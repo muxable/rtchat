@@ -2,6 +2,8 @@ import * as functions from "firebase-functions";
 import { PubSub } from "@google-cloud/pubsub";
 import * as admin from "firebase-admin";
 
+admin.initializeApp();
+
 export const subscribe = functions.https.onRequest(async (req, res) => {
   const provider = req.body?.provider;
   const channel = req.body?.channel;
