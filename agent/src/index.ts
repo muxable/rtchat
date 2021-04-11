@@ -45,7 +45,12 @@ async function subscribe(provider: string, channel: string) {
   switch (provider) {
     case "twitch":
       if (JOIN_BOTTLENECK.check()) {
-        await JOIN_BOTTLENECK.schedule(() => TWITCH_CLIENT.join(channel));
+        try {
+          await JOIN_BOTTLENECK.schedule(() => TWITCH_CLIENT.join(channel));
+        } catch (err) {
+          console.error(err);
+          return false;
+        }
         return true;
       }
   }
@@ -55,7 +60,12 @@ async function subscribe(provider: string, channel: string) {
 async function unsubscribe(provider: string, channel: string) {
   switch (provider) {
     case "twitch":
-      TWITCH_CLIENT.part(channel);
+      try {
+        await TWITCH_CLIENT.part(channel);
+      } catch (err) {
+        console.error(err);
+        return false;
+      }
       return true;
   }
   return false; // not handled by this agent.
