@@ -24,8 +24,6 @@ TWITCH_CLIENT.on("message", async (channel, tags, message) => {
 
   const timestamp = new admin.firestore.Timestamp(seconds, nanoseconds);
 
-  console.log(channel, tags, message);
-
   await admin
     .firestore()
     .collection("messages")
@@ -41,15 +39,15 @@ TWITCH_CLIENT.on("message", async (channel, tags, message) => {
 const JOIN_BOTTLENECK = new Bottleneck({
   maxConcurrent: 50,
   minTime: 15 * 1000,
-  highWater: 0, // another agent will handle this request if we're blocked.
-  strategy: Bottleneck.strategy.BLOCK,
 });
 
 async function subscribe(provider: string, channel: string) {
   switch (provider) {
     case "twitch":
-      await JOIN_BOTTLENECK.schedule(() => TWITCH_CLIENT.join(channel));
-      return true;
+      if (JOIN_BOTTLENECK.check()) {
+        await JOIN_BOTTLENECK.schedule(() => TWITCH_CLIENT.join(channel));
+        return true;
+      }
   }
   return false; // not handled by this agent.
 }
@@ -66,8 +64,10 @@ async function unsubscribe(provider: string, channel: string) {
 async function onSubscribe(message: Message) {
   const { provider, channel } = JSON.parse(message.data.toString());
   if (await subscribe(provider, channel)) {
+    console.log("successful subscribe", provider, channel);
     message.ack();
   } else {
+    console.log("failed subscribe", provider, channel);
     message.nack();
   }
 }
@@ -75,8 +75,10 @@ async function onSubscribe(message: Message) {
 async function onUnsubscribe(message: Message) {
   const { provider, channel } = JSON.parse(message.data.toString());
   if (await unsubscribe(provider, channel)) {
+    console.log("successful unsubscribe", provider, channel);
     message.ack();
   } else {
+    console.log("failed unsubscribe", provider, channel);
     message.nack();
   }
 }
