@@ -1,6 +1,8 @@
 name: Push agent to container registry
 on:
   push:
+    paths:
+      - "agent/**"
     branches:
       - main
 
