@@ -159,7 +159,9 @@ process.once("SIGTERM", async () => {
 
   const twitch = TWITCH_CLIENT.getChannels().map((channel) =>
     JOIN_TOPIC.publish(
-      Buffer.from(JSON.stringify({ provider: "twitch", channel }))
+      Buffer.from(
+        JSON.stringify({ provider: "twitch", channel: channel.substring(1) })
+      )
     )
   );
 
