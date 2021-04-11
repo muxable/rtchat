@@ -1,0 +1,32 @@
+name: Push agent to container registry
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push-to-gcr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: RafikFarhad/push-to-gcr-github-action@v3.0.2
+        with:
+          gcloud_service_key: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          registry: gcr.io
+          project_id: rtchat-47692
+          image_name: agent
+          image_tag: ${{ github.sha }}
+          context: ./agent
+      - name: deploy to cluster
+        uses: steebchen/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        with:
+          args: set image --record deployment/agent container=gcr.io/rtchat-47692/agent:${{ github.sha }}
+      - name: verify deployment
+        uses: steebchen/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+          KUBECTL_VERSION: "1.21"
+        with:
+          args: '"rollout status deployment/agent"'
