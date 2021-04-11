@@ -7,7 +7,9 @@ import * as process from "process";
 import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
-admin.initializeApp();
+admin.initializeApp({
+  databaseURL: "https://rtchat-47692-default-rtdb.firebaseio.com",
+});
 
 const AGENT_ID = uuidv4();
 
@@ -163,7 +165,7 @@ process.once("SIGTERM", async () => {
 
   await Promise.all(twitch);
 
-  for (const lock of locks.values()) {
+  for (const lock of Array.from(locks.values())) {
     await admin.database().ref("locks").child(lock).set(null);
   }
 
