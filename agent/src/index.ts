@@ -9,6 +9,10 @@ import { v4 as uuidv4 } from "uuid";
 dotenv.config();
 admin.initializeApp();
 
+const AGENT_ID = uuidv4();
+
+console.log("running agent", AGENT_ID);
+
 const TWITCH_CLIENT = new tmi.Client({
   connection: { reconnect: true },
   channels: [],
@@ -71,22 +75,53 @@ async function unsubscribe(provider: string, channel: string) {
   return false; // not handled by this agent.
 }
 
+const locks = new Set<string>();
+
 async function onSubscribe(message: Message) {
   const { provider, channel } = JSON.parse(message.data.toString());
-  if (await subscribe(provider, channel)) {
-    console.log("successful subscribe", provider, channel);
-    message.ack();
-  } else {
-    console.log("failed subscribe", provider, channel);
-    message.nack();
-  }
+  const key = `${provider}:${channel}`;
+  // attempt to lock the key.
+  await admin
+    .database()
+    .ref("locks")
+    .child(key)
+    .transaction(
+      (current) => {
+        if (!current) {
+          return AGENT_ID;
+        }
+      },
+      async (error, committed) => {
+        if (error) {
+          console.error(error);
+        }
+        if (!committed) {
+          return;
+        }
+        if (await subscribe(provider, channel)) {
+          console.log("successful subscribe", provider, channel);
+          message.ack();
+          locks.add(key);
+        } else {
+          console.log("failed subscribe", provider, channel);
+          message.nack();
+          await admin.database().ref("locks").child(key).set(null);
+          locks.delete(key);
+        }
+      }
+    );
 }
 
 async function onUnsubscribe(message: Message) {
   const { provider, channel } = JSON.parse(message.data.toString());
+  const key = `${provider}:${channel}`;
   if (await unsubscribe(provider, channel)) {
     console.log("successful unsubscribe", provider, channel);
     message.ack();
+    if (locks.has(key)) {
+      await admin.database().ref("locks").child(key).set(null);
+      locks.delete(key);
+    }
   } else {
     console.log("failed unsubscribe", provider, channel);
     message.nack();
@@ -105,7 +140,6 @@ const LEAVE_TOPIC = new PubSub().topic(
   "projects/rtchat-47692/topics/unsubscribe"
 );
 
-const AGENT_ID = uuidv4();
 const LEAVE_SUBSCRIPTION_ID = `projects/rtchat-47692/subscriptions/unsubscribe-${AGENT_ID}`;
 
 (async function () {
@@ -128,6 +162,10 @@ process.once("SIGTERM", async () => {
   );
 
   await Promise.all(twitch);
+
+  for (const lock of locks.values()) {
+    await admin.database().ref("locks").child(lock).set(null);
+  }
 
   process.exit(0);
 });
