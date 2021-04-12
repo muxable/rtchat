@@ -5,21 +5,21 @@ import * as tmi from "tmi.js";
 
 admin.initializeApp();
 
-export const subscribe = functions.https.onRequest(async (req, res) => {
-  const provider = req.body?.provider;
-  const channel = req.body?.channel;
+export const subscribe = functions.https.onCall(async (data) => {
+  const provider = data?.provider;
+  const channel = data?.channel;
   if (!provider || !channel) {
-    res.status(400).send("missing provider, channel");
-    return;
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channel"
+    );
   }
 
   const pubsub = new PubSub({ projectId: "rtchat-47692" });
 
-  const response = await pubsub
+  return await pubsub
     .topic("projects/rtchat-47692/topics/subscribe")
     .publish(Buffer.from(JSON.stringify({ provider, channel })));
-
-  res.status(200).send(response);
 });
 
 export const cleanup = functions.pubsub
