@@ -22,31 +22,6 @@ export const subscribe = functions.https.onCall(async (data) => {
     .publish(Buffer.from(JSON.stringify({ provider, channel })));
 });
 
-export const cleanup = functions.pubsub
-  .schedule("* * * * *")
-  .onRun(async () => {
-    // remove any messages older than 24 hours.
-    const timestamp = admin.firestore.Timestamp.fromMillis(
-      new Date().getTime() - 86400 * 1000
-    );
-    while (true) {
-      const snapshot = await admin
-        .firestore()
-        .collection("messages")
-        .where("timestamp", "<=", timestamp)
-        .limit(500)
-        .get();
-      if (snapshot.empty) {
-        return;
-      }
-      const batch = admin.firestore().batch();
-      for (const doc of snapshot.docs) {
-        batch.delete(doc.ref);
-      }
-      await batch.commit();
-    }
-  });
-
 export const send = functions.https.onRequest(async (req, res) => {
   const provider = req.body?.provider;
   const channel = req.body?.channel;
