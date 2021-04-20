@@ -22,7 +22,7 @@ export const subscribe = functions.https.onCall(async (data) => {
     .publish(Buffer.from(JSON.stringify({ provider, channel })));
 });
 
-export const send = functions.https.onRequest(async (req, res) => {
+export const send = functions.https.onCall(async (req, res) => {
   const provider = req.body?.provider;
   const channel = req.body?.channel;
   const message = req.body?.message;
