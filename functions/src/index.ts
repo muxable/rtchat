@@ -22,23 +22,24 @@ export const subscribe = functions.https.onCall(async (data) => {
     .publish(Buffer.from(JSON.stringify({ provider, channel })));
 });
 
-export const send = functions.https.onCall(async (req, res) => {
-  const provider = req.body?.provider;
-  const channel = req.body?.channel;
-  const message = req.body?.message;
-  const identity = req.body?.identity;
+export const send = functions.https.onCall(async (data) => {
+  const provider = data?.provider;
+  const channel = data?.channel;
+  const message = data?.message;
+  const identity = data?.identity;
   if (!provider || !channel || !message || !identity) {
-    res.status(400).send("missing provider, channel, message, or identity");
-    return;
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channel, message, or identity"
+    );
   }
 
   switch (provider) {
     case "twitch":
       const client = new tmi.Client({ channels: [channel], identity });
       await client.connect();
-      res.status(200).send(await client.say(channel, message));
-      return;
+      return await client.say(channel, message);
   }
 
-  res.status(400).send("invalid provider");
+  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
