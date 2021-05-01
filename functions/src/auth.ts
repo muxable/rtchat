@@ -73,7 +73,7 @@ app.get("/auth/twitch/redirect", (req, res) => {
     scope: ["user:read:email", "chat:read", "chat:edit"],
     state: state,
   });
-  res.redirect(redirectUri);
+  res.status(200).send("lsdkjf");
 });
 
 app.get("/auth/twitch/callback", async (req, res) => {
