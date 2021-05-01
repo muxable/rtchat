@@ -77,47 +77,38 @@ app.get("/auth/twitch", (req, res) => {
 });
 
 app.get("/auth/twitch/callback", async (req, res) => {
-  try {
-    if (!req.session?.state) {
-      res.status(500).send("state not set");
-      return;
-    } else if (req.session.state !== req.session.state) {
-      res.status(403).send("incorrect state");
-      return;
-    }
-    const results = await new AuthorizationCode(TWITCH_OAUTH_CONFIG).getToken({
-      code: String(req.query.code),
-      redirect_uri: `${HOST}/auth/twitch/callback`,
-    });
-
-    const accessToken = JSON.stringify(results.token);
-
-    const users = await fetch("https://api.twitch.tv/helix/users", {
-      headers: {
-        Authorization: `Bearer ${results.token.access_token}`,
-        "Client-Id": TWITCH_CLIENT_ID,
-      },
-    }).then((response) => response.json());
-
-    const twitchUserId = users["data"][0]["id"];
-
-    req.session.state = undefined;
-
-    // Create a Firebase account and get the Custom Auth Token.
-    const firebaseToken = await createFirebaseAccount(
-      twitchUserId,
-      accessToken
-    );
-
-    res.redirect(
-      "com.rtirl.chat://auth/twitch?token=" +
-        encodeURIComponent(firebaseToken.token)
-    );
-  } catch (error) {
-    console.error(error);
-    res.redirect("/");
+  if (!req.session?.state) {
+    res.status(500).send("state not set");
+    return;
+  } else if (req.session.state !== req.session.state) {
+    res.status(403).send("incorrect state");
     return;
   }
+  const results = await new AuthorizationCode(TWITCH_OAUTH_CONFIG).getToken({
+    code: String(req.query.code),
+    redirect_uri: `${HOST}/auth/twitch/callback`,
+  });
+
+  const accessToken = JSON.stringify(results.token);
+
+  const users = await fetch("https://api.twitch.tv/helix/users", {
+    headers: {
+      Authorization: `Bearer ${results.token.access_token}`,
+      "Client-Id": TWITCH_CLIENT_ID,
+    },
+  }).then((response) => response.json());
+
+  const twitchUserId = users["data"][0]["id"];
+
+  req.session.state = undefined;
+
+  // Create a Firebase account and get the Custom Auth Token.
+  const firebaseToken = await createFirebaseAccount(twitchUserId, accessToken);
+
+  res.redirect(
+    "com.rtirl.chat://auth/twitch?token=" +
+      encodeURIComponent(firebaseToken.token)
+  );
 });
 
 export { app };
