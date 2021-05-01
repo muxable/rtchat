@@ -65,7 +65,7 @@ async function createFirebaseAccount(userId: string, token: string) {
   return { token: await admin.auth().createCustomToken(uid), uid };
 }
 
-app.get("/auth/twitch/redirect", (req, res) => {
+app.get("/auth/twitch/asdf", (req, res) => {
   const state = req.session.state || crypto.randomBytes(20).toString("hex");
   req.session.state = state.toString();
   const redirectUri = new AuthorizationCode(TWITCH_OAUTH_CONFIG).authorizeURL({
