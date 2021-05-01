@@ -4,7 +4,12 @@ import * as functions from "firebase-functions";
 import * as tmi from "tmi.js";
 import { app as authApp } from "./auth";
 
-admin.initializeApp();
+admin.initializeApp({
+  credential: admin.credential.cert(
+    require("../rtchat-47692-firebase-adminsdk-ax5x8-9938439836.json")
+  ),
+  databaseURL: "https://itsli7-87384.firebaseio.com",
+});
 
 export const subscribe = functions.https.onCall(async (data) => {
   const provider = data?.provider;

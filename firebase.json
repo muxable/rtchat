@@ -15,6 +15,14 @@
         "function": "auth"
       },
       {
+        "source": "/api/send",
+        "function": "send"
+      },
+      {
+        "source": "/api/subscribe",
+        "function": "subscribe"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
