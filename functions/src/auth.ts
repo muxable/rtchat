@@ -36,32 +36,30 @@ const HOST =
     ? "https://chat.rtirl.com"
     : "http://localhost:5000";
 
-async function createFirebaseAccount(userId: string, token: string) {
-  // The UID we'll assign to the user.
-  const uid = `twitch:${userId}`;
-
-  // Save the access token to the Firebase Realtime Database.
-  const databaseTask = admin
+async function getFirebaseAccountForTwitch(userId: string) {
+  // see if the user exists
+  const mapping = await admin
     .firestore()
-    .collection("tokens")
-    .doc(uid)
-    .set({ token });
+    .collection("owners")
+    .where("twitch", "==", userId)
+    .limit(1)
+    .get();
 
-  // Create or update the user account.
-  const userCreationTask = admin
-    .auth()
-    .getUser(uid)
-    .catch((error) => {
-      // If user does not exists we create it.
-      if (error.code === "auth/user-not-found") {
-        return admin.auth().createUser({ uid });
-      }
-      throw error;
-    });
+  if (mapping.empty) {
+    // there's a race condition here, but it's ok if there's duplicate user accounts.
+    const record = await admin.auth().createUser({});
+    await admin
+      .firestore()
+      .collection("accounts")
+      .doc(record.uid)
+      .set({ twitch: userId }, { merge: true });
+    return {
+      token: await admin.auth().createCustomToken(record.uid),
+      uid: record.uid,
+    };
+  }
 
-  // Wait for all async task to complete then generate and return a custom auth token.
-  await Promise.all([userCreationTask, databaseTask]);
-  // Create a Firebase custom auth token.
+  const uid = mapping.docs[0].id;
   return { token: await admin.auth().createCustomToken(uid), uid };
 }
 
@@ -98,12 +96,33 @@ app.get("/auth/twitch/callback", async (req, res) => {
     },
   }).then((response) => response.json());
 
-  const twitchUserId = users["data"][0]["id"];
-
   req.session.state = undefined;
 
   // Create a Firebase account and get the Custom Auth Token.
-  const firebaseToken = await createFirebaseAccount(twitchUserId, accessToken);
+  const firebaseToken = await getFirebaseAccountForTwitch(
+    users["data"][0]["id"]
+  );
+
+  await admin
+    .firestore()
+    .collection("tokens")
+    .doc(firebaseToken.uid)
+    .set({ twitch: accessToken }, { merge: true });
+
+  await admin
+    .firestore()
+    .collection("profiles")
+    .doc(firebaseToken.uid)
+    .set(
+      {
+        twitch: {
+          displayName: users["data"][0]["display_name"],
+          url: `https://twitch.tv/${users["data"][0]["login"]}`,
+          profilePictureUrl: users["data"][0]["profile_image_url"],
+        },
+      },
+      { merge: true }
+    );
 
   res.redirect(
     "com.rtirl.chat://auth/twitch?token=" +
