@@ -65,7 +65,7 @@ async function createFirebaseAccount(userId: string, token: string) {
   return { token: await admin.auth().createCustomToken(uid), uid };
 }
 
-app.get("/auth/twitch/asdf", (req, res) => {
+app.get("/auth/twitch", (req, res) => {
   const state = req.session.state || crypto.randomBytes(20).toString("hex");
   req.session.state = state.toString();
   const redirectUri = new AuthorizationCode(TWITCH_OAUTH_CONFIG).authorizeURL({
@@ -73,7 +73,7 @@ app.get("/auth/twitch/asdf", (req, res) => {
     scope: ["user:read:email", "chat:read", "chat:edit"],
     state: state,
   });
-  res.status(200).send(redirectUri.toString());
+  res.redirect(redirectUri);
 });
 
 app.get("/auth/twitch/callback", async (req, res) => {
