@@ -11,6 +11,10 @@
     "predeploy": "flutter build web",
     "rewrites": [
       {
+        "source": "/auth/**",
+        "function": "auth"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
