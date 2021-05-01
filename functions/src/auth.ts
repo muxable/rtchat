@@ -119,3 +119,5 @@ app.get("/auth/twitch/callback", async (req, res) => {
     return;
   }
 });
+
+export { app };
