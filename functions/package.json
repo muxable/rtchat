@@ -13,9 +13,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
-    "@google-cloud/connect-firestore": "^2.0.1",
     "@google-cloud/pubsub": "^2.10.0",
-    "express-session": "^1.17.1",
     "firebase-admin": "^9.7.0",
     "firebase-functions": "^3.11.0",
     "node-fetch": "^2.6.1",
@@ -23,7 +21,6 @@
     "tmi.js": "^1.7.5"
   },
   "devDependencies": {
-    "@types/express-session": "^1.17.3",
     "@types/node-fetch": "^2.5.10",
     "@types/simple-oauth2": "^4.1.0",
     "@types/tmi.js": "^1.7.1",

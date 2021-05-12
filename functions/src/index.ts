@@ -2,7 +2,6 @@ import { PubSub } from "@google-cloud/pubsub";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import * as tmi from "tmi.js";
-import { app as authApp } from "./auth";
 
 admin.initializeApp({
   credential: admin.credential.cert(
@@ -49,5 +48,3 @@ export const send = functions.https.onCall(async (data) => {
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
-
-export const auth = functions.https.onRequest(authApp);
