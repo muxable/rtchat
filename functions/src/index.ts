@@ -48,3 +48,94 @@ export const send = functions.https.onCall(async (data) => {
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
+
+export const ban = functions.https.onCall(async (data) => {
+  const provider = data?.provider;
+  const channel = data?.channel;
+  const username = data?.username;
+  const reason = data?.reason;
+  const identity = data?.identity;
+  if (!provider || !channel || !username || !reason || !identity) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channel, username, reason, or identity"
+    );
+  }
+
+  switch (provider) {
+    case "twitch":
+      const client = new tmi.Client({ channels: [channel], identity });
+      await client.connect();
+      return await client.ban(channel, username, reason);
+  }
+
+  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
+});
+
+export const unban = functions.https.onCall(async (data) => {
+  const provider = data?.provider;
+  const channel = data?.channel;
+  const username = data?.username;
+  const identity = data?.identity;
+  if (!provider || !channel || !username || !identity) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channel, username, or identity"
+    );
+  }
+
+  switch (provider) {
+    case "twitch":
+      const client = new tmi.Client({ channels: [channel], identity });
+      await client.connect();
+      return await client.unban(channel, username);
+  }
+
+  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
+});
+
+export const timeout = functions.https.onCall(async (data) => {
+  const provider = data?.provider;
+  const channel = data?.channel;
+  const username = data?.username;
+  const length = data?.length;
+  const reason = data?.reason;
+  const identity = data?.identity;
+  if (!provider || !channel || !username || !length || !reason || !identity) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channel, username, length, reason, or identity"
+    );
+  }
+
+  switch (provider) {
+    case "twitch":
+      const client = new tmi.Client({ channels: [channel], identity });
+      await client.connect();
+      return await client.timeout(channel, username, length, reason);
+  }
+
+  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
+});
+
+export const deleteMessage = functions.https.onCall(async (data) => {
+  const provider = data?.provider;
+  const channel = data?.channel;
+  const messageId = data?.messageId;
+  const identity = data?.identity;
+  if (!provider || !channel || !messageId || !identity) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channel, messageId, or identity"
+    );
+  }
+
+  switch (provider) {
+    case "twitch":
+      const client = new tmi.Client({ channels: [channel], identity });
+      await client.connect();
+      return await client.deletemessage(channel, messageId);
+  }
+
+  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
+});
