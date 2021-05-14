@@ -90,25 +90,18 @@ class TwitchChatMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<LayoutModel>(builder: (context, model, child) {
-      final List<InlineSpan> children = [
-        TextSpan(
-            style: Theme.of(context)
-                .textTheme
-                .bodyText1!
-                .copyWith(height: 1.75, color: color, fontSize: model.fontSize),
-            text: _author),
-        TextSpan(text: ": "),
-      ];
-
       final textStyle = Theme.of(context)
           .textTheme
           .bodyText2!
-          .copyWith(height: 1.75, fontSize: model.fontSize);
+          .copyWith(fontSize: model.fontSize);
 
       final linkStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
-          height: 1.75,
-          fontSize: model.fontSize,
-          color: Theme.of(context).accentColor);
+          fontSize: model.fontSize, color: Theme.of(context).accentColor);
+
+      final List<InlineSpan> children = [
+        TextSpan(style: textStyle.copyWith(color: color), text: _author),
+        TextSpan(text: ": "),
+      ];
 
       if (_emotes != null) {
         final parsed = _emotes!.split("/").expand((block) {
@@ -134,6 +127,7 @@ class TwitchChatMessage extends StatelessWidget {
           final url =
               "https://static-cdn.jtvnw.net/emoticons/v1/${child._key}/4.0";
           children.add(WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
               child: Image(image: NetworkImage(url), height: model.fontSize)));
           index = child._end + 1;
         });
@@ -144,10 +138,13 @@ class TwitchChatMessage extends StatelessWidget {
       } else {
         children.addAll(parseText(_message, linkStyle));
       }
-      return RichText(
-        text: TextSpan(
-          style: textStyle,
-          children: children,
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 4),
+        child: RichText(
+          text: TextSpan(
+            style: textStyle,
+            children: children,
+          ),
         ),
       );
     });

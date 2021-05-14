@@ -117,26 +117,36 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         })
       ];
 
-      final input = Padding(
-        padding: EdgeInsets.all(16),
-        child: TextField(
-          controller: _textEditingController,
-          textInputAction: TextInputAction.send,
-          maxLines: null,
-          decoration: InputDecoration(
-            hintText: "Send a message...",
+      final input = Container(
+        color: Colors.grey.shade900,
+        child: Padding(
+          padding: EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 8),
+          child: TextField(
+            controller: _textEditingController,
+            textInputAction: TextInputAction.send,
+            maxLines: null,
+            decoration: InputDecoration(
+              hintText: "Send a message...",
+            ),
+            onChanged: (text) {
+              final filtered = text.replaceAll('\n', ' ');
+              if (filtered == text) {
+                return;
+              }
+              _textEditingController.value = TextEditingValue(
+                  text: filtered,
+                  selection: TextSelection.fromPosition(TextPosition(
+                      offset: _textEditingController.text.length)));
+            },
+            onSubmitted: (value) async {
+              value = value.trim();
+              if (value.isEmpty) {
+                return;
+              }
+              Provider.of<TwitchUserModel>(context, listen: false).send(value);
+              _textEditingController.clear();
+            },
           ),
-          onChanged: (text) {
-            _textEditingController.text = text.replaceAll('\n', ' ');
-          },
-          onSubmitted: (value) async {
-            value = value.trim();
-            if (value.isEmpty) {
-              return;
-            }
-            Provider.of<TwitchUserModel>(context, listen: false).send(value);
-            _textEditingController.clear();
-          },
         ),
       );
 
