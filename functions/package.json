@@ -13,6 +13,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "@google-cloud/connect-firestore": "^2.0.1",
     "@google-cloud/pubsub": "^2.10.0",
     "express-session": "^1.17.1",
     "firebase-admin": "^9.7.0",
