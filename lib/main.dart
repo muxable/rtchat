@@ -6,9 +6,9 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/twitch_user.dart';
-import 'package:rtchat/screens/home_screen.dart';
-import 'package:rtchat/screens/settings_screen.dart';
-import 'package:rtchat/screens/sign_in_screen.dart';
+import 'package:rtchat/screens/home.dart';
+import 'package:rtchat/screens/settings.dart';
+import 'package:rtchat/screens/sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const primarySwatch = MaterialColor(0xFF009FDF, {
@@ -45,7 +45,6 @@ class App extends StatelessWidget {
           return MultiProvider(
             providers: [
               ChangeNotifierProvider(create: (context) {
-                print("prefs $prefs");
                 final model = TwitchUserModel.fromJson(
                     jsonDecode(prefs.getString("twitch_user") ?? "{}"));
                 model.addListener(() {
@@ -66,10 +65,12 @@ class App extends StatelessWidget {
             child: MaterialApp(
               title: 'RealtimeChat',
               theme: ThemeData(
+                fontFamily: 'Arial',
                 brightness: Brightness.light,
                 primarySwatch: primarySwatch,
               ),
               darkTheme: ThemeData(
+                fontFamily: 'Arial',
                 brightness: Brightness.dark,
                 primarySwatch: primarySwatch,
                 scaffoldBackgroundColor: Colors.black,

@@ -44,7 +44,7 @@ class ChatHistoryModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void unsubscribe(String provider, String channel) {
+  Future<void> unsubscribe(String provider, String channel) async {
     final key = "$provider:$channel";
     if (!_subscribedKeys.contains(key)) {
       return;
@@ -54,6 +54,12 @@ class ChatHistoryModel extends ChangeNotifier {
     _rebindStream();
 
     notifyListeners();
+
+    final unsubscribe = FirebaseFunctions.instance.httpsCallable('unsubscribe');
+    await unsubscribe({
+      "provider": provider,
+      "channel": channel,
+    });
   }
 
   void _rebindStream() {

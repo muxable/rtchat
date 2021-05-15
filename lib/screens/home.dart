@@ -4,8 +4,8 @@ import 'package:rtchat/components/chat_panel.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/twitch_user.dart';
-import 'package:rtchat/screens/add_tab_screen.dart';
-import 'package:rtchat/screens/settings_screen.dart';
+import 'package:rtchat/screens/add_tab.dart';
+import 'package:rtchat/screens/settings.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -99,7 +99,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   }),
                 );
               } else if (value == "Sign Out") {
-                model.clearToken();
+                final username = model.username;
+                if (username != null) {
+                  await Provider.of<ChatHistoryModel>(context, listen: false)
+                      .unsubscribe("twitch", username);
+                }
+                await model.clearToken();
               }
             },
             itemBuilder: (context) {
