@@ -27,6 +27,19 @@ export const subscribe = functions.https.onCall(async (data) => {
     .publish(Buffer.from(JSON.stringify({ provider, channel })));
 });
 
+export const unsubscribe = functions.https.onCall(async (data) => {
+  const provider = data?.provider;
+  const channel = data?.channel;
+  if (!provider || !channel) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channel"
+    );
+  }
+
+  return {};
+});
+
 export const send = functions.https.onCall(async (data) => {
   const provider = data?.provider;
   const channel = data?.channel;
