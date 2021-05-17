@@ -23,12 +23,9 @@ const TWITCH_CLIENT = new tmi.Client({
 TWITCH_CLIENT.connect();
 
 TWITCH_CLIENT.on("message", async (channel, tags, message) => {
-  const unix = tags["tmi-sent-ts"];
-
-  const seconds = Number(unix.substring(0, unix.length - 3));
-  const nanoseconds = Number(unix.substring(unix.length - 3));
-
-  const timestamp = new admin.firestore.Timestamp(seconds, nanoseconds);
+  const timestamp = admin.firestore.Timestamp.fromMillis(
+    Number(tags["tmi-sent-ts"])
+  );
 
   await admin
     .firestore()
