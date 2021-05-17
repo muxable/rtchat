@@ -7,6 +7,7 @@ import * as admin from "firebase-admin";
 import fetch from "node-fetch";
 import { AuthorizationCode } from "simple-oauth2";
 import { TWITCH_CLIENT_ID, TWITCH_OAUTH_CONFIG } from "./oauth";
+import { v4 as uuidv4 } from "uuid";
 
 const app = express();
 
@@ -36,27 +37,35 @@ const HOST =
     ? "https://chat.rtirl.com"
     : "http://localhost:5000";
 
-async function createFirebaseAccount(uid: string, token: string) {
-  const databaseTask = admin
-    .firestore()
-    .collection("profiles")
-    .doc(uid)
-    .set({ token }, { merge: true });
-
-  const userCreationTask = admin
+async function createFirebaseAccount(uid: string, externalToken: string) {
+  await admin
     .auth()
     .getUser(uid)
     .catch((error) => {
       // If user does not exists we create it.
       if (error.code === "auth/user-not-found") {
-        return admin.auth().createUser({ uid });
+        return admin
+          .auth()
+          .createUser({ uid })
+          .then(() => admin.auth().setCustomUserClaims(uid, { key: uuidv4() }));
       }
       throw error;
     });
 
-  await Promise.all([userCreationTask, databaseTask]);
+  const token = await admin.auth().createCustomToken(uid);
 
-  return { token: await admin.auth().createCustomToken(uid), uid };
+  const key = await admin
+    .auth()
+    .verifyIdToken(token)
+    .then((claims) => claims.key);
+
+  await admin
+    .firestore()
+    .collection("profiles")
+    .doc(key)
+    .set({ userId: uid, token: externalToken }, { merge: true });
+
+  return { token, key };
 }
 
 app.get("/auth/twitch/redirect", (req, res) => {
@@ -98,7 +107,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
   const email = users["data"][0]["email"];
 
   // Create a Firebase account and get the Custom Auth Token.
-  const firebaseToken = await createFirebaseAccount(
+  const { token, key } = await createFirebaseAccount(
     `twitch:${userId}`,
     accessToken
   );
@@ -108,7 +117,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
   await admin
     .firestore()
     .collection("profiles")
-    .doc(firebaseToken.uid)
+    .doc(key)
     .set(
       {
         displayName: users["data"][0]["display_name"],
@@ -120,9 +129,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
 
   // we can be a bit handwavey here because this request is automatically https'd.
   // it would probably be smarter to put this in a cookie, but whatever.
-  res.redirect(
-    "/?provider=twitch&token=" + encodeURIComponent(firebaseToken.token)
-  );
+  res.redirect("/?provider=twitch&token=" + encodeURIComponent(token));
 });
 
 export { app };
