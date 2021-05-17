@@ -40,18 +40,6 @@ TWITCH_CLIENT.on("message", async (channel, tags, message) => {
       tags,
       message,
     });
-
-  await admin
-    .firestore()
-    .collection("channels")
-    .doc(`twitch:${channel.substring(1)}`)
-    .collection("messages")
-    .doc(tags.id)
-    .set({
-      timestamp,
-      tags,
-      message,
-    });
 });
 
 const JOIN_BOTTLENECK = new Bottleneck({
