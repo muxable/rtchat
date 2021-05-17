@@ -39,9 +39,9 @@ const HOST =
 async function createFirebaseAccount(uid: string, token: string) {
   const databaseTask = admin
     .firestore()
-    .collection("tokens")
+    .collection("profiles")
     .doc(uid)
-    .set({ token });
+    .set({ token }, { merge: true });
 
   const userCreationTask = admin
     .auth()
@@ -111,11 +111,9 @@ app.get("/auth/twitch/callback", async (req, res) => {
     .doc(firebaseToken.uid)
     .set(
       {
-        twitch: {
-          displayName: users["data"][0]["display_name"],
-          url: `https://twitch.tv/${users["data"][0]["login"]}`,
-          profilePictureUrl: users["data"][0]["profile_image_url"],
-        },
+        displayName: users["data"][0]["display_name"],
+        url: `https://twitch.tv/${users["data"][0]["login"]}`,
+        profilePictureUrl: users["data"][0]["profile_image_url"],
       },
       { merge: true }
     );

@@ -42,20 +42,37 @@ export const unsubscribe = functions.https.onCall(async (data) => {
 });
 
 export const send = functions.https.onCall(async (data) => {
-  const provider = data?.provider;
-  const channel = data?.channel;
   const message = data?.message;
-  const identity = data?.identity;
-  if (!provider || !channel || !message || !identity) {
+  const token = data?.token;
+  if (!message || !token) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channel, message, or identity"
+      "missing channel, message, or token"
     );
   }
 
+  const decodedToken = await admin.auth().verifyIdToken(token, true);
+
+  const provider = decodedToken.split(":")[0];
+
+  const profile = await admin
+    .firestore()
+    .collection("profiles")
+    .doc(decodedToken.uid)
+    .get();
+
+  const username = profile.get("displayName").toLowerCase();
+  const password = JSON.parse(profile.get("token"))["access_token"];
+
+  const channel = data?.channel || username;
+  const identity = { username, password };
+
   switch (provider) {
     case "twitch":
-      const client = new tmi.Client({ channels: [channel], identity });
+      const client = new tmi.Client({
+        channels: [channel],
+        identity,
+      });
       await client.connect();
       return await client.say(channel, message);
   }
