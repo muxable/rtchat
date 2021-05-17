@@ -8,7 +8,7 @@ admin.initializeApp({
   credential: admin.credential.cert(
     require("../rtchat-47692-firebase-adminsdk-ax5x8-9938439836.json")
   ),
-  databaseURL: "https://itsli7-87384.firebaseio.com",
+  databaseURL: "https://rtchat-47692-default-rtdb.firebaseio.com",
 });
 
 export const subscribe = functions.https.onCall(async (data) => {
