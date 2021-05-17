@@ -47,17 +47,18 @@ async function createFirebaseAccount(uid: string, externalToken: string) {
         return admin
           .auth()
           .createUser({ uid })
-          .then(() => admin.auth().setCustomUserClaims(uid, { key: uuidv4() }));
+          .then(() => admin.database().ref("keys").child(uid).set(uuidv4()));
       }
       throw error;
     });
 
   const token = await admin.auth().createCustomToken(uid);
 
-  const key = await admin
-    .auth()
-    .verifyIdToken(token)
-    .then((claims) => claims.key);
+  const key = (await admin.database().ref("keys").child(uid).get()).val();
+
+  if (!key) {
+    throw new Error("key not found!");
+  }
 
   await admin
     .firestore()
