@@ -113,7 +113,9 @@ app.get("/auth/twitch/callback", async (req, res) => {
     accessToken
   );
 
-  await admin.auth().updateUser(userId, { email, emailVerified: true });
+  await admin
+    .auth()
+    .updateUser(`twitch:${userId}`, { email, emailVerified: true });
 
   await admin
     .firestore()
