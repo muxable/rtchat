@@ -120,7 +120,9 @@ app.get("/auth/twitch/callback", async (req, res) => {
       { merge: true }
     );
 
-  res.redirect("/");
+  // we can be a bit handwavey here because this request is automatically https'd.
+  // it would probably be smarter to put this in a cookie, but whatever.
+  res.redirect("/?token=" + encodeURIComponent(firebaseToken.token));
 });
 
 export { app };
