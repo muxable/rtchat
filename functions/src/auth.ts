@@ -104,18 +104,13 @@ app.get("/auth/twitch/callback", async (req, res) => {
 
   req.session.state = undefined;
 
-  const userId = users["data"][0]["id"];
+  const userId = `twitch:${users["data"][0]["id"]}`;
   const email = users["data"][0]["email"];
 
   // Create a Firebase account and get the Custom Auth Token.
-  const { token, key } = await createFirebaseAccount(
-    `twitch:${userId}`,
-    accessToken
-  );
+  const { token, key } = await createFirebaseAccount(userId, accessToken);
 
-  await admin
-    .auth()
-    .updateUser(`twitch:${userId}`, { email, emailVerified: true });
+  await admin.auth().updateUser(userId, { email, emailVerified: true });
 
   await admin
     .firestore()
