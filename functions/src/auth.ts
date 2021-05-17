@@ -77,7 +77,7 @@ app.get("/auth/twitch/redirect", (req, res) => {
     scope: ["user:read:email", "chat:read", "chat:edit"],
     state: state,
   });
-  res.redirect(redirectUri);
+  res.redirect(`${redirectUri}&force_verify=true`);
 });
 
 app.get("/auth/twitch/callback", async (req, res) => {
