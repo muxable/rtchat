@@ -122,7 +122,9 @@ app.get("/auth/twitch/callback", async (req, res) => {
 
   // we can be a bit handwavey here because this request is automatically https'd.
   // it would probably be smarter to put this in a cookie, but whatever.
-  res.redirect("/?token=" + encodeURIComponent(firebaseToken.token));
+  res.redirect(
+    "/?provider=twitch&token=" + encodeURIComponent(firebaseToken.token)
+  );
 });
 
 export { app };
