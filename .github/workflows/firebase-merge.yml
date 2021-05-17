@@ -1,8 +1,6 @@
-name: Deploy to Firebase Functions on merge
+name: Deploy to Firebase on merge
 on:
   push:
-    paths:
-      - "functions/**"
     branches:
       - main
 
@@ -13,6 +11,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: w9jds/firebase-action@master
         with:
-          args: deploy --only functions
+          args: deploy --only functions,firestore
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
