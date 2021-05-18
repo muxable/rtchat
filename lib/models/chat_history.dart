@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:rtchat/models/user.dart';
 
 class TwitchMessage {
   final String channel;
@@ -17,8 +18,6 @@ class TwitchMessage {
 }
 
 class ChatHistoryModel extends ChangeNotifier {
-  final Set<String> _subscribedKeys = {};
-
   StreamSubscription<QuerySnapshot>? _subscription;
 
   final List<TwitchMessage> _messages = [];
@@ -27,52 +26,28 @@ class ChatHistoryModel extends ChangeNotifier {
 
   bool _ttsEnabled = false;
 
-  Future<void> subscribe(String provider, String channel) async {
-    final key = "$provider:$channel";
-    if (_subscribedKeys.contains(key)) {
-      return;
-    }
+  Future<void> subscribe(Set<Channel> channels) async {
     final subscribe = FirebaseFunctions.instance.httpsCallable('subscribe');
-    await subscribe({
-      "provider": provider,
-      "channel": channel,
+    channels.forEach((channel) {
+      subscribe({
+        "provider": channel.provider,
+        "channel": channel.channel,
+      });
     });
-    _subscribedKeys.add(key);
 
-    _rebindStream();
-
-    notifyListeners();
-  }
-
-  Future<void> unsubscribe(String provider, String channel) async {
-    final key = "$provider:$channel";
-    if (!_subscribedKeys.contains(key)) {
-      return;
-    }
-    _subscribedKeys.remove(key);
-
-    _rebindStream();
-
-    notifyListeners();
-
-    final unsubscribe = FirebaseFunctions.instance.httpsCallable('unsubscribe');
-    await unsubscribe({
-      "provider": provider,
-      "channel": channel,
-    });
-  }
-
-  void _rebindStream() {
     _messages.clear();
     notifyListeners();
 
     _subscription?.cancel();
-    if (_subscribedKeys.isEmpty) {
+    if (channels.isEmpty) {
       _subscription = null;
     } else {
       _subscription = FirebaseFirestore.instance
           .collection("messages")
-          .where("channel", whereIn: _subscribedKeys.toList())
+          .where("channel",
+              whereIn: channels
+                  .map((channel) => "${channel.provider}:${channel.channel}")
+                  .toList())
           .orderBy("timestamp")
           .limitToLast(250)
           .snapshots()

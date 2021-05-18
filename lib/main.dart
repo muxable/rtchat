@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
-import 'package:rtchat/models/twitch_user.dart';
+import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings.dart';
 import 'package:rtchat/screens/sign_in.dart';
@@ -44,14 +44,7 @@ class App extends StatelessWidget {
 
           return MultiProvider(
             providers: [
-              ChangeNotifierProvider(create: (context) {
-                final model = TwitchUserModel.fromJson(
-                    jsonDecode(prefs.getString("twitch_user") ?? "{}"));
-                model.addListener(() {
-                  prefs.setString("twitch_user", jsonEncode(model.toJson()));
-                });
-                return model;
-              }),
+              ChangeNotifierProvider(create: (context) => UserModel()),
               ChangeNotifierProvider(create: (context) {
                 final model = LayoutModel.fromJson(
                     jsonDecode(prefs.getString("layout") ?? "{}"));
@@ -60,7 +53,11 @@ class App extends StatelessWidget {
                 });
                 return model;
               }),
-              ChangeNotifierProvider(create: (context) => ChatHistoryModel()),
+              ChangeNotifierProxyProvider<UserModel, ChatHistoryModel>(
+                  create: (context) => ChatHistoryModel(),
+                  update: (context, user, chatHistory) =>
+                      (chatHistory == null ? ChatHistoryModel() : chatHistory)
+                        ..subscribe(user.channels)),
             ],
             child: MaterialApp(
               title: 'RealtimeChat',
@@ -78,8 +75,7 @@ class App extends StatelessWidget {
               initialRoute: '/',
               routes: {
                 '/': (context) {
-                  return Consumer<TwitchUserModel>(
-                      builder: (context, model, child) {
+                  return Consumer<UserModel>(builder: (context, model, child) {
                     if (!model.isSignedIn()) {
                       return SignInScreen(loading: false);
                     }

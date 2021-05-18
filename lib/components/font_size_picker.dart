@@ -11,7 +11,11 @@ class FontSizePicker extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Font size", style: Theme.of(context).textTheme.subtitle1),
+          Text("Font size",
+              style: TextStyle(
+                color: Theme.of(context).accentColor,
+                fontWeight: FontWeight.bold,
+              )),
           Container(
               height: 120,
               child: Padding(

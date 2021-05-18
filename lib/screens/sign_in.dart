@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/models/twitch_user.dart';
+import 'package:rtchat/models/user.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-final url = Uri.https('id.twitch.tv', '/oauth2/authorize', {
-  'response_type': 'token',
-  'client_id': "edfnh2q85za8phifif9jxt3ey6t9b9",
-  'redirect_uri': 'https://chat.rtirl.com/oauth2redirect',
-  'scope': 'chat:edit chat:read',
-  "force_verify": "true",
-});
+final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
 
 class SignInScreen extends StatelessWidget {
   final bool loading;
@@ -38,14 +32,13 @@ class SignInScreen extends StatelessWidget {
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all(Color(0xFF6441A5)),
               ),
-              child: Consumer<TwitchUserModel>(builder: (context, user, child) {
+              child: Consumer<UserModel>(builder: (context, user, child) {
                 return Text("Sign in with Twitch");
               }),
               onPressed: () {
-                final user =
-                    Provider.of<TwitchUserModel>(context, listen: false);
+                final user = Provider.of<UserModel>(context, listen: false);
                 if (user.isSignedIn()) {
-                  user.clearToken();
+                  user.signOut();
                 } else {
                   showModalBottomSheet<void>(
                     isScrollControlled: true,
@@ -58,15 +51,16 @@ class SignInScreen extends StatelessWidget {
                           initialUrl: url.toString(),
                           javascriptMode: JavascriptMode.unrestricted,
                           navigationDelegate: (request) {
-                            if (request.url.startsWith(
-                                "https://chat.rtirl.com/oauth2redirect")) {
+                            if (request.url
+                                .startsWith("https://chat.rtirl.com/?")) {
                               final uri = Uri.parse(request.url);
-                              final params = Uri.splitQueryString(uri.fragment);
-                              final token = params["access_token"];
+                              final token = uri.queryParameters['token'];
                               if (token != null) {
-                                user.setToken(token);
+                                user.signIn(token);
+                                Navigator.pop(context);
+                              } else {
+                                print("uh oh");
                               }
-                              Navigator.pop(context);
                               return NavigationDecision.prevent;
                             }
                             return NavigationDecision.navigate;

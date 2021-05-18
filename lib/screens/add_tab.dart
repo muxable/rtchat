@@ -60,18 +60,23 @@ class _AddTabScreenState extends State<AddTabScreen> {
                     hintText: 'URL',
                   ),
                   validator: (String? value) {
-                    if (value == null || !Uri.parse(value).isAbsolute) {
+                    if (value == null || Uri.tryParse(value) != null) {
                       return 'This doesn\'t appear to be a valid URL.';
                     }
                     return null;
                   },
                   onChanged: (value) {
-                    if (Uri.parse(value).isAbsolute) {
+                    if (Uri.tryParse(value) != null) {
                       _webViewController?.loadUrl(value);
                     }
                   }),
               Padding(padding: EdgeInsets.all(8), child: Text("Preview")),
-              Expanded(child: WebView(
+              Expanded(
+                  child: WebView(
+                javascriptMode: JavascriptMode.unrestricted,
+                allowsInlineMediaPlayback: true,
+                initialMediaPlaybackPolicy:
+                    AutoMediaPlaybackPolicy.always_allow,
                 onWebViewCreated: (controller) {
                   _webViewController = controller;
                 },

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_panel.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
-import 'package:rtchat/models/twitch_user.dart';
+import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/add_tab.dart';
 import 'package:rtchat/screens/settings.dart';
 import 'package:wakelock/wakelock.dart';
@@ -26,36 +26,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _tabController = TabController(length: 0, vsync: this);
-    Provider.of<TwitchUserModel>(context, listen: false)
-        .addListener(bindChatHistory);
-    bindChatHistory(); // fire it once.
     Wakelock.enable();
   }
 
   @override
   void dispose() {
     Wakelock.disable();
-    Provider.of<TwitchUserModel>(context, listen: false)
-        .removeListener(bindChatHistory);
     _tabController.dispose();
     super.dispose();
-  }
-
-  void bindChatHistory() {
-    final username =
-        Provider.of<TwitchUserModel>(context, listen: false).username;
-    if (username != null) {
-      Provider.of<ChatHistoryModel>(context, listen: false)
-          .subscribe("twitch", username);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-      final title = Consumer<TwitchUserModel>(builder: (context, model, child) {
-        if (model.isSignedIn() && model.username != null) {
-          return Text("/${model.username}");
+      final title = Consumer<UserModel>(builder: (context, model, child) {
+        if (model.channels.isNotEmpty) {
+          // TODO: Implement multi-channel rendering.
+          return Text("/${model.channels.first.channel}");
         }
         return Text("RealtimeChat");
       });
@@ -81,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 chatHistoryModel.ttsEnabled = !chatHistoryModel.ttsEnabled;
               });
         }),
-        Consumer<TwitchUserModel>(builder: (context, model, child) {
+        Consumer<UserModel>(builder: (context, model, child) {
           return PopupMenuButton<String>(
             onSelected: (value) async {
               if (value == "Add Browser Panel") {
@@ -99,18 +86,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   }),
                 );
               } else if (value == "Sign Out") {
-                final username = model.username;
-                if (username != null) {
-                  await Provider.of<ChatHistoryModel>(context, listen: false)
-                      .unsubscribe("twitch", username);
-                }
-                await model.clearToken();
+                await Provider.of<ChatHistoryModel>(context, listen: false)
+                    .subscribe({});
+                model.signOut();
               }
             },
             itemBuilder: (context) {
-              final options = model.isSignedIn()
-                  ? {'Add Browser Panel', 'Settings', 'Sign Out'}
-                  : {'Add Browser Panel', 'Settings'};
+              final options = {'Add Browser Panel', 'Settings', 'Sign Out'};
               return options.map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
@@ -148,7 +130,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               if (value.isEmpty) {
                 return;
               }
-              Provider.of<TwitchUserModel>(context, listen: false).send(value);
+              final model = Provider.of<UserModel>(context, listen: false);
+              model.send(model.channels.first, value);
               _textEditingController.clear();
             },
           ),
@@ -193,7 +176,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       IconButton(
                           onPressed: () {
                             final index = _tabController.index;
-                            layoutModel.removeTab(index);
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text(
+                                      'Remove tab ${layoutModel.tabs[index].label}?'),
+                                  actions: [
+                                    TextButton(
+                                      child: Text('Cancel'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: Text('Confirm'),
+                                      onPressed: () {
+                                        layoutModel.removeTab(index);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           },
                           icon: Icon(Icons.close)),
                     ]),
@@ -226,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 }
                 layoutModel.updatePanelHeight(dy: details.delta.dy);
               },
-              child: Divider(thickness: 5),
+              child: Divider(thickness: 16),
             ),
             Expanded(child: ChatPanel()),
             input,
