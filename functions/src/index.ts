@@ -3,6 +3,7 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import * as tmi from "tmi.js";
 import { app as authApp } from "./auth";
+import { getAccessToken } from "./oauth";
 
 admin.initializeApp({
   credential: admin.credential.cert(
@@ -41,34 +42,32 @@ export const unsubscribe = functions.https.onCall(async (data) => {
   return {};
 });
 
-export const send = functions.https.onCall(async (data) => {
+export const send = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("permission-denied", "missing auth");
+  }
+  const provider = data?.provider;
+  const channel = data?.channel;
   const message = data?.message;
-  const token = data?.token;
-  if (!message || !token) {
+  if (!provider || !channel || !message) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing channel, message, or token"
+      "missing provider, channel, message"
     );
   }
 
-  const decodedToken = await admin.auth().verifyIdToken(token, true);
-
-  const provider = decodedToken.split(":")[0];
-
-  const profile = await admin
-    .firestore()
-    .collection("profiles")
-    .doc(decodedToken.uid)
-    .get();
-
-  const username = profile.get("displayName").toLowerCase();
-  const password = JSON.parse(profile.get("token"))["access_token"];
-
-  const channel = data?.channel || username;
-  const identity = { username, password };
-
   switch (provider) {
     case "twitch":
+      const token = await getAccessToken(context.auth.uid, "twitch");
+
+      const usernameDoc = await admin
+        .firestore()
+        .collection("profiles")
+        .doc(context.auth.uid)
+        .get();
+
+      const username = usernameDoc.get("twitch")["login"];
+      const identity = { username, password: `oauth:${token}` };
       const client = new tmi.Client({
         channels: [channel],
         identity,
