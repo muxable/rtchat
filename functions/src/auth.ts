@@ -37,38 +37,6 @@ const HOST =
     ? "https://chat.rtirl.com"
     : "http://localhost:5000";
 
-async function createFirebaseAccount(uid: string, externalToken: string) {
-  await admin
-    .auth()
-    .getUser(uid)
-    .catch((error) => {
-      // If user does not exists we create it.
-      if (error.code === "auth/user-not-found") {
-        return admin
-          .auth()
-          .createUser({ uid })
-          .then(() => admin.database().ref("keys").child(uid).set(uuidv4()));
-      }
-      throw error;
-    });
-
-  const token = await admin.auth().createCustomToken(uid);
-
-  const key = (await admin.database().ref("keys").child(uid).get()).val();
-
-  if (!key) {
-    throw new Error("key not found!");
-  }
-
-  await admin
-    .firestore()
-    .collection("profiles")
-    .doc(key)
-    .set({ userId: uid, token: externalToken }, { merge: true });
-
-  return { token, key };
-}
-
 app.get("/auth/twitch/redirect", (req, res) => {
   const state = req.session.state || crypto.randomBytes(20).toString("hex");
   req.session.state = state.toString();
@@ -93,8 +61,6 @@ app.get("/auth/twitch/callback", async (req, res) => {
     redirect_uri: `${HOST}/auth/twitch/callback`,
   });
 
-  const accessToken = JSON.stringify(results.token);
-
   const users = await fetch("https://api.twitch.tv/helix/users", {
     headers: {
       Authorization: `Bearer ${results.token.access_token}`,
@@ -104,30 +70,48 @@ app.get("/auth/twitch/callback", async (req, res) => {
 
   req.session.state = undefined;
 
-  const userId = `twitch:${users["data"][0]["id"]}`;
+  const twitchUserId = users["data"][0]["id"];
   const email = users["data"][0]["email"];
 
-  // Create a Firebase account and get the Custom Auth Token.
-  const { token, key } = await createFirebaseAccount(userId, accessToken);
+  // check if this user exists already.
+  const userIdRef = admin
+    .database()
+    .ref("userIds")
+    .child("twitch")
+    .child(twitchUserId);
+  const firebaseUserIdDoc = await userIdRef.get();
+  let firebaseUserId = firebaseUserIdDoc.val();
+  if (!firebaseUserId) {
+    const userRecord = await admin.auth().createUser({});
+    await userIdRef.set(userRecord.uid);
+    firebaseUserId = userRecord.uid;
+  }
 
-  await admin.auth().updateUser(userId, { email, emailVerified: true });
+  // save the token to the user doc.
+  await admin
+    .firestore()
+    .collection("tokens")
+    .doc(firebaseUserId)
+    .set({ twitch: JSON.stringify(results.token) }, { merge: true });
+
+  // save the profile information too.
+  const twitchProfile = {
+    email,
+    displayName: users["data"][0]["display_name"],
+    login: users["data"][0]["login"],
+    profilePictureUrl: users["data"][0]["profile_image_url"],
+  };
 
   await admin
     .firestore()
     .collection("profiles")
-    .doc(key)
-    .set(
-      {
-        displayName: users["data"][0]["display_name"],
-        url: `https://twitch.tv/${users["data"][0]["login"]}`,
-        profilePictureUrl: users["data"][0]["profile_image_url"],
-      },
-      { merge: true }
-    );
+    .doc(firebaseUserId)
+    .set({ twitch: twitchProfile }, { merge: true });
 
   // we can be a bit handwavey here because this request is automatically https'd.
   // it would probably be smarter to put this in a cookie, but whatever.
-  res.redirect("/?provider=twitch&token=" + encodeURIComponent(token));
+  const token = await admin.auth().createCustomToken(firebaseUserId);
+  res.redirect("/?token=" + encodeURIComponent(token));
 });
 
 export { app };
