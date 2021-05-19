@@ -4,9 +4,9 @@ import 'package:rtchat/components/messages/twitch_message.dart';
 import 'package:rtchat/models/chat_history.dart';
 
 class ChatPanelWidget extends StatefulWidget {
-  ChatPanelWidget({Key? key, this.title}) : super(key: key);
+  final void Function(bool) onScrollback;
 
-  final String? title;
+  ChatPanelWidget({Key? key, required this.onScrollback}) : super(key: key);
 
   @override
   _ChatPanelWidgetState createState() => _ChatPanelWidgetState();
@@ -27,6 +27,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
         setState(() {
           _atBottom = value;
         });
+        widget.onScrollback(!_atBottom);
       }
     });
   }

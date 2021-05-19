@@ -21,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   final Map<int, WebViewController> _webViewControllers = {};
   var _locked = false;
+  var _minimized = false;
 
   @override
   void initState() {
@@ -138,10 +139,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
       );
 
+      final chatPanel = ChatPanelWidget(
+        onScrollback: (isScrolling) {
+          setState(() {
+            _minimized = isScrolling;
+          });
+        },
+      );
+
       if (layoutModel.tabs.length == 0) {
         return Scaffold(
           appBar: AppBar(title: title, actions: actions),
-          body: Column(children: [Expanded(child: ChatPanelWidget()), input]),
+          body: Column(children: [Expanded(child: chatPanel), input]),
         );
       }
 
@@ -207,8 +216,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             actions: actions),
         body: Column(
           children: [
-            Container(
-              height: layoutModel.panelHeight,
+            AnimatedContainer(
+              height: _minimized ? 100 : layoutModel.panelHeight,
+              duration: Duration(milliseconds: 400),
               child: TabBarView(
                 controller: _tabController,
                 children: layoutModel.tabs.asMap().entries.map((entry) {
@@ -233,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               },
               child: Divider(thickness: 16),
             ),
-            Expanded(child: ChatPanelWidget()),
+            Expanded(child: chatPanel),
             input,
           ],
         ),
