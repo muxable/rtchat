@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -32,16 +30,6 @@ class Emote {
   final String _key;
 
   Emote(this._start, this._end, this._key);
-}
-
-List<Shadow> outlinedText(
-    {double strokeWidth = 0.4, Color strokeColor = Colors.black}) {
-  return [
-    // Shadow(offset: Offset(-strokeWidth, -strokeWidth), color: strokeColor),
-    // Shadow(offset: Offset(-strokeWidth, strokeWidth), color: strokeColor),
-    // Shadow(offset: Offset(strokeWidth, -strokeWidth), color: strokeColor),
-    Shadow(offset: Offset(strokeWidth, strokeWidth), color: strokeColor)
-  ];
 }
 
 Iterable<InlineSpan> parseText(String text, TextStyle linkStyle) {
@@ -105,21 +93,14 @@ class TwitchMessageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<LayoutModel>(builder: (context, model, child) {
-      var strokeColor = Theme.of(context).scaffoldBackgroundColor;
-      var luminance = color.computeLuminance();
-
-      if (Theme.of(context).brightness == Brightness.dark &&
-          luminance < 0.179) {
-        strokeColor = Colors.white;
-      } else if (Theme.of(context).brightness == Brightness.light &&
-          luminance > 1 - 0.179) {
-        strokeColor = Colors.black;
-      }
+      final luminance = color.computeLuminance();
+      final override = (Theme.of(context).brightness == Brightness.dark &&
+              luminance < 0.179) ||
+          (Theme.of(context).brightness == Brightness.light &&
+              luminance > 1 - 0.179);
 
       var authorStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
-          fontSize: model.fontSize,
-          color: color,
-          shadows: outlinedText(strokeColor: strokeColor));
+          fontSize: model.fontSize, color: override ? Colors.grey : color);
 
       var messageStyle = Theme.of(context)
           .textTheme

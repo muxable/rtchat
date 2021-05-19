@@ -15,7 +15,11 @@ class SignInScreen extends StatelessWidget {
     if (loading) {
       return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Image(width: 160, image: AssetImage('assets/logo.png')),
-        Text("RealtimeChat", style: Theme.of(context).textTheme.headline6),
+        Text("RealtimeChat",
+            style: Theme.of(context)
+                .textTheme
+                .headline6!
+                .copyWith(color: Colors.white)),
       ]);
     }
     return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -23,9 +27,12 @@ class SignInScreen extends StatelessWidget {
       Padding(
           padding: EdgeInsets.only(bottom: 64),
           child: Text("RealtimeChat",
-              style: Theme.of(context).textTheme.headline6)),
+              style: Theme.of(context)
+                  .textTheme
+                  .headline6!
+                  .copyWith(color: Colors.white))),
       Container(
-        width: double.infinity,
+        width: 400,
         child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 64),
             child: ElevatedButton(

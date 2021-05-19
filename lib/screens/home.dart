@@ -106,15 +106,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ];
 
       final input = Container(
-        color: Colors.grey.shade900,
+        color: Theme.of(context).primaryColor,
         child: Padding(
           padding: EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 8),
           child: TextField(
             controller: _textEditingController,
             textInputAction: TextInputAction.send,
             maxLines: null,
+            style: TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: "Send a message...",
+              hintStyle: TextStyle(color: Colors.white),
+              focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white)),
+              enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white)),
             ),
             onChanged: (text) {
               final filtered = text.replaceAll('\n', ' ');
@@ -181,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             _webViewControllers[index]
                                 ?.loadUrl(layoutModel.tabs[index].uri);
                           },
-                          icon: Icon(Icons.refresh)),
+                          icon: Icon(Icons.refresh, color: Colors.white)),
                       IconButton(
                           onPressed: () {
                             final index = _tabController.index;
@@ -209,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               },
                             );
                           },
-                          icon: Icon(Icons.close)),
+                          icon: Icon(Icons.close, color: Colors.white)),
                     ]),
                     preferredSize: Size.fromHeight(56),
                   ),
