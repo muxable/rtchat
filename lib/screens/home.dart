@@ -141,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (layoutModel.tabs.length == 0) {
         return Scaffold(
           appBar: AppBar(title: title, actions: actions),
-          body: Column(children: [Expanded(child: ChatPanel()), input]),
+          body: Column(children: [Expanded(child: ChatPanelWidget()), input]),
         );
       }
 
@@ -169,8 +169,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       IconButton(
                           onPressed: () {
                             final index = _tabController.index;
-                            _webViewControllers[index]?.loadUrl(
-                                layoutModel.tabs[index].uri.toString());
+                            _webViewControllers[index]
+                                ?.loadUrl(layoutModel.tabs[index].uri);
                           },
                           icon: Icon(Icons.refresh)),
                       IconButton(
@@ -233,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               },
               child: Divider(thickness: 16),
             ),
-            Expanded(child: ChatPanel()),
+            Expanded(child: ChatPanelWidget()),
             input,
           ],
         ),

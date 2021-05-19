@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -32,6 +34,16 @@ class Emote {
   Emote(this._start, this._end, this._key);
 }
 
+List<Shadow> outlinedText(
+    {double strokeWidth = 0.4, Color strokeColor = Colors.black}) {
+  return [
+    // Shadow(offset: Offset(-strokeWidth, -strokeWidth), color: strokeColor),
+    // Shadow(offset: Offset(-strokeWidth, strokeWidth), color: strokeColor),
+    // Shadow(offset: Offset(strokeWidth, -strokeWidth), color: strokeColor),
+    Shadow(offset: Offset(strokeWidth, strokeWidth), color: strokeColor)
+  ];
+}
+
 Iterable<InlineSpan> parseText(String text, TextStyle linkStyle) {
   final parsed = linkify(text, options: LinkifyOptions(humanize: false));
   return parsed.map<InlineSpan>((element) {
@@ -63,18 +75,21 @@ Iterable<InlineSpan> parseText(String text, TextStyle linkStyle) {
   });
 }
 
-class TwitchChatMessage extends StatelessWidget {
+class TwitchMessageWidget extends StatelessWidget {
   final String _message;
+  final String _type;
   final String _author;
   final String? _emotes;
   final String? _color;
 
-  TwitchChatMessage(
+  TwitchMessageWidget(
       {required String? color,
+      required String type,
       required String author,
       required String message,
       required String? emotes})
       : _message = message,
+        _type = type,
         _author = author,
         _color = color,
         _emotes = emotes;
@@ -90,7 +105,23 @@ class TwitchChatMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<LayoutModel>(builder: (context, model, child) {
-      final textStyle = Theme.of(context)
+      var strokeColor = Theme.of(context).scaffoldBackgroundColor;
+      var luminance = color.computeLuminance();
+
+      if (Theme.of(context).brightness == Brightness.dark &&
+          luminance < 0.179) {
+        strokeColor = Colors.white;
+      } else if (Theme.of(context).brightness == Brightness.light &&
+          luminance > 1 - 0.179) {
+        strokeColor = Colors.black;
+      }
+
+      var authorStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
+          fontSize: model.fontSize,
+          color: color,
+          shadows: outlinedText(strokeColor: strokeColor));
+
+      var messageStyle = Theme.of(context)
           .textTheme
           .bodyText2!
           .copyWith(fontSize: model.fontSize);
@@ -99,9 +130,17 @@ class TwitchChatMessage extends StatelessWidget {
           fontSize: model.fontSize, color: Theme.of(context).accentColor);
 
       final List<InlineSpan> children = [
-        TextSpan(style: textStyle.copyWith(color: color), text: _author),
-        TextSpan(text: ": "),
+        TextSpan(style: authorStyle, text: _author),
       ];
+
+      switch (_type) {
+        case "action":
+          children.add(TextSpan(text: " "));
+          break;
+        case "chat":
+          children.add(TextSpan(text: ": "));
+          break;
+      }
 
       if (_emotes != null) {
         final parsed = _emotes!.split("/").expand((block) {
@@ -142,7 +181,7 @@ class TwitchChatMessage extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 4),
         child: RichText(
           text: TextSpan(
-            style: textStyle,
+            style: messageStyle,
             children: children,
           ),
         ),

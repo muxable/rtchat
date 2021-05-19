@@ -5,19 +5,19 @@ import 'package:flutter/foundation.dart';
 
 class PanelTab {
   final String label;
-  final Uri uri;
+  final String uri;
 
-  PanelTab({required String label, required Uri uri})
+  PanelTab({required String label, required String uri})
       : label = label,
         uri = uri;
 
   PanelTab.fromJson(Map<String, dynamic> json)
       : label = json['label'],
-        uri = Uri.parse(json['uri']);
+        uri = json['uri'];
 
   Map<String, dynamic> toJson() => {
         "label": label,
-        "uri": uri.toString(),
+        "uri": uri,
       };
 }
 

@@ -3,28 +3,28 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_tts/flutter_tts.dart';
+import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 
-class TwitchMessage {
+class TwitchMessageModel {
   final String channel;
   final String author;
   final String message;
   final Map<String, dynamic> tags;
   final DateTime timestamp;
 
-  TwitchMessage(
+  TwitchMessageModel(
       this.channel, this.author, this.message, this.tags, this.timestamp);
 }
 
 class ChatHistoryModel extends ChangeNotifier {
   StreamSubscription<QuerySnapshot>? _subscription;
 
-  final List<TwitchMessage> _messages = [];
+  final List<TwitchMessageModel> _messages = [];
 
-  final FlutterTts _flutterTts = FlutterTts();
+  final TtsModel _ttsModule;
 
-  bool _ttsEnabled = false;
+  ChatHistoryModel(this._ttsModule);
 
   Future<void> subscribe(Set<Channel> channels) async {
     final subscribe = FirebaseFunctions.instance.httpsCallable('subscribe');
@@ -64,11 +64,16 @@ class ChatHistoryModel extends ChangeNotifier {
             final tags = data['tags'];
             final author = tags['display-name'] ?? tags['username'];
 
-            _messages.add(TwitchMessage(data['channel'], author, message, tags,
-                data['timestamp'].toDate()));
+            _messages.add(TwitchMessageModel(data['channel'], author, message,
+                tags, data['timestamp'].toDate()));
 
-            if (ttsEnabled) {
-              _flutterTts.speak("$author said $message");
+            switch (tags['message-type']) {
+              case "action":
+                _ttsModule.speak("$author $message");
+                break;
+              case "chat":
+                _ttsModule.speak("$author said: $message");
+                break;
             }
           }
         });
@@ -84,16 +89,16 @@ class ChatHistoryModel extends ChangeNotifier {
     super.dispose();
   }
 
-  List<TwitchMessage> get messages {
+  List<TwitchMessageModel> get messages {
     return _messages;
   }
 
   bool get ttsEnabled {
-    return _ttsEnabled;
+    return _ttsModule.enabled;
   }
 
   set ttsEnabled(bool enabled) {
-    _ttsEnabled = enabled;
+    _ttsModule.enabled = enabled;
     notifyListeners();
   }
 }

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/messages/twitch_chat_message.dart';
+import 'package:rtchat/components/messages/twitch_message.dart';
 import 'package:rtchat/models/chat_history.dart';
 
-class ChatPanel extends StatefulWidget {
-  ChatPanel({Key? key, this.title}) : super(key: key);
+class ChatPanelWidget extends StatefulWidget {
+  ChatPanelWidget({Key? key, this.title}) : super(key: key);
 
   final String? title;
 
   @override
-  _ChatPanelState createState() => _ChatPanelState();
+  _ChatPanelWidgetState createState() => _ChatPanelWidgetState();
 }
 
-class _ChatPanelState extends State<ChatPanel> {
+class _ChatPanelWidgetState extends State<ChatPanelWidget> {
   var _controller = ScrollController();
   var _atBottom = true;
 
@@ -43,8 +43,9 @@ class _ChatPanelState extends State<ChatPanel> {
           itemCount: messages.length,
           itemBuilder: (context, index) {
             final message = messages[index];
-            return TwitchChatMessage(
+            return TwitchMessageWidget(
                 color: message.tags['color'],
+                type: message.tags['message-type'],
                 author: message.author,
                 message: message.message,
                 emotes: message.tags['emotes-raw']);

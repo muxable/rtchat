@@ -11,7 +11,7 @@ class SettingsScreen extends StatelessWidget {
           title: Text("Settings"),
         ),
         body: Column(children: [
-          Padding(padding: EdgeInsets.all(16), child: FontSizePicker()),
+          Padding(padding: EdgeInsets.all(16), child: FontSizePickerWidget()),
         ]));
   }
 }

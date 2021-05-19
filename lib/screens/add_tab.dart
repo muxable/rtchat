@@ -31,14 +31,11 @@ class _AddTabScreenState extends State<AddTabScreen> {
             icon: Icon(Icons.check),
             tooltip: "Add",
             onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                Provider.of<LayoutModel>(context, listen: false)
-                    .addTab(PanelTab(
-                  label: _labelController.text,
-                  uri: Uri.parse(_urlController.text),
-                ));
-                Navigator.maybePop(context);
-              }
+              Provider.of<LayoutModel>(context, listen: false).addTab(PanelTab(
+                label: _labelController.text,
+                uri: _urlController.text,
+              ));
+              Navigator.maybePop(context);
             })
       ]),
       body: Form(
@@ -59,16 +56,8 @@ class _AddTabScreenState extends State<AddTabScreen> {
                   decoration: const InputDecoration(
                     hintText: 'URL',
                   ),
-                  validator: (String? value) {
-                    if (value == null || Uri.tryParse(value) != null) {
-                      return 'This doesn\'t appear to be a valid URL.';
-                    }
-                    return null;
-                  },
                   onChanged: (value) {
-                    if (Uri.tryParse(value) != null) {
-                      _webViewController?.loadUrl(value);
-                    }
+                    _webViewController?.loadUrl(value);
                   }),
               Padding(padding: EdgeInsets.all(8), child: Text("Preview")),
               Expanded(

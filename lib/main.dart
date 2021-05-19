@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings.dart';
@@ -54,10 +55,11 @@ class App extends StatelessWidget {
                 return model;
               }),
               ChangeNotifierProxyProvider<UserModel, ChatHistoryModel>(
-                  create: (context) => ChatHistoryModel(),
-                  update: (context, user, chatHistory) =>
-                      (chatHistory == null ? ChatHistoryModel() : chatHistory)
-                        ..subscribe(user.channels)),
+                  create: (context) => ChatHistoryModel(TtsModel()),
+                  update: (context, user, chatHistory) => (chatHistory == null
+                      ? ChatHistoryModel(TtsModel())
+                      : chatHistory)
+                    ..subscribe(user.channels)),
             ],
             child: MaterialApp(
               title: 'RealtimeChat',
