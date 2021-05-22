@@ -48,11 +48,9 @@ app.get("/auth/twitch/redirect", (req, res) => {
 });
 
 app.get("/auth/twitch/callback", async (req, res) => {
-  if (!req.session?.state) {
-    res.status(500).send("state not set");
-    return;
-  } else if (req.session.state !== req.session.state) {
-    res.status(403).send("incorrect state");
+  if (!req.session?.state || req.session.state !== req.session.state) {
+    console.error(new Error("invalid state"));
+    res.redirect("/auth/twitch/redirect");
     return;
   }
   const results = await new AuthorizationCode(TWITCH_OAUTH_CONFIG).getToken({
