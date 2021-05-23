@@ -30,7 +30,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
 
   const channel = await getTwitchLogin(context.auth.uid, channelId);
   if (!channel) {
-    return true;
+    return null;
   }
   // check if it's currently locked
   const lock = await admin
@@ -40,12 +40,12 @@ export const subscribe = functions.https.onCall(async (data, context) => {
     .child(channel)
     .get();
   if (lock.exists()) {
-    return true;
+    throw new functions.https.HttpsError("not-found", "invalid channelId");
   }
   await pubsub
     .topic("projects/rtchat-47692/topics/subscribe")
     .publish(Buffer.from(JSON.stringify({ provider, channel })));
-  return true;
+  return channel;
 });
 
 export const unsubscribe = functions.https.onCall(async (data, context) => {
