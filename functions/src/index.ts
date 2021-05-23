@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
 import { app as authApp } from "./auth";
-import { getAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { TWITCH_CLIENT_ID } from "./oauth";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
 
 admin.initializeApp({
