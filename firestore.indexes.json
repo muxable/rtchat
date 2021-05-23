@@ -5,7 +5,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "channel",
+          "fieldPath": "channelId",
           "order": "ASCENDING"
         },
         {
