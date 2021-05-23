@@ -225,9 +225,10 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
       );
       const json = await response.json();
       if (!json["stream"]) {
-        return null;
+        return { isOnline: false };
       }
       return {
+        isOnline: true,
         viewers: json["stream"]["viewers"],
         followers: json["stream"]["channel"]["followers"],
       };
