@@ -1,8 +1,9 @@
 import { PubSub } from "@google-cloud/pubsub";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
+import fetch from "node-fetch";
 import { app as authApp } from "./auth";
-import { getAccessToken } from "./oauth";
+import { getAccessToken, TWITCH_CLIENT_ID, TWITCH_CLIENT_ID } from "./oauth";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
 
 admin.initializeApp({
@@ -212,16 +213,28 @@ export const getViewerCount = functions.https.onCall(async (data, context) => {
   if (!provider || !channelId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId, messageId"
+      "missing provider, channelId"
     );
   }
-  const token = await getAccessToken(context.auth.uid, "twitch");
 
   switch (provider) {
     case "twitch":
-      const client = await getTwitchClient(context.auth.uid, channelId);
-      await client.connect();
-      return await client.deletemessage(channelId, messageId);
+      const token = await getAccessToken(context.auth.uid, "twitch");
+      const response = await fetch(
+        `https://api.twitch.tv/helix/streams?user_id=${channelId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Client-Id": TWITCH_CLIENT_ID,
+          },
+        }
+      );
+      const json = await response.json();
+      const stream = json["data"][0];
+      if (!stream) {
+        return 0;
+      }
+      return stream["viewer_count"];
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
