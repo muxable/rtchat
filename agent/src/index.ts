@@ -33,6 +33,7 @@ TWITCH_CLIENT.on("message", async (channel, tags, message) => {
     .doc(`twitch:${tags.id}`)
     .set({
       channel: `twitch:${channel.substring(1)}`,
+      channelId: `twitch:${tags["room-id"]}`,
       timestamp,
       tags,
       message,
