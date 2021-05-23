@@ -204,7 +204,7 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
-export const getViewerCount = functions.https.onCall(async (data, context) => {
+export const getStatistics = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("permission-denied", "missing auth");
   }
@@ -219,62 +219,21 @@ export const getViewerCount = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const token = await getAccessToken(context.auth.uid, "twitch");
       const response = await fetch(
-        `https://api.twitch.tv/helix/streams?user_id=${channelId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Client-Id": TWITCH_CLIENT_ID,
-          },
-        }
+        `https://api.twitch.tv/kraken/streams/${channelId}`,
+        { headers: { "Client-Id": TWITCH_CLIENT_ID } }
       );
       const json = await response.json();
-      const stream = json["data"][0];
-      if (!stream) {
-        return 0;
+      if (!json["stream"]) {
+        return null;
       }
-      return stream["viewer_count"];
+      return {
+        viewers: json["stream"]["viewers"],
+        followers: json["stream"]["channel"]["followers"],
+      };
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
-
-export const getFollowerCount = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("permission-denied", "missing auth");
-    }
-    const provider = data?.provider;
-    const channelId = data?.channelId;
-    if (!provider || !channelId) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "missing provider, channelId"
-      );
-    }
-
-    switch (provider) {
-      case "twitch":
-        const token = await getAccessToken(context.auth.uid, "twitch");
-        const response = await fetch(
-          `https://api.twitch.tv/helix/users/follows?from_id=${channelId}&first=1`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Client-Id": TWITCH_CLIENT_ID,
-            },
-          }
-        );
-        const json = await response.json();
-        return json["total"];
-    }
-
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "invalid provider"
-    );
-  }
-);
 
 export const auth = functions.https.onRequest(authApp);
