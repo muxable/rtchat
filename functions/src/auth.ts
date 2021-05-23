@@ -94,6 +94,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
   // save the profile information too.
   const twitchProfile = {
     email,
+    id: users["data"][0]["id"],
     displayName: users["data"][0]["display_name"],
     login: users["data"][0]["login"],
     profilePictureUrl: users["data"][0]["profile_image_url"],
