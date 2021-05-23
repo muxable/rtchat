@@ -40,7 +40,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
     .child(channel)
     .get();
   if (lock.exists()) {
-    throw new functions.https.HttpsError("not-found", "invalid channelId");
+    return channel;
   }
   await pubsub
     .topic("projects/rtchat-47692/topics/subscribe")
