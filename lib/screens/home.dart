@@ -238,20 +238,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ? min(layoutModel.panelHeight, 100)
                   : layoutModel.panelHeight,
               duration: Duration(milliseconds: 400),
-              child: TabBarView(
-                controller: _tabController,
-                children: layoutModel.tabs.asMap().entries.map((entry) {
-                  return WebView(
-                      onWebViewCreated: (controller) {
-                        _webViewControllers[entry.key] = controller;
-                      },
-                      javascriptMode: JavascriptMode.unrestricted,
-                      allowsInlineMediaPlayback: true,
-                      initialMediaPlaybackPolicy:
-                          AutoMediaPlaybackPolicy.always_allow,
-                      initialUrl: entry.value.uri.toString());
-                }).toList(),
-              ),
+              child: ClipRect(
+                  child: OverflowBox(
+                alignment: Alignment.topCenter,
+                maxHeight: layoutModel.panelHeight,
+                child: TabBarView(
+                  controller: _tabController,
+                  children: layoutModel.tabs.asMap().entries.map((entry) {
+                    return WebView(
+                        onWebViewCreated: (controller) {
+                          _webViewControllers[entry.key] = controller;
+                        },
+                        javascriptMode: JavascriptMode.unrestricted,
+                        allowsInlineMediaPlayback: true,
+                        initialMediaPlaybackPolicy:
+                            AutoMediaPlaybackPolicy.always_allow,
+                        initialUrl: entry.value.uri.toString());
+                  }).toList(),
+                ),
+              )),
             ),
             layoutModel.locked
                 ? Container()
