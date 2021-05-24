@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/messages/twitch_message.dart';
 import 'package:rtchat/models/chat_history.dart';
+import 'package:rtchat/models/user.dart';
 
 class ChatPanelWidget extends StatefulWidget {
   final void Function(bool) onScrollback;
@@ -39,17 +40,53 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
         final messages = model.messages.reversed.toList();
         return ListView.builder(
           controller: _controller,
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.symmetric(vertical: 8),
           reverse: true,
           itemCount: messages.length,
           itemBuilder: (context, index) {
             final message = messages[index];
-            return TwitchMessageWidget(
-                color: message.tags['color'],
-                type: message.tags['message-type'],
-                author: message.author,
-                message: message.message,
-                emotes: message.tags['emotes-raw']);
+            if (message is TwitchMessageModel) {
+              return InkWell(
+                  onLongPress: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Dialog(
+                            child: ListView(shrinkWrap: true, children: [
+                              ListTile(
+                                  title: Text('Delete Message'),
+                                  onTap: () {
+                                    final model = Provider.of<UserModel>(
+                                        context,
+                                        listen: false);
+                                    model.delete(model.channels.first,
+                                        message.messageId);
+                                  }),
+                              ListTile(
+                                  title: Text('Timeout ${message.author}'),
+                                  onTap: () {}),
+                              ListTile(
+                                  title: Text('Ban ${message.author}'),
+                                  onTap: () {}),
+                              ListTile(
+                                  title: Text('Unban ${message.author}'),
+                                  onTap: () {}),
+                            ]),
+                          );
+                        });
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: TwitchMessageWidget(
+                        color: message.tags['color'],
+                        type: message.tags['message-type'],
+                        author: message.author,
+                        message: message.message,
+                        emotes: message.tags['emotes-raw']),
+                  ));
+            } else {
+              throw new AssertionError("invalid message type");
+            }
           },
         );
       }),

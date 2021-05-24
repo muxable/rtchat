@@ -32,6 +32,24 @@ class Emote {
   Emote(this._start, this._end, this._key);
 }
 
+Color darken(Color color, [double amount = .1]) {
+  assert(amount >= 0 && amount <= 1);
+
+  final hsl = HSLColor.fromColor(color);
+  final hslDark = hsl.withLightness((hsl.lightness) * (1 - amount));
+
+  return hslDark.toColor();
+}
+
+Color lighten(Color color, [double amount = .1]) {
+  assert(amount >= 0 && amount <= 1);
+
+  final hsl = HSLColor.fromColor(color);
+  final hslLight = hsl.withLightness((hsl.lightness) * (1 - amount) + amount);
+
+  return hslLight.toColor();
+}
+
 Iterable<InlineSpan> parseText(String text, TextStyle linkStyle) {
   final parsed = linkify(text, options: LinkifyOptions(humanize: false));
   return parsed.map<InlineSpan>((element) {
@@ -93,14 +111,18 @@ class TwitchMessageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<LayoutModel>(builder: (context, model, child) {
-      final luminance = color.computeLuminance();
-      final override = (Theme.of(context).brightness == Brightness.dark &&
-              luminance < 0.179) ||
-          (Theme.of(context).brightness == Brightness.light &&
-              luminance > 1 - 0.179);
+      var authorColor = color;
 
-      var authorStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
-          fontSize: model.fontSize, color: override ? Colors.grey : color);
+      if (Theme.of(context).brightness == Brightness.dark) {
+        authorColor = lighten(authorColor, model.lightnessBoost);
+      } else if (Theme.of(context).brightness == Brightness.light) {
+        authorColor = darken(authorColor, model.lightnessBoost);
+      }
+
+      var authorStyle = Theme.of(context)
+          .textTheme
+          .bodyText2!
+          .copyWith(fontSize: model.fontSize, color: authorColor);
 
       var messageStyle = Theme.of(context)
           .textTheme

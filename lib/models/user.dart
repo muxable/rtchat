@@ -11,19 +11,20 @@ const TWITCH_CLIENT_ID = "edfnh2q85za8phifif9jxt3ey6t9b9";
 
 class Channel {
   String provider;
-  String channel;
+  String channelId;
+  String displayName;
 
-  Channel(this.provider, this.channel);
+  Channel(this.provider, this.channelId, this.displayName);
 
   bool operator ==(that) =>
       that is Channel &&
       that.provider == this.provider &&
-      that.channel == this.channel;
+      that.channelId == this.channelId;
 
-  int get hashCode => provider.hashCode ^ channel.hashCode;
+  int get hashCode => provider.hashCode ^ channelId.hashCode;
 
   @override
-  String toString() => "$provider:$channel";
+  String toString() => "$provider:$channelId";
 }
 
 class UserModel extends ChangeNotifier {
@@ -48,7 +49,8 @@ class UserModel extends ChangeNotifier {
           final data = event.data();
           final Set<Channel> channels = {};
           if (data != null && data.containsKey('twitch')) {
-            channels.add(Channel("twitch", data['twitch']['login']));
+            channels.add(Channel(
+                "twitch", data['twitch']['id'], data['twitch']['displayName']));
           }
           _channels = channels;
           notifyListeners();
@@ -69,11 +71,55 @@ class UserModel extends ChangeNotifier {
   }
 
   Future<void> send(Channel channel, String message) async {
-    final send = FirebaseFunctions.instance.httpsCallable('send');
-    final results = await send({
+    final call = FirebaseFunctions.instance.httpsCallable('send');
+    final results = await call({
       "provider": channel.provider,
-      "channel": channel.channel,
+      "channelId": channel.channelId,
       "message": message,
+    });
+    print(results);
+  }
+
+  Future<void> ban(Channel channel, String username, String reason) async {
+    final call = FirebaseFunctions.instance.httpsCallable('ban');
+    final results = await call({
+      "provider": channel.provider,
+      "channelId": channel.channelId,
+      "username": username,
+      "reason": reason,
+    });
+    print(results);
+  }
+
+  Future<void> unban(Channel channel, String username) async {
+    final call = FirebaseFunctions.instance.httpsCallable('unban');
+    final results = await call({
+      "provider": channel.provider,
+      "channelId": channel.channelId,
+      "username": username,
+    });
+    print(results);
+  }
+
+  Future<void> timeout(Channel channel, String username, String reason,
+      Duration duration) async {
+    final call = FirebaseFunctions.instance.httpsCallable('timeout');
+    final results = await call({
+      "provider": channel.provider,
+      "channelId": channel.channelId,
+      "username": username,
+      "reason": reason,
+      "length": duration.inSeconds,
+    });
+    print(results);
+  }
+
+  Future<void> delete(Channel channel, String messageId) async {
+    final call = FirebaseFunctions.instance.httpsCallable('deleteMessage');
+    final results = await call({
+      "provider": channel.provider,
+      "channelId": channel.channelId,
+      "messageId": messageId,
     });
     print(results);
   }

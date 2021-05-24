@@ -10,11 +10,6 @@ class FontSizePickerWidget extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Font size",
-              style: TextStyle(
-                color: Theme.of(context).accentColor,
-                fontWeight: FontWeight.bold,
-              )),
           Container(
             height: 120,
             child: Padding(
@@ -27,14 +22,33 @@ class FontSizePickerWidget extends StatelessWidget {
                   message: "have you followed muxfd on twitch? Kappa"),
             ),
           ),
+          Text("Font size",
+              style: TextStyle(
+                color: Theme.of(context).accentColor,
+                fontWeight: FontWeight.bold,
+              )),
           Slider(
             value: model.fontSize,
             min: 12,
-            max: 24,
+            max: 36,
             divisions: 6,
             label: "${model.fontSize}px",
             onChanged: (value) {
-              model.setFontSize(value);
+              model.fontSize = value;
+            },
+          ),
+          Text("Lightness boost",
+              style: TextStyle(
+                color: Theme.of(context).accentColor,
+                fontWeight: FontWeight.bold,
+              )),
+          Slider(
+            value: model.lightnessBoost,
+            min: 0.179,
+            max: 1.0,
+            label: "${model.lightnessBoost}",
+            onChanged: (value) {
+              model.lightnessBoost = value;
             },
           )
         ],

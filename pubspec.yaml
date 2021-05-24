@@ -36,6 +36,7 @@ dependencies:
   wakelock: ^0.5.1+1
   linkify: ^4.0.0
   url_launcher: ^6.0.3
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:

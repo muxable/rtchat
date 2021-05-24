@@ -6,21 +6,24 @@ import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 
-class TwitchMessageModel {
+class MessageModel {}
+
+class TwitchMessageModel implements MessageModel {
+  final String messageId;
   final String channel;
   final String author;
   final String message;
   final Map<String, dynamic> tags;
   final DateTime timestamp;
 
-  TwitchMessageModel(
-      this.channel, this.author, this.message, this.tags, this.timestamp);
+  TwitchMessageModel(this.messageId, this.channel, this.author, this.message,
+      this.tags, this.timestamp);
 }
 
 class ChatHistoryModel extends ChangeNotifier {
   StreamSubscription<QuerySnapshot>? _subscription;
 
-  final List<TwitchMessageModel> _messages = [];
+  final List<MessageModel> _messages = [];
 
   final TtsModel _ttsModule;
 
@@ -31,7 +34,7 @@ class ChatHistoryModel extends ChangeNotifier {
     channels.forEach((channel) {
       subscribe({
         "provider": channel.provider,
-        "channel": channel.channel,
+        "channelId": channel.channelId,
       });
     });
 
@@ -42,12 +45,12 @@ class ChatHistoryModel extends ChangeNotifier {
     if (channels.isEmpty) {
       _subscription = null;
     } else {
+      final channelIds = channels
+          .map((channel) => "${channel.provider}:${channel.channelId}")
+          .toList();
       _subscription = FirebaseFirestore.instance
           .collection("messages")
-          .where("channel",
-              whereIn: channels
-                  .map((channel) => "${channel.provider}:${channel.channel}")
-                  .toList())
+          .where("channelId", whereIn: channelIds)
           .orderBy("timestamp")
           .limitToLast(250)
           .snapshots()
@@ -62,10 +65,14 @@ class ChatHistoryModel extends ChangeNotifier {
 
             final message = data['message'];
             final tags = data['tags'];
-            final author = tags['display-name'] ?? tags['username'];
+            String author = tags['display-name'] ?? tags['username'];
+            if (author.toLowerCase() != tags['username']) {
+              // this is an internationalized name.
+              author = "${tags['display-name']} (${tags['username']})";
+            }
 
-            _messages.add(TwitchMessageModel(data['channel'], author, message,
-                tags, data['timestamp'].toDate()));
+            _messages.add(TwitchMessageModel(tags['id'], data['channel'],
+                author, message, tags, data['timestamp'].toDate()));
 
             switch (tags['message-type']) {
               case "action":
@@ -89,7 +96,7 @@ class ChatHistoryModel extends ChangeNotifier {
     super.dispose();
   }
 
-  List<TwitchMessageModel> get messages {
+  List<MessageModel> get messages {
     return _messages;
   }
 

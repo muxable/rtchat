@@ -1,6 +1,10 @@
+import 'dart:io';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_panel.dart';
+import 'package:rtchat/components/statistics_bar.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
@@ -20,7 +24,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _textEditingController = TextEditingController();
   late TabController _tabController;
   final Map<int, WebViewController> _webViewControllers = {};
-  var _locked = false;
   var _minimized = false;
 
   @override
@@ -40,25 +43,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-      final title = Consumer<UserModel>(builder: (context, model, child) {
-        if (model.channels.isNotEmpty) {
+      final title = Consumer<UserModel>(builder: (context, userModel, child) {
+        if (userModel.channels.isNotEmpty) {
           // TODO: Implement multi-channel rendering.
-          return Text("/${model.channels.first.channel}");
+          return Text(
+            "/${userModel.channels.first.displayName}",
+            overflow: TextOverflow.fade,
+          );
         }
         return Text("RealtimeChat");
       });
 
       final actions = [
-        layoutModel.tabs.length == 0
-            ? Container()
-            : IconButton(
-                icon: Icon(_locked ? Icons.lock : Icons.lock_open),
-                tooltip: "Lock layout",
-                onPressed: () {
-                  setState(() {
-                    _locked = !_locked;
-                  });
-                }),
         Consumer<ChatHistoryModel>(builder: (context, chatHistoryModel, child) {
           return IconButton(
               icon: Icon(chatHistoryModel.ttsEnabled
@@ -72,20 +68,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Consumer<UserModel>(builder: (context, model, child) {
           return PopupMenuButton<String>(
             onSelected: (value) async {
-              if (value == "Add Browser Panel") {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return AddTabScreen();
-                  }),
-                );
-              } else if (value == "Settings") {
+              if (value == "Settings") {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
                     return SettingsScreen();
                   }),
                 );
+              } else if (value == "Lock Layout" || value == "Unlock Layout") {
+                layoutModel.locked = !layoutModel.locked;
               } else if (value == "Sign Out") {
                 await Provider.of<ChatHistoryModel>(context, listen: false)
                     .subscribe({});
@@ -93,7 +84,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               }
             },
             itemBuilder: (context) {
-              final options = {'Add Browser Panel', 'Settings', 'Sign Out'};
+              final options = layoutModel.locked
+                  ? {"Unlock Layout", 'Settings', 'Sign Out'}
+                  : {"Lock Layout", 'Settings', 'Sign Out'};
               return options.map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
@@ -107,21 +100,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
       final input = Container(
         color: Theme.of(context).primaryColor,
-        child: Padding(
-          padding: EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 8),
+        child: SafeArea(
+          top: false,
+          bottom: true,
+          left: false,
+          right: false,
+          minimum: EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: TextField(
             controller: _textEditingController,
             textInputAction: TextInputAction.send,
             maxLines: null,
             style: TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              hintText: "Send a message...",
-              hintStyle: TextStyle(color: Colors.white),
-              focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white)),
-              enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white)),
-            ),
+                hintText: "Send a message...",
+                hintStyle: TextStyle(color: Colors.white),
+                border: InputBorder.none),
             onChanged: (text) {
               final filtered = text.replaceAll('\n', ' ');
               if (filtered == text) {
@@ -153,6 +146,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         },
       );
 
+      if (layoutModel.isStatsVisible) {
+        actions.insert(0,
+            Consumer<UserModel>(builder: (context, userModel, child) {
+          if (userModel.channels.isNotEmpty) {
+            // TODO: Implement multi-channel rendering.
+            final channel = userModel.channels.first;
+            return StatisticsBarWidget(
+                provider: channel.provider, channelId: channel.channelId);
+          }
+          return Container();
+        }));
+      }
+
       if (layoutModel.tabs.length == 0) {
         return Scaffold(
           appBar: AppBar(title: title, actions: actions),
@@ -167,63 +173,70 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
 
       return Scaffold(
-        appBar: AppBar(
-            title: title,
-            bottom: _locked
-                ? null
-                : PreferredSize(
-                    child: Row(children: [
-                      Expanded(
-                          child: TabBar(
-                        controller: _tabController,
-                        isScrollable: true,
-                        tabs: layoutModel.tabs
-                            .map((tab) => Tab(text: tab.label))
-                            .toList(),
-                      )),
-                      IconButton(
-                          onPressed: () {
-                            final index = _tabController.index;
-                            _webViewControllers[index]
-                                ?.loadUrl(layoutModel.tabs[index].uri);
-                          },
-                          icon: Icon(Icons.refresh, color: Colors.white)),
-                      IconButton(
-                          onPressed: () {
-                            final index = _tabController.index;
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: Text(
-                                      'Remove tab ${layoutModel.tabs[index].label}?'),
-                                  actions: [
-                                    TextButton(
-                                      child: Text('Cancel'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                    TextButton(
-                                      child: Text('Confirm'),
-                                      onPressed: () {
-                                        layoutModel.removeTab(index);
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                          icon: Icon(Icons.close, color: Colors.white)),
-                    ]),
-                    preferredSize: Size.fromHeight(56),
-                  ),
-            actions: actions),
+        appBar: AppBar(title: title, actions: actions),
         body: Column(
           children: [
+            layoutModel.locked
+                ? Container()
+                : Row(children: [
+                    Expanded(
+                        child: TabBar(
+                      controller: _tabController,
+                      isScrollable: true,
+                      tabs: layoutModel.tabs
+                          .map((tab) => Tab(text: tab.label))
+                          .toList(),
+                    )),
+                    IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return AddTabScreen();
+                            }),
+                          );
+                        },
+                        icon: Icon(Icons.add, color: Colors.white)),
+                    IconButton(
+                        onPressed: () {
+                          final index = _tabController.index;
+                          _webViewControllers[index]
+                              ?.loadUrl(layoutModel.tabs[index].uri);
+                        },
+                        icon: Icon(Icons.refresh, color: Colors.white)),
+                    IconButton(
+                        onPressed: () {
+                          final index = _tabController.index;
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text(
+                                    'Remove tab ${layoutModel.tabs[index].label}?'),
+                                actions: [
+                                  TextButton(
+                                    child: Text('Cancel'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: Text('Confirm'),
+                                    onPressed: () {
+                                      layoutModel.removeTab(index);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        icon: Icon(Icons.close, color: Colors.white)),
+                  ]),
             AnimatedContainer(
-              height: _minimized ? 100 : layoutModel.panelHeight,
+              height: _minimized
+                  ? min(layoutModel.panelHeight, 100)
+                  : layoutModel.panelHeight,
               duration: Duration(milliseconds: 400),
               child: TabBarView(
                 controller: _tabController,
@@ -240,15 +253,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 }).toList(),
               ),
             ),
-            GestureDetector(
-              onVerticalDragUpdate: (details) {
-                if (_locked) {
-                  return;
-                }
-                layoutModel.updatePanelHeight(dy: details.delta.dy);
-              },
-              child: Divider(thickness: 16),
-            ),
+            layoutModel.locked
+                ? Container()
+                : GestureDetector(
+                    onVerticalDragUpdate: (details) {
+                      if (layoutModel.locked) {
+                        return;
+                      }
+                      layoutModel.updatePanelHeight(dy: details.delta.dy);
+                    },
+                    child: Divider(thickness: 16),
+                  ),
             Expanded(child: chatPanel),
             input,
           ],

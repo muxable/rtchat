@@ -23,13 +23,12 @@ class PanelTab {
 
 class LayoutModel extends ChangeNotifier {
   final List<PanelTab> _tabs = [];
-  double _fontSize = 18;
+  double _fontSize = 20;
   double _panelHeight = 100.0;
-
-  Future<void> setFontSize(double fontSize) async {
-    _fontSize = fontSize;
-    notifyListeners();
-  }
+  double _panelWidth = 100.0;
+  double _lightnessBoost = 0.179;
+  bool _isStatsVisible = true;
+  bool _locked = false;
 
   List<PanelTab> get tabs {
     return _tabs;
@@ -48,6 +47,7 @@ class LayoutModel extends ChangeNotifier {
   void updatePanelHeight({required double dy}) {
     _panelHeight += dy;
     _panelHeight = max(_panelHeight, 1);
+    _panelHeight = min(_panelHeight, 400);
     notifyListeners();
   }
 
@@ -55,8 +55,44 @@ class LayoutModel extends ChangeNotifier {
     return _fontSize;
   }
 
+  set fontSize(double fontSize) {
+    _fontSize = fontSize;
+    notifyListeners();
+  }
+
   double get panelHeight {
     return _panelHeight;
+  }
+
+  double get panelWidth {
+    return _panelWidth;
+  }
+
+  double get lightnessBoost {
+    return _lightnessBoost;
+  }
+
+  set lightnessBoost(double lightnessBoost) {
+    _lightnessBoost = lightnessBoost;
+    notifyListeners();
+  }
+
+  bool get locked {
+    return _locked;
+  }
+
+  set locked(bool locked) {
+    _locked = locked;
+    notifyListeners();
+  }
+
+  bool get isStatsVisible {
+    return _isStatsVisible;
+  }
+
+  set isStatsVisible(bool isStatsVisible) {
+    _isStatsVisible = isStatsVisible;
+    notifyListeners();
   }
 
   LayoutModel.fromJson(Map<String, dynamic> json) {
@@ -69,14 +105,30 @@ class LayoutModel extends ChangeNotifier {
     if (json['panelHeight'] != null) {
       _panelHeight = json['panelHeight'];
     }
+    if (json['panelWidth'] != null) {
+      _panelWidth = json['panelWidth'];
+    }
+    if (json['lightnessBoost'] != null) {
+      _lightnessBoost = json['lightnessBoost'];
+    }
     if (json['fontSize'] != null) {
       _fontSize = json['fontSize'];
+    }
+    if (json['locked'] != null) {
+      _locked = json['locked'];
+    }
+    if (json['isStatsVisible'] != null) {
+      _isStatsVisible = json['isStatsVisible'];
     }
   }
 
   Map<String, dynamic> toJson() => {
         "tabs": _tabs.map((tab) => tab.toJson()).toList(),
         "panelHeight": _panelHeight,
+        "panelWidth": _panelWidth,
+        "lightnessBoost": _lightnessBoost,
         "fontSize": _fontSize,
+        "locked": _locked,
+        "isStatsVisible": _isStatsVisible,
       };
 }
