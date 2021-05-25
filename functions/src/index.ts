@@ -221,7 +221,7 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
     case "twitch":
       const response = await fetch(
         `https://api.twitch.tv/kraken/streams/${channelId}`,
-        { headers: { "Client-Id": TWITCH_CLIENT_ID } }
+        { headers: { "Client-ID": TWITCH_CLIENT_ID } }
       );
       const json = await response.json();
       if (!json["stream"]) {
