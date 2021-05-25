@@ -61,6 +61,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                                         listen: false);
                                     model.delete(model.channels.first,
                                         message.messageId);
+                                    Navigator.pop(context);
                                   }),
                               ListTile(
                                   title: Text('Timeout ${message.author}'),
@@ -82,7 +83,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                         type: message.tags['message-type'],
                         author: message.author,
                         message: message.message,
-                        emotes: message.tags['emotes-raw']),
+                        emotes: message.tags['emotes-raw'],
+                        deleted: model.deletedMessageIds
+                            .contains("twitch:${message.messageId}")),
                   ));
             } else {
               throw new AssertionError("invalid message type");

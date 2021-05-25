@@ -21,9 +21,11 @@ class TwitchMessageModel implements MessageModel {
 }
 
 class ChatHistoryModel extends ChangeNotifier {
-  StreamSubscription<QuerySnapshot>? _subscription;
+  StreamSubscription<QuerySnapshot>? _messagesSub;
+  StreamSubscription<QuerySnapshot>? _deletionsSub;
 
   final List<MessageModel> _messages = [];
+  final Set<String> _deletedMessageIds = {};
 
   final TtsModel _ttsModule;
 
@@ -41,14 +43,16 @@ class ChatHistoryModel extends ChangeNotifier {
     _messages.clear();
     notifyListeners();
 
-    _subscription?.cancel();
+    _messagesSub?.cancel();
+    _deletionsSub?.cancel();
     if (channels.isEmpty) {
-      _subscription = null;
+      _messagesSub = null;
+      _deletionsSub = null;
     } else {
       final channelIds = channels
           .map((channel) => "${channel.provider}:${channel.channelId}")
           .toList();
-      _subscription = FirebaseFirestore.instance
+      _messagesSub = FirebaseFirestore.instance
           .collection("messages")
           .where("channelId", whereIn: channelIds)
           .orderBy("timestamp")
@@ -87,17 +91,38 @@ class ChatHistoryModel extends ChangeNotifier {
 
         notifyListeners();
       });
+      _deletionsSub = FirebaseFirestore.instance
+          .collection("deletions")
+          .where("channelId", whereIn: channelIds)
+          .orderBy("timestamp")
+          .limitToLast(250)
+          .snapshots()
+          .listen((event) {
+        event.docChanges.forEach((change) {
+          // only process appends.
+          if (change.type == DocumentChangeType.added) {
+            _deletedMessageIds.add(change.doc.id);
+          }
+        });
+
+        notifyListeners();
+      });
     }
   }
 
   @override
   void dispose() {
-    _subscription?.cancel();
+    _messagesSub?.cancel();
+    _deletionsSub?.cancel();
     super.dispose();
   }
 
   List<MessageModel> get messages {
     return _messages;
+  }
+
+  Set<String> get deletedMessageIds {
+    return _deletedMessageIds;
   }
 
   bool get ttsEnabled {

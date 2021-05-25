@@ -87,18 +87,21 @@ class TwitchMessageWidget extends StatelessWidget {
   final String _author;
   final String? _emotes;
   final String? _color;
+  final bool _deleted;
 
   TwitchMessageWidget(
       {required String? color,
       required String type,
       required String author,
       required String message,
-      required String? emotes})
+      required String? emotes,
+      required bool deleted})
       : _message = message,
         _type = type,
         _author = author,
         _color = color,
-        _emotes = emotes;
+        _emotes = emotes,
+        _deleted = deleted;
 
   Color get color {
     if (_color != null) {
@@ -145,7 +148,9 @@ class TwitchMessageWidget extends StatelessWidget {
           break;
       }
 
-      if (_emotes != null) {
+      if (_deleted) {
+        children.add(TextSpan(text: "<deleted message>"));
+      } else if (_emotes != null) {
         final parsed = _emotes!.split("/").expand((block) {
           final blockTokens = block.split(':');
           final key = blockTokens[0];
