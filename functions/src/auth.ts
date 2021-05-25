@@ -106,10 +106,8 @@ app.get("/auth/twitch/callback", async (req, res) => {
     .doc(firebaseUserId)
     .set({ twitch: twitchProfile }, { merge: true });
 
-  // we can be a bit handwavey here because this request is automatically https'd.
-  // it would probably be smarter to put this in a cookie, but whatever.
   const token = await admin.auth().createCustomToken(firebaseUserId);
-  res.redirect("/?token=" + encodeURIComponent(token));
+  res.redirect("com.rtirl.chat://success?token=" + encodeURIComponent(token));
 });
 
 export { app };

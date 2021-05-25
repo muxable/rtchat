@@ -3,6 +3,17 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/android.iml" filepath="$PROJECT_DIR$/.idea/modules/android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/android.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/android.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1459395265/android.cloud_firestore.iml" filepath="$PROJECT_DIR$/.idea/modules/-1459395265/android.cloud_firestore.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1262574481/android.cloud_functions.iml" filepath="$PROJECT_DIR$/.idea/modules/-1262574481/android.cloud_functions.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1264704124/android.firebase_auth.iml" filepath="$PROJECT_DIR$/.idea/modules/1264704124/android.firebase_auth.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1661412144/android.firebase_core.iml" filepath="$PROJECT_DIR$/.idea/modules/1661412144/android.firebase_core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-791512834/android.firebase_crashlytics.iml" filepath="$PROJECT_DIR$/.idea/modules/-791512834/android.firebase_crashlytics.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-437657726/android.flutter_inappwebview.iml" filepath="$PROJECT_DIR$/.idea/modules/-437657726/android.flutter_inappwebview.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-788072022/android.flutter_tts.iml" filepath="$PROJECT_DIR$/.idea/modules/-788072022/android.flutter_tts.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-444520003/android.shared_preferences.iml" filepath="$PROJECT_DIR$/.idea/modules/-444520003/android.shared_preferences.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1222468271/android.url_launcher.iml" filepath="$PROJECT_DIR$/.idea/modules/-1222468271/android.url_launcher.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/899395795/android.wakelock.iml" filepath="$PROJECT_DIR$/.idea/modules/899395795/android.wakelock.iml" />
     </modules>
   </component>
 </project>

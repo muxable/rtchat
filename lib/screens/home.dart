@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -11,7 +10,6 @@ import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/add_tab.dart';
 import 'package:rtchat/screens/settings.dart';
 import 'package:wakelock/wakelock.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key? key}) : super(key: key);
@@ -23,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _textEditingController = TextEditingController();
   late TabController _tabController;
-  final Map<int, WebViewController> _webViewControllers = {};
+  // final Map<int, WebViewController> _webViewControllers = {};
   var _minimized = false;
 
   @override
@@ -159,13 +157,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         }));
       }
 
-      if (layoutModel.tabs.length == 0) {
-        return Scaffold(
-          appBar: AppBar(title: title, actions: actions),
-          body: Column(children: [Expanded(child: chatPanel), input]),
-        );
-      }
-
       if (_tabController.length != layoutModel.tabs.length) {
         _tabController.dispose();
         _tabController =
@@ -173,92 +164,119 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
 
       return Scaffold(
-        appBar: AppBar(title: title, actions: actions),
-        body: Column(
-          children: [
-            layoutModel.locked
-                ? Container()
-                : Row(children: [
-                    Expanded(
-                        child: TabBar(
-                      controller: _tabController,
-                      isScrollable: true,
-                      tabs: layoutModel.tabs
-                          .map((tab) => Tab(text: tab.label))
-                          .toList(),
-                    )),
-                    IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return AddTabScreen();
-                            }),
-                          );
-                        },
-                        icon: Icon(Icons.add, color: Colors.white)),
-                    IconButton(
-                        onPressed: () {
-                          final index = _tabController.index;
-                          _webViewControllers[index]
-                              ?.loadUrl(layoutModel.tabs[index].uri);
-                        },
-                        icon: Icon(Icons.refresh, color: Colors.white)),
-                    IconButton(
-                        onPressed: () {
-                          final index = _tabController.index;
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text(
-                                    'Remove tab ${layoutModel.tabs[index].label}?'),
-                                actions: [
-                                  TextButton(
-                                    child: Text('Cancel'),
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                  ),
-                                  TextButton(
-                                    child: Text('Confirm'),
-                                    onPressed: () {
-                                      layoutModel.removeTab(index);
-                                    },
-                                  ),
-                                ],
+        appBar: AppBar(
+            title: title,
+            actions: actions,
+            bottom: layoutModel.locked
+                ? null
+                : PreferredSize(
+                    preferredSize: Size.fromHeight(56),
+                    child: Builder(builder: (context) {
+                      if (layoutModel.tabs.length == 0) {
+                        return Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              IconButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) {
+                                        return AddTabScreen();
+                                      }),
+                                    );
+                                  },
+                                  icon: Icon(Icons.add, color: Colors.white)),
+                            ]);
+                      }
+                      return Row(children: [
+                        Expanded(
+                            child: TabBar(
+                          controller: _tabController,
+                          isScrollable: true,
+                          tabs: layoutModel.tabs
+                              .map((tab) => Tab(text: tab.label))
+                              .toList(),
+                        )),
+                        IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) {
+                                  return AddTabScreen();
+                                }),
                               );
                             },
-                          );
-                        },
-                        icon: Icon(Icons.close, color: Colors.white)),
-                  ]),
-            AnimatedContainer(
-              height: _minimized
-                  ? min(layoutModel.panelHeight, 100)
-                  : layoutModel.panelHeight,
-              duration: Duration(milliseconds: 400),
-              child: ClipRect(
-                  child: OverflowBox(
-                alignment: Alignment.topCenter,
-                maxHeight: layoutModel.panelHeight,
-                child: TabBarView(
-                  controller: _tabController,
-                  children: layoutModel.tabs.asMap().entries.map((entry) {
-                    return WebView(
-                        onWebViewCreated: (controller) {
-                          _webViewControllers[entry.key] = controller;
-                        },
-                        javascriptMode: JavascriptMode.unrestricted,
-                        allowsInlineMediaPlayback: true,
-                        initialMediaPlaybackPolicy:
-                            AutoMediaPlaybackPolicy.always_allow,
-                        initialUrl: entry.value.uri.toString());
-                  }).toList(),
-                ),
-              )),
-            ),
-            layoutModel.locked
+                            icon: Icon(Icons.add, color: Colors.white)),
+                        IconButton(
+                            onPressed: () {
+                              final index = _tabController.index;
+                              // _webViewControllers[index]
+                              //     ?.loadUrl(layoutModel.tabs[index].uri);
+                            },
+                            icon: Icon(Icons.refresh, color: Colors.white)),
+                        IconButton(
+                            onPressed: () {
+                              final index = _tabController.index;
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text(
+                                        'Remove tab ${layoutModel.tabs[index].label}?'),
+                                    actions: [
+                                      TextButton(
+                                        child: Text('Cancel'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: Text('Confirm'),
+                                        onPressed: () {
+                                          layoutModel.removeTab(index);
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            icon: Icon(Icons.close, color: Colors.white)),
+                      ]);
+                    }))),
+        body: Column(
+          children: [
+            layoutModel.tabs.length == 0
+                ? Container()
+                : AnimatedContainer(
+                    height: _minimized
+                        ? min(layoutModel.panelHeight, 100)
+                        : layoutModel.panelHeight,
+                    duration: Duration(milliseconds: 400),
+                    child: ClipRect(
+                        child: OverflowBox(
+                      alignment: Alignment.topCenter,
+                      minHeight: layoutModel.panelHeight,
+                      maxHeight: layoutModel.panelHeight,
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: layoutModel.tabs.asMap().entries.map((entry) {
+                          return Container();
+                          // return WebView(
+                          //     onWebViewCreated: (controller) {
+                          //       _webViewControllers[entry.key] = controller;
+                          //     },
+                          //     javascriptMode: JavascriptMode.unrestricted,
+                          //     allowsInlineMediaPlayback: true,
+                          //     initialMediaPlaybackPolicy:
+                          //         AutoMediaPlaybackPolicy.always_allow,
+                          //     initialUrl: entry.value.uri.toString());
+                        }).toList(),
+                      ),
+                    )),
+                  ),
+            layoutModel.tabs.length == 0
                 ? Container()
                 : GestureDetector(
                     onVerticalDragUpdate: (details) {
@@ -267,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       }
                       layoutModel.updatePanelHeight(dy: details.delta.dy);
                     },
-                    child: Divider(thickness: 16),
+                    child: Divider(thickness: layoutModel.locked ? 4 : 16),
                   ),
             Expanded(child: chatPanel),
             input,
