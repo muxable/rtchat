@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class AddTabScreen extends StatefulWidget {
   AddTabScreen({Key? key}) : super(key: key);
@@ -13,6 +16,7 @@ class _AddTabScreenState extends State<AddTabScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _labelController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
+  WebViewController? _webViewController;
 
   @override
   void dispose() {
@@ -55,19 +59,19 @@ class _AddTabScreenState extends State<AddTabScreen> {
                     hintText: 'URL',
                   ),
                   onChanged: (value) {
-                    // _webViewController?.loadUrl(value);
+                    _webViewController?.loadUrl(value);
                   }),
               Padding(padding: EdgeInsets.all(8), child: Text("Preview")),
-              // Expanded(
-              //     child: WebView(
-              //   javascriptMode: JavascriptMode.unrestricted,
-              //   allowsInlineMediaPlayback: true,
-              //   initialMediaPlaybackPolicy:
-              //       AutoMediaPlaybackPolicy.always_allow,
-              //   onWebViewCreated: (controller) {
-              //     _webViewController = controller;
-              //   },
-              // )),
+              Expanded(
+                  child: WebView(
+                javascriptMode: JavascriptMode.unrestricted,
+                allowsInlineMediaPlayback: true,
+                initialMediaPlaybackPolicy:
+                    AutoMediaPlaybackPolicy.always_allow,
+                onWebViewCreated: (controller) {
+                  _webViewController = controller;
+                },
+              )),
             ],
           ),
         ),

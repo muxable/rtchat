@@ -40,6 +40,29 @@ TWITCH_CLIENT.on("message", async (channel, tags, message) => {
     });
 });
 
+TWITCH_CLIENT.on(
+  "messagedeleted",
+  async (channel, username, deletedMessage, userstate) => {
+    // fetch the message.
+    const id = userstate["target-msg-id"];
+    const message = await admin
+      .firestore()
+      .collection("messages")
+      .doc(`twitch:${id}`)
+      .get();
+
+    await admin
+      .firestore()
+      .collection("deletions")
+      .doc(`twitch:${id}`)
+      .set({
+        channel: message.get("channel"),
+        channelId: message.get("channelId"),
+        timestamp: message.get("timestamp"),
+      });
+  }
+);
+
 const JOIN_BOTTLENECK = new Bottleneck({
   maxConcurrent: 50,
   minTime: 15 * 1000,

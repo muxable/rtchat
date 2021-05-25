@@ -119,10 +119,10 @@ class TwitchMessageWidget extends StatelessWidget {
         authorColor = darken(authorColor, model.lightnessBoost);
       }
 
-      var authorStyle = Theme.of(context)
-          .textTheme
-          .bodyText2!
-          .copyWith(fontSize: model.fontSize, color: authorColor);
+      var authorStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
+          fontSize: model.fontSize,
+          fontWeight: FontWeight.w500,
+          color: authorColor);
 
       var messageStyle = Theme.of(context)
           .textTheme

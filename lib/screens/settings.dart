@@ -16,7 +16,7 @@ class SettingsScreen extends StatelessWidget {
         return Column(children: [
           Padding(padding: EdgeInsets.all(16), child: FontSizePickerWidget()),
           SwitchListTile(
-            title: const Text('Stream Statistics'),
+            title: const Text('Viewer and Follower Count'),
             value: layoutModel.isStatsVisible,
             onChanged: (value) {
               layoutModel.isStatsVisible = value;

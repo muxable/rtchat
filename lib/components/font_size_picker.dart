@@ -37,7 +37,7 @@ class FontSizePickerWidget extends StatelessWidget {
               model.fontSize = value;
             },
           ),
-          Text("Lightness boost",
+          Text("Username contrast boost",
               style: TextStyle(
                 color: Theme.of(context).accentColor,
                 fontWeight: FontWeight.bold,

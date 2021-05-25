@@ -10,6 +10,7 @@ import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/add_tab.dart';
 import 'package:rtchat/screens/settings.dart';
 import 'package:wakelock/wakelock.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key? key}) : super(key: key);
@@ -21,7 +22,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _textEditingController = TextEditingController();
   late TabController _tabController;
-  // final Map<int, WebViewController> _webViewControllers = {};
+  final Map<int, WebViewController> _webViewControllers = {};
   var _minimized = false;
 
   @override
@@ -53,6 +54,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       });
 
       final actions = [
+        Consumer<UserModel>(builder: (context, userModel, child) {
+          if (userModel.channels.isNotEmpty) {
+            // TODO: Implement multi-channel rendering.
+            final channel = userModel.channels.first;
+            return StatisticsBarWidget(
+                provider: channel.provider,
+                channelId: channel.channelId,
+                isStatsVisible: layoutModel.isStatsVisible);
+          }
+          return Container();
+        }),
         Consumer<ChatHistoryModel>(builder: (context, chatHistoryModel, child) {
           return IconButton(
               icon: Icon(chatHistoryModel.ttsEnabled
@@ -144,19 +156,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         },
       );
 
-      if (layoutModel.isStatsVisible) {
-        actions.insert(0,
-            Consumer<UserModel>(builder: (context, userModel, child) {
-          if (userModel.channels.isNotEmpty) {
-            // TODO: Implement multi-channel rendering.
-            final channel = userModel.channels.first;
-            return StatisticsBarWidget(
-                provider: channel.provider, channelId: channel.channelId);
-          }
-          return Container();
-        }));
-      }
-
       if (_tabController.length != layoutModel.tabs.length) {
         _tabController.dispose();
         _tabController =
@@ -210,8 +209,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         IconButton(
                             onPressed: () {
                               final index = _tabController.index;
-                              // _webViewControllers[index]
-                              //     ?.loadUrl(layoutModel.tabs[index].uri);
+                              _webViewControllers[index]
+                                  ?.loadUrl(layoutModel.tabs[index].uri);
                             },
                             icon: Icon(Icons.refresh, color: Colors.white)),
                         IconButton(
@@ -219,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               final index = _tabController.index;
                               showDialog(
                                 context: context,
-                                builder: (BuildContext context) {
+                                builder: (context) {
                                   return AlertDialog(
                                     title: Text(
                                         'Remove tab ${layoutModel.tabs[index].label}?'),
@@ -262,16 +261,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: TabBarView(
                         controller: _tabController,
                         children: layoutModel.tabs.asMap().entries.map((entry) {
-                          return Container();
-                          // return WebView(
-                          //     onWebViewCreated: (controller) {
-                          //       _webViewControllers[entry.key] = controller;
-                          //     },
-                          //     javascriptMode: JavascriptMode.unrestricted,
-                          //     allowsInlineMediaPlayback: true,
-                          //     initialMediaPlaybackPolicy:
-                          //         AutoMediaPlaybackPolicy.always_allow,
-                          //     initialUrl: entry.value.uri.toString());
+                          return WebView(
+                              onWebViewCreated: (controller) {
+                                _webViewControllers[entry.key] = controller;
+                              },
+                              javascriptMode: JavascriptMode.unrestricted,
+                              allowsInlineMediaPlayback: true,
+                              initialMediaPlaybackPolicy:
+                                  AutoMediaPlaybackPolicy.always_allow,
+                              initialUrl: entry.value.uri.toString());
                         }).toList(),
                       ),
                     )),

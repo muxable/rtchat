@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings.dart';
 import 'package:rtchat/screens/sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 const primarySwatch = MaterialColor(0xFF009FDF, {
   50: Color.fromRGBO(0, 159, 223, .1),
@@ -27,6 +29,9 @@ const primarySwatch = MaterialColor(0xFF009FDF, {
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  if (Platform.isAndroid) {
+    WebView.platform = SurfaceAndroidWebView();
+  }
   runApp(App());
 }
 
@@ -64,12 +69,10 @@ class App extends StatelessWidget {
             child: MaterialApp(
               title: 'RealtimeChat',
               theme: ThemeData(
-                fontFamily: 'Arial',
                 brightness: Brightness.light,
                 primarySwatch: primarySwatch,
               ),
               darkTheme: ThemeData(
-                fontFamily: 'Arial',
                 brightness: Brightness.dark,
                 primarySwatch: primarySwatch,
                 scaffoldBackgroundColor: Colors.black,

@@ -7,9 +7,13 @@ import 'package:intl/intl.dart';
 class StatisticsBarWidget extends StatefulWidget {
   final String provider;
   final String channelId;
+  final bool isStatsVisible;
 
   StatisticsBarWidget(
-      {Key? key, required this.provider, required this.channelId})
+      {Key? key,
+      required this.provider,
+      required this.channelId,
+      required this.isStatsVisible})
       : super(key: key);
 
   @override
@@ -75,6 +79,12 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
           return Chip(
             backgroundColor: Colors.red,
             label: const Text('Offline'),
+          );
+        }
+        if (!widget.isStatsVisible) {
+          return Chip(
+            backgroundColor: Colors.green,
+            label: const Text('Online'),
           );
         }
         return Chip(

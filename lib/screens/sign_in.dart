@@ -48,37 +48,13 @@ class SignInScreen extends StatelessWidget {
                   user.signOut();
                 } else {
                   final result = await FlutterWebAuth.authenticate(
-                      url: url.toString(), callbackUrlScheme: "my-custom-app");
-
-                  // showModalBottomSheet<void>(
-                  //   isScrollControlled: true,
-                  //   enableDrag: false,
-                  //   context: context,
-                  //   builder: (context) {
-                  // return FractionallySizedBox(
-                  //   heightFactor: 0.8,
-                  //   child: WebView(
-                  //     initialUrl: url.toString(),
-                  //     javascriptMode: JavascriptMode.unrestricted,
-                  //     navigationDelegate: (request) {
-                  //       if (request.url
-                  //           .startsWith("https://chat.rtirl.com/?")) {
-                  //         final uri = Uri.parse(request.url);
-                  //         final token = uri.queryParameters['token'];
-                  //         if (token != null) {
-                  //           user.signIn(token);
-                  //           Navigator.pop(context);
-                  //         } else {
-                  //           print("uh oh");
-                  //         }
-                  //         return NavigationDecision.prevent;
-                  //       }
-                  //       return NavigationDecision.navigate;
-                  //     },
-                  //   ),
-                  // );
-                  //   },
-                  // );
+                      url: url.toString(), callbackUrlScheme: "com.rtirl.chat");
+                  final token = Uri.parse(result).queryParameters['token'];
+                  if (token != null) {
+                    user.signIn(token);
+                  } else {
+                    print("uh oh");
+                  }
                 }
               },
             )),
