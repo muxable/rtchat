@@ -8,11 +8,9 @@ import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/message.dart';
 
 class ChatHistoryModel extends ChangeNotifier {
-  StreamSubscription<QuerySnapshot>? _messagesSub;
-  StreamSubscription<QuerySnapshot>? _deletionsSub;
+  StreamSubscription<QuerySnapshot>? _subscription;
 
   final List<MessageModel> _messages = [];
-  final Set<String> _deletedMessageIds = {};
 
   final TtsModel _ttsModule;
 
@@ -30,16 +28,14 @@ class ChatHistoryModel extends ChangeNotifier {
     _messages.clear();
     notifyListeners();
 
-    _messagesSub?.cancel();
-    _deletionsSub?.cancel();
+    _subscription?.cancel();
     if (channels.isEmpty) {
-      _messagesSub = null;
-      _deletionsSub = null;
+      _subscription = null;
     } else {
       final channelIds = channels
           .map((channel) => "${channel.provider}:${channel.channelId}")
           .toList();
-      _messagesSub = FirebaseFirestore.instance
+      _subscription = FirebaseFirestore.instance
           .collection("messages")
           .where("channelId", whereIn: channelIds)
           .orderBy("timestamp")
@@ -54,65 +50,65 @@ class ChatHistoryModel extends ChangeNotifier {
               return;
             }
 
-            final message = data['message'];
-            final tags = data['tags'];
-            String author = tags['display-name'] ?? tags['username'];
-            if (author.toLowerCase() != tags['username']) {
-              // this is an internationalized name.
-              author = "${tags['display-name']} (${tags['username']})";
-            }
+            switch (data['type']) {
+              case "message":
+                final message = data['message'];
+                final tags = data['tags'];
+                String author = tags['display-name'] ?? tags['username'];
+                if (author.toLowerCase() != tags['username']) {
+                  // this is an internationalized name.
+                  author = "${tags['display-name']} (${tags['username']})";
+                }
 
-            _messages.add(TwitchMessageModel(
-              messageId: tags['id'],
-              channel: data['channel'],
-              author: author,
-              message: message,
-              tags: tags,
-              timestamp: data['timestamp'].toDate(),
-              deleted: _deletedMessageIds.contains("twitch:${tags['id']}"),
-            ));
+                _messages.add(TwitchMessageModel(
+                  messageId: tags['id'],
+                  channel: data['channel'],
+                  author: author,
+                  message: message,
+                  tags: tags,
+                  timestamp: data['timestamp'].toDate(),
+                  deleted: false,
+                ));
 
-            switch (tags['message-type']) {
-              case "action":
-                _ttsModule.speak("$author $message");
+                switch (tags['message-type']) {
+                  case "action":
+                    _ttsModule.speak("$author $message");
+                    break;
+                  case "chat":
+                    _ttsModule.speak("$author said: $message");
+                    break;
+                }
                 break;
-              case "chat":
-                _ttsModule.speak("$author said: $message");
+              case "messagedeleted":
+                final messageId = data['messageId'];
+                final index = _messages.indexWhere((element) {
+                  if (element is TwitchMessageModel) {
+                    return element.messageId == messageId;
+                  }
+                  return false;
+                });
+                if (index > -1) {
+                  final message = _messages[index];
+                  if (message is TwitchMessageModel) {
+                    _messages[index] = TwitchMessageModel(
+                      messageId: message.messageId,
+                      channel: message.channel,
+                      author: message.author,
+                      message: message.message,
+                      tags: message.tags,
+                      timestamp: message.timestamp,
+                      deleted: true,
+                    );
+                  }
+                }
                 break;
-            }
-          }
-        });
-
-        notifyListeners();
-      });
-      _deletionsSub = FirebaseFirestore.instance
-          .collection("deletions")
-          .where("channelId", whereIn: channelIds)
-          .orderBy("timestamp")
-          .limitToLast(250)
-          .snapshots()
-          .listen((event) {
-        event.docChanges.forEach((change) {
-          // only process appends.
-          if (change.type == DocumentChangeType.added) {
-            _deletedMessageIds.add(change.doc.id);
-            final tokens = change.doc.id.split(":");
-            final provider = tokens[0];
-            final messageId = tokens[1];
-            for (var i = 0; i < _messages.length; i++) {
-              final message = _messages[i];
-              if (provider == "twitch" &&
-                  message is TwitchMessageModel &&
-                  message.messageId == messageId) {
-                _messages[i] = TwitchMessageModel(
-                    author: message.author,
-                    channel: message.channel,
-                    messageId: message.messageId,
-                    message: message.message,
-                    tags: message.tags,
-                    timestamp: message.timestamp,
-                    deleted: true);
-              }
+              case "raided":
+                _messages.add(TwitchRaidEventModel(
+                  profilePictureUrl: data['tags']['msg-param-profileImageURL'],
+                  fromUsername: data['username'],
+                  viewers: data['viewers'],
+                ));
+                break;
             }
           }
         });
@@ -124,17 +120,12 @@ class ChatHistoryModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    _messagesSub?.cancel();
-    _deletionsSub?.cancel();
+    _subscription?.cancel();
     super.dispose();
   }
 
   List<MessageModel> get messages {
     return _messages;
-  }
-
-  Set<String> get deletedMessageIds {
-    return _deletedMessageIds;
   }
 
   bool get ttsEnabled {

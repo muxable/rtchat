@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/twitch/message.dart';
+import 'package:rtchat/components/twitch/raid_event.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/user.dart';
@@ -81,6 +82,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: TwitchMessageWidget(message),
                   ));
+            } else if (message is TwitchRaidEventModel) {
+              return TwitchRaidEventWidget(message);
             } else {
               throw new AssertionError("invalid message type");
             }

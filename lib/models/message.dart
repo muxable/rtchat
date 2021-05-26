@@ -18,3 +18,14 @@ class TwitchMessageModel implements MessageModel {
       required this.timestamp,
       required this.deleted});
 }
+
+class TwitchRaidEventModel implements MessageModel {
+  final String profilePictureUrl;
+  final String fromUsername;
+  final int viewers;
+
+  TwitchRaidEventModel(
+      {required this.profilePictureUrl,
+      required this.fromUsername,
+      required this.viewers});
+}
