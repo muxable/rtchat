@@ -30,7 +30,7 @@ dependencies:
   webview_flutter: ^2.0.7
   flutter_web_auth: ^0.3.0
   shared_preferences: ^2.0.5
-  cloud_firestore: ^1.0.7
+  cloud_firestore: ^2.2.0
   cloud_functions: ^1.0.7
   cupertino_icons: ^1.0.2
   flutter_tts: ^3.0.0
