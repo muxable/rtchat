@@ -13,9 +13,5 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
-    match /deletions/{document=**} {
-      allow read: if true;
-      allow write: if false;
-    }
   }
 }
