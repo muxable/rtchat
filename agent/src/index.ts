@@ -32,7 +32,7 @@ TWITCH_CLIENT.on("message", async (channel, tags, message) => {
     .collection("messages")
     .doc(`twitch:${tags.id}`)
     .set({
-      channel: `twitch:${channel.substring(1)}`,
+      channel,
       channelId: `twitch:${tags["room-id"]}`,
       type: "message",
       timestamp,
@@ -52,7 +52,7 @@ TWITCH_CLIENT.on(
       .collection("messages")
       .doc(`twitch:${tags.id}`)
       .set({
-        channel: `twitch:${channel.substring(1)}`,
+        channel,
         channelId: `twitch:${tags["room-id"]}`,
         type: "messagedeleted",
         timestamp,
@@ -72,7 +72,7 @@ TWITCH_CLIENT.on("raided", (async (channel, username, viewers, tags) => {
     .collection("messages")
     .doc(`twitch:${tags.id}`)
     .set({
-      channel: channel.substring(1),
+      channel,
       channelId: `twitch:${tags["room-id"]}`,
       type: "raided",
       timestamp,
