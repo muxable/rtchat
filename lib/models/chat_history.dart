@@ -5,20 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-
-class MessageModel {}
-
-class TwitchMessageModel implements MessageModel {
-  final String messageId;
-  final String channel;
-  final String author;
-  final String message;
-  final Map<String, dynamic> tags;
-  final DateTime timestamp;
-
-  TwitchMessageModel(this.messageId, this.channel, this.author, this.message,
-      this.tags, this.timestamp);
-}
+import 'package:rtchat/models/message.dart';
 
 class ChatHistoryModel extends ChangeNotifier {
   StreamSubscription<QuerySnapshot>? _messagesSub;
@@ -75,8 +62,15 @@ class ChatHistoryModel extends ChangeNotifier {
               author = "${tags['display-name']} (${tags['username']})";
             }
 
-            _messages.add(TwitchMessageModel(tags['id'], data['channel'],
-                author, message, tags, data['timestamp'].toDate()));
+            _messages.add(TwitchMessageModel(
+              messageId: tags['id'],
+              channel: data['channel'],
+              author: author,
+              message: message,
+              tags: tags,
+              timestamp: data['timestamp'].toDate(),
+              deleted: _deletedMessageIds.contains("twitch:${tags['id']}"),
+            ));
 
             switch (tags['message-type']) {
               case "action":
@@ -102,6 +96,24 @@ class ChatHistoryModel extends ChangeNotifier {
           // only process appends.
           if (change.type == DocumentChangeType.added) {
             _deletedMessageIds.add(change.doc.id);
+            final tokens = change.doc.id.split(":");
+            final provider = tokens[0];
+            final messageId = tokens[1];
+            for (var i = 0; i < _messages.length; i++) {
+              final message = _messages[i];
+              if (provider == "twitch" &&
+                  message is TwitchMessageModel &&
+                  message.messageId == messageId) {
+                _messages[i] = TwitchMessageModel(
+                    author: message.author,
+                    channel: message.channel,
+                    messageId: message.messageId,
+                    message: message.message,
+                    tags: message.tags,
+                    timestamp: message.timestamp,
+                    deleted: true);
+              }
+            }
           }
         });
 

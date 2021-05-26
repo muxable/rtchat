@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/messages/twitch_message.dart';
+import 'package:rtchat/components/twitch/message.dart';
 import 'package:rtchat/models/chat_history.dart';
+import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/user.dart';
 
 class ChatPanelWidget extends StatefulWidget {
@@ -78,14 +79,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                   },
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: TwitchMessageWidget(
-                        color: message.tags['color'],
-                        type: message.tags['message-type'],
-                        author: message.author,
-                        message: message.message,
-                        emotes: message.tags['emotes-raw'],
-                        deleted: model.deletedMessageIds
-                            .contains("twitch:${message.messageId}")),
+                    child: TwitchMessageWidget(message),
                   ));
             } else {
               throw new AssertionError("invalid message type");

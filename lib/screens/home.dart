@@ -8,7 +8,6 @@ import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/add_tab.dart';
-import 'package:rtchat/screens/settings.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -79,12 +78,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           return PopupMenuButton<String>(
             onSelected: (value) async {
               if (value == "Settings") {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return SettingsScreen();
-                  }),
-                );
+                Navigator.pushNamed(context, "/settings");
               } else if (value == "Lock Layout" || value == "Unlock Layout") {
                 layoutModel.locked = !layoutModel.locked;
               } else if (value == "Sign Out") {

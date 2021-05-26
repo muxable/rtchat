@@ -16,13 +16,19 @@ class SettingsScreen extends StatelessWidget {
         return Column(children: [
           Padding(padding: EdgeInsets.all(16), child: FontSizePickerWidget()),
           SwitchListTile(
-            title: const Text('Viewer and Follower Count'),
+            title: const Text('Show viewer and follower count'),
             value: layoutModel.isStatsVisible,
             onChanged: (value) {
               layoutModel.isStatsVisible = value;
             },
-            secondary: const Icon(Icons.analytics_outlined),
-          )
+          ),
+          ListTile(
+            title: const Text('Twitch badge settings'),
+            subtitle: const Text("Control which badges are visible"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/badges");
+            },
+          ),
         ]);
       }),
     );

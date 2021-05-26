@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/messages/twitch_message.dart';
+import 'package:rtchat/components/twitch/message.dart';
+import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/layout.dart';
 
 class FontSizePickerWidget extends StatelessWidget {
@@ -14,13 +15,18 @@ class FontSizePickerWidget extends StatelessWidget {
             height: 120,
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
-              child: TwitchMessageWidget(
+              child: TwitchMessageWidget(TwitchMessageModel(
+                  messageId: "placeholder",
+                  channel: "muxfd",
                   author: 'muxfd',
-                  type: "chat",
-                  color: '#800000',
-                  emotes: "25:35-39",
+                  tags: {
+                    "message-type": "chat",
+                    "color": "#800000",
+                    "emotes": "25:35-39",
+                  },
+                  timestamp: DateTime.now(),
                   message: "have you followed muxfd on twitch? Kappa",
-                  deleted: false),
+                  deleted: false)),
             ),
           ),
           Text("Font size",

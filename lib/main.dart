@@ -7,10 +7,12 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/twitch/badge.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings.dart';
 import 'package:rtchat/screens/sign_in.dart';
+import 'package:rtchat/screens/twitch/badges.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -65,6 +67,11 @@ class App extends StatelessWidget {
                       ? ChatHistoryModel(TtsModel())
                       : chatHistory)
                     ..subscribe(user.channels)),
+              ChangeNotifierProxyProvider<UserModel, TwitchBadgeModel>(
+                  create: (context) => TwitchBadgeModel(),
+                  update: (context, user, twitchBadge) =>
+                      (twitchBadge == null ? TwitchBadgeModel() : twitchBadge)
+                        ..bind(user.channels)),
             ],
             child: MaterialApp(
               title: 'RealtimeChat',
@@ -88,6 +95,7 @@ class App extends StatelessWidget {
                   });
                 },
                 '/settings': (context) => SettingsScreen(),
+                '/settings/badges': (context) => TwitchBadgesScreen(),
               },
             ),
           );
