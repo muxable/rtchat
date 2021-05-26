@@ -34,6 +34,7 @@ TWITCH_CLIENT.on("message", async (channel, tags, message) => {
     .set({
       channel: `twitch:${channel.substring(1)}`,
       channelId: `twitch:${tags["room-id"]}`,
+      type: "message",
       timestamp,
       tags,
       message,
@@ -42,26 +43,44 @@ TWITCH_CLIENT.on("message", async (channel, tags, message) => {
 
 TWITCH_CLIENT.on(
   "messagedeleted",
-  async (channel, username, deletedMessage, userstate) => {
-    // fetch the message.
-    const id = userstate["target-msg-id"];
-    const message = await admin
-      .firestore()
-      .collection("messages")
-      .doc(`twitch:${id}`)
-      .get();
-
+  async (channel, username, deletedMessage, tags: any) => {
+    const timestamp = admin.firestore.Timestamp.fromMillis(
+      Number(tags["tmi-sent-ts"])
+    );
     await admin
       .firestore()
-      .collection("deletions")
-      .doc(`twitch:${id}`)
+      .collection("messages")
+      .doc(`twitch:${tags.id}`)
       .set({
-        channel: message.get("channel"),
-        channelId: message.get("channelId"),
-        timestamp: message.get("timestamp"),
+        channel: `twitch:${channel.substring(1)}`,
+        channelId: `twitch:${tags["room-id"]}`,
+        type: "messagedeleted",
+        timestamp,
+        tags,
+        messageId: tags["target-msg-id"],
       });
   }
 );
+
+TWITCH_CLIENT.on("raided", (async (channel, username, viewers, tags) => {
+  const timestamp = admin.firestore.Timestamp.fromMillis(
+    Number(tags["tmi-sent-ts"])
+  );
+
+  await admin
+    .firestore()
+    .collection("messages")
+    .doc(`twitch:${tags.id}`)
+    .set({
+      channel: channel.substring(1),
+      channelId: `twitch:${tags["room-id"]}`,
+      type: "raided",
+      timestamp,
+      tags,
+      username,
+      viewers,
+    });
+}) as any);
 
 const JOIN_BOTTLENECK = new Bottleneck({
   maxConcurrent: 50,
