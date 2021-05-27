@@ -28,6 +28,7 @@ class LayoutModel extends ChangeNotifier {
   double _panelWidth = 100.0;
   double _lightnessBoost = 0.179;
   bool _isStatsVisible = true;
+  bool _isInputLockable = false;
   bool _locked = false;
 
   List<PanelTab> get tabs {
@@ -95,6 +96,15 @@ class LayoutModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get isInputLockable {
+    return _isInputLockable;
+  }
+
+  set isInputLockable(bool isInputLockable) {
+    _isInputLockable = isInputLockable;
+    notifyListeners();
+  }
+
   LayoutModel.fromJson(Map<String, dynamic> json) {
     final tabs = json['tabs'];
     if (tabs != null) {
@@ -120,6 +130,9 @@ class LayoutModel extends ChangeNotifier {
     if (json['isStatsVisible'] != null) {
       _isStatsVisible = json['isStatsVisible'];
     }
+    if (json['isInputLockable'] != null) {
+      _isInputLockable = json['isInputLockable'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -130,5 +143,6 @@ class LayoutModel extends ChangeNotifier {
         "fontSize": _fontSize,
         "locked": _locked,
         "isStatsVisible": _isStatsVisible,
+        "isInputLockable": _isInputLockable,
       };
 }

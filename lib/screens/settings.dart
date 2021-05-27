@@ -22,6 +22,15 @@ class SettingsScreen extends StatelessWidget {
               layoutModel.isStatsVisible = value;
             },
           ),
+          SwitchListTile(
+            title: const Text('Disable input when layout is locked'),
+            subtitle: const Text(
+                'Useful for rain streams to avoid triggering the keyboard'),
+            value: layoutModel.isInputLockable,
+            onChanged: (value) {
+              layoutModel.isInputLockable = value;
+            },
+          ),
           ListTile(
             title: const Text('Twitch badge settings'),
             subtitle: const Text("Control which badges are visible"),

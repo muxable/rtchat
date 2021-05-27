@@ -11,6 +11,34 @@ import 'package:rtchat/screens/add_tab.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+class PersistentWebViewWidget extends StatefulWidget {
+  void Function(WebViewController) onWebViewCreated;
+  String initialUrl;
+
+  PersistentWebViewWidget(
+      {required this.onWebViewCreated, required this.initialUrl});
+
+  @override
+  _PersistentWebViewWidget createState() => _PersistentWebViewWidget();
+}
+
+class _PersistentWebViewWidget extends State<PersistentWebViewWidget>
+    with AutomaticKeepAliveClientMixin<PersistentWebViewWidget> {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return WebView(
+        onWebViewCreated: widget.onWebViewCreated,
+        javascriptMode: JavascriptMode.unrestricted,
+        allowsInlineMediaPlayback: true,
+        initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
+        initialUrl: widget.initialUrl);
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+}
+
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key? key}) : super(key: key);
 
@@ -102,45 +130,48 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         })
       ];
 
-      final input = Container(
-        color: Theme.of(context).primaryColor,
-        child: SafeArea(
-          top: false,
-          bottom: true,
-          left: false,
-          right: false,
-          minimum: EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: TextField(
-            controller: _textEditingController,
-            textInputAction: TextInputAction.send,
-            maxLines: null,
-            style: TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-                hintText: "Send a message...",
-                hintStyle: TextStyle(color: Colors.white),
-                border: InputBorder.none),
-            onChanged: (text) {
-              final filtered = text.replaceAll('\n', ' ');
-              if (filtered == text) {
-                return;
-              }
-              _textEditingController.value = TextEditingValue(
-                  text: filtered,
-                  selection: TextSelection.fromPosition(TextPosition(
-                      offset: _textEditingController.text.length)));
-            },
-            onSubmitted: (value) async {
-              value = value.trim();
-              if (value.isEmpty) {
-                return;
-              }
-              final model = Provider.of<UserModel>(context, listen: false);
-              model.send(model.channels.first, value);
-              _textEditingController.clear();
-            },
-          ),
-        ),
-      );
+      final input = layoutModel.isInputLockable && layoutModel.locked
+          ? Container()
+          : Container(
+              color: Theme.of(context).primaryColor,
+              child: SafeArea(
+                top: false,
+                bottom: true,
+                left: false,
+                right: false,
+                minimum: EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: TextField(
+                  controller: _textEditingController,
+                  textInputAction: TextInputAction.send,
+                  maxLines: null,
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                      hintText: "Send a message...",
+                      hintStyle: TextStyle(color: Colors.white),
+                      border: InputBorder.none),
+                  onChanged: (text) {
+                    final filtered = text.replaceAll('\n', ' ');
+                    if (filtered == text) {
+                      return;
+                    }
+                    _textEditingController.value = TextEditingValue(
+                        text: filtered,
+                        selection: TextSelection.fromPosition(TextPosition(
+                            offset: _textEditingController.text.length)));
+                  },
+                  onSubmitted: (value) async {
+                    value = value.trim();
+                    if (value.isEmpty) {
+                      return;
+                    }
+                    final model =
+                        Provider.of<UserModel>(context, listen: false);
+                    model.send(model.channels.first, value);
+                    _textEditingController.clear();
+                  },
+                ),
+              ),
+            );
 
       final chatPanel = ChatPanelWidget(
         onScrollback: (isScrolling) {
@@ -255,15 +286,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: TabBarView(
                         controller: _tabController,
                         children: layoutModel.tabs.asMap().entries.map((entry) {
-                          return WebView(
-                              onWebViewCreated: (controller) {
-                                _webViewControllers[entry.key] = controller;
-                              },
-                              javascriptMode: JavascriptMode.unrestricted,
-                              allowsInlineMediaPlayback: true,
-                              initialMediaPlaybackPolicy:
-                                  AutoMediaPlaybackPolicy.always_allow,
-                              initialUrl: entry.value.uri.toString());
+                          return PersistentWebViewWidget(
+                            onWebViewCreated: (controller) {
+                              _webViewControllers[entry.key] = controller;
+                            },
+                            initialUrl: entry.value.uri.toString(),
+                          );
                         }).toList(),
                       ),
                     )),

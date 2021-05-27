@@ -40,8 +40,10 @@ class TwitchBadgesScreen extends StatelessWidget {
                         height: 36),
                     title: Text(badgeSet["title"],
                         overflow: TextOverflow.ellipsis),
-                    subtitle: Text(badgeSet["description"],
-                        overflow: TextOverflow.ellipsis),
+                    subtitle: badgeSet["description"] == badgeSet["title"]
+                        ? null
+                        : Text(badgeSet["description"],
+                            overflow: TextOverflow.ellipsis),
                     value: model.isEnabled(keys[index]),
                     onChanged: (value) {
                       model.setEnabled(keys[index], value ?? false);
