@@ -204,6 +204,33 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
+export const clear = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("permission-denied", "missing auth");
+  }
+  const provider = data?.provider;
+  const channelId = data?.channelId;
+  if (!provider || !channelId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channelId"
+    );
+  }
+
+  switch (provider) {
+    case "twitch":
+      const channel = await getTwitchLogin(context.auth.uid, channelId);
+      if (!channel) {
+        return;
+      }
+      const client = await getTwitchClient(context.auth.uid, channelId);
+      await client.connect();
+      return await client.clear(channel);
+  }
+
+  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
+});
+
 export const getStatistics = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("permission-denied", "missing auth");
