@@ -9,6 +9,7 @@ import 'package:cloud_functions_web/cloud_functions_web.dart';
 import 'package:firebase_auth_web/firebase_auth_web.dart';
 import 'package:firebase_core_web/firebase_core_web.dart';
 import 'package:flutter_tts/flutter_tts_web.dart';
+import 'package:package_info_plus_web/package_info_plus_web.dart';
 import 'package:shared_preferences_web/shared_preferences_web.dart';
 import 'package:url_launcher_web/url_launcher_web.dart';
 import 'package:wakelock_web/wakelock_web.dart';
@@ -22,6 +23,7 @@ void registerPlugins(Registrar registrar) {
   FirebaseAuthWeb.registerWith(registrar);
   FirebaseCoreWeb.registerWith(registrar);
   FlutterTtsPlugin.registerWith(registrar);
+  PackageInfoPlugin.registerWith(registrar);
   SharedPreferencesPlugin.registerWith(registrar);
   UrlLauncherPlugin.registerWith(registrar);
   WakelockWeb.registerWith(registrar);
