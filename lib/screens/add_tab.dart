@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/layout.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class AddTabScreen extends StatefulWidget {
   AddTabScreen({Key? key}) : super(key: key);
@@ -14,7 +14,12 @@ class _AddTabScreenState extends State<AddTabScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _labelController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
-  WebViewController? _webViewController;
+  InAppWebViewController? _webViewController;
+  final GlobalKey _webViewKey = GlobalKey();
+  final InAppWebViewGroupOptions _webViewOptions = InAppWebViewGroupOptions(
+      crossPlatform: InAppWebViewOptions(transparentBackground: true),
+      android: AndroidInAppWebViewOptions(useHybridComposition: true),
+      ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true));
 
   @override
   void dispose() {
@@ -57,19 +62,26 @@ class _AddTabScreenState extends State<AddTabScreen> {
                     hintText: 'URL',
                   ),
                   onChanged: (value) {
-                    _webViewController?.loadUrl(value);
+                    final url = Uri.tryParse(value);
+                    if (url == null) {
+                      _webViewController?.loadUrl(
+                          urlRequest:
+                              URLRequest(url: Uri.parse("about:blank")));
+                      return;
+                    }
+                    _webViewController?.loadUrl(
+                        urlRequest: URLRequest(url: url));
                   }),
               Padding(padding: EdgeInsets.all(8), child: Text("Preview")),
               Expanded(
-                  child: WebView(
-                javascriptMode: JavascriptMode.unrestricted,
-                allowsInlineMediaPlayback: true,
-                initialMediaPlaybackPolicy:
-                    AutoMediaPlaybackPolicy.always_allow,
-                onWebViewCreated: (controller) {
-                  _webViewController = controller;
-                },
-              )),
+                child: InAppWebView(
+                  key: _webViewKey,
+                  initialOptions: _webViewOptions,
+                  onWebViewCreated: (controller) {
+                    _webViewController = controller;
+                  },
+                ),
+              ),
             ],
           ),
         ),

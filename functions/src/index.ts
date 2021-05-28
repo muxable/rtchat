@@ -85,7 +85,13 @@ export const send = functions.https.onCall(async (data, context) => {
         return;
       }
       const client = await getTwitchClient(context.auth.uid, channelId);
-      return await client.say(channel, message);
+      await client.connect();
+      try {
+        await await client.say(channel, message);
+      } catch (err) {
+        console.error(err);
+      }
+      return;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -113,7 +119,13 @@ export const ban = functions.https.onCall(async (data, context) => {
         return;
       }
       const client = await getTwitchClient(context.auth.uid, channelId);
-      return await client.ban(channel, username, reason);
+      await client.connect();
+      try {
+        await client.ban(channel, username, reason);
+      } catch (err) {
+        console.error(err);
+      }
+      return;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -140,7 +152,13 @@ export const unban = functions.https.onCall(async (data, context) => {
         return;
       }
       const client = await getTwitchClient(context.auth.uid, channelId);
-      return await client.unban(channel, username);
+      await client.connect();
+      try {
+        await client.unban(channel, username);
+      } catch (err) {
+        console.error(err);
+      }
+      return;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -170,7 +188,12 @@ export const timeout = functions.https.onCall(async (data, context) => {
       }
       const client = await getTwitchClient(context.auth.uid, channelId);
       await client.connect();
-      return await client.timeout(channel, username, length, reason);
+      try {
+        await client.timeout(channel, username, length, reason);
+      } catch (err) {
+        console.error(err);
+      }
+      return;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -198,7 +221,12 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
       }
       const client = await getTwitchClient(context.auth.uid, channelId);
       await client.connect();
-      return await client.deletemessage(channel, messageId);
+      try {
+        await client.deletemessage(channel, messageId);
+      } catch (err) {
+        console.error(err);
+      }
+      return;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -225,7 +253,12 @@ export const clear = functions.https.onCall(async (data, context) => {
       }
       const client = await getTwitchClient(context.auth.uid, channelId);
       await client.connect();
-      return await client.clear(channel);
+      try {
+        await client.clear(channel);
+      } catch (err) {
+        console.error(err);
+      }
+      return;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 
 final validateUrl = Uri.https('id.twitch.tv', '/oauth2/validate');
@@ -40,6 +41,7 @@ class UserModel extends ChangeNotifier {
 
       // bind profile
       if (user != null) {
+        FirebaseCrashlytics.instance.setUserIdentifier(user.uid);
         _profileSubscription?.cancel();
         _profileSubscription = FirebaseFirestore.instance
             .collection("profiles")

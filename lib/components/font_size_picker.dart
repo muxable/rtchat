@@ -22,7 +22,7 @@ class FontSizePickerWidget extends StatelessWidget {
                   tags: {
                     "message-type": "chat",
                     "color": "#800000",
-                    "emotes": "25:35-39",
+                    "emotes-raw": "25:35-39",
                   },
                   timestamp: DateTime.now(),
                   message: "have you followed muxfd on twitch? Kappa",

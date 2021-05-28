@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_panel.dart';
@@ -9,11 +10,11 @@ import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/add_tab.dart';
 import 'package:wakelock/wakelock.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class PersistentWebViewWidget extends StatefulWidget {
-  void Function(WebViewController) onWebViewCreated;
-  String initialUrl;
+  final void Function(InAppWebViewController) onWebViewCreated;
+  final String initialUrl;
 
   PersistentWebViewWidget(
       {required this.onWebViewCreated, required this.initialUrl});
@@ -24,15 +25,20 @@ class PersistentWebViewWidget extends StatefulWidget {
 
 class _PersistentWebViewWidget extends State<PersistentWebViewWidget>
     with AutomaticKeepAliveClientMixin<PersistentWebViewWidget> {
+  final GlobalKey _webViewKey = GlobalKey();
+  final InAppWebViewGroupOptions _webViewOptions = InAppWebViewGroupOptions(
+      crossPlatform: InAppWebViewOptions(transparentBackground: true),
+      android: AndroidInAppWebViewOptions(useHybridComposition: true),
+      ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true));
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return WebView(
-        onWebViewCreated: widget.onWebViewCreated,
-        javascriptMode: JavascriptMode.unrestricted,
-        allowsInlineMediaPlayback: true,
-        initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
-        initialUrl: widget.initialUrl);
+    return InAppWebView(
+      key: _webViewKey,
+      initialOptions: _webViewOptions,
+      initialUrlRequest: URLRequest(url: Uri.parse(widget.initialUrl)),
+    );
   }
 
   @override
@@ -49,7 +55,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _textEditingController = TextEditingController();
   late TabController _tabController;
-  final Map<int, WebViewController> _webViewControllers = {};
+  final Map<int, InAppWebViewController> _webViewControllers = {};
   var _minimized = false;
 
   @override
@@ -116,9 +122,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               }
             },
             itemBuilder: (context) {
-              final options = layoutModel.locked
-                  ? {"Unlock Layout", 'Settings', 'Sign Out'}
-                  : {"Lock Layout", 'Settings', 'Sign Out'};
+              final options = {
+                layoutModel.locked ? "Unlock Layout" : "Lock Layout",
+                'Settings',
+                'Sign Out'
+              };
               return options.map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
@@ -140,36 +148,65 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 left: false,
                 right: false,
                 minimum: EdgeInsets.fromLTRB(16, 8, 16, 8),
-                child: TextField(
-                  controller: _textEditingController,
-                  textInputAction: TextInputAction.send,
-                  maxLines: null,
-                  style: TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                      hintText: "Send a message...",
-                      hintStyle: TextStyle(color: Colors.white),
-                      border: InputBorder.none),
-                  onChanged: (text) {
-                    final filtered = text.replaceAll('\n', ' ');
-                    if (filtered == text) {
-                      return;
-                    }
-                    _textEditingController.value = TextEditingValue(
-                        text: filtered,
-                        selection: TextSelection.fromPosition(TextPosition(
-                            offset: _textEditingController.text.length)));
-                  },
-                  onSubmitted: (value) async {
-                    value = value.trim();
-                    if (value.isEmpty) {
-                      return;
-                    }
-                    final model =
-                        Provider.of<UserModel>(context, listen: false);
-                    model.send(model.channels.first, value);
-                    _textEditingController.clear();
-                  },
-                ),
+                child: Row(children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _textEditingController,
+                      textInputAction: TextInputAction.send,
+                      maxLines: null,
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                          hintText: "Send a message...",
+                          hintStyle: TextStyle(color: Colors.white),
+                          border: InputBorder.none),
+                      onChanged: (text) {
+                        final filtered = text.replaceAll('\n', ' ');
+                        if (filtered == text) {
+                          return;
+                        }
+                        _textEditingController.value = TextEditingValue(
+                            text: filtered,
+                            selection: TextSelection.fromPosition(TextPosition(
+                                offset: _textEditingController.text.length)));
+                      },
+                      onSubmitted: (value) async {
+                        value = value.trim();
+                        if (value.isEmpty) {
+                          return;
+                        }
+                        final model =
+                            Provider.of<UserModel>(context, listen: false);
+                        model.send(model.channels.first, value);
+                        _textEditingController.clear();
+                      },
+                    ),
+                  ),
+                  Consumer<UserModel>(builder: (context, userModel, child) {
+                    return PopupMenuButton<String>(
+                      icon: Icon(Icons.build),
+                      onSelected: (value) async {
+                        if (value == "Clear Chat") {
+                          final channel = userModel.channels.first;
+                          FirebaseFunctions.instance.httpsCallable("clear")({
+                            "provider": channel.provider,
+                            "channelId": channel.channelId,
+                          });
+                          Provider.of<ChatHistoryModel>(context, listen: false)
+                              .clear();
+                        } else if (value == "Raid") {}
+                      },
+                      itemBuilder: (context) {
+                        final options = {'Clear Chat'};
+                        return options.map((String choice) {
+                          return PopupMenuItem<String>(
+                            value: choice,
+                            child: Text(choice),
+                          );
+                        }).toList();
+                      },
+                    );
+                  }),
+                ]),
               ),
             );
 
@@ -234,8 +271,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         IconButton(
                             onPressed: () {
                               final index = _tabController.index;
-                              _webViewControllers[index]
-                                  ?.loadUrl(layoutModel.tabs[index].uri);
+                              _webViewControllers[index]?.loadUrl(
+                                  urlRequest: URLRequest(
+                                      url: Uri.parse(
+                                          layoutModel.tabs[index].uri)));
                             },
                             icon: Icon(Icons.refresh, color: Colors.white)),
                         IconButton(
