@@ -335,6 +335,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       minHeight: layoutModel.panelHeight,
                       maxHeight: layoutModel.panelHeight,
                       child: TabBarView(
+                        physics: layoutModel.locked
+                            ? NeverScrollableScrollPhysics()
+                            : null,
                         controller: _tabController,
                         children: layoutModel.tabs.asMap().entries.map((entry) {
                           return PersistentWebViewWidget(
