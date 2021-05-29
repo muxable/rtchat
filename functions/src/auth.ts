@@ -41,7 +41,15 @@ app.get("/auth/twitch/redirect", (req, res) => {
   req.session.state = state.toString();
   const redirectUri = new AuthorizationCode(TWITCH_OAUTH_CONFIG).authorizeURL({
     redirect_uri: `${HOST}/auth/twitch/callback`,
-    scope: ["user:read:email", "chat:read", "chat:edit", "channel:moderate"],
+    scope: [
+      "user:read:email",
+      "chat:read",
+      "chat:edit",
+      "channel:moderate",
+      "channel:manage:broadcast",
+      "channel:manage:polls",
+      "channel:manage:predictions",
+    ],
     state: state,
   });
   res.redirect(`${redirectUri}&force_verify=true`);
