@@ -47,16 +47,15 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
       "provider": widget.provider,
       "channelId": widget.channelId,
     });
+    print(statistics.data);
     if (!mounted) {
       return;
     }
     setState(() {
       _loading = false;
-      _isOnline = statistics.data['isOnline'];
-      if (_isOnline) {
-        _viewers = statistics.data['viewers'];
-        _followers = statistics.data['followers'];
-      }
+      _isOnline = statistics.data['isOnline'] ?? false;
+      _viewers = statistics.data['viewers'] ?? 0;
+      _followers = statistics.data['followers'] ?? 0;
     });
   }
 
@@ -75,20 +74,15 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
         if (_loading) {
           return Container();
         }
-        if (!_isOnline) {
-          return Chip(
-            backgroundColor: Colors.red,
-            label: const Text('Offline'),
-          );
-        }
+        final backgroundColor = _isOnline ? Colors.green : Colors.red;
         if (!widget.isStatsVisible) {
           return Chip(
-            backgroundColor: Colors.green,
-            label: const Text('Online'),
+            backgroundColor: backgroundColor,
+            label: _isOnline ? const Text('Online') : const Text('Offline'),
           );
         }
         return Chip(
-          backgroundColor: Colors.grey[700],
+          backgroundColor: backgroundColor,
           label: Row(children: [
             Icon(Icons.visibility),
             SizedBox(width: 8),
