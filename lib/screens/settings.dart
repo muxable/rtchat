@@ -17,7 +17,7 @@ class SettingsScreen extends StatelessWidget {
         title: Text("Settings"),
       ),
       body: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-        return Column(children: [
+        return ListView(children: [
           Padding(padding: EdgeInsets.all(16), child: FontSizePickerWidget()),
           SwitchListTile(
             title: const Text('Show viewer and follower count'),
@@ -65,6 +65,26 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => launch(discordUrl),
                 );
               }),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text("Thanks to all the testers who sent bug reports!",
+                style: TextStyle(
+                  color: Theme.of(context).accentColor,
+                  fontWeight: FontWeight.bold,
+                )),
+          ),
+          Column(
+              children: {"wormoSTEEZE", "ThisIsKurrrt", "nezst"}.map((key) {
+            final url = "https://twitch.tv/$key";
+            return ListTile(
+              leading: const Image(
+                  width: 24,
+                  image: AssetImage('assets/TwitchGlitchPurple.png')),
+              title: Text("/$key"),
+              trailing: Icon(Icons.launch),
+              onTap: () => launch(url),
+            );
+          }).toList()),
           FutureBuilder(
               future: PackageInfo.fromPlatform(),
               builder: (context, snapshot) {
