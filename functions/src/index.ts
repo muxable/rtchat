@@ -290,7 +290,7 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
       );
       const viewerJson = await viewerResponse.json();
       const followerResponse = await fetch(
-        `https://api.twitch.tv/helix/users/follows?from_id=${channelId}&first=1`,
+        `https://api.twitch.tv/helix/users/follows?to_id=${channelId}&first=1`,
         { headers }
       );
       const followerJson = await followerResponse.json();
@@ -299,13 +299,13 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
         return {
           isOnline: false,
           viewers: 0,
-          followers: followerJson["total"] || 0,
+          followers: followerJson["total"],
         };
       }
       return {
         isOnline: true,
-        viewers: stream["viewer_count"] || 0,
-        followers: followerJson["total"] || 0,
+        viewers: stream["viewer_count"],
+        followers: followerJson["total"],
       };
   }
 
