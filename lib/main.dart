@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/chat_history.dart';
@@ -31,8 +33,15 @@ const primarySwatch = MaterialColor(0xFF009FDF, {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
-  runApp(App(prefs: await SharedPreferences.getInstance()));
+  final prefs = await SharedPreferences.getInstance();
+  if (kDebugMode) {
+    runApp(App(prefs: prefs));
+  } else {
+    runZonedGuarded(() {
+      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
+      runApp(App(prefs: prefs));
+    }, FirebaseCrashlytics.instance.recordError);
+  }
 }
 
 class App extends StatelessWidget {

@@ -26,6 +26,13 @@ class SettingsScreen extends StatelessWidget {
               layoutModel.isStatsVisible = value;
             },
           ),
+          ListTile(
+            title: const Text('Twitch badge settings'),
+            subtitle: const Text("Control which badges are visible"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/badges");
+            },
+          ),
           SwitchListTile(
             title: const Text('Disable input when layout is locked'),
             subtitle: const Text(
@@ -35,11 +42,12 @@ class SettingsScreen extends StatelessWidget {
               layoutModel.isInputLockable = value;
             },
           ),
-          ListTile(
-            title: const Text('Twitch badge settings'),
-            subtitle: const Text("Control which badges are visible"),
-            onTap: () {
-              Navigator.pushNamed(context, "/settings/badges");
+          SwitchListTile(
+            title: const Text('Speaker disconnect prevention'),
+            subtitle: const Text('Plays an inaudible sound every 5 minutes'),
+            value: layoutModel.isSpeakerDisconnectPreventionEnabled,
+            onChanged: (value) {
+              layoutModel.isSpeakerDisconnectPreventionEnabled = value;
             },
           ),
           Divider(),

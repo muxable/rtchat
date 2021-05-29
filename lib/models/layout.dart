@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:core';
 import 'dart:math';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 
 class PanelTab {
@@ -30,6 +32,8 @@ class LayoutModel extends ChangeNotifier {
   bool _isStatsVisible = true;
   bool _isInputLockable = false;
   bool _locked = false;
+  Timer? _speakerDisconnectTimer;
+  final AudioCache _audioCache = AudioCache();
 
   List<PanelTab> get tabs {
     return _tabs;
@@ -105,6 +109,27 @@ class LayoutModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get isSpeakerDisconnectPreventionEnabled {
+    return _speakerDisconnectTimer != null;
+  }
+
+  set isSpeakerDisconnectPreventionEnabled(bool isEnabled) {
+    if (isEnabled) {
+      _startSpeakerDisconnectTimer();
+    } else {
+      _speakerDisconnectTimer?.cancel();
+      _speakerDisconnectTimer = null;
+    }
+    notifyListeners();
+  }
+
+  void _startSpeakerDisconnectTimer() {
+    _speakerDisconnectTimer = Timer.periodic(
+      Duration(minutes: 5),
+      (_) => _audioCache.play("silence.mp3"),
+    );
+  }
+
   LayoutModel.fromJson(Map<String, dynamic> json) {
     final tabs = json['tabs'];
     if (tabs != null) {
@@ -133,6 +158,9 @@ class LayoutModel extends ChangeNotifier {
     if (json['isInputLockable'] != null) {
       _isInputLockable = json['isInputLockable'];
     }
+    if (json['isSpeakerDisconnectPreventionEnabled'] != null) {
+      _startSpeakerDisconnectTimer();
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -144,5 +172,6 @@ class LayoutModel extends ChangeNotifier {
         "locked": _locked,
         "isStatsVisible": _isStatsVisible,
         "isInputLockable": _isInputLockable,
+        "isSpeakerDisconnectPreventionEnabled": _speakerDisconnectTimer != null,
       };
 }
