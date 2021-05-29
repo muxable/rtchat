@@ -71,13 +71,7 @@ Iterable<InlineSpan> parseText(String text, TextStyle linkStyle) {
               text: element.text,
               style: linkStyle,
               recognizer: (TapGestureRecognizer()
-                ..onTap = () async {
-                  if (await canLaunch(element.url)) {
-                    await launch(element.url);
-                  } else {
-                    throw 'Could not launch $element';
-                  }
-                }),
+                ..onTap = () => launch(element.url)),
             ),
           ),
         ),

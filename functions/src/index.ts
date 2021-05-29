@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
 import { app as authApp } from "./auth";
-import { TWITCH_CLIENT_ID } from "./oauth";
+import { getAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
 
 admin.initializeApp({
@@ -279,18 +279,33 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const response = await fetch(
-        `https://api.twitch.tv/kraken/streams/${channelId}`,
-        { headers: { "Client-ID": TWITCH_CLIENT_ID } }
+      const token = await getAccessToken(context.auth.uid, "twitch");
+      const headers = {
+        "Client-Id": TWITCH_CLIENT_ID,
+        Authorization: `Bearer ${token}`,
+      };
+      const viewerResponse = await fetch(
+        `https://api.twitch.tv/helix/streams?user_id=${channelId}&first=1`,
+        { headers }
       );
-      const json = await response.json();
-      if (!json["stream"]) {
-        return { isOnline: false };
+      const viewerJson = await viewerResponse.json();
+      const followerResponse = await fetch(
+        `https://api.twitch.tv/helix/streams?user_id=${channelId}&first=1`,
+        { headers }
+      );
+      const followerJson = await followerResponse.json();
+      const stream = viewerJson["data"][0];
+      if (!stream) {
+        return {
+          isOnline: false,
+          viewers: 0,
+          followers: followerJson["total"],
+        };
       }
       return {
         isOnline: true,
-        viewers: json["stream"]["viewers"],
-        followers: json["stream"]["channel"]["followers"],
+        viewers: stream["viewer_count"],
+        followers: followerJson["total"],
       };
   }
 
