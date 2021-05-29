@@ -47,7 +47,6 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
       "provider": widget.provider,
       "channelId": widget.channelId,
     });
-    print(statistics.data);
     if (!mounted) {
       return;
     }

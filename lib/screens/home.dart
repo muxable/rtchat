@@ -226,11 +226,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
       return Scaffold(
         appBar: AppBar(
-            leading: const Padding(
-              padding: EdgeInsets.all(12),
-              child: Image(image: AssetImage('assets/TwitchGlitchPurple.png')),
-            ),
-            title: title,
+            automaticallyImplyLeading: false,
+            title: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(right: 8),
+                    child: Image(
+                        height: 24,
+                        image: AssetImage('assets/TwitchGlitchPurple.png')),
+                  ),
+                  title
+                ]),
             actions: actions,
             bottom: layoutModel.locked
                 ? null
