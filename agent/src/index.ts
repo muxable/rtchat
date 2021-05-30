@@ -153,10 +153,13 @@ process.once("SIGTERM", async () => {
   }
 
   // stop subscribing.
-  const channels = [
-    ...new Set(CLIENTS.flatMap((client) => client.getChannels())),
-  ];
-  for (const channel of channels) {
+  const channels = new Set<string>();
+  for (const client of CLIENTS) {
+    for (const channel of client.getChannels()) {
+      channels.add(channel);
+    }
+  }
+  for (const channel of Array.from(channels)) {
     const payload = JSON.stringify({
       provider: "twitch",
       channel: channel.substring(1),
