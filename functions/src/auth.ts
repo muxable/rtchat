@@ -42,6 +42,8 @@ app.get("/auth/twitch/redirect", (req, res) => {
   const redirectUri = new AuthorizationCode(TWITCH_OAUTH_CONFIG).authorizeURL({
     redirect_uri: `${HOST}/auth/twitch/callback`,
     scope: [
+      "channel_editor",
+      "channel_commercial",
       "user:read:email",
       "chat:read",
       "chat:edit",
