@@ -3,17 +3,15 @@ import 'dart:async';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:rtchat/models/layout.dart';
 
 class StatisticsBarWidget extends StatefulWidget {
   final String provider;
   final String channelId;
-  final bool isStatsVisible;
 
   StatisticsBarWidget(
-      {Key? key,
-      required this.provider,
-      required this.channelId,
-      required this.isStatsVisible})
+      {Key? key, required this.provider, required this.channelId})
       : super(key: key);
 
   @override
@@ -67,34 +65,36 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8),
-      child: Builder(builder: (context) {
-        if (_loading) {
-          return Container();
-        }
-        final backgroundColor = _isOnline ? Colors.green : Colors.red;
-        if (!widget.isStatsVisible) {
+    return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8),
+        child: Builder(builder: (context) {
+          if (_loading) {
+            return Container();
+          }
+          final backgroundColor = _isOnline ? Colors.green : Colors.red;
+          if (!layoutModel.isStatsVisible) {
+            return Chip(
+              backgroundColor: backgroundColor,
+              label: _isOnline
+                  ? const Text('Stream online')
+                  : const Text('Stream offline'),
+            );
+          }
           return Chip(
             backgroundColor: backgroundColor,
-            label: _isOnline
-                ? const Text('Stream online')
-                : const Text('Stream offline'),
+            label: Row(children: [
+              Icon(Icons.visibility),
+              SizedBox(width: 8),
+              Text(_formatter.format(_viewers)),
+              SizedBox(width: 8),
+              Icon(Icons.people),
+              SizedBox(width: 8),
+              Text(_formatter.format(_followers)),
+            ]),
           );
-        }
-        return Chip(
-          backgroundColor: backgroundColor,
-          label: Row(children: [
-            Icon(Icons.visibility),
-            SizedBox(width: 8),
-            Text(_formatter.format(_viewers)),
-            SizedBox(width: 8),
-            Icon(Icons.people),
-            SizedBox(width: 8),
-            Text(_formatter.format(_followers)),
-          ]),
-        );
-      }),
-    );
+        }),
+      );
+    });
   }
 }

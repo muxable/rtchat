@@ -56,6 +56,13 @@ class LayoutModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updatePanelWidth({required double dx}) {
+    _panelWidth += dx;
+    _panelWidth = max(_panelWidth, 1);
+    _panelWidth = min(_panelWidth, 400);
+    notifyListeners();
+  }
+
   double get fontSize {
     return _fontSize;
   }

@@ -5,6 +5,7 @@ import * as tmi from "tmi.js";
 import Bottleneck from "bottleneck";
 import * as process from "process";
 import { v4 as uuidv4 } from "uuid";
+import { buildClient } from "./client";
 
 dotenv.config();
 admin.initializeApp({
@@ -15,73 +16,7 @@ const AGENT_ID = uuidv4();
 
 console.log("running agent", AGENT_ID);
 
-const TWITCH_CLIENT = new tmi.Client({
-  connection: { reconnect: true },
-  channels: [],
-});
-
-TWITCH_CLIENT.connect();
-
-TWITCH_CLIENT.on("message", async (channel, tags, message) => {
-  const timestamp = admin.firestore.Timestamp.fromMillis(
-    Number(tags["tmi-sent-ts"])
-  );
-
-  await admin
-    .firestore()
-    .collection("messages")
-    .doc(`twitch:${tags.id}`)
-    .set({
-      channel,
-      channelId: `twitch:${tags["room-id"]}`,
-      type: "message",
-      timestamp,
-      tags,
-      message,
-    });
-});
-
-TWITCH_CLIENT.on(
-  "messagedeleted",
-  async (channel, username, deletedMessage, tags: any) => {
-    const timestamp = admin.firestore.Timestamp.fromMillis(
-      Number(tags["tmi-sent-ts"])
-    );
-
-    await admin
-      .firestore()
-      .collection("messages")
-      .doc(`twitch:${tags.id}`)
-      .set({
-        channel,
-        channelId: `twitch:${tags["room-id"]}`,
-        type: "messagedeleted",
-        timestamp,
-        tags,
-        messageId: tags["target-msg-id"],
-      });
-  }
-);
-
-TWITCH_CLIENT.on("raided", (async (channel, username, viewers, tags) => {
-  const timestamp = admin.firestore.Timestamp.fromMillis(
-    Number(tags["tmi-sent-ts"])
-  );
-
-  await admin
-    .firestore()
-    .collection("messages")
-    .doc(`twitch:${tags.id}`)
-    .set({
-      channel,
-      channelId: `twitch:${tags["room-id"]}`,
-      type: "raided",
-      timestamp,
-      tags,
-      username,
-      viewers,
-    });
-}) as any);
+const CLIENTS = [buildClient(), buildClient()];
 
 const JOIN_BOTTLENECK = new Bottleneck({
   maxConcurrent: 50,
@@ -93,7 +28,11 @@ async function subscribe(provider: string, channel: string) {
     case "twitch":
       if (JOIN_BOTTLENECK.check()) {
         try {
-          await JOIN_BOTTLENECK.schedule(() => TWITCH_CLIENT.join(channel));
+          await JOIN_BOTTLENECK.schedule(async () => {
+            for (const client of CLIENTS) {
+              await client.join(channel);
+            }
+          });
         } catch (err) {
           console.error(err);
           return false;
@@ -108,7 +47,9 @@ async function unsubscribe(provider: string, channel: string) {
   switch (provider) {
     case "twitch":
       try {
-        await TWITCH_CLIENT.part(channel);
+        for (const client of CLIENTS) {
+          await client.part(channel);
+        }
       } catch (err) {
         console.error(err);
         return false;
@@ -200,16 +141,7 @@ process.once("SIGTERM", async () => {
 
   await LEAVE_TOPIC.subscription(LEAVE_SUBSCRIPTION_ID).delete();
 
-  const twitch = TWITCH_CLIENT.getChannels().map((channel) =>
-    JOIN_TOPIC.publish(
-      Buffer.from(
-        JSON.stringify({ provider: "twitch", channel: channel.substring(1) })
-      )
-    )
-  );
-
-  await Promise.all(twitch);
-
+  // release locks.
   for (const lock of Array.from(locks.values())) {
     const [provider, channel] = lock.split(":");
     await admin
@@ -218,6 +150,18 @@ process.once("SIGTERM", async () => {
       .child(provider)
       .child(channel)
       .set(null);
+  }
+
+  // stop subscribing.
+  const channels = [
+    ...new Set(CLIENTS.flatMap((client) => client.getChannels())),
+  ];
+  for (const channel of channels) {
+    const payload = JSON.stringify({
+      provider: "twitch",
+      channel: channel.substring(1),
+    });
+    await JOIN_TOPIC.publish(Buffer.from(payload));
   }
 
   process.exit(0);

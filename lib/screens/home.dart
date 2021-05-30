@@ -4,7 +4,9 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_panel.dart';
+import 'package:rtchat/components/settings_button.dart';
 import 'package:rtchat/components/statistics_bar.dart';
+import 'package:rtchat/components/title_bar.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
@@ -74,70 +76,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-      final title = Consumer<UserModel>(builder: (context, userModel, child) {
+    final actions = [
+      Consumer<UserModel>(builder: (context, userModel, child) {
         if (userModel.channels.isNotEmpty) {
           // TODO: Implement multi-channel rendering.
-          return Text(
-            "/${userModel.channels.first.displayName}",
-            overflow: TextOverflow.fade,
-          );
+          final channel = userModel.channels.first;
+          return StatisticsBarWidget(
+              provider: channel.provider, channelId: channel.channelId);
         }
-        return Text("RealtimeChat");
-      });
-
-      final actions = [
-        Consumer<UserModel>(builder: (context, userModel, child) {
-          if (userModel.channels.isNotEmpty) {
-            // TODO: Implement multi-channel rendering.
-            final channel = userModel.channels.first;
-            return StatisticsBarWidget(
-                provider: channel.provider,
-                channelId: channel.channelId,
-                isStatsVisible: layoutModel.isStatsVisible);
-          }
-          return Container();
-        }),
-        Consumer<ChatHistoryModel>(builder: (context, chatHistoryModel, child) {
-          return IconButton(
-              icon: Icon(chatHistoryModel.ttsEnabled
-                  ? Icons.record_voice_over
-                  : Icons.voice_over_off),
-              tooltip: "Text to speech",
-              onPressed: () {
-                chatHistoryModel.ttsEnabled = !chatHistoryModel.ttsEnabled;
-              });
-        }),
-        Consumer<UserModel>(builder: (context, model, child) {
-          return PopupMenuButton<String>(
-            onSelected: (value) async {
-              if (value == "Settings") {
-                Navigator.pushNamed(context, "/settings");
-              } else if (value == "Lock Layout" || value == "Unlock Layout") {
-                layoutModel.locked = !layoutModel.locked;
-              } else if (value == "Sign Out") {
-                await Provider.of<ChatHistoryModel>(context, listen: false)
-                    .subscribe({});
-                model.signOut();
-              }
-            },
-            itemBuilder: (context) {
-              final options = {
-                layoutModel.locked ? "Unlock Layout" : "Lock Layout",
-                'Settings',
-                'Sign Out'
-              };
-              return options.map((String choice) {
-                return PopupMenuItem<String>(
-                  value: choice,
-                  child: Text(choice),
-                );
-              }).toList();
-            },
-          );
-        })
-      ];
-
+        return Container();
+      }),
+      Consumer<ChatHistoryModel>(builder: (context, chatHistoryModel, child) {
+        return IconButton(
+            icon: Icon(chatHistoryModel.ttsEnabled
+                ? Icons.record_voice_over
+                : Icons.voice_over_off),
+            tooltip: "Text to speech",
+            onPressed: () {
+              chatHistoryModel.ttsEnabled = !chatHistoryModel.ttsEnabled;
+            });
+      }),
+      SettingsButtonWidget(),
+    ];
+    return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
       final input = layoutModel.isInputLockable && layoutModel.locked
           ? Container()
           : Container(
@@ -227,18 +188,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       return Scaffold(
         appBar: AppBar(
             automaticallyImplyLeading: false,
-            title: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(right: 8),
-                    child: Image(
-                        height: 24,
-                        image: AssetImage('assets/TwitchGlitchPurple.png')),
-                  ),
-                  title
-                ]),
+            title: TitleBarWidget(),
             actions: actions,
             bottom: layoutModel.locked
                 ? null
@@ -320,51 +270,72 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             icon: Icon(Icons.close, color: Colors.white)),
                       ]);
                     }))),
-        body: Column(
-          children: [
-            layoutModel.tabs.length == 0
-                ? Container()
-                : AnimatedContainer(
-                    height: _minimized
-                        ? min(layoutModel.panelHeight, 100)
-                        : layoutModel.panelHeight,
-                    duration: Duration(milliseconds: 400),
-                    child: ClipRect(
-                        child: OverflowBox(
-                      alignment: Alignment.topCenter,
-                      minHeight: layoutModel.panelHeight,
-                      maxHeight: layoutModel.panelHeight,
-                      child: TabBarView(
-                        physics: layoutModel.locked
-                            ? NeverScrollableScrollPhysics()
-                            : null,
-                        controller: _tabController,
-                        children: layoutModel.tabs.asMap().entries.map((entry) {
-                          return PersistentWebViewWidget(
-                            onWebViewCreated: (controller) {
-                              _webViewControllers[entry.key] = controller;
-                            },
-                            initialUrl: entry.value.uri.toString(),
-                          );
-                        }).toList(),
-                      ),
-                    )),
-                  ),
-            layoutModel.tabs.length == 0
-                ? Container()
-                : GestureDetector(
-                    onVerticalDragUpdate: (details) {
-                      if (layoutModel.locked) {
-                        return;
-                      }
-                      layoutModel.updatePanelHeight(dy: details.delta.dy);
-                    },
-                    child: Divider(thickness: layoutModel.locked ? 4 : 16),
-                  ),
-            Expanded(child: chatPanel),
-            input,
-          ],
-        ),
+        body: OrientationBuilder(builder: (context, orientation) {
+          if (layoutModel.tabs.length == 0) {
+            return Column(children: [Expanded(child: chatPanel), input]);
+          }
+          final tabBarView = TabBarView(
+            physics: layoutModel.locked ? NeverScrollableScrollPhysics() : null,
+            controller: _tabController,
+            children: layoutModel.tabs.asMap().entries.map((entry) {
+              return PersistentWebViewWidget(
+                onWebViewCreated: (controller) {
+                  _webViewControllers[entry.key] = controller;
+                },
+                initialUrl: entry.value.uri.toString(),
+              );
+            }).toList(),
+          );
+          if (orientation == Orientation.portrait) {
+            return Column(
+              children: [
+                AnimatedContainer(
+                  height: _minimized
+                      ? min(layoutModel.panelHeight, 100)
+                      : layoutModel.panelHeight,
+                  duration: Duration(milliseconds: 400),
+                  child: ClipRect(
+                      child: OverflowBox(
+                    alignment: Alignment.topCenter,
+                    minHeight: layoutModel.panelHeight,
+                    maxHeight: layoutModel.panelHeight,
+                    child: tabBarView,
+                  )),
+                ),
+                GestureDetector(
+                  onVerticalDragUpdate: (details) {
+                    if (layoutModel.locked) {
+                      return;
+                    }
+                    layoutModel.updatePanelHeight(dy: details.delta.dy);
+                  },
+                  child: Divider(thickness: layoutModel.locked ? 4 : 16),
+                ),
+                Expanded(child: chatPanel),
+                input,
+              ],
+            );
+          } else {
+            return Row(
+              children: [
+                Container(width: layoutModel.panelWidth, child: tabBarView),
+                GestureDetector(
+                  onHorizontalDragUpdate: (details) {
+                    if (layoutModel.locked) {
+                      return;
+                    }
+                    layoutModel.updatePanelWidth(dx: details.delta.dx);
+                  },
+                  child:
+                      VerticalDivider(thickness: layoutModel.locked ? 4 : 16),
+                ),
+                Expanded(
+                    child:
+                        Column(children: [Expanded(child: chatPanel), input])),
+              ],
+            );
+          }
+        }),
       );
     });
   }

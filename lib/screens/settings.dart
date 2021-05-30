@@ -78,8 +78,7 @@ class SettingsScreen extends StatelessWidget {
             final url = "https://twitch.tv/$key";
             return ListTile(
               leading: const Image(
-                  width: 24,
-                  image: AssetImage('assets/TwitchGlitchPurple.png')),
+                  width: 24, image: AssetImage('assets/providers/twitch.png')),
               title: Text("/$key"),
               trailing: Icon(Icons.launch),
               onTap: () => launch(url),
