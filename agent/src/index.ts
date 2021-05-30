@@ -47,6 +47,7 @@ TWITCH_CLIENT.on(
     const timestamp = admin.firestore.Timestamp.fromMillis(
       Number(tags["tmi-sent-ts"])
     );
+
     await admin
       .firestore()
       .collection("messages")

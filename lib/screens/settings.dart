@@ -19,7 +19,7 @@ class SettingsScreen extends StatelessWidget {
       body: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return ListView(children: [
           Padding(padding: EdgeInsets.all(16), child: FontSizePickerWidget()),
-          SwitchListTile(
+          SwitchListTile.adaptive(
             title: const Text('Show viewer and follower count'),
             value: layoutModel.isStatsVisible,
             onChanged: (value) {
@@ -33,7 +33,7 @@ class SettingsScreen extends StatelessWidget {
               Navigator.pushNamed(context, "/settings/badges");
             },
           ),
-          SwitchListTile(
+          SwitchListTile.adaptive(
             title: const Text('Disable input when layout is locked'),
             subtitle: const Text(
                 'Useful for rain streams to avoid triggering the keyboard'),
@@ -42,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
               layoutModel.isInputLockable = value;
             },
           ),
-          SwitchListTile(
+          SwitchListTile.adaptive(
             title: const Text('Speaker disconnect prevention'),
             subtitle: const Text('Plays an inaudible sound every 5 minutes'),
             value: layoutModel.isSpeakerDisconnectPreventionEnabled,

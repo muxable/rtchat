@@ -73,7 +73,14 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                                   onTap: () {}),
                               ListTile(
                                   title: Text('Unban ${message.author}'),
-                                  onTap: () {}),
+                                  onTap: () {
+                                    final model = Provider.of<UserModel>(
+                                        context,
+                                        listen: false);
+                                    model.unban(
+                                        model.channels.first, message.author);
+                                    Navigator.pop(context);
+                                  }),
                             ]),
                           );
                         });

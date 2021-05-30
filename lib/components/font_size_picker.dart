@@ -22,7 +22,9 @@ class FontSizePickerWidget extends StatelessWidget {
                   tags: {
                     "message-type": "chat",
                     "color": "#800000",
+                    "badges-raw": "premium/1",
                     "emotes-raw": "25:35-39",
+                    "room-id": "158394109",
                   },
                   timestamp: DateTime.now(),
                   message: "have you followed muxfd on twitch? Kappa",
@@ -34,7 +36,7 @@ class FontSizePickerWidget extends StatelessWidget {
                 color: Theme.of(context).accentColor,
                 fontWeight: FontWeight.bold,
               )),
-          Slider(
+          Slider.adaptive(
             value: model.fontSize,
             min: 12,
             max: 36,
@@ -49,7 +51,7 @@ class FontSizePickerWidget extends StatelessWidget {
                 color: Theme.of(context).accentColor,
                 fontWeight: FontWeight.bold,
               )),
-          Slider(
+          Slider.adaptive(
             value: model.lightnessBoost,
             min: 0.179,
             max: 1.0,

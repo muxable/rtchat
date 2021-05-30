@@ -77,7 +77,9 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
         if (!widget.isStatsVisible) {
           return Chip(
             backgroundColor: backgroundColor,
-            label: _isOnline ? const Text('Online') : const Text('Offline'),
+            label: _isOnline
+                ? const Text('Stream online')
+                : const Text('Stream offline'),
           );
         }
         return Chip(

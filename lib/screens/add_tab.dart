@@ -43,10 +43,10 @@ class _AddTabScreenState extends State<AddTabScreen> {
               Navigator.maybePop(context);
             })
       ]),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
