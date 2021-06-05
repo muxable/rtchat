@@ -13,8 +13,6 @@ admin.initializeApp({
 
 const AGENT_ID = uuidv4();
 
-console.log("service account", require("../service_account.json"));
-
 console.log("running agent", AGENT_ID);
 
 const CLIENTS = [buildClient(), buildClient()];
