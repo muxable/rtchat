@@ -7,9 +7,7 @@ import { subscribe, unsubscribe } from "./subscriptions";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
 
 admin.initializeApp({
-  credential: admin.credential.cert(
-    require("../rtchat-47692-firebase-adminsdk-ax5x8-9938439836.json")
-  ),
+  credential: admin.credential.cert(require("../service_account.json")),
   databaseURL: "https://rtchat-47692-default-rtdb.firebaseio.com",
 });
 
