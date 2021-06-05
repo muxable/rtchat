@@ -1,7 +1,6 @@
 import * as admin from "firebase-admin";
 import { Message, PubSub } from "@google-cloud/pubsub";
 import * as dotenv from "dotenv";
-import * as tmi from "tmi.js";
 import Bottleneck from "bottleneck";
 import * as process from "process";
 import { v4 as uuidv4 } from "uuid";
@@ -13,6 +12,8 @@ admin.initializeApp({
 });
 
 const AGENT_ID = uuidv4();
+
+console.log("service account", require("../service_account.json"));
 
 console.log("running agent", AGENT_ID);
 
