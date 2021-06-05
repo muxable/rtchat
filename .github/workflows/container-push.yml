@@ -34,7 +34,7 @@ jobs:
       - run: |-
           gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
-      - run: echo $FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON | base64 -d > agent/service_account.json
+      - run: echo $FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON > agent/service_account.json
         env:
           FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON }}
 

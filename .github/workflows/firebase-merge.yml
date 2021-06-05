@@ -9,6 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - run: echo $FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON > functions/service_account.json
+        env:
+          FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON }}
       - uses: w9jds/firebase-action@master
         with:
           args: deploy --only functions,firestore
