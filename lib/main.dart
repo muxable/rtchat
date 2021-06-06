@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -17,18 +18,31 @@ import 'package:rtchat/screens/sign_in.dart';
 import 'package:rtchat/screens/twitch/badges.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const primarySwatch = MaterialColor(0xFF009FDF, {
-  50: Color.fromRGBO(0, 159, 223, .1),
-  100: Color.fromRGBO(0, 159, 223, .2),
-  200: Color.fromRGBO(0, 159, 223, .3),
-  300: Color.fromRGBO(0, 159, 223, .4),
-  400: Color.fromRGBO(0, 159, 223, .5),
-  500: Color.fromRGBO(0, 159, 223, .6),
-  600: Color.fromRGBO(0, 159, 223, .7),
-  700: Color.fromRGBO(0, 159, 223, .8),
-  800: Color.fromRGBO(0, 159, 223, .9),
-  900: Color.fromRGBO(0, 159, 223, 1),
-});
+MaterialColor generateMaterialColor(Color color) {
+  return MaterialColor(color.value, {
+    50: tintColor(color, 0.5),
+    100: tintColor(color, 0.4),
+    200: tintColor(color, 0.3),
+    300: tintColor(color, 0.2),
+    400: tintColor(color, 0.1),
+    500: tintColor(color, 0),
+    600: tintColor(color, -0.1),
+    700: tintColor(color, -0.2),
+    800: tintColor(color, -0.3),
+    900: tintColor(color, -0.4),
+  });
+}
+
+int tintValue(int value, double factor) =>
+    max(0, min((value + ((255 - value) * factor)).round(), 255));
+
+Color tintColor(Color color, double factor) => Color.fromRGBO(
+    tintValue(color.red, factor),
+    tintValue(color.green, factor),
+    tintValue(color.blue, factor),
+    1);
+
+final primarySwatch = generateMaterialColor(Color(0xFF009FDF));
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
