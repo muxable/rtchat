@@ -165,7 +165,7 @@ class LayoutModel extends ChangeNotifier {
     if (json['isInputLockable'] != null) {
       _isInputLockable = json['isInputLockable'];
     }
-    if (json['isSpeakerDisconnectPreventionEnabled'] != null) {
+    if (json['isSpeakerDisconnectPreventionEnabled'] ?? false) {
       _startSpeakerDisconnectTimer();
     }
   }
