@@ -16,9 +16,33 @@ class SettingsButtonWidget extends StatelessWidget {
             } else if (value == "Lock Layout" || value == "Unlock Layout") {
               layoutModel.locked = !layoutModel.locked;
             } else if (value == "Sign Out") {
-              await Provider.of<ChatHistoryModel>(context, listen: false)
-                  .subscribe({});
-              userModel.signOut();
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: const Text('Sign Out'),
+                    content: const Text('Are you sure you want to sign out?'),
+                    actions: [
+                      TextButton(
+                        child: Text('Cancel'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      TextButton(
+                        child: Text('Sign Out'),
+                        onPressed: () async {
+                          await Provider.of<ChatHistoryModel>(context,
+                                  listen: false)
+                              .subscribe({});
+                          await userModel.signOut();
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
             }
           },
           itemBuilder: (context) {
