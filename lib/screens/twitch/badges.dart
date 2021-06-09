@@ -3,8 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/twitch/badge.dart';
 
 class TwitchBadgesScreen extends StatelessWidget {
-  void authenticate(BuildContext context) {}
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

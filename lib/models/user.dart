@@ -130,8 +130,8 @@ class UserModel extends ChangeNotifier {
     return _user;
   }
 
-  void signOut() {
-    FirebaseAuth.instance.signOut();
+  Future<void> signOut() async {
+    await FirebaseAuth.instance.signOut();
   }
 
   void signIn(String token) {

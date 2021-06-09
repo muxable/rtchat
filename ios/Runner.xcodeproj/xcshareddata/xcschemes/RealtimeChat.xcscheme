@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "97C146ED1CF9000F007C117D"
-               BuildableName = "RealtimeChat.app"
-               BlueprintName = "RealtimeChat"
-               ReferencedContainer = "container:RealtimeChat.xcodeproj">
+               BuildableName = "Runner.app"
+               BlueprintName = "Runner"
+               ReferencedContainer = "container:Runner.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "97C146ED1CF9000F007C117D"
-            BuildableName = "RealtimeChat.app"
-            BlueprintName = "RealtimeChat"
-            ReferencedContainer = "container:RealtimeChat.xcodeproj">
+            BuildableName = "Runner.app"
+            BlueprintName = "Runner"
+            ReferencedContainer = "container:Runner.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "97C146ED1CF9000F007C117D"
-            BuildableName = "RealtimeChat.app"
-            BlueprintName = "RealtimeChat"
-            ReferencedContainer = "container:RealtimeChat.xcodeproj">
+            BuildableName = "Runner.app"
+            BlueprintName = "Runner"
+            ReferencedContainer = "container:Runner.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
