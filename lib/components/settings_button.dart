@@ -17,7 +17,8 @@ class SettingsButtonWidget extends StatelessWidget {
               layoutModel.locked = !layoutModel.locked;
             } else if (value == "Sign Out") {
               await Provider.of<ChatHistoryModel>(context, listen: false)
-                  .subscribe({});
+                ..subscribe({})
+                ..ttsEnabled = false;
               userModel.signOut();
             }
           },
