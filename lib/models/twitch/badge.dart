@@ -100,4 +100,17 @@ class TwitchBadgeModel extends ChangeNotifier {
   int get enabledCount {
     return _enabled.length;
   }
+
+  TwitchBadgeModel.fromJson(Map<String, dynamic> json) {
+    final badges = json['enabled'];
+    if (badges != null) {
+      for (dynamic badge in badges) {
+        setEnabled(badge, true);
+      }
+    }
+  }
+
+  Map<String, dynamic> toJson() => {
+        "enabled": _enabled.toList(),
+      };
 }

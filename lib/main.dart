@@ -70,10 +70,10 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (context) {
           final model = LayoutModel.fromJson(
               jsonDecode(prefs.getString("layout") ?? "{}"));
-          model.addListener(() {
-            prefs.setString("layout", jsonEncode(model.toJson()));
-          });
-          return model;
+          return model
+            ..addListener(() {
+              prefs.setString('layout', jsonEncode(model.toJson()));
+            });
         }),
         ChangeNotifierProxyProvider<UserModel, ChatHistoryModel>(
             create: (context) => ChatHistoryModel(TtsModel()),
@@ -82,10 +82,25 @@ class App extends StatelessWidget {
                 : chatHistory)
               ..subscribe(user.channels)),
         ChangeNotifierProxyProvider<UserModel, TwitchBadgeModel>(
-            create: (context) => TwitchBadgeModel(),
-            update: (context, user, twitchBadge) =>
-                (twitchBadge == null ? TwitchBadgeModel() : twitchBadge)
-                  ..bind(user.channels)),
+            create: (context) {
+          final model = TwitchBadgeModel.fromJson(
+              jsonDecode(prefs.getString("twitch_badge") ?? "{}"));
+          return model
+            ..addListener(() {
+              prefs.setString('twitch_badge', jsonEncode(model.toJson()));
+            });
+        }, update: (context, user, twitchBadge) {
+          if (twitchBadge == null) {
+            final model = TwitchBadgeModel.fromJson(
+                jsonDecode(prefs.getString("twitch_badge") ?? "{}"));
+            return model
+              ..addListener(() {
+                prefs.setString('twitch_badge', jsonEncode(model.toJson()));
+              })
+              ..bind(user.channels);
+          }
+          return twitchBadge..bind(user.channels);
+        }),
       ],
       child: MaterialApp(
         title: 'RealtimeChat',
