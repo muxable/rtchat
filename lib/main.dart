@@ -8,16 +8,22 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
+import 'package:rtchat/models/audio.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/quick_links.dart';
+import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/twitch/badge.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:rtchat/screens/activity_feed.dart';
+import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/home.dart';
-import 'package:rtchat/screens/settings.dart';
+import 'package:rtchat/screens/settings/audio_sources.dart';
+import 'package:rtchat/screens/settings/quick_links.dart';
+import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/sign_in.dart';
-import 'package:rtchat/screens/twitch/badges.dart';
+import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 MaterialColor generateMaterialColor(Color color) {
@@ -69,50 +75,83 @@ class App extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserModel()),
-        ChangeNotifierProxyProvider<UserModel, LayoutModel>(create: (context) {
+        ChangeNotifierProvider(create: (context) {
+          final model =
+              AudioModel.fromJson(jsonDecode(prefs.getString("audio") ?? "{}"));
+          model.addListener(() {
+            prefs.setString('audio', jsonEncode(model.toJson()));
+          });
+          return model;
+        }),
+        ChangeNotifierProvider(create: (context) {
+          final model = QuickLinksModel.fromJson(
+              jsonDecode(prefs.getString("quick_links") ?? "{}"));
+          model.addListener(() {
+            prefs.setString('quick_links', jsonEncode(model.toJson()));
+          });
+          return model;
+        }),
+        ChangeNotifierProvider(create: (context) {
+          final model =
+              StyleModel.fromJson(jsonDecode(prefs.getString("style") ?? "{}"));
+          model.addListener(() {
+            prefs.setString('style', jsonEncode(model.toJson()));
+          });
+          return model;
+        }),
+        ChangeNotifierProvider(create: (context) {
           final model = LayoutModel.fromJson(
               jsonDecode(prefs.getString("layout") ?? "{}"));
-          return model
-            ..addListener(() {
-              prefs.setString('layout', jsonEncode(model.toJson()));
-            });
-        }, update: (context, user, layout) {
+          model.addListener(() {
+            prefs.setString('layout', jsonEncode(model.toJson()));
+          });
+          return model;
+        }),
+        ChangeNotifierProvider(create: (context) {
+          final model = ChannelsModel();
+          final user = Provider.of<UserModel>(context, listen: false);
           final userChannel = user.userChannel;
-          layout?.channels = userChannel == null ? {} : {userChannel};
+          model.channels = userChannel == null ? {} : {userChannel};
           user.addListener(() {
             final userChannel = user.userChannel;
-            layout?.channels = userChannel == null ? {} : {userChannel};
+            model.channels = userChannel == null ? {} : {userChannel};
           });
-          return layout!;
+          return model;
         }),
-        ChangeNotifierProxyProvider<LayoutModel, ChatHistoryModel>(
-            create: (context) => ChatHistoryModel(TtsModel()),
-            update: (context, layout, chatHistory) =>
-                chatHistory!..subscribe(layout.channels)),
-        ChangeNotifierProxyProvider<LayoutModel, ActivityFeedModel>(
-            create: (context) {
-              final model = ActivityFeedModel.fromJson(
-                  jsonDecode(prefs.getString("activity_feed") ?? "{}"));
-              return model
-                ..addListener(() {
-                  prefs.setString("activity_feed", jsonEncode(model.toJson()));
-                });
-            },
-            update: (context, layout, activityFeed) =>
-                activityFeed!..bind(layout)),
-        ChangeNotifierProxyProvider<LayoutModel, TwitchBadgeModel>(
-          create: (context) {
-            final model = TwitchBadgeModel.fromJson(
-                jsonDecode(prefs.getString("twitch_badge") ?? "{}"));
-            model.addListener(() {
-              prefs.setString('twitch_badge', jsonEncode(model.toJson()));
+        ChangeNotifierProvider(create: (context) {
+          final model = ChatHistoryModel(TtsModel());
+          final channels = Provider.of<ChannelsModel>(context, listen: false);
+          model.subscribe(channels.channels);
+          channels.addListener(() {
+            model.subscribe(channels.channels);
+          });
+          return model;
+        }),
+        ChangeNotifierProvider(create: (context) {
+          final model = ActivityFeedModel.fromJson(
+              jsonDecode(prefs.getString("activity_feed") ?? "{}"));
+          final channels = Provider.of<ChannelsModel>(context, listen: false);
+          channels.addListener(() {
+            model.bind(channels);
+          });
+          return model
+            ..addListener(() {
+              prefs.setString("activity_feed", jsonEncode(model.toJson()));
             });
-            return model;
-          },
-          update: (context, layout, twitchBadge) {
-            return twitchBadge!..bind(layout.channels);
-          },
-        ),
+        }),
+        ChangeNotifierProvider(create: (context) {
+          final model = TwitchBadgeModel.fromJson(
+              jsonDecode(prefs.getString("twitch_badge") ?? "{}"));
+          model.addListener(() {
+            prefs.setString('twitch_badge', jsonEncode(model.toJson()));
+          });
+          final channels = Provider.of<ChannelsModel>(context, listen: false);
+          model.subscribe(channels.channels);
+          channels.addListener(() {
+            model.subscribe(channels.channels);
+          });
+          return model;
+        }),
       ],
       child: DefaultTabController(
         initialIndex: 0,
@@ -141,6 +180,8 @@ class App extends StatelessWidget {
             '/settings': (context) => SettingsScreen(),
             '/settings/badges': (context) => TwitchBadgesScreen(),
             '/settings/activity-feed': (context) => ActivityFeedScreen(),
+            '/settings/audio-sources': (context) => AudioSourcesScreen(),
+            '/settings/quick-links': (context) => QuickLinksScreen(),
           },
         ),
       ),

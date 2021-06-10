@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_panel.dart';
 import 'package:rtchat/components/statistics_bar.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
@@ -18,7 +19,7 @@ class ChannelPanelWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+    return Consumer<ChannelsModel>(builder: (context, channelsModel, child) {
       return Column(children: [
         // header
         Container(
@@ -27,7 +28,7 @@ class ChannelPanelWidget extends StatelessWidget {
             padding: EdgeInsets.only(left: 16),
             child: Row(children: [
               Expanded(
-                child: layoutModel.channels.isEmpty
+                child: channelsModel.channels.isEmpty
                     ? Container()
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -38,26 +39,28 @@ class ChannelPanelWidget extends StatelessWidget {
                               child: Image(
                                   height: 24,
                                   image: AssetImage(
-                                      'assets/providers/${layoutModel.channels.first.provider}.png')),
+                                      'assets/providers/${channelsModel.channels.first.provider}.png')),
                             ),
-                            Text("/${layoutModel.channels.first.displayName}",
+                            Text("/${channelsModel.channels.first.displayName}",
                                 overflow: TextOverflow.fade),
                           ]),
               ),
-              layoutModel.locked
-                  ? Container()
-                  : GestureDetector(
-                      onVerticalDragUpdate: (details) =>
-                          onResize(details.delta.dy),
-                      child: Icon(Icons.drag_handle),
-                    ),
+              Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+                if (layoutModel.locked) {
+                  return Container();
+                }
+                return GestureDetector(
+                  onVerticalDragUpdate: (details) => onResize(details.delta.dy),
+                  child: Icon(Icons.drag_handle),
+                );
+              }),
               Expanded(
                 child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  layoutModel.channels.isEmpty
+                  channelsModel.channels.isEmpty
                       ? Container()
                       : StatisticsBarWidget(
-                          provider: layoutModel.channels.first.provider,
-                          channelId: layoutModel.channels.first.channelId),
+                          provider: channelsModel.channels.first.provider,
+                          channelId: channelsModel.channels.first.channelId),
                   Consumer<ChatHistoryModel>(
                       builder: (context, chatHistoryModel, child) {
                     return IconButton(
@@ -80,7 +83,7 @@ class ChannelPanelWidget extends StatelessWidget {
         Expanded(child: ChatPanelWidget(onScrollback: onScrollback)),
 
         // input
-        Builder(builder: (context) {
+        Consumer<LayoutModel>(builder: (context, layoutModel, child) {
           if (layoutModel.isInputLockable && layoutModel.locked) {
             return Container();
           }
@@ -118,9 +121,11 @@ class ChannelPanelWidget extends StatelessWidget {
                       if (value.isEmpty) {
                         return;
                       }
-                      final model =
+                      final userModel =
                           Provider.of<UserModel>(context, listen: false);
-                      model.send(layoutModel.channels.first, value);
+                      final channelsModel =
+                          Provider.of<ChannelsModel>(context, listen: false);
+                      userModel.send(channelsModel.channels.first, value);
                       _textEditingController.clear();
                     },
                   ),
@@ -129,7 +134,9 @@ class ChannelPanelWidget extends StatelessWidget {
                   icon: Icon(Icons.build, color: Colors.white),
                   onSelected: (value) async {
                     if (value == "Clear Chat") {
-                      final channel = layoutModel.channels.first;
+                      final channelsModel =
+                          Provider.of<ChannelsModel>(context, listen: false);
+                      final channel = channelsModel.channels.first;
                       FirebaseFunctions.instance.httpsCallable("clear")({
                         "provider": channel.provider,
                         "channelId": channel.channelId,

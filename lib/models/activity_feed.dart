@@ -1,15 +1,14 @@
 import 'dart:core';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/channels.dart';
 
 class ActivityFeedModel extends ChangeNotifier {
   bool _isEnabled = false;
   bool _isCustom = false;
   String _customUrl = "";
   Channel? _baseChannel;
-  LayoutModel? _host;
+  ChannelsModel? _host;
 
   @override
   void dispose() {
@@ -44,11 +43,11 @@ class ActivityFeedModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  bind(LayoutModel layoutModel) {
+  bind(ChannelsModel model) {
     _host?.removeListener(register);
-    _host = layoutModel;
+    _host = model;
     register();
-    layoutModel.addListener(register);
+    model.addListener(register);
   }
 
   register() {

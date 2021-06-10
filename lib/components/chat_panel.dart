@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/twitch/message.dart';
 import 'package:rtchat/components/twitch/raid_event.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/chat_history.dart';
-import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/user.dart';
 
@@ -62,10 +62,11 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                                     final userModel = Provider.of<UserModel>(
                                         context,
                                         listen: false);
-                                    final layoutModel =
-                                        Provider.of<LayoutModel>(context,
+                                    final channelsModel =
+                                        Provider.of<ChannelsModel>(context,
                                             listen: false);
-                                    userModel.delete(layoutModel.channels.first,
+                                    userModel.delete(
+                                        channelsModel.channels.first,
                                         message.messageId);
                                     Navigator.pop(context);
                                   }),
@@ -81,10 +82,11 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                                     final userModel = Provider.of<UserModel>(
                                         context,
                                         listen: false);
-                                    final layoutModel =
-                                        Provider.of<LayoutModel>(context,
+                                    final channelsModel =
+                                        Provider.of<ChannelsModel>(context,
                                             listen: false);
-                                    userModel.unban(layoutModel.channels.first,
+                                    userModel.unban(
+                                        channelsModel.channels.first,
                                         message.author);
                                     Navigator.pop(context);
                                   }),

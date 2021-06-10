@@ -18,11 +18,15 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   void initState() {
     super.initState();
 
-    final activityFeedUrl =
-        Provider.of<ActivityFeedModel>(context, listen: false);
-    _textEditingController.text = activityFeedUrl.customUrl;
-    activityFeedUrl.addListener(() {
-      final url = activityFeedUrl.url;
+    final activityFeed = Provider.of<ActivityFeedModel>(context, listen: false);
+    _textEditingController.text = activityFeed.customUrl;
+    activityFeed.addListener(() {
+      if (!activityFeed.isEnabled) {
+        _inAppWebViewController?.loadUrl(
+            urlRequest: URLRequest(url: Uri.parse("about:blank")));
+        return;
+      }
+      final url = activityFeed.url;
       if (url != null) {
         _inAppWebViewController?.loadUrl(urlRequest: URLRequest(url: url));
       }
@@ -88,8 +92,10 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                 onWebViewCreated: (controller) =>
                     _inAppWebViewController = controller,
                 initialOptions: InAppWebViewGroupOptions(
-                    crossPlatform:
-                        InAppWebViewOptions(javaScriptEnabled: true)),
+                    crossPlatform: InAppWebViewOptions(
+                  javaScriptEnabled: true,
+                  transparentBackground: true,
+                )),
               ),
             ),
           ),

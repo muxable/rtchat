@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_panel.dart';
+import 'package:rtchat/components/quick_links_bar.dart';
 import 'package:rtchat/components/settings_button.dart';
 import 'package:rtchat/components/title_bar.dart';
 import 'package:rtchat/models/layout.dart';
@@ -66,39 +67,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-      return Scaffold(
-        appBar: AppBar(
-            automaticallyImplyLeading: false,
-            title: TitleBarWidget(),
-            actions: [SettingsButtonWidget()]),
-        body: Builder(builder: (context) {
-          if (MediaQuery.of(context).orientation == Orientation.portrait) {
-            return Column(children: [
-              AnimatedContainer(
-                height: _minimized
-                    ? min(layoutModel.panelHeight, 0)
-                    : layoutModel.panelHeight,
-                duration: Duration(milliseconds: 400),
-                child: Container(),
-              ),
-              Expanded(
-                  child: ChannelPanelWidget(
-                onScrollback: (isScrolled) {
-                  setState(() {
-                    _minimized = isScrolled;
-                  });
-                },
-                onResize: (dy) {
-                  layoutModel.updatePanelHeight(dy: dy);
-                },
-              )),
-            ]);
-          } else {
-            return Container();
-          }
-        }),
-      );
-    });
+    return Scaffold(
+      appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: TitleBarWidget(),
+          actions: [QuickLinksBar(), SettingsButtonWidget()]),
+      body: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+        if (MediaQuery.of(context).orientation == Orientation.portrait) {
+          return Column(children: [
+            AnimatedContainer(
+              height: _minimized
+                  ? min(layoutModel.panelHeight, 0)
+                  : layoutModel.panelHeight,
+              duration: Duration(milliseconds: 200),
+              child: Container(),
+            ),
+            Expanded(
+                child: ChannelPanelWidget(
+              onScrollback: (isScrolled) {
+                setState(() {
+                  _minimized = isScrolled;
+                });
+              },
+              onResize: (dy) {
+                layoutModel.updatePanelHeight(dy: dy);
+              },
+            )),
+          ]);
+        } else {
+          return Container();
+        }
+      }),
+    );
   }
 }

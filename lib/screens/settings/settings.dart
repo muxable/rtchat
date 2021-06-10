@@ -18,7 +18,28 @@ class SettingsScreen extends StatelessWidget {
       ),
       body: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return ListView(children: [
-          Padding(padding: EdgeInsets.all(16), child: FontSizePickerWidget()),
+          ListTile(
+            title: const Text('Activity feed'),
+            subtitle: const Text("Customize your activity feed"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/activity-feed");
+            },
+          ),
+          ListTile(
+            title: const Text('Audio sources'),
+            subtitle: const Text("Add web sources for alert sounds"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/audio-sources");
+            },
+          ),
+          ListTile(
+            title: const Text('Quick links'),
+            subtitle: const Text("Add shortcuts to commonly-used tools"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/quick-links");
+            },
+          ),
+          Divider(),
           SwitchListTile.adaptive(
             title: const Text('Show viewer and follower count'),
             value: layoutModel.isStatsVisible,
@@ -26,13 +47,7 @@ class SettingsScreen extends StatelessWidget {
               layoutModel.isStatsVisible = value;
             },
           ),
-          ListTile(
-            title: const Text('Activity feed'),
-            subtitle: const Text("Control which badges are visible"),
-            onTap: () {
-              Navigator.pushNamed(context, "/settings/activity-feed");
-            },
-          ),
+          Padding(padding: EdgeInsets.all(16), child: FontSizePickerWidget()),
           ListTile(
             title: const Text('Twitch badge settings'),
             subtitle: const Text("Control which badges are visible"),
@@ -47,14 +62,6 @@ class SettingsScreen extends StatelessWidget {
             value: layoutModel.isInputLockable,
             onChanged: (value) {
               layoutModel.isInputLockable = value;
-            },
-          ),
-          SwitchListTile.adaptive(
-            title: const Text('Speaker disconnect prevention'),
-            subtitle: const Text('Plays an inaudible sound every 5 minutes'),
-            value: layoutModel.isSpeakerDisconnectPreventionEnabled,
-            onChanged: (value) {
-              layoutModel.isSpeakerDisconnectPreventionEnabled = value;
             },
           ),
           Divider(),

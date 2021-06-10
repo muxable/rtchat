@@ -65,54 +65,53 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-      return Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8),
-        child: Builder(builder: (context) {
-          final backgroundColor = _loading
-              ? Colors.grey
-              : _isOnline
-                  ? Colors.green
-                  : Colors.red;
-          return Align(
-            child: AnimatedContainer(
-              duration: Duration(milliseconds: 300),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: backgroundColor,
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(8),
-                child: Builder(builder: (context) {
-                  if (_loading) {
-                    return SizedBox(
-                      child: CircularProgressIndicator.adaptive(
-                        semanticsLabel: 'Linear progress indicator',
-                      ),
-                      height: 16,
-                      width: 16,
-                    );
-                  }
-                  if (!layoutModel.isStatsVisible) {
-                    return _isOnline
-                        ? const Text('Stream online')
-                        : const Text('Stream offline');
-                  }
-                  return Row(children: [
-                    Icon(Icons.visibility),
-                    SizedBox(width: 8),
-                    Text(_formatter.format(_viewers)),
-                    SizedBox(width: 8),
-                    Icon(Icons.people),
-                    SizedBox(width: 8),
-                    Text(_formatter.format(_followers)),
-                  ]);
-                }),
-              ),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8),
+      child: Builder(builder: (context) {
+        final backgroundColor = _loading
+            ? Colors.grey
+            : _isOnline
+                ? Colors.green
+                : Colors.red;
+        return Align(
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: backgroundColor,
             ),
-          );
-        }),
-      );
-    });
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child:
+                  Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+                if (_loading) {
+                  return SizedBox(
+                    child: CircularProgressIndicator.adaptive(
+                      semanticsLabel: 'Linear progress indicator',
+                    ),
+                    height: 16,
+                    width: 16,
+                  );
+                }
+                if (!layoutModel.isStatsVisible) {
+                  return _isOnline
+                      ? const Text('Stream online')
+                      : const Text('Stream offline');
+                }
+                return Row(children: [
+                  Icon(Icons.visibility),
+                  SizedBox(width: 8),
+                  Text(_formatter.format(_viewers)),
+                  SizedBox(width: 8),
+                  Icon(Icons.people),
+                  SizedBox(width: 8),
+                  Text(_formatter.format(_followers)),
+                ]);
+              }),
+            ),
+          ),
+        );
+      }),
+    );
   }
 }
