@@ -5,26 +5,26 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 
-class PanelTab {
-  final String label;
-  final String uri;
+class Channel {
+  String provider;
+  String channelId;
+  String displayName;
 
-  PanelTab({required String label, required String uri})
-      : label = label,
-        uri = uri;
+  Channel(this.provider, this.channelId, this.displayName);
 
-  PanelTab.fromJson(Map<String, dynamic> json)
-      : label = json['label'],
-        uri = json['uri'];
+  bool operator ==(that) =>
+      that is Channel &&
+      that.provider == this.provider &&
+      that.channelId == this.channelId;
 
-  Map<String, dynamic> toJson() => {
-        "label": label,
-        "uri": uri,
-      };
+  int get hashCode => provider.hashCode ^ channelId.hashCode;
+
+  @override
+  String toString() => "$provider:$channelId";
 }
 
 class LayoutModel extends ChangeNotifier {
-  final List<PanelTab> _tabs = [];
+  Set<String> _audioSources = {};
   double _fontSize = 20;
   double _panelHeight = 100.0;
   double _panelWidth = 100.0;
@@ -34,20 +34,7 @@ class LayoutModel extends ChangeNotifier {
   bool _locked = false;
   Timer? _speakerDisconnectTimer;
   final AudioCache _audioCache = AudioCache();
-
-  List<PanelTab> get tabs {
-    return _tabs;
-  }
-
-  void addTab(PanelTab tab) {
-    _tabs.add(tab);
-    notifyListeners();
-  }
-
-  void removeTab(int index) {
-    _tabs.removeAt(index);
-    notifyListeners();
-  }
+  Set<Channel> _channels = {};
 
   void updatePanelHeight({required double dy}) {
     _panelHeight += dy;
@@ -137,13 +124,22 @@ class LayoutModel extends ChangeNotifier {
     );
   }
 
+  Set<Channel> get channels {
+    return _channels;
+  }
+
+  set channels(Set<Channel> channels) {
+    _channels = channels;
+    notifyListeners();
+  }
+
   LayoutModel.fromJson(Map<String, dynamic> json) {
-    final tabs = json['tabs'];
-    if (tabs != null) {
-      for (dynamic tab in tabs) {
-        addTab(PanelTab.fromJson(tab));
-      }
-    }
+    // final tabs = json['tabs'];
+    // if (tabs != null) {
+    //   for (dynamic tab in tabs) {
+    //     addTab(PanelTab.fromJson(tab));
+    //   }
+    // }
     if (json['panelHeight'] != null) {
       _panelHeight = json['panelHeight'];
     }
@@ -171,7 +167,7 @@ class LayoutModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-        "tabs": _tabs.map((tab) => tab.toJson()).toList(),
+        // "tabs": _tabs.map((tab) => tab.toJson()).toList(),
         "panelHeight": _panelHeight,
         "panelWidth": _panelWidth,
         "lightnessBoost": _lightnessBoost,

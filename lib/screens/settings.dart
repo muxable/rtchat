@@ -27,6 +27,13 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           ListTile(
+            title: const Text('Activity feed'),
+            subtitle: const Text("Control which badges are visible"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/activity-feed");
+            },
+          ),
+          ListTile(
             title: const Text('Twitch badge settings'),
             subtitle: const Text("Control which badges are visible"),
             onTap: () {

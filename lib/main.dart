@@ -7,11 +7,13 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/twitch/badge.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/screens/activity_feed.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings.dart';
 import 'package:rtchat/screens/sign_in.dart';
@@ -67,65 +69,80 @@ class App extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserModel()),
-        ChangeNotifierProvider(create: (context) {
+        ChangeNotifierProxyProvider<UserModel, LayoutModel>(create: (context) {
           final model = LayoutModel.fromJson(
               jsonDecode(prefs.getString("layout") ?? "{}"));
           return model
             ..addListener(() {
               prefs.setString('layout', jsonEncode(model.toJson()));
             });
+        }, update: (context, user, layout) {
+          final userChannel = user.userChannel;
+          layout?.channels = userChannel == null ? {} : {userChannel};
+          user.addListener(() {
+            final userChannel = user.userChannel;
+            layout?.channels = userChannel == null ? {} : {userChannel};
+          });
+          return layout!;
         }),
-        ChangeNotifierProxyProvider<UserModel, ChatHistoryModel>(
+        ChangeNotifierProxyProvider<LayoutModel, ChatHistoryModel>(
             create: (context) => ChatHistoryModel(TtsModel()),
-            update: (context, user, chatHistory) => (chatHistory == null
-                ? ChatHistoryModel(TtsModel())
-                : chatHistory)
-              ..subscribe(user.channels)),
-        ChangeNotifierProxyProvider<UserModel, TwitchBadgeModel>(
+            update: (context, layout, chatHistory) =>
+                chatHistory!..subscribe(layout.channels)),
+        ChangeNotifierProxyProvider<LayoutModel, ActivityFeedModel>(
             create: (context) {
-          final model = TwitchBadgeModel.fromJson(
-              jsonDecode(prefs.getString("twitch_badge") ?? "{}"));
-          return model
-            ..addListener(() {
-              prefs.setString('twitch_badge', jsonEncode(model.toJson()));
-            });
-        }, update: (context, user, twitchBadge) {
-          if (twitchBadge == null) {
+              final model = ActivityFeedModel.fromJson(
+                  jsonDecode(prefs.getString("activity_feed") ?? "{}"));
+              return model
+                ..addListener(() {
+                  prefs.setString("activity_feed", jsonEncode(model.toJson()));
+                });
+            },
+            update: (context, layout, activityFeed) =>
+                activityFeed!..bind(layout)),
+        ChangeNotifierProxyProvider<LayoutModel, TwitchBadgeModel>(
+          create: (context) {
             final model = TwitchBadgeModel.fromJson(
                 jsonDecode(prefs.getString("twitch_badge") ?? "{}"));
-            return model
-              ..addListener(() {
-                prefs.setString('twitch_badge', jsonEncode(model.toJson()));
-              })
-              ..bind(user.channels);
-          }
-          return twitchBadge..bind(user.channels);
-        }),
-      ],
-      child: MaterialApp(
-        title: 'RealtimeChat',
-        theme: ThemeData(
-          brightness: Brightness.light,
-          primarySwatch: primarySwatch,
-        ),
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          primarySwatch: primarySwatch,
-          scaffoldBackgroundColor: Colors.black,
-        ),
-        initialRoute: '/',
-        routes: {
-          '/': (context) {
-            return Consumer<UserModel>(builder: (context, model, child) {
-              if (!model.isSignedIn()) {
-                return SignInScreen();
-              }
-              return HomeScreen();
+            model.addListener(() {
+              prefs.setString('twitch_badge', jsonEncode(model.toJson()));
             });
+            return model;
           },
-          '/settings': (context) => SettingsScreen(),
-          '/settings/badges': (context) => TwitchBadgesScreen(),
-        },
+          update: (context, layout, twitchBadge) {
+            return twitchBadge!..bind(layout.channels);
+          },
+        ),
+      ],
+      child: DefaultTabController(
+        initialIndex: 0,
+        length: 2,
+        child: MaterialApp(
+          title: 'RealtimeChat',
+          theme: ThemeData(
+            brightness: Brightness.light,
+            primarySwatch: primarySwatch,
+          ),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            primarySwatch: primarySwatch,
+            scaffoldBackgroundColor: Colors.black,
+          ),
+          initialRoute: '/',
+          routes: {
+            '/': (context) {
+              return Consumer<UserModel>(builder: (context, model, child) {
+                if (!model.isSignedIn()) {
+                  return SignInScreen();
+                }
+                return HomeScreen();
+              });
+            },
+            '/settings': (context) => SettingsScreen(),
+            '/settings/badges': (context) => TwitchBadgesScreen(),
+            '/settings/activity-feed': (context) => ActivityFeedScreen(),
+          },
+        ),
       ),
     );
   }

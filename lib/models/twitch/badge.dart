@@ -3,7 +3,7 @@ import 'dart:core';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/layout.dart';
 
 final Map<String, Future<Map<String, dynamic>>> _localCache = {};
 Future<Map<String, dynamic>>? _globalCache;
