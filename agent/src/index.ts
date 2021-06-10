@@ -61,6 +61,7 @@ async function unsubscribe(provider: string, channel: string) {
 const locks = new Set<string>();
 
 async function onSubscribe(message: Message) {
+  console.log("received subscribe message: " + message);
   const { provider, channel } = JSON.parse(message.data.toString());
   // attempt to lock the key.
   const key = `${provider}:${channel}`;
@@ -93,6 +94,7 @@ async function onSubscribe(message: Message) {
 }
 
 async function onUnsubscribe(message: Message) {
+  console.log("received unsubscribe message: " + message);
   const { provider, channel } = JSON.parse(message.data.toString());
   const key = `${provider}:${channel}`;
   if (await unsubscribe(provider, channel)) {
