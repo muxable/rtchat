@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/twitch/message.dart';
 import 'package:rtchat/models/message.dart';
-import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/style.dart';
 
 class FontSizePickerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer<LayoutModel>(builder: (context, model, child) {
+    return Consumer<StyleModel>(builder: (context, model, child) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

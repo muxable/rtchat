@@ -5,30 +5,13 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
-
-class Channel {
-  String provider;
-  String channelId;
-  String displayName;
-
-  Channel(this.provider, this.channelId, this.displayName);
-
-  bool operator ==(that) =>
-      that is Channel &&
-      that.provider == this.provider &&
-      that.channelId == this.channelId;
-
-  int get hashCode => provider.hashCode ^ channelId.hashCode;
-
-  @override
-  String toString() => "$provider:$channelId";
-}
+import 'package:rtchat/models/channels.dart';
 
 class UserModel extends ChangeNotifier {
   User? _user = FirebaseAuth.instance.currentUser;
-  Set<Channel> _channels = {};
   late StreamSubscription<User?> _userSubscription;
   StreamSubscription<DocumentSnapshot>? _profileSubscription;
+  Channel? _userChannel;
 
   UserModel() {
     _userSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
@@ -45,12 +28,12 @@ class UserModel extends ChangeNotifier {
             .snapshots()
             .listen((event) {
           final data = event.data();
-          final Set<Channel> channels = {};
           if (data != null && data.containsKey('twitch')) {
-            channels.add(Channel(
-                "twitch", data['twitch']['id'], data['twitch']['displayName']));
+            _userChannel = Channel(
+                "twitch", data['twitch']['id'], data['twitch']['displayName']);
+          } else {
+            _userChannel = null;
           }
-          _channels = channels;
           notifyListeners();
         });
       }
@@ -122,12 +105,12 @@ class UserModel extends ChangeNotifier {
     print(results);
   }
 
-  Set<Channel> get channels {
-    return _channels;
-  }
-
   User? get user {
     return _user;
+  }
+
+  Channel? get userChannel {
+    return _userChannel;
   }
 
   Future<void> signOut() async {

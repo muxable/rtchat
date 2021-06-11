@@ -3,7 +3,7 @@ import 'dart:core';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/channels.dart';
 
 final Map<String, Future<Map<String, dynamic>>> _localCache = {};
 Future<Map<String, dynamic>>? _globalCache;
@@ -26,7 +26,7 @@ class TwitchBadgeModel extends ChangeNotifier {
   Map<String, dynamic> globalBadgeSets = {};
   Set<String> _enabled = {};
 
-  Future<void> bind(Set<Channel> channels) async {
+  Future<void> subscribe(Set<Channel> channels) async {
     localBadgeSets.clear();
     globalBadgeSets.clear();
     if (_globalCache == null) {

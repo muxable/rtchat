@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/message.dart';
+import 'package:rtchat/models/style.dart';
 
 class TwitchRaidEventWidget extends StatelessWidget {
   final TwitchRaidEventModel model;
@@ -14,13 +14,15 @@ class TwitchRaidEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-      var boldStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
-          fontSize: layoutModel.fontSize, fontWeight: FontWeight.w500);
+    return Consumer<StyleModel>(builder: (context, styleModel, child) {
+      var boldStyle = Theme.of(context)
+          .textTheme
+          .bodyText2!
+          .copyWith(fontSize: styleModel.fontSize, fontWeight: FontWeight.w500);
       var baseStyle = Theme.of(context)
           .textTheme
           .bodyText2!
-          .copyWith(fontSize: layoutModel.fontSize);
+          .copyWith(fontSize: styleModel.fontSize);
       return Container(
         decoration: BoxDecoration(
           border: Border(
@@ -34,10 +36,10 @@ class TwitchRaidEventWidget extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(12, 4, 16, 4),
           child: Row(children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(layoutModel.fontSize),
+              borderRadius: BorderRadius.circular(styleModel.fontSize),
               child: Image(
                   image: NetworkImage(model.profilePictureUrl),
-                  height: layoutModel.fontSize * 1.5),
+                  height: styleModel.fontSize * 1.5),
             ),
             SizedBox(width: 12),
             Expanded(
