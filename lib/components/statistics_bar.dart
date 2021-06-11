@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 
 class StatisticsBarWidget extends StatefulWidget {
@@ -17,8 +17,6 @@ class StatisticsBarWidget extends StatefulWidget {
   @override
   _StatisticsBarWidgetState createState() => _StatisticsBarWidgetState();
 }
-
-final getStatistics = FirebaseFunctions.instance.httpsCallable("getStatistics");
 
 class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
   late Timer _timer;
@@ -41,18 +39,18 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
   }
 
   Future<void> _poll() async {
-    final statistics = await getStatistics({
-      "provider": widget.provider,
-      "channelId": widget.channelId,
-    });
+    final statistics = await getStreamMetadata(
+        provider: widget.provider, channelId: widget.channelId);
     if (!mounted) {
       return;
     }
     setState(() {
       _loading = false;
-      _isOnline = statistics.data['isOnline'] ?? false;
-      _viewers = statistics.data['viewers'] ?? 0;
-      _followers = statistics.data['followers'] ?? 0;
+      _isOnline = statistics.isOnline;
+      if (statistics is TwitchStreamMetadata) {
+        _viewers = statistics.viewerCount;
+        _followers = statistics.followerCount;
+      }
     });
   }
 

@@ -81,6 +81,17 @@ class App extends StatelessWidget {
           model.addListener(() {
             prefs.setString('audio', jsonEncode(model.toJson()));
           });
+          final user = Provider.of<UserModel>(context, listen: false);
+          Timer.periodic(Duration(seconds: 15), (timer) async {
+            final channel = user.userChannel;
+            if (channel != null) {
+              final metadata = await getStreamMetadata(
+                  provider: channel.provider, channelId: channel.channelId);
+              await model.setStreamOnlineUnmutedState(metadata.isOnline);
+            } else {
+              await model.setStreamOnlineUnmutedState(false);
+            }
+          });
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
