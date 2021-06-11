@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:core';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class AudioSource {
@@ -39,8 +39,12 @@ class AudioModel extends ChangeNotifier {
   Map<AudioSource, HeadlessInAppWebView> _views = {};
   Timer? _speakerDisconnectTimer;
   bool _isAutoMuteEnabled = true;
-  bool _isTempMuted = true;
-  final AudioCache _audioCache = AudioCache();
+  bool _isTempSettingsUnmuted = false;
+  bool _isStreamOnlineUnmuted = false;
+  final _audioCache = AudioCache();
+  final initialOptions = InAppWebViewGroupOptions(
+      crossPlatform: InAppWebViewOptions(
+          mediaPlaybackRequiresUserGesture: false, javaScriptEnabled: true));
 
   bool get isSpeakerDisconnectPreventionEnabled {
     return _speakerDisconnectTimer != null;
@@ -69,6 +73,7 @@ class AudioModel extends ChangeNotifier {
 
   set isAutoMuteEnabled(bool isEnabled) {
     _isAutoMuteEnabled = isEnabled;
+    _views.keys.forEach((source) => _syncWebView(source));
     notifyListeners();
   }
 
@@ -77,6 +82,9 @@ class AudioModel extends ChangeNotifier {
   }
 
   Future<void> addSource(AudioSource source) async {
+    if (_sources.contains(source)) {
+      return;
+    }
     _sources.add(source);
     await _syncWebView(source);
     notifyListeners();
@@ -103,26 +111,25 @@ class AudioModel extends ChangeNotifier {
       _views.remove(source);
     } else {
       final view = HeadlessInAppWebView(
-        initialUrlRequest: URLRequest(url: source.url),
-      );
+          initialOptions: initialOptions,
+          initialUrlRequest: URLRequest(url: source.url));
       _views[source] = view;
-      if (!_isTempMuted) {
+      if (_isStreamOnlineUnmuted ||
+          _isTempSettingsUnmuted ||
+          !_isAutoMuteEnabled) {
         await view.run();
       }
     }
   }
 
-  Future<void> setTemporaryMutedState(bool muted) async {
-    // decoupled from channels because we also unmute when the audio sourse
-    // selection screen is open.
-    _isTempMuted = muted;
-    await Future.wait(_views.values.map((view) async {
-      if (muted) {
-        await view.dispose();
-      } else {
-        await view.run();
-      }
-    }));
+  Future<void> setTemporarySettingsUnmutedState(bool unmuted) async {
+    _isTempSettingsUnmuted = unmuted;
+    await Future.wait(_views.keys.map((source) => _syncWebView(source)));
+  }
+
+  Future<void> setStreamOnlineUnmutedState(bool unmuted) async {
+    _isTempSettingsUnmuted = unmuted;
+    await Future.wait(_views.keys.map((source) => _syncWebView(source)));
   }
 
   AudioModel.fromJson(Map<String, dynamic> json) {

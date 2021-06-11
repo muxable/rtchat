@@ -12,22 +12,36 @@ class AudioSourcesScreen extends StatefulWidget {
 class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textEditingController = TextEditingController();
+  AudioModel? _audioModel;
 
   @override
   void initState() {
     super.initState();
 
-    Provider.of<AudioModel>(context, listen: false)
-        .setTemporaryMutedState(false);
+    final model = Provider.of<AudioModel>(context, listen: false);
+    model.setTemporarySettingsUnmutedState(true);
+    _audioModel = model;
   }
 
   @override
   void dispose() {
-    // TODO: this model reference might not be correct anymore. we should instead find a way to guarantee we're bound to the same audio model.
-    Provider.of<AudioModel>(context, listen: false)
-        .setTemporaryMutedState(true);
+    _audioModel?.setTemporarySettingsUnmutedState(false);
 
     super.dispose();
+  }
+
+  void add() async {
+    if (_formKey.currentState!.validate()) {
+      // fetch the title for the page.
+      final url = _textEditingController.text;
+      final metadata = await MetadataFetch.extract(url);
+
+      await Provider.of<AudioModel>(context, listen: false)
+          .addSource(AudioSource(metadata?.title, Uri.parse(url), false));
+
+      _textEditingController.clear();
+      FocusScope.of(context).unfocus();
+    }
   }
 
   @override
@@ -49,7 +63,11 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
         Consumer<AudioModel>(builder: (context, audioModel, child) {
           return SwitchListTile.adaptive(
             title: const Text('Auto mute'),
-            subtitle: const Text('Mute sounds if your stream isn\'t online'),
+            subtitle: audioModel.isAutoMuteEnabled
+                ? const Text(
+                    'Sounds won\'t play if your stream is offline and the app is open')
+                : const Text(
+                    'Sounds will play if your stream is offline and the app is open'),
             value: audioModel.isAutoMuteEnabled,
             onChanged: (value) {
               audioModel.isAutoMuteEnabled = value;
@@ -91,24 +109,18 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                     controller: _textEditingController,
                     decoration: InputDecoration(hintText: "URL"),
                     validator: (value) {
-                      if (value == null || Uri.tryParse(value) == null) {
+                      if (value == null ||
+                          value.isEmpty ||
+                          Uri.tryParse(value) == null) {
                         return "This doesn't look like a valid URL.";
                       }
                       return null;
-                    }),
+                    },
+                    keyboardType: TextInputType.url,
+                    textInputAction: TextInputAction.done,
+                    onEditingComplete: add),
               ),
-              IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      // fetch the title for the page.
-                      final url = _textEditingController.text;
-                      final metadata = await MetadataFetch.extract(url);
-
-                      Provider.of<AudioModel>(context, listen: false).addSource(
-                          AudioSource(metadata?.title, Uri.parse(url), false));
-                    }
-                  }),
+              IconButton(icon: const Icon(Icons.add), onPressed: add),
             ]),
           ),
         ),
