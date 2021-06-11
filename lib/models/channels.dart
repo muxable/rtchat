@@ -3,9 +3,9 @@ import 'dart:core';
 import 'package:flutter/foundation.dart';
 
 class Channel {
-  String provider;
-  String channelId;
-  String displayName;
+  final String provider;
+  final String channelId;
+  final String displayName;
 
   Channel(this.provider, this.channelId, this.displayName);
 
@@ -18,6 +18,19 @@ class Channel {
 
   @override
   String toString() => "$provider:$channelId";
+}
+
+class StreamMetadata {}
+
+class TwitchStreamMetadata extends StreamMetadata {
+  final int viewerCount;
+  final int followerCount;
+  final bool isOnline;
+
+  TwitchStreamMetadata(
+      {required this.viewerCount,
+      required this.followerCount,
+      required this.isOnline});
 }
 
 class ChannelsModel extends ChangeNotifier {

@@ -39,6 +39,7 @@ class AudioModel extends ChangeNotifier {
   Map<AudioSource, HeadlessInAppWebView> _views = {};
   Timer? _speakerDisconnectTimer;
   bool _isAutoMuteEnabled = true;
+  bool _isTempMuted = true;
   final AudioCache _audioCache = AudioCache();
 
   bool get isSpeakerDisconnectPreventionEnabled {
@@ -75,36 +76,53 @@ class AudioModel extends ChangeNotifier {
     return _sources;
   }
 
-  void addSource(AudioSource source) {
+  Future<void> addSource(AudioSource source) async {
     _sources.add(source);
-    _syncWebView(source);
+    await _syncWebView(source);
     notifyListeners();
   }
 
-  void removeSource(AudioSource source) {
+  Future<void> removeSource(AudioSource source) async {
     _sources.remove(source);
-    _syncWebView(source);
+    await _syncWebView(source);
     notifyListeners();
   }
 
-  void toggleSource(AudioSource source) {
+  Future<void> toggleSource(AudioSource source) async {
     final index = _sources.indexOf(source);
     if (index != -1) {
       _sources[index] = source.withMuted(!source.muted);
-      _syncWebView(_sources[index]);
+      await _syncWebView(_sources[index]);
     }
     notifyListeners();
   }
 
-  void _syncWebView(AudioSource source) {
+  Future<void> _syncWebView(AudioSource source) async {
     _views[source]?.dispose();
     if (source.muted) {
       _views.remove(source);
     } else {
-      _views[source] = HeadlessInAppWebView(
+      final view = HeadlessInAppWebView(
         initialUrlRequest: URLRequest(url: source.url),
       );
+      _views[source] = view;
+      if (!_isTempMuted) {
+        await view.run();
+      }
     }
+  }
+
+  Future<void> setTemporaryMutedState(bool muted) async {
+    // decoupled from channels because we also unmute when the audio sourse
+    // selection screen is open.
+    _isTempMuted = muted;
+    await Future.wait(_views.values.map((view) async {
+      if (muted) {
+        await view.dispose();
+      } else {
+        await view.run();
+      }
+    }));
   }
 
   AudioModel.fromJson(Map<String, dynamic> json) {

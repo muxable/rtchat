@@ -4,9 +4,31 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
-class AudioSourcesScreen extends StatelessWidget {
+class AudioSourcesScreen extends StatefulWidget {
+  @override
+  _AudioSourcesScreenState createState() => _AudioSourcesScreenState();
+}
+
+class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textEditingController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    Provider.of<AudioModel>(context, listen: false)
+        .setTemporaryMutedState(false);
+  }
+
+  @override
+  void dispose() {
+    // TODO: this model reference might not be correct anymore. we should instead find a way to guarantee we're bound to the same audio model.
+    Provider.of<AudioModel>(context, listen: false)
+        .setTemporaryMutedState(true);
+
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
