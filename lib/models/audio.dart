@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:core';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class AudioSource {
   final String? name;
@@ -34,6 +36,7 @@ class AudioSource {
 
 class AudioModel extends ChangeNotifier {
   List<AudioSource> _sources = [];
+  Map<AudioSource, HeadlessInAppWebView> _views = {};
   Timer? _speakerDisconnectTimer;
   bool _isAutoMuteEnabled = true;
   final AudioCache _audioCache = AudioCache();
@@ -74,11 +77,13 @@ class AudioModel extends ChangeNotifier {
 
   void addSource(AudioSource source) {
     _sources.add(source);
+    _syncWebView(source);
     notifyListeners();
   }
 
   void removeSource(AudioSource source) {
     _sources.remove(source);
+    _syncWebView(source);
     notifyListeners();
   }
 
@@ -86,15 +91,27 @@ class AudioModel extends ChangeNotifier {
     final index = _sources.indexOf(source);
     if (index != -1) {
       _sources[index] = source.withMuted(!source.muted);
+      _syncWebView(_sources[index]);
     }
     notifyListeners();
+  }
+
+  void _syncWebView(AudioSource source) {
+    _views[source]?.dispose();
+    if (source.muted) {
+      _views.remove(source);
+    } else {
+      _views[source] = HeadlessInAppWebView(
+        initialUrlRequest: URLRequest(url: source.url),
+      );
+    }
   }
 
   AudioModel.fromJson(Map<String, dynamic> json) {
     final sources = json['sources'];
     if (sources != null) {
       for (dynamic source in sources) {
-        _sources.add(AudioSource.fromJson(source));
+        addSource(AudioSource.fromJson(source));
       }
     }
     if (json['isAutoMuteEnabled'] != null) {
