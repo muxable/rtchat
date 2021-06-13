@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
 
 class ActivityFeedModel extends ChangeNotifier {
-  bool _isEnabled = false;
   bool _isCustom = false;
   String _customUrl = "";
   Channel? _baseChannel;
@@ -14,15 +13,6 @@ class ActivityFeedModel extends ChangeNotifier {
   void dispose() {
     _host?.removeListener(register);
     super.dispose();
-  }
-
-  bool get isEnabled {
-    return _isEnabled;
-  }
-
-  set isEnabled(bool isEnabled) {
-    _isEnabled = isEnabled;
-    notifyListeners();
   }
 
   bool get isCustom {
@@ -79,9 +69,6 @@ class ActivityFeedModel extends ChangeNotifier {
   }
 
   ActivityFeedModel.fromJson(Map<String, dynamic> json) {
-    if (json['isEnabled'] != null) {
-      _isEnabled = json['isEnabled'];
-    }
     if (json['isCustom'] != null) {
       _isCustom = json['isCustom'];
     }
@@ -91,7 +78,6 @@ class ActivityFeedModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-        "isEnabled": _isEnabled,
         "isCustom": _isCustom,
         "customUrl": _customUrl,
       };
