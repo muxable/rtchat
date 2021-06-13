@@ -12,23 +12,6 @@ class AudioSourcesScreen extends StatefulWidget {
 class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textEditingController = TextEditingController();
-  AudioModel? _audioModel;
-
-  @override
-  void initState() {
-    super.initState();
-
-    final model = Provider.of<AudioModel>(context, listen: false);
-    model.setTemporarySettingsUnmutedState(true);
-    _audioModel = model;
-  }
-
-  @override
-  void dispose() {
-    _audioModel?.setTemporarySettingsUnmutedState(false);
-
-    super.dispose();
-  }
 
   void add() async {
     if (_formKey.currentState!.validate()) {
@@ -57,20 +40,6 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
             value: audioModel.isSpeakerDisconnectPreventionEnabled,
             onChanged: (value) {
               audioModel.isSpeakerDisconnectPreventionEnabled = value;
-            },
-          );
-        }),
-        Consumer<AudioModel>(builder: (context, audioModel, child) {
-          return SwitchListTile.adaptive(
-            title: const Text('Auto mute'),
-            subtitle: audioModel.isAutoMuteEnabled
-                ? const Text(
-                    'Sounds won\'t play if your stream is offline and the app is open')
-                : const Text(
-                    'Sounds will play if your stream is offline and the app is open'),
-            value: audioModel.isAutoMuteEnabled,
-            onChanged: (value) {
-              audioModel.isAutoMuteEnabled = value;
             },
           );
         }),

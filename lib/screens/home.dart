@@ -8,6 +8,7 @@ import 'package:rtchat/components/quick_links_bar.dart';
 import 'package:rtchat/components/settings_button.dart';
 import 'package:rtchat/components/title_bar.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/user.dart';
 import 'package:wakelock/wakelock.dart';
 
 class PersistentWebViewWidget extends StatefulWidget {
@@ -80,7 +81,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ? min(layoutModel.panelHeight, 0)
                   : layoutModel.panelHeight,
               duration: Duration(milliseconds: 200),
-              child: Container(),
+              child: Consumer<UserModel>(builder: (context, userModel, child) {
+                final channel = userModel.userChannel;
+                if (channel == null) {
+                  return Container();
+                }
+                return TabBarView(
+                  children: [
+                    Center(
+                      child: Text("It's rainy here"),
+                    ),
+                    InAppWebView(
+                      initialOptions: InAppWebViewGroupOptions(
+                        crossPlatform: InAppWebViewOptions(
+                            javaScriptEnabled: true,
+                            mediaPlaybackRequiresUserGesture: false,
+                            transparentBackground: true),
+                      ),
+                      initialUrlRequest: URLRequest(
+                          url: Uri.parse(
+                              "https://player.twitch.tv/?channel=${channel.displayName}&parent=chat.rtirl.com")),
+                    ),
+                  ],
+                );
+              }),
             ),
             Expanded(
                 child: ChannelPanelWidget(
