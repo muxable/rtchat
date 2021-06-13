@@ -24,6 +24,7 @@ class ChannelPanelWidget extends StatelessWidget {
         // header
         Container(
           height: 56,
+          color: Theme.of(context).primaryColor,
           child: Padding(
             padding: EdgeInsets.only(left: 16),
             child: Row(children: [
