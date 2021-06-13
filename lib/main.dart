@@ -20,6 +20,7 @@ import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
+import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/sign_in.dart';
@@ -193,6 +194,7 @@ class App extends StatelessWidget {
             '/settings/activity-feed': (context) => ActivityFeedScreen(),
             '/settings/audio-sources': (context) => AudioSourcesScreen(),
             '/settings/quick-links': (context) => QuickLinksScreen(),
+            '/settings/backup': (context) => BackupScreen(),
           },
         ),
       ),
