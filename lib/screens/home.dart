@@ -64,10 +64,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               height: _minimized
                   ? min(layoutModel.panelHeight, 0)
                   : layoutModel.panelHeight,
-              duration: Duration(milliseconds: 500),
+              duration: Duration(milliseconds: 200),
               child: ClipRect(
                 child: OverflowBox(
                   alignment: Alignment.topCenter,
+                  minHeight: layoutModel.panelHeight,
                   maxHeight: layoutModel.panelHeight,
                   child: TabBarView(
                     children: [
