@@ -22,6 +22,7 @@ import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
+import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/sign_in.dart';
@@ -85,17 +86,6 @@ class App extends StatelessWidget {
               AudioModel.fromJson(jsonDecode(prefs.getString("audio") ?? "{}"));
           model.addListener(() {
             prefs.setString('audio', jsonEncode(model.toJson()));
-          });
-          final user = Provider.of<UserModel>(context, listen: false);
-          Timer.periodic(Duration(seconds: 15), (timer) async {
-            final channel = user.userChannel;
-            if (channel != null) {
-              final metadata = await getStreamMetadata(
-                  provider: channel.provider, channelId: channel.channelId);
-              await model.setStreamOnlineUnmutedState(metadata.isOnline);
-            } else {
-              await model.setStreamOnlineUnmutedState(false);
-            }
           });
           return model;
         }),
@@ -199,6 +189,7 @@ class App extends StatelessWidget {
             '/settings/activity-feed': (context) => ActivityFeedScreen(),
             '/settings/audio-sources': (context) => AudioSourcesScreen(),
             '/settings/quick-links': (context) => QuickLinksScreen(),
+            '/settings/backup': (context) => BackupScreen(),
           },
         ),
       ),

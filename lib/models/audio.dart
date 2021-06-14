@@ -38,9 +38,6 @@ class AudioModel extends ChangeNotifier {
   List<AudioSource> _sources = [];
   Map<AudioSource, HeadlessInAppWebView> _views = {};
   Timer? _speakerDisconnectTimer;
-  bool _isAutoMuteEnabled = true;
-  bool _isTempSettingsUnmuted = false;
-  bool _isStreamOnlineUnmuted = false;
   final _audioCache = AudioCache();
   final initialOptions = InAppWebViewGroupOptions(
       crossPlatform: InAppWebViewOptions(
@@ -65,16 +62,6 @@ class AudioModel extends ChangeNotifier {
       Duration(minutes: 5),
       (_) => _audioCache.play("silence.mp3"),
     );
-  }
-
-  bool get isAutoMuteEnabled {
-    return _isAutoMuteEnabled;
-  }
-
-  set isAutoMuteEnabled(bool isEnabled) {
-    _isAutoMuteEnabled = isEnabled;
-    _views.keys.forEach((source) => _syncWebView(source));
-    notifyListeners();
   }
 
   List<AudioSource> get sources {
@@ -114,22 +101,8 @@ class AudioModel extends ChangeNotifier {
           initialOptions: initialOptions,
           initialUrlRequest: URLRequest(url: source.url));
       _views[source] = view;
-      if (_isStreamOnlineUnmuted ||
-          _isTempSettingsUnmuted ||
-          !_isAutoMuteEnabled) {
-        await view.run();
-      }
+      await view.run();
     }
-  }
-
-  Future<void> setTemporarySettingsUnmutedState(bool unmuted) async {
-    _isTempSettingsUnmuted = unmuted;
-    await Future.wait(_views.keys.map((source) => _syncWebView(source)));
-  }
-
-  Future<void> setStreamOnlineUnmutedState(bool unmuted) async {
-    _isTempSettingsUnmuted = unmuted;
-    await Future.wait(_views.keys.map((source) => _syncWebView(source)));
   }
 
   AudioModel.fromJson(Map<String, dynamic> json) {
@@ -139,9 +112,6 @@ class AudioModel extends ChangeNotifier {
         addSource(AudioSource.fromJson(source));
       }
     }
-    if (json['isAutoMuteEnabled'] != null) {
-      _isAutoMuteEnabled = json['isAutoMuteEnabled'];
-    }
     if (json['isSpeakerDisconnectPreventionEnabled'] ?? false) {
       _startSpeakerDisconnectTimer();
     }
@@ -149,7 +119,6 @@ class AudioModel extends ChangeNotifier {
 
   Map<String, dynamic> toJson() => {
         "sources": _sources.map((source) => source.toJson()).toList(),
-        "isAutoMuteEnabled": _isAutoMuteEnabled,
         "isSpeakerDisconnectPreventionEnabled": _speakerDisconnectTimer != null,
       };
 }

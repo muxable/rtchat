@@ -13,24 +13,29 @@ class ActivityFeedScreen extends StatefulWidget {
 class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   final _textEditingController = TextEditingController();
   InAppWebViewController? _inAppWebViewController;
+  ActivityFeedModel? _activityFeedModel;
 
   @override
   void initState() {
     super.initState();
 
-    final activityFeed = Provider.of<ActivityFeedModel>(context, listen: false);
-    _textEditingController.text = activityFeed.customUrl;
-    activityFeed.addListener(() {
-      if (!activityFeed.isEnabled) {
-        _inAppWebViewController?.loadUrl(
-            urlRequest: URLRequest(url: Uri.parse("about:blank")));
-        return;
-      }
-      final url = activityFeed.url;
-      if (url != null) {
-        _inAppWebViewController?.loadUrl(urlRequest: URLRequest(url: url));
-      }
-    });
+    _activityFeedModel = Provider.of<ActivityFeedModel>(context, listen: false);
+    _textEditingController.text = _activityFeedModel!.customUrl;
+    _activityFeedModel!.addListener(synchronizeUrl);
+  }
+
+  @override
+  void dispose() {
+    _activityFeedModel?.removeListener(synchronizeUrl);
+
+    super.dispose();
+  }
+
+  void synchronizeUrl() async {
+    final url = _activityFeedModel?.url;
+    if (url != null && url.toString().isNotEmpty) {
+      await _inAppWebViewController?.loadUrl(urlRequest: URLRequest(url: url));
+    }
   }
 
   @override
@@ -39,45 +44,26 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
       appBar: AppBar(title: Text("Activity feed")),
       body: Consumer<ActivityFeedModel>(
           builder: (context, activityFeedModel, child) {
-        var type = ActivityFeedType.disabled;
-        if (activityFeedModel.isEnabled) {
-          if (activityFeedModel.isCustom) {
-            type = ActivityFeedType.custom;
-          } else {
-            type = ActivityFeedType.standard;
-          }
-        }
         return Column(children: [
-          RadioListTile<ActivityFeedType>(
-            title: const Text('Disabled'),
-            value: ActivityFeedType.disabled,
-            groupValue: type,
-            onChanged: (value) {
-              activityFeedModel.isEnabled = false;
-            },
-          ),
-          RadioListTile<ActivityFeedType>(
+          RadioListTile(
             title: const Text('Twitch activity feed'),
-            value: ActivityFeedType.standard,
-            groupValue: type,
+            value: false,
+            groupValue: activityFeedModel.isCustom,
             onChanged: (value) {
-              activityFeedModel.isEnabled = true;
               activityFeedModel.isCustom = false;
             },
           ),
-          RadioListTile<ActivityFeedType>(
+          RadioListTile(
             title: TextField(
                 controller: _textEditingController,
                 decoration: InputDecoration(hintText: "Custom URL"),
                 onChanged: (value) {
                   activityFeedModel.customUrl = value;
-                  activityFeedModel.isEnabled = true;
                   activityFeedModel.isCustom = true;
                 }),
-            value: ActivityFeedType.custom,
-            groupValue: type,
+            value: true,
+            groupValue: activityFeedModel.isCustom,
             onChanged: (value) {
-              activityFeedModel.isEnabled = true;
               activityFeedModel.isCustom = true;
             },
           ),
