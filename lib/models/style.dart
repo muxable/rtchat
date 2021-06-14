@@ -16,18 +16,14 @@ class StyleModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  double get lightnessBoost {
-    return _lightnessBoost;
-  }
+  double get lightnessBoost => _lightnessBoost;
 
   set lightnessBoost(double lightnessBoost) {
     _lightnessBoost = lightnessBoost;
     notifyListeners();
   }
 
-  bool get aggregateSameAuthor {
-    return _aggregateSameAuthor;
-  }
+  bool get aggregateSameAuthor => _aggregateSameAuthor;
 
   set aggregateSameAuthor(bool aggregateSameAuthor) {
     _aggregateSameAuthor = aggregateSameAuthor;

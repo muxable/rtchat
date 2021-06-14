@@ -32,9 +32,7 @@ class QuickLinkSource {
 class QuickLinksModel extends ChangeNotifier {
   List<QuickLinkSource> _sources = [];
 
-  List<QuickLinkSource> get sources {
-    return _sources;
-  }
+  List<QuickLinkSource> get sources => _sources;
 
   void addSource(QuickLinkSource source) {
     _sources.add(source);

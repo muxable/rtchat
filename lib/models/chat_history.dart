@@ -136,13 +136,9 @@ class ChatHistoryModel extends ChangeNotifier {
     super.dispose();
   }
 
-  List<MessageModel> get messages {
-    return _messages;
-  }
+  List<MessageModel> get messages => _messages;
 
-  bool get ttsEnabled {
-    return _ttsModule.enabled;
-  }
+  bool get ttsEnabled => _ttsModule.enabled;
 
   set ttsEnabled(bool enabled) {
     _ttsModule.enabled = enabled;

@@ -47,9 +47,7 @@ class UserModel extends ChangeNotifier {
     super.dispose();
   }
 
-  bool isSignedIn() {
-    return _user != null;
-  }
+  bool isSignedIn() => _user != null;
 
   Future<void> send(Channel channel, String message) async {
     final call = FirebaseFunctions.instance.httpsCallable('send');
@@ -105,19 +103,12 @@ class UserModel extends ChangeNotifier {
     print(results);
   }
 
-  User? get user {
-    return _user;
-  }
+  User? get user => _user;
 
-  Channel? get userChannel {
-    return _userChannel;
-  }
+  Channel? get userChannel => _userChannel;
 
-  Future<void> signOut() async {
-    await FirebaseAuth.instance.signOut();
-  }
+  Future<void> signOut() => FirebaseAuth.instance.signOut();
 
-  void signIn(String token) {
-    FirebaseAuth.instance.signInWithCustomToken(token);
-  }
+  Future<UserCredential> signIn(String token) =>
+      FirebaseAuth.instance.signInWithCustomToken(token);
 }

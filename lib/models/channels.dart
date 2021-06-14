@@ -60,9 +60,7 @@ Future<StreamMetadata> getStreamMetadata(
 class ChannelsModel extends ChangeNotifier {
   Set<Channel> _channels = {};
 
-  Set<Channel> get channels {
-    return _channels;
-  }
+  Set<Channel> get channels => _channels;
 
   set channels(Set<Channel> channels) {
     _channels = channels;

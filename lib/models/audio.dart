@@ -64,9 +64,7 @@ class AudioModel extends ChangeNotifier {
     );
   }
 
-  List<AudioSource> get sources {
-    return _sources;
-  }
+  List<AudioSource> get sources => _sources;
 
   Future<void> addSource(AudioSource source) async {
     if (_sources.contains(source)) {

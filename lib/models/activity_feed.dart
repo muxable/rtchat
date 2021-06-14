@@ -15,18 +15,14 @@ class ActivityFeedModel extends ChangeNotifier {
     super.dispose();
   }
 
-  bool get isCustom {
-    return _isCustom;
-  }
+  bool get isCustom => _isCustom;
 
   set isCustom(bool isCustom) {
     _isCustom = isCustom;
     notifyListeners();
   }
 
-  String get customUrl {
-    return _customUrl;
-  }
+  String get customUrl => _customUrl;
 
   set customUrl(String customUrl) {
     _customUrl = customUrl;

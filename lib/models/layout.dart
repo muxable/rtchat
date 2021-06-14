@@ -24,35 +24,25 @@ class LayoutModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  double get panelHeight {
-    return _panelHeight;
-  }
+  double get panelHeight => _panelHeight;
 
-  double get panelWidth {
-    return _panelWidth;
-  }
+  double get panelWidth => _panelWidth;
 
-  bool get locked {
-    return _locked;
-  }
+  bool get locked => _locked;
 
   set locked(bool locked) {
     _locked = locked;
     notifyListeners();
   }
 
-  bool get isStatsVisible {
-    return _isStatsVisible;
-  }
+  bool get isStatsVisible => _isStatsVisible;
 
   set isStatsVisible(bool isStatsVisible) {
     _isStatsVisible = isStatsVisible;
     notifyListeners();
   }
 
-  bool get isInputLockable {
-    return _isInputLockable;
-  }
+  bool get isInputLockable => _isInputLockable;
 
   set isInputLockable(bool isInputLockable) {
     _isInputLockable = isInputLockable;
