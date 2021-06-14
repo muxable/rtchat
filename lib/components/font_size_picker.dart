@@ -9,57 +9,81 @@ class FontSizePickerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<StyleModel>(builder: (context, model, child) {
       return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 120,
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: TwitchMessageWidget(TwitchMessageModel(
-                  messageId: "placeholder",
-                  channel: "muxfd",
-                  author: 'muxfd',
-                  tags: {
-                    "message-type": "chat",
-                    "color": "#800000",
-                    "badges-raw": "premium/1",
-                    "emotes-raw": "25:35-39",
-                    "room-id": "158394109",
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 120,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: TwitchMessageWidget(TwitchMessageModel(
+                        messageId: "placeholder",
+                        channel: "muxfd",
+                        author: 'muxfd',
+                        tags: {
+                          "message-type": "chat",
+                          "color": "#800000",
+                          "badges-raw": "premium/1",
+                          "emotes-raw": "25:35-39",
+                          "room-id": "158394109",
+                        },
+                        timestamp: DateTime.now(),
+                        message: "have you followed muxfd on twitch? Kappa",
+                        deleted: false)),
+                  ),
+                ),
+                Text("Font size",
+                    style: TextStyle(
+                      color: Theme.of(context).accentColor,
+                      fontWeight: FontWeight.bold,
+                    )),
+                Slider.adaptive(
+                  value: model.fontSize,
+                  min: 12,
+                  max: 36,
+                  divisions: 6,
+                  label: "${model.fontSize}px",
+                  onChanged: (value) {
+                    model.fontSize = value;
                   },
-                  timestamp: DateTime.now(),
-                  message: "have you followed muxfd on twitch? Kappa",
-                  deleted: false)),
+                ),
+                Text("Username contrast boost",
+                    style: TextStyle(
+                      color: Theme.of(context).accentColor,
+                      fontWeight: FontWeight.bold,
+                    )),
+                Slider.adaptive(
+                  value: model.lightnessBoost,
+                  min: 0.179,
+                  max: 1.0,
+                  label: "${model.lightnessBoost}",
+                  onChanged: (value) {
+                    model.lightnessBoost = value;
+                  },
+                ),
+              ],
             ),
           ),
-          Text("Font size",
-              style: TextStyle(
-                color: Theme.of(context).accentColor,
-                fontWeight: FontWeight.bold,
-              )),
-          Slider.adaptive(
-            value: model.fontSize,
-            min: 12,
-            max: 36,
-            divisions: 6,
-            label: "${model.fontSize}px",
-            onChanged: (value) {
-              model.fontSize = value;
+          ListTile(
+            title: const Text('Twitch badge settings'),
+            subtitle: const Text("Control which badges are visible"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/badges");
             },
           ),
-          Text("Username contrast boost",
-              style: TextStyle(
-                color: Theme.of(context).accentColor,
-                fontWeight: FontWeight.bold,
-              )),
-          Slider.adaptive(
-            value: model.lightnessBoost,
-            min: 0.179,
-            max: 1.0,
-            label: "${model.lightnessBoost}",
+          SwitchListTile.adaptive(
+            title: const Text('Coalesce messages by the same author'),
+            subtitle: model.aggregateSameAuthor
+                ? const Text('Only the first message will show the author')
+                : const Text('Every message will show the author'),
+            value: model.aggregateSameAuthor,
             onChanged: (value) {
-              model.lightnessBoost = value;
+              model.aggregateSameAuthor = value;
             },
-          )
+          ),
         ],
       );
     });

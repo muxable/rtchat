@@ -49,6 +49,13 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
           itemBuilder: (context, index) {
             final message = messages[index];
             if (message is TwitchMessageModel) {
+              var coalesce = false;
+              // the history is forward.
+              if (index + 1 < messages.length) {
+                final prev = messages[index + 1];
+                coalesce =
+                    prev is TwitchMessageModel && prev.author == message.author;
+              }
               return InkWell(
                   onLongPress: () {
                     showDialog(
@@ -96,7 +103,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                   },
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: TwitchMessageWidget(message),
+                    child: TwitchMessageWidget(message, coalesce: coalesce),
                   ));
             } else if (message is TwitchRaidEventModel) {
               return TwitchRaidEventWidget(message);

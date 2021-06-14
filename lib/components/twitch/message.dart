@@ -111,8 +111,9 @@ List<_Badge> parseBadges(String badges) {
 
 class TwitchMessageWidget extends StatelessWidget {
   final TwitchMessageModel model;
+  final bool coalesce;
 
-  TwitchMessageWidget(this.model);
+  TwitchMessageWidget(this.model, {this.coalesce = false});
 
   Color get color {
     final color = model.tags['color'];
@@ -149,29 +150,31 @@ class TwitchMessageWidget extends StatelessWidget {
 
       final List<InlineSpan> children = [];
 
-      // add badges.
-      final badges = parseBadges(model.tags['badges-raw'] ?? "");
-      children.addAll(badges.map((badge) => WidgetSpan(
-          alignment: PlaceholderAlignment.middle,
-          child: Padding(
-              padding: EdgeInsets.only(right: 5),
-              child: TwitchBadgeWidget(
-                  channelId: model.tags['room-id'],
-                  badge: badge.key,
-                  version: badge.version,
-                  height: styleModel.fontSize)))));
+      if (!styleModel.aggregateSameAuthor || !coalesce) {
+        // add badges.
+        final badges = parseBadges(model.tags['badges-raw'] ?? "");
+        children.addAll(badges.map((badge) => WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+                padding: EdgeInsets.only(right: 5),
+                child: TwitchBadgeWidget(
+                    channelId: model.tags['room-id'],
+                    badge: badge.key,
+                    version: badge.version,
+                    height: styleModel.fontSize)))));
 
-      // add author.
-      children.add(TextSpan(style: authorStyle, text: model.author));
+        // add author.
+        children.add(TextSpan(style: authorStyle, text: model.author));
 
-      // add demarcator.
-      switch (model.tags['message-type']) {
-        case "action":
-          children.add(TextSpan(text: " "));
-          break;
-        case "chat":
-          children.add(TextSpan(text: ": "));
-          break;
+        // add demarcator.
+        switch (model.tags['message-type']) {
+          case "action":
+            children.add(TextSpan(text: " "));
+            break;
+          case "chat":
+            children.add(TextSpan(text: ": "));
+            break;
+        }
       }
 
       // add text.

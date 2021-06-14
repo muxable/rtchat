@@ -47,14 +47,7 @@ class SettingsScreen extends StatelessWidget {
               layoutModel.isStatsVisible = value;
             },
           ),
-          Padding(padding: EdgeInsets.all(16), child: FontSizePickerWidget()),
-          ListTile(
-            title: const Text('Twitch badge settings'),
-            subtitle: const Text("Control which badges are visible"),
-            onTap: () {
-              Navigator.pushNamed(context, "/settings/badges");
-            },
-          ),
+          FontSizePickerWidget(),
           SwitchListTile.adaptive(
             title: const Text('Disable input when layout is locked'),
             subtitle: const Text(

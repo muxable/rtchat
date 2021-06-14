@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 class StyleModel extends ChangeNotifier {
   double _fontSize = 20;
   double _lightnessBoost = 0.179;
+  bool _aggregateSameAuthor = false;
 
   double get fontSize {
     return _fontSize;
@@ -24,6 +25,15 @@ class StyleModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get aggregateSameAuthor {
+    return _aggregateSameAuthor;
+  }
+
+  set aggregateSameAuthor(bool aggregateSameAuthor) {
+    _aggregateSameAuthor = aggregateSameAuthor;
+    notifyListeners();
+  }
+
   StyleModel.fromJson(Map<String, dynamic> json) {
     if (json['fontSize'] != null) {
       _fontSize = json['fontSize'];
@@ -31,10 +41,14 @@ class StyleModel extends ChangeNotifier {
     if (json['lightnessBoost'] != null) {
       _lightnessBoost = json['lightnessBoost'];
     }
+    if (json['aggregateSameAuthor'] != null) {
+      _aggregateSameAuthor = json['aggregateSameAuthor'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
         "lightnessBoost": _lightnessBoost,
         "fontSize": _fontSize,
+        "aggregateSameAuthor": _aggregateSameAuthor,
       };
 }
