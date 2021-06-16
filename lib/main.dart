@@ -81,14 +81,16 @@ class App extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserModel()),
-        ChangeNotifierProvider(create: (context) {
-          final model =
-              AudioModel.fromJson(jsonDecode(prefs.getString("audio") ?? "{}"));
-          model.addListener(() {
-            prefs.setString('audio', jsonEncode(model.toJson()));
-          });
-          return model;
-        }),
+        ChangeNotifierProvider(
+            create: (context) {
+              final model = AudioModel.fromJson(
+                  jsonDecode(prefs.getString("audio") ?? "{}"));
+              model.addListener(() {
+                prefs.setString('audio', jsonEncode(model.toJson()));
+              });
+              return model;
+            },
+            lazy: false),
         ChangeNotifierProvider(create: (context) {
           final model = QuickLinksModel.fromJson(
               jsonDecode(prefs.getString("quick_links") ?? "{}"));
