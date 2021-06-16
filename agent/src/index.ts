@@ -137,7 +137,7 @@ const LEAVE_SUBSCRIPTION_ID = `projects/rtchat-47692/subscriptions/unsubscribe-$
   subscription.on("message", onUnsubscribe);
 })();
 
-process.once("SIGTERM", async () => {
+async function cleanup() {
   JOIN_SUBSCRIPTION.off("message", onSubscribe);
 
   await LEAVE_TOPIC.subscription(LEAVE_SUBSCRIPTION_ID).delete();
@@ -169,4 +169,7 @@ process.once("SIGTERM", async () => {
   }
 
   process.exit(0);
-});
+};
+
+process.once("SIGTERM", cleanup);
+process.once("uncaughtException", cleanup);
