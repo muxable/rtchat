@@ -171,5 +171,5 @@ async function cleanup() {
   process.exit(0);
 };
 
-process.once("SIGTERM", cleanup);
-process.once("uncaughtException", cleanup);
+process.on("SIGTERM", cleanup);
+process.on("uncaughtException", cleanup);
