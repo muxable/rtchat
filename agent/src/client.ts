@@ -53,7 +53,12 @@ export function buildClient() {
     }
   );
 
-  client.on("raided", (async (channel, username, viewers, tags) => {
+  client.on("raided", (async (
+    channel: string,
+    username: string,
+    viewers: number,
+    tags: any
+  ) => {
     const timestamp = admin.firestore.Timestamp.fromMillis(
       Number(tags["tmi-sent-ts"])
     );
