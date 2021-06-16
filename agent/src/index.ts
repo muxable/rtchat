@@ -2,7 +2,6 @@ import * as admin from "firebase-admin";
 import { Message, PubSub } from "@google-cloud/pubsub";
 import * as dotenv from "dotenv";
 import Bottleneck from "bottleneck";
-import * as process from "process";
 import { v4 as uuidv4 } from "uuid";
 import { buildClient } from "./client";
 
