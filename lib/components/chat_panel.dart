@@ -46,7 +46,6 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
       width: 100,
       height: 80,
       child: Card(
-        color: Colors.white,
         child: Column(
           children: [
             cntTextStyle(0),
@@ -80,96 +79,79 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                         context: context,
                         builder: (context) {
                           return Dialog(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(20.0))),
-                              child: Wrap(
+                              child: ListView(
+                            shrinkWrap: true,
+                            children: [
+                              ListTile(
+                                leading: Icon(Icons.person,
+                                    color: Colors.pinkAccent),
+                                title: Text('${message.author}',
+                                    style: TextStyle(fontSize: 22)),
+                                tileColor: Colors.blueAccent,
+                                trailing: CloseButton(),
+                              ),
+                              ListTile(
+                                leading: Icon(Icons.favorite,
+                                    color: Colors.deepPurpleAccent),
+                                title: Text('Following Since Jan 11 2024'),
+                              ),
+                              ListTile(
+                                leading: Icon(Icons.star,
+                                    color: Colors.deepPurpleAccent),
+                                title: Text('Sub Tier 3 - Since jan 11 2024'),
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  ListView(
-                                    shrinkWrap: true,
-                                    children: [
-                                      ListTile(
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius: new BorderRadius.only(
-                                          topLeft: const Radius.circular(20.0),
-                                          topRight: const Radius.circular(20.0),
-                                        )),
-                                        leading: Icon(Icons.person,
-                                            color: Colors.pinkAccent),
-                                        title: Text('${message.author}',
-                                            style: TextStyle(fontSize: 20)),
-                                        tileColor: Colors.blueAccent,
-                                        trailing: CloseButton(),
-                                      ),
-                                      ListTile(
-                                        leading: Icon(Icons.favorite,
-                                            color: Colors.deepPurpleAccent),
-                                        title:
-                                            Text('Following Since Jan 11 2024'),
-                                      ),
-                                      ListTile(
-                                        leading: Icon(Icons.star,
-                                            color: Colors.deepPurpleAccent),
-                                        title: Text(
-                                            'Sub Tier 3 - Since jan 11 2024'),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          cardInfoWidge('Messages', 0),
-                                          cardInfoWidge('Timeouts', 0)
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          cardInfoWidge('Bans', 0),
-                                          cardInfoWidge('Mod Messages', 0)
-                                        ],
-                                      ),
-                                      ListTile(
-                                          leading: Icon(Icons.delete,
-                                              color: Colors.redAccent),
-                                          title: Text('Delete Message'),
-                                          onTap: () {
-                                            final model =
-                                                Provider.of<UserModel>(context,
-                                                    listen: false);
-                                            model.delete(model.channels.first,
-                                                message.messageId);
-                                            Navigator.pop(context);
-                                          }),
-                                      ListTile(
-                                          leading: Icon(Icons.timer_outlined,
-                                              color: Colors.orangeAccent),
-                                          title:
-                                              Text('Timeout ${message.author}'),
-                                          onTap: () {}),
-                                      ListTile(
-                                          leading: Icon(
-                                              Icons.dnd_forwardslash_outlined,
-                                              color: Colors.redAccent),
-                                          title: Text('Ban ${message.author}'),
-                                          onTap: () {}),
-                                      ListTile(
-                                          leading: Icon(Icons.circle_outlined,
-                                              color: Colors.greenAccent),
-                                          title:
-                                              Text('Unban ${message.author}'),
-                                          onTap: () {
-                                            final model =
-                                                Provider.of<UserModel>(context,
-                                                    listen: false);
-                                            model.unban(model.channels.first,
-                                                message.author);
-                                            Navigator.pop(context);
-                                          }),
-                                    ],
-                                  )
+                                  cardInfoWidge('Messages', 0),
+                                  cardInfoWidge('Timeouts', 0)
                                 ],
-                              ));
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  cardInfoWidge('Bans', 0),
+                                  cardInfoWidge('Mod Messages', 0)
+                                ],
+                              ),
+                              ListTile(
+                                  leading: Icon(Icons.delete,
+                                      color: Colors.redAccent),
+                                  title: Text('Delete Message'),
+                                  onTap: () {
+                                    final model = Provider.of<UserModel>(
+                                        context,
+                                        listen: false);
+                                    model.delete(model.channels.first,
+                                        message.messageId);
+                                    Navigator.pop(context);
+                                  }),
+                              ListTile(
+                                  leading: Icon(Icons.timer_outlined,
+                                      color: Colors.orangeAccent),
+                                  title: Text('Timeout ${message.author}'),
+                                  onTap: () {}),
+                              ListTile(
+                                  leading: Icon(Icons.dnd_forwardslash_outlined,
+                                      color: Colors.redAccent),
+                                  title: Text('Ban ${message.author}'),
+                                  onTap: () {}),
+                              ListTile(
+                                  leading: Icon(Icons.circle_outlined,
+                                      color: Colors.greenAccent),
+                                  title: Text('Unban ${message.author}'),
+                                  onTap: () {
+                                    final model = Provider.of<UserModel>(
+                                        context,
+                                        listen: false);
+                                    model.unban(
+                                        model.channels.first, message.author);
+                                    Navigator.pop(context);
+                                  }),
+                            ],
+                          ));
                         });
                   },
                   child: Padding(
