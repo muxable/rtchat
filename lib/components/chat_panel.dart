@@ -8,9 +8,9 @@ import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/user.dart';
 
 class ChatPanelWidget extends StatefulWidget {
-  final void Function(bool) onScrollback;
+  final void Function(bool)? onScrollback;
 
-  ChatPanelWidget({Key? key, required this.onScrollback}) : super(key: key);
+  ChatPanelWidget({Key? key, this.onScrollback}) : super(key: key);
 
   @override
   _ChatPanelWidgetState createState() => _ChatPanelWidgetState();
@@ -24,6 +24,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
   void initState() {
     super.initState();
 
+    if (widget.onScrollback == null) {
+      return;
+    }
     _controller.addListener(() {
       final value =
           _controller.position.atEdge && _controller.position.pixels == 0;
@@ -31,7 +34,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
         setState(() {
           _atBottom = value;
         });
-        widget.onScrollback(!_atBottom);
+        widget.onScrollback!(!_atBottom);
       }
     });
   }

@@ -10,11 +10,10 @@ import 'package:rtchat/models/user.dart';
 
 class ChannelPanelWidget extends StatelessWidget {
   final _textEditingController = TextEditingController();
-  final void Function(bool) onScrollback;
-  final void Function(double) onResize;
+  final void Function(bool)? onScrollback;
+  final void Function(double)? onResize;
 
-  ChannelPanelWidget(
-      {Key? key, required this.onScrollback, required this.onResize})
+  ChannelPanelWidget({Key? key, this.onScrollback, this.onResize})
       : super(key: key);
 
   @override
@@ -47,11 +46,12 @@ class ChannelPanelWidget extends StatelessWidget {
                           ]),
               ),
               Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-                if (layoutModel.locked) {
+                if (layoutModel.locked || onResize == null) {
                   return Container();
                 }
                 return GestureDetector(
-                  onVerticalDragUpdate: (details) => onResize(details.delta.dy),
+                  onVerticalDragUpdate: (details) =>
+                      onResize!(details.delta.dy),
                   child: Icon(Icons.drag_handle),
                 );
               }),
