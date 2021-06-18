@@ -24,9 +24,6 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
   void initState() {
     super.initState();
 
-    if (widget.onScrollback == null) {
-      return;
-    }
     _controller.addListener(() {
       final value =
           _controller.position.atEdge && _controller.position.pixels == 0;
@@ -34,7 +31,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
         setState(() {
           _atBottom = value;
         });
-        widget.onScrollback!(!_atBottom);
+        if (widget.onScrollback != null) {
+          widget.onScrollback!(!_atBottom);
+        }
       }
     });
   }

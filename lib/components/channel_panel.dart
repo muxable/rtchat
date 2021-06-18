@@ -90,12 +90,9 @@ class ChannelPanelWidget extends StatelessWidget {
           }
           return Container(
             color: Theme.of(context).primaryColor,
-            child: SafeArea(
-              top: false,
-              bottom: true,
-              left: false,
-              right: false,
-              minimum: EdgeInsets.fromLTRB(16, 8, 16, 8),
+            height: 56,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
               child: Row(children: [
                 Expanded(
                   child: TextField(

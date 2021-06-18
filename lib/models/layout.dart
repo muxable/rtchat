@@ -12,15 +12,11 @@ class LayoutModel extends ChangeNotifier {
 
   void updatePanelHeight({required double dy}) {
     _panelHeight += dy;
-    _panelHeight = max(_panelHeight, 1);
-    _panelHeight = min(_panelHeight, 900);
     notifyListeners();
   }
 
   void updatePanelWidth({required double dx}) {
     _panelWidth += dx;
-    _panelWidth = max(_panelWidth, 1);
-    _panelWidth = min(_panelWidth, 600);
     notifyListeners();
   }
 
