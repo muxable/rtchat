@@ -2,7 +2,6 @@ import * as admin from "firebase-admin";
 import { Message, PubSub } from "@google-cloud/pubsub";
 import * as dotenv from "dotenv";
 import Bottleneck from "bottleneck";
-import * as process from "process";
 import { v4 as uuidv4 } from "uuid";
 import { buildClient } from "./client";
 
@@ -137,7 +136,7 @@ const LEAVE_SUBSCRIPTION_ID = `projects/rtchat-47692/subscriptions/unsubscribe-$
   subscription.on("message", onUnsubscribe);
 })();
 
-process.once("SIGTERM", async () => {
+async function cleanup() {
   JOIN_SUBSCRIPTION.off("message", onSubscribe);
 
   await LEAVE_TOPIC.subscription(LEAVE_SUBSCRIPTION_ID).delete();
@@ -169,4 +168,7 @@ process.once("SIGTERM", async () => {
   }
 
   process.exit(0);
-});
+};
+
+process.on("SIGTERM", cleanup);
+process.on("uncaughtException", cleanup);

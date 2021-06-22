@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/twitch/message.dart';
 import 'package:rtchat/components/twitch/raid_event.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/user.dart';
 
 class ChatPanelWidget extends StatefulWidget {
-  final void Function(bool) onScrollback;
+  final void Function(bool)? onScrollback;
 
-  ChatPanelWidget({Key? key, required this.onScrollback}) : super(key: key);
+  ChatPanelWidget({Key? key, this.onScrollback}) : super(key: key);
 
   @override
   _ChatPanelWidgetState createState() => _ChatPanelWidgetState();
@@ -30,7 +31,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
         setState(() {
           _atBottom = value;
         });
-        widget.onScrollback(!_atBottom);
+        if (widget.onScrollback != null) {
+          widget.onScrollback!(!_atBottom);
+        }
       }
     });
   }
@@ -73,6 +76,13 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
           itemBuilder: (context, index) {
             final message = messages[index];
             if (message is TwitchMessageModel) {
+              var coalesce = false;
+              // the history is forward.
+              if (index + 1 < messages.length) {
+                final prev = messages[index + 1];
+                coalesce =
+                    prev is TwitchMessageModel && prev.author == message.author;
+              }
               return InkWell(
                   onLongPress: () {
                     showDialog(
@@ -121,10 +131,14 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                                       color: Colors.redAccent),
                                   title: Text('Delete Message'),
                                   onTap: () {
-                                    final model = Provider.of<UserModel>(
+                                    final userModel = Provider.of<UserModel>(
                                         context,
                                         listen: false);
-                                    model.delete(model.channels.first,
+                                    final channelsModel =
+                                        Provider.of<ChannelsModel>(context,
+                                            listen: false);
+                                    userModel.delete(
+                                        channelsModel.channels.first,
                                         message.messageId);
                                     Navigator.pop(context);
                                   }),
@@ -143,11 +157,15 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                                       color: Colors.greenAccent),
                                   title: Text('Unban ${message.author}'),
                                   onTap: () {
-                                    final model = Provider.of<UserModel>(
+                                    final userModel = Provider.of<UserModel>(
                                         context,
                                         listen: false);
-                                    model.unban(
-                                        model.channels.first, message.author);
+                                    final channelsModel =
+                                        Provider.of<ChannelsModel>(context,
+                                            listen: false);
+                                    userModel.unban(
+                                        channelsModel.channels.first,
+                                        message.author);
                                     Navigator.pop(context);
                                   }),
                             ],
@@ -156,7 +174,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                   },
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: TwitchMessageWidget(message),
+                    child: TwitchMessageWidget(message, coalesce: coalesce),
                   ));
             } else if (message is TwitchRaidEventModel) {
               return TwitchRaidEventWidget(message);

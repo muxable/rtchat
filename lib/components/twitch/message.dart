@@ -5,7 +5,7 @@ import 'package:linkify/linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/twitch/badge.dart';
 import 'package:rtchat/models/message.dart';
-import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/style.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const COLORS = [
@@ -111,8 +111,9 @@ List<_Badge> parseBadges(String badges) {
 
 class TwitchMessageWidget extends StatelessWidget {
   final TwitchMessageModel model;
+  final bool coalesce;
 
-  TwitchMessageWidget(this.model);
+  TwitchMessageWidget(this.model, {this.coalesce = false});
 
   Color get color {
     final color = model.tags['color'];
@@ -125,53 +126,55 @@ class TwitchMessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+    return Consumer<StyleModel>(builder: (context, styleModel, child) {
       var authorColor = color;
 
       if (Theme.of(context).brightness == Brightness.dark) {
-        authorColor = lighten(authorColor, layoutModel.lightnessBoost);
+        authorColor = lighten(authorColor, styleModel.lightnessBoost);
       } else if (Theme.of(context).brightness == Brightness.light) {
-        authorColor = darken(authorColor, layoutModel.lightnessBoost);
+        authorColor = darken(authorColor, styleModel.lightnessBoost);
       }
 
       var authorStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
-          fontSize: layoutModel.fontSize,
+          fontSize: styleModel.fontSize,
           fontWeight: FontWeight.w500,
           color: authorColor);
 
       var messageStyle = Theme.of(context)
           .textTheme
           .bodyText2!
-          .copyWith(fontSize: layoutModel.fontSize);
+          .copyWith(fontSize: styleModel.fontSize);
 
       final linkStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
-          fontSize: layoutModel.fontSize, color: Theme.of(context).accentColor);
+          fontSize: styleModel.fontSize, color: Theme.of(context).accentColor);
 
       final List<InlineSpan> children = [];
 
-      // add badges.
-      final badges = parseBadges(model.tags['badges-raw'] ?? "");
-      children.addAll(badges.map((badge) => WidgetSpan(
-          alignment: PlaceholderAlignment.middle,
-          child: Padding(
-              padding: EdgeInsets.only(right: 5),
-              child: TwitchBadgeWidget(
-                  channelId: model.tags['room-id'],
-                  badge: badge.key,
-                  version: badge.version,
-                  height: layoutModel.fontSize)))));
+      if (!styleModel.aggregateSameAuthor || !coalesce) {
+        // add badges.
+        final badges = parseBadges(model.tags['badges-raw'] ?? "");
+        children.addAll(badges.map((badge) => WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+                padding: EdgeInsets.only(right: 5),
+                child: TwitchBadgeWidget(
+                    channelId: model.tags['room-id'],
+                    badge: badge.key,
+                    version: badge.version,
+                    height: styleModel.fontSize)))));
 
-      // add author.
-      children.add(TextSpan(style: authorStyle, text: model.author));
+        // add author.
+        children.add(TextSpan(style: authorStyle, text: model.author));
 
-      // add demarcator.
-      switch (model.tags['message-type']) {
-        case "action":
-          children.add(TextSpan(text: " "));
-          break;
-        case "chat":
-          children.add(TextSpan(text: ": "));
-          break;
+        // add demarcator.
+        switch (model.tags['message-type']) {
+          case "action":
+            children.add(TextSpan(text: " "));
+            break;
+          case "chat":
+            children.add(TextSpan(text: ": "));
+            break;
+        }
       }
 
       // add text.
@@ -195,7 +198,7 @@ class TwitchMessageWidget extends StatelessWidget {
           children.add(WidgetSpan(
               alignment: PlaceholderAlignment.middle,
               child: Image(
-                  image: NetworkImage(url), height: layoutModel.fontSize)));
+                  image: NetworkImage(url), height: styleModel.fontSize)));
           index = child.end + 1;
         });
 

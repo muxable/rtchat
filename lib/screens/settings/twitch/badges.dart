@@ -18,16 +18,19 @@ class TwitchBadgesScreen extends StatelessWidget {
                 title: Text('Twitch badges'),
               ),
               actions: [
-                Checkbox(
-                    tristate: true,
-                    value: model.enabledCount == 0
-                        ? false
-                        : (model.enabledCount == model.badgeCount
-                            ? true
-                            : null),
-                    onChanged: (value) {
-                      model.setAllEnabled(value ?? false);
-                    })
+                Row(children: [
+                  Text("Select all"),
+                  Checkbox(
+                      tristate: true,
+                      value: model.enabledCount == 0
+                          ? false
+                          : (model.enabledCount == model.badgeCount
+                              ? true
+                              : null),
+                      onChanged: (value) {
+                        model.setAllEnabled(value ?? false);
+                      })
+                ]),
               ]),
           SliverList(
             delegate: SliverChildBuilderDelegate(

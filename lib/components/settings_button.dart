@@ -32,10 +32,10 @@ class SettingsButtonWidget extends StatelessWidget {
                       TextButton(
                         child: Text('Sign Out'),
                         onPressed: () async {
-                          await Provider.of<ChatHistoryModel>(context,
-                              listen: false)
-                            ..subscribe({})
-                            ..ttsEnabled = false;
+                          final model = Provider.of<ChatHistoryModel>(context,
+                              listen: false);
+                          await model.subscribe({});
+                          model.ttsEnabled = false;
                           await userModel.signOut();
                           Navigator.of(context).pop();
                         },
