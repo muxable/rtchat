@@ -90,8 +90,16 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                     controller: _textEditingController,
                     decoration: InputDecoration(hintText: "URL"),
                     validator: (value) {
-                      if (value == null || Uri.tryParse(value) == null) {
+                      if (value == null ||
+                          value.isEmpty ||
+                          Uri.tryParse(value) == null) {
                         return "This doesn't look like a valid URL.";
+                      }
+                      final quickLinksModel =
+                          Provider.of<QuickLinksModel>(context, listen: false);
+                      if (quickLinksModel.sources.any(
+                          (s) => s.url.toString() == Uri.encodeFull(value))) {
+                        return "This link already exists";
                       }
                       return null;
                     }),
