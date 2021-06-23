@@ -59,7 +59,73 @@ Color lighten(Color color, [double amount = .1]) {
   return hslLight.toColor();
 }
 
-Iterable<InlineSpan> parseText(String text, TextStyle linkStyle) {
+dynamic tokenize(msg) {
+  // find out all parts where the first character is the @ symbol
+  var parts = msg.split(new RegExp('\\s+'));
+  var tokens = [];
+  var allowableSet =
+      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_@';
+  var tags = new Set();
+  for (var i = 0; i < parts.length; i++) {
+    var part = parts[i];
+    if (part.length > 1 && part[0] == '@') {
+      // check all char is either a num or a alphabet
+      var flag = true;
+      for (var j = 1; j < part.length; j++) {
+        if (j > 0 && part[j] == '@') {
+          flag = false;
+          break;
+        }
+        if (j > 0 && !allowableSet.contains(part[j])) {
+          flag = false;
+          break;
+        }
+      }
+      if (flag) {
+        tags.add(part);
+      }
+    }
+  }
+  // print("tags set: $tags");
+  var i = 0;
+  while (i < msg.length) {
+    if (msg[i] == '@') {
+      var j = i + 1;
+      while (j < msg.length && msg[j] != ' ' && msg[j] != '@') {
+        j += 1;
+      }
+      var cand = msg.substring(i, j);
+      if (tags.contains(cand)) {
+        tokens.add([cand, 'tag']);
+      } else {
+        tokens.add([cand, 'regular']);
+      }
+      i = j;
+    } else {
+      var j = i + 1;
+      while (j < msg.length && msg[j] != '@') {
+        j += 1;
+      }
+      tokens.add([msg.substring(i, j), 'regular']);
+      i = j;
+    }
+  }
+  return tokens;
+}
+
+Iterable<TextSpan> getTextSpans(dynamic lst, TextStyle tagStyle) sync* {
+  for (var i = 0; i < lst.length; i++) {
+    var item = lst[i];
+    if (lst[1] == 'tag') {
+      yield TextSpan(text: item[0], style: tagStyle);
+    } else {
+      yield TextSpan(text: item[0]); // plain text;
+    }
+  }
+}
+
+Iterable<InlineSpan> parseText(
+    String text, TextStyle linkStyle, TextStyle tagStyle) {
   final parsed = linkify(text, options: LinkifyOptions(humanize: false));
   return parsed.map<InlineSpan>((element) {
     if (element is LinkableElement) {
@@ -77,6 +143,18 @@ Iterable<InlineSpan> parseText(String text, TextStyle linkStyle) {
         ),
       );
     } else {
+      var lst = tokenize(element.text);
+      print("tokens are: $lst");
+      // sample of lst: [[@rippyae, tag], [ fffff, regular]]
+      // how to return both TextSpan with a single widget;
+      // for (var i = 0; i < lst.length; i++) {
+      //   var item = lst[i];
+      //   if (lst[1] == 'tag') {
+      //     return TextSpan(text: lst[0], style: tagStyle);
+      //   } else {
+      //     return TextSpan(text: lst[0]); // plain text;
+      //   }
+      // // }
       return TextSpan(
         text: element.text,
       );
@@ -148,6 +226,11 @@ class TwitchMessageWidget extends StatelessWidget {
       final linkStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
           fontSize: styleModel.fontSize, color: Theme.of(context).accentColor);
 
+      final tagStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
+          fontSize: styleModel.fontSize,
+          color: Colors.redAccent,
+          fontWeight: FontWeight.bold);
+
       final List<InlineSpan> children = [];
 
       if (!styleModel.aggregateSameAuthor || !coalesce) {
@@ -165,7 +248,7 @@ class TwitchMessageWidget extends StatelessWidget {
 
         // add author.
         children.add(TextSpan(style: authorStyle, text: model.author));
-
+        // print("the text send is: ${model.message}");
         // add demarcator.
         switch (model.tags['message-type']) {
           case "action":
@@ -176,6 +259,13 @@ class TwitchMessageWidget extends StatelessWidget {
             break;
         }
       }
+
+      // for (var i = 0; i < tagIndices.length; i++) {
+      //   var indices = tagIndices[i];
+      //   var a = indices[0];
+      //   var b = indices[1];
+      //   print("tag: ${model.message.substring(a, b)}");
+      // }
 
       // add text.
       final emotes = model.tags['emotes-raw'];
@@ -191,7 +281,10 @@ class TwitchMessageWidget extends StatelessWidget {
         parsed.forEach((child) {
           if (child.start > index) {
             children.addAll(parseText(
-                model.message.substring(index, child.start), linkStyle));
+              model.message.substring(index, child.start),
+              linkStyle,
+              tagStyle,
+            ));
           }
           final url =
               "https://static-cdn.jtvnw.net/emoticons/v1/${child.key}/4.0";
@@ -203,10 +296,18 @@ class TwitchMessageWidget extends StatelessWidget {
         });
 
         if (index < model.message.length) {
-          children.addAll(parseText(model.message.substring(index), linkStyle));
+          children.addAll(parseText(
+            model.message.substring(index),
+            linkStyle,
+            tagStyle,
+          ));
         }
       } else {
-        children.addAll(parseText(model.message, linkStyle));
+        children.addAll(parseText(
+          model.message,
+          linkStyle,
+          tagStyle,
+        ));
       }
       return Padding(
           padding: EdgeInsets.symmetric(vertical: 4),
