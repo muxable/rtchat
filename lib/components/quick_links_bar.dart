@@ -17,13 +17,13 @@ class QuickLinksBar extends StatelessWidget {
             icon: Text(source.icon,
                 style: TextStyle(fontSize: 24, fontFamily: "MaterialIcons")),
             tooltip: source.name,
-            onPressed: () async => launchLink(source));
+            onPressed: () => launchLink(source));
       }).toList());
     });
   }
 
   void launchLink(QuickLinkSource source) async {
-    final bool isWebUrl =
+    final isWebUrl =
         source.url.scheme == 'http' || source.url.scheme == 'https';
     if (isWebUrl) {
       await browser.open(url: source.url);
