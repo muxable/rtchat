@@ -38,31 +38,6 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
     });
   }
 
-  Widget cntTextStyle(cnt) {
-    cnt = cnt.toString();
-    return Text(cnt,
-        style: TextStyle(color: Colors.deepPurpleAccent, fontSize: 20));
-  }
-
-  Widget cardInfoWidge(text, cnt) {
-    return SizedBox(
-      width: 100,
-      height: 80,
-      child: Card(
-        child: Column(
-          children: [
-            cntTextStyle(0),
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
@@ -89,46 +64,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                         context: context,
                         builder: (context) {
                           return Dialog(
-                              child: ListView(
-                            shrinkWrap: true,
-                            children: [
+                            child: ListView(shrinkWrap: true, children: [
                               ListTile(
-                                leading: Icon(Icons.person,
-                                    color: Colors.pinkAccent),
-                                title: Text('${message.author}',
-                                    style: TextStyle(fontSize: 22)),
-                                tileColor: Colors.blueAccent,
-                                trailing: CloseButton(),
-                              ),
-                              ListTile(
-                                leading: Icon(Icons.favorite,
-                                    color: Colors.deepPurpleAccent),
-                                title: Text('Following Since Jan 11 2024'),
-                              ),
-                              ListTile(
-                                leading: Icon(Icons.star,
-                                    color: Colors.deepPurpleAccent),
-                                title: Text('Sub Tier 3 - Since jan 11 2024'),
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  cardInfoWidge('Messages', 0),
-                                  cardInfoWidge('Timeouts', 0)
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  cardInfoWidge('Bans', 0),
-                                  cardInfoWidge('Mod Messages', 0)
-                                ],
-                              ),
-                              ListTile(
-                                  leading: Icon(Icons.delete,
-                                      color: Colors.redAccent),
                                   title: Text('Delete Message'),
                                   onTap: () {
                                     final userModel = Provider.of<UserModel>(
@@ -143,18 +80,12 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                                     Navigator.pop(context);
                                   }),
                               ListTile(
-                                  leading: Icon(Icons.timer_outlined,
-                                      color: Colors.orangeAccent),
                                   title: Text('Timeout ${message.author}'),
                                   onTap: () {}),
                               ListTile(
-                                  leading: Icon(Icons.dnd_forwardslash_outlined,
-                                      color: Colors.redAccent),
                                   title: Text('Ban ${message.author}'),
                                   onTap: () {}),
                               ListTile(
-                                  leading: Icon(Icons.circle_outlined,
-                                      color: Colors.greenAccent),
                                   title: Text('Unban ${message.author}'),
                                   onTap: () {
                                     final userModel = Provider.of<UserModel>(
@@ -168,8 +99,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                                         message.author);
                                     Navigator.pop(context);
                                   }),
-                            ],
-                          ));
+                            ]),
+                          );
                         });
                   },
                   child: Padding(

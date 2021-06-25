@@ -99,12 +99,7 @@ Iterable<InlineSpan> parseText(
         ),
       );
     } else {
-      var tokens = tokenize(element.text, tagStyle);
-      List<InlineSpan> childrens = [];
-      for (final token in tokens) {
-        childrens.add(token);
-      }
-      return TextSpan(children: childrens);
+      return TextSpan(children: tokenize(element.text, tagStyle).toList());
     }
   });
 }
