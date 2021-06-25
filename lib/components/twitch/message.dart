@@ -59,7 +59,29 @@ Color lighten(Color color, [double amount = .1]) {
   return hslLight.toColor();
 }
 
-Iterable<InlineSpan> parseText(String text, TextStyle linkStyle) {
+Iterable<TextSpan> tokenize(String msg, TextStyle tagStyle) sync* {
+  final matches = RegExp(r"@[A-Za-z0-9_]+").allMatches(msg);
+  var start = 0;
+  for (final match in matches) {
+    // before the tag
+    var preTag = msg.substring(start, match.start);
+    yield TextSpan(text: preTag);
+    // the tag
+    var tag = msg.substring(match.start, match.end);
+    start = match.end;
+    yield TextSpan(text: tag, style: tagStyle);
+  }
+
+  if (matches.isNotEmpty) {
+    var txt = msg.substring(matches.last.end);
+    yield TextSpan(text: txt);
+  } else {
+    yield TextSpan(text: msg);
+  }
+}
+
+Iterable<InlineSpan> parseText(
+    String text, TextStyle linkStyle, TextStyle tagStyle) {
   final parsed = linkify(text, options: LinkifyOptions(humanize: false));
   return parsed.map<InlineSpan>((element) {
     if (element is LinkableElement) {
@@ -77,9 +99,7 @@ Iterable<InlineSpan> parseText(String text, TextStyle linkStyle) {
         ),
       );
     } else {
-      return TextSpan(
-        text: element.text,
-      );
+      return TextSpan(children: tokenize(element.text, tagStyle).toList());
     }
   });
 }
@@ -148,6 +168,11 @@ class TwitchMessageWidget extends StatelessWidget {
       final linkStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
           fontSize: styleModel.fontSize, color: Theme.of(context).accentColor);
 
+      final tagStyle = Theme.of(context)
+          .textTheme
+          .bodyText2!
+          .copyWith(fontSize: styleModel.fontSize, fontWeight: FontWeight.bold);
+
       final List<InlineSpan> children = [];
 
       if (!styleModel.aggregateSameAuthor || !coalesce) {
@@ -191,7 +216,10 @@ class TwitchMessageWidget extends StatelessWidget {
         parsed.forEach((child) {
           if (child.start > index) {
             children.addAll(parseText(
-                model.message.substring(index, child.start), linkStyle));
+              model.message.substring(index, child.start),
+              linkStyle,
+              tagStyle,
+            ));
           }
           final url =
               "https://static-cdn.jtvnw.net/emoticons/v1/${child.key}/4.0";
@@ -203,10 +231,18 @@ class TwitchMessageWidget extends StatelessWidget {
         });
 
         if (index < model.message.length) {
-          children.addAll(parseText(model.message.substring(index), linkStyle));
+          children.addAll(parseText(
+            model.message.substring(index),
+            linkStyle,
+            tagStyle,
+          ));
         }
       } else {
-        children.addAll(parseText(model.message, linkStyle));
+        children.addAll(parseText(
+          model.message,
+          linkStyle,
+          tagStyle,
+        ));
       }
       return Padding(
           padding: EdgeInsets.symmetric(vertical: 4),
