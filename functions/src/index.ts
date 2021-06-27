@@ -6,10 +6,9 @@ import { getAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
 import * as serviceAccount from "../service_account.json"; 
-import { ServiceAccount } from "firebase-admin";
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount as ServiceAccount),
+  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
   databaseURL: `https://${serviceAccount.project_id}-default-rtdb.firebaseio.com`,
 });
 
