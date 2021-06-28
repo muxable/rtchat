@@ -10,14 +10,14 @@ import 'package:rtchat/models/user.dart';
 class ChatPanelWidget extends StatefulWidget {
   final void Function(bool)? onScrollback;
 
-  ChatPanelWidget({Key? key, this.onScrollback}) : super(key: key);
+  const ChatPanelWidget({Key? key, this.onScrollback}) : super(key: key);
 
   @override
   _ChatPanelWidgetState createState() => _ChatPanelWidgetState();
 }
 
 class _ChatPanelWidgetState extends State<ChatPanelWidget> {
-  var _controller = ScrollController();
+  final _controller = ScrollController();
   var _atBottom = true;
 
   @override
@@ -45,7 +45,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
         final messages = model.messages.reversed.toList();
         return ListView.builder(
           controller: _controller,
-          padding: EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           reverse: true,
           itemCount: messages.length,
           itemBuilder: (context, index) {
@@ -66,7 +66,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                           return Dialog(
                             child: ListView(shrinkWrap: true, children: [
                               ListTile(
-                                  title: Text('Delete Message'),
+                                  title: const Text('Delete Message'),
                                   onTap: () {
                                     final userModel = Provider.of<UserModel>(
                                         context,
@@ -104,13 +104,13 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                         });
                   },
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: TwitchMessageWidget(message, coalesce: coalesce),
                   ));
             } else if (message is TwitchRaidEventModel) {
               return TwitchRaidEventWidget(message);
             } else {
-              throw new AssertionError("invalid message type");
+              throw AssertionError("invalid message type");
             }
           },
         );
@@ -124,16 +124,16 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
           child: TextButton(
               onPressed: () {
                 _controller.animateTo(0,
-                    duration: Duration(milliseconds: 200),
+                    duration: const Duration(milliseconds: 200),
                     curve: Curves.easeInOut);
               },
               style: ButtonStyle(
                 backgroundColor:
                     MaterialStateProperty.all(Colors.black.withOpacity(0.6)),
                 padding: MaterialStateProperty.all(
-                    EdgeInsets.only(left: 16, right: 16)),
+                    const EdgeInsets.only(left: 16, right: 16)),
               ),
-              child: Text("Scroll to bottom")),
+              child: const Text("Scroll to bottom")),
         );
       }),
     ]);

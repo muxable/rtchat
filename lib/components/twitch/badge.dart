@@ -8,11 +8,13 @@ class TwitchBadgeWidget extends StatelessWidget {
   final String version;
   final double? height;
 
-  TwitchBadgeWidget(
-      {required this.channelId,
+  const TwitchBadgeWidget(
+      {Key? key,
+      required this.channelId,
       required this.badge,
       required this.version,
-      this.height});
+      this.height})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

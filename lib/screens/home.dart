@@ -9,7 +9,7 @@ import 'package:rtchat/models/layout.dart';
 import 'package:wakelock/wakelock.dart';
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -38,7 +38,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           if (MediaQuery.of(context).orientation == Orientation.portrait) {
             return Column(children: [
               LayoutBuilder(builder: (context, constraints) {
-                print(constraints);
                 return NotificationPanelWidget(
                   height: min(
                       500, max(_minimized ? 0 : layoutModel.panelHeight, 56)),

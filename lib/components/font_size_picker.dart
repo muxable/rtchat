@@ -5,20 +5,22 @@ import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
 
 class FontSizePickerWidget extends StatelessWidget {
+  const FontSizePickerWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleModel>(builder: (context, model, child) {
       return Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
+                SizedBox(
                   height: 120,
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     child: TwitchMessageWidget(TwitchMessageModel(
                         messageId: "placeholder",
                         channel: "muxfd",

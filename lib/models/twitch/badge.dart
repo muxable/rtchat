@@ -34,7 +34,7 @@ class TwitchBadgeModel extends ChangeNotifier {
           Uri.parse("https://badges.twitch.tv/v1/badges/global/display");
       _globalCache = getBadgeSets(uri);
     }
-    channels.forEach((channel) {
+    for (final channel in channels) {
       if (channel.provider != "twitch") {
         return;
       }
@@ -43,7 +43,7 @@ class TwitchBadgeModel extends ChangeNotifier {
             "https://badges.twitch.tv/v1/badges/channels/${channel.channelId}/display");
         _localCache[channel.channelId] = getBadgeSets(uri);
       }
-    });
+    }
     globalBadgeSets.addAll((await _globalCache)!);
     for (final channel in channels) {
       if (channel.provider != "twitch") {

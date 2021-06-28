@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class BackupScreen extends StatefulWidget {
+  const BackupScreen({Key? key}) : super(key: key);
+
   @override
   _BackupScreenState createState() => _BackupScreenState();
 }
@@ -9,27 +11,27 @@ class _BackupScreenState extends State<BackupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Settings backup and restore")),
+      appBar: AppBar(title: const Text("Settings backup and restore")),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text("Cloud backup",
               style: TextStyle(
                 color: Theme.of(context).accentColor,
                 fontWeight: FontWeight.bold,
               )),
-          Text("Last backup: never"),
+          const Text("Last backup: never"),
           Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
             ElevatedButton.icon(
-                icon: Icon(Icons.cloud_upload),
-                label: Text("Back up"),
+                icon: const Icon(Icons.cloud_upload),
+                label: const Text("Back up"),
                 onPressed: () {}),
             ElevatedButton.icon(
-                icon: Icon(Icons.cloud_download),
-                label: Text("Restore"),
+                icon: const Icon(Icons.cloud_download),
+                label: const Text("Restore"),
                 onPressed: () {}),
           ]),
-          Divider(),
+          const Divider(),
           Text("Local backup",
               style: TextStyle(
                 color: Theme.of(context).accentColor,
@@ -37,15 +39,15 @@ class _BackupScreenState extends State<BackupScreen> {
               )),
           Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
             ElevatedButton.icon(
-                icon: Icon(Icons.file_download),
-                label: Text("Export"),
+                icon: const Icon(Icons.file_download),
+                label: const Text("Export"),
                 onPressed: () {}),
             ElevatedButton.icon(
-                icon: Icon(Icons.file_upload),
-                label: Text("Import"),
+                icon: const Icon(Icons.file_upload),
+                label: const Text("Import"),
                 onPressed: () {}),
           ]),
-          Divider(),
+          const Divider(),
         ]),
       ),
     );

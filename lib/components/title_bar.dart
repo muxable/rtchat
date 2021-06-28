@@ -3,13 +3,15 @@ import 'package:rtchat/components/quick_links_bar.dart';
 import 'package:rtchat/components/settings_button.dart';
 
 class TitleBarWidget extends StatelessWidget {
+  const TitleBarWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Container(
         height: 56,
         color: Theme.of(context).primaryColor,
         child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Expanded(
+          const Expanded(
             child: TabBar(
               tabs: [
                 Tab(icon: Icon(Icons.calendar_view_day)),
@@ -17,9 +19,9 @@ class TitleBarWidget extends StatelessWidget {
               ],
             ),
           ),
-          Spacer(),
+          const Spacer(),
           QuickLinksBar(),
-          SettingsButtonWidget()
+          const SettingsButtonWidget()
         ]));
   }
 }

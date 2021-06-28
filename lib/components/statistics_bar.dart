@@ -10,7 +10,7 @@ class StatisticsBarWidget extends StatefulWidget {
   final String provider;
   final String channelId;
 
-  StatisticsBarWidget(
+  const StatisticsBarWidget(
       {Key? key, required this.provider, required this.channelId})
       : super(key: key);
 
@@ -33,7 +33,7 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
     super.initState();
 
     _poll();
-    _timer = Timer.periodic(Duration(seconds: 15), (_) async {
+    _timer = Timer.periodic(const Duration(seconds: 15), (_) async {
       await _poll();
     });
   }
@@ -64,7 +64,7 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Builder(builder: (context) {
         final backgroundColor = _loading
             ? Colors.grey
@@ -73,17 +73,17 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
                 : Colors.red;
         return Align(
           child: AnimatedContainer(
-            duration: Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 300),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: backgroundColor,
             ),
             child: Padding(
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.all(8),
               child:
                   Consumer<LayoutModel>(builder: (context, layoutModel, child) {
                 if (_loading) {
-                  return SizedBox(
+                  return const SizedBox(
                     child: CircularProgressIndicator.adaptive(
                       semanticsLabel: 'Linear progress indicator',
                     ),
@@ -97,12 +97,12 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
                       : const Text('Stream offline');
                 }
                 return Row(children: [
-                  Icon(Icons.visibility),
-                  SizedBox(width: 8),
+                  const Icon(Icons.visibility),
+                  const SizedBox(width: 8),
                   Text(_formatter.format(_viewers)),
-                  SizedBox(width: 8),
-                  Icon(Icons.people),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.people),
+                  const SizedBox(width: 8),
                   Text(_formatter.format(_followers)),
                 ]);
               }),

@@ -19,12 +19,12 @@ class ChatHistoryModel extends ChangeNotifier {
 
   Future<void> subscribe(Set<Channel> channels) async {
     final subscribe = FirebaseFunctions.instance.httpsCallable('subscribe');
-    channels.forEach((channel) {
+    for (final channel in channels) {
       subscribe({
         "provider": channel.provider,
         "channelId": channel.channelId,
       });
-    });
+    }
 
     _messages.clear();
     notifyListeners();
@@ -43,7 +43,7 @@ class ChatHistoryModel extends ChangeNotifier {
           .limitToLast(250)
           .snapshots()
           .listen((event) {
-        event.docChanges.forEach((change) {
+        for (final change in event.docChanges) {
           // only process appends.
           if (change.type == DocumentChangeType.added) {
             final data = change.doc.data();
@@ -112,7 +112,7 @@ class ChatHistoryModel extends ChangeNotifier {
                 break;
             }
           }
-        });
+        }
 
         notifyListeners();
       }, onDone: () {

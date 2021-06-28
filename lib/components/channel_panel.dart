@@ -25,7 +25,7 @@ class ChannelPanelWidget extends StatelessWidget {
           height: 56,
           color: Theme.of(context).primaryColor,
           child: Padding(
-            padding: EdgeInsets.only(left: 16),
+            padding: const EdgeInsets.only(left: 16),
             child: Row(children: [
               Expanded(
                 child: channelsModel.channels.isEmpty
@@ -35,7 +35,7 @@ class ChannelPanelWidget extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                             Padding(
-                              padding: EdgeInsets.only(right: 8),
+                              padding: const EdgeInsets.only(right: 8),
                               child: Image(
                                   height: 24,
                                   image: AssetImage(
@@ -52,7 +52,7 @@ class ChannelPanelWidget extends StatelessWidget {
                 return GestureDetector(
                   onVerticalDragUpdate: (details) =>
                       onResize!(details.delta.dy),
-                  child: Icon(Icons.drag_handle),
+                  child: const Icon(Icons.drag_handle),
                 );
               }),
               Expanded(
@@ -92,15 +92,15 @@ class ChannelPanelWidget extends StatelessWidget {
             color: Theme.of(context).primaryColor,
             height: 56,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(children: [
                 Expanded(
                   child: TextField(
                     controller: _textEditingController,
                     textInputAction: TextInputAction.send,
                     maxLines: null,
-                    style: TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
                         hintText: "Send a message...",
                         hintStyle: TextStyle(color: Colors.white),
                         border: InputBorder.none),
@@ -129,7 +129,7 @@ class ChannelPanelWidget extends StatelessWidget {
                   ),
                 ),
                 PopupMenuButton<String>(
-                  icon: Icon(Icons.build, color: Colors.white),
+                  icon: const Icon(Icons.build, color: Colors.white),
                   onSelected: (value) async {
                     if (value == "Clear Chat") {
                       final channelsModel =

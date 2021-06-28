@@ -2,7 +2,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 
 final validateUrl = Uri.https('id.twitch.tv', '/oauth2/validate');
 
-const TWITCH_CLIENT_ID = "edfnh2q85za8phifif9jxt3ey6t9b9";
+const twitchClientId = "edfnh2q85za8phifif9jxt3ey6t9b9";
 
 class TtsModel {
   final FlutterTts _tts = FlutterTts();
