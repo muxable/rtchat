@@ -88,73 +88,66 @@ class ChannelPanelWidget extends StatelessWidget {
           if (layoutModel.isInputLockable && layoutModel.locked) {
             return Container();
           }
-          return Container(
-            color: Theme.of(context).primaryColor,
-            height: 56,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(children: [
-                Expanded(
-                  child: TextField(
-                    controller: _textEditingController,
-                    textInputAction: TextInputAction.send,
-                    maxLines: null,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                        hintText: "Send a message...",
-                        hintStyle: TextStyle(color: Colors.white),
-                        border: InputBorder.none),
-                    onChanged: (text) {
-                      final filtered = text.replaceAll('\n', ' ');
-                      if (filtered == text) {
-                        return;
-                      }
-                      _textEditingController.value = TextEditingValue(
-                          text: filtered,
-                          selection: TextSelection.fromPosition(TextPosition(
-                              offset: _textEditingController.text.length)));
-                    },
-                    onSubmitted: (value) async {
-                      value = value.trim();
-                      if (value.isEmpty) {
-                        return;
-                      }
-                      final userModel =
-                          Provider.of<UserModel>(context, listen: false);
-                      final channelsModel =
-                          Provider.of<ChannelsModel>(context, listen: false);
-                      userModel.send(channelsModel.channels.first, value);
-                      _textEditingController.clear();
-                    },
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.build, color: Colors.white),
-                  onSelected: (value) async {
-                    if (value == "Clear Chat") {
-                      final channelsModel =
-                          Provider.of<ChannelsModel>(context, listen: false);
-                      final channel = channelsModel.channels.first;
-                      FirebaseFunctions.instance.httpsCallable("clear")({
-                        "provider": channel.provider,
-                        "channelId": channel.channelId,
-                      });
-                      Provider.of<ChatHistoryModel>(context, listen: false)
-                          .clear();
-                    } else if (value == "Raid") {}
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(children: [
+              Expanded(
+                child: TextField(
+                  controller: _textEditingController,
+                  textInputAction: TextInputAction.send,
+                  maxLines: null,
+                  decoration:
+                      const InputDecoration(hintText: "Send a message..."),
+                  onChanged: (text) {
+                    final filtered = text.replaceAll('\n', ' ');
+                    if (filtered == text) {
+                      return;
+                    }
+                    _textEditingController.value = TextEditingValue(
+                        text: filtered,
+                        selection: TextSelection.fromPosition(TextPosition(
+                            offset: _textEditingController.text.length)));
                   },
-                  itemBuilder: (context) {
-                    final options = {'Clear Chat'};
-                    return options.map((String choice) {
-                      return PopupMenuItem<String>(
-                        value: choice,
-                        child: Text(choice),
-                      );
-                    }).toList();
+                  onSubmitted: (value) async {
+                    value = value.trim();
+                    if (value.isEmpty) {
+                      return;
+                    }
+                    final userModel =
+                        Provider.of<UserModel>(context, listen: false);
+                    final channelsModel =
+                        Provider.of<ChannelsModel>(context, listen: false);
+                    userModel.send(channelsModel.channels.first, value);
+                    _textEditingController.clear();
                   },
                 ),
-              ]),
-            ),
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.build, color: Colors.white),
+                onSelected: (value) async {
+                  if (value == "Clear Chat") {
+                    final channelsModel =
+                        Provider.of<ChannelsModel>(context, listen: false);
+                    final channel = channelsModel.channels.first;
+                    FirebaseFunctions.instance.httpsCallable("clear")({
+                      "provider": channel.provider,
+                      "channelId": channel.channelId,
+                    });
+                    Provider.of<ChatHistoryModel>(context, listen: false)
+                        .clear();
+                  } else if (value == "Raid") {}
+                },
+                itemBuilder: (context) {
+                  final options = {'Clear Chat'};
+                  return options.map((String choice) {
+                    return PopupMenuItem<String>(
+                      value: choice,
+                      child: Text(choice),
+                    );
+                  }).toList();
+                },
+              ),
+            ]),
           );
         })
       ]);
