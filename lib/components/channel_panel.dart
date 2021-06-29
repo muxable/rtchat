@@ -27,24 +27,6 @@ class ChannelPanelWidget extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.only(left: 16),
             child: Row(children: [
-              Expanded(
-                child: channelsModel.channels.isEmpty
-                    ? Container()
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: Image(
-                                  height: 24,
-                                  image: AssetImage(
-                                      'assets/providers/${channelsModel.channels.first.provider}.png')),
-                            ),
-                            Text("/${channelsModel.channels.first.displayName}",
-                                overflow: TextOverflow.fade),
-                          ]),
-              ),
               Consumer<LayoutModel>(builder: (context, layoutModel, child) {
                 if (layoutModel.locked || onResize == null) {
                   return Container();
@@ -52,30 +34,53 @@ class ChannelPanelWidget extends StatelessWidget {
                 return GestureDetector(
                   onVerticalDragUpdate: (details) =>
                       onResize!(details.delta.dy),
-                  child: const Icon(Icons.drag_handle),
+                  child: const Padding(
+                      padding: EdgeInsets.only(right: 16),
+                      child: Icon(Icons.drag_indicator)),
                 );
               }),
-              Expanded(
-                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  channelsModel.channels.isEmpty
-                      ? Container()
-                      : StatisticsBarWidget(
-                          provider: channelsModel.channels.first.provider,
-                          channelId: channelsModel.channels.first.channelId),
-                  Consumer<ChatHistoryModel>(
-                      builder: (context, chatHistoryModel, child) {
-                    return IconButton(
-                        icon: Icon(chatHistoryModel.ttsEnabled
-                            ? Icons.record_voice_over
-                            : Icons.voice_over_off),
-                        tooltip: "Text to speech",
-                        onPressed: () {
-                          chatHistoryModel.ttsEnabled =
-                              !chatHistoryModel.ttsEnabled;
-                        });
-                  }),
-                ]),
-              )
+              if (channelsModel.channels.isEmpty)
+                Container()
+              else
+                Expanded(
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Image(
+                              height: 24,
+                              image: AssetImage(
+                                  'assets/providers/${channelsModel.channels.first.provider}.png')),
+                        ),
+                        Expanded(
+                          child: Text(
+                              "/${channelsModel.channels.first.displayName}",
+                              softWrap: false,
+                              overflow: TextOverflow.fade),
+                        ),
+                      ]),
+                ),
+              Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                channelsModel.channels.isEmpty
+                    ? Container()
+                    : StatisticsBarWidget(
+                        provider: channelsModel.channels.first.provider,
+                        channelId: channelsModel.channels.first.channelId),
+                Consumer<ChatHistoryModel>(
+                    builder: (context, chatHistoryModel, child) {
+                  return IconButton(
+                      icon: Icon(chatHistoryModel.ttsEnabled
+                          ? Icons.record_voice_over
+                          : Icons.voice_over_off),
+                      tooltip: "Text to speech",
+                      onPressed: () {
+                        chatHistoryModel.ttsEnabled =
+                            !chatHistoryModel.ttsEnabled;
+                      });
+                }),
+              ]),
             ]),
           ),
         ),
