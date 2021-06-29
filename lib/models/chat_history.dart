@@ -108,6 +108,7 @@ class ChatHistoryModel extends ChangeNotifier {
                   profilePictureUrl: data['tags']['msg-param-profileImageURL'],
                   fromUsername: data['username'],
                   viewers: data['viewers'],
+                  pinnedUntil: DateTime.now(),
                 ));
                 break;
             }
