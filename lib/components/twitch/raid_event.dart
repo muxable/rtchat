@@ -10,7 +10,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
 
   final NumberFormat _formatter = NumberFormat.decimalPattern();
 
-  TwitchRaidEventWidget(this.model);
+  TwitchRaidEventWidget(this.model, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +33,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(12, 4, 16, 4),
+          padding: const EdgeInsets.fromLTRB(12, 4, 16, 4),
           child: Row(children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(styleModel.fontSize),
@@ -41,7 +41,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
                   image: NetworkImage(model.profilePictureUrl),
                   height: styleModel.fontSize * 1.5),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Expanded(
               child: RichText(
                 text: TextSpan(

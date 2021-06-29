@@ -44,8 +44,9 @@ class _SliverPersistentFooterElement extends RenderObjectElement {
     final SliverPersistentHeaderDelegate oldDelegate = oldWidget.delegate;
     if (newDelegate != oldDelegate &&
         (newDelegate.runtimeType != oldDelegate.runtimeType ||
-            newDelegate.shouldRebuild(oldDelegate)))
+            newDelegate.shouldRebuild(oldDelegate))) {
       renderObject.triggerRebuild();
+    }
   }
 
   @override
@@ -304,14 +305,14 @@ class PinnableDelegate extends SliverPersistentHeaderDelegate {
 class ChatPanelWidget extends StatefulWidget {
   final void Function(bool)? onScrollback;
 
-  ChatPanelWidget({Key? key, this.onScrollback}) : super(key: key);
+  const ChatPanelWidget({Key? key, this.onScrollback}) : super(key: key);
 
   @override
   _ChatPanelWidgetState createState() => _ChatPanelWidgetState();
 }
 
 class _ChatPanelWidgetState extends State<ChatPanelWidget> {
-  var _controller = ScrollController();
+  final _controller = ScrollController();
   var _atBottom = true;
 
   @override
@@ -344,7 +345,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
           final j = messages.indexWhere(
               (element) => element is PinnableMessageModel, i);
           final slice = (j > -1 ? messages.sublist(i, j) : messages.sublist(i));
-          if (slice.length > 0) {
+          if (slice.isNotEmpty) {
             slivers.add(SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
               return ChatPanelMessageWidget(message: slice[index]);
@@ -381,7 +382,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
                 backgroundColor:
                     MaterialStateProperty.all(Colors.black.withOpacity(0.6)),
                 padding: MaterialStateProperty.all(
-                    EdgeInsets.only(left: 16, right: 16)),
+                    const EdgeInsets.only(left: 16, right: 16)),
               ),
               child: Text("Scroll to bottom")),
         );

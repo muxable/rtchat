@@ -11,7 +11,7 @@ class NotificationPanelWidget extends StatefulWidget {
   final double width;
   final double height;
 
-  NotificationPanelWidget(
+  const NotificationPanelWidget(
       {Key? key, this.width = double.infinity, this.height = double.infinity})
       : super(key: key);
 
@@ -51,9 +51,9 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
     return AnimatedContainer(
       width: widget.width,
       height: widget.height,
-      duration: Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 200),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        TitleBarWidget(),
+        const TitleBarWidget(),
         Expanded(child: Builder(builder: (context) {
           final tabs = TabBarView(
             children: [
