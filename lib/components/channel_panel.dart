@@ -27,24 +27,6 @@ class ChannelPanelWidget extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.only(left: 16),
             child: Row(children: [
-              Expanded(
-                child: channelsModel.channels.isEmpty
-                    ? Container()
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: Image(
-                                  height: 24,
-                                  image: AssetImage(
-                                      'assets/providers/${channelsModel.channels.first.provider}.png')),
-                            ),
-                            Text("/${channelsModel.channels.first.displayName}",
-                                overflow: TextOverflow.fade),
-                          ]),
-              ),
               Consumer<LayoutModel>(builder: (context, layoutModel, child) {
                 if (layoutModel.locked || onResize == null) {
                   return Container();
@@ -52,30 +34,53 @@ class ChannelPanelWidget extends StatelessWidget {
                 return GestureDetector(
                   onVerticalDragUpdate: (details) =>
                       onResize!(details.delta.dy),
-                  child: const Icon(Icons.drag_handle),
+                  child: const Padding(
+                      padding: EdgeInsets.only(right: 16),
+                      child: Icon(Icons.drag_indicator)),
                 );
               }),
-              Expanded(
-                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  channelsModel.channels.isEmpty
-                      ? Container()
-                      : StatisticsBarWidget(
-                          provider: channelsModel.channels.first.provider,
-                          channelId: channelsModel.channels.first.channelId),
-                  Consumer<ChatHistoryModel>(
-                      builder: (context, chatHistoryModel, child) {
-                    return IconButton(
-                        icon: Icon(chatHistoryModel.ttsEnabled
-                            ? Icons.record_voice_over
-                            : Icons.voice_over_off),
-                        tooltip: "Text to speech",
-                        onPressed: () {
-                          chatHistoryModel.ttsEnabled =
-                              !chatHistoryModel.ttsEnabled;
-                        });
-                  }),
-                ]),
-              )
+              if (channelsModel.channels.isEmpty)
+                Container()
+              else
+                Expanded(
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Image(
+                              height: 24,
+                              image: AssetImage(
+                                  'assets/providers/${channelsModel.channels.first.provider}.png')),
+                        ),
+                        Expanded(
+                          child: Text(
+                              "/${channelsModel.channels.first.displayName}",
+                              softWrap: false,
+                              overflow: TextOverflow.fade),
+                        ),
+                      ]),
+                ),
+              Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                channelsModel.channels.isEmpty
+                    ? Container()
+                    : StatisticsBarWidget(
+                        provider: channelsModel.channels.first.provider,
+                        channelId: channelsModel.channels.first.channelId),
+                Consumer<ChatHistoryModel>(
+                    builder: (context, chatHistoryModel, child) {
+                  return IconButton(
+                      icon: Icon(chatHistoryModel.ttsEnabled
+                          ? Icons.record_voice_over
+                          : Icons.voice_over_off),
+                      tooltip: "Text to speech",
+                      onPressed: () {
+                        chatHistoryModel.ttsEnabled =
+                            !chatHistoryModel.ttsEnabled;
+                      });
+                }),
+              ]),
             ]),
           ),
         ),
@@ -88,73 +93,66 @@ class ChannelPanelWidget extends StatelessWidget {
           if (layoutModel.isInputLockable && layoutModel.locked) {
             return Container();
           }
-          return Container(
-            color: Theme.of(context).primaryColor,
-            height: 56,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(children: [
-                Expanded(
-                  child: TextField(
-                    controller: _textEditingController,
-                    textInputAction: TextInputAction.send,
-                    maxLines: null,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                        hintText: "Send a message...",
-                        hintStyle: TextStyle(color: Colors.white),
-                        border: InputBorder.none),
-                    onChanged: (text) {
-                      final filtered = text.replaceAll('\n', ' ');
-                      if (filtered == text) {
-                        return;
-                      }
-                      _textEditingController.value = TextEditingValue(
-                          text: filtered,
-                          selection: TextSelection.fromPosition(TextPosition(
-                              offset: _textEditingController.text.length)));
-                    },
-                    onSubmitted: (value) async {
-                      value = value.trim();
-                      if (value.isEmpty) {
-                        return;
-                      }
-                      final userModel =
-                          Provider.of<UserModel>(context, listen: false);
-                      final channelsModel =
-                          Provider.of<ChannelsModel>(context, listen: false);
-                      userModel.send(channelsModel.channels.first, value);
-                      _textEditingController.clear();
-                    },
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.build, color: Colors.white),
-                  onSelected: (value) async {
-                    if (value == "Clear Chat") {
-                      final channelsModel =
-                          Provider.of<ChannelsModel>(context, listen: false);
-                      final channel = channelsModel.channels.first;
-                      FirebaseFunctions.instance.httpsCallable("clear")({
-                        "provider": channel.provider,
-                        "channelId": channel.channelId,
-                      });
-                      Provider.of<ChatHistoryModel>(context, listen: false)
-                          .clear();
-                    } else if (value == "Raid") {}
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(children: [
+              Expanded(
+                child: TextField(
+                  controller: _textEditingController,
+                  textInputAction: TextInputAction.send,
+                  maxLines: null,
+                  decoration:
+                      const InputDecoration(hintText: "Send a message..."),
+                  onChanged: (text) {
+                    final filtered = text.replaceAll('\n', ' ');
+                    if (filtered == text) {
+                      return;
+                    }
+                    _textEditingController.value = TextEditingValue(
+                        text: filtered,
+                        selection: TextSelection.fromPosition(TextPosition(
+                            offset: _textEditingController.text.length)));
                   },
-                  itemBuilder: (context) {
-                    final options = {'Clear Chat'};
-                    return options.map((String choice) {
-                      return PopupMenuItem<String>(
-                        value: choice,
-                        child: Text(choice),
-                      );
-                    }).toList();
+                  onSubmitted: (value) async {
+                    value = value.trim();
+                    if (value.isEmpty) {
+                      return;
+                    }
+                    final userModel =
+                        Provider.of<UserModel>(context, listen: false);
+                    final channelsModel =
+                        Provider.of<ChannelsModel>(context, listen: false);
+                    userModel.send(channelsModel.channels.first, value);
+                    _textEditingController.clear();
                   },
                 ),
-              ]),
-            ),
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.build, color: Colors.white),
+                onSelected: (value) async {
+                  if (value == "Clear Chat") {
+                    final channelsModel =
+                        Provider.of<ChannelsModel>(context, listen: false);
+                    final channel = channelsModel.channels.first;
+                    FirebaseFunctions.instance.httpsCallable("clear")({
+                      "provider": channel.provider,
+                      "channelId": channel.channelId,
+                    });
+                    Provider.of<ChatHistoryModel>(context, listen: false)
+                        .clear();
+                  } else if (value == "Raid") {}
+                },
+                itemBuilder: (context) {
+                  final options = {'Clear Chat'};
+                  return options.map((String choice) {
+                    return PopupMenuItem<String>(
+                      value: choice,
+                      child: Text(choice),
+                    );
+                  }).toList();
+                },
+              ),
+            ]),
           );
         })
       ]);

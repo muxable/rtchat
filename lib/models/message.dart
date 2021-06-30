@@ -1,5 +1,11 @@
 class MessageModel {}
 
+class PinnableMessageModel extends MessageModel {
+  bool pinned;
+
+  PinnableMessageModel({required this.pinned});
+}
+
 class TwitchMessageModel implements MessageModel {
   final String messageId;
   final String channel;
@@ -19,7 +25,7 @@ class TwitchMessageModel implements MessageModel {
       required this.deleted});
 }
 
-class TwitchRaidEventModel implements MessageModel {
+class TwitchRaidEventModel extends PinnableMessageModel {
   final String profilePictureUrl;
   final String fromUsername;
   final int viewers;
@@ -27,5 +33,7 @@ class TwitchRaidEventModel implements MessageModel {
   TwitchRaidEventModel(
       {required this.profilePictureUrl,
       required this.fromUsername,
-      required this.viewers});
+      required this.viewers,
+      required bool pinned})
+      : super(pinned: pinned);
 }
