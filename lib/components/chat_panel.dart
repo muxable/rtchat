@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/sliver_floating_header.dart';
 import 'package:rtchat/components/twitch/message.dart';
 import 'package:rtchat/components/twitch/raid_event.dart';
 import 'package:rtchat/models/channels.dart';
@@ -29,7 +28,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
 
     _controller.addListener(() {
       final value =
-          _controller.position.atEdge && _controller.position.pixels != 0;
+          _controller.position.atEdge && _controller.position.pixels == 0;
       if (_atBottom != value) {
         setState(() {
           _atBottom = value;
@@ -45,37 +44,15 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
   Widget build(BuildContext context) {
     return Stack(children: [
       Consumer<ChatHistoryModel>(builder: (context, model, child) {
-        if (_atBottom) {
-          WidgetsBinding.instance?.addPostFrameCallback((_) {
-            _controller.jumpTo(_controller.position.maxScrollExtent);
-          });
-        }
-        final messages = model.messages.toList();
-        // construct slivers out of message chunks, using pinnable events as
-        // delimiters.
-        final slivers = <Widget>[];
-        for (var i = 0; i < messages.length;) {
-          final j = messages.indexWhere(
-              (element) => element is PinnableMessageModel, i);
-          final slice = (j > -1 ? messages.sublist(i, j) : messages.sublist(i));
-          if (slice.isNotEmpty) {
-            slivers.add(SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-              return ChatPanelMessageWidget(message: slice[index]);
-            }, childCount: slice.length)));
-          }
-          if (j > -1) {
-            slivers.add(SliverPinnableHeader(
-                child: ChatPanelMessageWidget(message: messages[j])));
-            i = j + 1;
-          } else {
-            break;
-          }
-        }
-        return CustomScrollView(
-          controller: _controller,
-          slivers: slivers,
-        );
+        final messages = model.messages.reversed.toList();
+        return ListView.builder(
+            controller: _controller,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            reverse: true,
+            itemCount: messages.length,
+            itemBuilder: (context, index) {
+              return ChatPanelMessageWidget(message: messages[index]);
+            });
       }),
       Builder(builder: (context) {
         if (_atBottom) {
@@ -85,7 +62,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
           alignment: Alignment.bottomCenter,
           child: TextButton(
               onPressed: () {
-                _controller.animateTo(_controller.position.maxScrollExtent,
+                _controller.animateTo(0,
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeInOut);
               },

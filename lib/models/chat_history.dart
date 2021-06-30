@@ -104,12 +104,29 @@ class ChatHistoryModel extends ChangeNotifier {
                 }
                 break;
               case "raided":
+                final index = _messages.length;
+                final DateTime timestamp = data['timestamp'].toDate();
+                final expiration = timestamp.add(const Duration(seconds: 15));
+                final remaining = expiration.difference(DateTime.now());
+
                 _messages.add(TwitchRaidEventModel(
-                  profilePictureUrl: data['tags']['msg-param-profileImageURL'],
-                  fromUsername: data['username'],
-                  viewers: data['viewers'],
-                  pinnedUntil: DateTime.now(),
-                ));
+                    profilePictureUrl: data['tags']
+                        ['msg-param-profileImageURL'],
+                    fromUsername: data['username'],
+                    viewers: data['viewers'],
+                    pinned: true));
+
+                if (remaining > Duration.zero) {
+                  Timer(remaining, () {
+                    _messages[index] = TwitchRaidEventModel(
+                        profilePictureUrl: data['tags']
+                            ['msg-param-profileImageURL'],
+                        fromUsername: data['username'],
+                        viewers: data['viewers'],
+                        pinned: false);
+                    notifyListeners();
+                  });
+                }
                 break;
             }
           }

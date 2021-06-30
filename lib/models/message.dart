@@ -1,9 +1,9 @@
 class MessageModel {}
 
 class PinnableMessageModel extends MessageModel {
-  final DateTime pinnedUntil;
+  bool pinned;
 
-  PinnableMessageModel({required this.pinnedUntil});
+  PinnableMessageModel({required this.pinned});
 }
 
 class TwitchMessageModel implements MessageModel {
@@ -34,6 +34,6 @@ class TwitchRaidEventModel extends PinnableMessageModel {
       {required this.profilePictureUrl,
       required this.fromUsername,
       required this.viewers,
-      required DateTime pinnedUntil})
-      : super(pinnedUntil: pinnedUntil);
+      required bool pinned})
+      : super(pinned: pinned);
 }
