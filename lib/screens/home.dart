@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: ChannelPanelWidget(
                 onScrollback: (isScrolled) {
                   setState(() {
-                    // _minimized = isScrolled;
+                    _minimized = isScrolled;
                   });
                 },
                 onResize: (dy) {
