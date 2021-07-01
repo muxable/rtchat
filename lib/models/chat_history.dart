@@ -144,4 +144,6 @@ class ChatHistoryModel extends ChangeNotifier {
     _ttsModule.enabled = enabled;
     notifyListeners();
   }
+
+  TtsModel get ttsModule => _ttsModule;
 }
