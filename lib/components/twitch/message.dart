@@ -223,7 +223,7 @@ class TwitchMessageWidget extends StatelessWidget {
             ));
           }
           final url =
-              "https://static-cdn.jtvnw.net/emoticons/v1/${child.key}/4.0";
+              "https://static-cdn.jtvnw.net/emoticons/v1/${child.key}/1.0";
           children.add(WidgetSpan(
               alignment: PlaceholderAlignment.middle,
               child: Image(
