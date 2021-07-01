@@ -128,7 +128,7 @@ class ChannelPanelWidget extends StatelessWidget {
                 ),
               ),
               PopupMenuButton<String>(
-                icon: const Icon(Icons.build, color: Colors.white),
+                icon: const Icon(Icons.build),
                 onSelected: (value) async {
                   if (value == "Clear Chat") {
                     final channelsModel =
