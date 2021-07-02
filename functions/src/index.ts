@@ -5,7 +5,8 @@ import { app as authApp } from "./auth";
 import { getAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
-import * as serviceAccount from "../service_account.json"; 
+import * as serviceAccount from "../service_account.json";
+import { eventsub } from "./eventsub";
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
@@ -260,5 +261,5 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
-export { subscribe, unsubscribe };
+export { subscribe, unsubscribe, eventsub };
 export const auth = functions.https.onRequest(authApp);
