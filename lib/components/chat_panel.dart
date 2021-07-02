@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/sliver_pinnable_header.dart';
 import 'package:rtchat/components/twitch/message.dart';
 import 'package:rtchat/components/twitch/raid_event.dart';
 import 'package:rtchat/models/channels.dart';
@@ -23,36 +24,52 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
   var _atBottom = true;
 
   @override
-  void initState() {
-    super.initState();
-
-    _controller.addListener(() {
-      final value =
-          _controller.position.atEdge && _controller.position.pixels == 0;
-      if (_atBottom != value) {
-        setState(() {
-          _atBottom = value;
-        });
-        if (widget.onScrollback != null) {
-          widget.onScrollback!(!_atBottom);
-        }
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Stack(children: [
       Consumer<ChatHistoryModel>(builder: (context, model, child) {
         final messages = model.messages.reversed.toList();
-        return ListView.builder(
+        final slivers = <Widget>[];
+        for (var start = 0; start < messages.length;) {
+          final nextPinnedIndex =
+              messages.indexWhere((element) => element.pinned, start);
+          final unpinned = nextPinnedIndex == -1
+              ? messages.sublist(start)
+              : messages.sublist(start, nextPinnedIndex);
+          if (unpinned.isNotEmpty) {
+            slivers.add(SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+              return ChatPanelMessageWidget(message: unpinned[index]);
+            }, childCount: unpinned.length)));
+          }
+          if (nextPinnedIndex == -1) {
+            break;
+          } else {
+            slivers.add(SliverPinnableHeader(
+                child: ChatPanelMessageWidget(
+                    message: messages[nextPinnedIndex])));
+            start = nextPinnedIndex + 1;
+          }
+        }
+        return NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            final value =
+                notification.metrics.atEdge && notification.metrics.pixels == 0;
+            if (_atBottom != value) {
+              setState(() {
+                _atBottom = value;
+              });
+              if (widget.onScrollback != null) {
+                widget.onScrollback!(!_atBottom);
+              }
+            }
+            return false;
+          },
+          child: CustomScrollView(
             controller: _controller,
-            padding: const EdgeInsets.symmetric(vertical: 8),
             reverse: true,
-            itemCount: messages.length,
-            itemBuilder: (context, index) {
-              return ChatPanelMessageWidget(message: messages[index]);
-            });
+            slivers: slivers,
+          ),
+        );
       }),
       Builder(builder: (context) {
         if (_atBottom) {

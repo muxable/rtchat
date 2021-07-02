@@ -62,7 +62,8 @@ class ChatHistoryModel extends ChangeNotifier {
                 }
 
                 _messages.add(TwitchMessageModel(
-                  messageId: tags['id'],
+                  messageId: change.doc.id,
+                  pinned: false,
                   channel: data['channel'],
                   author: author,
                   message: message,
@@ -93,6 +94,7 @@ class ChatHistoryModel extends ChangeNotifier {
                   if (message is TwitchMessageModel) {
                     _messages[index] = TwitchMessageModel(
                       messageId: message.messageId,
+                      pinned: false,
                       channel: message.channel,
                       author: message.author,
                       message: message.message,
@@ -110,23 +112,25 @@ class ChatHistoryModel extends ChangeNotifier {
                 final remaining = expiration.difference(DateTime.now());
 
                 _messages.add(TwitchRaidEventModel(
+                    messageId: change.doc.id,
                     profilePictureUrl: data['tags']
                         ['msg-param-profileImageURL'],
                     fromUsername: data['username'],
                     viewers: data['viewers'],
                     pinned: true));
 
-                if (remaining > Duration.zero) {
-                  Timer(remaining, () {
-                    _messages[index] = TwitchRaidEventModel(
-                        profilePictureUrl: data['tags']
-                            ['msg-param-profileImageURL'],
-                        fromUsername: data['username'],
-                        viewers: data['viewers'],
-                        pinned: false);
-                    notifyListeners();
-                  });
-                }
+                // if (remaining > Duration.zero) {
+                //   Timer(remaining, () {
+                //     _messages[index] = TwitchRaidEventModel(
+                //         messageId: change.doc.id,
+                //         profilePictureUrl: data['tags']
+                //             ['msg-param-profileImageURL'],
+                //         fromUsername: data['username'],
+                //         viewers: data['viewers'],
+                //         pinned: false);
+                //     notifyListeners();
+                //   });
+                // }
                 break;
             }
           }

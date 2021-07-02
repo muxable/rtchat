@@ -39,15 +39,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             return Column(children: [
               LayoutBuilder(builder: (context, constraints) {
                 return NotificationPanelWidget(
-                  height: min(
-                      500, max(_minimized ? 0 : layoutModel.panelHeight, 56)),
+                  height:
+                      _minimized ? 56 : layoutModel.panelHeight.clamp(56, 500),
+                  maxHeight: layoutModel.panelHeight.clamp(56, 500),
                 );
               }),
               Expanded(
                   child: ChannelPanelWidget(
                 onScrollback: (isScrolled) {
                   setState(() {
-                    _minimized = isScrolled;
+                    // _minimized = isScrolled;
                   });
                 },
                 onResize: (dy) {
