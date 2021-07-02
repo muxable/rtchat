@@ -4,8 +4,18 @@ final validateUrl = Uri.https('id.twitch.tv', '/oauth2/validate');
 
 const TWITCH_CLIENT_ID = "edfnh2q85za8phifif9jxt3ey6t9b9";
 
-final BOT_LIST =
-    ['streamlab', 'nightbot', 'xanbot', 'ankhbot', 'phantombot'].toSet();
+final BOT_LIST = [
+  'streamlab',
+  'streamlabs',
+  'nightbot',
+  'xanbot',
+  'ankhbot',
+  'moobot',
+  'wizebot',
+  'phantombot',
+  'streamelements',
+  'streamelement'
+].toSet();
 
 class TtsModel {
   final FlutterTts _tts = FlutterTts();
@@ -35,8 +45,6 @@ class TtsModel {
       return;
     }
     var author = getMsgAuthor(message).toLowerCase();
-    print('author: $author');
-    print('isbotmuted: $_isBotMuted');
     if (_isBotMuted && BOT_LIST.contains(author)) {
       return;
     }

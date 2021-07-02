@@ -23,9 +23,9 @@ class TtsOptionsWidget extends StatelessWidget {
             title: const Text('Option to Mute Bot'),
             subtitle: const Text(
                 'Useful when TTS is enabled and commands are excessively used'),
-            value: ttsModel.isBotMuted,
+            value: model.ttsIsBotMuted,
             onChanged: (value) {
-              ttsModel.isBotMuted = value;
+              model.ttsIsBotMuted = value;
             },
           ),
         ],
