@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:linkify/linkify.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/twitch/badge.dart';
+import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:url_launcher/url_launcher.dart';

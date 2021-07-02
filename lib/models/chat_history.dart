@@ -117,20 +117,20 @@ class ChatHistoryModel extends ChangeNotifier {
                         ['msg-param-profileImageURL'],
                     fromUsername: data['username'],
                     viewers: data['viewers'],
-                    pinned: true));
+                    pinned: remaining > Duration.zero));
 
-                // if (remaining > Duration.zero) {
-                //   Timer(remaining, () {
-                //     _messages[index] = TwitchRaidEventModel(
-                //         messageId: change.doc.id,
-                //         profilePictureUrl: data['tags']
-                //             ['msg-param-profileImageURL'],
-                //         fromUsername: data['username'],
-                //         viewers: data['viewers'],
-                //         pinned: false);
-                //     notifyListeners();
-                //   });
-                // }
+                if (remaining > Duration.zero) {
+                  Timer(remaining, () {
+                    _messages[index] = TwitchRaidEventModel(
+                        messageId: change.doc.id,
+                        profilePictureUrl: data['tags']
+                            ['msg-param-profileImageURL'],
+                        fromUsername: data['username'],
+                        viewers: data['viewers'],
+                        pinned: false);
+                    notifyListeners();
+                  });
+                }
                 break;
             }
           }

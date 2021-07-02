@@ -55,7 +55,8 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
     return AnimatedContainer(
       width: widget.width,
       height: widget.height,
-      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 400),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         const TitleBarWidget(),
         Expanded(child: Builder(builder: (context) {
