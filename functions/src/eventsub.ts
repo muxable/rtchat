@@ -41,6 +41,7 @@ export async function checkEventSubSubscriptions(userId: string) {
   }
   await Promise.all(
     Object.values(EventsubType).map((type) => {
+      console.log("subscribing to", type);
       return fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
         headers: {
           "Client-ID": TWITCH_CLIENT_ID,
