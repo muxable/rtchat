@@ -9,6 +9,7 @@ import {
 import fetch from "node-fetch";
 
 enum EventsubType {
+  ChannelFollow = "channel.follow",
   ChannelSubscribe = "channel.subscribe",
   ChannelSubscriptionEnd = "channel.subscription.end",
   ChannelBan = "channel.ban",
@@ -79,7 +80,7 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
     res.status(403).send();
     return;
   } else {
-    console.log("/api/webhooks/twitch", JSON.stringify(req.body));
+    console.log("/eventsub", JSON.stringify(req.body));
   }
 
   const status = req.body?.subscription?.status;
