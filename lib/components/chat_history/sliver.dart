@@ -55,11 +55,7 @@ class RenderPinnableMessageSliver extends RenderSliverToBoxAdapter {
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
-    if (_pinned) {
-      _controller.forward(from: 0.0);
-    } else {
-      _controller.reverse(from: 1.0);
-    }
+    _animate(_pinned);
   }
 
   @override
@@ -74,12 +70,20 @@ class RenderPinnableMessageSliver extends RenderSliverToBoxAdapter {
     if (value == _pinned) {
       return;
     }
-    if (value) {
-      _controller.forward(from: 0.0);
-    } else {
-      _controller.reverse(from: 1.0);
-    }
+    _animate(value);
     _pinned = value;
+  }
+
+  void _animate(bool value) {
+    if (value) {
+      if (!_controller.isCompleted) {
+        _controller.forward(from: 0.0);
+      }
+    } else {
+      if (!_controller.isDismissed) {
+        _controller.reverse(from: 1.0);
+      }
+    }
   }
 
   @override
