@@ -72,9 +72,5 @@ class TtsModel {
 
   set isBotMuted(bool value) {
     _isBotMuted = value;
-    if (!value) {
-      _queue.clear();
-      _tts.stop();
-    }
   }
 }

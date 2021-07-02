@@ -7,7 +7,6 @@ class TtsOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<ChatHistoryModel>(builder: (context, model, child) {
-      final ttsModel = model.ttsModule;
       return Column(
         children: [
           Padding(
