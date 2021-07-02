@@ -52,9 +52,6 @@ class TwitchBadgeModel extends ChangeNotifier {
       localBadgeSets.addAll((await _localCache[channel.channelId])!);
     }
 
-    _enabled = _enabled.intersection(
-        globalBadgeSets.keys.toSet().union(localBadgeSets.keys.toSet()));
-
     notifyListeners();
   }
 
@@ -74,9 +71,6 @@ class TwitchBadgeModel extends ChangeNotifier {
   }
 
   void setEnabled(String key, bool enabled) {
-    if (!localBadgeSets.containsKey(key) && !globalBadgeSets.containsKey(key)) {
-      return;
-    }
     if (enabled) {
       _enabled.add(key);
     } else {
@@ -101,8 +95,9 @@ class TwitchBadgeModel extends ChangeNotifier {
     final badges = json['enabled'];
     if (badges != null) {
       for (dynamic badge in badges) {
-        setEnabled(badge, true);
+        _enabled.add(badge);
       }
+      notifyListeners();
     }
   }
 
