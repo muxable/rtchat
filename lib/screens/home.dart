@@ -32,45 +32,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-          if (MediaQuery.of(context).orientation == Orientation.portrait) {
-            return Column(children: [
-              LayoutBuilder(builder: (context, constraints) {
-                return NotificationPanelWidget(
-                  height:
-                      _minimized ? 56 : layoutModel.panelHeight.clamp(56, 500),
-                  maxHeight: layoutModel.panelHeight.clamp(56, 500),
-                );
+    final content =
+        Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+      if (MediaQuery.of(context).orientation == Orientation.portrait) {
+        return Column(children: [
+          LayoutBuilder(builder: (context, constraints) {
+            return NotificationPanelWidget(
+              height: _minimized ? 56 : layoutModel.panelHeight.clamp(56, 500),
+              maxHeight: layoutModel.panelHeight.clamp(56, 500),
+            );
+          }),
+          Expanded(
+              child: ChannelPanelWidget(
+            onScrollback: (isScrolled) {
+              setState(() {
+                _minimized = isScrolled;
+              });
+            },
+            onResize: (dy) {
+              layoutModel.updatePanelHeight(dy: dy);
+            },
+          )),
+        ]);
+      } else {
+        return Row(children: [
+          NotificationPanelWidget(
+            width: min(500, max(layoutModel.panelWidth, 300)),
+          ),
+          GestureDetector(
+              child: Container(
+                  width: layoutModel.locked ? 0 : 8, color: Colors.grey),
+              onHorizontalDragUpdate: (details) {
+                layoutModel.updatePanelWidth(dx: details.delta.dx);
               }),
-              Expanded(
-                  child: ChannelPanelWidget(
-                onScrollback: (isScrolled) {
-                  setState(() {
-                    _minimized = isScrolled;
-                  });
-                },
-                onResize: (dy) {
-                  layoutModel.updatePanelHeight(dy: dy);
-                },
-              )),
-            ]);
-          } else {
-            return Row(children: [
-              NotificationPanelWidget(
-                width: min(500, max(layoutModel.panelWidth, 300)),
-              ),
-              GestureDetector(
-                  child: Container(
-                      width: layoutModel.locked ? 0 : 8, color: Colors.grey),
-                  onHorizontalDragUpdate: (details) {
-                    layoutModel.updatePanelWidth(dx: details.delta.dx);
-                  }),
-              Expanded(child: ChannelPanelWidget()),
-            ]);
-          }
-        }),
+          Expanded(child: ChannelPanelWidget()),
+        ]);
+      }
+    });
+    return Scaffold(
+      body: Container(
+        color: Theme.of(context).primaryColor,
+        child: SafeArea(
+          child: Container(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: content,
+          ),
+        ),
       ),
     );
   }

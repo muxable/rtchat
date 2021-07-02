@@ -19,9 +19,9 @@ class ChannelPanelWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<ChannelsModel>(builder: (context, channelsModel, child) {
-      return Column(children: [
-        // header
-        Container(
+      final header = DefaultTextStyle.merge(
+        style: TextStyle(color: Colors.white),
+        child: Container(
           height: 56,
           color: Theme.of(context).primaryColor,
           child: Padding(
@@ -84,7 +84,11 @@ class ChannelPanelWidget extends StatelessWidget {
             ]),
           ),
         ),
+      );
 
+      return Column(children: [
+        // header
+        header,
         // body
         Expanded(child: ChatPanelWidget(onScrollback: onScrollback)),
 
