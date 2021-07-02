@@ -1,5 +1,4 @@
 import * as admin from "firebase-admin";
-import fetch from "node-fetch";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
 
 export const TWITCH_CLIENT_ID = "edfnh2q85za8phifif9jxt3ey6t9b9";
@@ -20,13 +19,6 @@ export const TWITCH_OAUTH_CONFIG = {
     authorizationMethod: "body",
   },
 } as ModuleOptions<"client_id">;
-
-export async function getAppToken() {
-  const url = `https://id.twitch.tv/oauth2/token?client_id=${TWITCH_CLIENT_ID}&client_secret=${TWITCH_CLIENT_SECRET}&grant_type=client_credentials`;
-  const response = await fetch(url, { method: "POST" });
-  const json = await response.json();
-  return json["access_token"] as string;
-}
 
 export async function getAccessToken(userId: string, provider: string) {
   // fetch the token from the database.

@@ -1,8 +1,13 @@
 import * as crypto from "crypto";
-import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
+import * as admin from "firebase-admin";
+import {
+  TWITCH_CLIENT_ID,
+  TWITCH_CLIENT_SECRET,
+  TWITCH_OAUTH_CONFIG,
+} from "./oauth";
 import fetch from "node-fetch";
-import { getAppToken, TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET } from "./oauth";
+import { ClientCredentials } from "simple-oauth2";
 
 enum EventsubType {
   ChannelFollow = "channel.follow",
@@ -23,7 +28,9 @@ enum EventsubType {
 }
 
 export async function checkEventSubSubscriptions(userId: string) {
-  const token = await getAppToken();
+  const credentials = await new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken(
+    { scopes: [] }
+  );
   const { key: twitchUserId } = await admin
     .database()
     .ref("userIds")
@@ -37,14 +44,14 @@ export async function checkEventSubSubscriptions(userId: string) {
   }
   await Promise.all(
     Object.values(EventsubType).map(async (type) => {
-      console.log("subscribing to", type);
+      console.log("subscribing to", type, twitchUserId);
       const response = await fetch(
         "https://api.twitch.tv/helix/eventsub/subscriptions",
         {
           method: "POST",
           headers: {
             "Client-ID": TWITCH_CLIENT_ID,
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${credentials.token.access_token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
