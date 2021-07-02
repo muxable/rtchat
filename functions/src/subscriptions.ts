@@ -23,8 +23,12 @@ export const subscribe = functions.https.onCall(async (data, context) => {
     case "twitch":
       const channel = await getTwitchLogin(context.auth.uid, channelId);
       if (!channel) {
-        return null;
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "invalid channel"
+        );
       }
+      await checkEventSubSubscriptions(context.auth.uid);
       // check if it's currently locked
       const lock = await admin
         .database()
@@ -35,7 +39,6 @@ export const subscribe = functions.https.onCall(async (data, context) => {
       if (lock.exists()) {
         return channel;
       }
-      await checkEventSubSubscriptions(context.auth.uid);
       await pubsub
         .topic("projects/rtchat-47692/topics/subscribe")
         .publish(Buffer.from(JSON.stringify({ provider, channel })));
