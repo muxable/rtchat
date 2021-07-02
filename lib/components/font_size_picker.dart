@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/twitch/message.dart';
+import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
 
@@ -23,17 +23,18 @@ class FontSizePickerWidget extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: TwitchMessageWidget(TwitchMessageModel(
                         messageId: "placeholder",
+                        pinned: false,
                         channel: "muxfd",
                         author: 'muxfd',
                         tags: {
                           "message-type": "chat",
                           "color": "#800000",
                           "badges-raw": "premium/1",
-                          "emotes-raw": "25:35-39",
+                          "emotes-raw": "25:36-40",
                           "room-id": "158394109",
                         },
                         timestamp: DateTime.now(),
-                        message: "have you followed muxfd on twitch? Kappa",
+                        message: "have you followed @muxfd on twitch? Kappa",
                         deleted: false)),
                   ),
                 ),

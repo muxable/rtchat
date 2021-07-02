@@ -10,9 +10,13 @@ import 'package:rtchat/models/user.dart';
 class NotificationPanelWidget extends StatefulWidget {
   final double width;
   final double height;
+  final double maxHeight;
 
   const NotificationPanelWidget(
-      {Key? key, this.width = double.infinity, this.height = double.infinity})
+      {Key? key,
+      this.width = double.infinity,
+      this.height = double.infinity,
+      this.maxHeight = double.infinity})
       : super(key: key);
 
   @override
@@ -51,7 +55,8 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
     return AnimatedContainer(
       width: widget.width,
       height: widget.height,
-      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 400),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         const TitleBarWidget(),
         Expanded(child: Builder(builder: (context) {
@@ -108,8 +113,8 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
           return ClipRect(
             child: OverflowBox(
                 alignment: Alignment.topCenter,
-                minHeight: widget.height,
-                maxHeight: widget.height,
+                minHeight: widget.maxHeight,
+                maxHeight: widget.maxHeight,
                 child: tabs),
           );
         })),
