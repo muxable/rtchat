@@ -3,52 +3,53 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 class SliverPinnableHeader extends SingleChildRenderObjectWidget {
+  final double pinFraction;
+
   const SliverPinnableHeader({
     Key? key,
+    required this.pinFraction,
     required Widget child,
   }) : super(key: key, child: child);
 
   @override
   RenderSliverPinnableHeader createRenderObject(BuildContext context) {
-    return RenderSliverPinnableHeader();
+    return RenderSliverPinnableHeader(pinFraction: pinFraction);
+  }
+
+  @override
+  void updateRenderObject(
+      BuildContext context, RenderSliverPinnableHeader renderObject) {
+    renderObject.pinFraction = pinFraction;
   }
 }
 
-class RenderSliverPinnableHeader extends RenderSliverSingleBoxAdapter {
-  @override
-  void performLayout() {
-    child!.layout(constraints.asBoxConstraints(), parentUsesSize: true);
-    double childExtent;
-    switch (constraints.axis) {
-      case Axis.horizontal:
-        childExtent = child!.size.width;
-        break;
-      case Axis.vertical:
-        childExtent = child!.size.height;
-        break;
-    }
-    final paintedChildExtent = min(
-      childExtent,
-      constraints.remainingPaintExtent - constraints.overlap,
-    );
-    final layoutExtent =
-        max(0.0, paintedChildExtent - constraints.scrollOffset);
-    final paintOrigin =
-        constraints.overlap + (layoutExtent - paintedChildExtent);
-    geometry = SliverGeometry(
-      visible: true,
-      paintExtent: paintedChildExtent,
-      maxPaintExtent: childExtent,
-      maxScrollObstructionExtent: childExtent,
-      paintOrigin: paintOrigin,
-      scrollExtent: childExtent,
-      layoutExtent: layoutExtent,
-      hasVisualOverflow: paintedChildExtent < childExtent,
-    );
+class RenderSliverPinnableHeader extends RenderSliverToBoxAdapter {
+  double _pinFraction;
+
+  RenderSliverPinnableHeader({required double pinFraction, RenderBox? child})
+      : _pinFraction = pinFraction,
+        super(child: child);
+
+  double get pinFraction => _pinFraction;
+
+  set pinFraction(double value) {
+    _pinFraction = value;
+    markNeedsPaint();
+    markNeedsSemanticsUpdate();
   }
 
   @override
-  double childMainAxisPosition(RenderBox child) {
-    return 0;
+  void performLayout() {
+    super.performLayout();
+
+    geometry = SliverGeometry(
+      scrollExtent: geometry!.scrollExtent,
+      paintExtent: geometry!.paintExtent,
+      cacheExtent: geometry!.cacheExtent,
+      maxPaintExtent: geometry!.maxPaintExtent,
+      hitTestExtent: geometry!.hitTestExtent,
+      hasVisualOverflow: geometry!.hasVisualOverflow,
+      visible: true,
+    );
   }
 }

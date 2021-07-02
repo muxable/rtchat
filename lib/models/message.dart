@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 abstract class MessageModel {
   final bool pinned;
   final String messageId;

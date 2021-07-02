@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/sliver_pinnable_header.dart';
+import 'package:rtchat/components/chat_history_render_box.dart';
 import 'package:rtchat/components/twitch/message.dart';
 import 'package:rtchat/components/twitch/raid_event.dart';
 import 'package:rtchat/models/channels.dart';
@@ -28,28 +28,6 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
     return Stack(children: [
       Consumer<ChatHistoryModel>(builder: (context, model, child) {
         final messages = model.messages.reversed.toList();
-        final slivers = <Widget>[];
-        for (var start = 0; start < messages.length;) {
-          final nextPinnedIndex =
-              messages.indexWhere((element) => element.pinned, start);
-          final unpinned = nextPinnedIndex == -1
-              ? messages.sublist(start)
-              : messages.sublist(start, nextPinnedIndex);
-          if (unpinned.isNotEmpty) {
-            slivers.add(SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-              return ChatPanelMessageWidget(message: unpinned[index]);
-            }, childCount: unpinned.length)));
-          }
-          if (nextPinnedIndex == -1) {
-            break;
-          } else {
-            slivers.add(SliverPinnableHeader(
-                child: ChatPanelMessageWidget(
-                    message: messages[nextPinnedIndex])));
-            start = nextPinnedIndex + 1;
-          }
-        }
         return NotificationListener<ScrollNotification>(
           onNotification: (notification) {
             final value =
@@ -64,10 +42,10 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
             }
             return false;
           },
-          child: CustomScrollView(
+          child: PinnableMessageScrollView(
             controller: _controller,
             reverse: true,
-            slivers: slivers,
+            messages: messages,
           ),
         );
       }),
