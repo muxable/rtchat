@@ -31,13 +31,14 @@ export async function checkEventSubSubscriptions(userId: string) {
   const credentials = await new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken(
     { scopes: [] }
   );
-  const { key: twitchUserId } = await admin
+  const snapshot = await admin
     .database()
     .ref("userIds")
     .child("twitch")
     .orderByValue()
     .equalTo(userId)
     .get();
+  const twitchUserId = Object.keys(snapshot.val() || {})[0];
   if (!twitchUserId) {
     console.log("missing twitch user id");
     return;
