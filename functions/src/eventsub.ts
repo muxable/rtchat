@@ -12,15 +12,21 @@ import { ClientCredentials } from "simple-oauth2";
 enum EventsubType {
   ChannelFollow = "channel.follow",
   ChannelSubscribe = "channel.subscribe",
+  ChannelSubscriptionGift = "channel.subscription.gift",
+  ChannelSubscriptionMessage = "channel.subscription.message",
   ChannelSubscriptionEnd = "channel.subscription.end",
+  ChannelCheer = "channel.cheer",
+  ChannelRaid = "channel.raid",
   ChannelBan = "channel.ban",
   ChannelUnban = "channel.unban",
   ChannelChannelPointsCustomRewardRedemptionAdd = "channel.channel_points_custom_reward_redemption.add",
+  ChannelChannelPointsCustomRewardRedemptionUpdate = "channel.channel_points_custom_reward_redemption.update",
   ChannelPollBegin = "channel.poll.begin",
   ChannelPollProgress = "channel.poll.progress",
   ChannelPollEnd = "channel.poll.end",
   ChannelPredictionBegin = "channel.prediction.begin",
   ChannelPredictionProgress = "channel.prediction.progress",
+  ChannelPredictionLock = "channel.prediction.lock",
   ChannelPredictionEnd = "channel.prediction.end",
   ChannelHypeTrainBegin = "channel.hype_train.begin",
   ChannelHypeTrainProgress = "channel.hype_train.progress",
@@ -74,10 +80,9 @@ export async function checkEventSubSubscriptions(userId: string) {
 }
 
 export const eventsub = functions.https.onRequest(async (req, res) => {
-  const hmacMessage =
-    (req.headers["twitch-eventsub-message-id"] as string) +
-    (req.headers["twitch-eventsub-message-timestamp"] as string) +
-    req.rawBody.toString("utf-8");
+  const messageId = req.headers["twitch-eventsub-message-id"] as string;
+  const timestamp = req.headers["twitch-eventsub-message-timestamp"] as string;
+  const hmacMessage = messageId + timestamp + req.rawBody.toString("utf-8");
   const signature = crypto
     .createHmac("sha256", "pszd4vpr7e3d22m6l7442za3vxzwvc")
     .update(hmacMessage)
@@ -100,9 +105,31 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
   } else if (status === "enabled") {
     const type = req.body?.subscription?.type as EventsubType;
 
+    const messageRef = admin
+      .firestore()
+      .collection("messages")
+      .doc(`twitch:${messageId}`);
+
+    const channelId = `twitch:${req.body.event["broadcaster_user_id"]}`;
+
     switch (type) {
-      case EventsubType.ChannelBan:
-      case EventsubType.ChannelChannelPointsCustomRewardRedemptionAdd:
+      case EventsubType.ChannelFollow:
+      case EventsubType.ChannelSubscribe:
+      case EventsubType.ChannelSubscriptionGift:
+      case EventsubType.ChannelSubscriptionMessage:
+      case EventsubType.ChannelCheer:
+      case EventsubType.ChannelRaid:
+        // only log certain events to reduce noise.
+        await messageRef.set({
+          channelId,
+          type,
+          timestamp: admin.firestore.Timestamp.fromMillis(
+            Date.parse(timestamp)
+          ),
+          event: req.body.event,
+        });
+        break;
+      default:
     }
   }
   res.status(200).send();
