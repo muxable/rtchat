@@ -40,26 +40,30 @@ export async function checkEventSubSubscriptions(userId: string) {
     return;
   }
   await Promise.all(
-    Object.values(EventsubType).map((type) => {
+    Object.values(EventsubType).map(async (type) => {
       console.log("subscribing to", type);
-      return fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
-        headers: {
-          "Client-ID": TWITCH_CLIENT_ID,
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type,
-          version: "1",
-          condition: { broadcaster_user_id: twitchUserId },
-          transport: {
-            method: "webhook",
-            callback:
-              "https://us-central1-rtchat-47692.cloudfunctions.net/eventsub",
-            secret: TWITCH_CLIENT_SECRET,
+      const response = await fetch(
+        "https://api.twitch.tv/helix/eventsub/subscriptions",
+        {
+          headers: {
+            "Client-ID": TWITCH_CLIENT_ID,
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-        }),
-      });
+          body: JSON.stringify({
+            type,
+            version: "1",
+            condition: { broadcaster_user_id: twitchUserId },
+            transport: {
+              method: "webhook",
+              callback:
+                "https://us-central1-rtchat-47692.cloudfunctions.net/eventsub",
+              secret: TWITCH_CLIENT_SECRET,
+            },
+          }),
+        }
+      );
+      console.log(await response.json());
     })
   );
 }
