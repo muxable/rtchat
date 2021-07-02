@@ -45,6 +45,7 @@ export async function checkEventSubSubscriptions(userId: string) {
       const response = await fetch(
         "https://api.twitch.tv/helix/eventsub/subscriptions",
         {
+          method: "POST",
           headers: {
             "Client-ID": TWITCH_CLIENT_ID,
             Authorization: `Bearer ${token}`,
