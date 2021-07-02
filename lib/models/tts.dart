@@ -22,6 +22,8 @@ class TtsModel {
   final List<String> _queue = [];
   bool _enabled = false;
   bool _isBotMuted = false;
+  double _speed = 1;
+  double _pitch = 1;
 
   TtsModel() {
     _tts.setCompletionHandler(() {
@@ -49,6 +51,8 @@ class TtsModel {
       return;
     }
     if (_queue.isEmpty) {
+      _tts.setPitch(pitch);
+      _tts.setSpeechRate(speed);
       _tts.speak(message);
     }
     _queue.add(message);
@@ -72,5 +76,21 @@ class TtsModel {
 
   set isBotMuted(bool value) {
     _isBotMuted = value;
+  }
+
+  double get speed {
+    return _speed;
+  }
+
+  set speed(double value) {
+    _speed = value;
+  }
+
+  double get pitch {
+    return _pitch;
+  }
+
+  set pitch(double value) {
+    _pitch = value;
   }
 }

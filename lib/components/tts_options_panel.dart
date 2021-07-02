@@ -14,18 +14,45 @@ class TtsOptionsWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // future stuff for tts speed and pitch adjustment
+                Text("TTS Speed",
+                    style: TextStyle(
+                      color: Theme.of(context).accentColor,
+                      fontWeight: FontWeight.bold,
+                    )),
+                Slider.adaptive(
+                  value: model.ttsSpeed,
+                  min: 0.1,
+                  max: 2,
+                  label: "speed: ${model.ttsSpeed}",
+                  onChanged: (value) {
+                    model.ttsSpeed = value;
+                  },
+                ),
+                Text("TTS Pitch",
+                    style: TextStyle(
+                      color: Theme.of(context).accentColor,
+                      fontWeight: FontWeight.bold,
+                    )),
+                Slider.adaptive(
+                  value: model.ttsPitch,
+                  min: 0.1,
+                  max: 3,
+                  label: "${model.ttsPitch}",
+                  onChanged: (value) {
+                    model.ttsPitch = value;
+                  },
+                ),
+                SwitchListTile.adaptive(
+                  title: const Text('Option to Mute Bot'),
+                  subtitle: const Text(
+                      'Useful when TTS is enabled and commands are excessively used'),
+                  value: model.ttsIsBotMuted,
+                  onChanged: (value) {
+                    model.ttsIsBotMuted = value;
+                  },
+                ),
               ],
             ),
-          ),
-          SwitchListTile.adaptive(
-            title: const Text('Option to Mute Bot'),
-            subtitle: const Text(
-                'Useful when TTS is enabled and commands are excessively used'),
-            value: model.ttsIsBotMuted,
-            onChanged: (value) {
-              model.ttsIsBotMuted = value;
-            },
           ),
         ],
       );
