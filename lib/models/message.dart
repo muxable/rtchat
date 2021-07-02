@@ -5,6 +5,11 @@ abstract class MessageModel {
   const MessageModel({required this.pinned, required this.messageId});
 }
 
+abstract class PinnableMessageModel extends MessageModel {
+  const PinnableMessageModel({required bool pinned, required String messageId})
+      : super(pinned: pinned, messageId: messageId);
+}
+
 class TwitchMessageModel extends MessageModel {
   final String channel;
   final String author;
@@ -25,12 +30,12 @@ class TwitchMessageModel extends MessageModel {
       : super(messageId: messageId, pinned: pinned);
 }
 
-class TwitchRaidEventModel extends MessageModel {
+class TwitchRaidEventModel extends PinnableMessageModel {
   final String profilePictureUrl;
   final String fromUsername;
   final int viewers;
 
-  TwitchRaidEventModel(
+  const TwitchRaidEventModel(
       {required bool pinned,
       required String messageId,
       required this.profilePictureUrl,

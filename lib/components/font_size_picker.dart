@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/twitch/message.dart';
+import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
 
