@@ -3,6 +3,7 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import {
   getAccessToken,
+  getAppToken,
   TWITCH_CLIENT_ID,
   TWITCH_CLIENT_SECRET,
 } from "./oauth";
@@ -27,7 +28,7 @@ enum EventsubType {
 }
 
 export async function checkEventSubSubscriptions(userId: string) {
-  const token = await getAccessToken(userId, "twitch");
+  const token = await getAppToken();
   const { key: twitchUserId } = await admin
     .database()
     .ref("userIds")

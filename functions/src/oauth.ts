@@ -20,6 +20,13 @@ export const TWITCH_OAUTH_CONFIG = {
   },
 } as ModuleOptions<"client_id">;
 
+export async function getAppToken() {
+  const url = `https://id.twitch.tv/oauth2/token?client_id=${TWITCH_CLIENT_ID}&client_secret=${TWITCH_CLIENT_SECRET}&grant_type=client_credentials`;
+  const response = await fetch(url, { method: "POST" });
+  const json = await response.json();
+  return json["access_token"] as string;
+}
+
 export async function getAccessToken(userId: string, provider: string) {
   // fetch the token from the database.
   const ref = admin.firestore().collection("tokens").doc(userId);
