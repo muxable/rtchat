@@ -1,5 +1,6 @@
-import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
 import * as admin from "firebase-admin";
+import fetch from "node-fetch";
+import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
 
 export const TWITCH_CLIENT_ID = "edfnh2q85za8phifif9jxt3ey6t9b9";
 export const TWITCH_CLIENT_SECRET = "yn6jfzl3xturs91jdbljws5ouksqfj";
