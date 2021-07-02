@@ -11,7 +11,7 @@
   "engines": {
     "node": "12"
   },
-  "main": "lib/index.js",
+  "main": "lib/src/index.js",
   "dependencies": {
     "@google-cloud/connect-firestore": "^2.0.1",
     "@google-cloud/pubsub": "^2.12.0",
