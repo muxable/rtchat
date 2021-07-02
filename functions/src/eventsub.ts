@@ -1,13 +1,8 @@
 import * as crypto from "crypto";
-import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import {
-  getAccessToken,
-  getAppToken,
-  TWITCH_CLIENT_ID,
-  TWITCH_CLIENT_SECRET,
-} from "./oauth";
+import * as functions from "firebase-functions";
 import fetch from "node-fetch";
+import { getAppToken, TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET } from "./oauth";
 
 enum EventsubType {
   ChannelFollow = "channel.follow",
