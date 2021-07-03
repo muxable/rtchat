@@ -1,13 +1,17 @@
-import * as admin from "firebase-admin";
 import { Message, PubSub } from "@google-cloud/pubsub";
-import * as dotenv from "dotenv";
 import Bottleneck from "bottleneck";
+import * as dotenv from "dotenv";
+import * as admin from "firebase-admin";
 import { v4 as uuidv4 } from "uuid";
+import * as serviceAccount from "../service_account.json";
 import { buildClient } from "./client";
 
 dotenv.config();
+
+const PROJECT_ID = serviceAccount.project_id;
+
 admin.initializeApp({
-  databaseURL: "https://rtchat-47692-default-rtdb.firebaseio.com",
+  databaseURL: `https://${PROJECT_ID}-default-rtdb.firebaseio.com`,
 });
 
 const AGENT_ID = uuidv4();
@@ -114,19 +118,19 @@ async function onUnsubscribe(message: Message) {
   }
 }
 
-const JOIN_TOPIC = new PubSub().topic("projects/rtchat-47692/topics/subscribe");
+const JOIN_TOPIC = new PubSub().topic(`projects/${PROJECT_ID}/topics/subscribe`);
 
 const JOIN_SUBSCRIPTION = JOIN_TOPIC.subscription(
-  "projects/rtchat-47692/subscriptions/subscribe-sub"
+  `projects/${PROJECT_ID}/subscriptions/subscribe-sub`
 );
 
 JOIN_SUBSCRIPTION.on("message", onSubscribe);
 
 const LEAVE_TOPIC = new PubSub().topic(
-  "projects/rtchat-47692/topics/unsubscribe"
+  `projects/${PROJECT_ID}/topics/unsubscribe`
 );
 
-const LEAVE_SUBSCRIPTION_ID = `projects/rtchat-47692/subscriptions/unsubscribe-${AGENT_ID}`;
+const LEAVE_SUBSCRIPTION_ID = `projects/${PROJECT_ID}/subscriptions/unsubscribe-${AGENT_ID}`;
 
 (async function () {
   const [subscription] = await LEAVE_TOPIC.createSubscription(

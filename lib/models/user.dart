@@ -51,56 +51,51 @@ class UserModel extends ChangeNotifier {
 
   Future<void> send(Channel channel, String message) async {
     final call = FirebaseFunctions.instance.httpsCallable('send');
-    final results = await call({
+    await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
       "message": message,
     });
-    print(results);
   }
 
   Future<void> ban(Channel channel, String username, String reason) async {
     final call = FirebaseFunctions.instance.httpsCallable('ban');
-    final results = await call({
+    await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
       "username": username,
       "reason": reason,
     });
-    print(results);
   }
 
   Future<void> unban(Channel channel, String username) async {
     final call = FirebaseFunctions.instance.httpsCallable('unban');
-    final results = await call({
+    await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
       "username": username,
     });
-    print(results);
   }
 
   Future<void> timeout(Channel channel, String username, String reason,
       Duration duration) async {
     final call = FirebaseFunctions.instance.httpsCallable('timeout');
-    final results = await call({
+    await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
       "username": username,
       "reason": reason,
       "length": duration.inSeconds,
     });
-    print(results);
   }
 
   Future<void> delete(Channel channel, String messageId) async {
     final call = FirebaseFunctions.instance.httpsCallable('deleteMessage');
-    final results = await call({
+    await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
       "messageId": messageId,
     });
-    print(results);
   }
 
   User? get user => _user;

@@ -45,12 +45,6 @@ class LayoutModel extends ChangeNotifier {
   }
 
   LayoutModel.fromJson(Map<String, dynamic> json) {
-    // final tabs = json['tabs'];
-    // if (tabs != null) {
-    //   for (dynamic tab in tabs) {
-    //     addTab(PanelTab.fromJson(tab));
-    //   }
-    // }
     if (json['panelHeight'] != null) {
       _panelHeight = json['panelHeight'];
     }

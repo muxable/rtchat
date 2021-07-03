@@ -15,8 +15,10 @@ class AudioSource {
 
   AudioSource withMuted(bool muted) => AudioSource(name, url, muted);
 
-  bool operator ==(that) => that is AudioSource && that.url == this.url;
+  @override
+  bool operator ==(other) => other is AudioSource && other.url == url;
 
+  @override
   int get hashCode => url.hashCode;
 
   AudioSource.fromJson(Map<String, dynamic> json)
@@ -35,8 +37,8 @@ class AudioSource {
 }
 
 class AudioModel extends ChangeNotifier {
-  List<AudioSource> _sources = [];
-  Map<AudioSource, HeadlessInAppWebView> _views = {};
+  final List<AudioSource> _sources = [];
+  final Map<AudioSource, HeadlessInAppWebView> _views = {};
   Timer? _speakerDisconnectTimer;
   final _audioCache = AudioCache();
   final initialOptions = InAppWebViewGroupOptions(
@@ -59,7 +61,7 @@ class AudioModel extends ChangeNotifier {
 
   void _startSpeakerDisconnectTimer() {
     _speakerDisconnectTimer = Timer.periodic(
-      Duration(minutes: 5),
+      const Duration(minutes: 5),
       (_) => _audioCache.play("silence.mp3"),
     );
   }

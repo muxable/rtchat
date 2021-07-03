@@ -10,8 +10,10 @@ class QuickLinkSource {
 
   QuickLinkSource(this.name, this.icon, this.url);
 
-  bool operator ==(that) => that is QuickLinkSource && that.url == this.url;
+  @override
+  bool operator ==(other) => other is QuickLinkSource && other.url == url;
 
+  @override
   int get hashCode => url.hashCode;
 
   QuickLinkSource.fromJson(Map<String, dynamic> json)
@@ -30,7 +32,7 @@ class QuickLinkSource {
 }
 
 class QuickLinksModel extends ChangeNotifier {
-  List<QuickLinkSource> _sources = [];
+  final List<QuickLinkSource> _sources = [];
 
   List<QuickLinkSource> get sources => _sources;
 
