@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/font_size_picker.dart';
+import 'package:rtchat/components/tts_options_panel.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -50,6 +51,9 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           const FontSizePickerWidget(),
+          const Divider(),
+          TtsOptionsWidget(),
+          const Divider(),
           SwitchListTile.adaptive(
             title: const Text('Disable input when layout is locked'),
             subtitle: const Text(

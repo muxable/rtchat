@@ -166,4 +166,11 @@ class ChatHistoryModel extends ChangeNotifier {
     _ttsModule.enabled = enabled;
     notifyListeners();
   }
+
+  bool get ttsIsBotMuted => _ttsModule.isBotMuted;
+
+  set ttsIsBotMuted(bool value) {
+    _ttsModule.isBotMuted = value;
+    notifyListeners();
+  }
 }

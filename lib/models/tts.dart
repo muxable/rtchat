@@ -4,10 +4,24 @@ final validateUrl = Uri.https('id.twitch.tv', '/oauth2/validate');
 
 const twitchClientId = "edfnh2q85za8phifif9jxt3ey6t9b9";
 
+final BOT_LIST = [
+  'streamlab',
+  'streamlabs',
+  'nightbot',
+  'xanbot',
+  'ankhbot',
+  'moobot',
+  'wizebot',
+  'phantombot',
+  'streamelements',
+  'streamelement'
+].toSet();
+
 class TtsModel {
   final FlutterTts _tts = FlutterTts();
   final List<String> _queue = [];
   bool _enabled = false;
+  bool _isBotMuted = false;
 
   TtsModel() {
     _tts.setCompletionHandler(() {
@@ -21,8 +35,17 @@ class TtsModel {
     });
   }
 
+  String getMsgAuthor(String message) {
+    final parts = message.split(' ');
+    return parts[0];
+  }
+
   void speak(String message) {
     if (!_enabled) {
+      return;
+    }
+    var author = getMsgAuthor(message).toLowerCase();
+    if (_isBotMuted && BOT_LIST.contains(author)) {
       return;
     }
     if (_queue.isEmpty) {
@@ -41,5 +64,13 @@ class TtsModel {
       _queue.clear();
       _tts.stop();
     }
+  }
+
+  bool get isBotMuted {
+    return _isBotMuted;
+  }
+
+  set isBotMuted(bool value) {
+    _isBotMuted = value;
   }
 }
