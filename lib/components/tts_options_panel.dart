@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/twitch/message.dart';
 import 'package:rtchat/models/chat_history.dart';
+import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/tts.dart';
 
 class TtsOptionsWidget extends StatelessWidget {
@@ -14,7 +16,42 @@ class TtsOptionsWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // future stuff for tts speed and pitch adjustment
+                Text("TTS Speed",
+                    style: TextStyle(
+                      color: Theme.of(context).accentColor,
+                      fontWeight: FontWeight.bold,
+                    )),
+                Slider.adaptive(
+                  value: model.ttsSpeed,
+                  min: 0.1,
+                  max: 2,
+                  label: "speed: ${model.ttsSpeed}",
+                  onChanged: (value) {
+                    model.ttsSpeed = value;
+                  },
+                ),
+                Text("TTS Pitch",
+                    style: TextStyle(
+                      color: Theme.of(context).accentColor,
+                      fontWeight: FontWeight.bold,
+                    )),
+                Slider.adaptive(
+                  value: model.ttsPitch,
+                  min: 0.1,
+                  max: 3,
+                  label: "${model.ttsPitch}",
+                  onChanged: (value) {
+                    model.ttsPitch = value;
+                  },
+                ),
+                Center(
+                  child: ElevatedButton(
+                    child: Text("Play Sample Speech"),
+                    onPressed: () {
+                      model.ttsModel.speak('Follow MUXFD on Twitch!');
+                    },
+                  ),
+                )
               ],
             ),
           ),
