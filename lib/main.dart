@@ -53,7 +53,7 @@ Color tintColor(Color color, double factor) => Color.fromRGBO(
     tintValue(color.blue, factor),
     1);
 
-final primarySwatch = generateMaterialColor(Color(0xFF009FDF));
+final primarySwatch = generateMaterialColor(const Color(0xFF009FDF));
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -74,7 +74,7 @@ class App extends StatelessWidget {
   static final analytics = FirebaseAnalytics();
   static final observer = FirebaseAnalyticsObserver(analytics: analytics);
 
-  App({required this.prefs});
+  const App({Key? key, required this.prefs}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -181,17 +181,17 @@ class App extends StatelessWidget {
             '/': (context) {
               return Consumer<UserModel>(builder: (context, model, child) {
                 if (!model.isSignedIn()) {
-                  return SignInScreen();
+                  return const SignInScreen();
                 }
-                return HomeScreen();
+                return const HomeScreen();
               });
             },
-            '/settings': (context) => SettingsScreen(),
-            '/settings/badges': (context) => TwitchBadgesScreen(),
-            '/settings/activity-feed': (context) => ActivityFeedScreen(),
-            '/settings/audio-sources': (context) => AudioSourcesScreen(),
-            '/settings/quick-links': (context) => QuickLinksScreen(),
-            '/settings/backup': (context) => BackupScreen(),
+            '/settings': (context) => const SettingsScreen(),
+            '/settings/badges': (context) => const TwitchBadgesScreen(),
+            '/settings/activity-feed': (context) => const ActivityFeedScreen(),
+            '/settings/audio-sources': (context) => const AudioSourcesScreen(),
+            '/settings/quick-links': (context) => const QuickLinksScreen(),
+            '/settings/backup': (context) => const BackupScreen(),
           },
         ),
       ),

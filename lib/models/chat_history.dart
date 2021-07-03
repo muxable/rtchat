@@ -19,12 +19,12 @@ class ChatHistoryModel extends ChangeNotifier {
 
   Future<void> subscribe(Set<Channel> channels) async {
     final subscribe = FirebaseFunctions.instance.httpsCallable('subscribe');
-    channels.forEach((channel) {
+    for (final channel in channels) {
       subscribe({
         "provider": channel.provider,
         "channelId": channel.channelId,
       });
-    });
+    }
 
     _messages.clear();
     notifyListeners();
@@ -43,7 +43,7 @@ class ChatHistoryModel extends ChangeNotifier {
           .limitToLast(250)
           .snapshots()
           .listen((event) {
-        event.docChanges.forEach((change) {
+        for (final change in event.docChanges) {
           // only process appends.
           if (change.type == DocumentChangeType.added) {
             final data = change.doc.data();
@@ -62,7 +62,8 @@ class ChatHistoryModel extends ChangeNotifier {
                 }
 
                 _messages.add(TwitchMessageModel(
-                  messageId: tags['id'],
+                  messageId: change.doc.id,
+                  pinned: false,
                   channel: data['channel'],
                   author: author,
                   message: message,
@@ -93,6 +94,7 @@ class ChatHistoryModel extends ChangeNotifier {
                   if (message is TwitchMessageModel) {
                     _messages[index] = TwitchMessageModel(
                       messageId: message.messageId,
+                      pinned: false,
                       channel: message.channel,
                       author: message.author,
                       message: message.message,
@@ -104,15 +106,35 @@ class ChatHistoryModel extends ChangeNotifier {
                 }
                 break;
               case "raided":
+                final index = _messages.length;
+                final DateTime timestamp = data['timestamp'].toDate();
+                final expiration = timestamp.add(const Duration(seconds: 15));
+                final remaining = expiration.difference(DateTime.now());
+
                 _messages.add(TwitchRaidEventModel(
-                  profilePictureUrl: data['tags']['msg-param-profileImageURL'],
-                  fromUsername: data['username'],
-                  viewers: data['viewers'],
-                ));
+                    messageId: change.doc.id,
+                    profilePictureUrl: data['tags']
+                        ['msg-param-profileImageURL'],
+                    fromUsername: data['username'],
+                    viewers: data['viewers'],
+                    pinned: remaining > Duration.zero));
+
+                if (remaining > Duration.zero) {
+                  Timer(remaining, () {
+                    _messages[index] = TwitchRaidEventModel(
+                        messageId: change.doc.id,
+                        profilePictureUrl: data['tags']
+                            ['msg-param-profileImageURL'],
+                        fromUsername: data['username'],
+                        viewers: data['viewers'],
+                        pinned: false);
+                    notifyListeners();
+                  });
+                }
                 break;
             }
           }
-        });
+        }
 
         notifyListeners();
       }, onDone: () {

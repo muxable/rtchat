@@ -5,6 +5,8 @@ import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
 class AudioSourcesScreen extends StatefulWidget {
+  const AudioSourcesScreen({Key? key}) : super(key: key);
+
   @override
   _AudioSourcesScreenState createState() => _AudioSourcesScreenState();
 }
@@ -30,7 +32,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Audio sources")),
+      appBar: AppBar(title: const Text("Audio sources")),
       body: Column(children: [
         Consumer<AudioModel>(builder: (context, audioModel, child) {
           return SwitchListTile.adaptive(
@@ -43,7 +45,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
             },
           );
         }),
-        Divider(),
+        const Divider(),
         Expanded(
             child: Consumer<AudioModel>(builder: (context, audioModel, child) {
           return ListView(
@@ -51,7 +53,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
               final name = source.name;
               return Dismissible(
                 key: ValueKey(source),
-                background: DismissibleDeleteBackground(),
+                background: const DismissibleDeleteBackground(),
                 child: CheckboxListTile(
                     title:
                         name == null ? Text(source.url.toString()) : Text(name),
@@ -67,16 +69,16 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
             }).toList(),
           );
         })),
-        Divider(),
+        const Divider(),
         Padding(
-          padding: EdgeInsets.only(left: 16, bottom: 16),
+          padding: const EdgeInsets.only(left: 16, bottom: 16),
           child: Form(
             key: _formKey,
             child: Row(children: [
               Expanded(
                 child: TextFormField(
                     controller: _textEditingController,
-                    decoration: InputDecoration(hintText: "URL"),
+                    decoration: const InputDecoration(hintText: "URL"),
                     validator: (value) {
                       if (value == null ||
                           value.isEmpty ||

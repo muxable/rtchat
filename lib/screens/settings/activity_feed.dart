@@ -6,6 +6,8 @@ import 'package:rtchat/models/activity_feed.dart';
 enum ActivityFeedType { disabled, standard, custom }
 
 class ActivityFeedScreen extends StatefulWidget {
+  const ActivityFeedScreen({Key? key}) : super(key: key);
+
   @override
   _ActivityFeedScreenState createState() => _ActivityFeedScreenState();
 }
@@ -41,7 +43,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Activity feed")),
+      appBar: AppBar(title: const Text("Activity feed")),
       body: Consumer<ActivityFeedModel>(
           builder: (context, activityFeedModel, child) {
         return Column(children: [
@@ -56,7 +58,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
           RadioListTile(
             title: TextField(
                 controller: _textEditingController,
-                decoration: InputDecoration(hintText: "Custom URL"),
+                decoration: const InputDecoration(hintText: "Custom URL"),
                 onChanged: (value) {
                   activityFeedModel.customUrl = value;
                   activityFeedModel.isCustom = true;
@@ -67,10 +69,11 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
               activityFeedModel.isCustom = true;
             },
           ),
-          Padding(padding: EdgeInsets.only(top: 16), child: Text("Preview")),
+          const Padding(
+              padding: EdgeInsets.only(top: 16), child: Text("Preview")),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: InAppWebView(
                 initialUrlRequest: activityFeedModel.url != null
                     ? URLRequest(url: activityFeedModel.url)

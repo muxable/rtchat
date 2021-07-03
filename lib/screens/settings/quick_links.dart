@@ -5,6 +5,8 @@ import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
 class QuickLinksScreen extends StatefulWidget {
+  const QuickLinksScreen({Key? key}) : super(key: key);
+
   @override
   _QuickLinksScreenState createState() => _QuickLinksScreenState();
 }
@@ -17,7 +19,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Quick links")),
+      appBar: AppBar(title: const Text("Quick links")),
       body: Column(children: [
         Expanded(child:
             Consumer<QuickLinksModel>(builder: (context, quickLinks, child) {
@@ -26,16 +28,16 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
               final name = source.name;
               return Dismissible(
                 key: ValueKey(source),
-                background: DismissibleDeleteBackground(),
+                background: const DismissibleDeleteBackground(),
                 child: ListTile(
                   key: ValueKey(source),
                   leading: Text(source.icon,
-                      style:
-                          TextStyle(fontSize: 24, fontFamily: "MaterialIcons")),
+                      style: const TextStyle(
+                          fontSize: 24, fontFamily: "MaterialIcons")),
                   title:
                       name == null ? Text(source.url.toString()) : Text(name),
                   subtitle: name == null ? null : Text(source.url.toString()),
-                  trailing: Icon(Icons.drag_handle),
+                  trailing: const Icon(Icons.drag_handle),
                 ),
                 onDismissed: (direction) {
                   quickLinks.removeSource(source);
@@ -45,16 +47,16 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
             onReorder: quickLinks.swapSource,
           );
         })),
-        Divider(),
+        const Divider(),
         Padding(
-          padding: EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.only(bottom: 16),
           child: Form(
             key: _formKey,
             child: Row(children: [
               PopupMenuButton<String>(
                 icon: Text(_activeIcon,
-                    style:
-                        TextStyle(fontSize: 24, fontFamily: "MaterialIcons")),
+                    style: const TextStyle(
+                        fontSize: 24, fontFamily: "MaterialIcons")),
                 onSelected: (result) {
                   setState(() {
                     _activeIcon = result;
@@ -81,14 +83,14 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                     .map((icon) => PopupMenuItem(
                         value: icon,
                         child: Text(icon,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 24, fontFamily: "MaterialIcons"))))
                     .toList(),
               ),
               Expanded(
                 child: TextFormField(
                     controller: _textEditingController,
-                    decoration: InputDecoration(hintText: "URL"),
+                    decoration: const InputDecoration(hintText: "URL"),
                     validator: (value) {
                       if (value == null ||
                           value.isEmpty ||

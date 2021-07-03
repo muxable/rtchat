@@ -10,11 +10,13 @@ class Channel {
 
   Channel(this.provider, this.channelId, this.displayName);
 
-  bool operator ==(that) =>
-      that is Channel &&
-      that.provider == this.provider &&
-      that.channelId == this.channelId;
+  @override
+  bool operator ==(other) =>
+      other is Channel &&
+      other.provider == provider &&
+      other.channelId == channelId;
 
+  @override
   int get hashCode => provider.hashCode ^ channelId.hashCode;
 
   @override

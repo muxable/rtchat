@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/twitch/badge.dart';
 
 class TwitchBadgesScreen extends StatelessWidget {
+  const TwitchBadgesScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,12 +16,12 @@ class TwitchBadgesScreen extends StatelessWidget {
           SliverAppBar(
               pinned: true,
               expandedHeight: 250.0,
-              flexibleSpace: FlexibleSpaceBar(
+              flexibleSpace: const FlexibleSpaceBar(
                 title: Text('Twitch badges'),
               ),
               actions: [
                 Row(children: [
-                  Text("Select all"),
+                  const Text("Select all"),
                   Checkbox(
                       tristate: true,
                       value: model.enabledCount == 0
