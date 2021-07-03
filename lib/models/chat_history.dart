@@ -165,4 +165,6 @@ class ChatHistoryModel extends ChangeNotifier {
     _ttsModule.pitch = value;
     notifyListeners();
   }
+
+  TtsModel get ttsModel => _ttsModule;
 }

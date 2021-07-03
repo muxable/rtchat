@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/twitch/message.dart';
 import 'package:rtchat/models/chat_history.dart';
+import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/tts.dart';
 
 class TtsOptionsWidget extends StatelessWidget {
@@ -42,17 +44,25 @@ class TtsOptionsWidget extends StatelessWidget {
                     model.ttsPitch = value;
                   },
                 ),
-                SwitchListTile.adaptive(
-                  title: const Text('Option to Mute Bot'),
-                  subtitle: const Text(
-                      'Useful when TTS is enabled and commands are excessively used'),
-                  value: model.ttsIsBotMuted,
-                  onChanged: (value) {
-                    model.ttsIsBotMuted = value;
-                  },
-                ),
+                Center(
+                  child: ElevatedButton(
+                    child: Text("Play Sample Speech"),
+                    onPressed: () {
+                      model.ttsModel.speak('Follow MUXFD on Twitch!');
+                    },
+                  ),
+                )
               ],
             ),
+          ),
+          SwitchListTile.adaptive(
+            title: const Text('Option to Mute Bot'),
+            subtitle: const Text(
+                'Useful when TTS is enabled and commands are excessively used'),
+            value: model.ttsIsBotMuted,
+            onChanged: (value) {
+              model.ttsIsBotMuted = value;
+            },
           ),
         ],
       );
