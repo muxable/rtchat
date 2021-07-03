@@ -4,7 +4,7 @@ final validateUrl = Uri.https('id.twitch.tv', '/oauth2/validate');
 
 const twitchClientId = "edfnh2q85za8phifif9jxt3ey6t9b9";
 
-final BOT_LIST = [
+const botList = {
   'streamlab',
   'streamlabs',
   'nightbot',
@@ -15,20 +15,7 @@ final BOT_LIST = [
   'phantombot',
   'streamelements',
   'streamelement'
-].toSet();
-
-final BOT_LIST = [
-  'streamlab',
-  'streamlabs',
-  'nightbot',
-  'xanbot',
-  'ankhbot',
-  'moobot',
-  'wizebot',
-  'phantombot',
-  'streamelements',
-  'streamelement'
-].toSet();
+};
 
 class TtsModel {
   final FlutterTts _tts = FlutterTts();
@@ -50,17 +37,11 @@ class TtsModel {
     });
   }
 
-  String getMsgAuthor(String message) {
-    final parts = message.split(' ');
-    return parts[0];
-  }
-
-  void speak(String message) {
-    if (!_enabled) {
+  void speak(String author, String message, {bool force = false}) {
+    if (!_enabled && !force) {
       return;
     }
-    var author = getMsgAuthor(message).toLowerCase();
-    if (_isBotMuted && BOT_LIST.contains(author)) {
+    if (_isBotMuted && botList.contains(author.toLowerCase())) {
       return;
     }
     if (_queue.isEmpty) {
@@ -97,6 +78,7 @@ class TtsModel {
 
   set speed(double value) {
     _speed = value;
+    _tts.setSpeechRate(speed);
   }
 
   double get pitch {
@@ -105,5 +87,6 @@ class TtsModel {
 
   set pitch(double value) {
     _pitch = value;
+    _tts.setPitch(pitch);
   }
 }

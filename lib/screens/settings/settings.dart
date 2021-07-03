@@ -52,7 +52,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           const FontSizePickerWidget(),
           const Divider(),
-          TtsOptionsWidget(),
+          const TtsOptionsWidget(),
           const Divider(),
           SwitchListTile.adaptive(
             title: const Text('Disable input when layout is locked'),

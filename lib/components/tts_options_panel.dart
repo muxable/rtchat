@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/twitch/message.dart';
 import 'package:rtchat/models/chat_history.dart';
-import 'package:rtchat/models/message.dart';
-import 'package:rtchat/models/tts.dart';
 
 class TtsOptionsWidget extends StatelessWidget {
+  const TtsOptionsWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ChatHistoryModel>(builder: (context, model, child) {
       return Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("TTS Speed",
+                Text("Text to Speech Rate",
                     style: TextStyle(
                       color: Theme.of(context).accentColor,
                       fontWeight: FontWeight.bold,
@@ -30,7 +29,7 @@ class TtsOptionsWidget extends StatelessWidget {
                     model.ttsSpeed = value;
                   },
                 ),
-                Text("TTS Pitch",
+                Text("Text to Speech Pitch",
                     style: TextStyle(
                       color: Theme.of(context).accentColor,
                       fontWeight: FontWeight.bold,
@@ -46,9 +45,11 @@ class TtsOptionsWidget extends StatelessWidget {
                 ),
                 Center(
                   child: ElevatedButton(
-                    child: Text("Play Sample Speech"),
+                    child: const Text("Play sample message"),
                     onPressed: () {
-                      model.ttsModel.speak('Follow MUXFD on Twitch!');
+                      model.ttsModel.speak('muxfd',
+                          'muxfd said have you followed muxfd on twitch?',
+                          force: true);
                     },
                   ),
                 )
@@ -56,9 +57,7 @@ class TtsOptionsWidget extends StatelessWidget {
             ),
           ),
           SwitchListTile.adaptive(
-            title: const Text('Option to Mute Bot'),
-            subtitle: const Text(
-                'Useful when TTS is enabled and commands are excessively used'),
+            title: const Text('Mute text to speech for bots'),
             value: model.ttsIsBotMuted,
             onChanged: (value) {
               model.ttsIsBotMuted = value;

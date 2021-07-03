@@ -74,10 +74,10 @@ class ChatHistoryModel extends ChangeNotifier {
 
                 switch (tags['message-type']) {
                   case "action":
-                    _ttsModule.speak("$author $message");
+                    _ttsModule.speak(author, "$author $message");
                     break;
                   case "chat":
-                    _ttsModule.speak("$author said: $message");
+                    _ttsModule.speak(author, "$author said: $message");
                     break;
                 }
                 break;

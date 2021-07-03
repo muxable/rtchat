@@ -17,12 +17,6 @@ class ChatHistoryMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final m = message;
     if (m is TwitchMessageModel) {
-      var coalesce = false;
-      // the history is forward.
-      // if (index + 1 < messages.length) {
-      //   final prev = messages[index + 1];
-      //   coalesce = prev is TwitchMessageModel && prev.author == message.author;
-      // }
       return InkWell(
           onLongPress: () {
             showDialog(
@@ -63,7 +57,7 @@ class ChatHistoryMessage extends StatelessWidget {
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TwitchMessageWidget(m, coalesce: coalesce),
+            child: TwitchMessageWidget(m),
           ));
     } else if (m is TwitchRaidEventModel) {
       return TwitchRaidEventWidget(m);

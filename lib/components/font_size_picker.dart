@@ -77,16 +77,6 @@ class FontSizePickerWidget extends StatelessWidget {
               Navigator.pushNamed(context, "/settings/badges");
             },
           ),
-          SwitchListTile.adaptive(
-            title: const Text('Coalesce messages by the same author'),
-            subtitle: model.aggregateSameAuthor
-                ? const Text('Only the first message will show the author')
-                : const Text('Every message will show the author'),
-            value: model.aggregateSameAuthor,
-            onChanged: (value) {
-              model.aggregateSameAuthor = value;
-            },
-          ),
         ],
       );
     });

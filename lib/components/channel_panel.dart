@@ -20,7 +20,7 @@ class ChannelPanelWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ChannelsModel>(builder: (context, channelsModel, child) {
       final header = DefaultTextStyle.merge(
-        style: TextStyle(color: Colors.white),
+        style: const TextStyle(color: Colors.white),
         child: Container(
           height: 56,
           color: Theme.of(context).primaryColor,
