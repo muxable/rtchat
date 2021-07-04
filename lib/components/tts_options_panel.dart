@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/models/chat_history.dart';
+import 'package:rtchat/models/tts.dart';
 
 class TtsOptionsWidget extends StatelessWidget {
   const TtsOptionsWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChatHistoryModel>(builder: (context, model, child) {
+    return Consumer<TtsModel>(builder: (context, model, child) {
       return Column(
         children: [
           Padding(
@@ -21,12 +21,12 @@ class TtsOptionsWidget extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     )),
                 Slider.adaptive(
-                  value: model.ttsSpeed,
+                  value: model.speed,
                   min: 0.1,
                   max: 2,
-                  label: "speed: ${model.ttsSpeed}",
+                  label: "speed: ${model.speed}",
                   onChanged: (value) {
-                    model.ttsSpeed = value;
+                    model.speed = value;
                   },
                 ),
                 Text("Text to Speech Pitch",
@@ -35,20 +35,25 @@ class TtsOptionsWidget extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     )),
                 Slider.adaptive(
-                  value: model.ttsPitch,
+                  value: model.pitch,
                   min: 0.1,
                   max: 3,
-                  label: "${model.ttsPitch}",
+                  label: "${model.pitch}",
                   onChanged: (value) {
-                    model.ttsPitch = value;
+                    model.pitch = value;
                   },
                 ),
                 Center(
                   child: ElevatedButton(
                     child: const Text("Play sample message"),
                     onPressed: () {
-                      model.ttsModel.speak('muxfd',
-                          'muxfd said have you followed muxfd on twitch?',
+                      model.speak(
+                          const TtsMessage(
+                            author: 'muxfd',
+                            coalescingHeader: "muxfd said",
+                            message: 'have you followed muxfd on twitch?',
+                            messageId: "test",
+                          ),
                           force: true);
                     },
                   ),
@@ -58,9 +63,9 @@ class TtsOptionsWidget extends StatelessWidget {
           ),
           SwitchListTile.adaptive(
             title: const Text('Mute text to speech for bots'),
-            value: model.ttsIsBotMuted,
+            value: model.isBotMuted,
             onChanged: (value) {
-              model.ttsIsBotMuted = value;
+              model.isBotMuted = value;
             },
           ),
         ],

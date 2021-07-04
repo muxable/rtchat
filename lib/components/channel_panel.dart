@@ -6,6 +6,7 @@ import 'package:rtchat/components/statistics_bar.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 
 class ChannelPanelWidget extends StatelessWidget {
@@ -68,16 +69,14 @@ class ChannelPanelWidget extends StatelessWidget {
                     : StatisticsBarWidget(
                         provider: channelsModel.channels.first.provider,
                         channelId: channelsModel.channels.first.channelId),
-                Consumer<ChatHistoryModel>(
-                    builder: (context, chatHistoryModel, child) {
+                Consumer<TtsModel>(builder: (context, ttsModel, child) {
                   return IconButton(
-                      icon: Icon(chatHistoryModel.ttsEnabled
+                      icon: Icon(ttsModel.enabled
                           ? Icons.record_voice_over
                           : Icons.voice_over_off),
                       tooltip: "Text to speech",
                       onPressed: () {
-                        chatHistoryModel.ttsEnabled =
-                            !chatHistoryModel.ttsEnabled;
+                        ttsModel.enabled = !ttsModel.enabled;
                       });
                 }),
               ]),

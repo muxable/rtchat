@@ -127,11 +127,24 @@ class App extends StatelessWidget {
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
-          final model = ChatHistoryModel(TtsModel());
+          final model = ChatHistoryModel();
           final channels = Provider.of<ChannelsModel>(context, listen: false);
           model.subscribe(channels.channels);
           channels.addListener(() {
             model.subscribe(channels.channels);
+          });
+          return model;
+        }),
+        ChangeNotifierProvider(create: (context) {
+          final model =
+              TtsModel.fromJson(jsonDecode(prefs.getString("tts") ?? "{}"));
+          final chatHistory =
+              Provider.of<ChatHistoryModel>(context, listen: false);
+          model.addListener(() {
+            prefs.setString('tts', jsonEncode(model.toJson()));
+          });
+          chatHistory.additions.listen((message) {
+            model.speak(message);
           });
           return model;
         }),

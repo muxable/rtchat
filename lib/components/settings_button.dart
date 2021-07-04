@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 
 class SettingsButtonWidget extends StatelessWidget {
@@ -34,10 +35,13 @@ class SettingsButtonWidget extends StatelessWidget {
                       TextButton(
                         child: const Text('Sign Out'),
                         onPressed: () async {
-                          final model = Provider.of<ChatHistoryModel>(context,
-                              listen: false);
-                          await model.subscribe({});
-                          model.ttsEnabled = false;
+                          final chatHistoryModel =
+                              Provider.of<ChatHistoryModel>(context,
+                                  listen: false);
+                          await chatHistoryModel.subscribe({});
+                          final ttsModel =
+                              Provider.of<TtsModel>(context, listen: false);
+                          ttsModel.enabled = false;
                           await userModel.signOut();
                           Navigator.of(context).pop();
                         },
