@@ -1,0 +1,11 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "userIds": {
+      "$provider": {
+        ".indexOn": ".value"
+      }
+    }
+  }
+}

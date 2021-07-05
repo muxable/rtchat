@@ -9,22 +9,23 @@ import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/tts.dart';
 
 class ChatHistoryModel extends ChangeNotifier {
-  StreamSubscription<QuerySnapshot>? _subscription;
+  StreamSubscription<void>? _subscription;
 
   final List<MessageModel> _messages = [];
 
-  final TtsModel _ttsModule;
+  final _messageAdditionController = StreamController<TtsMessage>();
+  final _messageDeletionController = StreamController<String>();
 
-  ChatHistoryModel(this._ttsModule);
+  ChatHistoryModel();
 
   Future<void> subscribe(Set<Channel> channels) async {
     final subscribe = FirebaseFunctions.instance.httpsCallable('subscribe');
-    channels.forEach((channel) {
+    for (final channel in channels) {
       subscribe({
         "provider": channel.provider,
         "channelId": channel.channelId,
       });
-    });
+    }
 
     _messages.clear();
     notifyListeners();
@@ -42,77 +43,94 @@ class ChatHistoryModel extends ChangeNotifier {
           .orderBy("timestamp")
           .limitToLast(250)
           .snapshots()
-          .listen((event) {
-        event.docChanges.forEach((change) {
+          .expand((event) => event.docChanges)
           // only process appends.
-          if (change.type == DocumentChangeType.added) {
-            final data = change.doc.data();
-            if (data == null) {
-              return;
+          .where((change) => change.type == DocumentChangeType.added)
+          .listen((change) {
+        final data = change.doc.data();
+        if (data == null) {
+          return;
+        }
+
+        switch (data['type']) {
+          case "message":
+            final message = data['message'];
+            final tags = data['tags'];
+            String author = tags['display-name'] ?? tags['username'];
+            if (author.toLowerCase() != tags['username']) {
+              // this is an internationalized name.
+              author = "${tags['display-name']} (${tags['username']})";
             }
 
-            switch (data['type']) {
-              case "message":
-                final message = data['message'];
-                final tags = data['tags'];
-                String author = tags['display-name'] ?? tags['username'];
-                if (author.toLowerCase() != tags['username']) {
-                  // this is an internationalized name.
-                  author = "${tags['display-name']} (${tags['username']})";
-                }
+            final model = TwitchMessageModel(
+              messageId: change.doc.id,
+              pinned: false,
+              channel: data['channel'],
+              author: author,
+              message: message,
+              tags: tags,
+              timestamp: data['timestamp'].toDate(),
+              deleted: false,
+            );
 
-                _messages.add(TwitchMessageModel(
-                  messageId: tags['id'],
-                  channel: data['channel'],
-                  author: author,
-                  message: message,
-                  tags: tags,
-                  timestamp: data['timestamp'].toDate(),
-                  deleted: false,
-                ));
-
-                switch (tags['message-type']) {
-                  case "action":
-                    _ttsModule.speak("$author $message");
-                    break;
-                  case "chat":
-                    _ttsModule.speak("$author said: $message");
-                    break;
-                }
-                break;
-              case "messagedeleted":
-                final messageId = data['messageId'];
-                final index = _messages.indexWhere((element) {
-                  if (element is TwitchMessageModel) {
-                    return element.messageId == messageId;
-                  }
-                  return false;
-                });
-                if (index > -1) {
-                  final message = _messages[index];
-                  if (message is TwitchMessageModel) {
-                    _messages[index] = TwitchMessageModel(
-                      messageId: message.messageId,
-                      channel: message.channel,
-                      author: message.author,
-                      message: message.message,
-                      tags: message.tags,
-                      timestamp: message.timestamp,
-                      deleted: true,
-                    );
-                  }
-                }
-                break;
-              case "raided":
-                _messages.add(TwitchRaidEventModel(
-                  profilePictureUrl: data['tags']['msg-param-profileImageURL'],
-                  fromUsername: data['username'],
-                  viewers: data['viewers'],
-                ));
-                break;
+            _messages.add(model);
+            _messageAdditionController.add(TtsMessage(
+                messageId: change.doc.id,
+                author: author,
+                message: message,
+                coalescingHeader: "$author said"));
+            break;
+          case "messagedeleted":
+            final messageId = data['messageId'];
+            final index = _messages.indexWhere((element) {
+              return element is TwitchMessageModel &&
+                  element.messageId == messageId;
+            });
+            if (index > -1) {
+              final message = _messages[index];
+              if (message is TwitchMessageModel) {
+                _messages[index] = TwitchMessageModel(
+                  messageId: message.messageId,
+                  pinned: false,
+                  channel: message.channel,
+                  author: message.author,
+                  message: message.message,
+                  tags: message.tags,
+                  timestamp: message.timestamp,
+                  deleted: true,
+                );
+                _messageDeletionController.add(message.messageId);
+              }
             }
-          }
-        });
+            break;
+          case "raided":
+            final index = _messages.length;
+            final DateTime timestamp = data['timestamp'].toDate();
+            final expiration = timestamp.add(const Duration(seconds: 15));
+            final remaining = expiration.difference(DateTime.now());
+
+            final model = TwitchRaidEventModel(
+                messageId: change.doc.id,
+                profilePictureUrl: data['tags']['msg-param-profileImageURL'],
+                fromUsername: data['username'],
+                viewers: data['viewers'],
+                pinned: remaining > Duration.zero);
+            _messages.add(model);
+
+            if (remaining > Duration.zero) {
+              Timer(remaining, () {
+                _messages[index] = TwitchRaidEventModel(
+                    messageId: change.doc.id,
+                    profilePictureUrl: data['tags']
+                        ['msg-param-profileImageURL'],
+                    fromUsername: data['username'],
+                    viewers: data['viewers'],
+                    pinned: false);
+                notifyListeners();
+              });
+            }
+            break;
+        }
 
         notifyListeners();
       }, onDone: () {
@@ -125,6 +143,10 @@ class ChatHistoryModel extends ChangeNotifier {
     }
   }
 
+  Stream<TtsMessage> get additions => _messageAdditionController.stream;
+
+  Stream<String> get deletions => _messageDeletionController.stream;
+
   void clear() {
     _messages.clear();
     notifyListeners();
@@ -133,38 +155,10 @@ class ChatHistoryModel extends ChangeNotifier {
   @override
   void dispose() {
     _subscription?.cancel();
+    _messageAdditionController.close();
+    _messageDeletionController.close();
     super.dispose();
   }
 
   List<MessageModel> get messages => _messages;
-
-  bool get ttsEnabled => _ttsModule.enabled;
-
-  set ttsEnabled(bool enabled) {
-    _ttsModule.enabled = enabled;
-    notifyListeners();
-  }
-
-  bool get ttsIsBotMuted => _ttsModule.isBotMuted;
-
-  set ttsIsBotMuted(bool value) {
-    _ttsModule.isBotMuted = value;
-    notifyListeners();
-  }
-
-  double get ttsSpeed => _ttsModule.speed;
-
-  set ttsSpeed(double value) {
-    _ttsModule.speed = value;
-    notifyListeners();
-  }
-
-  double get ttsPitch => _ttsModule.pitch;
-
-  set ttsPitch(double value) {
-    _ttsModule.pitch = value;
-    notifyListeners();
-  }
-
-  TtsModel get ttsModel => _ttsModule;
 }

@@ -1,54 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/twitch/message.dart';
-import 'package:rtchat/models/chat_history.dart';
-import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/tts.dart';
 
 class TtsOptionsWidget extends StatelessWidget {
+  const TtsOptionsWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChatHistoryModel>(builder: (context, model, child) {
+    return Consumer<TtsModel>(builder: (context, model, child) {
       return Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("TTS Speed",
+                Text("Text to Speech Rate",
                     style: TextStyle(
                       color: Theme.of(context).accentColor,
                       fontWeight: FontWeight.bold,
                     )),
                 Slider.adaptive(
-                  value: model.ttsSpeed,
+                  value: model.speed,
                   min: 0.1,
                   max: 2,
-                  label: "speed: ${model.ttsSpeed}",
+                  label: "speed: ${model.speed}",
                   onChanged: (value) {
-                    model.ttsSpeed = value;
+                    model.speed = value;
                   },
                 ),
-                Text("TTS Pitch",
+                Text("Text to Speech Pitch",
                     style: TextStyle(
                       color: Theme.of(context).accentColor,
                       fontWeight: FontWeight.bold,
                     )),
                 Slider.adaptive(
-                  value: model.ttsPitch,
+                  value: model.pitch,
                   min: 0.1,
                   max: 3,
-                  label: "${model.ttsPitch}",
+                  label: "${model.pitch}",
                   onChanged: (value) {
-                    model.ttsPitch = value;
+                    model.pitch = value;
                   },
                 ),
                 Center(
                   child: ElevatedButton(
-                    child: Text("Play Sample Speech"),
+                    child: const Text("Play sample message"),
                     onPressed: () {
-                      model.ttsModel.speak('Follow MUXFD on Twitch!');
+                      model.speak(
+                          const TtsMessage(
+                            author: 'muxfd',
+                            coalescingHeader: "muxfd said",
+                            message: 'have you followed muxfd on twitch?',
+                            messageId: "test",
+                          ),
+                          force: true);
                     },
                   ),
                 )
@@ -56,12 +62,10 @@ class TtsOptionsWidget extends StatelessWidget {
             ),
           ),
           SwitchListTile.adaptive(
-            title: const Text('Option to Mute Bot'),
-            subtitle: const Text(
-                'Useful when TTS is enabled and commands are excessively used'),
-            value: model.ttsIsBotMuted,
+            title: const Text('Mute text to speech for bots'),
+            value: model.isBotMuted,
             onChanged: (value) {
-              model.ttsIsBotMuted = value;
+              model.isBotMuted = value;
             },
           ),
         ],

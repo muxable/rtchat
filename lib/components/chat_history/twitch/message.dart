@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:linkify/linkify.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/twitch/badge.dart';
+import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-const COLORS = [
+const colors = [
   Color(0xFFFF0000),
   Color(0xFF0000FF),
   Color(0xFF00FF00),
@@ -82,7 +82,7 @@ Iterable<TextSpan> tokenize(String msg, TextStyle tagStyle) sync* {
 
 Iterable<InlineSpan> parseText(
     String text, TextStyle linkStyle, TextStyle tagStyle) {
-  final parsed = linkify(text, options: LinkifyOptions(humanize: false));
+  final parsed = linkify(text, options: const LinkifyOptions(humanize: false));
   return parsed.map<InlineSpan>((element) {
     if (element is LinkableElement) {
       return WidgetSpan(
@@ -131,9 +131,8 @@ List<_Badge> parseBadges(String badges) {
 
 class TwitchMessageWidget extends StatelessWidget {
   final TwitchMessageModel model;
-  final bool coalesce;
 
-  TwitchMessageWidget(this.model, {this.coalesce = false});
+  const TwitchMessageWidget(this.model, {Key? key}) : super(key: key);
 
   Color get color {
     final color = model.tags['color'];
@@ -141,7 +140,7 @@ class TwitchMessageWidget extends StatelessWidget {
       return Color(int.parse("0xff${color.substring(1)}"));
     }
     final n = model.author.codeUnits.first + model.author.codeUnits.last;
-    return COLORS[n % COLORS.length];
+    return colors[n % colors.length];
   }
 
   @override
@@ -175,37 +174,35 @@ class TwitchMessageWidget extends StatelessWidget {
 
       final List<InlineSpan> children = [];
 
-      if (!styleModel.aggregateSameAuthor || !coalesce) {
-        // add badges.
-        final badges = parseBadges(model.tags['badges-raw'] ?? "");
-        children.addAll(badges.map((badge) => WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Padding(
-                padding: EdgeInsets.only(right: 5),
-                child: TwitchBadgeWidget(
-                    channelId: model.tags['room-id'],
-                    badge: badge.key,
-                    version: badge.version,
-                    height: styleModel.fontSize)))));
+      // add badges.
+      final badges = parseBadges(model.tags['badges-raw'] ?? "");
+      children.addAll(badges.map((badge) => WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Padding(
+              padding: const EdgeInsets.only(right: 5),
+              child: TwitchBadgeWidget(
+                  channelId: model.tags['room-id'],
+                  badge: badge.key,
+                  version: badge.version,
+                  height: styleModel.fontSize)))));
 
-        // add author.
-        children.add(TextSpan(style: authorStyle, text: model.author));
+      // add author.
+      children.add(TextSpan(style: authorStyle, text: model.author));
 
-        // add demarcator.
-        switch (model.tags['message-type']) {
-          case "action":
-            children.add(TextSpan(text: " "));
-            break;
-          case "chat":
-            children.add(TextSpan(text: ": "));
-            break;
-        }
+      // add demarcator.
+      switch (model.tags['message-type']) {
+        case "action":
+          children.add(const TextSpan(text: " "));
+          break;
+        case "chat":
+          children.add(const TextSpan(text: ": "));
+          break;
       }
 
       // add text.
       final emotes = model.tags['emotes-raw'];
       if (model.deleted) {
-        children.add(TextSpan(text: "<deleted message>"));
+        children.add(const TextSpan(text: "<deleted message>"));
       } else if (emotes != null) {
         final parsed = parseEmotes(emotes);
 
@@ -213,7 +210,7 @@ class TwitchMessageWidget extends StatelessWidget {
 
         var index = 0;
 
-        parsed.forEach((child) {
+        for (final child in parsed) {
           if (child.start > index) {
             children.addAll(parseText(
               model.message.substring(index, child.start),
@@ -222,13 +219,13 @@ class TwitchMessageWidget extends StatelessWidget {
             ));
           }
           final url =
-              "https://static-cdn.jtvnw.net/emoticons/v1/${child.key}/4.0";
+              "https://static-cdn.jtvnw.net/emoticons/v1/${child.key}/1.0";
           children.add(WidgetSpan(
               alignment: PlaceholderAlignment.middle,
               child: Image(
                   image: NetworkImage(url), height: styleModel.fontSize)));
           index = child.end + 1;
-        });
+        }
 
         if (index < model.message.length) {
           children.addAll(parseText(
@@ -245,7 +242,7 @@ class TwitchMessageWidget extends StatelessWidget {
         ));
       }
       return Padding(
-          padding: EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(vertical: 4),
           child: RichText(
             text: TextSpan(style: messageStyle, children: children),
           ));

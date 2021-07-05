@@ -34,7 +34,7 @@ class TwitchBadgeModel extends ChangeNotifier {
           Uri.parse("https://badges.twitch.tv/v1/badges/global/display");
       _globalCache = getBadgeSets(uri);
     }
-    channels.forEach((channel) {
+    for (final channel in channels) {
       if (channel.provider != "twitch") {
         return;
       }
@@ -43,7 +43,7 @@ class TwitchBadgeModel extends ChangeNotifier {
             "https://badges.twitch.tv/v1/badges/channels/${channel.channelId}/display");
         _localCache[channel.channelId] = getBadgeSets(uri);
       }
-    });
+    }
     globalBadgeSets.addAll((await _globalCache)!);
     for (final channel in channels) {
       if (channel.provider != "twitch") {
@@ -51,9 +51,6 @@ class TwitchBadgeModel extends ChangeNotifier {
       }
       localBadgeSets.addAll((await _localCache[channel.channelId])!);
     }
-
-    _enabled = _enabled.intersection(
-        globalBadgeSets.keys.toSet().union(localBadgeSets.keys.toSet()));
 
     notifyListeners();
   }
@@ -74,9 +71,6 @@ class TwitchBadgeModel extends ChangeNotifier {
   }
 
   void setEnabled(String key, bool enabled) {
-    if (!localBadgeSets.containsKey(key) && !globalBadgeSets.containsKey(key)) {
-      return;
-    }
     if (enabled) {
       _enabled.add(key);
     } else {
@@ -101,8 +95,9 @@ class TwitchBadgeModel extends ChangeNotifier {
     final badges = json['enabled'];
     if (badges != null) {
       for (dynamic badge in badges) {
-        setEnabled(badge, true);
+        _enabled.add(badge);
       }
+      notifyListeners();
     }
   }
 

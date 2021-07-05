@@ -1,37 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/twitch/message.dart';
+import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
 
 class FontSizePickerWidget extends StatelessWidget {
+  const FontSizePickerWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleModel>(builder: (context, model, child) {
       return Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
+                SizedBox(
                   height: 120,
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     child: TwitchMessageWidget(TwitchMessageModel(
                         messageId: "placeholder",
+                        pinned: false,
                         channel: "muxfd",
                         author: 'muxfd',
                         tags: {
                           "message-type": "chat",
                           "color": "#800000",
                           "badges-raw": "premium/1",
-                          "emotes-raw": "25:35-39",
+                          "emotes-raw": "25:36-40",
                           "room-id": "158394109",
                         },
                         timestamp: DateTime.now(),
-                        message: "have you followed muxfd on twitch? Kappa",
+                        message: "have you followed @muxfd on twitch? Kappa",
                         deleted: false)),
                   ),
                 ),
@@ -72,16 +75,6 @@ class FontSizePickerWidget extends StatelessWidget {
             subtitle: const Text("Control which badges are visible"),
             onTap: () {
               Navigator.pushNamed(context, "/settings/badges");
-            },
-          ),
-          SwitchListTile.adaptive(
-            title: const Text('Coalesce messages by the same author'),
-            subtitle: model.aggregateSameAuthor
-                ? const Text('Only the first message will show the author')
-                : const Text('Every message will show the author'),
-            value: model.aggregateSameAuthor,
-            onChanged: (value) {
-              model.aggregateSameAuthor = value;
             },
           ),
         ],

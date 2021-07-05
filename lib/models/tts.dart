@@ -1,10 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 final validateUrl = Uri.https('id.twitch.tv', '/oauth2/validate');
 
-const TWITCH_CLIENT_ID = "edfnh2q85za8phifif9jxt3ey6t9b9";
+const twitchClientId = "edfnh2q85za8phifif9jxt3ey6t9b9";
 
-final BOT_LIST = [
+const botList = {
   'streamlab',
   'streamlabs',
   'nightbot',
@@ -15,45 +16,47 @@ final BOT_LIST = [
   'phantombot',
   'streamelements',
   'streamelement'
-].toSet();
+};
 
-class TtsModel {
+class TtsMessage {
+  final String messageId;
+  final String author;
+  final String? coalescingHeader;
+  final String message;
+
+  const TtsMessage(
+      {required this.messageId,
+      required this.author,
+      required this.message,
+      this.coalescingHeader});
+
+  String get spokenMessage {
+    if (coalescingHeader != null) {
+      return "$coalescingHeader $message";
+    }
+    return message;
+  }
+}
+
+class TtsModel extends ChangeNotifier {
   final FlutterTts _tts = FlutterTts();
-  final List<String> _queue = [];
+  final List<TtsMessage> _queue = [];
   bool _enabled = false;
   bool _isBotMuted = false;
   double _speed = 1;
   double _pitch = 1;
 
-  TtsModel() {
-    _tts.setCompletionHandler(() {
-      if (_queue.isEmpty) {
-        return;
-      }
-      _queue.removeAt(0);
-      if (_queue.isNotEmpty) {
-        _tts.speak(_queue.first);
-      }
-    });
-  }
-
-  String getMsgAuthor(String message) {
-    final parts = message.split(' ');
-    return parts[0];
-  }
-
-  void speak(String message) {
-    if (!_enabled) {
+  void speak(TtsMessage message, {bool force = false}) {
+    if (!_enabled && !force) {
       return;
     }
-    var author = getMsgAuthor(message).toLowerCase();
-    if (_isBotMuted && BOT_LIST.contains(author)) {
+    if (_isBotMuted && botList.contains(message.author.toLowerCase())) {
       return;
     }
     if (_queue.isEmpty) {
       _tts.setPitch(pitch);
       _tts.setSpeechRate(speed);
-      _tts.speak(message);
+      _tts.speak(message.spokenMessage);
     }
     _queue.add(message);
   }
@@ -68,6 +71,7 @@ class TtsModel {
       _queue.clear();
       _tts.stop();
     }
+    notifyListeners();
   }
 
   bool get isBotMuted {
@@ -76,6 +80,7 @@ class TtsModel {
 
   set isBotMuted(bool value) {
     _isBotMuted = value;
+    notifyListeners();
   }
 
   double get speed {
@@ -84,6 +89,8 @@ class TtsModel {
 
   set speed(double value) {
     _speed = value;
+    _tts.setSpeechRate(speed);
+    notifyListeners();
   }
 
   double get pitch {
@@ -92,5 +99,34 @@ class TtsModel {
 
   set pitch(double value) {
     _pitch = value;
+    _tts.setPitch(pitch);
+    notifyListeners();
   }
+
+  TtsModel.fromJson(Map<String, dynamic> json) {
+    _tts.setCompletionHandler(() {
+      if (_queue.isEmpty) {
+        return;
+      }
+      _queue.removeAt(0);
+      if (_queue.isNotEmpty) {
+        _tts.speak(_queue.first.spokenMessage);
+      }
+    });
+    if (json['isBotMuted'] != null) {
+      _isBotMuted = json['isBotMuted'];
+    }
+    if (json['pitch'] != null) {
+      _pitch = json['pitch'];
+    }
+    if (json['speed'] != null) {
+      _speed = json['speed'];
+    }
+  }
+
+  Map<String, dynamic> toJson() => {
+        "isBotMuted": _isBotMuted,
+        "pitch": _pitch,
+        "speed": _speed,
+      };
 }

@@ -6,16 +6,18 @@ import 'package:rtchat/components/tts_options_panel.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-final discordUrl = "https://discord.gg/UKHJMQs74u";
+const discordUrl = "https://discord.gg/UKHJMQs74u";
 
 class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
+
   void authenticate(BuildContext context) {}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Settings"),
+        title: const Text("Settings"),
       ),
       body: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return ListView(children: [
@@ -40,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
               Navigator.pushNamed(context, "/settings/quick-links");
             },
           ),
-          Divider(),
+          const Divider(),
           SwitchListTile.adaptive(
             title: const Text('Show viewer and follower count'),
             value: layoutModel.isStatsVisible,
@@ -48,10 +50,10 @@ class SettingsScreen extends StatelessWidget {
               layoutModel.isStatsVisible = value;
             },
           ),
-          FontSizePickerWidget(),
-          Divider(),
-          TtsOptionsWidget(),
-          Divider(),
+          const FontSizePickerWidget(),
+          const Divider(),
+          const TtsOptionsWidget(),
+          const Divider(),
           SwitchListTile.adaptive(
             title: const Text('Disable input when layout is locked'),
             subtitle: const Text(
@@ -61,7 +63,7 @@ class SettingsScreen extends StatelessWidget {
               layoutModel.isInputLockable = value;
             },
           ),
-          Divider(),
+          const Divider(),
           // ListTile(
           //   title: const Text('Settings backup and restore'),
           //   subtitle: const Text('Upload your settings to the ~cloud~'),
@@ -79,7 +81,7 @@ class SettingsScreen extends StatelessWidget {
                 return ListTile(
                   title: const Text('RealtimeIRL Discord'),
                   subtitle: const Text("Join the RealtimeIRL Discord!"),
-                  trailing: Icon(Icons.launch),
+                  trailing: const Icon(Icons.launch),
                   onTap: () => launch(discordUrl),
                 );
               }),
@@ -98,7 +100,7 @@ class SettingsScreen extends StatelessWidget {
               leading: const Image(
                   width: 24, image: AssetImage('assets/providers/twitch.png')),
               title: Text("/$key"),
-              trailing: Icon(Icons.launch),
+              trailing: const Icon(Icons.launch),
               onTap: () => launch(url),
             );
           }).toList()),

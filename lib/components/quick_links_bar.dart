@@ -5,7 +5,9 @@ import 'package:rtchat/models/quick_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class QuickLinksBar extends StatelessWidget {
-  final ChromeSafariBrowser browser = new ChromeSafariBrowser();
+  final ChromeSafariBrowser browser = ChromeSafariBrowser();
+
+  QuickLinksBar({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +17,8 @@ class QuickLinksBar extends StatelessWidget {
           children: quickLinksModel.sources.map((source) {
         return IconButton(
             icon: Text(source.icon,
-                style: TextStyle(fontSize: 24, fontFamily: "MaterialIcons")),
+                style:
+                    const TextStyle(fontSize: 24, fontFamily: "MaterialIcons")),
             tooltip: source.name,
             onPressed: () => launchLink(source));
       }).toList());
