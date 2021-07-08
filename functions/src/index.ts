@@ -1,12 +1,13 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
+import { EmoteObj } from "tmi.js";
+import * as serviceAccount from "../service_account.json";
 import { app as authApp } from "./auth";
+import { eventsub } from "./eventsub";
 import { getAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
-import * as serviceAccount from "../service_account.json";
-import { eventsub } from "./eventsub";
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
@@ -256,6 +257,43 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
         viewers: stream["viewer_count"],
         followers: followerJson["total"],
       };
+  }
+
+  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
+});
+
+export const getUserEmotes = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("permission-denied", "missing auth");
+  }
+  const provider = data?.provider;
+  const channelId = data?.channelId;
+  if (!provider || !channelId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channelId"
+    );
+  }
+
+  switch (provider) {
+    case "twitch":
+      const channel = await getTwitchLogin(context.auth.uid, channelId);
+      if (!channel) {
+        return;
+      }
+      const client = await getTwitchClient(context.auth.uid, channelId);
+      await client.connect();
+
+      var retrieveEmotes = new Promise(function (resolve) {
+        client.on("emotesets", (set: string, emotes: EmoteObj) => resolve(emotes));
+      })
+
+      try {
+        return await retrieveEmotes;
+      }
+      finally {
+        await client.disconnect();
+      }
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
