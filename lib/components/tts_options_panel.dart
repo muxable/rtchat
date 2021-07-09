@@ -53,6 +53,7 @@ class TtsOptionsWidget extends StatelessWidget {
                             coalescingHeader: "muxfd said",
                             message: 'have you followed muxfd on twitch?',
                             messageId: "test",
+                            emoteOnly: false,
                           ),
                           force: true);
                     },
@@ -66,6 +67,13 @@ class TtsOptionsWidget extends StatelessWidget {
             value: model.isBotMuted,
             onChanged: (value) {
               model.isBotMuted = value;
+            },
+          ),
+          SwitchListTile.adaptive(
+            title: const Text('Mute emotes-only message'),
+            value: model.isEmoteMuted,
+            onChanged: (value) {
+              model.isEmoteMuted = value;
             },
           ),
         ],

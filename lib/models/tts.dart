@@ -23,12 +23,14 @@ class TtsMessage {
   final String author;
   final String? coalescingHeader;
   final String message;
+  final bool emoteOnly;
 
   const TtsMessage(
       {required this.messageId,
       required this.author,
       required this.message,
-      this.coalescingHeader});
+      this.coalescingHeader,
+      required this.emoteOnly});
 
   String get spokenMessage {
     if (coalescingHeader != null) {
@@ -43,11 +45,15 @@ class TtsModel extends ChangeNotifier {
   final List<TtsMessage> _queue = [];
   bool _enabled = false;
   bool _isBotMuted = false;
+  bool _isEmoteMuted = false;
   double _speed = 1;
   double _pitch = 1;
 
   void speak(TtsMessage message, {bool force = false}) {
     if (!_enabled && !force) {
+      return;
+    }
+    if (_isEmoteMuted && message.emoteOnly) {
       return;
     }
     if (_isBotMuted && botList.contains(message.author.toLowerCase())) {
@@ -100,6 +106,15 @@ class TtsModel extends ChangeNotifier {
   set pitch(double value) {
     _pitch = value;
     _tts.setPitch(pitch);
+    notifyListeners();
+  }
+
+  bool get isEmoteMuted {
+    return _isEmoteMuted;
+  }
+
+  set isEmoteMuted(bool value) {
+    _isEmoteMuted = value;
     notifyListeners();
   }
 
