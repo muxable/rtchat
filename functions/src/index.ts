@@ -289,7 +289,10 @@ export const getUserEmotes = functions.https.onCall(async (data, context) => {
       })
 
       try {
-        return await retrieveEmotes;
+        const emoteInfo: any = await retrieveEmotes;
+        var emoteList: any = [];
+        Object.values(emoteInfo).forEach((value: any) => Array.prototype.push.apply(emoteList, value));
+        return { emotes: emoteList };
       }
       finally {
         await client.disconnect();

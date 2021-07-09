@@ -2,6 +2,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_panel.dart';
+import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/components/statistics_bar.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/chat_history.dart';
@@ -9,13 +10,34 @@ import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 
-class ChannelPanelWidget extends StatelessWidget {
-  final _textEditingController = TextEditingController();
+class ChannelPanelWidget extends StatefulWidget {
   final void Function(bool)? onScrollback;
   final void Function(double)? onResize;
 
-  ChannelPanelWidget({Key? key, this.onScrollback, this.onResize})
+  const ChannelPanelWidget({Key? key, this.onScrollback, this.onResize})
       : super(key: key);
+
+  @override
+  _ChannelPanelWidgetState createState() => _ChannelPanelWidgetState();
+}
+
+class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
+  final _textEditingController = TextEditingController();
+  var _isEmotePickerVisible = false;
+  late FocusNode _chatInputFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _chatInputFocusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _chatInputFocusNode.dispose();
+    _textEditingController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +51,12 @@ class ChannelPanelWidget extends StatelessWidget {
             padding: const EdgeInsets.only(left: 16),
             child: Row(children: [
               Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-                if (layoutModel.locked || onResize == null) {
+                if (layoutModel.locked || widget.onResize == null) {
                   return Container();
                 }
                 return GestureDetector(
                   onVerticalDragUpdate: (details) =>
-                      onResize!(details.delta.dy),
+                      widget.onResize!(details.delta.dy),
                   child: const Padding(
                       padding: EdgeInsets.only(right: 16),
                       child: Icon(Icons.drag_indicator)),
@@ -89,7 +111,7 @@ class ChannelPanelWidget extends StatelessWidget {
         // header
         header,
         // body
-        Expanded(child: ChatPanelWidget(onScrollback: onScrollback)),
+        Expanded(child: ChatPanelWidget(onScrollback: widget.onScrollback)),
 
         // input
         Consumer<LayoutModel>(builder: (context, layoutModel, child) {
@@ -99,8 +121,22 @@ class ChannelPanelWidget extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(children: [
+              IconButton(
+                  onPressed: () {
+                    if (_isEmotePickerVisible) {
+                      hideEmotePicker();
+                      showKeyboard();
+                    } else {
+                      hideKeyboard();
+                      showEmotePicker();
+                    }
+                  },
+                  icon: Icon(_isEmotePickerVisible
+                      ? Icons.keyboard_rounded
+                      : Icons.tag_faces)),
               Expanded(
                 child: TextField(
+                  focusNode: _chatInputFocusNode,
                   controller: _textEditingController,
                   textInputAction: TextInputAction.send,
                   maxLines: null,
@@ -128,6 +164,7 @@ class ChannelPanelWidget extends StatelessWidget {
                     userModel.send(channelsModel.channels.first, value);
                     _textEditingController.clear();
                   },
+                  onTap: hideEmotePicker,
                 ),
               ),
               PopupMenuButton<String>(
@@ -157,8 +194,40 @@ class ChannelPanelWidget extends StatelessWidget {
               ),
             ]),
           );
-        })
+        }),
+        Offstage(
+          child: EmotePickerWidget(
+              channelId: Provider.of<ChannelsModel>(context, listen: false)
+                  .channels
+                  .first
+                  .channelId,
+              onEmoteSelected: (emote) {
+                _textEditingController.text =
+                    _textEditingController.text + " " + emote.code;
+              }),
+          offstage: !_isEmotePickerVisible,
+        )
       ]);
+    });
+  }
+
+  showKeyboard() {
+    _chatInputFocusNode.requestFocus();
+  }
+
+  hideKeyboard() {
+    _chatInputFocusNode.unfocus();
+  }
+
+  showEmotePicker() {
+    setState(() {
+      _isEmotePickerVisible = true;
+    });
+  }
+
+  hideEmotePicker() {
+    setState(() {
+      _isEmotePickerVisible = false;
     });
   }
 }
