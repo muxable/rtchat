@@ -27,7 +27,8 @@ class _PinnableMessageScrollViewState extends State<PinnableMessageScrollView>
     with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    return _PinnableMessageScrollView(vsync: this, messages: widget.messages);
+    return _PinnableMessageScrollView(
+        vsync: this, controller: widget.controller, messages: widget.messages);
   }
 }
 
