@@ -23,14 +23,16 @@ class TtsMessage {
   final String author;
   final String? coalescingHeader;
   final String message;
-  final bool emoteOnly;
+  final bool hasEmote;
+  final String? emotesRaw;
 
   const TtsMessage(
       {required this.messageId,
       required this.author,
       required this.message,
       this.coalescingHeader,
-      required this.emoteOnly});
+      required this.hasEmote,
+      this.emotesRaw});
 
   String get spokenMessage {
     if (coalescingHeader != null) {
@@ -53,18 +55,53 @@ class TtsModel extends ChangeNotifier {
     if (!_enabled && !force) {
       return;
     }
-    if (_isEmoteMuted && message.emoteOnly) {
-      return;
-    }
     if (_isBotMuted && botList.contains(message.author.toLowerCase())) {
       return;
     }
     if (_queue.isEmpty) {
       _tts.setPitch(pitch);
       _tts.setSpeechRate(speed);
-      _tts.speak(message.spokenMessage);
+      if (_isEmoteMuted && message.hasEmote) {
+        var filterMsg = filterEmotes(message.emotesRaw!, message.message);
+        print('filter MSG: $filterMsg');
+        _tts.speak(filterMsg);
+      } else {
+        _tts.speak(message.spokenMessage);
+      }
     }
     _queue.add(message);
+  }
+
+  dynamic parseEmotes(String emotes) {
+    return emotes.split("/").expand((block) {
+      final blockTokens = block.split(':');
+      final key = blockTokens[0];
+      return blockTokens[1].split(',').map((indices) {
+        final indexTokens = indices.split('-');
+        final start = int.parse(indexTokens[0]);
+        final end = int.parse(indexTokens[1]);
+        return [start, end];
+      });
+    }).toList();
+  }
+
+  String filterEmotes(String emotesRaw, String message) {
+    var ranges = parseEmotes(emotesRaw);
+    var res = "";
+    var index = 0;
+    for (var i = 0; i < ranges.length; i++) {
+      var start = ranges[i][0];
+      var end = ranges[i][1];
+      if (start > index) {
+        res += message.substring(index, start);
+      }
+      index = end + 1;
+    }
+
+    if (index < message.length) {
+      res += message.substring(index);
+    }
+    return res;
   }
 
   bool get enabled {
@@ -128,6 +165,9 @@ class TtsModel extends ChangeNotifier {
         _tts.speak(_queue.first.spokenMessage);
       }
     });
+    if (json['isEmoteMuted'] != null) {
+      _isEmoteMuted = json['isEmoteMuted'];
+    }
     if (json['isBotMuted'] != null) {
       _isBotMuted = json['isBotMuted'];
     }
@@ -143,5 +183,6 @@ class TtsModel extends ChangeNotifier {
         "isBotMuted": _isBotMuted,
         "pitch": _pitch,
         "speed": _speed,
+        "isEmoteMuted": _isEmoteMuted,
       };
 }

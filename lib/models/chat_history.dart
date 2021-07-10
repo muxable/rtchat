@@ -25,6 +25,10 @@ class ChatHistoryModel extends ChangeNotifier {
     return false;
   }
 
+  bool hasEmote(TwitchMessageModel model) {
+    return model.tags['emotes-raw'] != null ? true : false;
+  }
+
   Future<void> subscribe(Set<Channel> channels) async {
     final subscribe = FirebaseFunctions.instance.httpsCallable('subscribe');
     for (final channel in channels) {
@@ -90,7 +94,8 @@ class ChatHistoryModel extends ChangeNotifier {
                 author: author,
                 message: message,
                 coalescingHeader: "$author said",
-                emoteOnly: emoteOnly(model)));
+                hasEmote: hasEmote(model),
+                emotesRaw: model.tags['emotes-raw']));
             break;
           case "messagedeleted":
             final messageId = data['messageId'];

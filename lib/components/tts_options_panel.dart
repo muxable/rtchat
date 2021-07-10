@@ -49,12 +49,12 @@ class TtsOptionsWidget extends StatelessWidget {
                     onPressed: () {
                       model.speak(
                           const TtsMessage(
-                            author: 'muxfd',
-                            coalescingHeader: "muxfd said",
-                            message: 'have you followed muxfd on twitch?',
-                            messageId: "test",
-                            emoteOnly: false,
-                          ),
+                              author: 'muxfd',
+                              coalescingHeader: "muxfd said",
+                              message: 'have you followed muxfd on twitch?',
+                              messageId: "test",
+                              hasEmote: false,
+                              emotesRaw: ""),
                           force: true);
                     },
                   ),
