@@ -1,17 +1,9 @@
-import * as dotenv from "dotenv";
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
 
-dotenv.config();
-
-if (!process.env.TWITCH_CLIENT_ID || !process.env.TWITCH_CLIENT_SECRET) {
-  throw new Error(
-    "TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET env variables must be set."
-  );
-}
-
-export const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID!;
-export const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET!;
+export const TWITCH_CLIENT_ID = functions.config().twitch.id;
+export const TWITCH_CLIENT_SECRET = functions.config().twitch.secret;
 
 export const TWITCH_OAUTH_CONFIG = {
   client: {
