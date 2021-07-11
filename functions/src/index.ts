@@ -1,12 +1,15 @@
+import * as dotenv from "dotenv";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
+import * as serviceAccount from "../service_account.json";
 import { app as authApp } from "./auth";
+import { eventsub } from "./eventsub";
 import { getAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
-import * as serviceAccount from "../service_account.json";
-import { eventsub } from "./eventsub";
+
+dotenv.config();
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),

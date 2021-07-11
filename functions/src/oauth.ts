@@ -1,8 +1,8 @@
 import * as admin from "firebase-admin";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
 
-export const TWITCH_CLIENT_ID = "edfnh2q85za8phifif9jxt3ey6t9b9";
-export const TWITCH_CLIENT_SECRET = "yn6jfzl3xturs91jdbljws5ouksqfj";
+export const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID || "";
+export const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET || "";
 
 export const TWITCH_OAUTH_CONFIG = {
   client: {
