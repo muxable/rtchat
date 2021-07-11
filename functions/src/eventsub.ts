@@ -31,6 +31,8 @@ enum EventsubType {
   ChannelHypeTrainBegin = "channel.hype_train.begin",
   ChannelHypeTrainProgress = "channel.hype_train.progress",
   ChannelHypeTrainEnd = "channel.hype_train.end",
+  StreamOnline = "stream.online",
+  StreamOffline = "stream.offline",
 }
 
 export async function checkEventSubSubscriptions(userId: string) {
@@ -119,6 +121,8 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
       case EventsubType.ChannelSubscriptionMessage:
       case EventsubType.ChannelCheer:
       case EventsubType.ChannelRaid:
+      case EventsubType.StreamOnline:
+      case EventsubType.StreamOffline:
         // only log certain events to reduce noise.
         await messageRef.set({
           channelId,
