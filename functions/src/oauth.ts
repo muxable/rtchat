@@ -1,8 +1,14 @@
 import * as admin from "firebase-admin";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
 
-export const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID || "";
-export const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET || "";
+if (!process.env.TWITCH_CLIENT_ID || !process.env.TWITCH_CLIENT_SECRET) {
+  throw new Error(
+    "TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET env variables must be set."
+  );
+}
+
+export const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID!;
+export const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET!;
 
 export const TWITCH_OAUTH_CONFIG = {
   client: {
