@@ -1,5 +1,8 @@
+import * as dotenv from "dotenv";
 import * as admin from "firebase-admin";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
+
+dotenv.config();
 
 if (!process.env.TWITCH_CLIENT_ID || !process.env.TWITCH_CLIENT_SECRET) {
   throw new Error(
