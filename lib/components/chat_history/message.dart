@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/models/channels.dart';
@@ -61,6 +62,8 @@ class ChatHistoryMessage extends StatelessWidget {
           ));
     } else if (m is TwitchRaidEventModel) {
       return TwitchRaidEventWidget(m);
+    } else if (m is StreamStateEventModel) {
+      return StreamStateEventWidget(m);
     } else {
       throw AssertionError("invalid message type");
     }

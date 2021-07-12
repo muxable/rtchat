@@ -33,25 +33,27 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
     super.initState();
 
     _poll();
-    _timer = Timer.periodic(const Duration(seconds: 15), (_) async {
-      await _poll();
-    });
+    _timer = Timer.periodic(const Duration(seconds: 15), (_) => _poll());
   }
 
   Future<void> _poll() async {
-    final statistics = await getStreamMetadata(
-        provider: widget.provider, channelId: widget.channelId);
-    if (!mounted) {
+    try {
+      final statistics = await getStreamMetadata(
+          provider: widget.provider, channelId: widget.channelId);
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _loading = false;
+        _isOnline = statistics.isOnline;
+        if (statistics is TwitchStreamMetadata) {
+          _viewers = statistics.viewerCount;
+          _followers = statistics.followerCount;
+        }
+      });
+    } catch (e) {
       return;
     }
-    setState(() {
-      _loading = false;
-      _isOnline = statistics.isOnline;
-      if (statistics is TwitchStreamMetadata) {
-        _viewers = statistics.viewerCount;
-        _followers = statistics.followerCount;
-      }
-    });
   }
 
   @override
