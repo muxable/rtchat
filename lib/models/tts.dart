@@ -153,6 +153,7 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
 
   @override
   Future<void> stop() async {
+    isSeeking = false;
     isPlaying = false;
     playbackState.add(playbackState.value.copyWith(controls: const [
       MediaControl.rewind,
