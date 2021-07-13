@@ -1,16 +1,16 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
+import * as serviceAccount from "../service_account.json";
 import { app as authApp } from "./auth";
+import { eventsub } from "./eventsub";
 import { getAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
-import * as serviceAccount from "../service_account.json";
-import { eventsub } from "./eventsub";
 
 admin.initializeApp({
+  ...JSON.parse(process.env.FIREBASE_CONFIG || "{}"),
   credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-  databaseURL: `https://${serviceAccount.project_id}-default-rtdb.firebaseio.com`,
 });
 
 export const send = functions.https.onCall(async (data, context) => {

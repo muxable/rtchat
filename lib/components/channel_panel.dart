@@ -93,7 +93,7 @@ class ChannelPanelWidget extends StatelessWidget {
 
         // input
         Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-          if (layoutModel.isInputLockable && layoutModel.locked) {
+          if (layoutModel.isInteractionLockable && layoutModel.locked) {
             return Container();
           }
           return Padding(

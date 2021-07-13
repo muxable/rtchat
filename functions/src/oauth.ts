@@ -1,8 +1,9 @@
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
 
-export const TWITCH_CLIENT_ID = "edfnh2q85za8phifif9jxt3ey6t9b9";
-export const TWITCH_CLIENT_SECRET = "yn6jfzl3xturs91jdbljws5ouksqfj";
+export const TWITCH_CLIENT_ID = functions.config().twitch.id;
+export const TWITCH_CLIENT_SECRET = functions.config().twitch.secret;
 
 export const TWITCH_OAUTH_CONFIG = {
   client: {

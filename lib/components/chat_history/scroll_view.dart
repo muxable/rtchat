@@ -27,7 +27,8 @@ class _PinnableMessageScrollViewState extends State<PinnableMessageScrollView>
     with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    return _PinnableMessageScrollView(vsync: this, messages: widget.messages);
+    return _PinnableMessageScrollView(
+        vsync: this, controller: widget.controller, messages: widget.messages);
   }
 }
 
@@ -52,24 +53,24 @@ class _PinnableMessageScrollView extends ScrollView {
     // this is an optimization to improve pinning performance by skipping
     // messages that can't be pinned.
     for (var start = 0; start < messages.length;) {
-      final nextPinnedIndex = messages.indexWhere(
-          (element) => element is PinnableMessageModel, start);
-      final unpinned = nextPinnedIndex == -1
+      final nextPinnableIndex =
+          messages.indexWhere((element) => element.pinned != null, start);
+      final unpinned = nextPinnableIndex == -1
           ? messages.sublist(start)
-          : messages.sublist(start, nextPinnedIndex);
+          : messages.sublist(start, nextPinnableIndex);
       if (unpinned.isNotEmpty) {
         slivers.add(SliverList(
             delegate: SliverChildBuilderDelegate((context, index) {
           return ChatHistoryMessage(message: unpinned[index]);
         }, childCount: unpinned.length)));
       }
-      if (nextPinnedIndex == -1) {
+      if (nextPinnableIndex == -1) {
         break;
       } else {
-        final pinned = messages[nextPinnedIndex].pinned;
+        final pinned = messages[nextPinnableIndex].pinned;
         slivers.add(PinnableMessageSliver(
             vsync: vsync,
-            pinned: pinned,
+            pinned: pinned!,
             child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOut,
@@ -77,8 +78,8 @@ class _PinnableMessageScrollView extends ScrollView {
                     ? Theme.of(context).primaryColor
                     : Colors.transparent,
                 child:
-                    ChatHistoryMessage(message: messages[nextPinnedIndex]))));
-        start = nextPinnedIndex + 1;
+                    ChatHistoryMessage(message: messages[nextPinnableIndex]))));
+        start = nextPinnableIndex + 1;
       }
     }
     return slivers;
