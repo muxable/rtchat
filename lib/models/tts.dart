@@ -24,13 +24,18 @@ class TtsMessage extends MediaItem {
   final String author;
   final String? coalescingHeader;
   final String message;
+  final bool hasEmote;
+  final Map<String, dynamic> emotes;
 
   const TtsMessage(
       {required this.messageId,
       required this.author,
       required this.message,
-      this.coalescingHeader})
-      : super(id: messageId, artist: author, title: message);
+      this.coalescingHeader,
+      required this.hasEmote,
+      Map<String, dynamic>? emotes})
+      : emotes = emotes ?? const {},
+        super(id: messageId, artist: author, title: message);
 
   String get spokenMessage {
     if (coalescingHeader != null) {
@@ -40,11 +45,46 @@ class TtsMessage extends MediaItem {
   }
 
   bool get isBotAuthor => botList.contains(author.toLowerCase());
+
+  static List _parseEmotes(Map<String, dynamic> emotes) {
+    var ranges = [];
+    for (MapEntry e in emotes.entries) {
+      for (final str in e.value) {
+        final pair = str.split('-');
+        final start = int.parse(pair[0]);
+        final end = int.parse(pair[1]);
+        ranges.add([start, end]);
+      }
+    }
+
+    ranges.sort((a, b) => a[0].compareTo(b[0]));
+    return ranges;
+  }
+
+  String get spokenNoEmotesMessage {
+    var ranges = _parseEmotes(emotes);
+    var res = "";
+    var index = 0;
+    for (var i = 0; i < ranges.length; i++) {
+      var start = ranges[i][0];
+      var end = ranges[i][1];
+      if (start > index) {
+        res += message.substring(index, start);
+      }
+      index = end + 1;
+    }
+
+    if (index < message.length) {
+      res += message.substring(index);
+    }
+    return res;
+  }
 }
 
 class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
   final FlutterTts _tts = FlutterTts();
   var isBotMuted = false;
+  var isEmoteMuted = false;
   var speed = 1.0;
   var pitch = 1.0;
 
@@ -88,7 +128,11 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     ], processingState: AudioProcessingState.ready));
     await _tts.setSpeechRate(speed);
     await _tts.setPitch(pitch);
-    await _tts.speak(message.spokenMessage);
+    if (isEmoteMuted) {
+      await _tts.speak(message.spokenNoEmotesMessage);
+    } else {
+      await _tts.speak(message.spokenMessage);
+    }
   }
 
   @override
@@ -214,6 +258,13 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get isEmoteMuted => ttsHandler.isEmoteMuted;
+
+  set isEmoteMuted(bool value) {
+    ttsHandler.isEmoteMuted = value;
+    notifyListeners();
+  }
+
   TtsModel.fromJson(this.ttsHandler, Map<String, dynamic> json) {
     if (json['isBotMuted'] != null) {
       ttsHandler.isBotMuted = json['isBotMuted'];
@@ -224,10 +275,14 @@ class TtsModel extends ChangeNotifier {
     if (json['speed'] != null) {
       ttsHandler.speed = json['speed'];
     }
+    if (json['isEmoteMuted'] != null) {
+      ttsHandler.isEmoteMuted = json['isEmoteMuted'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
         "isBotMuted": isBotMuted,
+        "isEmoteMuted": isEmoteMuted,
         "pitch": pitch,
         "speed": speed,
       };

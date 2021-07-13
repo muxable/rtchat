@@ -22,6 +22,14 @@ class TwitchMessageModel extends MessageModel {
       required this.timestamp,
       required this.deleted})
       : super(messageId: messageId, pinned: null);
+
+  bool get emoteOnly {
+    return tags['emote-only'] == true;
+  }
+
+  bool get hasEmote {
+    return tags['emotes'] != null ? true : false;
+  }
 }
 
 class TwitchRaidEventModel extends MessageModel {

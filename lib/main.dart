@@ -74,7 +74,7 @@ void main() async {
       builder: () => TtsAudioHandler(),
       config: const AudioServiceConfig(
         notificationColor: Color(0xFF009FDF),
-        androidNotificationOngoing: true,,
+        androidNotificationOngoing: true,
         androidStopForegroundOnPause: true,
         androidNotificationChannelId: 'com.rtirl.chat.tts',
         androidNotificationChannelName: 'Text to speech',

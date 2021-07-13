@@ -77,7 +77,9 @@ class ChatHistoryModel extends ChangeNotifier {
                 messageId: change.doc.id,
                 author: author,
                 message: message,
-                coalescingHeader: "$author said"));
+                coalescingHeader: "$author said",
+                hasEmote: model.hasEmote,
+                emotes: model.tags['emotes']));
             break;
           case "messagedeleted":
             final messageId = data['messageId'];
