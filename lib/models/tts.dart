@@ -24,7 +24,7 @@ class TtsMessage {
   final String? coalescingHeader;
   final String message;
   final bool hasEmote;
-  final String? emotesRaw;
+  final dynamic emotes;
 
   const TtsMessage(
       {required this.messageId,
@@ -32,7 +32,7 @@ class TtsMessage {
       required this.message,
       this.coalescingHeader,
       required this.hasEmote,
-      this.emotesRaw});
+      this.emotes});
 
   String get spokenMessage {
     if (coalescingHeader != null) {
@@ -62,8 +62,7 @@ class TtsModel extends ChangeNotifier {
       _tts.setPitch(pitch);
       _tts.setSpeechRate(speed);
       if (_isEmoteMuted && message.hasEmote) {
-        var filterMsg = filterEmotes(message.emotesRaw!, message.message);
-        print('filter MSG: $filterMsg');
+        var filterMsg = filterEmotes(message.emotes!, message.message);
         _tts.speak(filterMsg);
       } else {
         _tts.speak(message.spokenMessage);
@@ -72,20 +71,22 @@ class TtsModel extends ChangeNotifier {
     _queue.add(message);
   }
 
-  dynamic parseEmotes(String emotes) {
-    return emotes.split("/").expand((block) {
-      final blockTokens = block.split(':');
-      final key = blockTokens[0];
-      return blockTokens[1].split(',').map((indices) {
-        final indexTokens = indices.split('-');
-        final start = int.parse(indexTokens[0]);
-        final end = int.parse(indexTokens[1]);
-        return [start, end];
-      });
-    }).toList();
+  List parseEmotes(dynamic emotes) {
+    var ranges = [];
+    for (MapEntry e in emotes.entries) {
+      for (final str in e.value) {
+        final pair = str.split('-');
+        final start = int.parse(pair[0]);
+        final end = int.parse(pair[1]);
+        ranges.add([start, end]);
+      }
+    }
+
+    ranges.sort((a, b) => a[0].compareTo(b[0]));
+    return ranges;
   }
 
-  String filterEmotes(String emotesRaw, String message) {
+  String filterEmotes(dynamic emotesRaw, String message) {
     var ranges = parseEmotes(emotesRaw);
     var res = "";
     var index = 0;

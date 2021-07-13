@@ -54,7 +54,7 @@ class TtsOptionsWidget extends StatelessWidget {
                               message: 'have you followed muxfd on twitch?',
                               messageId: "test",
                               hasEmote: false,
-                              emotesRaw: ""),
+                              emotes: null),
                           force: true);
                     },
                   ),
@@ -70,7 +70,7 @@ class TtsOptionsWidget extends StatelessWidget {
             },
           ),
           SwitchListTile.adaptive(
-            title: const Text('Mute emotes-only message'),
+            title: const Text('Mute all emotes in text to speech'),
             value: model.isEmoteMuted,
             onChanged: (value) {
               model.isEmoteMuted = value;
