@@ -23,12 +23,16 @@ class TtsMessage {
   final String author;
   final String? coalescingHeader;
   final String message;
+  final bool hasEmote;
+  final Map<String, dynamic>? emotes;
 
   const TtsMessage(
       {required this.messageId,
       required this.author,
       required this.message,
-      this.coalescingHeader});
+      this.coalescingHeader,
+      required this.hasEmote,
+      this.emotes});
 
   String get spokenMessage {
     if (coalescingHeader != null) {
@@ -43,6 +47,7 @@ class TtsModel extends ChangeNotifier {
   final List<TtsMessage> _queue = [];
   bool _enabled = false;
   bool _isBotMuted = false;
+  bool _isEmoteMuted = false;
   double _speed = 1;
   double _pitch = 1;
 
@@ -56,9 +61,48 @@ class TtsModel extends ChangeNotifier {
     if (_queue.isEmpty) {
       _tts.setPitch(pitch);
       _tts.setSpeechRate(speed);
-      _tts.speak(message.spokenMessage);
+      if (_isEmoteMuted && message.hasEmote) {
+        var filterMsg = filterEmotes(message.emotes!, message.message);
+        _tts.speak(filterMsg);
+      } else {
+        _tts.speak(message.spokenMessage);
+      }
     }
     _queue.add(message);
+  }
+
+  List parseEmotes(Map<String, dynamic> emotes) {
+    var ranges = [];
+    for (MapEntry e in emotes.entries) {
+      for (final str in e.value) {
+        final pair = str.split('-');
+        final start = int.parse(pair[0]);
+        final end = int.parse(pair[1]);
+        ranges.add([start, end]);
+      }
+    }
+
+    ranges.sort((a, b) => a[0].compareTo(b[0]));
+    return ranges;
+  }
+
+  String filterEmotes(Map<String, dynamic> emotes, String message) {
+    var ranges = parseEmotes(emotes);
+    var res = "";
+    var index = 0;
+    for (var i = 0; i < ranges.length; i++) {
+      var start = ranges[i][0];
+      var end = ranges[i][1];
+      if (start > index) {
+        res += message.substring(index, start);
+      }
+      index = end + 1;
+    }
+
+    if (index < message.length) {
+      res += message.substring(index);
+    }
+    return res;
   }
 
   bool get enabled {
@@ -103,6 +147,15 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get isEmoteMuted {
+    return _isEmoteMuted;
+  }
+
+  set isEmoteMuted(bool value) {
+    _isEmoteMuted = value;
+    notifyListeners();
+  }
+
   TtsModel.fromJson(Map<String, dynamic> json) {
     _tts.setCompletionHandler(() {
       if (_queue.isEmpty) {
@@ -113,6 +166,9 @@ class TtsModel extends ChangeNotifier {
         _tts.speak(_queue.first.spokenMessage);
       }
     });
+    if (json['isEmoteMuted'] != null) {
+      _isEmoteMuted = json['isEmoteMuted'];
+    }
     if (json['isBotMuted'] != null) {
       _isBotMuted = json['isBotMuted'];
     }
@@ -128,5 +184,6 @@ class TtsModel extends ChangeNotifier {
         "isBotMuted": _isBotMuted,
         "pitch": _pitch,
         "speed": _speed,
+        "isEmoteMuted": _isEmoteMuted,
       };
 }

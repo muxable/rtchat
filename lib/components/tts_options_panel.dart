@@ -49,11 +49,12 @@ class TtsOptionsWidget extends StatelessWidget {
                     onPressed: () {
                       model.speak(
                           const TtsMessage(
-                            author: 'muxfd',
-                            coalescingHeader: "muxfd said",
-                            message: 'have you followed muxfd on twitch?',
-                            messageId: "test",
-                          ),
+                              author: 'muxfd',
+                              coalescingHeader: "muxfd said",
+                              message: 'have you followed muxfd on twitch?',
+                              messageId: "test",
+                              hasEmote: false,
+                              emotes: null),
                           force: true);
                     },
                   ),
@@ -66,6 +67,13 @@ class TtsOptionsWidget extends StatelessWidget {
             value: model.isBotMuted,
             onChanged: (value) {
               model.isBotMuted = value;
+            },
+          ),
+          SwitchListTile.adaptive(
+            title: const Text('Mute all emotes in text to speech'),
+            value: model.isEmoteMuted,
+            onChanged: (value) {
+              model.isEmoteMuted = value;
             },
           ),
         ],
