@@ -8,7 +8,24 @@
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleJvm" value="1.8" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/cloud_firestore-1.0.7/android" />
+            <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/cloud_functions-1.0.7/android" />
+            <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-1.1.4/android" />
+            <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-1.1.1/android" />
+            <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/firebase_crashlytics-2.0.3/android" />
+            <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/flutter_inappwebview-5.3.2/android" />
+            <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/flutter_tts-3.1.0/android" />
+            <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences-2.0.5/android" />
+            <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher-6.0.3/android" />
+            <option value="$PROJECT_DIR$/../../../flutter/.pub-cache/hosted/pub.dartlang.org/wakelock-0.5.1+1/android" />
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/app" />
+          </set>
+        </option>
         <option name="resolveModulePerSourceSet" value="false" />
+        <option name="useQualifiedModuleNames" value="true" />
       </GradleProjectSettings>
     </option>
   </component>
