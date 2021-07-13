@@ -22,8 +22,8 @@ class TtsOptionsWidget extends StatelessWidget {
                     )),
                 Slider.adaptive(
                   value: model.speed,
-                  min: 0.1,
-                  max: 2,
+                  min: 0.0,
+                  max: 1.0,
                   label: "speed: ${model.speed}",
                   onChanged: (value) {
                     model.speed = value;
@@ -37,7 +37,7 @@ class TtsOptionsWidget extends StatelessWidget {
                 Slider.adaptive(
                   value: model.pitch,
                   min: 0.1,
-                  max: 3,
+                  max: 2,
                   label: "${model.pitch}",
                   onChanged: (value) {
                     model.pitch = value;
@@ -47,15 +47,13 @@ class TtsOptionsWidget extends StatelessWidget {
                   child: ElevatedButton(
                     child: const Text("Play sample message"),
                     onPressed: () {
-                      model.speak(
-                          const TtsMessage(
-                              author: 'muxfd',
-                              coalescingHeader: "muxfd said",
-                              message: 'have you followed muxfd on twitch?',
-                              messageId: "test",
-                              hasEmote: false,
-                              emotes: null),
-                          force: true);
+                      model.force(const TtsMessage(
+                        author: 'muxfd',
+                        coalescingHeader: "muxfd said",
+                        message: 'have you followed muxfd on twitch?',
+                        messageId: "test",
+                        hasEmote: false,
+                      ));
                     },
                   ),
                 )

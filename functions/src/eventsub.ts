@@ -31,6 +31,8 @@ enum EventsubType {
   ChannelHypeTrainBegin = "channel.hype_train.begin",
   ChannelHypeTrainProgress = "channel.hype_train.progress",
   ChannelHypeTrainEnd = "channel.hype_train.end",
+  StreamOnline = "stream.online",
+  StreamOffline = "stream.offline",
 }
 
 export async function checkEventSubSubscriptions(userId: string) {
@@ -84,7 +86,7 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
   const timestamp = req.headers["twitch-eventsub-message-timestamp"] as string;
   const hmacMessage = messageId + timestamp + req.rawBody.toString("utf-8");
   const signature = crypto
-    .createHmac("sha256", "pszd4vpr7e3d22m6l7442za3vxzwvc")
+    .createHmac("sha256", TWITCH_CLIENT_SECRET)
     .update(hmacMessage)
     .digest("hex");
   if (
@@ -119,6 +121,8 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
       case EventsubType.ChannelSubscriptionMessage:
       case EventsubType.ChannelCheer:
       case EventsubType.ChannelRaid:
+      case EventsubType.StreamOnline:
+      case EventsubType.StreamOffline:
         // only log certain events to reduce noise.
         await messageRef.set({
           channelId,

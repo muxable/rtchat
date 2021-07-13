@@ -19,28 +19,37 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
   var _atBottom = true;
 
   @override
+  void initState() {
+    super.initState();
+
+    _controller.addListener(() {
+      final value = _controller.position.atEdge && _controller.offset == 0;
+      if (_atBottom != value) {
+        setState(() {
+          _atBottom = value;
+        });
+        if (widget.onScrollback != null) {
+          widget.onScrollback!(!_atBottom);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Stack(children: [
       Consumer<ChatHistoryModel>(builder: (context, model, child) {
         final messages = model.messages.reversed.toList();
-        return NotificationListener<ScrollNotification>(
-          onNotification: (notification) {
-            final value =
-                notification.metrics.atEdge && notification.metrics.pixels == 0;
-            if (_atBottom != value) {
-              setState(() {
-                _atBottom = value;
-              });
-              if (widget.onScrollback != null) {
-                widget.onScrollback!(!_atBottom);
-              }
-            }
-            return false;
-          },
-          child: PinnableMessageScrollView(
-            controller: _controller,
-            messages: messages,
-          ),
+        return PinnableMessageScrollView(
+          controller: _controller,
+          messages: messages,
         );
       }),
       Builder(builder: (context) {

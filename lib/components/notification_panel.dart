@@ -98,7 +98,7 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
                   ),
                   initialUrlRequest: URLRequest(
                       url: Uri.parse(
-                          "https://player.twitch.tv/?channel=${channel.displayName}&parent=chat.rtirl.com")),
+                          "https://player.twitch.tv/?channel=${channel.displayName}&parent=chat.rtirl.com&muted=true")),
                   gestureRecognizers: {
                     Factory<OneSequenceGestureRecognizer>(
                         () => EagerGestureRecognizer()),
