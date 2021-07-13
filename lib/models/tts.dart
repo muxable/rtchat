@@ -106,9 +106,9 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
 
     playbackState.add(PlaybackState(
       controls: const [
-        MediaControl.skipToPrevious,
+        MediaControl.rewind,
         MediaControl.play,
-        MediaControl.skipToNext,
+        MediaControl.fastForward,
       ],
       androidCompactActionIndices: const [0, 1, 2],
       processingState: AudioProcessingState.ready,
@@ -179,9 +179,7 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     }
   }
 
-  bool get enabled {
-    return playbackState.value.playing;
-  }
+  bool get enabled => playbackState.value.playing;
 
   @override
   Future<void> rewind() async {
