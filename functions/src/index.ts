@@ -277,22 +277,17 @@ export const getUserEmotes = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(context.auth.uid, channelId);
-      if (!channel) {
-        return;
-      }
       const client = await getTwitchClient(context.auth.uid, channelId);
       await client.connect();
 
-      var retrieveEmotes = new Promise(function (resolve) {
-        client.on("emotesets", (set: string, emotes: EmoteObj) => resolve(emotes));
-      })
-
       try {
-        const emoteInfo: any = await retrieveEmotes;
         var emoteList: any = [];
+        const emoteInfo = await new Promise<EmoteObj>((resolve) => client.on("emotesets", (set, emotes) => resolve(emotes)));
         Object.values(emoteInfo).forEach((value: any) => Array.prototype.push.apply(emoteList, value));
         return { emotes: emoteList };
+      } catch (error) {
+        console.error(error);
+        throw new functions.https.HttpsError("internal", "error retrieving emotes");
       }
       finally {
         await client.disconnect();

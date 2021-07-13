@@ -24,13 +24,7 @@ class ChannelPanelWidget extends StatefulWidget {
 class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
   final _textEditingController = TextEditingController();
   var _isEmotePickerVisible = false;
-  late FocusNode _chatInputFocusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    _chatInputFocusNode = FocusNode();
-  }
+  final _chatInputFocusNode = FocusNode();
 
   @override
   void dispose() {
@@ -125,9 +119,9 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                   onPressed: () {
                     if (_isEmotePickerVisible) {
                       hideEmotePicker();
-                      showKeyboard();
+                      _chatInputFocusNode.requestFocus();
                     } else {
-                      hideKeyboard();
+                      _chatInputFocusNode.unfocus();
                       showEmotePicker();
                     }
                   },
@@ -195,28 +189,32 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
             ]),
           );
         }),
-        Offstage(
-          child: EmotePickerWidget(
-              channelId: Provider.of<ChannelsModel>(context, listen: false)
-                  .channels
-                  .first
-                  .channelId,
-              onEmoteSelected: (emote) {
-                _textEditingController.text =
-                    _textEditingController.text + " " + emote.code;
-              }),
-          offstage: !_isEmotePickerVisible,
-        )
+        _buildEmotePicker(context)
       ]);
     });
   }
 
-  showKeyboard() {
-    _chatInputFocusNode.requestFocus();
-  }
-
-  hideKeyboard() {
-    _chatInputFocusNode.unfocus();
+  Offstage _buildEmotePicker(BuildContext context) {
+    return Offstage(
+      child: EmotePickerWidget(
+          channelId: Provider.of<ChannelsModel>(context, listen: false)
+              .channels
+              .first
+              .channelId,
+          onDismiss: hideEmotePicker,
+          onDelete: () {
+            var initialText = _textEditingController.text;
+            if (initialText.isNotEmpty) {
+              _textEditingController.text =
+                  initialText.substring(0, initialText.length - 1);
+            }
+          },
+          onEmoteSelected: (emote) {
+            _textEditingController.text =
+                _textEditingController.text + " " + emote.code;
+          }),
+      offstage: !_isEmotePickerVisible,
+    );
   }
 
   showEmotePicker() {

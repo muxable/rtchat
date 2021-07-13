@@ -27,21 +27,24 @@ class TwitchEmoteSets extends ChangeNotifier {
 
     for (final channel in channels) {
       if (channel.provider != "twitch") {
-        return;
+        continue;
       }
-      if (!emotes.containsKey(channel.channelId)) {
-        var response = await getUserEmotes({
-          "provider": channel.provider,
-          "channelId": channel.channelId,
-        });
 
-        var emoteList = response.data['emotes'] as List;
-        List<Emote> parsedEmotes = emoteList
-            .map((individualEmote) => Emote.fromMap(individualEmote))
-            .toList();
-
-        emotes.putIfAbsent(channel.channelId, () => parsedEmotes);
+      if (emotes.containsKey(channel.channelId)) {
+        continue;
       }
+
+      final response = await getUserEmotes({
+        "provider": channel.provider,
+        "channelId": channel.channelId,
+      });
+
+      var emoteList = response.data['emotes'] as List;
+      List<Emote> parsedEmotes = emoteList
+          .map((individualEmote) => Emote.fromMap(individualEmote))
+          .toList();
+
+      emotes[channel.channelId] = parsedEmotes;
     }
 
     notifyListeners();
