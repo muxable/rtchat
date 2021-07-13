@@ -24,7 +24,7 @@ class TtsMessage {
   final String? coalescingHeader;
   final String message;
   final bool hasEmote;
-  final dynamic emotes;
+  final Map<String, dynamic>? emotes;
 
   const TtsMessage(
       {required this.messageId,
@@ -71,7 +71,7 @@ class TtsModel extends ChangeNotifier {
     _queue.add(message);
   }
 
-  List parseEmotes(dynamic emotes) {
+  List parseEmotes(Map<String, dynamic> emotes) {
     var ranges = [];
     for (MapEntry e in emotes.entries) {
       for (final str in e.value) {
@@ -86,8 +86,8 @@ class TtsModel extends ChangeNotifier {
     return ranges;
   }
 
-  String filterEmotes(dynamic emotesRaw, String message) {
-    var ranges = parseEmotes(emotesRaw);
+  String filterEmotes(Map<String, dynamic> emotes, String message) {
+    var ranges = parseEmotes(emotes);
     var res = "";
     var index = 0;
     for (var i = 0; i < ranges.length; i++) {
