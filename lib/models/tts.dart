@@ -38,6 +38,9 @@ class TtsMessage extends MediaItem {
         super(id: messageId, artist: author, title: message);
 
   String get spokenMessage {
+    if (message.trim().isEmpty) {
+      return "";
+    }
     if (coalescingHeader != null) {
       return "$coalescingHeader $message";
     }
@@ -63,7 +66,7 @@ class TtsMessage extends MediaItem {
 
   String get spokenNoEmotesMessage {
     var ranges = _parseEmotes(emotes);
-    var res = "";
+    var res = "$coalescingHeader ";
     var index = 0;
     for (var i = 0; i < ranges.length; i++) {
       var start = ranges[i][0];
@@ -76,6 +79,9 @@ class TtsMessage extends MediaItem {
 
     if (index < message.length) {
       res += message.substring(index);
+    }
+    if (res.trim() == coalescingHeader) {
+      return "";
     }
     return res;
   }
@@ -187,6 +193,14 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     isSeeking = true;
     await stop();
     super.skipToPrevious();
+  }
+
+  @override
+  Future<void> skipToPrevious() async {
+    // this might come from a media button. basically if this happens,
+    // immediately play the previous message.
+    super.skipToPrevious();
+    await play();
   }
 
   @override
