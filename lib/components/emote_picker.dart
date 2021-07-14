@@ -7,6 +7,8 @@ class EmotePickerWidget extends StatelessWidget {
   final void Function() onDelete;
   final void Function() onDismiss;
   final String channelId;
+  static const _emoteColumns = 8;
+  static const _footerHeight = 30;
 
   const EmotePickerWidget(
       {Key? key,
@@ -18,8 +20,12 @@ class EmotePickerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _rowNumber =
+        MediaQuery.of(context).orientation == Orientation.portrait ? 3 : 1.5;
+
     return SizedBox(
-      height: 290.0,
+      height: (MediaQuery.of(context).size.width / _emoteColumns) * _rowNumber +
+          _footerHeight,
       child: Column(children: <Widget>[
         Consumer<TwitchEmoteSets>(
           builder: (context, model, child) {
@@ -31,7 +37,7 @@ class EmotePickerWidget extends StatelessWidget {
                   SliverGrid(
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 8),
+                            crossAxisCount: _emoteColumns),
                     delegate: SliverChildListDelegate.fixed(emotes
                         .map((emote) => IconButton(
                             onPressed: () => onEmoteSelected(emote),

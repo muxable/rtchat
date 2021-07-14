@@ -118,11 +118,11 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
               IconButton(
                   onPressed: () {
                     if (_isEmotePickerVisible) {
-                      hideEmotePicker();
+                      setState(() => _isEmotePickerVisible = false);
                       _chatInputFocusNode.requestFocus();
                     } else {
                       _chatInputFocusNode.unfocus();
-                      showEmotePicker();
+                      setState(() => _isEmotePickerVisible = true);
                     }
                   },
                   icon: Icon(_isEmotePickerVisible
@@ -158,7 +158,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                     userModel.send(channelsModel.channels.first, value);
                     _textEditingController.clear();
                   },
-                  onTap: hideEmotePicker,
+                  onTap: () => setState(() => _isEmotePickerVisible = false),
                 ),
               ),
               PopupMenuButton<String>(
@@ -186,6 +186,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                   }).toList();
                 },
               ),
+              _buildSendButton(),
             ]),
           );
         }),
@@ -194,38 +195,41 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
     });
   }
 
-  Offstage _buildEmotePicker(BuildContext context) {
-    return Offstage(
-      child: EmotePickerWidget(
-          channelId: Provider.of<ChannelsModel>(context, listen: false)
-              .channels
-              .first
-              .channelId,
-          onDismiss: hideEmotePicker,
-          onDelete: () {
-            var initialText = _textEditingController.text;
-            if (initialText.isNotEmpty) {
-              _textEditingController.text =
-                  initialText.substring(0, initialText.length - 1);
+  Widget _buildSendButton() => _isEmotePickerVisible
+      ? IconButton(
+          icon: const Icon(Icons.send),
+          onPressed: () {
+            var text = _textEditingController.text;
+            if (text.isEmpty) {
+              return;
             }
-          },
-          onEmoteSelected: (emote) {
-            _textEditingController.text =
-                _textEditingController.text + " " + emote.code;
-          }),
-      offstage: !_isEmotePickerVisible,
-    );
-  }
+            final userModel = Provider.of<UserModel>(context, listen: false);
+            final channelsModel =
+                Provider.of<ChannelsModel>(context, listen: false);
+            userModel.send(channelsModel.channels.first, text);
+            _textEditingController.clear();
+          })
+      : Container();
 
-  showEmotePicker() {
-    setState(() {
-      _isEmotePickerVisible = true;
-    });
-  }
-
-  hideEmotePicker() {
-    setState(() {
-      _isEmotePickerVisible = false;
-    });
+  Widget _buildEmotePicker(BuildContext context) {
+    var channelProvider = Provider.of<ChannelsModel>(context, listen: false);
+    return channelProvider.channels.isNotEmpty
+        ? Offstage(
+            child: EmotePickerWidget(
+                channelId: channelProvider.channels.first.channelId,
+                onDismiss: () => setState(() => _isEmotePickerVisible = false),
+                onDelete: () {
+                  var initialText = _textEditingController.text;
+                  if (initialText.isNotEmpty) {
+                    _textEditingController.text =
+                        initialText.substring(0, initialText.length - 1);
+                  }
+                },
+                onEmoteSelected: (emote) {
+                  _textEditingController.text =
+                      _textEditingController.text + " " + emote.code;
+                }),
+            offstage: !_isEmotePickerVisible)
+        : Container();
   }
 }

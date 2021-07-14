@@ -39,7 +39,7 @@ class TwitchEmoteSets extends ChangeNotifier {
         "channelId": channel.channelId,
       });
 
-      var emoteList = response.data['emotes'] as List;
+      final emoteList = response.data['emotes'] as List;
       List<Emote> parsedEmotes = emoteList
           .map((individualEmote) => Emote.fromMap(individualEmote))
           .toList();
