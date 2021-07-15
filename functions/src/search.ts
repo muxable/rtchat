@@ -3,6 +3,9 @@ import { ClientCredentials } from "simple-oauth2";
 import { TWITCH_CLIENT_ID, TWITCH_OAUTH_CONFIG } from "./oauth";
 
 export const search = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("permission-denied", "missing auth");
+  }
   const credentials = await new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken(
     { scopes: [] }
   );
