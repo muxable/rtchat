@@ -41,7 +41,7 @@ class EmotePickerWidget extends StatelessWidget {
                     delegate: SliverChildListDelegate.fixed(emotes
                         .map((emote) => IconButton(
                             onPressed: () => onEmoteSelected(emote),
-                            icon: Image(image: NetworkImage(emote.source))))
+                            icon: Image.network(emote.source)))
                         .toList()),
                   ),
                 ],

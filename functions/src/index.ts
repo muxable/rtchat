@@ -281,10 +281,8 @@ export const getUserEmotes = functions.https.onCall(async (data, context) => {
       await client.connect();
 
       try {
-        var emoteList: any = [];
         const emoteInfo = await new Promise<EmoteObj>((resolve) => client.on("emotesets", (set, emotes) => resolve(emotes)));
-        Object.values(emoteInfo).forEach((value: any) => Array.prototype.push.apply(emoteList, value));
-        return { emotes: emoteList };
+        return { emotes: Object.values(emoteInfo).flat() };
       } catch (error) {
         console.error(error);
         throw new functions.https.HttpsError("internal", "error retrieving emotes");
