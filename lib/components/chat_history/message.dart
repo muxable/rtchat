@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
+import 'package:rtchat/components/chat_history/timeout_dialog.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/models/channels.dart';
@@ -28,8 +29,8 @@ class ChatHistoryMessage extends StatelessWidget {
           return child;
         }
         return InkWell(
-            onLongPress: () {
-              showDialog(
+            onLongPress: () async {
+              var showTimeoutDialog = await showDialog<bool>(
                   context: context,
                   builder: (context) {
                     return Dialog(
@@ -48,8 +49,24 @@ class ChatHistoryMessage extends StatelessWidget {
                               Navigator.pop(context);
                             }),
                         ListTile(
-                            title: Text('Timeout ${m.author}'), onTap: () {}),
-                        ListTile(title: Text('Ban ${m.author}'), onTap: () {}),
+                            title: Text('Timeout ${m.author}'),
+                            onTap: () {
+                              Navigator.pop(context, true);
+                            }),
+                        ListTile(
+                            title: Text('Ban ${m.author}'),
+                            onTap: () {
+                              final userModel = Provider.of<UserModel>(context,
+                                  listen: false);
+                              final channelsModel = Provider.of<ChannelsModel>(
+                                  context,
+                                  listen: false);
+                              userModel.ban(
+                                  channelsModel.subscribedChannels.first,
+                                  m.author,
+                                  "banned by streamer");
+                              Navigator.pop(context);
+                            }),
                         ListTile(
                             title: Text('Unban ${m.author}'),
                             onTap: () {
@@ -66,6 +83,27 @@ class ChatHistoryMessage extends StatelessWidget {
                       ]),
                     );
                   });
+              if (showTimeoutDialog == true) {
+                await showDialog(
+                    context: context,
+                    builder: (context) {
+                      return TimeoutDialog(
+                          title: "Timeout ${m.author}",
+                          onPressed: (duration) {
+                            final userModel =
+                                Provider.of<UserModel>(context, listen: false);
+                            final channelsModel = Provider.of<ChannelsModel>(
+                                context,
+                                listen: false);
+                            userModel.timeout(
+                                channelsModel.subscribedChannels.first,
+                                m.author,
+                                "timed out by streamer",
+                                duration);
+                            Navigator.pop(context);
+                          });
+                    });
+              }
             },
             child: child);
       });
