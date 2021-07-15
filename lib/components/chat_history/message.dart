@@ -43,7 +43,8 @@ class ChatHistoryMessage extends StatelessWidget {
                                   context,
                                   listen: false);
                               userModel.delete(
-                                  channelsModel.channels.first, m.messageId);
+                                  channelsModel.subscribedChannels.first,
+                                  m.messageId);
                               Navigator.pop(context);
                             }),
                         ListTile(
@@ -58,7 +59,8 @@ class ChatHistoryMessage extends StatelessWidget {
                                   context,
                                   listen: false);
                               userModel.unban(
-                                  channelsModel.channels.first, m.author);
+                                  channelsModel.subscribedChannels.first,
+                                  m.author);
                               Navigator.pop(context);
                             }),
                       ]),

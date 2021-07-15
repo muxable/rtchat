@@ -138,19 +138,19 @@ class App extends StatelessWidget {
           final model = ChannelsModel();
           final user = Provider.of<UserModel>(context, listen: false);
           final userChannel = user.userChannel;
-          model.channels = userChannel == null ? {} : {userChannel};
+          model.subscribedChannels = userChannel == null ? {} : {userChannel};
           user.addListener(() {
             final userChannel = user.userChannel;
-            model.channels = userChannel == null ? {} : {userChannel};
+            model.subscribedChannels = userChannel == null ? {} : {userChannel};
           });
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
           final model = ChatHistoryModel();
           final channels = Provider.of<ChannelsModel>(context, listen: false);
-          model.subscribe(channels.channels);
+          model.subscribe(channels.subscribedChannels);
           channels.addListener(() {
-            model.subscribe(channels.channels);
+            model.subscribe(channels.subscribedChannels);
           });
           return model;
         }),
@@ -186,9 +186,9 @@ class App extends StatelessWidget {
             prefs.setString('twitch_badge', jsonEncode(model.toJson()));
           });
           final channels = Provider.of<ChannelsModel>(context, listen: false);
-          model.subscribe(channels.channels);
+          model.subscribe(channels.subscribedChannels);
           channels.addListener(() {
-            model.subscribe(channels.channels);
+            model.subscribe(channels.subscribedChannels);
           });
           return model;
         }),

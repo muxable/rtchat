@@ -41,10 +41,10 @@ class ActivityFeedModel extends ChangeNotifier {
     if (host == null) {
       return;
     }
-    if (host.channels.isEmpty) {
+    if (host.subscribedChannels.isEmpty) {
       _baseChannel = null;
     } else {
-      final base = host.channels.first;
+      final base = host.subscribedChannels.first;
       _baseChannel = base;
     }
     notifyListeners();

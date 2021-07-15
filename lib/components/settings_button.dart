@@ -34,7 +34,7 @@ class SettingsButtonWidget extends StatelessWidget {
             layoutModel.locked = !layoutModel.locked;
             break;
           case _Value.signOut:
-            showDialog(
+            await showDialog(
               context: context,
               builder: (context) {
                 return AlertDialog(

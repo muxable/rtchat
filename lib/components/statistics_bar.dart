@@ -36,6 +36,14 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
     _timer = Timer.periodic(const Duration(seconds: 15), (_) => _poll());
   }
 
+  @override
+  void didUpdateWidget(StatisticsBarWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    setState(() => _loading = true);
+    _poll();
+  }
+
   Future<void> _poll() async {
     try {
       final statistics = await getStreamMetadata(
