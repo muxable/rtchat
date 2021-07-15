@@ -53,7 +53,6 @@ export async function checkEventSubSubscriptions(userId: string) {
   }
   await Promise.all(
     Object.values(EventsubType).map(async (type) => {
-      console.log("subscribing to", type, twitchUserId);
       const response = await fetch(
         "https://api.twitch.tv/helix/eventsub/subscriptions",
         {
@@ -76,7 +75,13 @@ export async function checkEventSubSubscriptions(userId: string) {
           }),
         }
       );
-      console.log(await response.json());
+      if (response.status == 409) {
+        // subscription already exists, this is ok.
+        return;
+      }
+      const json = await response.json();
+      console.log("subscribing to", type, twitchUserId);
+      console.log(JSON.stringify(json));
     })
   );
 }
