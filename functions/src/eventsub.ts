@@ -1,14 +1,13 @@
 import * as crypto from "crypto";
-import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
+import fetch from "node-fetch";
+import { ClientCredentials } from "simple-oauth2";
 import {
-  getAccessToken,
   TWITCH_CLIENT_ID,
   TWITCH_CLIENT_SECRET,
   TWITCH_OAUTH_CONFIG,
 } from "./oauth";
-import fetch from "node-fetch";
-import { ClientCredentials } from "simple-oauth2";
 
 enum EventsubType {
   ChannelFollow = "channel.follow",
@@ -67,7 +66,6 @@ export async function checkEventSubSubscriptions(userId: string) {
     { scopes: [] }
   );
   const appAccessToken = credentials.token.access_token;
-  const userAccessToken = await getAccessToken(userId, "twitch");
   const snapshot = await admin
     .database()
     .ref("userIds")
@@ -80,26 +78,18 @@ export async function checkEventSubSubscriptions(userId: string) {
     console.log("missing twitch user id");
     return;
   }
-  await Promise.all(
-    Object.values(EventsubType).map(async (type) => {
-      // TODO: clean this up.
-      let response = await createEventsub(appAccessToken, type, twitchUserId);
-      if (response.status == 409) {
-        // subscription already exists, this is ok.
-        return;
-      } else if (response.status == 403 && userAccessToken) {
-        console.log("forbidden, retrying with user token", type, twitchUserId);
-        response = await createEventsub(userAccessToken, type, twitchUserId);
-        if (response.status == 409) {
-          // subscription already exists, this is ok.
-          return;
-        }
-      }
-      const json = await response.json();
-      console.log("subscribing to", type, twitchUserId);
-      console.log(JSON.stringify(json));
-    })
-  );
+  const promises = Object.values(EventsubType).map(async (type) => {
+    // TODO: clean this up.
+    let response = await createEventsub(appAccessToken, type, twitchUserId);
+    if (response.status == 409) {
+      // subscription already exists, this is ok.
+      return;
+    }
+    const json = await response.json();
+    console.log("subscribing to", type, twitchUserId);
+    console.log(JSON.stringify(json));
+  });
+  await Promise.all(promises);
 }
 
 export const eventsub = functions.https.onRequest(async (req, res) => {
