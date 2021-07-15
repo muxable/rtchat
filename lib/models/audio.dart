@@ -68,6 +68,9 @@ class AudioModel extends ChangeNotifier {
 
   List<AudioSource> get sources => _sources;
 
+  int get unmutedSourceCount =>
+      _sources.where((element) => !element.muted).length;
+
   Future<void> addSource(AudioSource source) async {
     if (_sources.contains(source)) {
       return;
@@ -90,6 +93,12 @@ class AudioModel extends ChangeNotifier {
       await _syncWebView(_sources[index]);
     }
     notifyListeners();
+  }
+
+  Future<void> refreshAllSources() async {
+    for (final source in _sources) {
+      await _syncWebView(source);
+    }
   }
 
   Future<void> _syncWebView(AudioSource source) async {
