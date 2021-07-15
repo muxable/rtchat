@@ -27,7 +27,7 @@ export const search = functions.https.onCall(async (data, context) => {
         provider: "twitch",
         channelId: channel.id,
         displayName: channel.display_name,
-        isLive: channel.is_live,
+        isOnline: channel.is_live,
         imageUrl: channel.thumbnail_url,
         title: channel.title,
       };
