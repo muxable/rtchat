@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_panel.dart';
@@ -134,6 +135,7 @@ class ChannelPanelWidget extends StatelessWidget {
                 icon: const Icon(Icons.build),
                 onSelected: (value) async {
                   if (value == "Clear Chat") {
+                    FirebaseAnalytics().logEvent(name: "clear_chat");
                     final channelsModel =
                         Provider.of<ChannelsModel>(context, listen: false);
                     final channel = channelsModel.channels.first;
