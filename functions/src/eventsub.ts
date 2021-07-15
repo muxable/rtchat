@@ -2,6 +2,7 @@ import * as crypto from "crypto";
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import {
+  getAccessToken,
   TWITCH_CLIENT_ID,
   TWITCH_CLIENT_SECRET,
   TWITCH_OAUTH_CONFIG,
@@ -35,10 +36,38 @@ enum EventsubType {
   StreamOffline = "stream.offline",
 }
 
+function createEventsub(token: string, type: string, twitchUserId: string) {
+  const condition =
+    type == "channel.raid"
+      ? { to_broadcaster_user_id: twitchUserId }
+      : { broadcaster_user_id: twitchUserId };
+  return fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
+    method: "POST",
+    headers: {
+      "Client-ID": TWITCH_CLIENT_ID,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      type,
+      version: "1",
+      condition,
+      transport: {
+        method: "webhook",
+        callback:
+          "https://us-central1-rtchat-47692.cloudfunctions.net/eventsub",
+        secret: TWITCH_CLIENT_SECRET,
+      },
+    }),
+  });
+}
+
 export async function checkEventSubSubscriptions(userId: string) {
   const credentials = await new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken(
     { scopes: [] }
   );
+  const appAccessToken = credentials.token.access_token;
+  const userAccessToken = await getAccessToken(userId, "twitch");
   const snapshot = await admin
     .database()
     .ref("userIds")
@@ -53,31 +82,18 @@ export async function checkEventSubSubscriptions(userId: string) {
   }
   await Promise.all(
     Object.values(EventsubType).map(async (type) => {
-      const response = await fetch(
-        "https://api.twitch.tv/helix/eventsub/subscriptions",
-        {
-          method: "POST",
-          headers: {
-            "Client-ID": TWITCH_CLIENT_ID,
-            Authorization: `Bearer ${credentials.token.access_token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            type,
-            version: "1",
-            condition: { broadcaster_user_id: twitchUserId },
-            transport: {
-              method: "webhook",
-              callback:
-                "https://us-central1-rtchat-47692.cloudfunctions.net/eventsub",
-              secret: TWITCH_CLIENT_SECRET,
-            },
-          }),
-        }
-      );
+      // TODO: clean this up.
+      let response = await createEventsub(appAccessToken, type, twitchUserId);
       if (response.status == 409) {
         // subscription already exists, this is ok.
         return;
+      } else if (response.status == 403 && userAccessToken) {
+        console.log("forbidden, retrying with user token", type, twitchUserId);
+        response = await createEventsub(userAccessToken, type, twitchUserId);
+        if (response.status == 409) {
+          // subscription already exists, this is ok.
+          return;
+        }
       }
       const json = await response.json();
       console.log("subscribing to", type, twitchUserId);
