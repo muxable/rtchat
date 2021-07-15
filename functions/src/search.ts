@@ -1,4 +1,5 @@
 import * as functions from "firebase-functions";
+import fetch from "node-fetch";
 import { ClientCredentials } from "simple-oauth2";
 import { TWITCH_CLIENT_ID, TWITCH_OAUTH_CONFIG } from "./oauth";
 
