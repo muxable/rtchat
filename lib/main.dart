@@ -20,6 +20,7 @@ import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/twitch/badge.dart';
+import 'package:rtchat/models/twitch/emote.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/home.dart';
@@ -192,6 +193,15 @@ class App extends StatelessWidget {
           });
           return model;
         }),
+        ChangeNotifierProvider(create: (context) {
+          final model = TwitchEmoteSets();
+          final channels = Provider.of<ChannelsModel>(context, listen: false);
+          model.subscribe(channels.subscribedChannels);
+          channels.addListener(() {
+            model.subscribe(channels.subscribedChannels);
+          });
+          return model;
+        })
       ],
       child: DefaultTabController(
         initialIndex: 0,
