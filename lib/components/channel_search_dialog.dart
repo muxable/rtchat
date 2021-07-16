@@ -90,8 +90,18 @@ class _ChannelSearchDialogState extends State<ChannelSearchDialog> {
                 child: ListView(
                     children: data.map((result) {
               return ListTile(
-                  leading: CircleAvatar(
-                      foregroundImage: NetworkImage(result.imageUrl)),
+                  leading: Container(
+                    child: CircleAvatar(
+                      backgroundImage: NetworkImage(result.imageUrl),
+                    ),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: result.isOnline ? Colors.green : Colors.red,
+                        width: 2.0,
+                      ),
+                    ),
+                  ),
                   title: Text(result.displayName),
                   subtitle: Text(result.title),
                   onTap: () {
