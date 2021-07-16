@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:linkify/linkify.dart';
+import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/models/message.dart';
@@ -25,6 +26,31 @@ const colors = [
   Color(0xFF8A2BE2),
   Color(0xFF00FF7F),
 ];
+
+class _TwtichClipData {
+  final imgUrl;
+  final url;
+  final title;
+  final description;
+
+  _TwtichClipData(this.imgUrl, this.url, this.title, this.description);
+}
+
+class _MessageLink {
+  final url;
+  final hasLink;
+
+  _MessageLink(this.url, this.hasLink);
+
+  bool isTwitchClip() {
+    const twitchBaseUrl = 'www.twitch.tv';
+    const clipStr = 'clip';
+    if (url.contains(twitchBaseUrl) && url.contains(clipStr)) {
+      return true;
+    }
+    return false;
+  }
+}
 
 class _Emote {
   final int start;
@@ -57,6 +83,21 @@ Color lighten(Color color, [double amount = .1]) {
   final hslLight = hsl.withLightness((hsl.lightness) * (1 - amount) + amount);
 
   return hslLight.toColor();
+}
+
+_MessageLink hasLink(String text) {
+  final parsed = linkify(text, options: const LinkifyOptions(humanize: false));
+  for (final element in parsed) {
+    if (element is LinkableElement) {
+      return _MessageLink(element.url, true);
+    }
+  }
+  return _MessageLink('', false);
+}
+
+Future<_TwtichClipData> fetchClipData(String url) async {
+  var data = await MetadataFetch.extract(url);
+  return _TwtichClipData(data!.image, data.url, data.title, data.description);
 }
 
 Iterable<TextSpan> tokenize(String msg, TextStyle tagStyle) sync* {
@@ -239,6 +280,38 @@ class TwitchMessageWidget extends StatelessWidget {
           model.message,
           linkStyle,
           tagStyle,
+        ));
+      }
+
+      // if messsage has link and link is a twitch clip
+      var messageLink = hasLink(model.message);
+      if (messageLink.hasLink && messageLink.isTwitchClip()) {
+        return (Column(
+          children: [
+            Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: RichText(
+                  text: TextSpan(style: messageStyle, children: children),
+                )),
+            Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: FutureBuilder(
+                    future: fetchClipData(messageLink.url),
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return Card(
+                          child: ListTile(
+                            leading: Image.network(snapshot.data.imgUrl),
+                            title: Text(snapshot.data.title),
+                            subtitle: Text(snapshot.data.description),
+                            isThreeLine: true,
+                          ),
+                        );
+                      } else {
+                        return const Card(child: CircularProgressIndicator());
+                      }
+                    }))
+          ],
         ));
       }
       return Padding(
