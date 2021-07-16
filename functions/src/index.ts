@@ -8,10 +8,11 @@ import { eventsub } from "./eventsub";
 import { getAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
+import { search } from "./search";
 
 admin.initializeApp({
+  ...JSON.parse(process.env.FIREBASE_CONFIG || "{}"),
   credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-  databaseURL: `https://${serviceAccount.project_id}-default-rtdb.firebaseio.com`,
 });
 
 export const send = functions.https.onCall(async (data, context) => {
@@ -295,5 +296,5 @@ export const getUserEmotes = functions.https.onCall(async (data, context) => {
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
-export { subscribe, unsubscribe, eventsub };
+export { subscribe, unsubscribe, eventsub, search };
 export const auth = functions.https.onRequest(authApp);

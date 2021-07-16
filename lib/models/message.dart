@@ -1,13 +1,8 @@
 abstract class MessageModel {
-  final bool pinned;
+  final bool? pinned;
   final String messageId;
 
   const MessageModel({required this.pinned, required this.messageId});
-}
-
-abstract class PinnableMessageModel extends MessageModel {
-  const PinnableMessageModel({required bool pinned, required String messageId})
-      : super(pinned: pinned, messageId: messageId);
 }
 
 class TwitchMessageModel extends MessageModel {
@@ -19,18 +14,25 @@ class TwitchMessageModel extends MessageModel {
   final bool deleted;
 
   const TwitchMessageModel(
-      {required bool pinned,
-      required String messageId,
+      {required String messageId,
       required this.channel,
       required this.author,
       required this.message,
       required this.tags,
       required this.timestamp,
       required this.deleted})
-      : super(messageId: messageId, pinned: pinned);
+      : super(messageId: messageId, pinned: null);
+
+  bool get emoteOnly {
+    return tags['emote-only'] == true;
+  }
+
+  bool get hasEmote {
+    return tags['emotes'] != null ? true : false;
+  }
 }
 
-class TwitchRaidEventModel extends PinnableMessageModel {
+class TwitchRaidEventModel extends MessageModel {
   final String profilePictureUrl;
   final String fromUsername;
   final int viewers;
@@ -42,4 +44,15 @@ class TwitchRaidEventModel extends PinnableMessageModel {
       required this.fromUsername,
       required this.viewers})
       : super(messageId: messageId, pinned: pinned);
+}
+
+class StreamStateEventModel extends MessageModel {
+  final bool isOnline;
+  final DateTime timestamp;
+
+  const StreamStateEventModel(
+      {required String messageId,
+      required this.isOnline,
+      required this.timestamp})
+      : super(messageId: messageId, pinned: null);
 }

@@ -6,7 +6,7 @@ class LayoutModel extends ChangeNotifier {
   double _panelHeight = 100.0;
   double _panelWidth = 100.0;
   bool _isStatsVisible = true;
-  bool _isInputLockable = false;
+  bool _isInteractionLockable = false;
   bool _locked = false;
 
   void updatePanelHeight({required double dy}) {
@@ -32,15 +32,15 @@ class LayoutModel extends ChangeNotifier {
 
   bool get isStatsVisible => _isStatsVisible;
 
-  set isStatsVisible(bool isStatsVisible) {
-    _isStatsVisible = isStatsVisible;
+  set isStatsVisible(bool value) {
+    _isStatsVisible = value;
     notifyListeners();
   }
 
-  bool get isInputLockable => _isInputLockable;
+  bool get isInteractionLockable => _isInteractionLockable;
 
-  set isInputLockable(bool isInputLockable) {
-    _isInputLockable = isInputLockable;
+  set isInteractionLockable(bool value) {
+    _isInteractionLockable = value;
     notifyListeners();
   }
 
@@ -58,7 +58,7 @@ class LayoutModel extends ChangeNotifier {
       _isStatsVisible = json['isStatsVisible'];
     }
     if (json['isInputLockable'] != null) {
-      _isInputLockable = json['isInputLockable'];
+      _isInteractionLockable = json['isInputLockable'];
     }
   }
 
@@ -68,6 +68,6 @@ class LayoutModel extends ChangeNotifier {
         "panelWidth": _panelWidth,
         "locked": _locked,
         "isStatsVisible": _isStatsVisible,
-        "isInputLockable": _isInputLockable,
+        "isInputLockable": _isInteractionLockable,
       };
 }

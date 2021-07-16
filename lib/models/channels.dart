@@ -60,12 +60,31 @@ Future<StreamMetadata> getStreamMetadata(
 }
 
 class ChannelsModel extends ChangeNotifier {
-  Set<Channel> _channels = {};
+  Set<Channel> _subscribedChannels = {};
+  List<Channel> _availableChannels = [];
 
-  Set<Channel> get channels => _channels;
+  Set<Channel> get subscribedChannels => _subscribedChannels;
 
-  set channels(Set<Channel> channels) {
-    _channels = channels;
+  set subscribedChannels(Set<Channel> channels) {
+    _subscribedChannels = channels;
+    for (final channel in channels) {
+      if (!_availableChannels.contains(channel)) {
+        _availableChannels.add(channel);
+      }
+    }
     notifyListeners();
+  }
+
+  List<Channel> get availableChannels => _availableChannels;
+
+  set availableChannels(List<Channel> channels) {
+    _availableChannels = channels;
+    notifyListeners();
+  }
+
+  void addAvailableChannel(Channel channel) {
+    if (!_availableChannels.contains(channel)) {
+      _availableChannels.add(channel);
+    }
   }
 }

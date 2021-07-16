@@ -1,13 +1,13 @@
 import * as crypto from "crypto";
-import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
+import fetch from "node-fetch";
+import { ClientCredentials } from "simple-oauth2";
 import {
   TWITCH_CLIENT_ID,
   TWITCH_CLIENT_SECRET,
   TWITCH_OAUTH_CONFIG,
 } from "./oauth";
-import fetch from "node-fetch";
-import { ClientCredentials } from "simple-oauth2";
 
 enum EventsubType {
   ChannelFollow = "channel.follow",
@@ -31,12 +31,41 @@ enum EventsubType {
   ChannelHypeTrainBegin = "channel.hype_train.begin",
   ChannelHypeTrainProgress = "channel.hype_train.progress",
   ChannelHypeTrainEnd = "channel.hype_train.end",
+  StreamOnline = "stream.online",
+  StreamOffline = "stream.offline",
+}
+
+function createEventsub(token: string, type: string, twitchUserId: string) {
+  const condition =
+    type == "channel.raid"
+      ? { to_broadcaster_user_id: twitchUserId }
+      : { broadcaster_user_id: twitchUserId };
+  return fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
+    method: "POST",
+    headers: {
+      "Client-ID": TWITCH_CLIENT_ID,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      type,
+      version: "1",
+      condition,
+      transport: {
+        method: "webhook",
+        callback:
+          "https://us-central1-rtchat-47692.cloudfunctions.net/eventsub",
+        secret: TWITCH_CLIENT_SECRET,
+      },
+    }),
+  });
 }
 
 export async function checkEventSubSubscriptions(userId: string) {
   const credentials = await new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken(
     { scopes: [] }
   );
+  const appAccessToken = credentials.token.access_token;
   const snapshot = await admin
     .database()
     .ref("userIds")
@@ -49,34 +78,18 @@ export async function checkEventSubSubscriptions(userId: string) {
     console.log("missing twitch user id");
     return;
   }
-  await Promise.all(
-    Object.values(EventsubType).map(async (type) => {
-      console.log("subscribing to", type, twitchUserId);
-      const response = await fetch(
-        "https://api.twitch.tv/helix/eventsub/subscriptions",
-        {
-          method: "POST",
-          headers: {
-            "Client-ID": TWITCH_CLIENT_ID,
-            Authorization: `Bearer ${credentials.token.access_token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            type,
-            version: "1",
-            condition: { broadcaster_user_id: twitchUserId },
-            transport: {
-              method: "webhook",
-              callback:
-                "https://us-central1-rtchat-47692.cloudfunctions.net/eventsub",
-              secret: TWITCH_CLIENT_SECRET,
-            },
-          }),
-        }
-      );
-      console.log(await response.json());
-    })
-  );
+  const promises = Object.values(EventsubType).map(async (type) => {
+    // TODO: clean this up.
+    let response = await createEventsub(appAccessToken, type, twitchUserId);
+    if (response.status == 409) {
+      // subscription already exists, this is ok.
+      return;
+    }
+    const json = await response.json();
+    console.log("subscribing to", type, twitchUserId);
+    console.log(JSON.stringify(json));
+  });
+  await Promise.all(promises);
 }
 
 export const eventsub = functions.https.onRequest(async (req, res) => {
@@ -84,7 +97,7 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
   const timestamp = req.headers["twitch-eventsub-message-timestamp"] as string;
   const hmacMessage = messageId + timestamp + req.rawBody.toString("utf-8");
   const signature = crypto
-    .createHmac("sha256", "pszd4vpr7e3d22m6l7442za3vxzwvc")
+    .createHmac("sha256", TWITCH_CLIENT_SECRET)
     .update(hmacMessage)
     .digest("hex");
   if (
@@ -119,6 +132,8 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
       case EventsubType.ChannelSubscriptionMessage:
       case EventsubType.ChannelCheer:
       case EventsubType.ChannelRaid:
+      case EventsubType.StreamOnline:
+      case EventsubType.StreamOffline:
         // only log certain events to reduce noise.
         await messageRef.set({
           channelId,

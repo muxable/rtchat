@@ -5,6 +5,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:rtchat/foreground_service_channel.dart';
 
 class AudioSource {
   final String? name;
@@ -44,6 +45,7 @@ class AudioModel extends ChangeNotifier {
   final initialOptions = InAppWebViewGroupOptions(
       crossPlatform: InAppWebViewOptions(
           mediaPlaybackRequiresUserGesture: false, javaScriptEnabled: true));
+  var _isForegroundServiceEnabled = false;
 
   bool get isSpeakerDisconnectPreventionEnabled {
     return _speakerDisconnectTimer != null;
@@ -59,6 +61,18 @@ class AudioModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get isForegroundServiceEnabled => _isForegroundServiceEnabled;
+
+  set isForegroundServiceEnabled(bool isEnabled) {
+    if (isEnabled) {
+      ForegroundServiceChannel.start();
+    } else {
+      ForegroundServiceChannel.stop();
+    }
+    _isForegroundServiceEnabled = isEnabled;
+    notifyListeners();
+  }
+
   void _startSpeakerDisconnectTimer() {
     _speakerDisconnectTimer = Timer.periodic(
       const Duration(minutes: 5),
@@ -67,6 +81,9 @@ class AudioModel extends ChangeNotifier {
   }
 
   List<AudioSource> get sources => _sources;
+
+  int get unmutedSourceCount =>
+      _sources.where((element) => !element.muted).length;
 
   Future<void> addSource(AudioSource source) async {
     if (_sources.contains(source)) {
@@ -92,6 +109,12 @@ class AudioModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> refreshAllSources() async {
+    for (final source in _sources) {
+      await _syncWebView(source);
+    }
+  }
+
   Future<void> _syncWebView(AudioSource source) async {
     _views[source]?.dispose();
     if (source.muted) {
@@ -115,10 +138,15 @@ class AudioModel extends ChangeNotifier {
     if (json['isSpeakerDisconnectPreventionEnabled'] ?? false) {
       _startSpeakerDisconnectTimer();
     }
+    if (json['isForegroundServiceEnabled'] ?? false) {
+      _isForegroundServiceEnabled = json['isForegroundServiceEnabled'];
+      ForegroundServiceChannel.start();
+    }
   }
 
   Map<String, dynamic> toJson() => {
         "sources": _sources.map((source) => source.toJson()).toList(),
         "isSpeakerDisconnectPreventionEnabled": _speakerDisconnectTimer != null,
+        "isForegroundServiceEnabled": _isForegroundServiceEnabled,
       };
 }

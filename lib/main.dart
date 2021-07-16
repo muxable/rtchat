@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:audio_service/audio_service.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -63,19 +65,36 @@ void main() async {
   if (kDebugMode) {
     await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
   }
-  runZonedGuarded(() {
+  runZonedGuarded(() async {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
-    runApp(App(prefs: prefs));
+
+    final session = await AudioSession.instance;
+    await session.configure(const AudioSessionConfiguration.speech());
+
+    final ttsHandler = await AudioService.init(
+      builder: () => TtsAudioHandler(),
+      config: const AudioServiceConfig(
+        notificationColor: Color(0xFF009FDF),
+        androidNotificationIcon: "drawable/notification_icon",
+        androidNotificationOngoing: true,
+        androidStopForegroundOnPause: true,
+        androidNotificationChannelId: 'com.rtirl.chat.tts',
+        androidNotificationChannelName: 'Text to speech',
+      ),
+    );
+    runApp(App(prefs: prefs, ttsHandler: ttsHandler));
   }, FirebaseCrashlytics.instance.recordError);
 }
 
 class App extends StatelessWidget {
   final SharedPreferences prefs;
+  final TtsAudioHandler ttsHandler;
 
   static final analytics = FirebaseAnalytics();
   static final observer = FirebaseAnalyticsObserver(analytics: analytics);
 
-  const App({Key? key, required this.prefs}) : super(key: key);
+  const App({Key? key, required this.prefs, required this.ttsHandler})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -120,25 +139,25 @@ class App extends StatelessWidget {
           final model = ChannelsModel();
           final user = Provider.of<UserModel>(context, listen: false);
           final userChannel = user.userChannel;
-          model.channels = userChannel == null ? {} : {userChannel};
+          model.subscribedChannels = userChannel == null ? {} : {userChannel};
           user.addListener(() {
             final userChannel = user.userChannel;
-            model.channels = userChannel == null ? {} : {userChannel};
+            model.subscribedChannels = userChannel == null ? {} : {userChannel};
           });
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
           final model = ChatHistoryModel();
           final channels = Provider.of<ChannelsModel>(context, listen: false);
-          model.subscribe(channels.channels);
+          model.subscribe(channels.subscribedChannels);
           channels.addListener(() {
-            model.subscribe(channels.channels);
+            model.subscribe(channels.subscribedChannels);
           });
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
-          final model =
-              TtsModel.fromJson(jsonDecode(prefs.getString("tts") ?? "{}"));
+          final model = TtsModel.fromJson(
+              ttsHandler, jsonDecode(prefs.getString("tts") ?? "{}"));
           final chatHistory =
               Provider.of<ChatHistoryModel>(context, listen: false);
           model.addListener(() {
@@ -168,9 +187,9 @@ class App extends StatelessWidget {
             prefs.setString('twitch_badge', jsonEncode(model.toJson()));
           });
           final channels = Provider.of<ChannelsModel>(context, listen: false);
-          model.subscribe(channels.channels);
+          model.subscribe(channels.subscribedChannels);
           channels.addListener(() {
-            model.subscribe(channels.channels);
+            model.subscribe(channels.subscribedChannels);
           });
           return model;
         }),

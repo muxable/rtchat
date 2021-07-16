@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/quick_links.dart';
+import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class QuickLinksBar extends StatelessWidget {
@@ -16,9 +17,7 @@ class QuickLinksBar extends StatelessWidget {
       return Row(
           children: quickLinksModel.sources.map((source) {
         return IconButton(
-            icon: Text(source.icon,
-                style:
-                    const TextStyle(fontSize: 24, fontFamily: "MaterialIcons")),
+            icon: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
             tooltip: source.name,
             onPressed: () => launchLink(source));
       }).toList());

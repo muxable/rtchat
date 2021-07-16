@@ -55,12 +55,12 @@ class SettingsScreen extends StatelessWidget {
           const TtsOptionsWidget(),
           const Divider(),
           SwitchListTile.adaptive(
-            title: const Text('Disable input when layout is locked'),
+            title: const Text('Disable interaction when layout locked'),
             subtitle: const Text(
-                'Useful for rain streams to avoid triggering the keyboard'),
-            value: layoutModel.isInputLockable,
+                'Useful for rain streams to avoid triggering the screen'),
+            value: layoutModel.isInteractionLockable,
             onChanged: (value) {
-              layoutModel.isInputLockable = value;
+              layoutModel.isInteractionLockable = value;
             },
           ),
           const Divider(),

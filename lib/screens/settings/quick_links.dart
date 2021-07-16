@@ -11,6 +11,26 @@ class QuickLinksScreen extends StatefulWidget {
   _QuickLinksScreenState createState() => _QuickLinksScreenState();
 }
 
+const quickLinksIconsMap = {
+  "home": Icons.home,
+  "manage_accounts": Icons.manage_accounts,
+  "account_balance": Icons.account_balance,
+  "view_list": Icons.view_list,
+  "code": Icons.code,
+  "analytics": Icons.analytics,
+  "store": Icons.store,
+  "receipt": Icons.receipt,
+  "gavel": Icons.gavel,
+  "rule": Icons.rule,
+  "sensors": Icons.sensors,
+  "speaker_notes": Icons.speaker_notes,
+  "settings_input_antenna": Icons.settings_input_antenna,
+  "settings_input_component": Icons.settings_input_component,
+  "donut_small": Icons.donut_small,
+  "online_prediction": Icons.online_prediction,
+  "link": Icons.link,
+};
+
 class _QuickLinksScreenState extends State<QuickLinksScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textEditingController = TextEditingController();
@@ -31,9 +51,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                 background: const DismissibleDeleteBackground(),
                 child: ListTile(
                   key: ValueKey(source),
-                  leading: Text(source.icon,
-                      style: const TextStyle(
-                          fontSize: 24, fontFamily: "MaterialIcons")),
+                  leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
                   title:
                       name == null ? Text(source.url.toString()) : Text(name),
                   subtitle: name == null ? null : Text(source.url.toString()),
@@ -54,38 +72,20 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
             key: _formKey,
             child: Row(children: [
               PopupMenuButton<String>(
-                icon: Text(_activeIcon,
-                    style: const TextStyle(
-                        fontSize: 24, fontFamily: "MaterialIcons")),
+                icon: Icon(quickLinksIconsMap[_activeIcon] ?? Icons.link),
                 onSelected: (result) {
                   setState(() {
                     _activeIcon = result;
                   });
                 },
-                itemBuilder: (context) => [
-                  "home",
-                  "manage_accounts",
-                  "account_balance",
-                  "view_list",
-                  "code",
-                  "analytics",
-                  "store",
-                  "receipt",
-                  "gavel",
-                  "rule",
-                  "sensors",
-                  "speaker_notes",
-                  "settings_input_antenna",
-                  "settings_input_component",
-                  "donut_small",
-                  "online_prediction",
-                ]
-                    .map((icon) => PopupMenuItem(
-                        value: icon,
-                        child: Text(icon,
-                            style: const TextStyle(
-                                fontSize: 24, fontFamily: "MaterialIcons"))))
-                    .toList(),
+                itemBuilder: (context) {
+                  final entries = quickLinksIconsMap.entries.toList()
+                    ..sort((a, b) => a.key.compareTo(b.key));
+                  return entries
+                      .map((entry) => PopupMenuItem(
+                          value: entry.key, child: Icon(entry.value)))
+                      .toList();
+                },
               ),
               Expanded(
                 child: TextFormField(

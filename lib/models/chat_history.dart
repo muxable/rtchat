@@ -11,7 +11,7 @@ import 'package:rtchat/models/tts.dart';
 class ChatHistoryModel extends ChangeNotifier {
   StreamSubscription<void>? _subscription;
 
-  final List<MessageModel> _messages = [];
+  final List<MessageModel> _events = [];
 
   final _messageAdditionController = StreamController<TtsMessage>();
   final _messageDeletionController = StreamController<String>();
@@ -27,7 +27,7 @@ class ChatHistoryModel extends ChangeNotifier {
       });
     }
 
-    _messages.clear();
+    _events.clear();
     notifyListeners();
 
     _subscription?.cancel();
@@ -64,7 +64,6 @@ class ChatHistoryModel extends ChangeNotifier {
 
             final model = TwitchMessageModel(
               messageId: change.doc.id,
-              pinned: false,
               channel: data['channel'],
               author: author,
               message: message,
@@ -73,25 +72,26 @@ class ChatHistoryModel extends ChangeNotifier {
               deleted: false,
             );
 
-            _messages.add(model);
+            _events.add(model);
             _messageAdditionController.add(TtsMessage(
                 messageId: change.doc.id,
                 author: author,
                 message: message,
-                coalescingHeader: "$author said"));
+                coalescingHeader: "$author said",
+                hasEmote: model.hasEmote,
+                emotes: model.tags['emotes']));
             break;
           case "messagedeleted":
             final messageId = data['messageId'];
-            final index = _messages.indexWhere((element) {
+            final index = _events.indexWhere((element) {
               return element is TwitchMessageModel &&
                   element.messageId == messageId;
             });
             if (index > -1) {
-              final message = _messages[index];
+              final message = _events[index];
               if (message is TwitchMessageModel) {
-                _messages[index] = TwitchMessageModel(
+                _events[index] = TwitchMessageModel(
                   messageId: message.messageId,
-                  pinned: false,
                   channel: message.channel,
                   author: message.author,
                   message: message.message,
@@ -104,7 +104,7 @@ class ChatHistoryModel extends ChangeNotifier {
             }
             break;
           case "raided":
-            final index = _messages.length;
+            final index = _events.length;
             final DateTime timestamp = data['timestamp'].toDate();
             final expiration = timestamp.add(const Duration(seconds: 15));
             final remaining = expiration.difference(DateTime.now());
@@ -115,11 +115,11 @@ class ChatHistoryModel extends ChangeNotifier {
                 fromUsername: data['username'],
                 viewers: data['viewers'],
                 pinned: remaining > Duration.zero);
-            _messages.add(model);
+            _events.add(model);
 
             if (remaining > Duration.zero) {
               Timer(remaining, () {
-                _messages[index] = TwitchRaidEventModel(
+                _events[index] = TwitchRaidEventModel(
                     messageId: change.doc.id,
                     profilePictureUrl: data['tags']
                         ['msg-param-profileImageURL'],
@@ -129,6 +129,13 @@ class ChatHistoryModel extends ChangeNotifier {
                 notifyListeners();
               });
             }
+            break;
+          case "stream.online":
+          case "stream.offline":
+            _events.add(StreamStateEventModel(
+                messageId: change.doc.id,
+                isOnline: data['type'] == "stream.online",
+                timestamp: data['timestamp'].toDate()));
             break;
         }
 
@@ -148,7 +155,7 @@ class ChatHistoryModel extends ChangeNotifier {
   Stream<String> get deletions => _messageDeletionController.stream;
 
   void clear() {
-    _messages.clear();
+    _events.clear();
     notifyListeners();
   }
 
@@ -160,5 +167,5 @@ class ChatHistoryModel extends ChangeNotifier {
     super.dispose();
   }
 
-  List<MessageModel> get messages => _messages;
+  List<MessageModel> get messages => _events;
 }
