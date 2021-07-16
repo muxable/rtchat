@@ -196,9 +196,9 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (context) {
           final model = TwitchEmoteSets();
           final channels = Provider.of<ChannelsModel>(context, listen: false);
-          model.subscribe(channels.channels);
+          model.subscribe(channels.subscribedChannels);
           channels.addListener(() {
-            model.subscribe(channels.channels);
+            model.subscribe(channels.subscribedChannels);
           });
           return model;
         })
