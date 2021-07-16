@@ -234,6 +234,7 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
   }
 
   Future<void> force(TtsMessage message) async {
+    await skipToEnd();
     await _tts.setSpeechRate(speed);
     await _tts.setPitch(pitch);
     await _tts.speak(message.spokenMessage);
