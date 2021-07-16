@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:rtchat/models/style.dart';
 
 class _TwitchClipData {
-  final imageUrl;
-  final url;
-  final title;
-  final description;
+  final String? imageUrl;
+  final String? url;
+  final String? title;
+  final String? description;
 
   const _TwitchClipData(
       {required this.imageUrl,

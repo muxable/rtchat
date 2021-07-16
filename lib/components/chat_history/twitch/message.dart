@@ -28,8 +28,8 @@ const colors = [
 ];
 
 class _MessageLink {
-  final url;
-  final hasLink;
+  final String url;
+  final bool hasLink;
 
   _MessageLink(this.url, this.hasLink);
 }
