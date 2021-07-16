@@ -2,9 +2,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:linkify/linkify.dart';
-import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
+import 'package:rtchat/components/chat_history/twitch/message_link_preview.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -27,29 +27,11 @@ const colors = [
   Color(0xFF00FF7F),
 ];
 
-class _TwtichClipData {
-  final imgUrl;
-  final url;
-  final title;
-  final description;
-
-  _TwtichClipData(this.imgUrl, this.url, this.title, this.description);
-}
-
 class _MessageLink {
   final url;
   final hasLink;
 
   _MessageLink(this.url, this.hasLink);
-
-  bool isTwitchClip() {
-    const twitchBaseUrl = 'www.twitch.tv';
-    const clipStr = 'clip';
-    if (url.contains(twitchBaseUrl) && url.contains(clipStr)) {
-      return true;
-    }
-    return false;
-  }
 }
 
 class _Emote {
@@ -85,19 +67,20 @@ Color lighten(Color color, [double amount = .1]) {
   return hslLight.toColor();
 }
 
-_MessageLink hasLink(String text) {
+_MessageLink? getFirstClipLink(String text) {
   final parsed = linkify(text, options: const LinkifyOptions(humanize: false));
   for (final element in parsed) {
-    if (element is LinkableElement) {
+    if (element is LinkableElement && isTwitchClip(element.url)) {
       return _MessageLink(element.url, true);
     }
   }
-  return _MessageLink('', false);
+  return null;
 }
 
-Future<_TwtichClipData> fetchClipData(String url) async {
-  var data = await MetadataFetch.extract(url);
-  return _TwtichClipData(data!.image, data.url, data.title, data.description);
+bool isTwitchClip(String url) {
+  const twitchBaseUrl = 'www.twitch.tv';
+  const clipStr = 'clip';
+  return url.contains(twitchBaseUrl) && url.contains(clipStr);
 }
 
 Iterable<TextSpan> tokenize(String msg, TextStyle tagStyle) sync* {
@@ -283,36 +266,11 @@ class TwitchMessageWidget extends StatelessWidget {
         ));
       }
 
-      // if messsage has link and link is a twitch clip
-      var messageLink = hasLink(model.message);
-      if (messageLink.hasLink && messageLink.isTwitchClip()) {
-        return (Column(
-          children: [
-            Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: RichText(
-                  text: TextSpan(style: messageStyle, children: children),
-                )),
-            Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: FutureBuilder(
-                    future: fetchClipData(messageLink.url),
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        return Card(
-                          child: ListTile(
-                            leading: Image.network(snapshot.data.imgUrl),
-                            title: Text(snapshot.data.title),
-                            subtitle: Text(snapshot.data.description),
-                            isThreeLine: true,
-                          ),
-                        );
-                      } else {
-                        return const Card(child: CircularProgressIndicator());
-                      }
-                    }))
-          ],
-        ));
+      // if messsage has links and clips, then fetch the first clip link
+      var messageLink = getFirstClipLink(model.message);
+      if (messageLink != null) {
+        return (TwitchMessageLinkPreviewWidget(
+            messageStyle, children, messageLink.url));
       }
       return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
