@@ -212,8 +212,8 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
   @override
   Future<void> addQueueItem(MediaItem mediaItem) async {
     await super.addQueueItem(mediaItem);
-    await skipToEnd();
     if (enabled && !isSeeking && !isPlaying) {
+      await skipToEnd();
       await play();
     }
   }
@@ -234,6 +234,7 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
   }
 
   Future<void> force(TtsMessage message) async {
+    await skipToEnd();
     await _tts.setSpeechRate(speed);
     await _tts.setPitch(pitch);
     await _tts.speak(message.spokenMessage);
