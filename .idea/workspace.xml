@@ -8,18 +8,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="24a40471-718e-4e25-a4b6-b2a07001967d" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/android/app/src/main/kotlin/com/rtirl/chat/ForegroundService.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/components/channel_panel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/components/channel_panel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/generated_plugin_registrant.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/generated_plugin_registrant.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[SerialNumber@14141FDD4000T8]" />
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -47,7 +44,7 @@
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="show.migrate.to.gradle.popup" value="false" />
   </component>
-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SpellCheckerSettings" BundledDictionaries="0" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" Dictionaries="0" CorrectionsLimit="5" DefaultDictionary="application-level" UseSingleDictionary="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -70,5 +67,21 @@
       <screen x="0" y="25" width="1680" height="1025" />
     </state>
     <state x="537" y="376" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.25.1680.1025@0.25.1680.1025" timestamp="1626369869578" />
+    <state width="1340" height="199" key="GridCell.Tab.0.bottom" timestamp="1626460637850">
+      <screen x="0" y="0" width="1536" height="834" />
+    </state>
+    <state width="1340" height="199" key="GridCell.Tab.0.bottom/0.0.1536.834@0.0.1536.834" timestamp="1626460637850" />
+    <state width="1340" height="199" key="GridCell.Tab.0.center" timestamp="1626460637849">
+      <screen x="0" y="0" width="1536" height="834" />
+    </state>
+    <state width="1340" height="199" key="GridCell.Tab.0.center/0.0.1536.834@0.0.1536.834" timestamp="1626460637849" />
+    <state width="1340" height="199" key="GridCell.Tab.0.left" timestamp="1626460637849">
+      <screen x="0" y="0" width="1536" height="834" />
+    </state>
+    <state width="1340" height="199" key="GridCell.Tab.0.left/0.0.1536.834@0.0.1536.834" timestamp="1626460637849" />
+    <state width="1340" height="199" key="GridCell.Tab.0.right" timestamp="1626460637849">
+      <screen x="0" y="0" width="1536" height="834" />
+    </state>
+    <state width="1340" height="199" key="GridCell.Tab.0.right/0.0.1536.834@0.0.1536.834" timestamp="1626460637849" />
   </component>
 </project>
