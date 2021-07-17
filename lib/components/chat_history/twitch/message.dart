@@ -27,13 +27,6 @@ const colors = [
   Color(0xFF00FF7F),
 ];
 
-class _MessageLink {
-  final String url;
-  final bool hasLink;
-
-  _MessageLink(this.url, this.hasLink);
-}
-
 class _Emote {
   final int start;
   final int end;
@@ -67,11 +60,11 @@ Color lighten(Color color, [double amount = .1]) {
   return hslLight.toColor();
 }
 
-_MessageLink? getFirstClipLink(String text) {
+String? getFirstClipLink(String text) {
   final parsed = linkify(text, options: const LinkifyOptions(humanize: false));
   for (final element in parsed) {
     if (element is LinkableElement && isTwitchClip(element.url)) {
-      return _MessageLink(element.url, true);
+      return element.url;
     }
   }
   return null;
@@ -267,10 +260,10 @@ class TwitchMessageWidget extends StatelessWidget {
       }
 
       // if messsage has links and clips, then fetch the first clip link
-      var messageLink = getFirstClipLink(model.message);
-      if (messageLink != null) {
+      var fetchUrl = getFirstClipLink(model.message);
+      if (fetchUrl != null) {
         return (TwitchMessageLinkPreviewWidget(
-            messageStyle, children, messageLink.url));
+            messageStyle: messageStyle, children: children, url: fetchUrl));
       }
       return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),

@@ -1,7 +1,5 @@
 import 'package:metadata_fetch/metadata_fetch.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
-import 'package:rtchat/models/style.dart';
 
 class _TwitchClipData {
   final String? imageUrl;
@@ -31,39 +29,39 @@ class TwitchMessageLinkPreviewWidget extends StatelessWidget {
   final String url;
 
   const TwitchMessageLinkPreviewWidget(
-      this.messageStyle, this.children, this.url,
-      {Key? key})
+      {required this.messageStyle,
+      required this.children,
+      required this.url,
+      Key? key})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<StyleModel>(builder: (context, styleModel, child) {
-      return (Column(
-        children: [
-          Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: RichText(
-                text: TextSpan(style: messageStyle, children: children),
-              )),
-          Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: FutureBuilder(
-                  future: fetchClipData(url),
-                  builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
-                      return const Card(child: CircularProgressIndicator());
-                    }
-                    return Card(
-                      child: ListTile(
-                        leading: Image.network(snapshot.data.imageUrl),
-                        title: Text(snapshot.data.title),
-                        subtitle: Text(snapshot.data.description),
-                        isThreeLine: true,
-                      ),
-                    );
-                  }))
-        ],
-      ));
-    });
+    return (Column(
+      children: [
+        Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: RichText(
+              text: TextSpan(style: messageStyle, children: children),
+            )),
+        Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: FutureBuilder(
+                future: fetchClipData(url),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const Card(child: CircularProgressIndicator());
+                  }
+                  return Card(
+                    child: ListTile(
+                      leading: Image.network(snapshot.data.imageUrl),
+                      title: Text(snapshot.data.title),
+                      subtitle: Text(snapshot.data.description),
+                      isThreeLine: true,
+                    ),
+                  );
+                }))
+      ],
+    ));
   }
 }
