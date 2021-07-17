@@ -3,14 +3,41 @@
   <component name="AnalysisUIOptions">
     <option name="SCOPE_TYPE" value="4" />
   </component>
+  <component name="AndroidLogFilters">
+    <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Show only selected application" />
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="NONE" />
   </component>
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:upstream" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="24a40471-718e-4e25-a4b6-b2a07001967d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/components/channel_panel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/components/channel_panel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/generated_plugin_registrant.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/generated_plugin_registrant.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/chat_history.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/chat_history.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/user.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/user.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,6 +53,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="rtchat_timestamp" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1tPN4Gn8js1oC6uq4U3jCkZaoYV" />
@@ -40,6 +72,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="dart.analysis.tool.window.force.activate" value="true" />
     <property name="dart.analysis.tool.window.visible" value="false" />
+    <property name="io.flutter.reload.alreadyRun" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="show.migrate.to.gradle.popup" value="false" />
@@ -58,6 +91,18 @@
     </task>
     <servers />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
   <component name="WindowStateProjectService">
     <state x="653" y="248" key="#com.intellij.ide.util.MemberChooser" timestamp="1626369684245">
       <screen x="0" y="25" width="1680" height="1025" />
@@ -67,21 +112,29 @@
       <screen x="0" y="25" width="1680" height="1025" />
     </state>
     <state x="537" y="376" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.25.1680.1025@0.25.1680.1025" timestamp="1626369869578" />
-    <state width="1340" height="199" key="GridCell.Tab.0.bottom" timestamp="1626460637850">
+    <state width="1491" height="171" key="GridCell.Tab.0.bottom" timestamp="1626547940073">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
-    <state width="1340" height="199" key="GridCell.Tab.0.bottom/0.0.1536.834@0.0.1536.834" timestamp="1626460637850" />
-    <state width="1340" height="199" key="GridCell.Tab.0.center" timestamp="1626460637849">
+    <state width="1491" height="171" key="GridCell.Tab.0.bottom/0.0.1536.834@0.0.1536.834" timestamp="1626547940073" />
+    <state width="1491" height="171" key="GridCell.Tab.0.center" timestamp="1626547940073">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
-    <state width="1340" height="199" key="GridCell.Tab.0.center/0.0.1536.834@0.0.1536.834" timestamp="1626460637849" />
-    <state width="1340" height="199" key="GridCell.Tab.0.left" timestamp="1626460637849">
+    <state width="1491" height="171" key="GridCell.Tab.0.center/0.0.1536.834@0.0.1536.834" timestamp="1626547940073" />
+    <state width="1491" height="171" key="GridCell.Tab.0.left" timestamp="1626547940073">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
-    <state width="1340" height="199" key="GridCell.Tab.0.left/0.0.1536.834@0.0.1536.834" timestamp="1626460637849" />
-    <state width="1340" height="199" key="GridCell.Tab.0.right" timestamp="1626460637849">
+    <state width="1491" height="171" key="GridCell.Tab.0.left/0.0.1536.834@0.0.1536.834" timestamp="1626547940073" />
+    <state width="1491" height="171" key="GridCell.Tab.0.right" timestamp="1626547940073">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
-    <state width="1340" height="199" key="GridCell.Tab.0.right/0.0.1536.834@0.0.1536.834" timestamp="1626460637849" />
+    <state width="1491" height="171" key="GridCell.Tab.0.right/0.0.1536.834@0.0.1536.834" timestamp="1626547940073" />
+    <state x="353" y="131" key="Vcs.Push.Dialog.v2" timestamp="1626461267856">
+      <screen x="0" y="0" width="1536" height="834" />
+    </state>
+    <state x="353" y="131" key="Vcs.Push.Dialog.v2/0.0.1536.834@0.0.1536.834" timestamp="1626461267856" />
+    <state x="475" y="150" width="586" height="534" key="find.popup" timestamp="1626537057956">
+      <screen x="0" y="0" width="1536" height="834" />
+    </state>
+    <state x="475" y="150" width="586" height="534" key="find.popup/0.0.1536.834@0.0.1536.834" timestamp="1626537057956" />
   </component>
 </project>

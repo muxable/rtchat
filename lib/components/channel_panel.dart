@@ -2,17 +2,21 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/chat_history/message.dart';
+import 'package:rtchat/components/chat_history/scroll_view.dart';
 import 'package:rtchat/components/chat_panel.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/components/statistics_bar.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'channel_search_dialog.dart';
 
 bool firstMessage = true;
+UserModel? prevUserModel;
 
 class _ChannelPickerValue {
   final Channel? channel;
@@ -96,9 +100,9 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                           context: context,
                           builder: (context) =>
                               ChannelSearchDialog(onSelect: (channel) {
-                                channelsModel.subscribedChannels = {channel};
-                                Navigator.pop(context);
-                              }),
+                            channelsModel.subscribedChannels = {channel};
+                            Navigator.pop(context);
+                          }),
                         );
                       } else {
                         channelsModel.subscribedChannels = {value.channel!};
@@ -179,7 +183,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                 textInputAction: TextInputAction.send,
                 maxLines: null,
                 decoration:
-                const InputDecoration(hintText: "Send a message..."),
+                    const InputDecoration(hintText: "Send a message..."),
                 onChanged: (text) {
                   final filtered = text.replaceAll('\n', ' ');
                   if (filtered == text) {
@@ -196,19 +200,35 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                     return;
                   }
                   final userModel =
-                  Provider.of<UserModel>(context, listen: false);
+                      Provider.of<UserModel>(context, listen: false);
                   final channelsModel =
-                  Provider.of<ChannelsModel>(context, listen: false);
+                      Provider.of<ChannelsModel>(context, listen: false);
+                  String prevMessage = "";
+                  if (prevUserModel != null) {
+                    if (userModel.user!.uid == prevUserModel!.user!.uid) {
+                      prevMessage = prevUserModel!.lastMessage! + "\n";
+                      List<MessageModel> messageList = Provider.of<ChatHistoryModel>(context, listen: false).messages;
+                      MessageModel lastMessage = messageList[messageList.length - 1];
+                      userModel.delete(channelsModel.subscribedChannels.first,
+                          lastMessage.messageId);
+                      Provider.of<ChatHistoryModel>(context, listen: false).delete(lastMessage);
+                    }
+                  }
                   if (firstMessage) {
                     var now = DateTime.now();
-                    userModel.send(channelsModel.subscribedChannels.first,
-                        value + "\t sent time: " + now.toString());
+                    userModel.send(
+                        channelsModel.subscribedChannels.first,
+                        prevMessage +
+                            value +
+                            "\t sent time: " +
+                            now.toString());
                     firstMessage = false;
                   } else {
-                    userModel.send(
-                        channelsModel.subscribedChannels.first, value);
+                    userModel.send(channelsModel.subscribedChannels.first,
+                        prevMessage + value);
                   }
                   _textEditingController.clear();
+                  prevUserModel = userModel;
                 },
                 onTap: () => setState(() => _isEmotePickerVisible = false),
               ),
@@ -219,7 +239,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                 if (value == "Clear Chat") {
                   FirebaseAnalytics().logEvent(name: "clear_chat");
                   final channelsModel =
-                  Provider.of<ChannelsModel>(context, listen: false);
+                      Provider.of<ChannelsModel>(context, listen: false);
                   final channel = channelsModel.subscribedChannels.first;
                   FirebaseFunctions.instance.httpsCallable("clear")({
                     "provider": channel.provider,
@@ -248,39 +268,39 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
 
   Widget _buildSendButton() => _isEmotePickerVisible
       ? IconButton(
-      icon: const Icon(Icons.send),
-      onPressed: () {
-        var text = _textEditingController.text;
-        if (text.isEmpty) {
-          return;
-        }
-        final userModel = Provider.of<UserModel>(context, listen: false);
-        final channelsModel =
-        Provider.of<ChannelsModel>(context, listen: false);
-        userModel.send(channelsModel.subscribedChannels.first, text);
-        _textEditingController.clear();
-      })
+          icon: const Icon(Icons.send),
+          onPressed: () {
+            var text = _textEditingController.text;
+            if (text.isEmpty) {
+              return;
+            }
+            final userModel = Provider.of<UserModel>(context, listen: false);
+            final channelsModel =
+                Provider.of<ChannelsModel>(context, listen: false);
+            userModel.send(channelsModel.subscribedChannels.first, text);
+            _textEditingController.clear();
+          })
       : Container();
 
   Widget _buildEmotePicker(BuildContext context) {
     var channelProvider = Provider.of<ChannelsModel>(context, listen: false);
     return channelProvider.subscribedChannels.isNotEmpty
         ? Offstage(
-        child: EmotePickerWidget(
-            channelId: channelProvider.subscribedChannels.first.channelId,
-            onDismiss: () => setState(() => _isEmotePickerVisible = false),
-            onDelete: () {
-              var initialText = _textEditingController.text;
-              if (initialText.isNotEmpty) {
-                _textEditingController.text =
-                    initialText.substring(0, initialText.length - 1);
-              }
-            },
-            onEmoteSelected: (emote) {
-              _textEditingController.text =
-                  _textEditingController.text + " " + emote.code;
-            }),
-        offstage: !_isEmotePickerVisible)
+            child: EmotePickerWidget(
+                channelId: channelProvider.subscribedChannels.first.channelId,
+                onDismiss: () => setState(() => _isEmotePickerVisible = false),
+                onDelete: () {
+                  var initialText = _textEditingController.text;
+                  if (initialText.isNotEmpty) {
+                    _textEditingController.text =
+                        initialText.substring(0, initialText.length - 1);
+                  }
+                },
+                onEmoteSelected: (emote) {
+                  _textEditingController.text =
+                      _textEditingController.text + " " + emote.code;
+                }),
+            offstage: !_isEmotePickerVisible)
         : Container();
   }
 }

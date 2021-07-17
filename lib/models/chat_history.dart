@@ -159,6 +159,11 @@ class ChatHistoryModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void delete(MessageModel messageModel){
+    _events.remove(messageModel);
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     _subscription?.cancel();

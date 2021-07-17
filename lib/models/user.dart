@@ -9,6 +9,7 @@ import 'package:rtchat/models/channels.dart';
 
 class UserModel extends ChangeNotifier {
   User? _user = FirebaseAuth.instance.currentUser;
+  String? lastMessage;
   late StreamSubscription<User?> _userSubscription;
   StreamSubscription<DocumentSnapshot>? _profileSubscription;
   Channel? _userChannel;
@@ -50,6 +51,7 @@ class UserModel extends ChangeNotifier {
   bool isSignedIn() => _user != null;
 
   Future<void> send(Channel channel, String message) async {
+    lastMessage = message;
     final call = FirebaseFunctions.instance.httpsCallable('send');
     await call({
       "provider": channel.provider,
