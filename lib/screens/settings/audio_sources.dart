@@ -45,6 +45,19 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
             },
           );
         }),
+        Consumer<AudioModel>(builder: (context, audioModel, child) {
+          return SwitchListTile.adaptive(
+            title: const Text('Keep RealtimeChat running in the background'),
+            subtitle: audioModel.isForegroundServiceEnabled
+                ? const Text(
+                    'Audio sources will play even when you\'re using other apps')
+                : const Text('Audio sources may not play when you switch apps'),
+            value: audioModel.isForegroundServiceEnabled,
+            onChanged: (value) {
+              audioModel.isForegroundServiceEnabled = value;
+            },
+          );
+        }),
         const Divider(),
         Expanded(
             child: Consumer<AudioModel>(builder: (context, audioModel, child) {
