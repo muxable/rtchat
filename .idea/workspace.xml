@@ -25,13 +25,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="24a40471-718e-4e25-a4b6-b2a07001967d" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/test/channels_test.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/quick_link_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
+    <list default="true" id="24a40471-718e-4e25-a4b6-b2a07001967d" name="Default Changelist" comment="channel tests and quick link tests added">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/components/chat_history/twitch/message.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/components/chat_history/twitch/message.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -79,6 +75,14 @@
       <option name="presentableId" value="Default" />
       <updated>1622666571953</updated>
     </task>
+    <task id="LOCAL-00001" summary="channel tests and quick link tests added">
+      <created>1626547152135</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1626547152135</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -92,6 +96,10 @@
       </map>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="channel tests and quick link tests added" />
+    <option name="LAST_COMMIT_MESSAGE" value="channel tests and quick link tests added" />
+  </component>
   <component name="WindowStateProjectService">
     <state x="653" y="248" key="#com.intellij.ide.util.MemberChooser" timestamp="1626369684245">
       <screen x="0" y="25" width="1680" height="1025" />
@@ -101,6 +109,10 @@
       <screen x="0" y="25" width="1680" height="1025" />
     </state>
     <state x="537" y="376" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.25.1680.1025@0.25.1680.1025" timestamp="1626369869578" />
+    <state x="591" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1626547630413">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="591" y="289" width="800" height="535" key="Vcs.Push.Dialog.v2/72.27.1848.1053@72.27.1848.1053" timestamp="1626547630413" />
     <state x="687" y="292" width="618" height="522" key="find.popup" timestamp="1626546918606">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>

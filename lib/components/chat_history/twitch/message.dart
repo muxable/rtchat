@@ -76,7 +76,7 @@ bool isTwitchClip(String url) {
   return url.contains(twitchBaseUrl) && url.contains(clipStr);
 }
 
-Iterable<TextSpan> tokenize(String msg, TextStyle tagStyle) sync* {
+Iterable<InlineSpan> tokenize(String msg, TextStyle tagStyle) sync* {
   final matches = RegExp(r"@[A-Za-z0-9_]+").allMatches(msg);
   var start = 0;
   for (final match in matches) {
@@ -116,7 +116,10 @@ Iterable<InlineSpan> parseText(
         ),
       );
     } else {
-      return TextSpan(children: tokenize(element.text, tagStyle).toList());
+      return WidgetSpan(
+        child: RichText(
+            text: TextSpan(children: tokenize(element.text, tagStyle).toList())),
+      );
     }
   });
 }
@@ -187,7 +190,7 @@ class TwitchMessageWidget extends StatelessWidget {
       final tagStyle = Theme.of(context)
           .textTheme
           .bodyText2!
-          .copyWith(fontSize: styleModel.fontSize, fontWeight: FontWeight.bold);
+          .copyWith(fontSize: styleModel.fontSize, fontWeight: FontWeight.w900);
 
       final List<InlineSpan> children = [];
 
