@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               onHorizontalDragUpdate: (details) {
                 layoutModel.updatePanelWidth(dx: details.delta.dx);
               }),
-          Expanded(child: ChannelPanelWidget()),
+          const Expanded(child: ChannelPanelWidget()),
         ]);
       }
     });

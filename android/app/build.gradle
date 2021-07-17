@@ -13,10 +13,10 @@ if (keystorePropertiesFile.exists()) {
         keystoreProperties.load(reader)
     }
 } else {
-    keystoreProperties.setProperty('storePassword', System.getenv('STORE_PASSWORD') ?: "");
-    keystoreProperties.setProperty('keyPassword', System.getenv('KEY_PASSWORD') ?: "");
-    keystoreProperties.setProperty('keyAlias', System.getenv('KEY_ALIAS') ?: "");
-    keystoreProperties.setProperty('storeFile', System.getenv('STORE_FILE') ?: "");
+    keystoreProperties.setProperty('storePassword', System.getenv('STORE_PASSWORD') ?: "")
+    keystoreProperties.setProperty('keyPassword', System.getenv('KEY_PASSWORD') ?: "")
+    keystoreProperties.setProperty('keyAlias', System.getenv('KEY_ALIAS') ?: "")
+    keystoreProperties.setProperty('storeFile', System.getenv('STORE_FILE') ?: "")
 }
 
 def flutterRoot = localProperties.getProperty('flutter.sdk')
@@ -75,5 +75,5 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.multidex:multidex:2.0.0'
+    implementation 'androidx.multidex:multidex:2.0.1'
 }

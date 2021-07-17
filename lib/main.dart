@@ -20,6 +20,7 @@ import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/twitch/badge.dart';
+import 'package:rtchat/models/twitch/emote.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/home.dart';
@@ -74,6 +75,7 @@ void main() async {
       builder: () => TtsAudioHandler(),
       config: const AudioServiceConfig(
         notificationColor: Color(0xFF009FDF),
+        androidNotificationIcon: "drawable/notification_icon",
         androidNotificationOngoing: true,
         androidStopForegroundOnPause: true,
         androidNotificationChannelId: 'com.rtirl.chat.tts',
@@ -137,19 +139,19 @@ class App extends StatelessWidget {
           final model = ChannelsModel();
           final user = Provider.of<UserModel>(context, listen: false);
           final userChannel = user.userChannel;
-          model.channels = userChannel == null ? {} : {userChannel};
+          model.subscribedChannels = userChannel == null ? {} : {userChannel};
           user.addListener(() {
             final userChannel = user.userChannel;
-            model.channels = userChannel == null ? {} : {userChannel};
+            model.subscribedChannels = userChannel == null ? {} : {userChannel};
           });
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
           final model = ChatHistoryModel();
           final channels = Provider.of<ChannelsModel>(context, listen: false);
-          model.subscribe(channels.channels);
+          model.subscribe(channels.subscribedChannels);
           channels.addListener(() {
-            model.subscribe(channels.channels);
+            model.subscribe(channels.subscribedChannels);
           });
           return model;
         }),
@@ -185,12 +187,21 @@ class App extends StatelessWidget {
             prefs.setString('twitch_badge', jsonEncode(model.toJson()));
           });
           final channels = Provider.of<ChannelsModel>(context, listen: false);
-          model.subscribe(channels.channels);
+          model.subscribe(channels.subscribedChannels);
           channels.addListener(() {
-            model.subscribe(channels.channels);
+            model.subscribe(channels.subscribedChannels);
           });
           return model;
         }),
+        ChangeNotifierProvider(create: (context) {
+          final model = TwitchEmoteSets();
+          final channels = Provider.of<ChannelsModel>(context, listen: false);
+          model.subscribe(channels.subscribedChannels);
+          channels.addListener(() {
+            model.subscribe(channels.subscribedChannels);
+          });
+          return model;
+        })
       ],
       child: DefaultTabController(
         initialIndex: 0,
