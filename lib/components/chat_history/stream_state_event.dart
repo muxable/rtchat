@@ -23,7 +23,7 @@ class StreamStateEventWidget extends StatelessWidget {
                       : "Stream offline at $date, $time",
                   textAlign: TextAlign.center,
                 )),
-            color: Colors.grey[900],
+            color: Theme.of(context).dividerColor,
             width: double.infinity));
   }
 }
