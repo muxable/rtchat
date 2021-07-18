@@ -14,7 +14,7 @@ Future<Map<String, BttvEmote>> getGlobalEmotes(Uri uri) async {
 
   if (response.statusCode == 200) {
     jsonDecode(response.body).forEach((emote) {
-      var parsedEmote = BttvEmote.fromJson(emote);
+      final parsedEmote = BttvEmote.fromJson(emote);
       result[parsedEmote.code] = parsedEmote;
     });
   }
@@ -28,12 +28,12 @@ Future<Map<String, BttvEmote>> getChannelEmotes(Uri uri) async {
 
   if (response.statusCode == 200) {
     jsonDecode(response.body)['channelEmotes'].forEach((emote) {
-      var parsedEmote = BttvEmote.fromJson(emote);
+      final parsedEmote = BttvEmote.fromJson(emote);
       result[parsedEmote.code] = parsedEmote;
     });
 
     jsonDecode(response.body)['sharedEmotes'].forEach((emote) {
-      var parsedEmote = BttvEmote.fromJson(emote);
+      final parsedEmote = BttvEmote.fromJson(emote);
       result[parsedEmote.code] = parsedEmote;
     });
   }
