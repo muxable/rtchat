@@ -71,9 +71,14 @@ String? getFirstClipLink(String text) {
 }
 
 bool isTwitchClip(String url) {
-  const twitchBaseUrl = 'www.twitch.tv';
+  const twitchBaseUrl = 'twitch.tv';
   const clipStr = 'clip';
-  return url.contains(twitchBaseUrl) && url.contains(clipStr);
+  const clipsStr = 'clips';
+  const videosStr = 'videos';
+  return url.contains(twitchBaseUrl) &&
+      (url.contains(clipStr) ||
+          url.contains(clipsStr) ||
+          url.contains(videosStr));
 }
 
 Iterable<TextSpan> tokenize(String msg, TextStyle tagStyle) sync* {
