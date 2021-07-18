@@ -289,7 +289,7 @@ class TwitchMessageWidget extends StatelessWidget {
                 Image(image: NetworkImage(url), height: styleModel.fontSize)));
       } else {
         children.addAll(parseText(
-          token,
+          token + " ",
           linkStyle,
           tagStyle,
         ));
