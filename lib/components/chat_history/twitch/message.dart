@@ -224,7 +224,7 @@ class TwitchMessageWidget extends StatelessWidget {
 
       final emotes = model.tags['emotes-raw'];
       final bttvEmoteProvider =
-          Provider.of<BttvEmoteModel>(context, listen: true);
+          Provider.of<ThirdPartyEmoteModel>(context, listen: true);
       if (model.deleted) {
         children.add(const TextSpan(text: "<deleted message>"));
       } else if (emotes != null) {
@@ -273,7 +273,7 @@ class TwitchMessageWidget extends StatelessWidget {
     });
   }
 
-  List<InlineSpan> processText(String message, BttvEmoteModel bttvEmotes,
+  List<InlineSpan> processText(String message, ThirdPartyEmoteModel bttvEmotes,
       StyleModel styleModel, TextStyle linkStyle, TextStyle tagStyle) {
     final List<InlineSpan> children = [];
     var lastParsedStart = 0;
@@ -281,17 +281,17 @@ class TwitchMessageWidget extends StatelessWidget {
       final end = message.indexOf(" ", start) + 1;
       final token =
           end == 0 ? message.substring(start) : message.substring(start, end);
-      final emote = bttvEmotes.globalEmotes[token.trim()] ??
-          bttvEmotes.channelEmotes[token.trim()];
+      final emote = bttvEmotes.bttvGlobalEmotes[token.trim()] ??
+          bttvEmotes.bttvChannelEmotes[token.trim()] ??
+          bttvEmotes.ffzEmotes[token.trim()];
       if (emote != null) {
         children.addAll(parseText(
             message.substring(lastParsedStart, start), linkStyle, tagStyle));
-
-        final url = "https://cdn.betterttv.net/emote/${emote.id}/1x";
         children.add(WidgetSpan(
             alignment: PlaceholderAlignment.middle,
-            child:
-                Image(image: NetworkImage(url), height: styleModel.fontSize)));
+            child: Image(
+                image: NetworkImage(emote.source),
+                height: styleModel.fontSize)));
         start = end == 0 ? message.length : end;
         lastParsedStart = start;
       } else {

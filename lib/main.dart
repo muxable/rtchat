@@ -204,7 +204,7 @@ class App extends StatelessWidget {
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
-          final model = BttvEmoteModel();
+          final model = ThirdPartyEmoteModel();
           final channels = Provider.of<ChannelsModel>(context, listen: false);
           model.subscribe(channels.subscribedChannels);
           channels.addListener(() {
