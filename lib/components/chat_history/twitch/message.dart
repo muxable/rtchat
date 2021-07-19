@@ -276,24 +276,31 @@ class TwitchMessageWidget extends StatelessWidget {
   List<InlineSpan> processText(String message, BttvEmoteModel bttvEmotes,
       StyleModel styleModel, TextStyle linkStyle, TextStyle tagStyle) {
     final List<InlineSpan> children = [];
-    final tokenArray = message.split(" ");
-
-    for (var token in tokenArray) {
-      final emote =
-          bttvEmotes.globalEmotes[token] ?? bttvEmotes.channelEmotes[token];
+    var lastParsedStart = 0;
+    for (var start = 0; start < message.length;) {
+      final end = message.indexOf(" ", start) + 1;
+      final token =
+          end == 0 ? message.substring(start) : message.substring(start, end);
+      final emote = bttvEmotes.globalEmotes[token.trim()] ??
+          bttvEmotes.channelEmotes[token.trim()];
       if (emote != null) {
+        children.addAll(parseText(
+            message.substring(lastParsedStart, start), linkStyle, tagStyle));
+
         final url = "https://cdn.betterttv.net/emote/${emote.id}/1x";
         children.add(WidgetSpan(
             alignment: PlaceholderAlignment.middle,
             child:
                 Image(image: NetworkImage(url), height: styleModel.fontSize)));
+        start = end == 0 ? message.length : end;
+        lastParsedStart = start;
       } else {
-        children.addAll(parseText(
-          token + " ",
-          linkStyle,
-          tagStyle,
-        ));
+        start = end == 0 ? message.length : end;
       }
+    }
+    if (lastParsedStart != message.length) {
+      children.addAll(
+          parseText(message.substring(lastParsedStart), linkStyle, tagStyle));
     }
     return children;
   }
