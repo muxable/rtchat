@@ -49,7 +49,6 @@ Future<Map<String, ThirdPartyEmote>> getFFZEmotes(Uri uri) async {
   if (response.statusCode == 200) {
     jsonDecode(response.body).forEach((emote) {
       final parsedEmote = ThirdPartyEmote.fromFFZJson(emote);
-      print(parsedEmote.code);
       result[parsedEmote.code] = parsedEmote;
     });
   }
