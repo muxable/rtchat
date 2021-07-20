@@ -124,7 +124,7 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
       .doc(`twitch:${messageId}`);
 
     const channelId = `twitch:${
-      req.body.event["broadcaster_user_id"] ||
+      req.body.event["broadcaster_user_id"] ??
       req.body.event["to_broadcaster_user_id"]
     }`;
 
