@@ -53,7 +53,9 @@ class _SignInScreenState extends State<SignInScreen> {
                   } else {
                     await FirebaseCrashlytics.instance.log("failed to sign in");
                   }
-                  setState(() => _isLoading = false);
+                  if (mounted) {
+                    setState(() => _isLoading = false);
+                  }
                 },
               )),
         ),
