@@ -1,46 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/chat_history/sliver.dart';
 import 'package:rtchat/components/chat_history/viewport.dart';
-import 'package:rtchat/models/message.dart';
 
 /// This is a total hack of a scrollview. Instead of the standard one-pass
 /// render that [ScrollView] provides, this class instead performs a second
 /// pass to detect [PinnableMessageSliver] slivers and renders them at the
 /// correct location if they're pinned.
-class PinnableMessageScrollView extends StatefulWidget {
-  final ScrollController? controller;
-  final List<MessageModel> messages;
-
-  const PinnableMessageScrollView(
-      {Key? key, this.controller, required this.messages})
-      : super(key: key);
-
-  @override
-  _PinnableMessageScrollViewState createState() =>
-      _PinnableMessageScrollViewState();
-}
-
-class _PinnableMessageScrollViewState extends State<PinnableMessageScrollView>
-    with TickerProviderStateMixin {
-  @override
-  Widget build(BuildContext context) {
-    return _PinnableMessageScrollView(
-        vsync: this, controller: widget.controller, messages: widget.messages);
-  }
-}
-
-class _PinnableMessageScrollView extends ScrollView {
+class PinnableMessageScrollView extends ScrollView {
   final TickerProvider vsync;
-  final List<MessageModel> messages;
+  final bool? Function(int) isPinnedBuilder;
+  final Widget Function(int) itemBuilder;
+  final int count;
 
-  const _PinnableMessageScrollView({
+  const PinnableMessageScrollView({
     Key? key,
     ScrollController? controller,
     required this.vsync,
-    required this.messages,
+    required this.isPinnedBuilder,
+    required this.itemBuilder,
+    required this.count,
   }) : super(
           key: key,
           reverse: true,
@@ -52,35 +32,35 @@ class _PinnableMessageScrollView extends ScrollView {
     final slivers = <Widget>[];
     // this is an optimization to improve pinning performance by skipping
     // messages that can't be pinned.
-    for (var start = 0; start < messages.length;) {
+    for (var start = 0; start < count;) {
       final nextPinnableIndex =
-          messages.indexWhere((element) => element.pinned != null, start);
-      final unpinned = nextPinnableIndex == -1
-          ? messages.sublist(start)
-          : messages.sublist(start, nextPinnableIndex);
-      if (unpinned.isNotEmpty) {
-        slivers.add(SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-          return ChatHistoryMessage(message: unpinned[index]);
-        }, childCount: unpinned.length)));
+          Iterable.generate(count - start, (value) => value + start).firstWhere(
+              (index) => isPinnedBuilder(index) != null,
+              orElse: () => count);
+      final intermediateCount = nextPinnableIndex - start;
+      if (intermediateCount > 0) {
+        final sliver = SliverList(
+            delegate: SliverChildBuilderDelegate(
+                (context, index) => itemBuilder(index + start),
+                childCount: intermediateCount));
+        slivers.add(sliver);
       }
-      if (nextPinnableIndex == -1) {
+      if (nextPinnableIndex == count) {
         break;
-      } else {
-        final pinned = messages[nextPinnableIndex].pinned;
-        slivers.add(PinnableMessageSliver(
-            vsync: vsync,
-            pinned: pinned!,
-            child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-                color: pinned
-                    ? Theme.of(context).primaryColor
-                    : Colors.transparent,
-                child:
-                    ChatHistoryMessage(message: messages[nextPinnableIndex]))));
-        start = nextPinnableIndex + 1;
       }
+      final pinned = isPinnedBuilder(nextPinnableIndex)!;
+      final sliver = PinnableMessageSliver(
+        vsync: vsync,
+        pinned: pinned,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+          color: pinned ? Theme.of(context).primaryColor : Colors.transparent,
+          child: itemBuilder(nextPinnableIndex),
+        ),
+      );
+      slivers.add(sliver);
+      start = nextPinnableIndex + 1;
     }
     return slivers;
   }

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/chat_history/scroll_view.dart';
 import 'package:rtchat/models/chat_history.dart';
 
@@ -14,7 +15,8 @@ class ChatPanelWidget extends StatefulWidget {
   _ChatPanelWidgetState createState() => _ChatPanelWidgetState();
 }
 
-class _ChatPanelWidgetState extends State<ChatPanelWidget> {
+class _ChatPanelWidgetState extends State<ChatPanelWidget>
+    with TickerProviderStateMixin {
   final _controller = ScrollController(keepScrollOffset: true);
   var _atBottom = true;
 
@@ -48,8 +50,11 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget> {
       Consumer<ChatHistoryModel>(builder: (context, model, child) {
         final messages = model.messages.reversed.toList();
         return PinnableMessageScrollView(
+          vsync: this,
           controller: _controller,
-          messages: messages,
+          itemBuilder: (index) => ChatHistoryMessage(message: messages[index]),
+          isPinnedBuilder: (index) => messages[index].pinned,
+          count: messages.length,
         );
       }),
       Builder(builder: (context) {
