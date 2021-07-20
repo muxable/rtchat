@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude the shared preferences file that contains the GCM registrationId -->
+    <exclude
+        domain="sharedpref"
+        path="com.google.firebase.crashlytics.xml" />
+    <exclude
+        domain="sharedpref"
+        path="audio_service_preferences.xml" />
+</full-backup-content>
