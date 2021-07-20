@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:rtchat/components/chat_history/sliver.dart';
-import 'package:rtchat/components/chat_history/viewport.dart';
+import 'package:rtchat/components/pinnable/viewport.dart';
 
 /// This is a total hack of a scrollview. Instead of the standard one-pass
 /// render that [ScrollView] provides, this class instead performs a second

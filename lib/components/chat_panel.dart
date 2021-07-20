@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/message.dart';
-import 'package:rtchat/components/chat_history/scroll_view.dart';
+import 'package:rtchat/components/pinnable/scroll_view.dart';
 import 'package:rtchat/models/chat_history.dart';
 
 class ChatPanelWidget extends StatefulWidget {
