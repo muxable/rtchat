@@ -7,7 +7,7 @@ import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/components/chat_history/twitch/message_link_preview.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:rtchat/models/twitch/bttv_emote.dart';
+import 'package:rtchat/models/twitch/third_party_emote.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const colors = [
