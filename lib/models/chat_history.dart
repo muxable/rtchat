@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/twitch/user.dart';
 
 class ChatHistoryModel extends ChangeNotifier {
   StreamSubscription<void>? _subscription;
@@ -56,11 +57,9 @@ class ChatHistoryModel extends ChangeNotifier {
           case "message":
             final message = data['message'];
             final tags = data['tags'];
-            String author = tags['display-name'] ?? tags['username'];
-            if (author.toLowerCase() != tags['username']) {
-              // this is an internationalized name.
-              author = "${tags['display-name']} (${tags['username']})";
-            }
+
+            final author = TwitchUserModel(
+                displayName: tags['display-name'], login: tags['username']);
 
             final model = TwitchMessageModel(
               messageId: change.doc.id,

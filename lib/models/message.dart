@@ -1,3 +1,5 @@
+import 'package:rtchat/models/twitch/user.dart';
+
 abstract class MessageModel {
   final bool? pinned;
   final String messageId;
@@ -7,7 +9,7 @@ abstract class MessageModel {
 
 class TwitchMessageModel extends MessageModel {
   final String channel;
-  final String author;
+  final TwitchUserModel author;
   final String message;
   final Map<String, dynamic> tags;
   final DateTime timestamp;
