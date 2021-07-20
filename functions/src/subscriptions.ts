@@ -28,6 +28,15 @@ export const subscribe = functions.https.onCall(async (data, context) => {
           "invalid channel"
         );
       }
+
+      // log the subscription.
+      await admin
+        .database()
+        .ref("subscriptions")
+        .child(provider)
+        .child(channel)
+        .set(admin.database.ServerValue.TIMESTAMP);
+
       await checkEventSubSubscriptions(context.auth.uid);
       // check if it's currently locked
       const lock = await admin
