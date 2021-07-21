@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/twitch/user.dart';
 
 class TtsOptionsWidget extends StatelessWidget {
   const TtsOptionsWidget({Key? key}) : super(key: key);
@@ -47,8 +48,8 @@ class TtsOptionsWidget extends StatelessWidget {
                   child: ElevatedButton(
                     child: const Text("Play sample message"),
                     onPressed: () {
-                      model.force(const TtsMessage(
-                        author: 'muxfd',
+                      model.force(TtsMessage(
+                        author: const TwitchUserModel(login: 'muxfd'),
                         coalescingHeader: "muxfd said",
                         message: 'have you followed muxfd on twitch?',
                         messageId: "test",
