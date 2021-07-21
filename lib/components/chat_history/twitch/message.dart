@@ -7,6 +7,7 @@ import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/components/chat_history/twitch/message_link_preview.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
+import 'package:rtchat/models/twitch/third_party_emote.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const colors = [
@@ -194,8 +195,9 @@ class TwitchMessageWidget extends StatelessWidget {
           break;
       }
 
-      // add text.
       final emotes = model.tags['emotes-raw'];
+      final bttvEmoteProvider =
+          Provider.of<ThirdPartyEmoteModel>(context, listen: true);
       if (model.deleted) {
         children.add(const TextSpan(text: "<deleted message>"));
       } else if (emotes != null) {
@@ -207,11 +209,9 @@ class TwitchMessageWidget extends StatelessWidget {
 
         for (final child in parsed) {
           if (child.start > index) {
-            children.addAll(parseText(
-              model.message.substring(index, child.start),
-              linkStyle,
-              tagStyle,
-            ));
+            final substring = model.message.substring(index, child.start);
+            children.addAll(processText(
+                substring, bttvEmoteProvider, styleModel, linkStyle, tagStyle));
           }
           final url =
               "https://static-cdn.jtvnw.net/emoticons/v1/${child.key}/1.0";
@@ -223,18 +223,13 @@ class TwitchMessageWidget extends StatelessWidget {
         }
 
         if (index < model.message.length) {
-          children.addAll(parseText(
-            model.message.substring(index),
-            linkStyle,
-            tagStyle,
-          ));
+          final substring = model.message.substring(index);
+          children.addAll(processText(
+              substring, bttvEmoteProvider, styleModel, linkStyle, tagStyle));
         }
       } else {
-        children.addAll(parseText(
-          model.message,
-          linkStyle,
-          tagStyle,
-        ));
+        children.addAll(processText(
+            model.message, bttvEmoteProvider, styleModel, linkStyle, tagStyle));
       }
 
       // if messsage has links and clips, then fetch the first clip link
@@ -249,5 +244,37 @@ class TwitchMessageWidget extends StatelessWidget {
             text: TextSpan(style: messageStyle, children: children),
           ));
     });
+  }
+
+  List<InlineSpan> processText(String message, ThirdPartyEmoteModel bttvEmotes,
+      StyleModel styleModel, TextStyle linkStyle, TextStyle tagStyle) {
+    final List<InlineSpan> children = [];
+    var lastParsedStart = 0;
+    for (var start = 0; start < message.length;) {
+      final end = message.indexOf(" ", start) + 1;
+      final token =
+          end == 0 ? message.substring(start) : message.substring(start, end);
+      final emote = bttvEmotes.bttvGlobalEmotes[token.trim()] ??
+          bttvEmotes.bttvChannelEmotes[token.trim()] ??
+          bttvEmotes.ffzEmotes[token.trim()];
+      if (emote != null) {
+        children.addAll(parseText(
+            message.substring(lastParsedStart, start), linkStyle, tagStyle));
+        children.add(WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Image(
+                image: NetworkImage(emote.source),
+                height: styleModel.fontSize)));
+        start = end == 0 ? message.length : end;
+        lastParsedStart = start;
+      } else {
+        start = end == 0 ? message.length : end;
+      }
+    }
+    if (lastParsedStart != message.length) {
+      children.addAll(
+          parseText(message.substring(lastParsedStart), linkStyle, tagStyle));
+    }
+    return children;
   }
 }
