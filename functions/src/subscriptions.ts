@@ -4,6 +4,8 @@ import * as functions from "firebase-functions";
 import { checkEventSubSubscriptions } from "./eventsub";
 import { getTwitchLogin } from "./twitch";
 
+const PROJECT_ID = "rtchat-47692";
+
 export const subscribe = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("permission-denied", "missing auth");
@@ -17,7 +19,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
     );
   }
 
-  const pubsub = new PubSub({ projectId: "rtchat-47692" });
+  const pubsub = new PubSub({ projectId: PROJECT_ID });
 
   switch (provider) {
     case "twitch":
@@ -28,6 +30,15 @@ export const subscribe = functions.https.onCall(async (data, context) => {
           "invalid channel"
         );
       }
+
+      // log the subscription.
+      await admin
+        .database()
+        .ref("subscriptions")
+        .child(provider)
+        .child(channel)
+        .set(admin.database.ServerValue.TIMESTAMP);
+
       await checkEventSubSubscriptions(context.auth.uid);
       // check if it's currently locked
       const lock = await admin
@@ -40,7 +51,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         return channel;
       }
       await pubsub
-        .topic("projects/rtchat-47692/topics/subscribe")
+        .topic(`projects/${PROJECT_ID}/topics/subscribe`)
         .publish(Buffer.from(JSON.stringify({ provider, channel })));
       return channel;
   }
@@ -60,5 +71,60 @@ export const unsubscribe = functions.https.onCall(async (data, context) => {
     );
   }
 
-  return {};
+  const pubsub = new PubSub({ projectId: PROJECT_ID });
+
+  switch (provider) {
+    case "twitch":
+      const channel = await getTwitchLogin(context.auth.uid, channelId);
+      if (!channel) {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "invalid channel"
+        );
+      }
+
+      // clear the subscription.
+      await admin
+        .database()
+        .ref("subscriptions")
+        .child(provider)
+        .child(channel)
+        .set(null);
+
+      await pubsub
+        .topic(`projects/${PROJECT_ID}/topics/unsubscribe`)
+        .publish(Buffer.from(JSON.stringify({ provider, channel })));
+      return channel;
+  }
+  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
+
+export const unsubscribeCron = functions.pubsub
+  .schedule("0 4 * * *") // daily at 4a
+  .onRun(async (context) => {
+    const limit = Date.now() - 7 * 86400 * 1000;
+    const subscriptionsRef = admin.database().ref("subscriptions");
+    const subscriptions = await subscriptionsRef.get();
+    const providers = subscriptions.val() as {
+      [provider: string]: { [channel: string]: number };
+    };
+    const pubsub = new PubSub({ projectId: PROJECT_ID });
+
+    for (const [provider, channels] of Object.entries(providers)) {
+      for (const [channel, timestamp] of Object.entries(channels)) {
+        if (timestamp > limit) {
+          continue;
+        }
+
+        switch (provider) {
+          case "twitch":
+            console.log("unsubscribing from", provider, channel);
+
+            await pubsub
+              .topic(`projects/${PROJECT_ID}/topics/unsubscribe`)
+              .publish(Buffer.from(JSON.stringify({ provider, channel })));
+            await subscriptionsRef.child(provider).child(channel).set(null);
+        }
+      }
+    }
+  });
