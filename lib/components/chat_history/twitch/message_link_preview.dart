@@ -30,7 +30,16 @@ Future<_TwitchClipData> fetchClipData(String url) async {
    * image: https://static-cdn.jtvnw.net/ttv-static-metadata/twitch_logo3.jpg, 
    * url: null}
    * 
+   * but if I were to stop and start the emulator, the fetching
+   * works, but any clip links I send would come back null
+   * response: {title: Twitch, description: 
+   * Twitch is the world's leading video platform and community for gamers., 
+   * image: https://static-cdn.jtvnw.net/ttv-static-metadata/twitch_logo3.jpg, 
+   * url: null}
    * 
+   * also some older clip links wouldn't show either if i were to scroll up.
+   * 
+   * Weird, I can't figure why.
    */
   print('url to fetch: $url');
   final data = await MetadataFetch.extract(url);
