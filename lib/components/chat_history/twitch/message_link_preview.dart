@@ -1,6 +1,8 @@
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:flutter/material.dart';
 
+Map<String, _TwitchClipData> linkPreviewCache = {};
+
 class _TwitchClipData {
   final String? imageUrl;
   final String? url;
@@ -15,12 +17,20 @@ class _TwitchClipData {
 }
 
 Future<_TwitchClipData> fetchClipData(String url) async {
+  if (linkPreviewCache.containsKey(url)) {
+    print('$url is already cached');
+    return linkPreviewCache[url]!;
+  }
+
   final data = await MetadataFetch.extract(url);
-  return _TwitchClipData(
+  final response = _TwitchClipData(
       imageUrl: data!.image,
       url: data.url,
       title: data.title,
       description: data.description);
+  linkPreviewCache[url] = response;
+  print('response: $response');
+  return response;
 }
 
 class TwitchMessageLinkPreviewWidget extends StatelessWidget {
