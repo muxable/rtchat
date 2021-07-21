@@ -6,8 +6,15 @@ import 'package:flutter_web_auth/flutter_web_auth.dart';
 
 final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
 
-class SignInScreen extends StatelessWidget {
+class SignInScreen extends StatefulWidget {
   const SignInScreen({Key? key}) : super(key: key);
+
+  @override
+  _SignInScreenState createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
+  var _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -20,35 +27,38 @@ class SignInScreen extends StatelessWidget {
                   .textTheme
                   .headline6!
                   .copyWith(color: Colors.white))),
-      SizedBox(
-        width: 400,
-        child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 64),
-            child: ElevatedButton(
-              style: ButtonStyle(
-                backgroundColor:
-                    MaterialStateProperty.all(const Color(0xFF6441A5)),
-              ),
-              child: Consumer<UserModel>(builder: (context, user, child) {
-                return const Text("Sign in with Twitch");
-              }),
-              onPressed: () async {
-                final user = Provider.of<UserModel>(context, listen: false);
-                if (user.isSignedIn()) {
-                  user.signOut();
-                } else {
+      if (_isLoading)
+        const CircularProgressIndicator()
+      else
+        SizedBox(
+          width: 400,
+          child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 64),
+              child: ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all(const Color(0xFF6441A5)),
+                ),
+                child: Consumer<UserModel>(builder: (context, user, child) {
+                  return const Text("Sign in with Twitch");
+                }),
+                onPressed: () async {
+                  setState(() => _isLoading = true);
+                  final user = Provider.of<UserModel>(context, listen: false);
                   final result = await FlutterWebAuth.authenticate(
                       url: url.toString(), callbackUrlScheme: "com.rtirl.chat");
                   final token = Uri.parse(result).queryParameters['token'];
                   if (token != null) {
-                    user.signIn(token);
+                    await user.signIn(token);
                   } else {
-                    FirebaseCrashlytics.instance.log("failed to sign in");
+                    await FirebaseCrashlytics.instance.log("failed to sign in");
                   }
-                }
-              },
-            )),
-      ),
+                  if (mounted) {
+                    setState(() => _isLoading = false);
+                  }
+                },
+              )),
+        ),
     ]);
   }
 }
