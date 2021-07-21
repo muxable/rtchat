@@ -39,9 +39,10 @@ class PinnableMessageScrollView extends ScrollView {
               orElse: () => count);
       final intermediateCount = nextPinnableIndex - start;
       if (intermediateCount > 0) {
+        final offset = start;
         final sliver = SliverList(
             delegate: SliverChildBuilderDelegate(
-                (context, index) => itemBuilder(index + start),
+                (context, index) => itemBuilder(index + offset),
                 childCount: intermediateCount));
         slivers.add(sliver);
       }
