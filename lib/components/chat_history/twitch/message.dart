@@ -4,7 +4,6 @@ import 'package:flutter/rendering.dart';
 import 'package:linkify/linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
-import 'package:rtchat/components/chat_history/twitch/message_link_preview.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/twitch/third_party_emote.dart';
@@ -41,24 +40,6 @@ class _Badge {
   final String version;
 
   _Badge(this.key, this.version);
-}
-
-Color darken(Color color, [double amount = .1]) {
-  assert(amount >= 0 && amount <= 1);
-
-  final hsl = HSLColor.fromColor(color);
-  final hslDark = hsl.withLightness((hsl.lightness) * (1 - amount));
-
-  return hslDark.toColor();
-}
-
-Color lighten(Color color, [double amount = .1]) {
-  assert(amount >= 0 && amount <= 1);
-
-  final hsl = HSLColor.fromColor(color);
-  final hslLight = hsl.withLightness((hsl.lightness) * (1 - amount) + amount);
-
-  return hslLight.toColor();
 }
 
 String? getFirstClipLink(String text) {
@@ -162,25 +143,16 @@ class TwitchMessageWidget extends StatelessWidget {
     if (color != null) {
       return Color(int.parse("0xff${color.substring(1)}"));
     }
-    final n = model.author.codeUnits.first + model.author.codeUnits.last;
-    return colors[n % colors.length];
+    return model.author.color;
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleModel>(builder: (context, styleModel, child) {
-      var authorColor = color;
-
-      if (Theme.of(context).brightness == Brightness.dark) {
-        authorColor = lighten(authorColor, styleModel.lightnessBoost);
-      } else if (Theme.of(context).brightness == Brightness.light) {
-        authorColor = darken(authorColor, styleModel.lightnessBoost);
-      }
-
       var authorStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
           fontSize: styleModel.fontSize,
           fontWeight: FontWeight.w500,
-          color: authorColor);
+          color: styleModel.applyLightnessBoost(context, color));
 
       var messageStyle = Theme.of(context)
           .textTheme
@@ -210,7 +182,7 @@ class TwitchMessageWidget extends StatelessWidget {
                   height: styleModel.fontSize)))));
 
       // add author.
-      children.add(TextSpan(style: authorStyle, text: model.author));
+      children.add(TextSpan(style: authorStyle, text: model.author.display));
 
       // add demarcator.
       switch (model.tags['message-type']) {
@@ -260,11 +232,11 @@ class TwitchMessageWidget extends StatelessWidget {
       }
 
       // if messsage has links and clips, then fetch the first clip link
-      var fetchUrl = getFirstClipLink(model.message);
-      if (fetchUrl != null) {
-        return (TwitchMessageLinkPreviewWidget(
-            messageStyle: messageStyle, children: children, url: fetchUrl));
-      }
+      // var fetchUrl = getFirstClipLink(model.message);
+      // if (fetchUrl != null) {
+      //   return (TwitchMessageLinkPreviewWidget(
+      //       messageStyle: messageStyle, children: children, url: fetchUrl));
+      // }
       return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: RichText(
