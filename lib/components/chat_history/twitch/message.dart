@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:linkify/linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
+import 'package:rtchat/components/chat_history/twitch/message_link_preview.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/twitch/third_party_emote.dart';
@@ -232,11 +233,11 @@ class TwitchMessageWidget extends StatelessWidget {
       }
 
       // if messsage has links and clips, then fetch the first clip link
-      // var fetchUrl = getFirstClipLink(model.message);
-      // if (fetchUrl != null) {
-      //   return (TwitchMessageLinkPreviewWidget(
-      //       messageStyle: messageStyle, children: children, url: fetchUrl));
-      // }
+      var fetchUrl = getFirstClipLink(model.message);
+      if (fetchUrl != null) {
+        return (TwitchMessageLinkPreviewWidget(
+            messageStyle: messageStyle, children: children, url: fetchUrl));
+      }
       return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: RichText(
