@@ -233,11 +233,11 @@ class TwitchMessageWidget extends StatelessWidget {
       }
 
       // if messsage has links and clips, then fetch the first clip link
-      var fetchUrl = getFirstClipLink(model.message);
-      if (fetchUrl != null) {
-        return (TwitchMessageLinkPreviewWidget(
-            messageStyle: messageStyle, children: children, url: fetchUrl));
-      }
+      // var fetchUrl = getFirstClipLink(model.message);
+      // if (fetchUrl != null) {
+      //   return (TwitchMessageLinkPreviewWidget(
+      //       messageStyle: messageStyle, children: children, url: fetchUrl));
+      // }
       return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: RichText(
