@@ -56,7 +56,7 @@ class PinnableMessageScrollView extends ScrollView {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
-          color: pinned ? Theme.of(context).primaryColor : Colors.transparent,
+          color: pinned ? Theme.of(context).dividerColor   : Colors.transparent,
           child: itemBuilder(nextPinnableIndex),
         ),
       );
