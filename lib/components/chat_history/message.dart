@@ -49,7 +49,7 @@ class ChatHistoryMessage extends StatelessWidget {
                               Navigator.pop(context);
                             }),
                         ListTile(
-                            title: Text('Timeout ${m.author.login}'),
+                            title: Text('Timeout ${m.author.displayName}'),
                             onTap: () {
                               Navigator.pop(context, true);
                             }),
