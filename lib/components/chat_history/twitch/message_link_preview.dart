@@ -18,7 +18,7 @@ class _TwitchClipData {
 
 Future<_TwitchClipData> fetchClipData(String url) async {
   if (linkPreviewCache.containsKey(url)) {
-    print('$url is already cached');
+    // print('$url is already cached');
     return linkPreviewCache[url]!;
   }
 
@@ -41,14 +41,14 @@ Future<_TwitchClipData> fetchClipData(String url) async {
    * 
    * Weird, I can't figure why.
    */
-  print('url to fetch: $url');
+  // print('url to fetch: $url');
   final data = await MetadataFetch.extract(url);
   final response = _TwitchClipData(
       imageUrl: data!.image,
       url: data.url,
       title: data.title,
       description: data.description);
-  print("response: $data");
+  // print("response: $data");
   linkPreviewCache[url] = response;
   return response;
 }
