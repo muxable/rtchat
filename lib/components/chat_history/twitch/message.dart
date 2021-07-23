@@ -4,9 +4,9 @@ import 'package:flutter/rendering.dart';
 import 'package:linkify/linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
-import 'package:rtchat/components/chat_history/twitch/message_link_preview.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
+import 'package:rtchat/models/twitch/third_party_emote.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const colors = [
@@ -40,24 +40,6 @@ class _Badge {
   final String version;
 
   _Badge(this.key, this.version);
-}
-
-Color darken(Color color, [double amount = .1]) {
-  assert(amount >= 0 && amount <= 1);
-
-  final hsl = HSLColor.fromColor(color);
-  final hslDark = hsl.withLightness((hsl.lightness) * (1 - amount));
-
-  return hslDark.toColor();
-}
-
-Color lighten(Color color, [double amount = .1]) {
-  assert(amount >= 0 && amount <= 1);
-
-  final hsl = HSLColor.fromColor(color);
-  final hslLight = hsl.withLightness((hsl.lightness) * (1 - amount) + amount);
-
-  return hslLight.toColor();
 }
 
 String? getFirstClipLink(String text) {
@@ -161,25 +143,16 @@ class TwitchMessageWidget extends StatelessWidget {
     if (color != null) {
       return Color(int.parse("0xff${color.substring(1)}"));
     }
-    final n = model.author.codeUnits.first + model.author.codeUnits.last;
-    return colors[n % colors.length];
+    return model.author.color;
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleModel>(builder: (context, styleModel, child) {
-      var authorColor = color;
-
-      if (Theme.of(context).brightness == Brightness.dark) {
-        authorColor = lighten(authorColor, styleModel.lightnessBoost);
-      } else if (Theme.of(context).brightness == Brightness.light) {
-        authorColor = darken(authorColor, styleModel.lightnessBoost);
-      }
-
       var authorStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
           fontSize: styleModel.fontSize,
           fontWeight: FontWeight.w500,
-          color: authorColor);
+          color: styleModel.applyLightnessBoost(context, color));
 
       var messageStyle = Theme.of(context)
           .textTheme
@@ -209,7 +182,7 @@ class TwitchMessageWidget extends StatelessWidget {
                   height: styleModel.fontSize)))));
 
       // add author.
-      children.add(TextSpan(style: authorStyle, text: model.author));
+      children.add(TextSpan(style: authorStyle, text: model.author.display));
 
       // add demarcator.
       switch (model.tags['message-type']) {
@@ -221,8 +194,9 @@ class TwitchMessageWidget extends StatelessWidget {
           break;
       }
 
-      // add text.
       final emotes = model.tags['emotes-raw'];
+      final bttvEmoteProvider =
+          Provider.of<ThirdPartyEmoteModel>(context, listen: true);
       if (model.deleted) {
         children.add(const TextSpan(text: "<deleted message>"));
       } else if (emotes != null) {
@@ -234,11 +208,9 @@ class TwitchMessageWidget extends StatelessWidget {
 
         for (final child in parsed) {
           if (child.start > index) {
-            children.addAll(parseText(
-              model.message.substring(index, child.start),
-              linkStyle,
-              tagStyle,
-            ));
+            final substring = model.message.substring(index, child.start);
+            children.addAll(processText(
+                substring, bttvEmoteProvider, styleModel, linkStyle, tagStyle));
           }
           final url =
               "https://static-cdn.jtvnw.net/emoticons/v1/${child.key}/1.0";
@@ -250,31 +222,58 @@ class TwitchMessageWidget extends StatelessWidget {
         }
 
         if (index < model.message.length) {
-          children.addAll(parseText(
-            model.message.substring(index),
-            linkStyle,
-            tagStyle,
-          ));
+          final substring = model.message.substring(index);
+          children.addAll(processText(
+              substring, bttvEmoteProvider, styleModel, linkStyle, tagStyle));
         }
       } else {
-        children.addAll(parseText(
-          model.message,
-          linkStyle,
-          tagStyle,
-        ));
+        children.addAll(processText(
+            model.message, bttvEmoteProvider, styleModel, linkStyle, tagStyle));
       }
 
       // if messsage has links and clips, then fetch the first clip link
-      var fetchUrl = getFirstClipLink(model.message);
-      if (fetchUrl != null) {
-        return (TwitchMessageLinkPreviewWidget(
-            messageStyle: messageStyle, children: children, url: fetchUrl));
-      }
+      // var fetchUrl = getFirstClipLink(model.message);
+      // if (fetchUrl != null) {
+      //   return (TwitchMessageLinkPreviewWidget(
+      //       messageStyle: messageStyle, children: children, url: fetchUrl));
+      // }
       return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: RichText(
             text: TextSpan(style: messageStyle, children: children),
           ));
     });
+  }
+
+  List<InlineSpan> processText(String message, ThirdPartyEmoteModel bttvEmotes,
+      StyleModel styleModel, TextStyle linkStyle, TextStyle tagStyle) {
+    final List<InlineSpan> children = [];
+    var lastParsedStart = 0;
+    for (var start = 0; start < message.length;) {
+      final end = message.indexOf(" ", start) + 1;
+      final token =
+          end == 0 ? message.substring(start) : message.substring(start, end);
+      final emote = bttvEmotes.bttvGlobalEmotes[token.trim()] ??
+          bttvEmotes.bttvChannelEmotes[token.trim()] ??
+          bttvEmotes.ffzEmotes[token.trim()];
+      if (emote != null) {
+        children.addAll(parseText(
+            message.substring(lastParsedStart, start), linkStyle, tagStyle));
+        children.add(WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Image(
+                image: NetworkImage(emote.source),
+                height: styleModel.fontSize)));
+        start = end == 0 ? message.length : end;
+        lastParsedStart = start;
+      } else {
+        start = end == 0 ? message.length : end;
+      }
+    }
+    if (lastParsedStart != message.length) {
+      children.addAll(
+          parseText(message.substring(lastParsedStart), linkStyle, tagStyle));
+    }
+    return children;
   }
 }

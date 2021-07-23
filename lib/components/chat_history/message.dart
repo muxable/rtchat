@@ -49,12 +49,12 @@ class ChatHistoryMessage extends StatelessWidget {
                               Navigator.pop(context);
                             }),
                         ListTile(
-                            title: Text('Timeout ${m.author}'),
+                            title: Text('Timeout ${m.author.displayName}'),
                             onTap: () {
                               Navigator.pop(context, true);
                             }),
                         ListTile(
-                            title: Text('Ban ${m.author}'),
+                            title: Text('Ban ${m.author.displayName}'),
                             onTap: () {
                               final userModel = Provider.of<UserModel>(context,
                                   listen: false);
@@ -63,12 +63,12 @@ class ChatHistoryMessage extends StatelessWidget {
                                   listen: false);
                               userModel.ban(
                                   channelsModel.subscribedChannels.first,
-                                  m.author,
+                                  m.author.login,
                                   "banned by streamer");
                               Navigator.pop(context);
                             }),
                         ListTile(
-                            title: Text('Unban ${m.author}'),
+                            title: Text('Unban ${m.author.displayName}'),
                             onTap: () {
                               final userModel = Provider.of<UserModel>(context,
                                   listen: false);
@@ -77,7 +77,7 @@ class ChatHistoryMessage extends StatelessWidget {
                                   listen: false);
                               userModel.unban(
                                   channelsModel.subscribedChannels.first,
-                                  m.author);
+                                  m.author.login);
                               Navigator.pop(context);
                             }),
                       ]),
@@ -88,7 +88,7 @@ class ChatHistoryMessage extends StatelessWidget {
                     context: context,
                     builder: (context) {
                       return TimeoutDialog(
-                          title: "Timeout ${m.author}",
+                          title: "Timeout ${m.author.displayName}",
                           onPressed: (duration) {
                             final userModel =
                                 Provider.of<UserModel>(context, listen: false);
@@ -97,7 +97,7 @@ class ChatHistoryMessage extends StatelessWidget {
                                 listen: false);
                             userModel.timeout(
                                 channelsModel.subscribedChannels.first,
-                                m.author,
+                                m.author.login,
                                 "timed out by streamer",
                                 duration);
                             Navigator.pop(context);

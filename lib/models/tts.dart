@@ -1,33 +1,21 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:rtchat/models/twitch/user.dart';
 
 final validateUrl = Uri.https('id.twitch.tv', '/oauth2/validate');
 
 const twitchClientId = "edfnh2q85za8phifif9jxt3ey6t9b9";
 
-const botList = {
-  'streamlab',
-  'streamlabs',
-  'nightbot',
-  'xanbot',
-  'ankhbot',
-  'moobot',
-  'wizebot',
-  'phantombot',
-  'streamelements',
-  'streamelement'
-};
-
 class TtsMessage extends MediaItem {
   final String messageId;
-  final String author;
+  final TwitchUserModel author;
   final String? coalescingHeader;
   final String message;
   final bool hasEmote;
   final Map<String, dynamic> emotes;
 
-  const TtsMessage(
+  TtsMessage(
       {required this.messageId,
       required this.author,
       required this.message,
@@ -35,7 +23,7 @@ class TtsMessage extends MediaItem {
       required this.hasEmote,
       Map<String, dynamic>? emotes})
       : emotes = emotes ?? const {},
-        super(id: messageId, artist: author, title: message);
+        super(id: messageId, artist: author.display, title: message);
 
   String get spokenMessage {
     if (message.trim().isEmpty) {
@@ -46,8 +34,6 @@ class TtsMessage extends MediaItem {
     }
     return message;
   }
-
-  bool get isBotAuthor => botList.contains(author.toLowerCase());
 
   static List _parseEmotes(Map<String, dynamic> emotes) {
     var ranges = [];
@@ -133,7 +119,7 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     }
 
     final message = queue.value[index] as TtsMessage;
-    if (fromAutoplay && isBotMuted && message.isBotAuthor) {
+    if (fromAutoplay && isBotMuted && message.author.isBot) {
       if (index < queue.value.length - 1) {
         await fastForward();
         await play(fromAutoplay: true);
