@@ -28,6 +28,14 @@ class ChatHistoryMessage extends StatelessWidget {
         if (layoutModel.isInteractionLockable && layoutModel.locked) {
           return child;
         }
+        final userModel = Provider.of<UserModel>(context, listen: false);
+        final loginChannel = userModel.userChannel!.displayName;
+        final viewingChannel = m.channel.substring(1);
+
+        if (loginChannel != viewingChannel) {
+          return child;
+        }
+
         return InkWell(
             onLongPress: () async {
               var showTimeoutDialog = await showDialog<bool>(
