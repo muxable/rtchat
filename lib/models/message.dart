@@ -14,6 +14,7 @@ class TwitchMessageModel extends MessageModel {
   final Map<String, dynamic> tags;
   final DateTime timestamp;
   final bool deleted;
+  final String channelId;
 
   const TwitchMessageModel(
       {required String messageId,
@@ -22,7 +23,8 @@ class TwitchMessageModel extends MessageModel {
       required this.message,
       required this.tags,
       required this.timestamp,
-      required this.deleted})
+      required this.deleted,
+      required this.channelId})
       : super(messageId: messageId, pinned: null);
 
   bool get emoteOnly {

@@ -62,14 +62,14 @@ class ChatHistoryModel extends ChangeNotifier {
                 displayName: tags['display-name'], login: tags['username']);
 
             final model = TwitchMessageModel(
-              messageId: change.doc.id,
-              channel: data['channel'],
-              author: author,
-              message: message,
-              tags: tags,
-              timestamp: data['timestamp'].toDate(),
-              deleted: false,
-            );
+                messageId: change.doc.id,
+                channel: data['channel'],
+                author: author,
+                message: message,
+                tags: tags,
+                timestamp: data['timestamp'].toDate(),
+                deleted: false,
+                channelId: data['channelId']);
 
             _events.add(model);
             _messageAdditionController.add(TtsMessage(
@@ -90,14 +90,14 @@ class ChatHistoryModel extends ChangeNotifier {
               final message = _events[index];
               if (message is TwitchMessageModel) {
                 _events[index] = TwitchMessageModel(
-                  messageId: message.messageId,
-                  channel: message.channel,
-                  author: message.author,
-                  message: message.message,
-                  tags: message.tags,
-                  timestamp: message.timestamp,
-                  deleted: true,
-                );
+                    messageId: message.messageId,
+                    channel: message.channel,
+                    author: message.author,
+                    message: message.message,
+                    tags: message.tags,
+                    timestamp: message.timestamp,
+                    deleted: true,
+                    channelId: data['channelId']);
                 _messageDeletionController.add(message.messageId);
               }
             }
