@@ -12,7 +12,8 @@ class Emote {
   Emote.fromMap(dynamic input)
       : id = input['id'],
         code = input['code'],
-        source = 'https://static-cdn.jtvnw.net/emoticons/v1/${input['id']}/1.0';
+        source =
+            'https://static-cdn.jtvnw.net/emoticons/v2/${input['id']}/default/dark/1.0';
 }
 
 final getUserEmotes = FirebaseFunctions.instance.httpsCallable("getUserEmotes");

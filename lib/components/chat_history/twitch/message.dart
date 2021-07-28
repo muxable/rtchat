@@ -213,7 +213,7 @@ class TwitchMessageWidget extends StatelessWidget {
                 substring, bttvEmoteProvider, styleModel, linkStyle, tagStyle));
           }
           final url =
-              "https://static-cdn.jtvnw.net/emoticons/v1/${child.key}/1.0";
+              "https://static-cdn.jtvnw.net/emoticons/v2/${child.key}/default/dark/1.0";
           children.add(WidgetSpan(
               alignment: PlaceholderAlignment.middle,
               child: Image(
