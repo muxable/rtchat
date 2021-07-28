@@ -52,7 +52,8 @@ class TtsMessage extends MediaItem {
 
   String get spokenNoEmotesMessage {
     var ranges = _parseEmotes(emotes);
-    var res = "$coalescingHeader ";
+    final title = (coalescingHeader ?? "").replaceAll("_", " ");
+    var res = "$title ";
     var index = 0;
     for (var i = 0; i < ranges.length; i++) {
       var start = ranges[i][0];
