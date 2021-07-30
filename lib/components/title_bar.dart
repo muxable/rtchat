@@ -11,7 +11,8 @@ class TitleBarWidget extends StatelessWidget {
         height: 56,
         color: Theme.of(context).primaryColor,
         child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          const Expanded(
+          const SizedBox(
+            width: 168,
             child: TabBar(
               tabs: [
                 Tab(icon: Icon(Icons.calendar_view_day)),
@@ -19,7 +20,6 @@ class TitleBarWidget extends StatelessWidget {
               ],
             ),
           ),
-          const Spacer(),
           QuickLinksBar(),
           const SettingsButtonWidget()
         ]));

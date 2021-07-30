@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_image/flutter_image.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -92,7 +93,7 @@ class _ChannelSearchDialogState extends State<ChannelSearchDialog> {
               return ListTile(
                   leading: Container(
                     child: CircleAvatar(
-                      backgroundImage: NetworkImage(result.imageUrl),
+                      backgroundImage: NetworkImageWithRetry(result.imageUrl),
                     ),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
