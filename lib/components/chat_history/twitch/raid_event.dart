@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_image/flutter_image.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/message.dart';
@@ -38,7 +39,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(styleModel.fontSize),
               child: Image(
-                  image: NetworkImage(model.profilePictureUrl),
+                  image: NetworkImageWithRetry(model.profilePictureUrl),
                   height: styleModel.fontSize * 1.5),
             ),
             const SizedBox(width: 12),
