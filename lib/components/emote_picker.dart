@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_image/flutter_image.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/twitch/emote.dart';
 
@@ -41,7 +42,8 @@ class EmotePickerWidget extends StatelessWidget {
                     delegate: SliverChildListDelegate.fixed(emotes
                         .map((emote) => IconButton(
                             onPressed: () => onEmoteSelected(emote),
-                            icon: Image.network(emote.source)))
+                            icon: Image(
+                                image: NetworkImageWithRetry(emote.source))))
                         .toList()),
                   ),
                 ],
