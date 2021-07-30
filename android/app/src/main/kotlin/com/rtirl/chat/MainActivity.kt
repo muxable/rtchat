@@ -1,8 +1,10 @@
 package com.rtirl.chat
 
-import android.content.*
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.IBinder
-import android.util.Log
 import androidx.annotation.NonNull
 import com.ryanheise.audioservice.AudioServicePlugin
 import io.flutter.embedding.android.FlutterActivity
@@ -57,13 +59,5 @@ class MainActivity : FlutterActivity() {
                 else -> result.notImplemented()
             }
         }
-
-        registerReceiver(object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                Log.v("MainActivity", "received intent")
-                foregroundService?.stop()
-                stopService(Intent(context, ForegroundService::class.java))
-            }
-        }, IntentFilter(ForegroundService.ACTION_KILL_ACTIVITY))
     }
 }
