@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_image/flutter_image.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/twitch/badge.dart';
 
@@ -41,7 +42,7 @@ class TwitchBadgesScreen extends StatelessWidget {
                 return CheckboxListTile(
                     secondary: Image(
                         alignment: Alignment.center,
-                        image: NetworkImage(badgeSet["image_url_4x"]),
+                        image: NetworkImageWithRetry(badgeSet["image_url_4x"]),
                         height: 36),
                     title: Text(badgeSet["title"],
                         overflow: TextOverflow.ellipsis),

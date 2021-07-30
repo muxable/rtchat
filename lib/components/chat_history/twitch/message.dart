@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_image/flutter_image.dart';
 import 'package:linkify/linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
@@ -217,7 +218,8 @@ class TwitchMessageWidget extends StatelessWidget {
           children.add(WidgetSpan(
               alignment: PlaceholderAlignment.middle,
               child: Image(
-                  image: NetworkImage(url), height: styleModel.fontSize)));
+                  image: NetworkImageWithRetry(url),
+                  height: styleModel.fontSize)));
           index = child.end + 1;
         }
 
@@ -262,7 +264,7 @@ class TwitchMessageWidget extends StatelessWidget {
         children.add(WidgetSpan(
             alignment: PlaceholderAlignment.middle,
             child: Image(
-                image: NetworkImage(emote.source),
+                image: NetworkImageWithRetry(emote.source),
                 height: styleModel.fontSize)));
         start = end == 0 ? message.length : end;
         lastParsedStart = start;
