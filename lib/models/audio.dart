@@ -52,6 +52,13 @@ class AudioModel extends ChangeNotifier {
   Channel? _hostChannel;
   StreamSubscription? _hostChannelStateSubscription;
 
+  @override
+  void dispose() {
+    _hostChannelStateSubscription?.cancel();
+
+    super.dispose();
+  }
+
   bool get isSpeakerDisconnectPreventionEnabled {
     return _speakerDisconnectTimer != null;
   }
