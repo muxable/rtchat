@@ -1,49 +1,38 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rxdart/rxdart.dart';
 
 class UserModel extends ChangeNotifier {
   User? _user = FirebaseAuth.instance.currentUser;
-  late StreamSubscription<User?> _userSubscription;
-  StreamSubscription<DocumentSnapshot>? _profileSubscription;
+  late final StreamSubscription<void> _subscription;
   Channel? _userChannel;
 
   UserModel() {
-    _userSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
-      _user = user;
-      notifyListeners();
-
-      // bind profile
-      if (user != null) {
-        FirebaseCrashlytics.instance.setUserIdentifier(user.uid);
-        _profileSubscription?.cancel();
-        _profileSubscription = FirebaseFirestore.instance
-            .collection("profiles")
-            .doc(user.uid)
-            .snapshots()
-            .listen((event) {
-          final data = event.data();
-          if (data != null && data.containsKey('twitch')) {
-            _userChannel = Channel(
-                "twitch", data['twitch']['id'], data['twitch']['displayName']);
-          } else {
-            _userChannel = null;
-          }
+    _subscription = FirebaseAuth.instance
+        .authStateChanges()
+        .doOnData((user) {
+          _user = user;
+          notifyListeners();
+          FirebaseCrashlytics.instance.setUserIdentifier(user?.uid ?? "");
+        })
+        .switchMap((user) => user == null
+            ? Stream.value(null)
+            : ProfilesAdapter.instance.getChannel(user.uid))
+        .listen((channel) {
+          _userChannel = channel;
           notifyListeners();
         });
-      }
-    });
   }
 
   @override
   void dispose() {
-    _userSubscription.cancel();
-    _profileSubscription?.cancel();
+    _subscription.cancel();
     super.dispose();
   }
 
@@ -97,8 +86,6 @@ class UserModel extends ChangeNotifier {
       "messageId": messageId,
     });
   }
-
-  User? get user => _user;
 
   Channel? get userChannel => _userChannel;
 
