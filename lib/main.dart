@@ -109,6 +109,11 @@ class App extends StatelessWidget {
               model.addListener(() {
                 prefs.setString('audio', jsonEncode(model.toJson()));
               });
+              final user = Provider.of<UserModel>(context, listen: false);
+              model.hostChannel = user.userChannel;
+              user.addListener(() {
+                model.hostChannel = user.userChannel;
+              });
               return model;
             },
             lazy: false),
