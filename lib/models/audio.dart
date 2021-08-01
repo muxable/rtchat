@@ -42,7 +42,7 @@ class AudioSource {
 class AudioModel extends ChangeNotifier {
   final List<AudioSource> _sources = [];
   final Map<AudioSource, HeadlessInAppWebView> _views = {};
-  Timer? _speakerDisconnectTimer;
+  late final Timer _speakerDisconnectTimer;
   final _audioCache = AudioCache();
   final initialOptions = InAppWebViewGroupOptions(
       crossPlatform: InAppWebViewOptions(
@@ -55,22 +55,9 @@ class AudioModel extends ChangeNotifier {
   @override
   void dispose() {
     _hostChannelStateSubscription?.cancel();
+    _speakerDisconnectTimer.cancel();
 
     super.dispose();
-  }
-
-  bool get isSpeakerDisconnectPreventionEnabled {
-    return _speakerDisconnectTimer != null;
-  }
-
-  set isSpeakerDisconnectPreventionEnabled(bool isEnabled) {
-    if (isEnabled) {
-      _startSpeakerDisconnectTimer();
-    } else {
-      _speakerDisconnectTimer?.cancel();
-      _speakerDisconnectTimer = null;
-    }
-    notifyListeners();
   }
 
   bool get isForegroundServiceEnabled => _isForegroundServiceEnabled;
@@ -104,13 +91,6 @@ class AudioModel extends ChangeNotifier {
         ForegroundServiceChannel.stop();
       }
     });
-  }
-
-  void _startSpeakerDisconnectTimer() {
-    _speakerDisconnectTimer = Timer.periodic(
-      const Duration(minutes: 5),
-      (_) => _audioCache.play("silence.mp3"),
-    );
   }
 
   List<AudioSource> get sources => _sources;
@@ -162,14 +142,15 @@ class AudioModel extends ChangeNotifier {
   }
 
   AudioModel.fromJson(Map<String, dynamic> json) {
+    _speakerDisconnectTimer = Timer.periodic(
+      const Duration(minutes: 5),
+      (_) => _audioCache.play("silence.mp3"),
+    );
     final sources = json['sources'];
     if (sources != null) {
       for (dynamic source in sources) {
         addSource(AudioSource.fromJson(source));
       }
-    }
-    if (json['isSpeakerDisconnectPreventionEnabled'] ?? false) {
-      _startSpeakerDisconnectTimer();
     }
     if (json['isForegroundServiceEnabled'] ?? false) {
       _isForegroundServiceEnabled = json['isForegroundServiceEnabled'];
@@ -179,7 +160,6 @@ class AudioModel extends ChangeNotifier {
 
   Map<String, dynamic> toJson() => {
         "sources": _sources.map((source) => source.toJson()).toList(),
-        "isSpeakerDisconnectPreventionEnabled": _speakerDisconnectTimer != null,
         "isForegroundServiceEnabled": _isForegroundServiceEnabled,
       };
 }
