@@ -150,6 +150,9 @@ class TwitchMessageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleModel>(builder: (context, styleModel, child) {
+      if (!styleModel.isDeletedMessagesVisible && model.deleted) {
+        return Container();
+      }
       var authorStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
           fontSize: styleModel.fontSize,
           fontWeight: FontWeight.w500,
@@ -198,9 +201,7 @@ class TwitchMessageWidget extends StatelessWidget {
       final emotes = model.tags['emotes-raw'];
       final bttvEmoteProvider =
           Provider.of<ThirdPartyEmoteModel>(context, listen: true);
-      if (model.deleted) {
-        children.add(const TextSpan(text: "<deleted message>"));
-      } else if (emotes != null) {
+      if (emotes != null) {
         final parsed = parseEmotes(emotes);
 
         parsed.sort((a, b) => a.start.compareTo(b.start));
@@ -239,11 +240,15 @@ class TwitchMessageWidget extends StatelessWidget {
       //   return (TwitchMessageLinkPreviewWidget(
       //       messageStyle: messageStyle, children: children, url: fetchUrl));
       // }
-      return Padding(
+      return Opacity(
+        opacity: model.deleted ? 0.6 : 1.0,
+        child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: RichText(
             text: TextSpan(style: messageStyle, children: children),
-          ));
+          ),
+        ),
+      );
     });
   }
 
