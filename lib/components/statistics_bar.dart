@@ -40,8 +40,11 @@ class _StatisticsBarWidgetState extends State<StatisticsBarWidget> {
   void didUpdateWidget(StatisticsBarWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    setState(() => _loading = true);
-    _poll();
+    if (oldWidget.provider != widget.provider ||
+        oldWidget.channelId != widget.channelId) {
+      setState(() => _loading = true);
+      _poll();
+    }
   }
 
   Future<void> _poll() async {
