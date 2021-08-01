@@ -36,17 +36,6 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
       body: Column(children: [
         Consumer<AudioModel>(builder: (context, audioModel, child) {
           return SwitchListTile.adaptive(
-            title: const Text('Speaker disconnect prevention'),
-            subtitle:
-                const Text('Prevent bluetooth speakers from disconnecting'),
-            value: audioModel.isSpeakerDisconnectPreventionEnabled,
-            onChanged: (value) {
-              audioModel.isSpeakerDisconnectPreventionEnabled = value;
-            },
-          );
-        }),
-        Consumer<AudioModel>(builder: (context, audioModel, child) {
-          return SwitchListTile.adaptive(
             title: const Text('Keep app running in the background when online'),
             subtitle: audioModel.isForegroundServiceEnabled
                 ? const Text(
