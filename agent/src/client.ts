@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 export function buildClient() {
   const id = uuidv4();
 
+  const messages = admin.firestore().collection("messages");
+
   const client = new tmi.Client({
     connection: { reconnect: true },
     channels: [],
@@ -17,18 +19,14 @@ export function buildClient() {
       Number(tags["tmi-sent-ts"])
     );
 
-    await admin
-      .firestore()
-      .collection("messages")
-      .doc(`twitch:${tags.id}`)
-      .set({
-        channel,
-        channelId: `twitch:${tags["room-id"]}`,
-        type: "message",
-        timestamp,
-        tags,
-        message,
-      });
+    await messages.doc(`twitch:${tags.id}`).set({
+      channel,
+      channelId: `twitch:${tags["room-id"]}`,
+      type: "message",
+      timestamp,
+      tags,
+      message,
+    });
   });
 
   client.on(
@@ -38,18 +36,21 @@ export function buildClient() {
         Number(tags["tmi-sent-ts"])
       );
 
-      await admin
-        .firestore()
-        .collection("messages")
-        .doc(`twitch:${tags.id}`)
-        .set({
-          channel,
-          channelId: `twitch:${tags["room-id"]}`,
-          type: "messagedeleted",
-          timestamp,
-          tags,
-          messageId: tags["target-msg-id"],
-        });
+      const messageId = tags["target-msg-id"];
+
+      const original = await messages.doc(`twitch:${messageId}`).get();
+
+      if (!original.exists) {
+        return;
+      }
+
+      await messages.doc(`twitch:-${messageId}`).set({
+        channelId: `twitch:${tags["room-id"]}`,
+        type: "messagedeleted",
+        timestamp,
+        tags,
+        messageId,
+      });
     }
   );
 
@@ -63,19 +64,15 @@ export function buildClient() {
       Number(tags["tmi-sent-ts"])
     );
 
-    await admin
-      .firestore()
-      .collection("messages")
-      .doc(`twitch:${tags.id}`)
-      .set({
-        channel,
-        channelId: `twitch:${tags["room-id"]}`,
-        type: "raided",
-        timestamp,
-        tags,
-        username,
-        viewers,
-      });
+    await messages.doc(`twitch:${tags.id}`).set({
+      channel,
+      channelId: `twitch:${tags["room-id"]}`,
+      type: "raided",
+      timestamp,
+      tags,
+      username,
+      viewers,
+    });
   }) as any);
 
   client.on("connected", () => console.log(`client ${id} connected`));
