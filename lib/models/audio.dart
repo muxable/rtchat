@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:core';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:rtchat/foreground_service_channel.dart';
+import 'package:rtchat/models/channels.dart';
 
 class AudioSource {
   final String? name;
@@ -47,6 +49,16 @@ class AudioModel extends ChangeNotifier {
           mediaPlaybackRequiresUserGesture: false, javaScriptEnabled: true));
   var _isForegroundServiceEnabled = false;
 
+  Channel? _hostChannel;
+  StreamSubscription? _hostChannelStateSubscription;
+
+  @override
+  void dispose() {
+    _hostChannelStateSubscription?.cancel();
+
+    super.dispose();
+  }
+
   bool get isSpeakerDisconnectPreventionEnabled {
     return _speakerDisconnectTimer != null;
   }
@@ -64,13 +76,40 @@ class AudioModel extends ChangeNotifier {
   bool get isForegroundServiceEnabled => _isForegroundServiceEnabled;
 
   set isForegroundServiceEnabled(bool isEnabled) {
-    if (isEnabled) {
-      ForegroundServiceChannel.start();
-    } else {
-      ForegroundServiceChannel.stop();
-    }
     _isForegroundServiceEnabled = isEnabled;
+    _bindHostChannelStateSubscription();
     notifyListeners();
+  }
+
+  Channel? get hostChannel => _hostChannel;
+
+  set hostChannel(Channel? channel) {
+    _hostChannel = channel;
+    _bindHostChannelStateSubscription();
+  }
+
+  void _bindHostChannelStateSubscription() {
+    _hostChannelStateSubscription?.cancel();
+    if (_hostChannel == null || !_isForegroundServiceEnabled) {
+      _hostChannelStateSubscription = null;
+      ForegroundServiceChannel.stop();
+      return;
+    }
+    _hostChannelStateSubscription = FirebaseFirestore.instance
+        .collection("messages")
+        .where("channelId", isEqualTo: _hostChannel.toString())
+        .where("type", whereIn: ["stream.online", "stream.offline"])
+        .orderBy("timestamp", descending: true)
+        .limit(1)
+        .snapshots()
+        .listen((event) {
+          if (event.docs.isNotEmpty &&
+              event.docs.first.get("type") == "stream.online") {
+            ForegroundServiceChannel.start();
+          } else {
+            ForegroundServiceChannel.stop();
+          }
+        });
   }
 
   void _startSpeakerDisconnectTimer() {
