@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:core';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:rtchat/foreground_service_channel.dart';
+import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
 
 class AudioSource {
@@ -82,21 +82,15 @@ class AudioModel extends ChangeNotifier {
       ForegroundServiceChannel.stop();
       return;
     }
-    _hostChannelStateSubscription = FirebaseFirestore.instance
-        .collection("messages")
-        .where("channelId", isEqualTo: _hostChannel.toString())
-        .where("type", whereIn: ["stream.online", "stream.offline"])
-        .orderBy("timestamp", descending: true)
-        .limit(1)
-        .snapshots()
-        .listen((event) {
-          if (event.docs.isNotEmpty &&
-              event.docs.first.get("type") == "stream.online") {
-            ForegroundServiceChannel.start();
-          } else {
-            ForegroundServiceChannel.stop();
-          }
-        });
+    _hostChannelStateSubscription = ProfilesAdapter.instance
+        .getIsOnline(channelId: _hostChannel.toString())
+        .listen((isOnline) {
+      if (isOnline) {
+        ForegroundServiceChannel.start();
+      } else {
+        ForegroundServiceChannel.stop();
+      }
+    });
   }
 
   List<AudioSource> get sources => _sources;
