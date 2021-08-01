@@ -23,7 +23,7 @@ class UserModel extends ChangeNotifier {
         })
         .switchMap((user) => user == null
             ? Stream.value(null)
-            : ProfilesAdapter.instance.getChannel(user.uid))
+            : ProfilesAdapter.instance.getChannel(userId: user.uid))
         .listen((channel) {
           _userChannel = channel;
           notifyListeners();

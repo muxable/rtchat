@@ -21,7 +21,7 @@ class ProfilesAdapter {
   static ProfilesAdapter get instance =>
       ProfilesAdapter.instanceFor(db: FirebaseFirestore.instance);
 
-  Stream<Channel?> getChannel(String userId) {
+  Stream<Channel?> getChannel({required String userId}) {
     return db.collection("profiles").doc(userId).snapshots().map((event) {
       final data = event.data();
       if (data != null && data.containsKey('twitch')) {
@@ -29,5 +29,18 @@ class ProfilesAdapter {
             "twitch", data['twitch']['id'], data['twitch']['displayName']);
       }
     });
+  }
+
+  Stream<bool> getIsOnline({required String channelId}) {
+    return db
+        .collection("messages")
+        .where("channelId", isEqualTo: channelId)
+        .where("type", whereIn: ["stream.online", "stream.offline"])
+        .orderBy("timestamp")
+        .limitToLast(1)
+        .snapshots()
+        .map((event) =>
+            event.docs.isNotEmpty &&
+            event.docs.first.get("type") == "stream.online");
   }
 }
