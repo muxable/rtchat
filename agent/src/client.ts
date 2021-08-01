@@ -45,6 +45,7 @@ export function buildClient() {
       }
 
       await messages.doc(`twitch:-${messageId}`).set({
+        channel,
         channelId: original.get("channelId"),
         type: "messagedeleted",
         timestamp,
