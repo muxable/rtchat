@@ -7,9 +7,10 @@ import 'package:rtchat/models/channels.dart';
 
 final Map<String, Future<Map<String, ThirdPartyEmote>>> _bttvChannelCache = {};
 final Map<String, Future<Map<String, ThirdPartyEmote>>> _ffzCache = {};
-final Map<String, Future<Map<String, ThirdPartyEmote>>> _7tvChannelCache = {};
+final Map<String, Future<Map<String, ThirdPartyEmote>>> _sevenTvChannelCache =
+    {};
 Future<Map<String, ThirdPartyEmote>>? _bttvGlobalCache;
-Future<Map<String, ThirdPartyEmote>>? _7tvGlobalCache;
+Future<Map<String, ThirdPartyEmote>>? _sevenTvGlobalCache;
 
 Future<Map<String, ThirdPartyEmote>> getBttvGlobalEmotes(Uri uri) async {
   final response = await http.get(uri);
@@ -81,9 +82,9 @@ class ThirdPartyEmoteModel extends ChangeNotifier {
       final uri = Uri.parse("https://api.betterttv.net/3/cached/emotes/global");
       _bttvGlobalCache = getBttvGlobalEmotes(uri);
     }
-    if (_7tvGlobalCache == null) {
+    if (_sevenTvGlobalCache == null) {
       final uri = Uri.parse("https://api.7tv.app/v2/emotes/global");
-      _7tvGlobalCache = get7tvEmotes(uri);
+      _sevenTvGlobalCache = get7tvEmotes(uri);
     }
     for (final channel in channels) {
       if (channel.provider != "twitch") {
@@ -99,25 +100,27 @@ class ThirdPartyEmoteModel extends ChangeNotifier {
             "https://api.betterttv.net/3/cached/frankerfacez/users/twitch/${channel.channelId}");
         _ffzCache[channel.channelId] = getFFZEmotes(uri);
       }
-      if (!_7tvChannelCache.containsKey(channel.channelId)) {
+      if (!_sevenTvChannelCache.containsKey(channel.channelId)) {
         final uri = Uri.parse(
             "https://api.7tv.app/v2/users/${channel.channelId}/emotes");
-        _7tvChannelCache[channel.channelId] = get7tvEmotes(uri);
+        _sevenTvChannelCache[channel.channelId] = get7tvEmotes(uri);
       }
     }
     for (final channel in channels) {
       if (channel.provider != "twitch") {
         return;
       }
-      _emotes.addAll((await _7tvChannelCache[channel.channelId])!);
+      _emotes.addAll((await _sevenTvChannelCache[channel.channelId])!);
       _emotes.addAll((await _ffzCache[channel.channelId])!);
       _emotes.addAll((await _bttvChannelCache[channel.channelId])!);
     }
-    _emotes.addAll((await _7tvGlobalCache)!);
+    _emotes.addAll((await _sevenTvGlobalCache)!);
     _emotes.addAll((await _bttvGlobalCache)!);
 
     notifyListeners();
   }
+
+  String? Function(String) get resolver => (text) => _emotes[text]?.source;
 }
 
 class ThirdPartyEmote {
