@@ -7,9 +7,11 @@ import 'package:rtchat/models/channels.dart';
 
 final Map<String, Future<Map<String, ThirdPartyEmote>>> _bttvChannelCache = {};
 final Map<String, Future<Map<String, ThirdPartyEmote>>> _ffzCache = {};
-Future<Map<String, ThirdPartyEmote>>? _globalCache;
+final Map<String, Future<Map<String, ThirdPartyEmote>>> _7tvChannelCache = {};
+Future<Map<String, ThirdPartyEmote>>? _bttvGlobalCache;
+Future<Map<String, ThirdPartyEmote>>? _7tvGlobalCache;
 
-Future<Map<String, ThirdPartyEmote>> getGlobalEmotes(Uri uri) async {
+Future<Map<String, ThirdPartyEmote>> getBttvGlobalEmotes(Uri uri) async {
   final response = await http.get(uri);
   Map<String, ThirdPartyEmote> result = {};
 
@@ -23,7 +25,7 @@ Future<Map<String, ThirdPartyEmote>> getGlobalEmotes(Uri uri) async {
   return result;
 }
 
-Future<Map<String, ThirdPartyEmote>> getChannelEmotes(Uri uri) async {
+Future<Map<String, ThirdPartyEmote>> getBttvChannelEmotes(Uri uri) async {
   final response = await http.get(uri);
   Map<String, ThirdPartyEmote> result = {};
 
@@ -56,17 +58,32 @@ Future<Map<String, ThirdPartyEmote>> getFFZEmotes(Uri uri) async {
   return result;
 }
 
+Future<Map<String, ThirdPartyEmote>> get7tvEmotes(Uri uri) async {
+  final response = await http.get(uri);
+  Map<String, ThirdPartyEmote> result = {};
+
+  if (response.statusCode == 200) {
+    jsonDecode(response.body).forEach((emote) {
+      final parsedEmote = ThirdPartyEmote.from7tvJson(emote);
+      result[parsedEmote.code] = parsedEmote;
+    });
+  }
+
+  return result;
+}
+
 class ThirdPartyEmoteModel extends ChangeNotifier {
-  final Map<String, ThirdPartyEmote> _channelFFZEmotes = {};
-  final Map<String, ThirdPartyEmote> _channelBttvEmotes = {};
-  final Map<String, ThirdPartyEmote> _globalBttvEmotes = {};
+  final Map<String, ThirdPartyEmote> _emotes = {};
 
   Future<void> subscribe(Set<Channel> channels) async {
-    _channelBttvEmotes.clear();
-    _globalBttvEmotes.clear();
-    if (_globalCache == null) {
+    _emotes.clear();
+    if (_bttvGlobalCache == null) {
       final uri = Uri.parse("https://api.betterttv.net/3/cached/emotes/global");
-      _globalCache = getGlobalEmotes(uri);
+      _bttvGlobalCache = getBttvGlobalEmotes(uri);
+    }
+    if (_7tvGlobalCache == null) {
+      final uri = Uri.parse("https://api.7tv.app/v2/emotes/global");
+      _7tvGlobalCache = get7tvEmotes(uri);
     }
     for (final channel in channels) {
       if (channel.provider != "twitch") {
@@ -75,31 +92,32 @@ class ThirdPartyEmoteModel extends ChangeNotifier {
       if (!_bttvChannelCache.containsKey(channel.channelId)) {
         final uri = Uri.parse(
             "https://api.betterttv.net/3/cached/users/twitch/${channel.channelId}");
-        _bttvChannelCache[channel.channelId] = getChannelEmotes(uri);
+        _bttvChannelCache[channel.channelId] = getBttvChannelEmotes(uri);
       }
       if (!_ffzCache.containsKey(channel.channelId)) {
         final uri = Uri.parse(
             "https://api.betterttv.net/3/cached/frankerfacez/users/twitch/${channel.channelId}");
         _ffzCache[channel.channelId] = getFFZEmotes(uri);
       }
+      if (!_7tvChannelCache.containsKey(channel.channelId)) {
+        final uri = Uri.parse(
+            "https://api.7tv.app/v2/users/${channel.channelId}/emotes");
+        _7tvChannelCache[channel.channelId] = get7tvEmotes(uri);
+      }
     }
-    _globalBttvEmotes.addAll((await _globalCache)!);
+    _emotes.addAll((await _bttvGlobalCache)!);
+    _emotes.addAll((await _7tvGlobalCache)!);
     for (final channel in channels) {
       if (channel.provider != "twitch") {
         return;
       }
-      _channelBttvEmotes.addAll((await _bttvChannelCache[channel.channelId])!);
-      _channelFFZEmotes.addAll((await _ffzCache[channel.channelId])!);
+      _emotes.addAll((await _bttvChannelCache[channel.channelId])!);
+      _emotes.addAll((await _ffzCache[channel.channelId])!);
+      _emotes.addAll((await _7tvChannelCache[channel.channelId])!);
     }
 
     notifyListeners();
   }
-
-  Map<String, dynamic> get bttvGlobalEmotes => _globalBttvEmotes;
-
-  Map<String, dynamic> get bttvChannelEmotes => _channelBttvEmotes;
-
-  Map<String, dynamic> get ffzEmotes => _channelFFZEmotes;
 }
 
 class ThirdPartyEmote {
@@ -121,5 +139,13 @@ class ThirdPartyEmote {
         id: json['id'].toString(),
         code: json['code'],
         source: json['images']['1x']);
+  }
+
+  static ThirdPartyEmote from7tvJson(Map<String, dynamic> json) {
+    return ThirdPartyEmote(
+      id: json['id'].toString(),
+      code: json['name'],
+      source: json['urls'][0][1],
+    );
   }
 }
