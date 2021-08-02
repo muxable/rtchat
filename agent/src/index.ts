@@ -14,8 +14,6 @@ admin.initializeApp({
 const AGENT_ID = uuidv4();
 console.log("running agent", AGENT_ID);
 
-console.log(process.env);
-
 (async function () {
   const CLIENTS = [await buildClient()];
 
