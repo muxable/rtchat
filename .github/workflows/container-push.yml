@@ -39,13 +39,12 @@ jobs:
           FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON }}
 
       - run: |
-          echo << EOF > agent/.env
-          GCP_PROJ_ID=rtchat-47692\n
-          GOOGLE_APPLICATION_CREDENTIALS=service_account.json
-          TWITCH_CLIENT_ID=$TWITCH_CLIENT_ID
-          TWITCH_CLIENT_SECRET=$TWITCH_CLIENT_SECRET
-          TWITCH_BOT_USER_ID=JSdHKOEgwcZijVsuXXdftmizt6E3
-          EOF
+          echo "GCP_PROJ_ID=rtchat-47692\n" >> agent/.env
+          echo "GOOGLE_APPLICATION_CREDENTIALS=service_account.json\n" >> agent/.env
+          echo "TWITCH_CLIENT_ID=$TWITCH_CLIENT_ID\n" >> agent/.env
+          echo "TWITCH_CLIENT_SECRET=$TWITCH_CLIENT_SECRET\n" >> agent/.env
+          echo "TWITCH_BOT_USER_ID=JSdHKOEgwcZijVsuXXdftmizt6E3\n" >> agent/.env
+          cat agent/.env
         env:
           TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
           TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
