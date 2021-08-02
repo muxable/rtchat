@@ -95,11 +95,11 @@ class ThirdPartyEmoteModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Map<String, dynamic> get bttvGlobalEmotes => _globalBttvEmotes;
-
-  Map<String, dynamic> get bttvChannelEmotes => _channelBttvEmotes;
-
-  Map<String, dynamic> get ffzEmotes => _channelFFZEmotes;
+  String? Function(String) get resolver =>
+      (String text) => (_globalBttvEmotes[text] ??
+              _channelBttvEmotes[text] ??
+              _channelFFZEmotes[text])
+          ?.source;
 }
 
 class ThirdPartyEmote {

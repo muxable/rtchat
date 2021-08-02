@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
-import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
+import 'package:rtchat/models/twitch/message.dart';
 import 'package:rtchat/models/twitch/user.dart';
 
 class FontSizePickerWidget extends StatelessWidget {
@@ -24,7 +24,6 @@ class FontSizePickerWidget extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: TwitchMessageWidget(TwitchMessageModel(
                         messageId: "placeholder",
-                        channel: "muxfd",
                         author: const TwitchUserModel(login: 'muxfd'),
                         tags: {
                           "message-type": "chat",
