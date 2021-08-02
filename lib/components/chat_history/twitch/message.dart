@@ -86,8 +86,7 @@ class TwitchMessageWidget extends StatelessWidget {
       final List<InlineSpan> children = [];
 
       // add badges.
-      final badges = parseBadges(model.tags['badges-raw'] ?? "");
-      children.addAll(badges.map((badge) => WidgetSpan(
+      children.addAll(model.badges.map((badge) => WidgetSpan(
           alignment: PlaceholderAlignment.middle,
           child: Padding(
               padding: const EdgeInsets.only(right: 5),
@@ -103,10 +102,10 @@ class TwitchMessageWidget extends StatelessWidget {
       // add demarcator.
       switch (model.tags['message-type']) {
         case "action":
-          children.add(const TextSpan(text: " "));
+          children.add(TextSpan(text: " ", style: messageStyle));
           break;
         case "chat":
-          children.add(const TextSpan(text: ": "));
+          children.add(TextSpan(text: ": ", style: messageStyle));
           break;
       }
 
@@ -117,35 +116,40 @@ class TwitchMessageWidget extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: RichText(
               text: TextSpan(
-                  children: tokens.map((token) {
-                if (token is TextToken) {
-                  return TextSpan(text: token.text, style: messageStyle);
-                } else if (token is EmoteToken) {
-                  return WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: Image(
-                          image: NetworkImageWithRetry(token.url),
-                          height: styleModel.fontSize));
-                } else if (token is LinkToken) {
-                  return WidgetSpan(
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: Text.rich(
-                        TextSpan(
-                          text: token.text,
-                          style: linkStyle,
-                          recognizer: (TapGestureRecognizer()
-                            ..onTap = () => launch(token.url)),
+                children: [
+                  ...children,
+                  ...tokens.map((token) {
+                    if (token is TextToken) {
+                      return TextSpan(text: token.text, style: messageStyle);
+                    } else if (token is EmoteToken) {
+                      return WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Image(
+                              image: NetworkImageWithRetry(token.url),
+                              height: styleModel.fontSize));
+                    } else if (token is LinkToken) {
+                      return WidgetSpan(
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Text.rich(
+                            TextSpan(
+                              text: token.text,
+                              style: linkStyle,
+                              recognizer: (TapGestureRecognizer()
+                                ..onTap = () => launch(token.url)),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                } else if (token is UserMentionToken) {
-                  return TextSpan(text: "@${token.username}", style: tagStyle);
-                } else {
-                  throw Exception("invalid token");
-                }
-              }).toList()),
+                      );
+                    } else if (token is UserMentionToken) {
+                      return TextSpan(
+                          text: "@${token.username}", style: tagStyle);
+                    } else {
+                      throw Exception("invalid token");
+                    }
+                  }).toList(),
+                ],
+              ),
             ));
       });
     });

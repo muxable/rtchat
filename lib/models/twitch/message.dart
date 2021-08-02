@@ -152,7 +152,7 @@ Iterable<TwitchMessageToken> tokenizeEmotes(Iterable<TwitchMessageToken> tokens,
             yield TextToken(message.substring(lastParsedStart, start));
           }
           yield EmoteToken(emote);
-          lastParsedStart = end;
+          lastParsedStart = end == -1 ? message.length : end;
         }
         start = end == -1 ? message.length : end + 1;
       }
