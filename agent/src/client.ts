@@ -2,9 +2,6 @@ import * as admin from "firebase-admin";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
 import * as tmi from "tmi.js";
 import { v4 as uuidv4 } from "uuid";
-import * as dotenv from "dotenv";
-
-dotenv.config();
 
 console.log(process.env);
 
