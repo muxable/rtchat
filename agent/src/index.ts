@@ -1,12 +1,9 @@
 import { Message, PubSub } from "@google-cloud/pubsub";
 import Bottleneck from "bottleneck";
-import * as dotenv from "dotenv";
 import * as admin from "firebase-admin";
 import { v4 as uuidv4 } from "uuid";
 import * as serviceAccount from "../service_account.json";
 import { buildClient } from "./client";
-
-dotenv.config();
 
 const PROJECT_ID = serviceAccount.project_id;
 
@@ -16,6 +13,8 @@ admin.initializeApp({
 
 const AGENT_ID = uuidv4();
 console.log("running agent", AGENT_ID);
+
+console.log(process.env);
 
 (async function () {
   const CLIENTS = [await buildClient()];
