@@ -105,16 +105,16 @@ class ThirdPartyEmoteModel extends ChangeNotifier {
         _7tvChannelCache[channel.channelId] = get7tvEmotes(uri);
       }
     }
-    _emotes.addAll((await _bttvGlobalCache)!);
-    _emotes.addAll((await _7tvGlobalCache)!);
     for (final channel in channels) {
       if (channel.provider != "twitch") {
         return;
       }
-      _emotes.addAll((await _bttvChannelCache[channel.channelId])!);
-      _emotes.addAll((await _ffzCache[channel.channelId])!);
       _emotes.addAll((await _7tvChannelCache[channel.channelId])!);
+      _emotes.addAll((await _ffzCache[channel.channelId])!);
+      _emotes.addAll((await _bttvChannelCache[channel.channelId])!);
     }
+    _emotes.addAll((await _7tvGlobalCache)!);
+    _emotes.addAll((await _bttvGlobalCache)!);
 
     notifyListeners();
   }
