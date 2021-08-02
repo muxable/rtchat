@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc ./src/index.ts",
-    "start": "ts-node ./src/index.ts"
+    "start": "ts-node -r dotenv/config ./src/index.ts"
   },
   "dependencies": {
     "@google-cloud/pubsub": "^2.13.0",
