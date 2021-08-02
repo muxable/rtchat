@@ -5,8 +5,8 @@ import 'package:flutter_image/flutter_image.dart';
 import 'package:linkify/linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
-import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/style.dart';
+import 'package:rtchat/models/twitch/message.dart';
 import 'package:rtchat/models/twitch/third_party_emote.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -28,21 +28,6 @@ const colors = [
   Color(0xFF00FF7F),
 ];
 
-class _Emote {
-  final int start;
-  final int end;
-  final String key;
-
-  _Emote(this.key, this.start, this.end);
-}
-
-class _Badge {
-  final String key;
-  final String version;
-
-  _Badge(this.key, this.version);
-}
-
 String? getFirstClipLink(String text) {
   final parsed = linkify(text, options: const LinkifyOptions(humanize: false));
   for (final element in parsed) {
@@ -62,76 +47,6 @@ bool isTwitchClip(String url) {
       (url.contains(clipStr) ||
           url.contains(clipsStr) ||
           url.contains(videosStr));
-}
-
-Iterable<TextSpan> tokenize(String msg, TextStyle tagStyle) sync* {
-  final matches = RegExp(r"@[A-Za-z0-9_]+").allMatches(msg);
-  var start = 0;
-  for (final match in matches) {
-    // before the tag
-    var preTag = msg.substring(start, match.start);
-    yield TextSpan(text: preTag);
-    // the tag
-    var tag = msg.substring(match.start, match.end);
-    start = match.end;
-    yield TextSpan(text: tag, style: tagStyle);
-  }
-
-  if (matches.isNotEmpty) {
-    var txt = msg.substring(matches.last.end);
-    yield TextSpan(text: txt);
-  } else {
-    yield TextSpan(text: msg);
-  }
-}
-
-Iterable<InlineSpan> parseText(
-    String text, TextStyle linkStyle, TextStyle tagStyle) {
-  final parsed = linkify(text, options: const LinkifyOptions(humanize: false));
-  return parsed.map<InlineSpan>((element) {
-    if (element is LinkableElement) {
-      return WidgetSpan(
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: Text.rich(
-            TextSpan(
-              text: element.text,
-              style: linkStyle,
-              recognizer: (TapGestureRecognizer()
-                ..onTap = () => launch(element.url)),
-            ),
-          ),
-        ),
-      );
-    } else {
-      return TextSpan(children: tokenize(element.text, tagStyle).toList());
-    }
-  });
-}
-
-List<_Emote> parseEmotes(String emotes) {
-  return emotes.split("/").expand((block) {
-    final blockTokens = block.split(':');
-    final key = blockTokens[0];
-    return blockTokens[1].split(',').map((indices) {
-      final indexTokens = indices.split('-');
-      final start = int.parse(indexTokens[0]);
-      final end = int.parse(indexTokens[1]);
-      return _Emote(key, start, end);
-    });
-  }).toList();
-}
-
-List<_Badge> parseBadges(String badges) {
-  if (badges.isEmpty) {
-    return [];
-  }
-  return badges.split(",").map((block) {
-    final tokens = block.split('/');
-    final key = tokens[0];
-    final version = tokens[1];
-    return _Badge(key, version);
-  }).toList();
 }
 
 class TwitchMessageWidget extends StatelessWidget {
@@ -171,8 +86,7 @@ class TwitchMessageWidget extends StatelessWidget {
       final List<InlineSpan> children = [];
 
       // add badges.
-      final badges = parseBadges(model.tags['badges-raw'] ?? "");
-      children.addAll(badges.map((badge) => WidgetSpan(
+      children.addAll(model.badges.map((badge) => WidgetSpan(
           alignment: PlaceholderAlignment.middle,
           child: Padding(
               padding: const EdgeInsets.only(right: 5),
@@ -188,94 +102,56 @@ class TwitchMessageWidget extends StatelessWidget {
       // add demarcator.
       switch (model.tags['message-type']) {
         case "action":
-          children.add(const TextSpan(text: " "));
+          children.add(TextSpan(text: " ", style: messageStyle));
           break;
         case "chat":
-          children.add(const TextSpan(text: ": "));
+          children.add(TextSpan(text: ": ", style: messageStyle));
           break;
       }
 
-      final emotes = model.tags['emotes-raw'];
-      final bttvEmoteProvider =
-          Provider.of<ThirdPartyEmoteModel>(context, listen: true);
-      if (model.deleted) {
-        children.add(const TextSpan(text: "<deleted message>"));
-      } else if (emotes != null) {
-        final parsed = parseEmotes(emotes);
-
-        parsed.sort((a, b) => a.start.compareTo(b.start));
-
-        var index = 0;
-
-        for (final child in parsed) {
-          if (child.start > index) {
-            final substring = model.message.substring(index, child.start);
-            children.addAll(processText(
-                substring, bttvEmoteProvider, styleModel, linkStyle, tagStyle));
-          }
-          final url =
-              "https://static-cdn.jtvnw.net/emoticons/v2/${child.key}/default/dark/1.0";
-          children.add(WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Image(
-                  image: NetworkImageWithRetry(url),
-                  height: styleModel.fontSize)));
-          index = child.end + 1;
-        }
-
-        if (index < model.message.length) {
-          final substring = model.message.substring(index);
-          children.addAll(processText(
-              substring, bttvEmoteProvider, styleModel, linkStyle, tagStyle));
-        }
-      } else {
-        children.addAll(processText(
-            model.message, bttvEmoteProvider, styleModel, linkStyle, tagStyle));
-      }
-
-      // if messsage has links and clips, then fetch the first clip link
-      // var fetchUrl = getFirstClipLink(model.message);
-      // if (fetchUrl != null) {
-      //   return (TwitchMessageLinkPreviewWidget(
-      //       messageStyle: messageStyle, children: children, url: fetchUrl));
-      // }
-      return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: RichText(
-            text: TextSpan(style: messageStyle, children: children),
-          ));
+      return Consumer<ThirdPartyEmoteModel>(
+          builder: (context, emoteModel, child) {
+        final tokens = model.tokenize(emoteModel.resolver);
+        return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  ...children,
+                  ...tokens.map((token) {
+                    if (token is TextToken) {
+                      return TextSpan(text: token.text, style: messageStyle);
+                    } else if (token is EmoteToken) {
+                      return WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Image(
+                              image: NetworkImageWithRetry(token.url),
+                              height: styleModel.fontSize));
+                    } else if (token is LinkToken) {
+                      return WidgetSpan(
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Text.rich(
+                            TextSpan(
+                              text: token.text,
+                              style: linkStyle,
+                              recognizer: (TapGestureRecognizer()
+                                ..onTap = () => launch(token.url)),
+                            ),
+                          ),
+                        ),
+                      );
+                    } else if (token is UserMentionToken) {
+                      return TextSpan(
+                          text: "@${token.username}", style: tagStyle);
+                    } else {
+                      throw Exception("invalid token");
+                    }
+                  }).toList(),
+                ],
+              ),
+            ));
+      });
     });
-  }
-
-  List<InlineSpan> processText(String message, ThirdPartyEmoteModel bttvEmotes,
-      StyleModel styleModel, TextStyle linkStyle, TextStyle tagStyle) {
-    final List<InlineSpan> children = [];
-    var lastParsedStart = 0;
-    for (var start = 0; start < message.length;) {
-      final end = message.indexOf(" ", start) + 1;
-      final token =
-          end == 0 ? message.substring(start) : message.substring(start, end);
-      final emote = bttvEmotes.bttvGlobalEmotes[token.trim()] ??
-          bttvEmotes.bttvChannelEmotes[token.trim()] ??
-          bttvEmotes.ffzEmotes[token.trim()];
-      if (emote != null) {
-        children.addAll(parseText(
-            message.substring(lastParsedStart, start), linkStyle, tagStyle));
-        children.add(WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Image(
-                image: NetworkImageWithRetry(emote.source),
-                height: styleModel.fontSize)));
-        start = end == 0 ? message.length : end;
-        lastParsedStart = start;
-      } else {
-        start = end == 0 ? message.length : end;
-      }
-    }
-    if (lastParsedStart != message.length) {
-      children.addAll(
-          parseText(message.substring(lastParsedStart), linkStyle, tagStyle));
-    }
-    return children;
   }
 }
