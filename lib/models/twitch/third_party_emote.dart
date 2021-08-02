@@ -7,9 +7,12 @@ import 'package:rtchat/models/channels.dart';
 
 final Map<String, Future<Map<String, ThirdPartyEmote>>> _bttvChannelCache = {};
 final Map<String, Future<Map<String, ThirdPartyEmote>>> _ffzCache = {};
-Future<Map<String, ThirdPartyEmote>>? _globalCache;
+final Map<String, Future<Map<String, ThirdPartyEmote>>> _sevenTvChannelCache =
+    {};
+Future<Map<String, ThirdPartyEmote>>? _bttvGlobalCache;
+Future<Map<String, ThirdPartyEmote>>? _sevenTvGlobalCache;
 
-Future<Map<String, ThirdPartyEmote>> getGlobalEmotes(Uri uri) async {
+Future<Map<String, ThirdPartyEmote>> getBttvGlobalEmotes(Uri uri) async {
   final response = await http.get(uri);
   Map<String, ThirdPartyEmote> result = {};
 
@@ -23,7 +26,7 @@ Future<Map<String, ThirdPartyEmote>> getGlobalEmotes(Uri uri) async {
   return result;
 }
 
-Future<Map<String, ThirdPartyEmote>> getChannelEmotes(Uri uri) async {
+Future<Map<String, ThirdPartyEmote>> getBttvChannelEmotes(Uri uri) async {
   final response = await http.get(uri);
   Map<String, ThirdPartyEmote> result = {};
 
@@ -56,17 +59,32 @@ Future<Map<String, ThirdPartyEmote>> getFFZEmotes(Uri uri) async {
   return result;
 }
 
+Future<Map<String, ThirdPartyEmote>> get7tvEmotes(Uri uri) async {
+  final response = await http.get(uri);
+  Map<String, ThirdPartyEmote> result = {};
+
+  if (response.statusCode == 200) {
+    jsonDecode(response.body).forEach((emote) {
+      final parsedEmote = ThirdPartyEmote.from7tvJson(emote);
+      result[parsedEmote.code] = parsedEmote;
+    });
+  }
+
+  return result;
+}
+
 class ThirdPartyEmoteModel extends ChangeNotifier {
-  final Map<String, ThirdPartyEmote> _channelFFZEmotes = {};
-  final Map<String, ThirdPartyEmote> _channelBttvEmotes = {};
-  final Map<String, ThirdPartyEmote> _globalBttvEmotes = {};
+  final Map<String, ThirdPartyEmote> _emotes = {};
 
   Future<void> subscribe(Set<Channel> channels) async {
-    _channelBttvEmotes.clear();
-    _globalBttvEmotes.clear();
-    if (_globalCache == null) {
+    _emotes.clear();
+    if (_bttvGlobalCache == null) {
       final uri = Uri.parse("https://api.betterttv.net/3/cached/emotes/global");
-      _globalCache = getGlobalEmotes(uri);
+      _bttvGlobalCache = getBttvGlobalEmotes(uri);
+    }
+    if (_sevenTvGlobalCache == null) {
+      final uri = Uri.parse("https://api.7tv.app/v2/emotes/global");
+      _sevenTvGlobalCache = get7tvEmotes(uri);
     }
     for (final channel in channels) {
       if (channel.provider != "twitch") {
@@ -75,31 +93,34 @@ class ThirdPartyEmoteModel extends ChangeNotifier {
       if (!_bttvChannelCache.containsKey(channel.channelId)) {
         final uri = Uri.parse(
             "https://api.betterttv.net/3/cached/users/twitch/${channel.channelId}");
-        _bttvChannelCache[channel.channelId] = getChannelEmotes(uri);
+        _bttvChannelCache[channel.channelId] = getBttvChannelEmotes(uri);
       }
       if (!_ffzCache.containsKey(channel.channelId)) {
         final uri = Uri.parse(
             "https://api.betterttv.net/3/cached/frankerfacez/users/twitch/${channel.channelId}");
         _ffzCache[channel.channelId] = getFFZEmotes(uri);
       }
+      if (!_sevenTvChannelCache.containsKey(channel.channelId)) {
+        final uri = Uri.parse(
+            "https://api.7tv.app/v2/users/${channel.channelId}/emotes");
+        _sevenTvChannelCache[channel.channelId] = get7tvEmotes(uri);
+      }
     }
-    _globalBttvEmotes.addAll((await _globalCache)!);
     for (final channel in channels) {
       if (channel.provider != "twitch") {
         return;
       }
-      _channelBttvEmotes.addAll((await _bttvChannelCache[channel.channelId])!);
-      _channelFFZEmotes.addAll((await _ffzCache[channel.channelId])!);
+      _emotes.addAll((await _sevenTvChannelCache[channel.channelId])!);
+      _emotes.addAll((await _ffzCache[channel.channelId])!);
+      _emotes.addAll((await _bttvChannelCache[channel.channelId])!);
     }
+    _emotes.addAll((await _sevenTvGlobalCache)!);
+    _emotes.addAll((await _bttvGlobalCache)!);
 
     notifyListeners();
   }
 
-  String? Function(String) get resolver =>
-      (String text) => (_globalBttvEmotes[text] ??
-              _channelBttvEmotes[text] ??
-              _channelFFZEmotes[text])
-          ?.source;
+  String? Function(String) get resolver => (text) => _emotes[text]?.source;
 }
 
 class ThirdPartyEmote {
@@ -121,5 +142,13 @@ class ThirdPartyEmote {
         id: json['id'].toString(),
         code: json['code'],
         source: json['images']['1x']);
+  }
+
+  static ThirdPartyEmote from7tvJson(Map<String, dynamic> json) {
+    return ThirdPartyEmote(
+      id: json['id'].toString(),
+      code: json['name'],
+      source: json['urls'][0][1],
+    );
   }
 }
