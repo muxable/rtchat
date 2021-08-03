@@ -75,7 +75,7 @@ console.log(process.env);
   }
 
   async function onSubscribe(message: Message) {
-    console.log("received subscribe message", message);
+    console.log("received subscribe message", message.data.toString());
     const { provider, channel } = JSON.parse(message.data.toString());
     // check if we already have a lock for this channel.
     try {
