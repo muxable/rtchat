@@ -14,13 +14,17 @@ class QuickLinksBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<QuickLinksModel>(
         builder: (context, quickLinksModel, child) {
-      return Row(
-          children: quickLinksModel.sources.map((source) {
-        return IconButton(
-            icon: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-            tooltip: source.name,
-            onPressed: () => launchLink(source));
-      }).toList());
+      return Expanded(
+          child: ListView(
+        scrollDirection: Axis.horizontal,
+        reverse: true,
+        children: quickLinksModel.sources.reversed.map((source) {
+          return IconButton(
+              icon: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
+              tooltip: source.name,
+              onPressed: () => launchLink(source));
+        }).toList(),
+      ));
     });
   }
 

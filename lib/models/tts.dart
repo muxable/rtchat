@@ -30,9 +30,9 @@ class TtsMessage extends MediaItem {
       return "";
     }
     if (coalescingHeader != null) {
-      return "$coalescingHeader $message";
+      return "$coalescingHeader $message".replaceAll("_", " ");
     }
-    return message;
+    return message.replaceAll("_", " ");
   }
 
   static List _parseEmotes(Map<String, dynamic> emotes) {
@@ -52,7 +52,7 @@ class TtsMessage extends MediaItem {
 
   String get spokenNoEmotesMessage {
     var ranges = _parseEmotes(emotes);
-    var res = "$coalescingHeader ";
+    var res = coalescingHeader == null ? "" : "$coalescingHeader ";
     var index = 0;
     for (var i = 0; i < ranges.length; i++) {
       var start = ranges[i][0];
@@ -69,7 +69,7 @@ class TtsMessage extends MediaItem {
     if (res.trim() == coalescingHeader) {
       return "";
     }
-    return res;
+    return res.replaceAll("_", " ");
   }
 }
 

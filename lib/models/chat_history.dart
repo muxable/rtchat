@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/twitch/event.dart';
+import 'package:rtchat/models/twitch/message.dart';
 import 'package:rtchat/models/twitch/user.dart';
 
 class ChatHistoryModel extends ChangeNotifier {
@@ -63,7 +65,6 @@ class ChatHistoryModel extends ChangeNotifier {
 
             final model = TwitchMessageModel(
                 messageId: change.doc.id,
-                channel: data['channel'],
                 author: author,
                 message: message,
                 tags: tags,
@@ -91,7 +92,6 @@ class ChatHistoryModel extends ChangeNotifier {
               if (message is TwitchMessageModel) {
                 _events[index] = TwitchMessageModel(
                     messageId: message.messageId,
-                    channel: message.channel,
                     author: message.author,
                     message: message.message,
                     tags: message.tags,

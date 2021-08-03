@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:rtchat/foreground_service_channel.dart';
+import 'package:rtchat/models/adapters/profiles.dart';
+import 'package:rtchat/models/channels.dart';
 
 class AudioSource {
   final String? name;
@@ -40,44 +42,55 @@ class AudioSource {
 class AudioModel extends ChangeNotifier {
   final List<AudioSource> _sources = [];
   final Map<AudioSource, HeadlessInAppWebView> _views = {};
-  Timer? _speakerDisconnectTimer;
+  late final Timer _speakerDisconnectTimer;
   final _audioCache = AudioCache();
   final initialOptions = InAppWebViewGroupOptions(
       crossPlatform: InAppWebViewOptions(
           mediaPlaybackRequiresUserGesture: false, javaScriptEnabled: true));
   var _isForegroundServiceEnabled = false;
 
-  bool get isSpeakerDisconnectPreventionEnabled {
-    return _speakerDisconnectTimer != null;
-  }
+  Channel? _hostChannel;
+  StreamSubscription? _hostChannelStateSubscription;
 
-  set isSpeakerDisconnectPreventionEnabled(bool isEnabled) {
-    if (isEnabled) {
-      _startSpeakerDisconnectTimer();
-    } else {
-      _speakerDisconnectTimer?.cancel();
-      _speakerDisconnectTimer = null;
-    }
-    notifyListeners();
+  @override
+  void dispose() {
+    _hostChannelStateSubscription?.cancel();
+    _speakerDisconnectTimer.cancel();
+
+    super.dispose();
   }
 
   bool get isForegroundServiceEnabled => _isForegroundServiceEnabled;
 
   set isForegroundServiceEnabled(bool isEnabled) {
-    if (isEnabled) {
-      ForegroundServiceChannel.start();
-    } else {
-      ForegroundServiceChannel.stop();
-    }
     _isForegroundServiceEnabled = isEnabled;
+    _bindHostChannelStateSubscription();
     notifyListeners();
   }
 
-  void _startSpeakerDisconnectTimer() {
-    _speakerDisconnectTimer = Timer.periodic(
-      const Duration(minutes: 5),
-      (_) => _audioCache.play("silence.mp3"),
-    );
+  Channel? get hostChannel => _hostChannel;
+
+  set hostChannel(Channel? channel) {
+    _hostChannel = channel;
+    _bindHostChannelStateSubscription();
+  }
+
+  void _bindHostChannelStateSubscription() {
+    _hostChannelStateSubscription?.cancel();
+    if (_hostChannel == null || !_isForegroundServiceEnabled) {
+      _hostChannelStateSubscription = null;
+      ForegroundServiceChannel.stop();
+      return;
+    }
+    _hostChannelStateSubscription = ProfilesAdapter.instance
+        .getIsOnline(channelId: _hostChannel.toString())
+        .listen((isOnline) {
+      if (isOnline) {
+        ForegroundServiceChannel.start();
+      } else {
+        ForegroundServiceChannel.stop();
+      }
+    });
   }
 
   List<AudioSource> get sources => _sources;
@@ -129,14 +142,15 @@ class AudioModel extends ChangeNotifier {
   }
 
   AudioModel.fromJson(Map<String, dynamic> json) {
+    _speakerDisconnectTimer = Timer.periodic(
+      const Duration(minutes: 5),
+      (_) => _audioCache.play("silence.mp3"),
+    );
     final sources = json['sources'];
     if (sources != null) {
       for (dynamic source in sources) {
         addSource(AudioSource.fromJson(source));
       }
-    }
-    if (json['isSpeakerDisconnectPreventionEnabled'] ?? false) {
-      _startSpeakerDisconnectTimer();
     }
     if (json['isForegroundServiceEnabled'] ?? false) {
       _isForegroundServiceEnabled = json['isForegroundServiceEnabled'];
@@ -146,7 +160,6 @@ class AudioModel extends ChangeNotifier {
 
   Map<String, dynamic> toJson() => {
         "sources": _sources.map((source) => source.toJson()).toList(),
-        "isSpeakerDisconnectPreventionEnabled": _speakerDisconnectTimer != null,
         "isForegroundServiceEnabled": _isForegroundServiceEnabled,
       };
 }
