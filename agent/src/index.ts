@@ -81,7 +81,7 @@ console.log(process.env);
     try {
       if (await isSubscribed(provider, channel)) {
         console.log("channel already subscribed", provider, channel);
-        message.nack();
+        message.ack();
         return;
       }
     } catch (err) {
