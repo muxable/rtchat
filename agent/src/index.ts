@@ -80,7 +80,7 @@ console.log(process.env);
     // check if we already have a lock for this channel.
     try {
       if (await isSubscribed(provider, channel)) {
-        console.log("channel already subscribed");
+        console.log("channel already subscribed", provider, channel);
         message.nack();
         return;
       }
