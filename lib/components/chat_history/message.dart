@@ -9,6 +9,8 @@ import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/message.dart';
+import 'package:rtchat/models/twitch/event.dart';
+import 'package:rtchat/models/twitch/message.dart';
 import 'package:rtchat/models/user.dart';
 
 class ChatHistoryMessage extends StatelessWidget {
