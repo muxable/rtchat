@@ -114,7 +114,7 @@ class TwitchMessageWidget extends StatelessWidget {
       return Opacity(
         opacity: model.deleted ? 0.6 : 1.0,
         child: Consumer<ThirdPartyEmoteModel>(
-          builder: (context, emoteModel, child) {
+            builder: (context, emoteModel, child) {
           final tokens = model.tokenize(emoteModel.resolver);
           return Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
@@ -155,7 +155,7 @@ class TwitchMessageWidget extends StatelessWidget {
                   ],
                 ),
               ));
-        })
+        }),
       );
     });
   }
