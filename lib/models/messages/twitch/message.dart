@@ -1,6 +1,6 @@
 import 'package:linkify/linkify.dart';
 import 'package:rtchat/models/message.dart';
-import 'package:rtchat/models/twitch/user.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 
 abstract class TwitchMessageToken {
   const TwitchMessageToken();

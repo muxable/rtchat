@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:rtchat/models/twitch/user.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 
 final validateUrl = Uri.https('id.twitch.tv', '/oauth2/validate');
 

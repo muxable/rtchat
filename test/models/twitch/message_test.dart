@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rtchat/models/twitch/message.dart';
-import 'package:rtchat/models/twitch/user.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 
 TwitchMessageModel createMessageModel(
     String? badgesRaw, String? emotesRaw, String message) {

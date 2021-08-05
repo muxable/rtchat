@@ -6,8 +6,8 @@ import 'package:linkify/linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:rtchat/models/twitch/message.dart';
-import 'package:rtchat/models/twitch/third_party_emote.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/third_party_emote.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const colors = [

@@ -7,9 +7,9 @@ import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/tts.dart';
-import 'package:rtchat/models/twitch/event.dart';
-import 'package:rtchat/models/twitch/message.dart';
-import 'package:rtchat/models/twitch/user.dart';
+import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 
 class ChatHistoryModel extends ChangeNotifier {
   StreamSubscription<void>? _subscription;
