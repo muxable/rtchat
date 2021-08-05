@@ -123,7 +123,7 @@ class ChatHistoryMessage extends StatelessWidget {
     } else if (m is StreamStateEventModel) {
       return StreamStateEventWidget(m);
     } else if (m is TwitchFollowEventModel) {
-      return TwitchFollowEventWidget(m);
+      return kDebugMode ? TwitchFollowEventWidget(m) : Container();
     } else {
       throw AssertionError("invalid message type");
     }
