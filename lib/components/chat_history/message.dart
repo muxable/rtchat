@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
+import 'package:rtchat/components/chat_history/twitch/follow_event.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/models/channels.dart';
@@ -21,6 +22,7 @@ class ChatHistoryMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final m = message;
+    print('message is: ${m}');
     if (m is TwitchMessageModel) {
       return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         final child = Padding(
@@ -121,6 +123,8 @@ class ChatHistoryMessage extends StatelessWidget {
       return TwitchRaidEventWidget(m);
     } else if (m is StreamStateEventModel) {
       return StreamStateEventWidget(m);
+    } else if (m is TwitchFollowEventModel) {
+      return TwitchFollowEventWidget(m);
     } else {
       throw AssertionError("invalid message type");
     }

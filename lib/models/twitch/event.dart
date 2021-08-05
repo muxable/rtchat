@@ -13,3 +13,13 @@ class TwitchRaidEventModel extends MessageModel {
       required this.viewers})
       : super(messageId: messageId, pinned: pinned);
 }
+
+class TwitchFollowEventModel extends MessageModel {
+  final String followerName;
+
+  const TwitchFollowEventModel({
+    required this.followerName,
+    required String messageId,
+    required bool pinned,
+  }) : super(messageId: messageId, pinned: pinned);
+}

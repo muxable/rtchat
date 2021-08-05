@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:rtchat/components/chat_history/sliver.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/tts.dart';
@@ -125,6 +126,32 @@ class ChatHistoryModel extends ChangeNotifier {
                     fromUsername: data['username'],
                     viewers: data['viewers'],
                     pinned: false);
+                notifyListeners();
+              });
+            }
+            break;
+          case "channel.follow":
+            final index = _events.length;
+            final DateTime timestamp = data['timestamp'].toDate();
+            final expiration = timestamp.add(const Duration(seconds: 10));
+            final remaining = expiration.difference(DateTime.now());
+            final model = TwitchFollowEventModel(
+                followerName: data['event']['user_name'],
+                messageId: change.doc.id,
+                pinned: remaining > Duration.zero);
+
+            _events.add(model);
+
+            if (remaining > Duration.zero) {
+              Timer(remaining, () {
+                // go away
+                _events.removeAt(index);
+
+                // stays
+                // _events[index] = TwitchFollowEventModel(
+                //     followerName: data['event']['user_name'],
+                //     messageId: change.doc.id,
+                //     pinned: false);
                 notifyListeners();
               });
             }
