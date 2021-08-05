@@ -131,30 +131,11 @@ class ChatHistoryModel extends ChangeNotifier {
             }
             break;
           case "channel.follow":
-            final index = _events.length;
-            final DateTime timestamp = data['timestamp'].toDate();
-            final expiration = timestamp.add(const Duration(seconds: 10));
-            final remaining = expiration.difference(DateTime.now());
             final model = TwitchFollowEventModel(
                 followerName: data['event']['user_name'],
                 messageId: change.doc.id,
-                pinned: remaining > Duration.zero);
-
+                pinned: false);
             _events.add(model);
-
-            if (remaining > Duration.zero) {
-              Timer(remaining, () {
-                // go away
-                _events.removeAt(index);
-
-                // stays
-                // _events[index] = TwitchFollowEventModel(
-                //     followerName: data['event']['user_name'],
-                //     messageId: change.doc.id,
-                //     pinned: false);
-                notifyListeners();
-              });
-            }
             break;
           case "stream.online":
           case "stream.offline":

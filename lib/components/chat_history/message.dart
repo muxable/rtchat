@@ -22,7 +22,6 @@ class ChatHistoryMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final m = message;
-    print('message is: ${m}');
     if (m is TwitchMessageModel) {
       return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         final child = Padding(
