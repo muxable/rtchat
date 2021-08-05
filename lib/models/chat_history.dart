@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
-import 'package:rtchat/components/chat_history/sliver.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/tts.dart';
