@@ -1,73 +1,7 @@
 import 'package:linkify/linkify.dart';
 import 'package:rtchat/models/message.dart';
+import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/twitch/user.dart';
-
-abstract class TwitchMessageToken {
-  const TwitchMessageToken();
-}
-
-class UserMentionToken extends TwitchMessageToken {
-  final String username;
-
-  const UserMentionToken(this.username);
-
-  @override
-  bool operator ==(other) =>
-      other is UserMentionToken && username == other.username;
-
-  @override
-  int get hashCode => username.hashCode;
-
-  @override
-  String toString() => username;
-}
-
-class TextToken extends TwitchMessageToken {
-  final String text;
-
-  const TextToken(this.text);
-
-  @override
-  bool operator ==(other) => other is TextToken && text == other.text;
-
-  @override
-  int get hashCode => text.hashCode;
-
-  @override
-  String toString() => text;
-}
-
-class LinkToken extends TwitchMessageToken {
-  final String url;
-  final String text;
-
-  const LinkToken({required this.url, required this.text});
-
-  @override
-  bool operator ==(other) =>
-      other is LinkToken && other.url == url && other.text == text;
-
-  @override
-  int get hashCode => url.hashCode ^ text.hashCode;
-
-  @override
-  String toString() => "$text ($url)";
-}
-
-class EmoteToken extends TwitchMessageToken {
-  final String url;
-
-  const EmoteToken(this.url);
-
-  @override
-  bool operator ==(other) => other is EmoteToken && url == other.url;
-
-  @override
-  int get hashCode => url.hashCode;
-
-  @override
-  String toString() => url;
-}
 
 class _EmoteData {
   final int start;
@@ -84,8 +18,7 @@ class _BadgeData {
   const _BadgeData(this.key, this.version);
 }
 
-Iterable<TwitchMessageToken> tokenizeTags(
-    Iterable<TwitchMessageToken> tokens) sync* {
+Iterable<MessageToken> tokenizeTags(Iterable<MessageToken> tokens) sync* {
   for (final token in tokens) {
     if (token is TextToken) {
       final matches = RegExp(r"(^|\W)@[A-Za-z0-9_]+").allMatches(token.text);
@@ -116,8 +49,7 @@ Iterable<TwitchMessageToken> tokenizeTags(
   }
 }
 
-Iterable<TwitchMessageToken> tokenizeLinks(
-    Iterable<TwitchMessageToken> tokens) sync* {
+Iterable<MessageToken> tokenizeLinks(Iterable<MessageToken> tokens) sync* {
   for (final token in tokens) {
     if (token is TextToken) {
       final elements =
@@ -135,7 +67,7 @@ Iterable<TwitchMessageToken> tokenizeLinks(
   }
 }
 
-Iterable<TwitchMessageToken> tokenizeEmotes(Iterable<TwitchMessageToken> tokens,
+Iterable<MessageToken> tokenizeEmotes(Iterable<MessageToken> tokens,
     String? Function(String) emoteResolver) sync* {
   for (final token in tokens) {
     if (token is TextToken) {
@@ -190,8 +122,7 @@ List<_BadgeData> parseBadges(String badges) {
   }).toList();
 }
 
-Iterable<TwitchMessageToken> rootEmoteTokenizer(
-    String message, String emotes) sync* {
+Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
   if (emotes.isNotEmpty) {
     final parsed = parseEmotes(emotes);
     parsed.sort((a, b) => a.start.compareTo(b.start));
@@ -246,8 +177,8 @@ class TwitchMessageModel extends MessageModel {
       _badges ??= parseBadges(tags['badges-raw'] ?? "");
   List<_BadgeData>? _badges;
 
-  List<TwitchMessageToken> tokenize(String? Function(String) emoteResolver) {
-    Iterable<TwitchMessageToken> tokens =
+  List<MessageToken> tokenize(String? Function(String) emoteResolver) {
+    Iterable<MessageToken> tokens =
         rootEmoteTokenizer(message, tags['emotes-raw'] ?? "");
     tokens = tokenizeLinks(tokens);
     tokens = tokenizeTags(tokens);
