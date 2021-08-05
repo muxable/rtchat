@@ -74,8 +74,7 @@ Stream<DeltaEvent> _handleDocumentChange(
     case "raided":
       final DateTime timestamp = data['timestamp'].toDate();
       final expiration = timestamp.add(const Duration(seconds: 15));
-      final remaining =
-          Duration(seconds: 50000); // expiration.difference(DateTime.now());
+      final remaining = expiration.difference(DateTime.now());
 
       final model = TwitchRaidEventModel(
           messageId: change.doc.id,
