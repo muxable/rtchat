@@ -8,6 +8,7 @@ import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/third_party_emote.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rxdart/rxdart.dart';
 
 abstract class DeltaEvent {
   const DeltaEvent();
@@ -19,13 +20,94 @@ class AppendDeltaEvent extends DeltaEvent {
   const AppendDeltaEvent(this.model);
 }
 
-class UpdateDeltaEvent<T extends MessageModel> extends DeltaEvent {
+class UpdateDeltaEvent extends DeltaEvent {
   final String messageId;
-  final T Function(T) update;
+  final MessageModel Function(MessageModel) update;
 
   const UpdateDeltaEvent(this.messageId, this.update);
+}
 
-  Type type() => T;
+Stream<DeltaEvent> _handleDocumentChange(
+    Map<String, List<ThirdPartyEmote>> emotes,
+    DocumentChange<Map<String, dynamic>> change) async* {
+  final data = change.doc.data();
+  if (data == null) {
+    return;
+  }
+
+  switch (data['type']) {
+    case "message":
+      final message = data['message'];
+      final tags = data['tags'];
+
+      final author = TwitchUserModel(
+          displayName: tags['display-name'], login: tags['username']);
+
+      final model = TwitchMessageModel(
+          messageId: change.doc.id,
+          author: author,
+          message: message,
+          tags: tags,
+          thirdPartyEmotes: emotes[data['channelId']]!,
+          timestamp: data['timestamp'].toDate(),
+          deleted: false,
+          channelId: data['channelId']);
+
+      yield AppendDeltaEvent(model);
+      break;
+    case "messagedeleted":
+      yield UpdateDeltaEvent(data['messageId'], (message) {
+        if (message is! TwitchMessageModel) {
+          return message;
+        }
+        return TwitchMessageModel(
+            messageId: message.messageId,
+            author: message.author,
+            message: message.message,
+            tags: message.tags,
+            thirdPartyEmotes: [],
+            timestamp: message.timestamp,
+            deleted: true,
+            channelId: data['channelId']);
+      });
+      break;
+    case "raided":
+      final DateTime timestamp = data['timestamp'].toDate();
+      final expiration = timestamp.add(const Duration(seconds: 15));
+      final remaining =
+          Duration(seconds: 50000); // expiration.difference(DateTime.now());
+
+      final model = TwitchRaidEventModel(
+          messageId: change.doc.id,
+          profilePictureUrl: data['tags']['msg-param-profileImageURL'],
+          fromUsername: data['username'],
+          viewers: data['viewers'],
+          pinned: remaining > Duration.zero);
+      yield AppendDeltaEvent(model);
+
+      if (remaining > Duration.zero) {
+        await Future.delayed(remaining);
+        yield UpdateDeltaEvent(change.doc.id, (message) {
+          if (message is! TwitchRaidEventModel) {
+            return message;
+          }
+          return TwitchRaidEventModel(
+              messageId: change.doc.id,
+              profilePictureUrl: data['tags']['msg-param-profileImageURL'],
+              fromUsername: data['username'],
+              viewers: data['viewers'],
+              pinned: false);
+        });
+      }
+      break;
+    case "stream.online":
+    case "stream.offline":
+      final model = StreamStateEventModel(
+          messageId: change.doc.id,
+          isOnline: data['type'] == "stream.online",
+          timestamp: data['timestamp'].toDate());
+      yield AppendDeltaEvent(model);
+  }
 }
 
 Stream<DeltaEvent> getChatHistory(Set<Channel> channels) async* {
@@ -44,7 +126,7 @@ Stream<DeltaEvent> getChatHistory(Set<Channel> channels) async* {
     emotes[channel.toString()] =
         await getThirdPartyEmotes(channel.provider, channel.channelId);
   }
-  final changes = FirebaseFirestore.instance
+  yield* FirebaseFirestore.instance
       .collection("messages")
       .where("channelId",
           whereIn: channels.map((channel) => channel.toString()).toList())
@@ -52,79 +134,6 @@ Stream<DeltaEvent> getChatHistory(Set<Channel> channels) async* {
       .limitToLast(250)
       .snapshots()
       .expand((event) => event.docChanges)
-      // only process appends.
-      .where((change) => change.type == DocumentChangeType.added);
-  await for (final change in changes) {
-    final data = change.doc.data();
-    if (data == null) {
-      return;
-    }
-
-    switch (data['type']) {
-      case "message":
-        final message = data['message'];
-        final tags = data['tags'];
-
-        final author = TwitchUserModel(
-            displayName: tags['display-name'], login: tags['username']);
-
-        final model = TwitchMessageModel(
-            messageId: change.doc.id,
-            author: author,
-            message: message,
-            tags: tags,
-            thirdPartyEmotes: emotes[data['channelId']]!,
-            timestamp: data['timestamp'].toDate(),
-            deleted: false,
-            channelId: data['channelId']);
-
-        yield AppendDeltaEvent(model);
-        break;
-      case "messagedeleted":
-        yield UpdateDeltaEvent<TwitchMessageModel>(
-            data['messageId'],
-            (message) => TwitchMessageModel(
-                messageId: message.messageId,
-                author: message.author,
-                message: message.message,
-                tags: message.tags,
-                thirdPartyEmotes: [],
-                timestamp: message.timestamp,
-                deleted: true,
-                channelId: data['channelId']));
-        break;
-      case "raided":
-        final DateTime timestamp = data['timestamp'].toDate();
-        final expiration = timestamp.add(const Duration(seconds: 15));
-        final remaining = expiration.difference(DateTime.now());
-
-        final model = TwitchRaidEventModel(
-            messageId: change.doc.id,
-            profilePictureUrl: data['tags']['msg-param-profileImageURL'],
-            fromUsername: data['username'],
-            viewers: data['viewers'],
-            pinned: remaining > Duration.zero);
-        yield AppendDeltaEvent(model);
-
-        if (remaining > Duration.zero) {
-          await Future.delayed(remaining);
-          yield UpdateDeltaEvent<TwitchRaidEventModel>(
-              change.doc.id,
-              (message) => TwitchRaidEventModel(
-                  messageId: change.doc.id,
-                  profilePictureUrl: data['tags']['msg-param-profileImageURL'],
-                  fromUsername: data['username'],
-                  viewers: data['viewers'],
-                  pinned: false));
-        }
-        break;
-      case "stream.online":
-      case "stream.offline":
-        final model = StreamStateEventModel(
-            messageId: change.doc.id,
-            isOnline: data['type'] == "stream.online",
-            timestamp: data['timestamp'].toDate());
-        yield AppendDeltaEvent(model);
-    }
-  }
+      .where((change) => change.type == DocumentChangeType.added)
+      .flatMap((change) => _handleDocumentChange(emotes, change));
 }

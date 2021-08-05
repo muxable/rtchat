@@ -162,13 +162,9 @@ class App extends StatelessWidget {
           StreamSubscription<void>? subscription;
           channels.addListener(() {
             subscription?.cancel();
-            subscription = channels.chatHistory.listen((event) {
-              if (event is AppendDeltaEvent) {
-                model.addQueueItem(event.model);
-              } else if (event is UpdateDeltaEvent) {
-                model.updateQueueItem(event.messageId, event.update);
-              }
-            });
+            model.clearQueue();
+            model.enabled = false;
+            subscription = channels.chatHistory.listen(model.handleDeltaEvent);
           });
           return model;
         }),

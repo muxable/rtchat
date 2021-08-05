@@ -13,7 +13,7 @@ Future<List<ThirdPartyEmote>> getBttvGlobalEmotes(Uri uri) async {
   final response = await http.get(uri);
 
   if (response.statusCode == 200) {
-    return jsonDecode(response.body)
+    return (jsonDecode(response.body) as List<dynamic>)
         .map((emote) => ThirdPartyEmote.fromBttvJson(emote))
         .toList();
   }
@@ -26,9 +26,9 @@ Future<List<ThirdPartyEmote>> getBttvChannelEmotes(Uri uri) async {
 
   if (response.statusCode == 200) {
     return [
-      ...jsonDecode(response.body)['channelEmotes']
+      ...(jsonDecode(response.body)['channelEmotes'] as List<dynamic>)
           .map((emote) => ThirdPartyEmote.fromBttvJson(emote)),
-      ...jsonDecode(response.body)['sharedEmotes']
+      ...(jsonDecode(response.body)['sharedEmotes'] as List<dynamic>)
           .map((emote) => ThirdPartyEmote.fromBttvJson(emote)),
     ];
   }
@@ -40,7 +40,7 @@ Future<List<ThirdPartyEmote>> getFFZEmotes(Uri uri) async {
   final response = await http.get(uri);
 
   if (response.statusCode == 200) {
-    return jsonDecode(response.body)
+    return (jsonDecode(response.body) as List<dynamic>)
         .map((emote) => ThirdPartyEmote.fromFFZJson(emote))
         .toList();
   }
@@ -52,7 +52,7 @@ Future<List<ThirdPartyEmote>> get7tvEmotes(Uri uri) async {
   final response = await http.get(uri);
 
   if (response.statusCode == 200) {
-    return jsonDecode(response.body)
+    return (jsonDecode(response.body) as List<dynamic>)
         .map((emote) => ThirdPartyEmote.from7tvJson(emote))
         .toList();
   }
@@ -114,14 +114,14 @@ class ThirdPartyEmote {
     return ThirdPartyEmote(
         id: json['id'].toString(),
         code: json['code'],
-        source: json['images']['1x']);
+        source: Uri.parse(json['images']['1x']));
   }
 
   static ThirdPartyEmote from7tvJson(Map<String, dynamic> json) {
     return ThirdPartyEmote(
       id: json['id'].toString(),
       code: json['name'],
-      source: json['urls'][0][1],
+      source: Uri.parse(json['urls'][0][1]),
     );
   }
 }
