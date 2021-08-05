@@ -2,6 +2,7 @@ import 'dart:core';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
+import 'package:rtchat/models/chat_history.dart';
 
 class Channel {
   final String provider;
@@ -64,6 +65,7 @@ class ChannelsModel extends ChangeNotifier {
   List<Channel> _availableChannels = [];
 
   Set<Channel> get subscribedChannels => _subscribedChannels;
+  Stream<DeltaEvent> _chatHistory = const Stream.empty();
 
   set subscribedChannels(Set<Channel> channels) {
     _subscribedChannels = channels;
@@ -72,8 +74,11 @@ class ChannelsModel extends ChangeNotifier {
         _availableChannels.add(channel);
       }
     }
+    _chatHistory = getChatHistory(channels).asBroadcastStream();
     notifyListeners();
   }
+
+  Stream<DeltaEvent> get chatHistory => _chatHistory;
 
   List<Channel> get availableChannels => _availableChannels;
 

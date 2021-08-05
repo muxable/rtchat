@@ -1,4 +1,4 @@
-import 'package:rtchat/models/message.dart';
+import 'package:rtchat/models/messages/message.dart';
 
 class TwitchRaidEventModel extends MessageModel {
   final String profilePictureUrl;

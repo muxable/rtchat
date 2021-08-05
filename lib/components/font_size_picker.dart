@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:rtchat/models/twitch/message.dart';
-import 'package:rtchat/models/twitch/user.dart';
 
 class FontSizePickerWidget extends StatelessWidget {
   const FontSizePickerWidget({Key? key}) : super(key: key);
@@ -32,6 +32,7 @@ class FontSizePickerWidget extends StatelessWidget {
                           "emotes-raw": "25:36-40",
                           "room-id": "158394109",
                         },
+                        thirdPartyEmotes: [],
                         timestamp: DateTime.now(),
                         message: "have you followed @muxfd on twitch? Kappa",
                         deleted: false,
