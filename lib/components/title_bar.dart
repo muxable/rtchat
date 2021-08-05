@@ -7,7 +7,7 @@ import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TitleBarWidget extends StatelessWidget {
-  final ChromeSafariBrowser browser = ChromeSafariBrowser();
+  final browser = ChromeSafariBrowser();
 
   TitleBarWidget({Key? key}) : super(key: key);
 
