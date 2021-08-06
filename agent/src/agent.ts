@@ -95,7 +95,7 @@ export class Agent {
           return result;
         },
         onMessage: (channel, tags, message) =>
-          this.adapters.firebase.addMessage(channel, tags, message),
+          this.adapters.firebase.addMessage(channel, tags),
         onMessageDeleted: (channel, username, deletedMessage, tags) =>
           this.adapters.firebase.deleteMessage(channel, tags),
         onRaided: (channel, username, viewers, tags) =>
