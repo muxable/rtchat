@@ -9,7 +9,8 @@ final Map<String, Future<List<ThirdPartyEmote>>> _sevenTvChannelCache = {};
 Future<List<ThirdPartyEmote>>? _bttvGlobalCache;
 Future<List<ThirdPartyEmote>>? _sevenTvGlobalCache;
 
-Future<List<ThirdPartyEmote>> getBttvGlobalEmotes(Uri uri) async {
+Future<List<ThirdPartyEmote>> getBttvGlobalEmotes() async {
+  final uri = Uri.parse("https://api.betterttv.net/3/cached/emotes/global");
   final response = await http.get(uri);
 
   if (response.statusCode == 200) {
@@ -21,7 +22,9 @@ Future<List<ThirdPartyEmote>> getBttvGlobalEmotes(Uri uri) async {
   return [];
 }
 
-Future<List<ThirdPartyEmote>> getBttvChannelEmotes(Uri uri) async {
+Future<List<ThirdPartyEmote>> getBttvChannelEmotes(String channelId) async {
+  final uri =
+      Uri.parse("https://api.betterttv.net/3/cached/users/twitch/$channelId");
   final response = await http.get(uri);
 
   if (response.statusCode == 200) {
@@ -36,7 +39,9 @@ Future<List<ThirdPartyEmote>> getBttvChannelEmotes(Uri uri) async {
   return [];
 }
 
-Future<List<ThirdPartyEmote>> getFFZEmotes(Uri uri) async {
+Future<List<ThirdPartyEmote>> getFfzChannelEmotes(String channelId) async {
+  final uri = Uri.parse(
+      "https://api.betterttv.net/3/cached/frankerfacez/users/twitch/$channelId");
   final response = await http.get(uri);
 
   if (response.statusCode == 200) {
@@ -48,7 +53,21 @@ Future<List<ThirdPartyEmote>> getFFZEmotes(Uri uri) async {
   return [];
 }
 
-Future<List<ThirdPartyEmote>> get7tvEmotes(Uri uri) async {
+Future<List<ThirdPartyEmote>> get7tvGlobalEmotes() async {
+  final uri = Uri.parse("https://api.7tv.app/v2/emotes/global");
+  final response = await http.get(uri);
+
+  if (response.statusCode == 200) {
+    return (jsonDecode(response.body) as List<dynamic>)
+        .map((emote) => ThirdPartyEmote.from7tvJson(emote))
+        .toList();
+  }
+
+  return [];
+}
+
+Future<List<ThirdPartyEmote>> get7tvChannelEmotes(String channelId) async {
+  final uri = Uri.parse("https://api.7tv.app/v2/users/$channelId/emotes");
   final response = await http.get(uri);
 
   if (response.statusCode == 200) {
@@ -65,28 +84,11 @@ Future<List<ThirdPartyEmote>> getThirdPartyEmotes(
   if (provider != "twitch") {
     return [];
   }
-  if (_bttvGlobalCache == null) {
-    final uri = Uri.parse("https://api.betterttv.net/3/cached/emotes/global");
-    _bttvGlobalCache = getBttvGlobalEmotes(uri);
-  }
-  if (_sevenTvGlobalCache == null) {
-    final uri = Uri.parse("https://api.7tv.app/v2/emotes/global");
-    _sevenTvGlobalCache = get7tvEmotes(uri);
-  }
-  if (!_bttvChannelCache.containsKey(channelId)) {
-    final uri =
-        Uri.parse("https://api.betterttv.net/3/cached/users/twitch/$channelId");
-    _bttvChannelCache[channelId] = getBttvChannelEmotes(uri);
-  }
-  if (!_ffzCache.containsKey(channelId)) {
-    final uri = Uri.parse(
-        "https://api.betterttv.net/3/cached/frankerfacez/users/twitch/$channelId");
-    _ffzCache[channelId] = getFFZEmotes(uri);
-  }
-  if (!_sevenTvChannelCache.containsKey(channelId)) {
-    final uri = Uri.parse("https://api.7tv.app/v2/users/$channelId/emotes");
-    _sevenTvChannelCache[channelId] = get7tvEmotes(uri);
-  }
+  _bttvGlobalCache ??= getBttvGlobalEmotes();
+  _sevenTvGlobalCache ??= get7tvGlobalEmotes();
+  _bttvChannelCache[channelId] ??= getBttvChannelEmotes(channelId);
+  _ffzCache[channelId] ??= getFfzChannelEmotes(channelId);
+  _sevenTvChannelCache[channelId] ??= get7tvChannelEmotes(channelId);
   return [
     ...(await _sevenTvChannelCache[channelId]!),
     ...(await _ffzCache[channelId]!),
