@@ -83,6 +83,11 @@ export class FirebaseAdapter {
   async addMessage(channel: string, tags: tmi.ChatUserstate) {
     const messageId = tags["target-msg-id"];
 
+    if (!messageId) {
+      console.error("received empty message id", tags);
+      return;
+    }
+
     const original = await this.getMessage(`twitch:${messageId}`).get();
 
     if (!original.exists) {
