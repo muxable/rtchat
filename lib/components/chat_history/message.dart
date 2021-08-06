@@ -6,11 +6,17 @@ import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
+import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
+import 'package:rtchat/components/chat_history/twitch/subscription_gift_event.dart';
+import 'package:rtchat/components/chat_history/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/twitch/event.dart';
 import 'package:rtchat/models/twitch/message.dart';
+import 'package:rtchat/models/twitch/subscription_event.dart';
+import 'package:rtchat/models/twitch/subscription_gift_event.dart';
+import 'package:rtchat/models/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/user.dart';
 
 class ChatHistoryMessage extends StatelessWidget {
@@ -119,6 +125,12 @@ class ChatHistoryMessage extends StatelessWidget {
       });
     } else if (m is TwitchRaidEventModel) {
       return TwitchRaidEventWidget(m);
+    } else if (m is TwitchSubscriptionEventModel) {
+      return kDebugMode ? TwitchSubscriptionEventWidget(m) : Container();
+    } else if (m is TwitchSubscriptionGiftEventModel) {
+      return kDebugMode ? TwitchSubscriptionGiftEventWidget(m) : Container();
+    } else if (m is TwitchSubscriptionMessageEventModel) {
+      return kDebugMode ? TwitchSubscriptionMessageEventWidget(m) : Container();
     } else if (m is StreamStateEventModel) {
       return StreamStateEventWidget(m);
     } else {

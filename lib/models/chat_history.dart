@@ -9,6 +9,9 @@ import 'package:rtchat/models/message.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/twitch/event.dart';
 import 'package:rtchat/models/twitch/message.dart';
+import 'package:rtchat/models/twitch/subscription_event.dart';
+import 'package:rtchat/models/twitch/subscription_gift_event.dart';
+import 'package:rtchat/models/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/twitch/user.dart';
 
 class ChatHistoryModel extends ChangeNotifier {
@@ -128,6 +131,98 @@ class ChatHistoryModel extends ChangeNotifier {
                 notifyListeners();
               });
             }
+            break;
+          case "channel.subscribe":
+            final index = _events.length;
+            final DateTime timestamp = data['timestamp'].toDate();
+            final expiration = timestamp.add(const Duration(seconds: 15));
+            final remaining = expiration.difference(DateTime.now());
+
+            final model = TwitchSubscriptionEventModel(
+                pinned: remaining > Duration.zero,
+                messageId: change.doc.id,
+                subscriberUserName: data['event']['user_name'],
+                isGift: data['event']['is_gift'],
+                tier: data['event']['tier']);
+
+            _events.add(model);
+
+            if (remaining > Duration.zero) {
+              Timer(remaining, () {
+                _events[index] = TwitchSubscriptionEventModel(
+                    pinned: false,
+                    messageId: change.doc.id,
+                    subscriberUserName: data['event']['user_name'],
+                    isGift: data['event']['is_gift'],
+                    tier: data['event']['tier']);
+                notifyListeners();
+              });
+            }
+
+            break;
+          case "channel.subscription.gift":
+            final index = _events.length;
+            final DateTime timestamp = data['timestamp'].toDate();
+            final expiration = timestamp.add(const Duration(seconds: 15));
+            final remaining = expiration.difference(DateTime.now());
+
+            final gifterName = data['event']['is_anonymous']
+                ? "Anonymous Gifter"
+                : data['event']['user_name'];
+
+            final model = TwitchSubscriptionGiftEventModel(
+                pinned: remaining > Duration.zero,
+                messageId: change.doc.id,
+                gifterUserName: gifterName,
+                tier: data['event']['tier'],
+                total: data['event']['total']);
+
+            _events.add(model);
+
+            if (remaining > Duration.zero) {
+              Timer(remaining, () {
+                _events[index] = TwitchSubscriptionGiftEventModel(
+                    pinned: false,
+                    messageId: change.doc.id,
+                    gifterUserName: gifterName,
+                    tier: data['event']['tier'],
+                    total: data['event']['total']);
+                notifyListeners();
+              });
+            }
+
+            break;
+          case "channel.subscription.message":
+            final index = _events.length;
+            final DateTime timestamp = data['timestamp'].toDate();
+            final expiration = timestamp.add(const Duration(seconds: 15));
+            final remaining = expiration.difference(DateTime.now());
+
+            final model = TwitchSubscriptionMessageEventModel(
+                pinned: remaining > Duration.zero,
+                messageId: change.doc.id,
+                subscriberUserName: data['event']['user_name'],
+                tier: data['event']['tier'],
+                streakMonths: data['event']['streak_months'],
+                cumulativeMonths: data['event']['cumulative_months'],
+                durationMonths: data['event']['duration_months']);
+
+            _events.add(model);
+
+            if (remaining > Duration.zero) {
+              Timer(remaining, () {
+                _events[index] = TwitchSubscriptionMessageEventModel(
+                    pinned: false,
+                    messageId: change.doc.id,
+                    subscriberUserName: data['event']['user_name'],
+                    tier: data['event']['tier'],
+                    streakMonths: data['event']['streak_months'],
+                    cumulativeMonths: data['event']['cumulative_months'],
+                    durationMonths: data['event']['duration_months']);
+                notifyListeners();
+              });
+            }
+
             break;
           case "stream.online":
           case "stream.offline":
