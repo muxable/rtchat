@@ -77,6 +77,16 @@ class FontSizePickerWidget extends StatelessWidget {
               Navigator.pushNamed(context, "/settings/badges");
             },
           ),
+          SwitchListTile.adaptive(
+            title: const Text('Show deleted messages'),
+            subtitle: model.isDeletedMessagesVisible
+                ? const Text("Deleted messages will be greyed out")
+                : const Text("Deleted messages will be removed"),
+            value: model.isDeletedMessagesVisible,
+            onChanged: (value) {
+              model.isDeletedMessagesVisible = value;
+            },
+          ),
         ],
       );
     });
