@@ -56,12 +56,8 @@ export async function buildClient() {
   console.log("authenticating using token", token);
 
   const client = new tmi.Client({
-    connection: { reconnect: true },
+    connection: { secure: true, reconnect: true },
     channels: [],
-    identity: {
-      username: "realtimechat",
-      password: `oauth:${token}`,
-    },
   });
 
   client.on("message", async (channel, tags, message) => {
