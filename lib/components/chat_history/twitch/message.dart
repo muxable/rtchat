@@ -5,6 +5,7 @@ import 'package:flutter_image/flutter_image.dart';
 import 'package:linkify/linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
+import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/twitch/message.dart';
 import 'package:rtchat/models/twitch/third_party_emote.dart';
