@@ -129,6 +129,13 @@ class ChatHistoryModel extends ChangeNotifier {
               });
             }
             break;
+          case "channel.follow":
+            final model = TwitchFollowEventModel(
+                followerName: data['event']['user_name'],
+                messageId: change.doc.id,
+                pinned: false);
+            _events.add(model);
+            break;
           case "stream.online":
           case "stream.offline":
             _events.add(StreamStateEventModel(
