@@ -25,6 +25,7 @@ Color lighten(Color color, [double amount = .1]) {
 class StyleModel extends ChangeNotifier {
   double _fontSize = 20;
   double _lightnessBoost = 0.179;
+  bool _isDeletedMessagesVisible = true;
 
   double get fontSize {
     return _fontSize;
@@ -51,6 +52,13 @@ class StyleModel extends ChangeNotifier {
     }
   }
 
+  set isDeletedMessagesVisible(bool isDeletedMessagesVisible) {
+    _isDeletedMessagesVisible = isDeletedMessagesVisible;
+    notifyListeners();
+  }
+
+  bool get isDeletedMessagesVisible => _isDeletedMessagesVisible;
+
   StyleModel.fromJson(Map<String, dynamic> json) {
     if (json['fontSize'] != null) {
       _fontSize = json['fontSize'];
@@ -58,10 +66,14 @@ class StyleModel extends ChangeNotifier {
     if (json['lightnessBoost'] != null) {
       _lightnessBoost = json['lightnessBoost'];
     }
+    if (json['isDeletedMessagesVisible'] != null) {
+      _isDeletedMessagesVisible = json['isDeletedMessagesVisible'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
         "lightnessBoost": _lightnessBoost,
         "fontSize": _fontSize,
+        "isDeletedMessagesVisible": _isDeletedMessagesVisible,
       };
 }

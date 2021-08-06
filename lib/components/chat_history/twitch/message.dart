@@ -65,6 +65,9 @@ class TwitchMessageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleModel>(builder: (context, styleModel, child) {
+      if (!styleModel.isDeletedMessagesVisible && model.deleted) {
+        return Container();
+      }
       var authorStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
           fontSize: styleModel.fontSize,
           fontWeight: FontWeight.w500,
@@ -106,42 +109,46 @@ class TwitchMessageWidget extends StatelessWidget {
         children.add(TextSpan(text: ": ", style: messageStyle));
       }
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: RichText(
-          text: TextSpan(
-            children: [
-              ...children,
-              ...model.tokenized.map((token) {
-                if (token is TextToken) {
-                  return TextSpan(text: token.text, style: messageStyle);
-                } else if (token is EmoteToken) {
-                  return WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: Image(
-                          image: NetworkImageWithRetry(token.url.toString()),
-                          height: styleModel.fontSize));
-                } else if (token is LinkToken) {
-                  return WidgetSpan(
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: Text.rich(
-                        TextSpan(
-                          text: token.text,
-                          style: linkStyle,
-                          recognizer: (TapGestureRecognizer()
-                            ..onTap = () => launch(token.url.toString())),
+      return Opacity(
+        opacity: model.deleted ? 0.6 : 1.0,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: RichText(
+            text: TextSpan(
+              children: [
+                ...children,
+                ...model.tokenized.map((token) {
+                  if (token is TextToken) {
+                    return TextSpan(text: token.text, style: messageStyle);
+                  } else if (token is EmoteToken) {
+                    return WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: Image(
+                            image: NetworkImageWithRetry(token.url.toString()),
+                            height: styleModel.fontSize));
+                  } else if (token is LinkToken) {
+                    return WidgetSpan(
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Text.rich(
+                          TextSpan(
+                            text: token.text,
+                            style: linkStyle,
+                            recognizer: (TapGestureRecognizer()
+                              ..onTap = () => launch(token.url.toString())),
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                } else if (token is UserMentionToken) {
-                  return TextSpan(text: "@${token.username}", style: tagStyle);
-                } else {
-                  throw Exception("invalid token");
-                }
-              }).toList(),
-            ],
+                    );
+                  } else if (token is UserMentionToken) {
+                    return TextSpan(
+                        text: "@${token.username}", style: tagStyle);
+                  } else {
+                    throw Exception("invalid token");
+                  }
+                }).toList(),
+              ],
+            ),
           ),
         ),
       );
