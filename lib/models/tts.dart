@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/models/chat_history.dart';
-import 'package:rtchat/models/messages/tts.dart';
+import 'package:rtchat/models/messages/tts_audio_handler.dart';
 
 class TtsModel extends ChangeNotifier {
   TtsAudioHandler ttsHandler;
