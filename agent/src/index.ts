@@ -25,6 +25,7 @@ const agent = new Agent(AGENT_ID, {
 });
 
 process.on("SIGTERM", async () => {
+  console.log("RECEIVED SIGTERM");
   await agent.disconnect();
   process.exit(0);
 });
