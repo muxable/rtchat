@@ -222,7 +222,7 @@ class ChatHistoryModel extends ChangeNotifier {
                 notifyListeners();
               });
             }
-            
+
             break;
           case "channel.follow":
             final model = TwitchFollowEventModel(
