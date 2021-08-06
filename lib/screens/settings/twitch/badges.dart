@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_image/flutter_image.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/models/twitch/badge.dart';
+import 'package:rtchat/models/messages/twitch/badge.dart';
 
 class TwitchBadgesScreen extends StatelessWidget {
   const TwitchBadgesScreen({Key? key}) : super(key: key);
