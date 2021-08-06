@@ -81,7 +81,6 @@ export class FirebaseAdapter {
   }
 
   async addMessage(channel: string, tags: tmi.ChatUserstate, message: string) {
-    console.log("writing message", message);
     await this.getMessage(`twitch:${tags.id}`).set({
       channel,
       channelId: `twitch:${tags["room-id"]}`,

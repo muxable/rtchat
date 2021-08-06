@@ -45,8 +45,6 @@ export class Agent {
       const [subscription] = await leaveSubscription;
       await subscription.delete();
     };
-
-    this.subscribe("twitch", "automux");
   }
 
   async onSubscribe(message: Message) {
