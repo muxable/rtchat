@@ -1,45 +1,52 @@
 import { Message, PubSub, Topic } from "@google-cloud/pubsub";
-import * as admin from "firebase-admin";
-import * as serviceAccount from "../service_account.json";
 import { FirebaseAdapter } from "./adapters/firebase";
 import { ChatAdapter } from "./adapters/chat";
 
-const PROJECT_ID = serviceAccount.project_id;
-
-admin.initializeApp({
-  databaseURL: `https://${PROJECT_ID}-default-rtdb.firebaseio.com`,
-});
+type Adapters = {
+  pubsub: { client: PubSub; projectId: string };
+  chat: ChatAdapter;
+  firebase: FirebaseAdapter;
+};
 
 export class Agent {
-  private chat = new ChatAdapter();
-  private firebase = new FirebaseAdapter(admin.database(), admin.firestore());
-
   private cleanup: () => Promise<void>;
   private joinTopic: Topic;
+  private locks = new Set<string>();
 
-  constructor(private agentId: string) {
-    const prefix = `projects/${PROJECT_ID}/`;
-    this.joinTopic = new PubSub().topic(`${prefix}topics/subscribe`);
+  constructor(private agentId: string, private adapters: Adapters) {
+    const prefix = `projects/${adapters.pubsub.projectId}/`;
+    this.joinTopic = adapters.pubsub.client.topic(`${prefix}topics/subscribe`);
+
+    console.log("binding join listener", this.joinTopic.name);
 
     const joinSubscription = this.joinTopic.subscription(
       `${prefix}subscriptions/subscribe-sub`
     );
 
-    joinSubscription.on("message", this.onSubscribe);
+    joinSubscription.on("message", (message) => this.onSubscribe(message));
 
-    const leaveTopic = new PubSub().topic(`${prefix}topics/unsubscribe`);
+    const leaveTopic = adapters.pubsub.client.topic(
+      `${prefix}topics/unsubscribe`
+    );
 
     const leaveSubscriptionId = `${prefix}subscriptions/unsubscribe-${agentId}`;
+    console.log("binding leave listener", leaveSubscriptionId);
 
-    leaveTopic
-      .createSubscription(leaveSubscriptionId)
-      .then(([subscription]) => subscription.on("message", this.onUnsubscribe));
+    const leaveSubscription =
+      leaveTopic.createSubscription(leaveSubscriptionId);
+    leaveSubscription.then(([subscription]) => {
+      subscription.on("message", (message) => this.onUnsubscribe(message));
+    });
 
     this.cleanup = async () => {
-      joinSubscription.off("message", this.onSubscribe);
+      console.log("cleaning up");
 
-      await leaveTopic.subscription(leaveSubscriptionId).delete();
+      joinSubscription.close();
+      const [subscription] = await leaveSubscription;
+      await subscription.delete();
     };
+
+    this.subscribe("twitch", "automux");
   }
 
   async onSubscribe(message: Message) {
@@ -48,25 +55,53 @@ export class Agent {
 
     const { provider, channel } = JSON.parse(message.data.toString());
 
-    this.chat.addClient(
-      { provider, channel },
+    await this.subscribe(provider, channel);
+  }
+
+  async subscribe(provider: string, channel: string) {
+    const { token, username } = await this.adapters.firebase.getCredentials(
+      provider
+    );
+
+    this.adapters.chat.addClient(
+      { token, username, provider, channel },
       {
-        lock: () => this.firebase.lock(provider, channel, this.agentId),
-        unlock: async (resubscribe: boolean) => {
-          const result = await this.firebase.unlock(
+        lock: async () => {
+          const result = await this.adapters.firebase.lock(
             provider,
             channel,
             this.agentId
           );
-          if (resubscribe) {
+          if (result) {
+            this.locks.add(`${provider}:${channel}`);
+          } else {
+            console.log("lock already taken");
+          }
+          return result;
+        },
+        unlock: async (reconnect) => {
+          if (!this.locks.has(`${provider}:${channel}`)) {
+            console.error("lock not taken, ignoring unlock request");
+            return true;
+          }
+          const result = await this.adapters.firebase.unlock(
+            provider,
+            channel,
+            this.agentId
+          );
+          this.locks.delete(`${provider}:${channel}`);
+          if (reconnect && result) {
             // try to resubscribe.
             await this.joinTopic.publishJSON({ provider, channel });
           }
           return result;
         },
-        onMessage: this.firebase.addMessage,
-        onMessageDeleted: this.firebase.deleteMessage,
-        onRaided: this.firebase.addRaid,
+        onMessage: (channel, tags, message) =>
+          this.adapters.firebase.addMessage(channel, tags, message),
+        onMessageDeleted: (channel, username, deletedMessage, tags) =>
+          this.adapters.firebase.deleteMessage(channel, tags),
+        onRaided: (channel, username, viewers, tags) =>
+          this.adapters.firebase.addRaid(channel, username, viewers, tags),
       }
     );
   }
@@ -77,12 +112,16 @@ export class Agent {
 
     const { provider, channel } = JSON.parse(message.data.toString());
 
-    this.chat.removeClient({ provider, channel });
+    await this.unsubscribe(provider, channel);
+  }
+
+  async unsubscribe(provider: string, channel: string) {
+    await this.adapters.chat.removeClient({ provider, channel });
   }
 
   async disconnect() {
     await this.cleanup();
 
-    this.chat.close();
+    await this.adapters.chat.close();
   }
 }
