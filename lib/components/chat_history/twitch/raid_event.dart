@@ -4,7 +4,7 @@ import 'package:flutter_image/flutter_image.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:rtchat/models/twitch/event.dart';
+import 'package:rtchat/models/messages/twitch/event.dart';
 
 class TwitchRaidEventWidget extends StatelessWidget {
   final TwitchRaidEventModel model;
