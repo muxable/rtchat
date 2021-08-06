@@ -6,7 +6,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/message.dart';
-import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/messages/tts_audio_handler.dart';
 import 'package:rtchat/models/twitch/event.dart';
 import 'package:rtchat/models/twitch/message.dart';
 import 'package:rtchat/models/twitch/user.dart';
