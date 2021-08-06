@@ -80,7 +80,18 @@ export class FirebaseAdapter {
     };
   }
 
-  async addMessage(channel: string, tags: tmi.ChatUserstate) {
+  async addMessage(channel: string, tags: tmi.ChatUserstate, message: string) {
+    await this.getMessage(`twitch:${tags.id}`).set({
+      channel,
+      channelId: `twitch:${tags["room-id"]}`,
+      type: "message",
+      timestamp: parseTimestamp(tags["tmi-sent-ts"]),
+      tags,
+      message,
+    });
+  }
+
+  async deleteMessage(channel: string, tags: any) {
     const messageId = tags["target-msg-id"];
 
     if (!messageId) {
@@ -101,17 +112,6 @@ export class FirebaseAdapter {
       timestamp: parseTimestamp(tags["tmi-sent-ts"]),
       tags,
       messageId,
-    });
-  }
-
-  async deleteMessage(channel: string, tags: any) {
-    await this.getMessage(`twitch:${tags.id}`).set({
-      channel,
-      channelId: `twitch:${tags["room-id"]}`,
-      type: "messagedeleted",
-      timestamp: parseTimestamp(tags["tmi-sent-ts"]),
-      tags,
-      messageId: tags["target-msg-id"],
     });
   }
 
