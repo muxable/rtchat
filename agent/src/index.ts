@@ -1,5 +1,4 @@
 import { Message, PubSub } from "@google-cloud/pubsub";
-import Bottleneck from "bottleneck";
 import * as admin from "firebase-admin";
 import { v4 as uuidv4 } from "uuid";
 import * as serviceAccount from "../service_account.json";
@@ -20,26 +19,17 @@ console.log(process.env);
 (async function () {
   const CLIENTS = [await buildClient()];
 
-  const JOIN_BOTTLENECK = new Bottleneck({
-    maxConcurrent: 20,
-    minTime: 10 * 1000,
-  });
-
   async function subscribe(provider: string, channel: string) {
     switch (provider) {
       case "twitch":
-        if (JOIN_BOTTLENECK.check()) {
-          try {
-            await JOIN_BOTTLENECK.schedule(async () => {
-              for (const client of CLIENTS) {
-                await client.join(channel);
-              }
-            });
-          } catch (err) {
-            console.error(err);
-            return false;
+        try {
+          for (const client of CLIENTS) {
+            await client.join(channel);
           }
           return true;
+        } catch (err) {
+          console.error(err);
+          return false;
         }
     }
     return false; // not handled by this agent.
