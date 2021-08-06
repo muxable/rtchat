@@ -32,10 +32,7 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 4, 16, 4),
           child: Row(children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(styleModel.fontSize),
-              child: Icon(Icons.star, size: styleModel.fontSize * 1.5),
-            ),
+            Icon(Icons.star, size: styleModel.fontSize * 1.5),
             const SizedBox(width: 12),
             Expanded(
               child: RichText(
