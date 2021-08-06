@@ -63,7 +63,7 @@ export class FirebaseAdapter {
     }
     const client = new AuthorizationCode(TWITCH_OAUTH_CONFIG);
     let accessToken = client.createToken(JSON.parse(encoded));
-    while (accessToken.expired(300)) {
+    while (accessToken.expired(3600)) {
       try {
         accessToken = await accessToken.refresh();
       } catch (err) {
