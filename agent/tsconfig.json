@@ -3,6 +3,7 @@
     "target": "es2019",
     "module": "commonjs",
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node"],
+    "strict": true
   }
 }
