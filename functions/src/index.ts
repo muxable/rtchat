@@ -5,7 +5,7 @@ import { EmoteObj } from "tmi.js";
 import * as serviceAccount from "../service_account.json";
 import { app as authApp } from "./auth";
 import { eventsub } from "./eventsub";
-import { getAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
 import { search } from "./search";
@@ -230,7 +230,10 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const token = await getAccessToken(context.auth.uid, "twitch");
+      const token = await getAccessToken(context.auth.uid, provider);
+      if (!token) {
+        throw new functions.https.HttpsError("internal", "auth error");
+      }
       const headers = {
         "Client-Id": TWITCH_CLIENT_ID,
         Authorization: `Bearer ${token}`,
@@ -263,6 +266,41 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
+export const getProfilePicture = functions.https.onRequest(async (req, res) => {
+  const provider = req.query?.provider as string | null;
+  const channelId = req.query?.channelId as string | null;
+  if (!provider || !channelId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channelId"
+    );
+  }
+
+  switch (provider) {
+    case "twitch":
+      const token = await getAppAccessToken(provider);
+      if (!token) {
+        throw new functions.https.HttpsError("internal", "auth error");
+      }
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Client-Id": TWITCH_CLIENT_ID,
+      };
+      const response = await fetch(
+        `https://api.twitch.tv/helix/users?id=${channelId}`,
+        { headers: headers }
+      );
+      const json = await response.json();
+      if (json["data"].length === 0) {
+        throw new functions.https.HttpsError("not-found", "image not found");
+      }
+      const image = await fetch(json["data"][0]["profile_image_url"]);
+      res.setHeader("Content-Type", "image/png");
+      res.status(200).send(await image.buffer());
+  }
+  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
+});
+
 export const getUserEmotes = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("permission-denied", "missing auth");
@@ -282,13 +320,17 @@ export const getUserEmotes = functions.https.onCall(async (data, context) => {
       await client.connect();
 
       try {
-        const emoteInfo = await new Promise<EmoteObj>((resolve) => client.on("emotesets", (set, emotes) => resolve(emotes)));
+        const emoteInfo = await new Promise<EmoteObj>((resolve) =>
+          client.on("emotesets", (set, emotes) => resolve(emotes))
+        );
         return { emotes: Object.values(emoteInfo).flat() };
       } catch (error) {
         console.error(error);
-        throw new functions.https.HttpsError("internal", "error retrieving emotes");
-      }
-      finally {
+        throw new functions.https.HttpsError(
+          "internal",
+          "error retrieving emotes"
+        );
+      } finally {
         await client.disconnect();
       }
   }
