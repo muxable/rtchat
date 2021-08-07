@@ -15,9 +15,9 @@ import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/twitch/subscription_event.dart';
-import 'package:rtchat/models/twitch/subscription_gift_event.dart';
-import 'package:rtchat/models/twitch/subscription_message_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/user.dart';
 
 class ChatHistoryMessage extends StatelessWidget {
