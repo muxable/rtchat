@@ -52,7 +52,9 @@ class TitleBarWidget extends StatelessWidget {
             ));
           }),
           // settings button
-          const SettingsButtonWidget()
+          IconTheme(
+              data: Theme.of(context).primaryIconTheme,
+              child: const SettingsButtonWidget()),
         ]));
   }
 }
