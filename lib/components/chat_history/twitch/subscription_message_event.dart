@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_image/flutter_image.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:rtchat/models/twitch/subscription_message_event.dart';
 
-class TwitchRaidEventWidget extends StatelessWidget {
-  final TwitchRaidEventModel model;
+class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
+  final TwitchSubscriptionMessageEventModel model;
 
-  final NumberFormat _formatter = NumberFormat.decimalPattern();
-
-  TwitchRaidEventWidget(this.model, {Key? key}) : super(key: key);
+  const TwitchSubscriptionMessageEventWidget(this.model, {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,24 +33,25 @@ class TwitchRaidEventWidget extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 4, 16, 4),
           child: Row(children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(styleModel.fontSize),
-              child: Image(
-                  image: NetworkImageWithRetry(model.profilePictureUrl),
-                  height: styleModel.fontSize * 1.5),
-            ),
+            Icon(Icons.star, size: styleModel.fontSize * 1.5),
             const SizedBox(width: 12),
             Expanded(
               child: RichText(
                 text: TextSpan(
                   children: [
-                    TextSpan(text: model.fromUsername, style: boldStyle),
+                    TextSpan(text: model.subscriberUserName, style: boldStyle),
                     TextSpan(
-                        text: " is raiding with a party of ", style: baseStyle),
+                        text:
+                            " subscribed at Tier ${model.tier.replaceAll("000", "")}. They've subscribed for ",
+                        style: baseStyle),
                     TextSpan(
-                        text: _formatter.format(model.viewers),
+                        text: "${model.durationMonths} months",
                         style: boldStyle),
-                    TextSpan(text: ".", style: baseStyle),
+                    TextSpan(
+                        text: model.streakMonths > 1
+                            ? ", currently on a ${model.streakMonths} month streak!"
+                            : "!",
+                        style: baseStyle),
                   ],
                 ),
               ),

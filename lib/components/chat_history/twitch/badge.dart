@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/models/twitch/badge.dart';
+import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:flutter_image/flutter_image.dart';
 
 class TwitchBadgeWidget extends StatelessWidget {

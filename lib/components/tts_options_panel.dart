@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/models/messages/tts_audio_handler.dart';
 import 'package:rtchat/models/tts.dart';
-import 'package:rtchat/models/twitch/user.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 
 class TtsOptionsWidget extends StatelessWidget {
   const TtsOptionsWidget({Key? key}) : super(key: key);
