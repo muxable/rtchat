@@ -44,13 +44,16 @@ app.get("/auth/twitch/redirect", (req, res) => {
     scope: [
       "channel_editor",
       "channel_commercial",
-      "user:read:email",
+      "bits:read",
       "chat:read",
       "chat:edit",
       "channel:moderate",
       "channel:manage:broadcast",
       "channel:manage:polls",
       "channel:manage:predictions",
+      "channel:read:subscriptions",
+      "moderation:read",
+      "user:read:email",
     ],
     state: state,
   });

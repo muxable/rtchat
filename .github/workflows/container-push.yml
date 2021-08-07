@@ -19,6 +19,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - run: npm ci
+        working-directory: agent
+      - run: npm run build --if-present
+        working-directory: agent
+      - run: npm test
+        working-directory: agent
       - uses: google-github-actions/setup-gcloud@master
         with:
           version: "331.0.0"
@@ -37,6 +44,17 @@ jobs:
       - run: echo $FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON > agent/service_account.json
         env:
           FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON }}
+
+      - run: |
+          echo "GCP_PROJ_ID=rtchat-47692" >> agent/.env
+          echo "GOOGLE_APPLICATION_CREDENTIALS=service_account.json" >> agent/.env
+          echo "TWITCH_CLIENT_ID=$TWITCH_CLIENT_ID" >> agent/.env
+          echo "TWITCH_CLIENT_SECRET=$TWITCH_CLIENT_SECRET" >> agent/.env
+          echo "TWITCH_BOT_USER_ID=JSdHKOEgwcZijVsuXXdftmizt6E3" >> agent/.env
+          cat agent/.env
+        env:
+          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+          TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
 
       # Build the Docker image
       - name: Build

@@ -1,29 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/models/user.dart';
+import 'package:rtchat/components/settings_button.dart';
+import 'package:rtchat/models/quick_links.dart';
+import 'package:rtchat/screens/settings/quick_links.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TitleBarWidget extends StatelessWidget {
+  final browser = ChromeSafariBrowser();
+
+  TitleBarWidget({Key? key}) : super(key: key);
+
+  void launchLink(QuickLinkSource source) async {
+    final isWebUrl =
+        source.url.scheme == 'http' || source.url.scheme == 'https';
+    if (isWebUrl) {
+      await browser.open(url: source.url);
+    } else {
+      await launch(source.url.toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<UserModel>(builder: (context, userModel, child) {
-      if (userModel.channels.isEmpty) {
-        return Text("RealtimeChat");
-      }
-      // TODO: Implement multi-channel rendering.
-      final channel = userModel.channels.first;
-      return Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(right: 8),
-              child: Image(
-                  height: 24,
-                  image:
-                      AssetImage('assets/providers/${channel.provider}.png')),
-            ),
-            Text("/${channel.displayName}", overflow: TextOverflow.fade),
-          ]);
-    });
+    final row = Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      // tabs
+      const SizedBox(
+        width: 168,
+        child: TabBar(
+          tabs: [
+            Tab(icon: Icon(Icons.calendar_view_day)),
+            Tab(icon: Icon(Icons.preview)),
+          ],
+        ),
+      ),
+      // quick links
+      Consumer<QuickLinksModel>(builder: (context, quickLinksModel, child) {
+        return Expanded(
+            child: ListView(
+          scrollDirection: Axis.horizontal,
+          reverse: true,
+          children: quickLinksModel.sources.reversed.map((source) {
+            return IconButton(
+                icon: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
+                tooltip: source.name,
+                onPressed: () => launchLink(source));
+          }).toList(),
+        ));
+      }),
+      // settings button
+      const SettingsButtonWidget(),
+    ]);
+    return IconTheme(
+        data: Theme.of(context).primaryIconTheme,
+        child: Container(
+            height: 56, color: Theme.of(context).primaryColor, child: row));
   }
 }

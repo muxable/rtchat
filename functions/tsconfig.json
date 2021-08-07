@@ -1,12 +1,16 @@
 {
   "compilerOptions": {
+    "resolveJsonModule": true,
     "module": "commonjs",
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "outDir": "lib",
     "sourceMap": true,
     "strict": true,
-    "target": "es2017"
+    "target": "es2017",
+    "lib": [
+      "es2019"
+    ]
   },
   "compileOnSave": true,
   "include": [
