@@ -1,4 +1,4 @@
-import 'package:rtchat/models/message.dart';
+import 'package:rtchat/models/messages/message.dart';
 
 class TwitchSubscriptionEventModel extends MessageModel {
   final String subscriberUserName;

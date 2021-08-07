@@ -6,9 +6,8 @@ import 'package:linkify/linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/models/messages/tokens.dart';
-import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/messages/twitch/third_party_emote.dart';
+import 'package:rtchat/models/style.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const colors = [
@@ -104,59 +103,54 @@ class TwitchMessageWidget extends StatelessWidget {
       children.add(TextSpan(style: authorStyle, text: model.author.display));
 
       // add demarcator.
-      switch (model.tags['message-type']) {
-        case "action":
-          children.add(TextSpan(text: " ", style: messageStyle));
-          break;
-        case "chat":
-          children.add(TextSpan(text: ": ", style: messageStyle));
-          break;
+      if (model.isAction) {
+        children.add(TextSpan(text: " ", style: messageStyle));
+      } else {
+        children.add(TextSpan(text: ": ", style: messageStyle));
       }
+
       return Opacity(
         opacity: model.deleted ? 0.6 : 1.0,
-        child: Consumer<ThirdPartyEmoteModel>(
-            builder: (context, emoteModel, child) {
-          final tokens = model.tokenize(emoteModel.resolver);
-          return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: RichText(
-                text: TextSpan(
-                  children: [
-                    ...children,
-                    ...tokens.map((token) {
-                      if (token is TextToken) {
-                        return TextSpan(text: token.text, style: messageStyle);
-                      } else if (token is EmoteToken) {
-                        return WidgetSpan(
-                            alignment: PlaceholderAlignment.middle,
-                            child: Image(
-                                image: NetworkImageWithRetry(token.url),
-                                height: styleModel.fontSize));
-                      } else if (token is LinkToken) {
-                        return WidgetSpan(
-                          child: MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: Text.rich(
-                              TextSpan(
-                                text: token.text,
-                                style: linkStyle,
-                                recognizer: (TapGestureRecognizer()
-                                  ..onTap = () => launch(token.url)),
-                              ),
-                            ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: RichText(
+            text: TextSpan(
+              children: [
+                ...children,
+                ...model.tokenized.map((token) {
+                  if (token is TextToken) {
+                    return TextSpan(text: token.text, style: messageStyle);
+                  } else if (token is EmoteToken) {
+                    return WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: Image(
+                            image: NetworkImageWithRetry(token.url.toString()),
+                            height: styleModel.fontSize));
+                  } else if (token is LinkToken) {
+                    return WidgetSpan(
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Text.rich(
+                          TextSpan(
+                            text: token.text,
+                            style: linkStyle,
+                            recognizer: (TapGestureRecognizer()
+                              ..onTap = () => launch(token.url.toString())),
                           ),
-                        );
-                      } else if (token is UserMentionToken) {
-                        return TextSpan(
-                            text: "@${token.username}", style: tagStyle);
-                      } else {
-                        throw Exception("invalid token");
-                      }
-                    }).toList(),
-                  ],
-                ),
-              ));
-        }),
+                        ),
+                      ),
+                    );
+                  } else if (token is UserMentionToken) {
+                    return TextSpan(
+                        text: "@${token.username}", style: tagStyle);
+                  } else {
+                    throw Exception("invalid token");
+                  }
+                }).toList(),
+              ],
+            ),
+          ),
+        ),
       );
     });
   }

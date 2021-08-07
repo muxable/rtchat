@@ -15,7 +15,7 @@ class UserMentionToken extends MessageToken {
   int get hashCode => username.hashCode;
 
   @override
-  String toString() => username;
+  String toString() => "@$username";
 }
 
 class TextToken extends MessageToken {
@@ -34,7 +34,7 @@ class TextToken extends MessageToken {
 }
 
 class LinkToken extends MessageToken {
-  final String url;
+  final Uri url;
   final String text;
 
   const LinkToken({required this.url, required this.text});
@@ -47,13 +47,14 @@ class LinkToken extends MessageToken {
   int get hashCode => url.hashCode ^ text.hashCode;
 
   @override
-  String toString() => "$text ($url)";
+  String toString() => text;
 }
 
 class EmoteToken extends MessageToken {
-  final String url;
+  final Uri url;
+  final String code;
 
-  const EmoteToken(this.url);
+  const EmoteToken({required this.url, required this.code});
 
   @override
   bool operator ==(other) => other is EmoteToken && url == other.url;
@@ -62,5 +63,5 @@ class EmoteToken extends MessageToken {
   int get hashCode => url.hashCode;
 
   @override
-  String toString() => url;
+  String toString() => code;
 }

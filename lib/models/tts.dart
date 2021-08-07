@@ -1,12 +1,39 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/messages/tts_audio_handler.dart';
 
 class TtsModel extends ChangeNotifier {
   TtsAudioHandler ttsHandler;
 
-  Future<void> speak(TtsMessage message) => ttsHandler.addQueueItem(message);
+  Future<void> handleDeltaEvent(DeltaEvent event) async {
+    if (event is AppendDeltaEvent) {
+      final mediaItem = TtsMediaItem.fromMessageModel(event.model);
+      if (mediaItem != null) {
+        await ttsHandler.addQueueItem(mediaItem);
+      }
+    } else if (event is UpdateDeltaEvent) {
+      for (var i = 0; i < ttsHandler.queue.value.length; i++) {
+        final existingItem = ttsHandler.queue.value[i];
+        if (existingItem.id == event.messageId) {
+          final updated = event.update((existingItem as TtsMediaItem).model);
+          final mediaItem = TtsMediaItem.fromMessageModel(updated);
+          if (mediaItem != null) {
+            await ttsHandler.setQueueItem(i, mediaItem);
+          }
+        }
+      }
+    }
+  }
 
-  Future<void> force(TtsMessage message) => ttsHandler.force(message);
+  Future<void> clearQueue() async {
+    await ttsHandler.updateQueue([]);
+  }
+
+  List<TtsMediaItem> get queue {
+    return ttsHandler.queue.value as List<TtsMediaItem>;
+  }
+
+  Future<void> force(String message) => ttsHandler.force(message);
 
   bool get enabled {
     return ttsHandler.enabled;

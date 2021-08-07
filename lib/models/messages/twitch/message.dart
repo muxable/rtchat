@@ -1,7 +1,8 @@
 import 'package:linkify/linkify.dart';
-import 'package:rtchat/models/message.dart';
-import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
+import 'package:rtchat/models/messages/twitch/third_party_emote.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 
 class _EmoteData {
   final int start;
@@ -56,7 +57,12 @@ Iterable<MessageToken> tokenizeLinks(Iterable<MessageToken> tokens) sync* {
           linkify(token.text, options: const LinkifyOptions(humanize: false));
       for (final element in elements) {
         if (element is LinkableElement) {
-          yield LinkToken(url: element.url, text: element.text);
+          final url = Uri.tryParse(element.url);
+          if (url != null) {
+            yield LinkToken(url: url, text: element.text);
+          } else {
+            yield TextToken(element.text);
+          }
         } else {
           yield TextToken(element.text);
         }
@@ -67,8 +73,9 @@ Iterable<MessageToken> tokenizeLinks(Iterable<MessageToken> tokens) sync* {
   }
 }
 
-Iterable<MessageToken> tokenizeEmotes(Iterable<MessageToken> tokens,
-    String? Function(String) emoteResolver) sync* {
+Iterable<MessageToken> tokenizeEmotes(
+    Iterable<MessageToken> tokens, List<ThirdPartyEmote> emotes) sync* {
+  final emotesMap = {for (final emote in emotes) emote.code: emote};
   for (final token in tokens) {
     if (token is TextToken) {
       var lastParsedStart = 0;
@@ -78,12 +85,12 @@ Iterable<MessageToken> tokenizeEmotes(Iterable<MessageToken> tokens,
         final token = end == -1
             ? message.substring(start)
             : message.substring(start, end);
-        final emote = emoteResolver(token.trim());
+        final emote = emotesMap[token.trim()];
         if (emote != null) {
           if (lastParsedStart != start) {
             yield TextToken(message.substring(lastParsedStart, start));
           }
-          yield EmoteToken(emote);
+          yield EmoteToken(url: emote.source, code: emote.code);
           lastParsedStart = end == -1 ? message.length : end;
         }
         start = end == -1 ? message.length : end + 1;
@@ -133,9 +140,10 @@ Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
         final substring = message.substring(index, child.start);
         yield TextToken(substring);
       }
-      final url =
-          "https://static-cdn.jtvnw.net/emoticons/v2/${child.key}/default/dark/1.0";
-      yield EmoteToken(url);
+      final url = Uri.parse(
+          "https://static-cdn.jtvnw.net/emoticons/v2/${child.key}/default/dark/1.0");
+      yield EmoteToken(
+          url: url, code: message.substring(child.start, child.end));
       index = child.end + 1;
     }
 
@@ -151,6 +159,7 @@ class TwitchMessageModel extends MessageModel {
   final TwitchUserModel author;
   final String message;
   final Map<String, dynamic> tags;
+  final List<ThirdPartyEmote> thirdPartyEmotes;
   final DateTime timestamp;
   final bool deleted;
   final String channelId;
@@ -160,6 +169,7 @@ class TwitchMessageModel extends MessageModel {
       required this.author,
       required this.message,
       required this.tags,
+      required this.thirdPartyEmotes,
       required this.timestamp,
       required this.deleted,
       required this.channelId})
@@ -177,12 +187,16 @@ class TwitchMessageModel extends MessageModel {
       _badges ??= parseBadges(tags['badges-raw'] ?? "");
   List<_BadgeData>? _badges;
 
-  List<MessageToken> tokenize(String? Function(String) emoteResolver) {
+  bool get isAction => tags['message-type'] == "action";
+
+  List<MessageToken> get tokenized => _tokenized ??= tokenize();
+  List<MessageToken>? _tokenized;
+  List<MessageToken> tokenize() {
     Iterable<MessageToken> tokens =
         rootEmoteTokenizer(message, tags['emotes-raw'] ?? "");
     tokens = tokenizeLinks(tokens);
     tokens = tokenizeTags(tokens);
-    tokens = tokenizeEmotes(tokens, emoteResolver);
+    tokens = tokenizeEmotes(tokens, thirdPartyEmotes);
 
     return tokens.toList();
   }

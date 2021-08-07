@@ -12,7 +12,7 @@ import 'package:rtchat/components/chat_history/twitch/subscription_gift_event.da
 import 'package:rtchat/components/chat_history/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
-import 'package:rtchat/models/message.dart';
+import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/twitch/subscription_event.dart';

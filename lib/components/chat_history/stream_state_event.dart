@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
-import 'package:rtchat/models/message.dart';
+import 'package:rtchat/models/messages/message.dart';
 
 class StreamStateEventWidget extends StatelessWidget {
   final StreamStateEventModel model;

@@ -1,70 +1,65 @@
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/messages/message.dart';
+import 'package:rtchat/models/messages/tokens.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
 
-class TtsMessage extends MediaItem {
-  final String messageId;
-  final TwitchUserModel author;
-  final String? coalescingHeader;
-  final String message;
-  final bool hasEmote;
-  final Map<String, dynamic> emotes;
+class TtsMediaItem extends MediaItem {
+  final bool isBot;
+  final MessageModel model;
 
-  TtsMessage(
-      {required this.messageId,
-      required this.author,
-      required this.message,
-      this.coalescingHeader,
-      required this.hasEmote,
-      Map<String, dynamic>? emotes})
-      : emotes = emotes ?? const {},
-        super(id: messageId, artist: author.display, title: message);
-
-  String get spokenMessage {
-    if (message.trim().isEmpty) {
-      return "";
+  static TtsMediaItem? fromMessageModel(MessageModel model) {
+    if (model is TwitchMessageModel) {
+      return TtsMediaItem._(
+        model,
+        messageId: model.messageId,
+        author: model.author.display,
+        message: model.tokenized.join(""),
+        isBot: model.author.isBot,
+      );
+    } else if (model is StreamStateEventModel) {
+      return TtsMediaItem._(
+        model,
+        messageId: model.messageId,
+        author: "RealtimeChat",
+        message: model.isOnline ? "Stream is online" : "Stream is offline",
+      );
     }
-    if (coalescingHeader != null) {
-      return "$coalescingHeader $message".replaceAll("_", " ");
-    }
-    return message.replaceAll("_", " ");
   }
 
-  static List _parseEmotes(Map<String, dynamic> emotes) {
-    var ranges = [];
-    for (MapEntry e in emotes.entries) {
-      for (final str in e.value) {
-        final pair = str.split('-');
-        final start = int.parse(pair[0]);
-        final end = int.parse(pair[1]);
-        ranges.add([start, end]);
-      }
-    }
+  TtsMediaItem._(this.model,
+      {required String messageId,
+      required String author,
+      required String message,
+      this.isBot = false})
+      : super(id: messageId, artist: author, title: message);
 
-    ranges.sort((a, b) => a[0].compareTo(b[0]));
-    return ranges;
-  }
-
-  String get spokenNoEmotesMessage {
-    var ranges = _parseEmotes(emotes);
-    var res = coalescingHeader == null ? "" : "$coalescingHeader ";
-    var index = 0;
-    for (var i = 0; i < ranges.length; i++) {
-      var start = ranges[i][0];
-      var end = ranges[i][1];
-      if (start > index) {
-        res += message.substring(index, start);
-      }
-      index = end + 1;
+  String getVocalization({required bool emotes}) {
+    final model = this.model;
+    if (model is TwitchMessageModel) {
+      final text = model.tokenized
+          .where((token) =>
+              token is TextToken ||
+              (emotes && token is EmoteToken) ||
+              token is UserMentionToken ||
+              token is LinkToken)
+          .map((token) {
+        if (token is TextToken) {
+          return token.text;
+        } else if (token is EmoteToken) {
+          return token.code;
+        } else if (token is UserMentionToken) {
+          return token.username.replaceAll("_", " ");
+        } else if (token is LinkToken) {
+          return token.url.host;
+        }
+      }).join("");
+      final author = model.author.displayName ?? model.author.login;
+      return model.isAction ? "$author $text" : "$author said $text";
+    } else if (model is StreamStateEventModel) {
+      return model.isOnline ? "Stream is online" : "Stream is offline";
     }
-
-    if (index < message.length) {
-      res += message.substring(index);
-    }
-    if (res.trim() == coalescingHeader) {
-      return "";
-    }
-    return res.replaceAll("_", " ");
+    return "";
   }
 }
 
@@ -113,8 +108,8 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
       return;
     }
 
-    final message = queue.value[index] as TtsMessage;
-    if (fromAutoplay && isBotMuted && message.author.isBot) {
+    final message = queue.value[index] as TtsMediaItem;
+    if (fromAutoplay && isBotMuted && message.isBot) {
       if (index < queue.value.length - 1) {
         await fastForward();
         await play(fromAutoplay: true);
@@ -129,13 +124,10 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
       MediaControl.fastForward,
       MediaControl.skipToNext,
     ]));
+    final vocalization = message.getVocalization(emotes: !isEmoteMuted);
     await _tts.setSpeechRate(speed);
     await _tts.setPitch(pitch);
-    if (isEmoteMuted) {
-      await _tts.speak(message.spokenNoEmotesMessage);
-    } else {
-      await _tts.speak(message.spokenMessage);
-    }
+    await _tts.speak(vocalization);
   }
 
   @override
@@ -199,6 +191,10 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     }
   }
 
+  Future<void> setQueueItem(int index, MediaItem mediaItem) async {
+    queue.add(queue.value..setAll(index, [mediaItem]));
+  }
+
   @override
   Future<void> skipToQueueItem(int index) async {
     if (index < 0 || index >= queue.value.length) {
@@ -214,10 +210,10 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     await skipToQueueItem(queue.value.length - 1);
   }
 
-  Future<void> force(TtsMessage message) async {
+  Future<void> force(String message) async {
     await skipToEnd();
     await _tts.setSpeechRate(speed);
     await _tts.setPitch(pitch);
-    await _tts.speak(message.spokenMessage);
+    await _tts.speak(message);
   }
 }
