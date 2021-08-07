@@ -58,7 +58,7 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
       curve: Curves.easeOut,
       duration: const Duration(milliseconds: 400),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        const TitleBarWidget(),
+        TitleBarWidget(),
         Expanded(child: Builder(builder: (context) {
           final tabs = TabBarView(
             children: [

@@ -24,9 +24,14 @@ const agent = new Agent(AGENT_ID, {
   firebase: new FirebaseAdapter(admin.database(), admin.firestore()),
 });
 
-for (const signal of ["SIGINT", "SIGTERM", "uncaughtException"]) {
-  process.on(signal, async () => {
-    await agent.disconnect();
-    process.exit(0);
-  });
-}
+process.on("SIGTERM", async () => {
+  console.log("RECEIVED SIGTERM");
+  await agent.disconnect();
+  process.exit(0);
+});
+
+process.on("uncaughtException", async (err) => {
+  console.error(err);
+  await agent.disconnect();
+  process.exit(1);
+});

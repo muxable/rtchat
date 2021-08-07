@@ -92,13 +92,26 @@ export class FirebaseAdapter {
   }
 
   async deleteMessage(channel: string, tags: any) {
-    await this.getMessage(`twitch:${tags.id}`).set({
+    const messageId = tags["target-msg-id"];
+
+    if (!messageId) {
+      console.error("received empty message id", tags);
+      return;
+    }
+
+    const original = await this.getMessage(`twitch:${messageId}`).get();
+
+    if (!original.exists) {
+      return;
+    }
+
+    await this.getMessage(`twitch:x-${messageId}`).set({
       channel,
-      channelId: `twitch:${tags["room-id"]}`,
+      channelId: original.get("channelId"),
       type: "messagedeleted",
       timestamp: parseTimestamp(tags["tmi-sent-ts"]),
       tags,
-      messageId: tags["target-msg-id"],
+      messageId,
     });
   }
 

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:rtchat/models/twitch/message.dart';
-import 'package:rtchat/models/twitch/user.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 
 class FontSizePickerWidget extends StatelessWidget {
   const FontSizePickerWidget({Key? key}) : super(key: key);
@@ -75,6 +75,16 @@ class FontSizePickerWidget extends StatelessWidget {
             subtitle: const Text("Control which badges are visible"),
             onTap: () {
               Navigator.pushNamed(context, "/settings/badges");
+            },
+          ),
+          SwitchListTile.adaptive(
+            title: const Text('Show deleted messages'),
+            subtitle: model.isDeletedMessagesVisible
+                ? const Text("Deleted messages will be greyed out")
+                : const Text("Deleted messages will be removed"),
+            value: model.isDeletedMessagesVisible,
+            onChanged: (value) {
+              model.isDeletedMessagesVisible = value;
             },
           ),
         ],
