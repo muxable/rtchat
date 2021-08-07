@@ -1,15 +1,13 @@
-import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_panel.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/components/statistics_bar.dart';
 import 'package:rtchat/models/channels.dart';
-import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+
 import 'channel_search_dialog.dart';
 
 class _ChannelPickerValue {
@@ -209,31 +207,30 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                 onTap: () => setState(() => _isEmotePickerVisible = false),
               ),
             ),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.build),
-              onSelected: (value) async {
-                if (value == "Clear Chat") {
-                  FirebaseAnalytics().logEvent(name: "clear_chat");
-                  final channelsModel =
-                      Provider.of<ChannelsModel>(context, listen: false);
-                  final channel = channelsModel.subscribedChannels.first;
-                  FirebaseFunctions.instance.httpsCallable("clear")({
-                    "provider": channel.provider,
-                    "channelId": channel.channelId,
-                  });
-                  Provider.of<ChatHistoryModel>(context, listen: false).clear();
-                } else if (value == "Raid") {}
-              },
-              itemBuilder: (context) {
-                final options = {'Clear Chat'};
-                return options.map((String choice) {
-                  return PopupMenuItem<String>(
-                    value: choice,
-                    child: Text(choice),
-                  );
-                }).toList();
-              },
-            ),
+            // PopupMenuButton<String>(
+            //   icon: const Icon(Icons.build),
+            //   onSelected: (value) async {
+            //     if (value == "Clear Chat") {
+            //       FirebaseAnalytics().logEvent(name: "clear_chat");
+            //       final channelsModel =
+            //           Provider.of<ChannelsModel>(context, listen: false);
+            //       final channel = channelsModel.subscribedChannels.first;
+            //       FirebaseFunctions.instance.httpsCallable("clear")({
+            //         "provider": channel.provider,
+            //         "channelId": channel.channelId,
+            //       });
+            //     } else if (value == "Raid") {}
+            //   },
+            //   itemBuilder: (context) {
+            //     final options = {'Clear Chat'};
+            //     return options.map((String choice) {
+            //       return PopupMenuItem<String>(
+            //         value: choice,
+            //         child: Text(choice),
+            //       );
+            //     }).toList();
+            //   },
+            // ),
             _buildSendButton(),
           ]),
         );

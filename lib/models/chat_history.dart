@@ -2,271 +2,245 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
-import 'package:rtchat/models/message.dart';
-import 'package:rtchat/models/messages/twitch/event.dart';
-import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/messages/twitch/user.dart';
-import 'package:rtchat/models/messages/tts_audio_handler.dart';
 import 'package:rtchat/models/twitch/subscription_event.dart';
 import 'package:rtchat/models/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/twitch/subscription_message_event.dart';
+import 'package:rtchat/models/messages/message.dart';
+import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/third_party_emote.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rxdart/rxdart.dart';
 
-class ChatHistoryModel extends ChangeNotifier {
-  StreamSubscription<void>? _subscription;
+abstract class DeltaEvent {
+  const DeltaEvent();
+}
 
-  final List<MessageModel> _events = [];
+class AppendDeltaEvent extends DeltaEvent {
+  final MessageModel model;
 
-  final _messageAdditionController = StreamController<TtsMessage>();
-  final _messageDeletionController = StreamController<String>();
+  const AppendDeltaEvent(this.model);
+}
 
-  ChatHistoryModel();
+class UpdateDeltaEvent extends DeltaEvent {
+  final String messageId;
+  final MessageModel Function(MessageModel) update;
 
-  Future<void> subscribe(Set<Channel> channels) async {
-    final subscribe = FirebaseFunctions.instance.httpsCallable('subscribe');
-    for (final channel in channels) {
-      subscribe({
-        "provider": channel.provider,
-        "channelId": channel.channelId,
-      });
-    }
+  const UpdateDeltaEvent(this.messageId, this.update);
+}
 
-    _events.clear();
-    notifyListeners();
+Stream<DeltaEvent> _handleDocumentChange(
+    Map<String, List<ThirdPartyEmote>> emotes,
+    DocumentChange<Map<String, dynamic>> change) async* {
+  final data = change.doc.data();
+  if (data == null) {
+    return;
+  }
 
-    _subscription?.cancel();
-    if (channels.isEmpty) {
-      _subscription = null;
-    } else {
-      final channelIds = channels
-          .map((channel) => "${channel.provider}:${channel.channelId}")
-          .toList();
-      _subscription = FirebaseFirestore.instance
-          .collection("messages")
-          .where("channelId", whereIn: channelIds)
-          .orderBy("timestamp")
-          .limitToLast(250)
-          .snapshots()
-          .expand((event) => event.docChanges)
-          // only process appends.
-          .where((change) => change.type == DocumentChangeType.added)
-          .listen((change) {
-        final data = change.doc.data();
-        if (data == null) {
-          return;
+  switch (data['type']) {
+    case "message":
+      final message = data['message'];
+      final tags = data['tags'];
+
+      final author = TwitchUserModel(
+          displayName: tags['display-name'], login: tags['username']);
+
+      final model = TwitchMessageModel(
+          messageId: change.doc.id,
+          author: author,
+          message: message,
+          tags: tags,
+          thirdPartyEmotes: emotes[data['channelId']]!,
+          timestamp: data['timestamp'].toDate(),
+          deleted: false,
+          channelId: data['channelId']);
+
+      yield AppendDeltaEvent(model);
+      break;
+    case "messagedeleted":
+      yield UpdateDeltaEvent(data['messageId'], (message) {
+        if (message is! TwitchMessageModel) {
+          return message;
         }
-
-        switch (data['type']) {
-          case "message":
-            final message = data['message'];
-            final tags = data['tags'];
-
-            final author = TwitchUserModel(
-                displayName: tags['display-name'], login: tags['username']);
-
-            final model = TwitchMessageModel(
-                messageId: change.doc.id,
-                author: author,
-                message: message,
-                tags: tags,
-                timestamp: data['timestamp'].toDate(),
-                deleted: false,
-                channelId: data['channelId']);
-
-            _events.add(model);
-            _messageAdditionController.add(TtsMessage(
-                messageId: change.doc.id,
-                author: author,
-                message: message,
-                coalescingHeader: "${author.login} said",
-                hasEmote: model.hasEmote,
-                emotes: model.tags['emotes']));
-            break;
-          case "messagedeleted":
-            final messageId = data['messageId'];
-            final index = _events.indexWhere((element) {
-              return element is TwitchMessageModel &&
-                  element.messageId == messageId;
-            });
-            if (index > -1) {
-              final message = _events[index];
-              if (message is TwitchMessageModel) {
-                _events[index] = TwitchMessageModel(
-                    messageId: message.messageId,
-                    author: message.author,
-                    message: message.message,
-                    tags: message.tags,
-                    timestamp: message.timestamp,
-                    deleted: true,
-                    channelId: data['channelId']);
-                _messageDeletionController.add(message.messageId);
-              }
-            }
-            break;
-          case "raided":
-            final index = _events.length;
-            final DateTime timestamp = data['timestamp'].toDate();
-            final expiration = timestamp.add(const Duration(seconds: 15));
-            final remaining = expiration.difference(DateTime.now());
-
-            final model = TwitchRaidEventModel(
-                messageId: change.doc.id,
-                profilePictureUrl: data['tags']['msg-param-profileImageURL'],
-                fromUsername: data['username'],
-                viewers: data['viewers'],
-                pinned: remaining > Duration.zero);
-            _events.add(model);
-
-            if (remaining > Duration.zero) {
-              Timer(remaining, () {
-                _events[index] = TwitchRaidEventModel(
-                    messageId: change.doc.id,
-                    profilePictureUrl: data['tags']
-                        ['msg-param-profileImageURL'],
-                    fromUsername: data['username'],
-                    viewers: data['viewers'],
-                    pinned: false);
-                notifyListeners();
-              });
-            }
-            break;
-          case "channel.subscribe":
-            final index = _events.length;
-            final DateTime timestamp = data['timestamp'].toDate();
-            final expiration = timestamp.add(const Duration(seconds: 15));
-            final remaining = expiration.difference(DateTime.now());
-
-            final model = TwitchSubscriptionEventModel(
-                pinned: remaining > Duration.zero,
-                messageId: change.doc.id,
-                subscriberUserName: data['event']['user_name'],
-                isGift: data['event']['is_gift'],
-                tier: data['event']['tier']);
-
-            _events.add(model);
-
-            if (remaining > Duration.zero) {
-              Timer(remaining, () {
-                _events[index] = TwitchSubscriptionEventModel(
-                    pinned: false,
-                    messageId: change.doc.id,
-                    subscriberUserName: data['event']['user_name'],
-                    isGift: data['event']['is_gift'],
-                    tier: data['event']['tier']);
-                notifyListeners();
-              });
-            }
-
-            break;
-          case "channel.subscription.gift":
-            final index = _events.length;
-            final DateTime timestamp = data['timestamp'].toDate();
-            final expiration = timestamp.add(const Duration(seconds: 15));
-            final remaining = expiration.difference(DateTime.now());
-
-            final gifterName = data['event']['is_anonymous']
-                ? "Anonymous Gifter"
-                : data['event']['user_name'];
-
-            final model = TwitchSubscriptionGiftEventModel(
-                pinned: remaining > Duration.zero,
-                messageId: change.doc.id,
-                gifterUserName: gifterName,
-                tier: data['event']['tier'],
-                total: data['event']['total']);
-
-            _events.add(model);
-
-            if (remaining > Duration.zero) {
-              Timer(remaining, () {
-                _events[index] = TwitchSubscriptionGiftEventModel(
-                    pinned: false,
-                    messageId: change.doc.id,
-                    gifterUserName: gifterName,
-                    tier: data['event']['tier'],
-                    total: data['event']['total']);
-                notifyListeners();
-              });
-            }
-
-            break;
-          case "channel.subscription.message":
-            final index = _events.length;
-            final DateTime timestamp = data['timestamp'].toDate();
-            final expiration = timestamp.add(const Duration(seconds: 15));
-            final remaining = expiration.difference(DateTime.now());
-
-            final model = TwitchSubscriptionMessageEventModel(
-                pinned: remaining > Duration.zero,
-                messageId: change.doc.id,
-                subscriberUserName: data['event']['user_name'],
-                tier: data['event']['tier'],
-                streakMonths: data['event']['streak_months'],
-                cumulativeMonths: data['event']['cumulative_months'],
-                durationMonths: data['event']['duration_months']);
-
-            _events.add(model);
-
-            if (remaining > Duration.zero) {
-              Timer(remaining, () {
-                _events[index] = TwitchSubscriptionMessageEventModel(
-                    pinned: false,
-                    messageId: change.doc.id,
-                    subscriberUserName: data['event']['user_name'],
-                    tier: data['event']['tier'],
-                    streakMonths: data['event']['streak_months'],
-                    cumulativeMonths: data['event']['cumulative_months'],
-                    durationMonths: data['event']['duration_months']);
-                notifyListeners();
-              });
-            }
-
-            break;
-          case "channel.follow":
-            final model = TwitchFollowEventModel(
-                followerName: data['event']['user_name'],
-                messageId: change.doc.id,
-                pinned: false);
-            _events.add(model);
-            break;
-          case "stream.online":
-          case "stream.offline":
-            _events.add(StreamStateEventModel(
-                messageId: change.doc.id,
-                isOnline: data['type'] == "stream.online",
-                timestamp: data['timestamp'].toDate()));
-            break;
-        }
-
-        notifyListeners();
-      }, onDone: () {
-        FirebaseCrashlytics.instance
-            .log("unexpected done handler called on firestore listener");
-      }, onError: (error) {
-        FirebaseCrashlytics.instance.recordError(error, StackTrace.current,
-            reason: "messages listener error");
+        return TwitchMessageModel(
+            messageId: message.messageId,
+            author: message.author,
+            message: message.message,
+            tags: message.tags,
+            thirdPartyEmotes: [],
+            timestamp: message.timestamp,
+            deleted: true,
+            channelId: data['channelId']);
       });
-    }
+      break;
+    case "raided":
+      final DateTime timestamp = data['timestamp'].toDate();
+      final expiration = timestamp.add(const Duration(seconds: 15));
+      final remaining = expiration.difference(DateTime.now());
+
+      final model = TwitchRaidEventModel(
+          messageId: change.doc.id,
+          profilePictureUrl: data['tags']['msg-param-profileImageURL'],
+          fromUsername: data['username'],
+          viewers: data['viewers'],
+          pinned: remaining > Duration.zero);
+      yield AppendDeltaEvent(model);
+
+      if (remaining > Duration.zero) {
+        await Future.delayed(remaining);
+        yield UpdateDeltaEvent(change.doc.id, (message) {
+          if (message is! TwitchRaidEventModel) {
+            return message;
+          }
+          return TwitchRaidEventModel(
+              messageId: change.doc.id,
+              profilePictureUrl: data['tags']['msg-param-profileImageURL'],
+              fromUsername: data['username'],
+              viewers: data['viewers'],
+              pinned: false);
+        });
+      }
+      break;
+    case "channel.subscribe":
+      final DateTime timestamp = data['timestamp'].toDate();
+      final expiration = timestamp.add(const Duration(seconds: 15));
+      final remaining = expiration.difference(DateTime.now());
+
+      final model = TwitchSubscriptionEventModel(
+          pinned: remaining > Duration.zero,
+          messageId: change.doc.id,
+          subscriberUserName: data['event']['user_name'],
+          isGift: data['event']['is_gift'],
+          tier: data['event']['tier']);
+
+      yield AppendDeltaEvent(model);
+
+      if (remaining > Duration.zero) {
+        await Future.delayed(remaining);
+        yield UpdateDeltaEvent(change.doc.id, (message) {
+          if (message is! TwitchSubscriptionEventModel) {
+            return message;
+          }
+          return TwitchSubscriptionEventModel(
+              pinned: false,
+              messageId: change.doc.id,
+              subscriberUserName: data['event']['user_name'],
+              isGift: data['event']['is_gift'],
+              tier: data['event']['tier']);
+        });
+      }
+
+      break;
+    case "channel.subscription.gift":
+      final DateTime timestamp = data['timestamp'].toDate();
+      final expiration = timestamp.add(const Duration(seconds: 15));
+      final remaining = expiration.difference(DateTime.now());
+
+      final gifterName = data['event']['is_anonymous']
+          ? "Anonymous Gifter"
+          : data['event']['user_name'];
+
+      final model = TwitchSubscriptionGiftEventModel(
+          pinned: remaining > Duration.zero,
+          messageId: change.doc.id,
+          gifterUserName: gifterName,
+          tier: data['event']['tier'],
+          total: data['event']['total']);
+
+      yield AppendDeltaEvent(model);
+
+      if (remaining > Duration.zero) {
+        await Future.delayed(remaining);
+        yield UpdateDeltaEvent(change.doc.id, (message) {
+          if (message is! TwitchSubscriptionGiftEventModel) {
+            return message;
+          }
+          return TwitchSubscriptionGiftEventModel(
+              pinned: false,
+              messageId: change.doc.id,
+              gifterUserName: gifterName,
+              tier: data['event']['tier'],
+              total: data['event']['total']);
+        });
+      }
+
+      break;
+    case "channel.subscription.message":
+      final DateTime timestamp = data['timestamp'].toDate();
+      final expiration = timestamp.add(const Duration(seconds: 15));
+      final remaining = expiration.difference(DateTime.now());
+
+      final model = TwitchSubscriptionMessageEventModel(
+          pinned: remaining > Duration.zero,
+          messageId: change.doc.id,
+          subscriberUserName: data['event']['user_name'],
+          tier: data['event']['tier'],
+          streakMonths: data['event']['streak_months'],
+          cumulativeMonths: data['event']['cumulative_months'],
+          durationMonths: data['event']['duration_months']);
+
+      yield AppendDeltaEvent(model);
+
+      if (remaining > Duration.zero) {
+        await Future.delayed(remaining);
+        yield UpdateDeltaEvent(change.doc.id, (message) {
+          if (message is! TwitchSubscriptionMessageEventModel) {
+            return message;
+          }
+          return TwitchSubscriptionMessageEventModel(
+              pinned: false,
+              messageId: change.doc.id,
+              subscriberUserName: data['event']['user_name'],
+              tier: data['event']['tier'],
+              streakMonths: data['event']['streak_months'],
+              cumulativeMonths: data['event']['cumulative_months'],
+              durationMonths: data['event']['duration_months']);
+        });
+      }
+
+      break;
+    case "channel.follow":
+      final model = TwitchFollowEventModel(
+          followerName: data['event']['user_name'],
+          messageId: change.doc.id,
+          pinned: false);
+      yield AppendDeltaEvent(model);
+      break;
+    case "stream.online":
+    case "stream.offline":
+      final model = StreamStateEventModel(
+          messageId: change.doc.id,
+          isOnline: data['type'] == "stream.online",
+          timestamp: data['timestamp'].toDate());
+      yield AppendDeltaEvent(model);
   }
+}
 
-  Stream<TtsMessage> get additions => _messageAdditionController.stream;
-
-  Stream<String> get deletions => _messageDeletionController.stream;
-
-  void clear() {
-    _events.clear();
-    notifyListeners();
+Stream<DeltaEvent> getChatHistory(Set<Channel> channels) async* {
+  final subscribe = FirebaseFunctions.instance.httpsCallable('subscribe');
+  for (final channel in channels) {
+    subscribe({
+      "provider": channel.provider,
+      "channelId": channel.channelId,
+    });
   }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    _messageAdditionController.close();
-    _messageDeletionController.close();
-    super.dispose();
+  if (channels.isEmpty) {
+    return;
   }
-
-  List<MessageModel> get messages => _events;
+  Map<String, List<ThirdPartyEmote>> emotes = {};
+  for (final channel in channels) {
+    emotes[channel.toString()] =
+        await getThirdPartyEmotes(channel.provider, channel.channelId);
+  }
+  yield* FirebaseFirestore.instance
+      .collection("messages")
+      .where("channelId",
+          whereIn: channels.map((channel) => channel.toString()).toList())
+      .orderBy("timestamp")
+      .limitToLast(250)
+      .snapshots()
+      .expand((event) => event.docChanges)
+      .where((change) => change.type == DocumentChangeType.added)
+      .flatMap((change) => _handleDocumentChange(emotes, change));
 }

@@ -14,24 +14,22 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
-import 'package:rtchat/models/chat_history.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/tts_audio_handler.dart';
+import 'package:rtchat/models/messages/twitch/badge.dart';
+import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
-import 'package:rtchat/models/messages/twitch/badge.dart';
-import 'package:rtchat/models/messages/twitch/third_party_emote.dart';
-import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/home.dart';
+import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
-import 'package:rtchat/screens/sign_in.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
+import 'package:rtchat/screens/sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 MaterialColor generateMaterialColor(Color color) {
@@ -154,24 +152,18 @@ class App extends StatelessWidget {
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
-          final model = ChatHistoryModel();
-          final channels = Provider.of<ChannelsModel>(context, listen: false);
-          model.subscribe(channels.subscribedChannels);
-          channels.addListener(() {
-            model.subscribe(channels.subscribedChannels);
-          });
-          return model;
-        }),
-        ChangeNotifierProvider(create: (context) {
           final model = TtsModel.fromJson(
               ttsHandler, jsonDecode(prefs.getString("tts") ?? "{}"));
-          final chatHistory =
-              Provider.of<ChatHistoryModel>(context, listen: false);
+          final channels = Provider.of<ChannelsModel>(context, listen: false);
           model.addListener(() {
             prefs.setString('tts', jsonEncode(model.toJson()));
           });
-          chatHistory.additions.listen((message) {
-            model.speak(message);
+          StreamSubscription<void>? subscription;
+          channels.addListener(() {
+            subscription?.cancel();
+            model.clearQueue();
+            model.enabled = false;
+            subscription = channels.chatHistory.listen(model.handleDeltaEvent);
           });
           return model;
         }),
@@ -202,15 +194,6 @@ class App extends StatelessWidget {
         }),
         ChangeNotifierProvider(create: (context) {
           final model = TwitchEmoteSets();
-          final channels = Provider.of<ChannelsModel>(context, listen: false);
-          model.subscribe(channels.subscribedChannels);
-          channels.addListener(() {
-            model.subscribe(channels.subscribedChannels);
-          });
-          return model;
-        }),
-        ChangeNotifierProvider(create: (context) {
-          final model = ThirdPartyEmoteModel();
           final channels = Provider.of<ChannelsModel>(context, listen: false);
           model.subscribe(channels.subscribedChannels);
           channels.addListener(() {
