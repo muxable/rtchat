@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:rtchat/models/twitch/subscription_message_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 
 class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
   final TwitchSubscriptionMessageEventModel model;
