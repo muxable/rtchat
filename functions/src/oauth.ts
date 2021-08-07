@@ -1,6 +1,10 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
-import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
+import {
+  AuthorizationCode,
+  ClientCredentials,
+  ModuleOptions,
+} from "simple-oauth2";
 
 export const TWITCH_CLIENT_ID = functions.config().twitch.id;
 export const TWITCH_CLIENT_SECRET = functions.config().twitch.secret;
@@ -44,6 +48,14 @@ export async function getAccessToken(userId: string, provider: string) {
   }
   await ref.update({ [provider]: JSON.stringify(accessToken.token) });
   return accessToken.token["access_token"] as string;
+}
+
+export async function getAppAccessToken(provider: string) {
+  switch (provider) {
+    case "twitch":
+      return new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken({ scope: [] });
+  }
+  return null;
 }
 
 async function unlink(userId: string, provider: string) {
