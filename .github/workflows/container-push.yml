@@ -19,6 +19,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - run: npm ci
+        working-directory: agent
+      - run: npm run build --if-present
+        working-directory: agent
+      - run: npm test
+        working-directory: agent
       - uses: google-github-actions/setup-gcloud@master
         with:
           version: "331.0.0"
