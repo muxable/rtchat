@@ -23,36 +23,37 @@ class TitleBarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        height: 56,
-        color: Theme.of(context).primaryColor,
-        child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          // tabs
-          const SizedBox(
-            width: 168,
-            child: TabBar(
-              tabs: [
-                Tab(icon: Icon(Icons.calendar_view_day)),
-                Tab(icon: Icon(Icons.preview)),
-              ],
-            ),
-          ),
-          // quick links
-          Consumer<QuickLinksModel>(builder: (context, quickLinksModel, child) {
-            return Expanded(
-                child: ListView(
-              scrollDirection: Axis.horizontal,
-              reverse: true,
-              children: quickLinksModel.sources.reversed.map((source) {
-                return IconButton(
-                    icon: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-                    tooltip: source.name,
-                    onPressed: () => launchLink(source));
-              }).toList(),
-            ));
-          }),
-          // settings button
-          const SettingsButtonWidget()
-        ]));
+    final row = Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      // tabs
+      const SizedBox(
+        width: 168,
+        child: TabBar(
+          tabs: [
+            Tab(icon: Icon(Icons.calendar_view_day)),
+            Tab(icon: Icon(Icons.preview)),
+          ],
+        ),
+      ),
+      // quick links
+      Consumer<QuickLinksModel>(builder: (context, quickLinksModel, child) {
+        return Expanded(
+            child: ListView(
+          scrollDirection: Axis.horizontal,
+          reverse: true,
+          children: quickLinksModel.sources.reversed.map((source) {
+            return IconButton(
+                icon: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
+                tooltip: source.name,
+                onPressed: () => launchLink(source));
+          }).toList(),
+        ));
+      }),
+      // settings button
+      const SettingsButtonWidget(),
+    ]);
+    return IconTheme(
+        data: Theme.of(context).primaryIconTheme,
+        child: Container(
+            height: 56, color: Theme.of(context).primaryColor, child: row));
   }
 }
