@@ -93,7 +93,9 @@ export class ChatAdapter {
         remote.on("disconnected", async (reason) => {
           client.disconnect(true, 0);
         });
+
         await remote.connect();
+
         console.log(
           "listening on",
           params.provider,
