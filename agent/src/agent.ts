@@ -61,6 +61,8 @@ export class Agent {
       provider
     );
 
+    console.log("received token", token);
+
     this.adapters.chat.addClient(
       { token, username, provider, channel },
       {
