@@ -53,13 +53,15 @@ export class ChatAdapter {
           },
           channels: [params.channel],
         });
+        const expiration = Date.parse(params.token["expires_at"]) - Date.now();
+        console.log("setting timer for", expiration, "ms");
         const client = {
           ...params,
           remote,
           refreshTimer: setTimeout(async () => {
             console.log("refreshing");
             client.disconnect(true, 5000);
-          }, (params.token["expires_in"] - 30 * 60) * 1000),
+          }, Math.max(10 * 1000, expiration - 30 * 60 * 1000)),
           disconnect: async (reconnect: boolean, persistDelay: number) => {
             console.log("disconnecting", reconnect, persistDelay);
             remote.removeAllListeners("disconnected");
