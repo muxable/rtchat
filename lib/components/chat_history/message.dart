@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
+import 'package:rtchat/components/chat_history/twitch/cheer_event.dart';
 import 'package:rtchat/components/chat_history/twitch/follow_event.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
@@ -136,6 +137,8 @@ class ChatHistoryMessage extends StatelessWidget {
       return StreamStateEventWidget(m);
     } else if (m is TwitchFollowEventModel) {
       return kDebugMode ? TwitchFollowEventWidget(m) : Container();
+    } else if (m is TwitchCheerEventModel) {
+      return kDebugMode ? TwitchCheerEventWidget(m) : Container();
     } else {
       throw AssertionError("invalid message type");
     }
