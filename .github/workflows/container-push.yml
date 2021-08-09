@@ -36,13 +36,13 @@ jobs:
           TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
 
       # Check that it builds.
-      - uses: actions/setup-node@v2
-      - run: npm ci
-        working-directory: agent
-      - run: npm run build --if-present
-        working-directory: agent
-      - run: npm test
-        working-directory: agent
+      # - uses: actions/setup-node@v2
+      # - run: npm ci
+      #   working-directory: agent
+      # - run: npm run build --if-present
+      #   working-directory: agent
+      # - run: npm test
+      #   working-directory: agent
 
       - uses: google-github-actions/setup-gcloud@master
         with:
