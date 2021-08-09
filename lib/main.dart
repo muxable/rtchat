@@ -8,6 +8,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -84,6 +85,15 @@ void main() async {
     );
     runApp(App(prefs: prefs, ttsHandler: ttsHandler));
   }, FirebaseCrashlytics.instance.recordError);
+
+  // Add remote config
+  final _remoteConfig = RemoteConfig.instance;
+  _remoteConfig.setConfigSettings(RemoteConfigSettings(
+      minimumFetchInterval: const Duration(hours: 1),
+      fetchTimeout: const Duration(seconds: 10)));
+
+  _remoteConfig.setDefaults(<String, dynamic>{'inline_events_enabled': false});
+  await _remoteConfig.fetchAndActivate();
 }
 
 class App extends StatelessWidget {
