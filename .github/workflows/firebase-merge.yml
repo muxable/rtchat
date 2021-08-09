@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - "functions/**"
+      - "database.rules.json"
       - ".firebaserc"
       - "firebase.json"
       - "firestore.indexes.json"
