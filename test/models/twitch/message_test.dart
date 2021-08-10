@@ -149,4 +149,72 @@ void main() {
           ]));
     });
   });
+
+  test('detect actions and commands', () {
+    final chatMessage = TwitchMessageModel(
+        messageId: "placeholder",
+        author: const TwitchUserModel(login: 'muxfd'),
+        tags: {
+          "message-type": "chat",
+          "color": "#800000",
+          "room-id": "158394109",
+        },
+        thirdPartyEmotes: [],
+        timestamp: DateTime.now(),
+        message: "moooo",
+        deleted: false,
+        channelId: 'placeholder');
+
+    final chatCommand = TwitchMessageModel(
+        messageId: "placeholder",
+        author: const TwitchUserModel(login: 'muxfd'),
+        tags: {
+          "message-type": "chat",
+          "color": "#800000",
+          "room-id": "158394109",
+        },
+        thirdPartyEmotes: [],
+        timestamp: DateTime.now(),
+        message: "!moooo",
+        deleted: false,
+        channelId: 'placeholder');
+
+    final actionMessage = TwitchMessageModel(
+        messageId: "placeholder",
+        author: const TwitchUserModel(login: 'muxfd'),
+        tags: {
+          "message-type": "action",
+          "color": "#800000",
+          "room-id": "158394109",
+        },
+        thirdPartyEmotes: [],
+        timestamp: DateTime.now(),
+        message: "mooooo",
+        deleted: false,
+        channelId: 'placeholder');
+
+    final actionCommand = TwitchMessageModel(
+        messageId: "placeholder",
+        author: const TwitchUserModel(login: 'muxfd'),
+        tags: {
+          "message-type": "action",
+          "color": "#800000",
+          "room-id": "158394109",
+        },
+        thirdPartyEmotes: [],
+        timestamp: DateTime.now(),
+        message: "!mooooo",
+        deleted: false,
+        channelId: 'placeholder');
+
+    expect(chatMessage.isAction, equals(false));
+    expect(actionMessage.isAction, equals(true));
+    expect(chatCommand.isAction, equals(false));
+    expect(actionCommand.isAction, equals(true));
+
+    expect(chatMessage.isCommand, equals(false));
+    expect(actionMessage.isCommand, equals(false));
+    expect(chatCommand.isCommand, equals(true));
+    expect(actionCommand.isCommand, equals(false));
+  });
 }
