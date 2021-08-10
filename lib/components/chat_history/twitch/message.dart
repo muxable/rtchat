@@ -123,6 +123,8 @@ class TwitchMessageWidget extends StatelessWidget {
                   } else if (token is EmoteToken) {
                     return WidgetSpan(
                         alignment: PlaceholderAlignment.middle,
+                        // NetworkImageWithRetry doesn't support animated gifs.
+                        // https://github.com/flutter/flutter/issues/81664
                         child: Image.network(token.url.toString(),
                             height: styleModel.fontSize));
                   } else if (token is LinkToken) {
