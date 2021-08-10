@@ -53,6 +53,20 @@ export const subscribe = functions.https.onCall(async (data, context) => {
       await pubsub
         .topic(`projects/${PROJECT_ID}/topics/subscribe`)
         .publish(Buffer.from(JSON.stringify({ provider, channel })));
+
+      // acquire an agent if there's not already one.
+      await admin
+        .database()
+        .ref("agents")
+        .child(provider)
+        .child(channel)
+        .transaction((data) => {
+          if (!data) {
+            return "";
+          }
+          return;
+        });
+
       return channel;
   }
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -94,6 +108,15 @@ export const unsubscribe = functions.https.onCall(async (data, context) => {
       await pubsub
         .topic(`projects/${PROJECT_ID}/topics/unsubscribe`)
         .publish(Buffer.from(JSON.stringify({ provider, channel })));
+
+      // release the agent.
+      await admin
+        .database()
+        .ref("agents")
+        .child(provider)
+        .child(channel)
+        .set(null);
+
       return channel;
   }
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
