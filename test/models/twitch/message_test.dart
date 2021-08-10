@@ -8,7 +8,7 @@ TwitchMessageModel createMessageModel(String? badgesRaw, String? emotesRaw,
     List<ThirdPartyEmote> thirdPartyEmotes, String message) {
   return TwitchMessageModel(
       messageId: "placeholder",
-      author: const TwitchUserModel(login: 'muxfd'),
+      author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
       tags: {
         "message-type": "chat",
         "color": "#800000",
