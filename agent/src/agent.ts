@@ -61,6 +61,8 @@ export class Agent {
       provider
     );
 
+    console.log("received token", token);
+
     this.adapters.chat.addClient(
       { token, username, provider, channel },
       {
@@ -89,6 +91,12 @@ export class Agent {
           );
           this.locks.delete(`${provider}:${channel}`);
           if (reconnect && result) {
+            console.log("forcing a token refresh");
+            const { token } = await this.adapters.firebase.getCredentials(
+              provider,
+              true
+            );
+            console.log("new token", token);
             // try to resubscribe.
             await this.joinTopic.publishJSON({ provider, channel });
           }

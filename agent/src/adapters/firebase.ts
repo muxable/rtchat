@@ -45,7 +45,7 @@ export class FirebaseAdapter {
     return this.firestore.collection("messages").doc(key);
   }
 
-  async getCredentials(provider: string) {
+  async getCredentials(provider: string, forceRefresh = false) {
     const userId = getBotUserId(provider);
     if (!userId) {
       throw new Error("invalid provider");
@@ -63,8 +63,9 @@ export class FirebaseAdapter {
     }
     const client = new AuthorizationCode(TWITCH_OAUTH_CONFIG);
     let accessToken = client.createToken(JSON.parse(encoded));
-    while (accessToken.expired(3600)) {
+    while (accessToken.expired(3600) || forceRefresh) {
       try {
+        forceRefresh = false;
         accessToken = await accessToken.refresh();
       } catch (err) {
         if (err.data?.payload?.message === "Invalid refresh token") {
