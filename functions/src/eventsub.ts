@@ -137,6 +137,8 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
       case EventsubType.ChannelRaid:
       case EventsubType.StreamOnline:
       case EventsubType.StreamOffline:
+      case EventsubType.ChannelChannelPointsCustomRewardRedemptionAdd:
+      case EventsubType.ChannelChannelPointsCustomRewardRedemptionUpdate:
         // only log certain events to reduce noise.
         await messageRef.set({
           channelId,
