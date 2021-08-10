@@ -207,6 +207,16 @@ Stream<DeltaEvent> _handleDocumentChange(
           pinned: false);
       yield AppendDeltaEvent(model);
       break;
+    case "channel.cheer":
+      final model = TwitchCheerEventModel(
+          bits: data['event']['bits'],
+          isAnonymous: data['event']['is_anonymous'],
+          cheerMessage: data['event']['message'],
+          giverName: data['event']['user_name'],
+          messageId: change.doc.id,
+          pinned: false);
+      yield AppendDeltaEvent(model);
+      break;
     case "stream.online":
     case "stream.offline":
       final model = StreamStateEventModel(
