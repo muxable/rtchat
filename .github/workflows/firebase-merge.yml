@@ -1,6 +1,13 @@
 name: Deploy to Firebase on merge
 on:
   push:
+    paths:
+      - "functions/**"
+      - "database.rules.json"
+      - ".firebaserc"
+      - "firebase.json"
+      - "firestore.indexes.json"
+      - "firestore.rules"
     branches:
       - main
 
