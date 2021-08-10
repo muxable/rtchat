@@ -123,8 +123,7 @@ class TwitchMessageWidget extends StatelessWidget {
                   } else if (token is EmoteToken) {
                     return WidgetSpan(
                         alignment: PlaceholderAlignment.middle,
-                        child: Image(
-                            image: NetworkImageWithRetry(token.url.toString()),
+                        child: Image.network(token.url.toString(),
                             height: styleModel.fontSize));
                   } else if (token is LinkToken) {
                     return WidgetSpan(
