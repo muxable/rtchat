@@ -47,7 +47,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
               child: RichText(
                 text: TextSpan(
                   children: [
-                    TextSpan(text: model.fromUsername, style: boldStyle),
+                    TextSpan(text: model.from.displayName, style: boldStyle),
                     TextSpan(
                         text: " is raiding with a party of ", style: baseStyle),
                     TextSpan(
