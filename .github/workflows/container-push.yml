@@ -19,27 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-      - run: npm ci
-        working-directory: agent
-      - run: npm run build --if-present
-        working-directory: agent
-      - run: npm test
-        working-directory: agent
-      - uses: google-github-actions/setup-gcloud@master
-        with:
-          version: "331.0.0"
-          service_account_key: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          project_id: rtchat-47692
-
-      # Configure Docker to use the gcloud command-line tool as a credential
-      # helper for authentication
-      - run: |-
-          gcloud --quiet auth configure-docker
-
-      # Get the GKE credentials so we can deploy to the cluster
-      - run: |-
-          gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
       - run: echo $FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON > agent/service_account.json
         env:
@@ -55,6 +34,30 @@ jobs:
         env:
           TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
           TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
+
+      # Check that it builds.
+      # - uses: actions/setup-node@v2
+      # - run: npm ci
+      #   working-directory: agent
+      # - run: npm run build --if-present
+      #   working-directory: agent
+      # - run: npm test
+      #   working-directory: agent
+
+      - uses: google-github-actions/setup-gcloud@master
+        with:
+          version: "331.0.0"
+          service_account_key: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          project_id: rtchat-47692
+
+      # Configure Docker to use the gcloud command-line tool as a credential
+      # helper for authentication
+      - run: |-
+          gcloud --quiet auth configure-docker
+
+      # Get the GKE credentials so we can deploy to the cluster
+      - run: |-
+          gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
       # Build the Docker image
       - name: Build

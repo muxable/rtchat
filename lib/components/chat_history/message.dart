@@ -1,3 +1,4 @@
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -29,6 +30,8 @@ class ChatHistoryMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final m = message;
+    final enableInlineEvents =
+        kDebugMode || RemoteConfig.instance.getBool('inline_events_enabled');
     if (m is TwitchMessageModel) {
       return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         final child = Padding(
@@ -128,17 +131,23 @@ class ChatHistoryMessage extends StatelessWidget {
     } else if (m is TwitchRaidEventModel) {
       return TwitchRaidEventWidget(m);
     } else if (m is TwitchSubscriptionEventModel) {
-      return kDebugMode ? TwitchSubscriptionEventWidget(m) : Container();
+      return enableInlineEvents
+          ? TwitchSubscriptionEventWidget(m)
+          : Container();
     } else if (m is TwitchSubscriptionGiftEventModel) {
-      return kDebugMode ? TwitchSubscriptionGiftEventWidget(m) : Container();
+      return enableInlineEvents
+          ? TwitchSubscriptionGiftEventWidget(m)
+          : Container();
     } else if (m is TwitchSubscriptionMessageEventModel) {
-      return kDebugMode ? TwitchSubscriptionMessageEventWidget(m) : Container();
+      return enableInlineEvents
+          ? TwitchSubscriptionMessageEventWidget(m)
+          : Container();
     } else if (m is StreamStateEventModel) {
       return StreamStateEventWidget(m);
     } else if (m is TwitchFollowEventModel) {
-      return kDebugMode ? TwitchFollowEventWidget(m) : Container();
+      return enableInlineEvents ? TwitchFollowEventWidget(m) : Container();
     } else if (m is TwitchCheerEventModel) {
-      return kDebugMode ? TwitchCheerEventWidget(m) : Container();
+      return enableInlineEvents ? TwitchCheerEventWidget(m) : Container();
     } else {
       throw AssertionError("invalid message type");
     }
