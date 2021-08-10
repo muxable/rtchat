@@ -168,12 +168,8 @@ class App extends StatelessWidget {
           model.addListener(() {
             prefs.setString('tts', jsonEncode(model.toJson()));
           });
-          StreamSubscription<void>? subscription;
           channels.addListener(() {
-            subscription?.cancel();
-            model.clearQueue();
-            model.enabled = false;
-            subscription = channels.chatHistory.listen(model.handleDeltaEvent);
+            model.messages = channels.messages;
           });
           return model;
         }),

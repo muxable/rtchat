@@ -1,27 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:rtchat/models/chat_history.dart';
+import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tts_audio_handler.dart';
 
 class TtsModel extends ChangeNotifier {
   TtsAudioHandler ttsHandler;
 
-  Future<void> handleDeltaEvent(DeltaEvent event) async {
-    if (event is AppendDeltaEvent) {
-      final mediaItem = TtsMediaItem.fromMessageModel(event.model);
-      if (mediaItem != null) {
-        await ttsHandler.addQueueItem(mediaItem);
-      }
-    } else if (event is UpdateDeltaEvent) {
-      for (var i = 0; i < ttsHandler.queue.value.length; i++) {
-        final existingItem = ttsHandler.queue.value[i];
-        if (existingItem.id == event.messageId) {
-          final updated = event.update((existingItem as TtsMediaItem).model);
-          final mediaItem = TtsMediaItem.fromMessageModel(updated);
-          if (mediaItem != null) {
-            await ttsHandler.setQueueItem(i, mediaItem);
-          }
+  set messages(List<MessageModel> messages) {
+    // for tts, we sort of cheat a bit and just append the new messages to the end of the list.
+    final queue = ttsHandler.queue.value;
+    if (queue.isEmpty) {
+      for (final message in messages) {
+        final mediaItem = TtsMediaItem.fromMessageModel(message);
+        if (mediaItem != null) {
+          ttsHandler.addQueueItem(mediaItem);
         }
       }
+      return;
+    }
+    final index = messages
+        .lastIndexWhere((message) => message.messageId == queue.last.id);
+    List<TtsMediaItem> mediaItems = [];
+    for (var i = index + 1; i < messages.length; i++) {
+      final mediaItem = TtsMediaItem.fromMessageModel(messages[i]);
+      if (mediaItem != null) {
+        mediaItems.add(mediaItem);
+      }
+    }
+    if (index == -1) {
+      // looks like we wiped the history, so reset the queue.
+      enabled = false;
+      ttsHandler.updateQueue(mediaItems);
+    } else {
+      ttsHandler.addQueueItems(mediaItems);
     }
   }
 
