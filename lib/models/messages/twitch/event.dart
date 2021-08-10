@@ -23,3 +23,19 @@ class TwitchFollowEventModel extends MessageModel {
     required bool pinned,
   }) : super(messageId: messageId, pinned: pinned);
 }
+
+class TwitchCheerEventModel extends MessageModel {
+  final int bits;
+  final bool isAnonymous;
+  final String cheerMessage;
+  final String giverName;
+
+  const TwitchCheerEventModel({
+    required this.bits,
+    required this.isAnonymous,
+    required this.cheerMessage,
+    required this.giverName,
+    required String messageId,
+    required bool pinned,
+  }) : super(messageId: messageId, pinned: pinned);
+}
