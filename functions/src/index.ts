@@ -323,7 +323,16 @@ export const getUserEmotes = functions.https.onCall(async (data, context) => {
         const emoteInfo = await new Promise<EmoteObj>((resolve) =>
           client.on("emotesets", (set, emotes) => resolve(emotes))
         );
-        return { emotes: Object.values(emoteInfo).flat() };
+        return {
+          emotes: Object.values(emoteInfo)
+            .flat()
+            .map((emote) => {
+              return {
+                ...emote,
+                source: `https://static-cdn.jtvnw.net/emoticons/v2/${emote["id"]}/default/dark/1.0`,
+              };
+            }),
+        };
       } catch (error) {
         console.error(error);
         throw new functions.https.HttpsError(
