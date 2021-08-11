@@ -113,6 +113,7 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
 
   const status = req.body?.subscription?.status;
   if (status === "webhook_callback_verification_pending") {
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
     res.status(200).send(req.body.challenge);
     return;
   } else if (status === "enabled") {
