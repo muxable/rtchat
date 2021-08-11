@@ -57,6 +57,9 @@ class TtsMediaItem extends MediaItem {
           return token.url.host;
         }
       }).join("");
+      if (text.trim().isEmpty) {
+        return "";
+      }
       final author = model.author.displayName ?? model.author.login;
       return model.isAction ? "$author $text" : "$author said $text";
     } else if (model is StreamStateEventModel) {
