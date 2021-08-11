@@ -189,6 +189,8 @@ class TwitchMessageModel extends MessageModel {
 
   bool get isAction => tags['message-type'] == "action";
 
+  bool get isCommand => !isAction && message.startsWith("!");
+
   List<MessageToken> get tokenized => _tokenized ??= tokenize();
   List<MessageToken>? _tokenized;
   List<MessageToken> tokenize() {
