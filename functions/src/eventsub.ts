@@ -128,29 +128,14 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
       req.body.event["to_broadcaster_user_id"]
     }`;
 
-    switch (type) {
-      case EventsubType.ChannelFollow:
-      case EventsubType.ChannelSubscribe:
-      case EventsubType.ChannelSubscriptionGift:
-      case EventsubType.ChannelSubscriptionMessage:
-      case EventsubType.ChannelCheer:
-      case EventsubType.ChannelRaid:
-      case EventsubType.StreamOnline:
-      case EventsubType.StreamOffline:
-      case EventsubType.ChannelChannelPointsCustomRewardRedemptionAdd:
-      case EventsubType.ChannelChannelPointsCustomRewardRedemptionUpdate:
-        // only log certain events to reduce noise.
-        await messageRef.set({
-          channelId,
-          type,
-          timestamp: admin.firestore.Timestamp.fromMillis(
-            Date.parse(timestamp)
-          ),
-          event: req.body.event,
-        });
-        break;
-      default:
-    }
+    await messageRef.set({
+      channelId,
+      type,
+      timestamp: admin.firestore.Timestamp.fromMillis(
+        Date.parse(timestamp)
+      ),
+      event: req.body.event,
+    });
   }
   res.status(200).send();
 });
