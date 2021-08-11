@@ -16,7 +16,6 @@
     "@google-cloud/connect-firestore": "^2.0.1",
     "@google-cloud/pubsub": "^2.16.1",
     "dotenv": "^10.0.0",
-    "express-rate-limit": "^0.0.0-typescript-beta-7",
     "express-session": "^1.17.2",
     "firebase-admin": "^9.11.0",
     "firebase-functions": "^3.14.1",
