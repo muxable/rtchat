@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_image/flutter_image.dart';
 import 'package:linkify/linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
@@ -123,8 +122,9 @@ class TwitchMessageWidget extends StatelessWidget {
                   } else if (token is EmoteToken) {
                     return WidgetSpan(
                         alignment: PlaceholderAlignment.middle,
-                        child: Image(
-                            image: NetworkImageWithRetry(token.url.toString()),
+                        // NetworkImageWithRetry doesn't support animated gifs.
+                        // https://github.com/flutter/flutter/issues/81664
+                        child: Image.network(token.url.toString(),
                             height: styleModel.fontSize));
                   } else if (token is LinkToken) {
                     return WidgetSpan(

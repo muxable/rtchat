@@ -283,7 +283,7 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
         throw new functions.https.HttpsError("internal", "auth error");
       }
       const headers = {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token.token["access_token"]}`,
         "Client-Id": TWITCH_CLIENT_ID,
       };
       const response = await fetch(
@@ -291,7 +291,7 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
         { headers: headers }
       );
       const json = await response.json();
-      if (json["data"].length === 0) {
+      if (!json["data"] || json["data"].length === 0) {
         throw new functions.https.HttpsError("not-found", "image not found");
       }
       const image = await fetch(json["data"][0]["profile_image_url"]);
@@ -323,7 +323,16 @@ export const getUserEmotes = functions.https.onCall(async (data, context) => {
         const emoteInfo = await new Promise<EmoteObj>((resolve) =>
           client.on("emotesets", (set, emotes) => resolve(emotes))
         );
-        return { emotes: Object.values(emoteInfo).flat() };
+        return {
+          emotes: Object.values(emoteInfo)
+            .flat()
+            .map((emote) => {
+              return {
+                ...emote,
+                source: `https://static-cdn.jtvnw.net/emoticons/v2/${emote["id"]}/default/dark/1.0`,
+              };
+            }),
+        };
       } catch (error) {
         console.error(error);
         throw new functions.https.HttpsError(

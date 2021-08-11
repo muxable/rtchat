@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:core';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/chat_history.dart';
+import 'package:rtchat/models/messages/message.dart';
+import 'package:rxdart/rxdart.dart';
 
 class Channel {
   final String provider;
@@ -65,7 +68,10 @@ class ChannelsModel extends ChangeNotifier {
   List<Channel> _availableChannels = [];
 
   Set<Channel> get subscribedChannels => _subscribedChannels;
-  Stream<DeltaEvent> _chatHistory = const Stream.empty();
+
+  StreamSubscription<void>? _subscription;
+
+  List<MessageModel> _messages = [];
 
   set subscribedChannels(Set<Channel> channels) {
     _subscribedChannels = channels;
@@ -74,11 +80,31 @@ class ChannelsModel extends ChangeNotifier {
         _availableChannels.add(channel);
       }
     }
-    _chatHistory = getChatHistory(channels).asBroadcastStream();
+    _messages = [];
     notifyListeners();
+
+    _subscription?.cancel();
+    if (channels.isNotEmpty) {
+      _subscription =
+          getChatHistory(channels).scan<List<MessageModel>>((acc, event, i) {
+        if (event is AppendDeltaEvent) {
+          acc.add(event.model);
+        } else if (event is UpdateDeltaEvent) {
+          for (var i = 0; i < acc.length; i++) {
+            if (acc[i].messageId == event.messageId) {
+              acc[i] = event.update(acc[i]);
+            }
+          }
+        }
+        return acc;
+      }, []).listen((messages) {
+        _messages = messages;
+        notifyListeners();
+      });
+    }
   }
 
-  Stream<DeltaEvent> get chatHistory => _chatHistory;
+  List<MessageModel> get messages => _messages;
 
   List<Channel> get availableChannels => _availableChannels;
 

@@ -44,7 +44,9 @@ Stream<DeltaEvent> _handleDocumentChange(
       final tags = data['tags'];
 
       final author = TwitchUserModel(
-          displayName: tags['display-name'], login: tags['username']);
+          userId: tags['user-id'],
+          displayName: tags['display-name'],
+          login: tags['username']);
 
       final model = TwitchMessageModel(
           messageId: change.doc.id,
@@ -74,15 +76,17 @@ Stream<DeltaEvent> _handleDocumentChange(
             channelId: data['channelId']);
       });
       break;
-    case "raided":
+    case "channel.raid":
       final DateTime timestamp = data['timestamp'].toDate();
       final expiration = timestamp.add(const Duration(seconds: 15));
       final remaining = expiration.difference(DateTime.now());
 
       final model = TwitchRaidEventModel(
           messageId: change.doc.id,
-          profilePictureUrl: data['tags']['msg-param-profileImageURL'],
-          fromUsername: data['username'],
+          from: TwitchUserModel(
+              userId: data['event']['from_broadcaster_user_id'],
+              login: data['event']['from_broadcaster_user_login'],
+              displayName: data['event']['from_broadcaster_user_name']),
           viewers: data['viewers'],
           pinned: remaining > Duration.zero);
       yield AppendDeltaEvent(model);
@@ -95,8 +99,10 @@ Stream<DeltaEvent> _handleDocumentChange(
           }
           return TwitchRaidEventModel(
               messageId: change.doc.id,
-              profilePictureUrl: data['tags']['msg-param-profileImageURL'],
-              fromUsername: data['username'],
+              from: TwitchUserModel(
+                  userId: data['event']['from_broadcaster_user_id'],
+                  login: data['event']['from_broadcaster_user_login'],
+                  displayName: data['event']['from_broadcaster_user_name']),
               viewers: data['viewers'],
               pinned: false);
         });
@@ -203,6 +209,16 @@ Stream<DeltaEvent> _handleDocumentChange(
     case "channel.follow":
       final model = TwitchFollowEventModel(
           followerName: data['event']['user_name'],
+          messageId: change.doc.id,
+          pinned: false);
+      yield AppendDeltaEvent(model);
+      break;
+    case "channel.cheer":
+      final model = TwitchCheerEventModel(
+          bits: data['event']['bits'],
+          isAnonymous: data['event']['is_anonymous'],
+          cheerMessage: data['event']['message'],
+          giverName: data['event']['user_name'],
           messageId: change.doc.id,
           pinned: false);
       yield AppendDeltaEvent(model);

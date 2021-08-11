@@ -24,7 +24,8 @@ class FontSizePickerWidget extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: TwitchMessageWidget(TwitchMessageModel(
                         messageId: "placeholder",
-                        author: const TwitchUserModel(login: 'muxfd'),
+                        author: const TwitchUserModel(
+                            userId: 'muxfd', login: 'muxfd'),
                         tags: {
                           "message-type": "chat",
                           "color": "#800000",
