@@ -32,10 +32,12 @@ const botList = {
 };
 
 class TwitchUserModel {
+  final String userId;
   final String? displayName;
   final String login;
 
-  const TwitchUserModel({this.displayName, required this.login});
+  const TwitchUserModel(
+      {required this.userId, this.displayName, required this.login});
 
   bool get isBot => botList.contains(login.toLowerCase());
 
