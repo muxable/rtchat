@@ -16,8 +16,6 @@ const AGENT_ID = uuidv4();
 
 console.log("running agent", AGENT_ID);
 
-console.log(process.env);
-
 const agent = new Agent(AGENT_ID, {
   pubsub: { client: new PubSub(), projectId: PROJECT_ID },
   chat: new ChatAdapter(),
