@@ -151,9 +151,11 @@ void main() {
   });
 
   test('detect actions and commands', () {
+    const author = TwitchUserModel(userId: 'muxfd', login: 'muxfd');
+
     final chatMessage = TwitchMessageModel(
         messageId: "placeholder",
-        author: const TwitchUserModel(login: 'muxfd'),
+        author: author,
         tags: {
           "message-type": "chat",
           "color": "#800000",
@@ -167,7 +169,7 @@ void main() {
 
     final chatCommand = TwitchMessageModel(
         messageId: "placeholder",
-        author: const TwitchUserModel(login: 'muxfd'),
+        author: author,
         tags: {
           "message-type": "chat",
           "color": "#800000",
@@ -181,7 +183,7 @@ void main() {
 
     final actionMessage = TwitchMessageModel(
         messageId: "placeholder",
-        author: const TwitchUserModel(login: 'muxfd'),
+        author: author,
         tags: {
           "message-type": "action",
           "color": "#800000",
@@ -195,7 +197,7 @@ void main() {
 
     final actionCommand = TwitchMessageModel(
         messageId: "placeholder",
-        author: const TwitchUserModel(login: 'muxfd'),
+        author: author,
         tags: {
           "message-type": "action",
           "color": "#800000",
