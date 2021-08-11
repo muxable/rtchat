@@ -10,6 +10,7 @@ on:
       - "firestore.rules"
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build_and_deploy:
