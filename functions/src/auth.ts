@@ -51,6 +51,7 @@ app.get("/auth/twitch/redirect", (req, res) => {
       "channel:manage:broadcast",
       "channel:manage:polls",
       "channel:manage:predictions",
+      "channel:read:hype_train",
       "channel:read:subscriptions",
       "channel:read:redemptions",
       "moderation:read",
