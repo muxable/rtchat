@@ -187,7 +187,7 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     await super.addQueueItem(mediaItem);
     if (enabled && !isSeeking && !isPlaying) {
       await skipToEnd();
-      await play();
+      await play(fromAutoplay: true);
     }
   }
 
@@ -196,7 +196,7 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     await super.addQueueItems(mediaItems);
     if (enabled && !isSeeking && !isPlaying) {
       await skipToEnd();
-      await play();
+      await play(fromAutoplay: true);
     }
   }
 
