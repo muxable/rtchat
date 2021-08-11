@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -222,6 +223,32 @@ Stream<DeltaEvent> _handleDocumentChange(
           messageId: change.doc.id,
           pinned: false);
       yield AppendDeltaEvent(model);
+      break;
+    case "channel.channel_points_custom_reward_redemption.add":
+      final status = data['event']['status'];
+      if (status == "fulfilled") {
+        final model = TwitchChannelPointRedemptionEventModel(
+            pinned: false,
+            messageId: change.doc.id,
+            redeemerUsername: data['event']['user_name'],
+            status: status,
+            rewardName: data['event']['reward']['title'],
+            rewardCost: data['event']['reward']['cost']);
+        yield AppendDeltaEvent(model);
+      }
+      break;
+    case "channel.channel_points_custom_reward_redemption.update":
+      final status = data['event']['status'];
+      if (status == "fulfilled") {
+        final model = TwitchChannelPointRedemptionEventModel(
+            pinned: false,
+            messageId: change.doc.id,
+            redeemerUsername: data['event']['user_name'],
+            status: status,
+            rewardName: data['event']['reward']['title'],
+            rewardCost: data['event']['reward']['cost']);
+        yield AppendDeltaEvent(model);
+      }
       break;
     case "stream.online":
     case "stream.offline":
