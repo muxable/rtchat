@@ -4,11 +4,20 @@ import * as crypto from "crypto";
 import * as express from "express";
 import * as expressSession from "express-session";
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
 import fetch from "node-fetch";
 import { AuthorizationCode } from "simple-oauth2";
 import { TWITCH_CLIENT_ID, TWITCH_OAUTH_CONFIG } from "./oauth";
+import * as rateLimit from "express-rate-limit";
 
 const app = express();
+
+app.use(
+  rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 5,
+  })
+);
 
 app.use(
   expressSession({
@@ -17,7 +26,7 @@ app.use(
       kind: "express-sessions",
     }),
     name: "__session",
-    secret: "ishdcr78aw34rycn*&#FHCa8e7fh32c",
+    secret: functions.config().express.secret,
     resave: true,
     saveUninitialized: true,
     rolling: true,
