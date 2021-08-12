@@ -92,6 +92,7 @@ export class FirebaseAdapter {
 
   async addMessage(
     channelId: string,
+    channel: string,
     messageId: string,
     message: string,
     timestamp: Date,

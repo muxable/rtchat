@@ -63,6 +63,7 @@ export async function runTwitchAgent(agentId: string) {
     // strip off the action data.
     firebase.addMessage(
       message.tags.roomId,
+      message.channel,
       message.tags.id,
       actionMessage ? actionMessage[1] : message.message,
       message.timestamp,
