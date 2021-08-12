@@ -1,6 +1,13 @@
 import * as tmi from "tmi.js";
 import * as admin from "firebase-admin";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
+import {
+  ClearMessageMessage,
+  Messages,
+  PrivateMessage,
+  PrivateMessage,
+  UserStateTags,
+} from "twitch-js";
 
 const TWITCH_CLIENT_ID = process.env["TWITCH_CLIENT_ID"];
 const TWITCH_CLIENT_SECRET = process.env["TWITCH_CLIENT_SECRET"];
@@ -81,22 +88,22 @@ export class FirebaseAdapter {
     };
   }
 
-  async addMessage(channel: string, tags: tmi.ChatUserstate, message: string) {
-    await this.getMessage(`twitch:${tags.id}`).set({
-      channel,
-      channelId: `twitch:${tags["room-id"]}`,
+  async addMessage(message: PrivateMessage) {
+    await this.getMessage(`twitch:${message.tags.id}`).set({
+      channel: message.channel,
+      channelId: `twitch:${message.tags.roomId}`,
       type: "message",
-      timestamp: parseTimestamp(tags["tmi-sent-ts"]),
-      tags,
+      timestamp: parseTimestamp(message.tags.tmiSentTs),
+      tags: message.tags,
       message,
     });
   }
 
-  async deleteMessage(channel: string, tags: any) {
-    const messageId = tags["target-msg-id"];
+  async deleteMessage(message: ClearMessageMessage) {
+    const messageId = message.tags.targetMsgId;
 
     if (!messageId) {
-      console.error("received empty message id", tags);
+      console.error("received empty message id", message);
       return;
     }
 
@@ -107,24 +114,12 @@ export class FirebaseAdapter {
     }
 
     await this.getMessage(`twitch:x-${messageId}`).set({
-      channel,
+      channel: message.channel,
       channelId: original.get("channelId"),
       type: "messagedeleted",
-      timestamp: parseTimestamp(tags["tmi-sent-ts"]),
-      tags,
+      timestamp: admin.firestore.Timestamp.fromDate(message.timestamp),
+      tags: message.tags,
       messageId,
-    });
-  }
-
-  async addRaid(channel: string, username: string, viewers: number, tags: any) {
-    await this.getMessage(`twitch:${tags.id}`).set({
-      channel,
-      channelId: `twitch:${tags["room-id"]}`,
-      type: "raided",
-      timestamp: parseTimestamp(tags["tmi-sent-ts"]),
-      tags,
-      username,
-      viewers,
     });
   }
 
