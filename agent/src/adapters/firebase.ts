@@ -1,13 +1,6 @@
-import * as tmi from "tmi.js";
 import * as admin from "firebase-admin";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
-import {
-  ClearMessageMessage,
-  Messages,
-  PrivateMessage,
-  PrivateMessage,
-  UserStateTags,
-} from "twitch-js";
+import { ClearMessageMessage, PrivateMessage } from "twitch-js";
 
 const TWITCH_CLIENT_ID = process.env["TWITCH_CLIENT_ID"];
 const TWITCH_CLIENT_SECRET = process.env["TWITCH_CLIENT_SECRET"];
@@ -42,29 +35,37 @@ function getBotUserId(provider: string) {
   }
 }
 
+/**
+ * Computes the difference between two sets.
+ */
+function diff<T>(a: Set<T>, b: Set<T>) {
+  return new Set<T>(Array.from(a).filter((x) => !b.has(x)));
+}
+
 export class FirebaseAdapter {
   constructor(
     private firebase: admin.database.Database,
-    private firestore: admin.firestore.Firestore
+    private firestore: admin.firestore.Firestore,
+    private provider: string
   ) {}
 
   private getMessage(key: string) {
     return this.firestore.collection("messages").doc(key);
   }
 
-  async getCredentials(provider: string, forceRefresh = false) {
-    const userId = getBotUserId(provider);
+  async getCredentials(forceRefresh = false) {
+    const userId = getBotUserId(this.provider);
     if (!userId) {
       throw new Error("invalid provider");
     }
 
     const username = (
       await this.firestore.collection("profiles").doc(userId).get()
-    ).get(provider)["login"] as string;
+    ).get(this.provider)["login"] as string;
 
     // fetch the token from the database.
     const ref = this.firestore.collection("tokens").doc(userId);
-    const encoded = (await ref.get()).get(provider);
+    const encoded = (await ref.get()).get(this.provider);
     if (!encoded) {
       throw new Error("token not found");
     }
@@ -81,32 +82,30 @@ export class FirebaseAdapter {
         throw err;
       }
     }
-    await ref.update({ [provider]: JSON.stringify(accessToken.token) });
+    await ref.update({ [this.provider]: JSON.stringify(accessToken.token) });
     return {
       token: accessToken.token,
       username,
     };
   }
 
-  async addMessage(message: PrivateMessage) {
-    await this.getMessage(`twitch:${message.tags.id}`).set({
-      channel: message.channel,
-      channelId: `twitch:${message.tags.roomId}`,
+  async addMessage(
+    channelId: string,
+    messageId: string,
+    message: string,
+    timestamp: Date,
+    tags: any
+  ) {
+    await this.getMessage(`twitch:${messageId}`).set({
+      channelId: `${this.provider}:${channelId}`,
       type: "message",
-      timestamp: parseTimestamp(message.tags.tmiSentTs),
-      tags: message.tags,
+      timestamp: admin.firestore.Timestamp.fromDate(timestamp),
+      tags,
       message,
     });
   }
 
-  async deleteMessage(message: ClearMessageMessage) {
-    const messageId = message.tags.targetMsgId;
-
-    if (!messageId) {
-      console.error("received empty message id", message);
-      return;
-    }
-
+  async deleteMessage(messageId: string, timestamp: Date, tags: any) {
     const original = await this.getMessage(`twitch:${messageId}`).get();
 
     if (!original.exists) {
@@ -114,40 +113,61 @@ export class FirebaseAdapter {
     }
 
     await this.getMessage(`twitch:x-${messageId}`).set({
-      channel: message.channel,
       channelId: original.get("channelId"),
       type: "messagedeleted",
-      timestamp: admin.firestore.Timestamp.fromDate(message.timestamp),
-      tags: message.tags,
+      timestamp: admin.firestore.Timestamp.fromDate(timestamp),
+      tags,
       messageId,
     });
   }
 
-  // returns true if the lock was aqcuired properly.
-  async lock(provider: string, channel: string, agentId: string) {
-    console.log("locking", provider, channel, agentId);
-    const lockRef = this.firebase.ref("locks").child(provider).child(channel);
-    return new Promise<boolean>((resolve) => {
-      lockRef.transaction(
-        (current) => {
-          if (!current) {
-            return agentId;
-          }
-        },
-        (error, committed) => {
-          if (error) {
-            console.error(error);
-          }
-          resolve(committed);
-        }
-      );
-    });
-  }
+  onAssignment(
+    provider: string,
+    agentId: string,
+    join: (channel: string) => Promise<void>,
+    leave: (channel: string) => Promise<void>
+  ): () => void {
+    const channels = new Set<string>();
+    const ref = this.firebase.ref("agents").child(provider);
 
-  // returns true if the lock was released properly.
-  async unlock(provider: string, channel: string, agentId: string) {
-    console.log("unlocking", provider, channel, agentId);
-    await this.firebase.ref("locks").child(provider).child(channel).set(null);
-    return true;
+    const claimListener = async (snapshot: admin.database.DataSnapshot) => {
+      const channel = Object.keys(snapshot.val()).pop();
+      if (!channel) {
+        return;
+      }
+      ref.child(channel).transaction((data) => {
+        if (data !== "") {
+          return;
+        }
+        return agentId;
+      });
+    };
+
+    const assignListener = async (snapshot: admin.database.DataSnapshot) => {
+      const requestedChannels = new Set(Object.keys(snapshot.val() || {}));
+
+      // TODO: handle join failure in a way that doesn't cause infinite loops.
+      const add = diff(channels, requestedChannels);
+      const remove = diff(channels, requestedChannels);
+      for (const channel of add) {
+        await join(channel);
+        channels.add(channel);
+      }
+      for (const channel of remove) {
+        await leave(channel);
+        channels.delete(channel);
+      }
+    };
+
+    const claimRef = ref.orderByValue().limitToFirst(1).equalTo("");
+    const assignRef = ref.orderByValue().equalTo("");
+
+    assignRef.on("value", assignListener);
+    claimRef.on("value", claimListener);
+
+    return () => {
+      claimRef.off("value", claimListener);
+      assignRef.off("value", assignListener);
+    };
   }
 }
