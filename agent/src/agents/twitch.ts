@@ -36,10 +36,10 @@ function tmiJsTagsShim(
     "display-name": tags.displayName,
     "room-id": tags.roomId,
     "message-type": isAction ? "action" : "chat",
-    "badges-raw": badgesRaw ? badgesRaw[1] : "",
+    "badges-raw": badgesRaw ? badgesRaw[1] : null,
     "emote-only": tags.emoteOnly === "1",
     emotes: tmiJsEmotes(emotesRaw ? emotesRaw[1] : ""),
-    "emotes-raw": emotesRaw ? emotesRaw[1] : "",
+    "emotes-raw": emotesRaw ? emotesRaw[1] : null,
     // the frontend expects null color instead of an empty string. oops.
     color: tags.color == "" ? null : tags.color,
   };
