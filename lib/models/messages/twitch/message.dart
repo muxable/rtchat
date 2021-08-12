@@ -175,14 +175,6 @@ class TwitchMessageModel extends MessageModel {
       required this.channelId})
       : super(messageId: messageId, pinned: null);
 
-  bool get emoteOnly {
-    return tags['emote-only'] == true;
-  }
-
-  bool get hasEmote {
-    return tags['emotes'] != null ? true : false;
-  }
-
   List<_BadgeData> get badges =>
       _badges ??= parseBadges(tags['badges-raw'] ?? "");
   List<_BadgeData>? _badges;
