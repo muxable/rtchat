@@ -1,7 +1,10 @@
+import { PubSub } from "@google-cloud/pubsub";
 import * as admin from "firebase-admin";
 import { v4 as uuidv4 } from "uuid";
 import * as serviceAccount from "../service_account.json";
-import { runTwitchAgent } from "./agents/twitch";
+import { ChatAdapter } from "./adapters/chat";
+import { FirebaseAdapter } from "./adapters/firebase";
+import { Agent } from "./agent";
 
 const PROJECT_ID = serviceAccount.project_id;
 
@@ -13,12 +16,20 @@ const AGENT_ID = uuidv4();
 
 console.log("running agent", AGENT_ID);
 
-runTwitchAgent(AGENT_ID).then((close) => {
-  for (const signal of ["SIGINT", "SIGTERM", "uncaughtException"]) {
-    process.on(signal, async (err) => {
-      console.error("received", signal, "with error", err);
-      await close();
-      process.exit(0);
-    });
-  }
+const agent = new Agent(AGENT_ID, {
+  pubsub: { client: new PubSub(), projectId: PROJECT_ID },
+  chat: new ChatAdapter(),
+  firebase: new FirebaseAdapter(admin.database(), admin.firestore()),
+});
+
+process.on("SIGTERM", async () => {
+  console.log("RECEIVED SIGTERM");
+  await agent.disconnect();
+  process.exit(0);
+});
+
+process.on("uncaughtException", async (err) => {
+  console.error(err);
+  await agent.disconnect();
+  process.exit(1);
 });
