@@ -59,6 +59,7 @@ export async function runTwitchAgent(agentId: string) {
     token: token["access_token"],
     onAuthenticationFailure: async () => {
       const { token } = await firebase.getCredentials(true);
+      console.log("auth failure", token);
       return token["access_token"];
     },
   });
