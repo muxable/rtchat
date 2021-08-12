@@ -1,14 +1,27 @@
 import * as admin from "firebase-admin";
-import TwitchJs, { UserStateTags } from "twitch-js";
+import TwitchJs, { PrivateMessage, PrivateMessageWithBits } from "twitch-js";
 import { FirebaseAdapter } from "../adapters/firebase";
 
-function tmiJsTagsShim(tags: UserStateTags) {
+const ACTION_MESSAGE_REGEX = /^\u0001ACTION ([^\u0001]+)\u0001$/;
+const BADGES_RAW_REGEX = /badges=([^;]+);/;
+const EMOTES_RAW_REGEX = /emotes=([^;]+);/;
+
+function tmiJsTagsShim(
+  message: PrivateMessage | PrivateMessageWithBits,
+  isAction: boolean
+) {
+  const tags = message.tags;
+
+  const badgesRaw = message._raw.match(BADGES_RAW_REGEX);
+  const emotesRaw = message._raw.match(EMOTES_RAW_REGEX);
+
   return {
     "user-id": tags.userId,
     "display-name": tags.displayName,
     "room-id": tags.roomId,
-    "emote-only": tags.emoteOnly,
-    ...tags,
+    "message-type": isAction ? "action" : "chat",
+    "badges-raw": badgesRaw ? badgesRaw[1] : "",
+    "emotes-raw": emotesRaw ? emotesRaw[1] : "",
   };
 }
 
@@ -16,7 +29,7 @@ export async function runTwitchAgent(agentId: string) {
   const firebase = new FirebaseAdapter(
     admin.database(),
     admin.firestore(),
-    "twitcH"
+    "twitch"
   );
 
   const { username, token } = await firebase.getCredentials();
@@ -41,12 +54,21 @@ export async function runTwitchAgent(agentId: string) {
     ) {
       return;
     }
+
+    const actionMessage = message.message.match(ACTION_MESSAGE_REGEX);
+    const isAction = Boolean(actionMessage);
+
+    // strip off the action data.
     firebase.addMessage(
       message.tags.roomId,
       message.tags.id,
-      message.message,
+      actionMessage ? actionMessage[1] : message.message,
       message.timestamp,
-      tmiJsTagsShim(message.tags)
+      {
+        ...message.tags,
+        isAction,
+        ...tmiJsTagsShim(message, isAction),
+      }
     );
   });
 
@@ -67,15 +89,19 @@ export async function runTwitchAgent(agentId: string) {
     "twitch",
     agentId,
     async (channel) => {
+      console.log(`[twitch] Assigned to channel: ${channel}`);
       await twitch.chat.join(channel);
     },
     async (channel) => {
+      console.log(`[twitch] Unassigned from channel: ${channel}`);
       await twitch.chat.part(channel);
     }
   );
 
-  return () => {
-    unsubscribe();
+  return async () => {
+    console.log(`[twitch] Disconnecting from Twitch`);
+
+    await unsubscribe();
 
     twitch.chat.disconnect();
   };

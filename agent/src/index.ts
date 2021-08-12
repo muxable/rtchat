@@ -17,7 +17,7 @@ runTwitchAgent(AGENT_ID).then((close) => {
   for (const signal of ["SIGINT", "SIGTERM", "uncaughtException"]) {
     process.on(signal, async (err) => {
       console.error("received", signal, "with error", err);
-      close();
+      await close();
       process.exit(0);
     });
   }

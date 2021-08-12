@@ -1,10 +1,12 @@
 import * as admin from "firebase-admin";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
-import { ClearMessageMessage, PrivateMessage } from "twitch-js";
 
 const TWITCH_CLIENT_ID = process.env["TWITCH_CLIENT_ID"];
 const TWITCH_CLIENT_SECRET = process.env["TWITCH_CLIENT_SECRET"];
 const TWITCH_BOT_USER_ID = process.env["TWITCH_BOT_USER_ID"];
+if (!TWITCH_CLIENT_ID || !TWITCH_CLIENT_SECRET || !TWITCH_BOT_USER_ID) {
+  throw new Error("Missing environment variables");
+}
 
 export const TWITCH_OAUTH_CONFIG = {
   client: {
@@ -28,10 +30,10 @@ export function parseTimestamp(
   return admin.firestore.Timestamp.fromMillis(Number(timestamp));
 }
 
-function getBotUserId(provider: string) {
+function getBotUserId(provider: "twitch") {
   switch (provider) {
     case "twitch":
-      return TWITCH_BOT_USER_ID;
+      return TWITCH_BOT_USER_ID!;
   }
 }
 
@@ -46,8 +48,10 @@ export class FirebaseAdapter {
   constructor(
     private firebase: admin.database.Database,
     private firestore: admin.firestore.Firestore,
-    private provider: string
-  ) {}
+    private provider: "twitch"
+  ) {
+    firestore.settings({ ignoreUndefinedProperties: true });
+  }
 
   private getMessage(key: string) {
     return this.firestore.collection("messages").doc(key);
@@ -55,9 +59,6 @@ export class FirebaseAdapter {
 
   async getCredentials(forceRefresh = false) {
     const userId = getBotUserId(this.provider);
-    if (!userId) {
-      throw new Error("invalid provider");
-    }
 
     const username = (
       await this.firestore.collection("profiles").doc(userId).get()
@@ -126,16 +127,16 @@ export class FirebaseAdapter {
     agentId: string,
     join: (channel: string) => Promise<void>,
     leave: (channel: string) => Promise<void>
-  ): () => void {
+  ) {
     const channels = new Set<string>();
     const ref = this.firebase.ref("agents").child(provider);
 
     const claimListener = async (snapshot: admin.database.DataSnapshot) => {
-      const channel = Object.keys(snapshot.val()).pop();
+      const channel = Object.keys(snapshot.val() || {}).pop();
       if (!channel) {
         return;
       }
-      ref.child(channel).transaction((data) => {
+      await ref.child(channel).transaction((data) => {
         if (data !== "") {
           return;
         }
@@ -147,7 +148,7 @@ export class FirebaseAdapter {
       const requestedChannels = new Set(Object.keys(snapshot.val() || {}));
 
       // TODO: handle join failure in a way that doesn't cause infinite loops.
-      const add = diff(channels, requestedChannels);
+      const add = diff(requestedChannels, channels);
       const remove = diff(channels, requestedChannels);
       for (const channel of add) {
         await join(channel);
@@ -160,14 +161,21 @@ export class FirebaseAdapter {
     };
 
     const claimRef = ref.orderByValue().limitToFirst(1).equalTo("");
-    const assignRef = ref.orderByValue().equalTo("");
+    const assignRef = ref.orderByValue().equalTo(agentId);
 
     assignRef.on("value", assignListener);
     claimRef.on("value", claimListener);
 
-    return () => {
+    return async () => {
       claimRef.off("value", claimListener);
       assignRef.off("value", assignListener);
+
+      // remove all existing channel claims.
+      const update: { [key: string]: "" } = {};
+      for (const channel of channels) {
+        update[channel] = "";
+      }
+      await ref.update(update);
     };
   }
 }
