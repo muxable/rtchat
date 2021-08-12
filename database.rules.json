@@ -6,11 +6,6 @@
       "$provider": {
         ".indexOn": ".value"
       }
-    },
-    "agents": {
-      "$provider": {
-        ".indexOn": ".value"
-      }
     }
   }
 }

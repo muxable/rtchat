@@ -3,7 +3,6 @@
     "target": "es2019",
     "module": "commonjs",
     "resolveJsonModule": true,
-    "esModuleInterop": true,
     "types": ["node", "jest"],
     "strict": true
   }
