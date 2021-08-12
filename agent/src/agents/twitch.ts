@@ -6,6 +6,22 @@ const ACTION_MESSAGE_REGEX = /^\u0001ACTION ([^\u0001]+)\u0001$/;
 const BADGES_RAW_REGEX = /badges=([^;]+);/;
 const EMOTES_RAW_REGEX = /emotes=([^;]+);/;
 
+function tmiJsEmotes(emotes: string) {
+  if (emotes.length === 0) {
+    return null;
+  }
+  const map: { [key: string]: string[] } = {};
+  for (const block of emotes.split("/")) {
+    const [key, value] = block.split(":");
+    if (map[key]) {
+      map[key].push(value);
+    } else {
+      map[key] = [value];
+    }
+  }
+  return map;
+}
+
 function tmiJsTagsShim(
   message: PrivateMessage | PrivateMessageWithBits,
   isAction: boolean
@@ -21,6 +37,8 @@ function tmiJsTagsShim(
     "room-id": tags.roomId,
     "message-type": isAction ? "action" : "chat",
     "badges-raw": badgesRaw ? badgesRaw[1] : "",
+    "emote-only": tags.emoteOnly === "1",
+    emotes: tmiJsEmotes(emotesRaw ? emotesRaw[1] : ""),
     "emotes-raw": emotesRaw ? emotesRaw[1] : "",
     // the frontend expects null color instead of an empty string. oops.
     color: tags.color == "" ? null : tags.color,

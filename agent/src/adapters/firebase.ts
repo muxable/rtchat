@@ -100,6 +100,7 @@ export class FirebaseAdapter {
   ) {
     await this.getMessage(`twitch:${messageId}`).set({
       channelId: `${this.provider}:${channelId}`,
+      channel,
       type: "message",
       timestamp: admin.firestore.Timestamp.fromDate(timestamp),
       tags,
