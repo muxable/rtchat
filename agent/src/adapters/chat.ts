@@ -31,6 +31,14 @@ type ChatClient = {
   disconnect: (reconnect: boolean, persistDelay: number) => Promise<void>;
 };
 
+export function ChatClient(provider: "twitch", channel: string) {
+  switch (provider) {
+    case "twitch":
+      const { chat } = new TwitchJs({username: TWITCH_BOT_USER_ID
+      
+  }
+}
+
 export class ChatAdapter {
   readonly clients: ChatClient[] = [];
 
