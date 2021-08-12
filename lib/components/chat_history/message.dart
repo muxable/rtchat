@@ -7,6 +7,7 @@ import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
 import 'package:rtchat/components/chat_history/twitch/cheer_event.dart';
 import 'package:rtchat/components/chat_history/twitch/follow_event.dart';
+import 'package:rtchat/components/chat_history/twitch/hype_train_event.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
@@ -16,6 +17,7 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
@@ -148,6 +150,8 @@ class ChatHistoryMessage extends StatelessWidget {
       return enableInlineEvents ? TwitchFollowEventWidget(m) : Container();
     } else if (m is TwitchCheerEventModel) {
       return enableInlineEvents ? TwitchCheerEventWidget(m) : Container();
+    } else if (m is TwitchHypeTrainEventModel) {
+      return enableInlineEvents ? TwitchHypeTrainEventWidget(m) : Container();
     } else {
       throw AssertionError("invalid message type");
     }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -222,6 +223,56 @@ Stream<DeltaEvent> _handleDocumentChange(
           messageId: change.doc.id,
           pinned: false);
       yield AppendDeltaEvent(model);
+      break;
+    case "channel.hype_train.begin":
+      final model = TwitchHypeTrainEventModel(
+          pinned: true,
+          messageId: "train${data['event']['id']}",
+          level: 1,
+          progress: data['event']['progress'],
+          goal: data['event']['goal'],
+          total: data['event']['total']);
+      yield AppendDeltaEvent(model);
+      break;
+    case "channel.hype_train.progress":
+      yield UpdateDeltaEvent("train${data['event']['id']}", (message) {
+        if (message is! TwitchHypeTrainEventModel) {
+          return message;
+        }
+        // Since you can receive duplicates and order is not guaranteed
+        var level = data['event']['level'];
+        var total = data['event']['total'];
+        if (message.level > level || message.total > total) {
+          return message;
+        }
+        return TwitchHypeTrainEventModel(
+            pinned: true,
+            messageId: "train${data['event']['id']}",
+            level: level,
+            progress: data['event']['progress'],
+            goal: data['event']['goal'],
+            total: total);
+      });
+      break;
+    case "channel.hype_train.end":
+      yield UpdateDeltaEvent("train${data['event']['id']}", (message) {
+        if (message is! TwitchHypeTrainEventModel) {
+          return message;
+        }
+        // Since you can receive duplicates and order is not guaranteed
+        var level = data['event']['level'];
+        var total = data['event']['total'];
+        if (message.level > level || message.total > total) {
+          return message;
+        }
+        return TwitchHypeTrainEventModel(
+            pinned: true,
+            messageId: "train${data['event']['id']}",
+            level: level,
+            progress: data['event']['progress'],
+            goal: data['event']['goal'],
+            total: total);
+      });
       break;
     case "stream.online":
     case "stream.offline":
