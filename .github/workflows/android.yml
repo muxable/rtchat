@@ -6,6 +6,8 @@ on:
       - "android/**"
       - "assets/**"
       - "lib/**"
+      - "pubspec.lock"
+      - "pubspec.yaml"
     branches:
       - main
   release:
