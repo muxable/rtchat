@@ -23,13 +23,13 @@ jobs:
       - name: Set environment to alpha
         if: ${{ github.event_name == 'push' }}
         run: echo "track=alpha" >> $GITHUB_ENV
-      - uses: actions-ecosystem/action-get-latest-tag@v1
-        id: get-latest-tag
 
       - uses: actions/checkout@v2
       - run: echo $UPLOAD_KEYSTORE | base64 -d > android/app/upload-keystore.jks
         env:
           UPLOAD_KEYSTORE: ${{ secrets.UPLOAD_KEYSTORE }}
+      - uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
       - uses: actions/setup-java@v1
         with:
           java-version: "12.x"

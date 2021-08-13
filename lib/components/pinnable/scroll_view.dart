@@ -29,6 +29,9 @@ class PinnableMessageScrollView extends ScrollView {
 
   @override
   List<Widget> buildSlivers(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final pinnedSliverColor =
+        brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[300];
     final slivers = <Widget>[];
     // this is an optimization to improve pinning performance by skipping
     // messages that can't be pinned.
@@ -56,7 +59,7 @@ class PinnableMessageScrollView extends ScrollView {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
-          color: pinned ? Colors.grey[900] : Colors.transparent,
+          color: pinned ? pinnedSliverColor : Colors.transparent,
           child: itemBuilder(nextPinnableIndex),
         ),
       );
