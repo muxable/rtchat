@@ -11,6 +11,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
@@ -83,6 +84,11 @@ void main() async {
         androidNotificationChannelName: 'Text to speech',
       ),
     );
+
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarBrightness: Brightness.dark,
+    ));
+
     runApp(App(prefs: prefs, ttsHandler: ttsHandler));
   }, FirebaseCrashlytics.instance.recordError);
 
