@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_image/flutter_image.dart';
-import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 
 class EmotePickerWidget extends StatelessWidget {
@@ -28,9 +27,10 @@ class EmotePickerWidget extends StatelessWidget {
       height: (MediaQuery.of(context).size.width / _emoteColumns) * _rowNumber +
           _footerHeight,
       child: Column(children: <Widget>[
-        Consumer<TwitchEmoteSets>(
-          builder: (context, model, child) {
-            final emotes = model.emotes[channelId] ?? [];
+        FutureBuilder<List<Emote>>(
+          future: getTwitchEmotes(channelId),
+          initialData: const [],
+          builder: (context, snapshot) {
             return Flexible(
               child: CustomScrollView(
                 shrinkWrap: true,
@@ -39,11 +39,12 @@ class EmotePickerWidget extends StatelessWidget {
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: _emoteColumns),
-                    delegate: SliverChildListDelegate.fixed(emotes
+                    delegate: SliverChildListDelegate.fixed(snapshot.data!
                         .map((emote) => IconButton(
                             onPressed: () => onEmoteSelected(emote),
                             icon: Image(
-                                image: NetworkImageWithRetry(emote.source))))
+                                image: NetworkImageWithRetry(
+                                    emote.source.toString()))))
                         .toList()),
                   ),
                 ],

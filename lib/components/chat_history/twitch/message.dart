@@ -54,8 +54,8 @@ class TwitchMessageWidget extends StatelessWidget {
   const TwitchMessageWidget(this.model, {Key? key}) : super(key: key);
 
   Color get color {
-    final color = model.tags['color'];
-    if (color != null) {
+    final color = model.tags['color'] ?? "";
+    if (color.isNotEmpty) {
       return Color(int.parse("0xff${color.substring(1)}"));
     }
     return model.author.color;
