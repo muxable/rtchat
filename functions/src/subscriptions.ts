@@ -1,10 +1,7 @@
-import { PubSub } from "@google-cloud/pubsub";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { checkEventSubSubscriptions } from "./eventsub";
 import { getTwitchLogin } from "./twitch";
-
-const PROJECT_ID = "rtchat-47692";
 
 export const subscribe = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -18,8 +15,6 @@ export const subscribe = functions.https.onCall(async (data, context) => {
       "missing provider, channelId"
     );
   }
-
-  const pubsub = new PubSub({ projectId: PROJECT_ID });
 
   switch (provider) {
     case "twitch":
@@ -39,90 +34,23 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         .child(channel)
         .set(admin.database.ServerValue.TIMESTAMP);
 
+      // acquire an agent. this might cause a reconnection but it's ok because
+      // the user just opened the app.
+      await admin
+        .database()
+        .ref("agents")
+        .child(provider)
+        .child(channel)
+        .set("");
+
       await checkEventSubSubscriptions(context.auth.uid);
-      // check if it's currently locked
-      const lock = await admin
-        .database()
-        .ref("locks")
-        .child(provider)
-        .child(channel)
-        .get();
-      if (lock.exists()) {
-        return channel;
-      }
-      await pubsub
-        .topic(`projects/${PROJECT_ID}/topics/subscribe`)
-        .publish(Buffer.from(JSON.stringify({ provider, channel })));
-
-      // acquire an agent if there's not already one.
-      await admin
-        .database()
-        .ref("agents")
-        .child(provider)
-        .child(channel)
-        .transaction((data) => {
-          if (!data) {
-            return "";
-          }
-          return;
-        });
 
       return channel;
   }
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
-export const unsubscribe = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("permission-denied", "missing auth");
-  }
-  const provider = data?.provider;
-  const channelId = data?.channelId;
-  if (!provider || !channelId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId"
-    );
-  }
-
-  const pubsub = new PubSub({ projectId: PROJECT_ID });
-
-  switch (provider) {
-    case "twitch":
-      const channel = await getTwitchLogin(context.auth.uid, channelId);
-      if (!channel) {
-        throw new functions.https.HttpsError(
-          "invalid-argument",
-          "invalid channel"
-        );
-      }
-
-      // clear the subscription.
-      await admin
-        .database()
-        .ref("subscriptions")
-        .child(provider)
-        .child(channel)
-        .set(null);
-
-      await pubsub
-        .topic(`projects/${PROJECT_ID}/topics/unsubscribe`)
-        .publish(Buffer.from(JSON.stringify({ provider, channel })));
-
-      // release the agent.
-      await admin
-        .database()
-        .ref("agents")
-        .child(provider)
-        .child(channel)
-        .set(null);
-
-      return channel;
-  }
-  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
-});
-
-export const unsubscribeCron = functions.pubsub
+export const unsubscribe = functions.pubsub
   .schedule("0 4 * * *") // daily at 4a
   .onRun(async (context) => {
     const limit = Date.now() - 7 * 86400 * 1000;
@@ -131,7 +59,6 @@ export const unsubscribeCron = functions.pubsub
     const providers = subscriptions.val() as {
       [provider: string]: { [channel: string]: number };
     };
-    const pubsub = new PubSub({ projectId: PROJECT_ID });
 
     for (const [provider, channels] of Object.entries(providers)) {
       for (const [channel, timestamp] of Object.entries(channels)) {
@@ -143,9 +70,14 @@ export const unsubscribeCron = functions.pubsub
           case "twitch":
             console.log("unsubscribing from", provider, channel);
 
-            await pubsub
-              .topic(`projects/${PROJECT_ID}/topics/unsubscribe`)
-              .publish(Buffer.from(JSON.stringify({ provider, channel })));
+            // release the agent.
+            await admin
+              .database()
+              .ref("agents")
+              .child(provider)
+              .child(channel)
+              .set(null);
+
             await subscriptionsRef.child(provider).child(channel).set(null);
         }
       }

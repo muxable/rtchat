@@ -87,7 +87,7 @@ Stream<DeltaEvent> _handleDocumentChange(
               userId: data['event']['from_broadcaster_user_id'],
               login: data['event']['from_broadcaster_user_login'],
               displayName: data['event']['from_broadcaster_user_name']),
-          viewers: data['viewers'],
+          viewers: data['event']['viewers'],
           pinned: remaining > Duration.zero);
       yield AppendDeltaEvent(model);
 
@@ -103,7 +103,7 @@ Stream<DeltaEvent> _handleDocumentChange(
                   userId: data['event']['from_broadcaster_user_id'],
                   login: data['event']['from_broadcaster_user_login'],
                   displayName: data['event']['from_broadcaster_user_name']),
-              viewers: data['viewers'],
+              viewers: data['event']['viewers'],
               pinned: false);
         });
       }
