@@ -16,6 +16,7 @@
     "dotenv": "^10.0.0",
     "firebase-admin": "^9.11.0",
     "node-fetch": "^2.6.1",
+    "rxjs": "^7.3.0",
     "simple-oauth2": "^4.2.0",
     "ts-node": "^10.1.0",
     "twitch-js": "^2.0.0-beta.42",
