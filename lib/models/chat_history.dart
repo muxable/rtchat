@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/twitch/hype_train_end_event.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
@@ -240,8 +241,8 @@ Stream<DeltaEvent> _handleDocumentChange(
           return message;
         }
         // Since you can receive duplicates and order is not guaranteed
-        var level = data['event']['level'];
-        var total = data['event']['total'];
+        final level = data['event']['level'];
+        final total = data['event']['total'];
         if (message.level > level || message.total > total) {
           return message;
         }
@@ -255,24 +256,38 @@ Stream<DeltaEvent> _handleDocumentChange(
       });
       break;
     case "channel.hype_train.end":
+      final DateTime timestamp = data['timestamp'].toDate();
+      final expiration = timestamp.add(const Duration(seconds: 20));
+      final remaining = expiration.difference(DateTime.now());
+
       yield UpdateDeltaEvent("train${data['event']['id']}", (message) {
         if (message is! TwitchHypeTrainEventModel) {
           return message;
         }
-        // Since you can receive duplicates and order is not guaranteed
-        var level = data['event']['level'];
-        var total = data['event']['total'];
-        if (message.level > level || message.total > total) {
-          return message;
-        }
-        return TwitchHypeTrainEventModel(
+        return TwitchHypeTrainEndEventModel(
             pinned: true,
             messageId: "train${data['event']['id']}",
-            level: level,
-            progress: data['event']['progress'],
-            goal: data['event']['goal'],
-            total: total);
+            level: data['event']['level'],
+            total: data['event']['total'],
+            wasSuccessful: message.progress >= message.total ? true : false);
       });
+
+      if (remaining > Duration.zero) {
+        await Future.delayed(remaining);
+        yield UpdateDeltaEvent("train${data['event']['id']}", (message) {
+          if (message is! TwitchHypeTrainEndEventModel) {
+            return message;
+          }
+
+          return TwitchHypeTrainEndEventModel(
+              pinned: false,
+              messageId: "train${data['event']['id']}",
+              level: message.level,
+              total: message.total,
+              wasSuccessful: message.wasSuccessful);
+        });
+      }
+
       break;
     case "stream.online":
     case "stream.offline":
