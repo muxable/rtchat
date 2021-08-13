@@ -8,11 +8,23 @@ on:
       - "lib/**"
     branches:
       - main
+  release:
+    types: [published]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Set environment to prod
+        if: ${{ github.event.action == "release" && !github.event.release.prerelease }}
+        run: echo "track=production" >> $GITHUB_ENV
+      - name: Set environment to beta
+        if: ${{ github.event.action == "release" && github.event.release.prerelease }}
+        run: echo "track=beta" >> $GITHUB_ENV
+      - name: Set environment to alpha
+        if: ${{ github.event.action == "push" }}
+        run: echo "track=alpha" >> $GITHUB_ENV
+
       - uses: actions/checkout@v2
       - run: echo $UPLOAD_KEYSTORE | base64 -d > android/app/upload-keystore.jks
         env:
@@ -24,17 +36,33 @@ jobs:
         with:
           channel: "stable"
       - run: flutter pub get
-      - run: flutter build appbundle --release
+      - run: |
+          case "${{ env.track }}" in
+            "alpha")
+              flutter build appbundle --release
+              ;;
+            "beta")
+              flutter build appbundle --release --build-name=${{ github.event.release.tag_name }}
+              ;;
+            "production")
+              flutter build appbundle --release --build-name=${{ github.event.release.tag_name }}
+              ;;
+          esac
         env:
           STORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
           KEY_ALIAS: upload
           STORE_FILE: upload-keystore.jks
+
       - name: Upload artifact to Google Play
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.rtirl.chat
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
-          track: alpha
+          track: ${{ env.track }}
           mappingFile: build/app/outputs/mapping/release/mapping.txt
+      - uses: actions/upload-artifact@v2
+        with:
+          name: app-release
+          path: build/app/outputs/bundle/release/app-release.aab
