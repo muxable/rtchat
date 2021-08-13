@@ -41,3 +41,27 @@ class TwitchCheerEventModel extends MessageModel {
     required bool pinned,
   }) : super(messageId: messageId, pinned: pinned);
 }
+
+class PollChoiceData {
+  final String id;
+  final String title;
+  final int bitVotes;
+  final int channelPointVote;
+  final int votes;
+  const PollChoiceData(
+      this.id, this.title, this.bitVotes, this.channelPointVote, this.votes);
+}
+
+class TwitchPollEventModel extends MessageModel {
+  final List<dynamic> choices;
+  final String pollTitle;
+  final bool isCompleted;
+
+  TwitchPollEventModel({
+    required this.choices,
+    required this.pollTitle,
+    required this.isCompleted,
+    required String messageId,
+    required bool pinned,
+  }) : super(messageId: messageId, pinned: pinned);
+}
