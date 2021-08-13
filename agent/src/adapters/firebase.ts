@@ -139,20 +139,12 @@ export class FirebaseAdapter {
       if (!channel) {
         return;
       }
-      await ref.child(channel).transaction(
-        (data) => {
-          if (data !== "") {
-            return;
-          }
-          return agentId;
-        },
-        (error) => {
-          if (error) {
-            console.error(error);
-          }
-        },
-        /** applyLocally */ false
-      );
+      await ref.child(channel).transaction((data) => {
+        if (data !== "") {
+          return;
+        }
+        return agentId;
+      });
     };
 
     const claimRef = ref.orderByValue().limitToFirst(1).equalTo("");
@@ -170,7 +162,7 @@ export class FirebaseAdapter {
       }
     )
       .pipe(
-        concatMap(async (snapshot: admin.database.DataSnapshot) => {
+        concatMap(async (snapshot) => {
           const requestedChannels = new Set(Object.keys(snapshot.val() || {}));
 
           // TODO: handle join failure in a way that doesn't cause infinite loops.
