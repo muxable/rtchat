@@ -18,13 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set environment to prod
-        if: ${{ github.event.action == "release" && !github.event.release.prerelease }}
+        if: ${{ github.event.action == 'release' && !github.event.release.prerelease }}
         run: echo "track=production" >> $GITHUB_ENV
       - name: Set environment to beta
-        if: ${{ github.event.action == "release" && github.event.release.prerelease }}
+        if: ${{ github.event.action == 'release' && github.event.release.prerelease }}
         run: echo "track=beta" >> $GITHUB_ENV
       - name: Set environment to alpha
-        if: ${{ github.event.action == "push" }}
+        if: ${{ github.event.action == 'push' }}
         run: echo "track=alpha" >> $GITHUB_ENV
 
       - uses: actions/checkout@v2
