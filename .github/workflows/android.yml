@@ -11,21 +11,20 @@ on:
     branches:
       - main
   release:
-    types: [published]
+    types: [released]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Set environment to prod
-        if: ${{ github.event_name == 'release' && !github.event.release.prerelease }}
+        if: ${{ github.event_name == 'release' }}
         run: echo "track=production" >> $GITHUB_ENV
-      - name: Set environment to beta
-        if: ${{ github.event_name == 'release' && github.event.release.prerelease }}
-        run: echo "track=beta" >> $GITHUB_ENV
       - name: Set environment to alpha
         if: ${{ github.event_name == 'push' }}
         run: echo "track=alpha" >> $GITHUB_ENV
+      - uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
 
       - uses: actions/checkout@v2
       - run: echo $UPLOAD_KEYSTORE | base64 -d > android/app/upload-keystore.jks
@@ -38,18 +37,7 @@ jobs:
         with:
           channel: "stable"
       - run: flutter pub get
-      - run: |
-          case "${{ env.track }}" in
-            "alpha")
-              flutter build appbundle --release
-              ;;
-            "beta")
-              flutter build appbundle --release --build-name=${{ github.event.release.tag_name }}
-              ;;
-            "production")
-              flutter build appbundle --release --build-name=${{ github.event.release.tag_name }}
-              ;;
-          esac
+      - run: flutter build appbundle --release --build-name=${{ steps.get-latest-tag.outputs.tag }}
         env:
           STORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
