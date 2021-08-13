@@ -226,13 +226,7 @@ Stream<DeltaEvent> _handleDocumentChange(
       yield AppendDeltaEvent(model);
       break;
     case "channel.hype_train.begin":
-      final model = TwitchHypeTrainEventModel(
-          pinned: true,
-          messageId: "train${data['event']['id']}",
-          level: 1,
-          progress: data['event']['progress'],
-          goal: data['event']['goal'],
-          total: data['event']['total']);
+      final model = TwitchHypeTrainEventModel.fromDocument(change.doc);
       yield AppendDeltaEvent(model);
       break;
     case "channel.hype_train.progress":
@@ -240,19 +234,8 @@ Stream<DeltaEvent> _handleDocumentChange(
         if (message is! TwitchHypeTrainEventModel) {
           return message;
         }
-        // Since you can receive duplicates and order is not guaranteed
-        final level = data['event']['level'];
-        final total = data['event']['total'];
-        if (message.level > level || message.total > total) {
-          return message;
-        }
-        return TwitchHypeTrainEventModel(
-            pinned: true,
-            messageId: "train${data['event']['id']}",
-            level: level,
-            progress: data['event']['progress'],
-            goal: data['event']['goal'],
-            total: total);
+
+        return message.withProgress(change.doc);
       });
       break;
     case "channel.hype_train.end":
@@ -264,12 +247,10 @@ Stream<DeltaEvent> _handleDocumentChange(
         if (message is! TwitchHypeTrainEventModel) {
           return message;
         }
-        return TwitchHypeTrainEndEventModel(
-            pinned: true,
-            messageId: "train${data['event']['id']}",
-            level: data['event']['level'],
-            total: data['event']['total'],
-            wasSuccessful: message.progress >= message.total ? true : false);
+        return TwitchHypeTrainEndEventModel.fromDocument(
+            document: change.doc,
+            wasSuccessful: message.progress >= message.total ? true : false,
+            pinned: remaining > Duration.zero);
       });
 
       if (remaining > Duration.zero) {
@@ -279,12 +260,10 @@ Stream<DeltaEvent> _handleDocumentChange(
             return message;
           }
 
-          return TwitchHypeTrainEndEventModel(
-              pinned: false,
-              messageId: "train${data['event']['id']}",
-              level: message.level,
-              total: message.total,
-              wasSuccessful: message.wasSuccessful);
+          return TwitchHypeTrainEndEventModel.fromDocument(
+              document: change.doc,
+              wasSuccessful: message.wasSuccessful,
+              pinned: false);
         });
       }
 
