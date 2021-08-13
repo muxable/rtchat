@@ -3,14 +3,13 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rtchat/models/channels.dart';
-import 'package:rtchat/models/messages/twitch/hype_train_end_event.dart';
+import 'package:rtchat/models/messages/message.dart';
+import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
-import 'package:rtchat/models/messages/message.dart';
-import 'package:rtchat/models/messages/twitch/event.dart';
-import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/third_party_emote.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rxdart/rxdart.dart';
@@ -230,7 +229,8 @@ Stream<DeltaEvent> _handleDocumentChange(
       yield AppendDeltaEvent(model);
       break;
     case "channel.hype_train.progress":
-      yield UpdateDeltaEvent("train${data['event']['id']}", (message) {
+      yield UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
+          (message) {
         if (message is! TwitchHypeTrainEventModel) {
           return message;
         }
@@ -243,27 +243,24 @@ Stream<DeltaEvent> _handleDocumentChange(
       final expiration = timestamp.add(const Duration(seconds: 20));
       final remaining = expiration.difference(DateTime.now());
 
-      yield UpdateDeltaEvent("train${data['event']['id']}", (message) {
+      yield UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
+          (message) {
         if (message is! TwitchHypeTrainEventModel) {
           return message;
         }
-        return TwitchHypeTrainEndEventModel.fromDocument(
-            document: change.doc,
-            wasSuccessful: message.progress >= message.total ? true : false,
-            pinned: remaining > Duration.zero);
+        return message.withEnd(
+            document: change.doc, pinned: remaining > Duration.zero);
       });
 
       if (remaining > Duration.zero) {
         await Future.delayed(remaining);
-        yield UpdateDeltaEvent("train${data['event']['id']}", (message) {
-          if (message is! TwitchHypeTrainEndEventModel) {
+        yield UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
+            (message) {
+          if (message is! TwitchHypeTrainEventModel) {
             return message;
           }
 
-          return TwitchHypeTrainEndEventModel.fromDocument(
-              document: change.doc,
-              wasSuccessful: message.wasSuccessful,
-              pinned: false);
+          return message.withEnd(document: change.doc, pinned: false);
         });
       }
 

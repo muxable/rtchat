@@ -37,15 +37,7 @@ class TwitchHypeTrainEventWidget extends StatelessWidget {
             Expanded(
               child: RichText(
                 text: TextSpan(
-                  children: [
-                    TextSpan(text: "Hype Train level ", style: baseStyle),
-                    TextSpan(text: model.level.toString(), style: boldStyle),
-                    TextSpan(text: " in progress! ", style: baseStyle),
-                    TextSpan(
-                        text:
-                            "${(model.progress * 100) ~/ model.goal}% completed!",
-                        style: baseStyle),
-                  ],
+                  children: buildMessage(baseStyle, boldStyle),
                 ),
               ),
             )
@@ -53,5 +45,24 @@ class TwitchHypeTrainEventWidget extends StatelessWidget {
         ),
       );
     });
+  }
+
+  List<InlineSpan> buildMessage(TextStyle baseStyle, TextStyle boldStyle) {
+    return model.hasEnded
+        ? [
+            TextSpan(text: "Hype Train level ", style: baseStyle),
+            TextSpan(text: model.level.toString(), style: boldStyle),
+            model.isSuccessful
+                ? TextSpan(text: " succeeded! ", style: baseStyle)
+                : TextSpan(text: " was not succesful. ", style: baseStyle),
+          ]
+        : [
+            TextSpan(text: "Hype Train level ", style: baseStyle),
+            TextSpan(text: model.level.toString(), style: boldStyle),
+            TextSpan(text: " in progress! ", style: baseStyle),
+            TextSpan(
+                text: "${(model.progress * 100) ~/ model.goal}% completed!",
+                style: baseStyle),
+          ];
   }
 }

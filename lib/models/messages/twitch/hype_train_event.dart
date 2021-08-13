@@ -6,6 +6,8 @@ class TwitchHypeTrainEventModel extends MessageModel {
   final int progress;
   final int goal;
   final int total;
+  final bool isSuccessful;
+  final bool hasEnded;
 
   const TwitchHypeTrainEventModel(
       {required bool pinned,
@@ -13,7 +15,9 @@ class TwitchHypeTrainEventModel extends MessageModel {
       required this.level,
       required this.progress,
       required this.goal,
-      required this.total})
+      required this.total,
+      this.isSuccessful = false,
+      this.hasEnded = false})
       : super(messageId: messageId, pinned: pinned);
 
   static TwitchHypeTrainEventModel fromDocument(
@@ -21,7 +25,7 @@ class TwitchHypeTrainEventModel extends MessageModel {
     final data = document.data();
     return TwitchHypeTrainEventModel(
         pinned: true,
-        messageId: "train${data!['event']['id']}",
+        messageId: "channel.hype_train-${data!['event']['id']}",
         level: data['event']['level'] ?? 1,
         progress: data['event']['progress'],
         goal: data['event']['goal'],
@@ -39,5 +43,27 @@ class TwitchHypeTrainEventModel extends MessageModel {
     }
 
     return fromDocument(document);
+  }
+
+  TwitchHypeTrainEventModel withEnd(
+      {required DocumentSnapshot<Map<String, dynamic>> document,
+      required bool pinned}) {
+    final data = document.data();
+    final level = data!['event']['level'];
+    final total = data['event']['total'];
+
+    final wasSuccessful = level > 1;
+    final previousLevel = level == 1 ? 1 : level - 1;
+    final endLevel = progress >= total ? level : previousLevel;
+
+    return TwitchHypeTrainEventModel(
+        pinned: pinned,
+        messageId: messageId,
+        level: endLevel,
+        progress: progress,
+        goal: goal,
+        total: total,
+        isSuccessful: wasSuccessful,
+        hasEnded: true);
   }
 }
