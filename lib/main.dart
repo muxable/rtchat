@@ -108,6 +108,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("temp");
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserModel()),
