@@ -19,7 +19,6 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/tts_audio_handler.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
-import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
@@ -197,15 +196,6 @@ class App extends StatelessWidget {
           model.addListener(() {
             prefs.setString('twitch_badge', jsonEncode(model.toJson()));
           });
-          final channels = Provider.of<ChannelsModel>(context, listen: false);
-          model.subscribe(channels.subscribedChannels);
-          channels.addListener(() {
-            model.subscribe(channels.subscribedChannels);
-          });
-          return model;
-        }),
-        ChangeNotifierProvider(create: (context) {
-          final model = TwitchEmoteSets();
           final channels = Provider.of<ChannelsModel>(context, listen: false);
           model.subscribe(channels.subscribedChannels);
           channels.addListener(() {
