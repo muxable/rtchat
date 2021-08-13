@@ -225,7 +225,7 @@ Stream<DeltaEvent> _handleDocumentChange(
       yield AppendDeltaEvent(model);
       break;
     case "channel.hype_train.begin":
-      final model = TwitchHypeTrainEventModel.fromDocument(change.doc);
+      final model = TwitchHypeTrainEventModel.fromDocumentData(data);
       yield AppendDeltaEvent(model);
       break;
     case "channel.hype_train.progress":
@@ -235,7 +235,7 @@ Stream<DeltaEvent> _handleDocumentChange(
           return message;
         }
 
-        return message.withProgress(change.doc);
+        return message.withProgress(data);
       });
       break;
     case "channel.hype_train.end":
@@ -248,8 +248,7 @@ Stream<DeltaEvent> _handleDocumentChange(
         if (message is! TwitchHypeTrainEventModel) {
           return message;
         }
-        return message.withEnd(
-            document: change.doc, pinned: remaining > Duration.zero);
+        return message.withEnd(data: data, pinned: remaining > Duration.zero);
       });
 
       if (remaining > Duration.zero) {
@@ -260,7 +259,7 @@ Stream<DeltaEvent> _handleDocumentChange(
             return message;
           }
 
-          return message.withEnd(document: change.doc, pinned: false);
+          return message.withEnd(data: data, pinned: false);
         });
       }
 

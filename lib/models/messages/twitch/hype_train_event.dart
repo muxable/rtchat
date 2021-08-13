@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:rtchat/models/messages/message.dart';
 
 class TwitchHypeTrainEventModel extends MessageModel {
@@ -20,9 +20,8 @@ class TwitchHypeTrainEventModel extends MessageModel {
       this.hasEnded = false})
       : super(messageId: messageId, pinned: pinned);
 
-  static TwitchHypeTrainEventModel fromDocument(
-      DocumentSnapshot<Map<String, dynamic>> document) {
-    final data = document.data();
+  static TwitchHypeTrainEventModel fromDocumentData(
+      Map<String, dynamic>? data) {
     return TwitchHypeTrainEventModel(
         pinned: true,
         messageId: "channel.hype_train-${data!['event']['id']}",
@@ -32,9 +31,7 @@ class TwitchHypeTrainEventModel extends MessageModel {
         total: data['event']['total']);
   }
 
-  TwitchHypeTrainEventModel withProgress(
-      DocumentSnapshot<Map<String, dynamic>> document) {
-    final data = document.data();
+  TwitchHypeTrainEventModel withProgress(Map<String, dynamic>? data) {
     final level = data!['event']['level'];
     final total = data['event']['total'];
 
@@ -42,19 +39,17 @@ class TwitchHypeTrainEventModel extends MessageModel {
       return this;
     }
 
-    return fromDocument(document);
+    return fromDocumentData(data);
   }
 
   TwitchHypeTrainEventModel withEnd(
-      {required DocumentSnapshot<Map<String, dynamic>> document,
-      required bool pinned}) {
-    final data = document.data();
+      {required Map<String, dynamic>? data, required bool pinned}) {
     final level = data!['event']['level'];
     final total = data['event']['total'];
 
     final wasSuccessful = level > 1;
     final previousLevel = level == 1 ? 1 : level - 1;
-    final endLevel = progress >= total ? level : previousLevel;
+    final endLevel = progress >= goal ? level : previousLevel;
 
     return TwitchHypeTrainEventModel(
         pinned: pinned,
@@ -66,4 +61,18 @@ class TwitchHypeTrainEventModel extends MessageModel {
         isSuccessful: wasSuccessful,
         hasEnded: true);
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is TwitchHypeTrainEventModel &&
+      other.level == level &&
+      other.progress == progress &&
+      other.goal == goal &&
+      other.total == total &&
+      other.isSuccessful == isSuccessful &&
+      other.hasEnded == hasEnded;
+
+  @override
+  int get hashCode =>
+      hashValues(level, progress, goal.hashCode, total, isSuccessful, hasEnded);
 }
