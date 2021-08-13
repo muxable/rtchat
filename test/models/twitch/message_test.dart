@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/messages/twitch/third_party_emote.dart';
+import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
 TwitchMessageModel createMessageModel(String? badgesRaw, String? emotesRaw,
-    List<ThirdPartyEmote> thirdPartyEmotes, String message) {
+    List<Emote> thirdPartyEmotes, String message) {
   return TwitchMessageModel(
       messageId: "placeholder",
       author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
@@ -119,7 +119,7 @@ void main() {
       final model = createMessageModel(
           null,
           null,
-          [ThirdPartyEmote(id: "", code: code, source: source)],
+          [Emote(id: "", code: code, source: source)],
           "mooooo asdf mooooo cows mooooocows cowsmooooo mooooomooooo");
 
       expect(
