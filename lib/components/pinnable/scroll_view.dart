@@ -29,7 +29,7 @@ class PinnableMessageScrollView extends ScrollView {
 
   @override
   List<Widget> buildSlivers(BuildContext context) {
-    final brightness = MediaQuery.of(context).platformBrightness;
+    final brightness = Theme.of(context).brightness;
     final pinnedSliverColor =
         brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[300];
     final slivers = <Widget>[];
