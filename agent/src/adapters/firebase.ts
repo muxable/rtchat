@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import { concatMap, fromEvent, Observable } from "rxjs";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
 
 const TWITCH_CLIENT_ID = process.env["TWITCH_CLIENT_ID"];
@@ -138,39 +139,60 @@ export class FirebaseAdapter {
       if (!channel) {
         return;
       }
-      await ref.child(channel).transaction((data) => {
-        if (data !== "") {
-          return;
-        }
-        return agentId;
-      });
-    };
-
-    const assignListener = async (snapshot: admin.database.DataSnapshot) => {
-      const requestedChannels = new Set(Object.keys(snapshot.val() || {}));
-
-      // TODO: handle join failure in a way that doesn't cause infinite loops.
-      const add = diff(requestedChannels, channels);
-      const remove = diff(channels, requestedChannels);
-      for (const channel of add) {
-        await join(channel);
-        channels.add(channel);
-      }
-      for (const channel of remove) {
-        await leave(channel);
-        channels.delete(channel);
-      }
+      await ref.child(channel).transaction(
+        (data) => {
+          if (data !== "") {
+            return;
+          }
+          return agentId;
+        },
+        (error) => {
+          if (error) {
+            console.error(error);
+          }
+        },
+        /** applyLocally */ false
+      );
     };
 
     const claimRef = ref.orderByValue().limitToFirst(1).equalTo("");
     const assignRef = ref.orderByValue().equalTo(agentId);
 
-    assignRef.on("value", assignListener);
+    const subscription = new Observable<admin.database.DataSnapshot>(
+      (subscriber) => {
+        const listener = (s: admin.database.DataSnapshot) => {
+          subscriber.next(s);
+        };
+
+        assignRef.on("value", listener);
+
+        return () => assignRef.off("value", listener);
+      }
+    )
+      .pipe(
+        concatMap(async (snapshot: admin.database.DataSnapshot) => {
+          const requestedChannels = new Set(Object.keys(snapshot.val() || {}));
+
+          // TODO: handle join failure in a way that doesn't cause infinite loops.
+          const add = diff(requestedChannels, channels);
+          const remove = diff(channels, requestedChannels);
+          for (const channel of add) {
+            await join(channel);
+            channels.add(channel);
+          }
+          for (const channel of remove) {
+            await leave(channel);
+            channels.delete(channel);
+          }
+        })
+      )
+      .subscribe();
+
     claimRef.on("value", claimListener);
 
     return async () => {
       claimRef.off("value", claimListener);
-      assignRef.off("value", assignListener);
+      subscription.unsubscribe();
 
       // remove all existing channel claims.
       const update: { [key: string]: "" } = {};
