@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rtchat/models/messages/message.dart';
-import 'package:rxdart/rxdart.dart';
 
 class TwitchHypeTrainEventModel extends MessageModel {
   final int level;
