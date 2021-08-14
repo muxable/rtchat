@@ -139,6 +139,10 @@ export class FirebaseAdapter {
       if (!channel) {
         return;
       }
+      // incur a slight delay to reduce contesting and load balance a little.
+      await new Promise((resolve) =>
+        setTimeout(resolve, 250 * Math.random() + 50 * channels.size)
+      );
       await ref.child(channel).transaction((data) => {
         if (data !== "") {
           return;

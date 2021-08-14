@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/message.dart';
+import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
-import 'package:rtchat/models/messages/message.dart';
-import 'package:rtchat/models/messages/twitch/event.dart';
-import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rxdart/rxdart.dart';
@@ -221,6 +222,46 @@ Stream<DeltaEvent> _handleDocumentChange(Map<String, List<Emote>> emotes,
           messageId: change.doc.id,
           pinned: false);
       yield AppendDeltaEvent(model);
+      break;
+    case "channel.hype_train.begin":
+      final model = TwitchHypeTrainEventModel.fromDocumentData(data);
+      yield AppendDeltaEvent(model);
+      break;
+    case "channel.hype_train.progress":
+      yield UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
+          (message) {
+        if (message is! TwitchHypeTrainEventModel) {
+          return message;
+        }
+
+        return message.withProgress(data);
+      });
+      break;
+    case "channel.hype_train.end":
+      final DateTime timestamp = data['timestamp'].toDate();
+      final expiration = timestamp.add(const Duration(seconds: 20));
+      final remaining = expiration.difference(DateTime.now());
+
+      yield UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
+          (message) {
+        if (message is! TwitchHypeTrainEventModel) {
+          return message;
+        }
+        return message.withEnd(data: data, pinned: remaining > Duration.zero);
+      });
+
+      if (remaining > Duration.zero) {
+        await Future.delayed(remaining);
+        yield UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
+            (message) {
+          if (message is! TwitchHypeTrainEventModel) {
+            return message;
+          }
+
+          return message.withEnd(data: data, pinned: false);
+        });
+      }
+
       break;
     case "stream.online":
     case "stream.offline":
