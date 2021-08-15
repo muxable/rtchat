@@ -5,32 +5,15 @@ import 'package:rtchat/components/chat_history/twitch/poll_indicator.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/style.dart';
 
-List<Widget> getPollsWidget(TwitchPollEventModel model, TextStyle baseStyle) {
+List<Widget> getPollsWidget(TwitchPollEventModel model) {
   var choices = model.choices;
   List<Widget> children = [];
-  for (final entry in choices) {
-    final String id = entry['id'];
-    final String choiceName = entry['title'];
-    final int votes = entry['votes'] ?? 0;
-    final int bitVotes = entry['bit_votes'] ?? 0;
-    final int channelPointVotes = entry['channel_point_votes'] ?? 0;
-
-    // avoid division by zero
-    double percentage = 0;
-    if (model.totalVotes > 0) {
-      percentage = (votes / model.totalVotes);
-    }
-
-    var poll = PollChoiceData(
-        id: id,
-        title: choiceName,
-        bitVotes: bitVotes,
-        channelPointVotes: channelPointVotes,
-        votes: votes,
-        percentage: percentage);
-
-    children.add(PollIndicatorWidget(
-        data: poll, isCompleted: model.isCompleted, maxVotes: model.maxVotes));
+  for (final poll in choices) {
+    children.add(PollChoiceWidget(
+        data: poll,
+        isCompleted: model.isCompleted,
+        maxVotes: model.maxVotes,
+        totalVotes: model.totalVotes));
   }
   return children;
 }
@@ -42,7 +25,6 @@ class TwitchPollEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // List<Widget> children = [];
     return Consumer<StyleModel>(builder: (context, styleModel, child) {
       var boldStyle = Theme.of(context)
           .textTheme
@@ -53,9 +35,6 @@ class TwitchPollEventWidget extends StatelessWidget {
           .bodyText2!
           .copyWith(fontSize: styleModel.fontSize);
 
-      // children.add(Padding(
-      //     padding: const EdgeInsets.only(bottom: 8),
-      //     child: Text(model.pollTitle, style: boldStyle)));
       return Container(
         decoration: BoxDecoration(
           border: Border(
@@ -78,12 +57,13 @@ class TwitchPollEventWidget extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Text(model.pollTitle, style: boldStyle)),
                     // polls
-                    ...getPollsWidget(model, baseStyle),
+                    ...getPollsWidget(model),
                     // some breakdowns
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text("channel point votes: ${model.totalBitVotes}",
+                        Text(
+                            "channel point votes: ${model.totalChannelPointsVotes}",
                             style: baseStyle),
                         Text("  bit votes: ${model.totalBitVotes}",
                             style: baseStyle),

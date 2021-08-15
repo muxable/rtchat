@@ -1,6 +1,7 @@
+import 'dart:math';
+
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
-import 'dart:math' as math;
 
 class TwitchRaidEventModel extends MessageModel {
   final TwitchUserModel from;
@@ -43,30 +44,25 @@ class TwitchCheerEventModel extends MessageModel {
   }) : super(messageId: messageId, pinned: pinned);
 }
 
-class PollChoiceData {
+class PollChoiceModel {
   final String id;
   final String title;
   final int bitVotes;
   final int channelPointVotes;
   final int votes;
-  final double percentage;
-  const PollChoiceData(
-      {required this.id,
-      required this.title,
-      required this.bitVotes,
-      required this.channelPointVotes,
-      required this.votes,
-      required this.percentage});
+  const PollChoiceModel({
+    required this.id,
+    required this.title,
+    required this.bitVotes,
+    required this.channelPointVotes,
+    required this.votes,
+  });
 }
 
 class TwitchPollEventModel extends MessageModel {
-  final List<dynamic> choices;
+  final List<PollChoiceModel> choices;
   final String pollTitle;
   final bool isCompleted;
-  int totalVotes = 0;
-  int totalChannelPointsVotes = 0;
-  int totalBitVotes = 0;
-  int maxVotes = 0;
 
   TwitchPollEventModel({
     required this.choices,
@@ -78,12 +74,11 @@ class TwitchPollEventModel extends MessageModel {
 
   static TwitchPollEventModel fromDocumentData(Map<String, dynamic>? data) {
     final m = TwitchPollEventModel(
-        choices: data!['event']['choices'],
+        choices: parseChoices(data!),
         pollTitle: data['event']['title'],
         isCompleted: false,
         messageId: "poll${data['event']['id']}",
         pinned: false);
-    m.computeTotalVotes();
     return m;
   }
 
@@ -93,24 +88,41 @@ class TwitchPollEventModel extends MessageModel {
 
   TwitchPollEventModel withEnd(Map<String, dynamic>? data) {
     final m = TwitchPollEventModel(
-        choices: data!['event']['choices'],
+        choices: parseChoices(data!),
         pollTitle: data['event']['title'],
         isCompleted: true,
         messageId: "poll${data['event']['id']}",
         pinned: false);
-    m.computeTotalVotes();
     return m;
   }
 
-  void computeTotalVotes() {
-    for (final entry in choices) {
+  static List<PollChoiceModel> parseChoices(Map<String, dynamic>? data) {
+    List<PollChoiceModel> lst = [];
+    for (final entry in data!['event']['choices']) {
+      final String id = entry['id'];
+      final String title = entry['title'] ?? "Untitled";
       final int votes = entry['votes'] ?? 0;
       final int bitVotes = entry['bit_votes'] ?? 0;
       final int channelPointVotes = entry['channel_point_votes'] ?? 0;
-      totalVotes = totalVotes + votes;
-      totalChannelPointsVotes += channelPointVotes;
-      totalBitVotes += bitVotes;
-      maxVotes = math.max(maxVotes, votes);
+
+      var poll = PollChoiceModel(
+          id: id,
+          title: title,
+          bitVotes: bitVotes,
+          channelPointVotes: channelPointVotes,
+          votes: votes);
+      lst.add(poll);
     }
+    return lst;
   }
+
+  int get totalVotes => choices.fold(0, (sum, choice) => sum + choice.votes);
+
+  int get totalChannelPointsVotes =>
+      choices.fold(0, (sum, choice) => sum + choice.channelPointVotes);
+
+  int get totalBitVotes =>
+      choices.fold(0, (sum, choice) => sum + choice.bitVotes);
+
+  int get maxVotes => choices.map((e) => e.votes).reduce((a, b) => max(a, b));
 }
