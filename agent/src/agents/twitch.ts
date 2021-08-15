@@ -62,6 +62,7 @@ export async function runTwitchAgent(agentId: string) {
       console.log("auth failure", token);
       return token["access_token"];
     },
+    log: { level: "warn" },
   });
 
   twitch.chat.on(TwitchJs.Chat.Events.PRIVATE_MESSAGE, (message) => {
@@ -113,10 +114,12 @@ export async function runTwitchAgent(agentId: string) {
     async (channel) => {
       console.log(`[twitch] Assigned to channel: ${channel}`);
       await twitch.chat.join(channel);
+      console.log(`[twitch] Joined channel: ${channel}`);
     },
     async (channel) => {
       console.log(`[twitch] Unassigned from channel: ${channel}`);
       await twitch.chat.part(channel);
+      console.log(`[twitch] Parted channel: ${channel}`);
     }
   );
 
