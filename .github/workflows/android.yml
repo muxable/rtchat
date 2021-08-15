@@ -12,6 +12,7 @@ on:
       - main
   release:
     types: [released]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -37,7 +38,17 @@ jobs:
         with:
           channel: "stable"
       - run: flutter pub get
-      - run: flutter build appbundle --release --build-name=${{ steps.get-latest-tag.outputs.tag }}
+
+      - name: Build aab
+        run: flutter build appbundle --release --build-name=${{ steps.get-latest-tag.outputs.tag }}
+        env:
+          STORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: upload
+          STORE_FILE: upload-keystore.jks
+
+      - name: Build apk
+        run: flutter build apk --split-per-abi --release --build-name=${{ steps.get-latest-tag.outputs.tag }}
         env:
           STORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
@@ -52,7 +63,20 @@ jobs:
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           track: ${{ env.track }}
           mappingFile: build/app/outputs/mapping/release/mapping.txt
+
       - uses: actions/upload-artifact@v2
         with:
-          name: app-release
+          name: app-release.aab
           path: build/app/outputs/bundle/release/app-release.aab
+      - uses: actions/upload-artifact@v2
+        with:
+          name: app-armeabi-v7a-release.apk
+          path: build/app/outputs/apk/release/app-armeabi-v7a-release.apk
+      - uses: actions/upload-artifact@v2
+        with:
+          name: app-arm64-v8a-release.apk
+          path: build/app/outputs/apk/release/app-arm64-v8a-release.apk
+      - uses: actions/upload-artifact@v2
+        with:
+          name: app-x86_64-release.apk
+          path: build/app/outputs/apk/release/app-x86_64-release.apk
