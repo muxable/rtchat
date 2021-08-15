@@ -14,7 +14,7 @@ jobs:
           store-password: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
           key-password: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
 
-      - uses: muxfd/flutter-upload-aapk@v1
+      - uses: muxfd/flutter-upload-apk@v1
 
   aab:
     runs-on: ubuntu-latest
