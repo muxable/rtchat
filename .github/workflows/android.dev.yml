@@ -13,61 +13,30 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  apk:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - run: echo $UPLOAD_KEYSTORE | base64 -d > android/app/upload-keystore.jks
-        env:
-          UPLOAD_KEYSTORE: ${{ secrets.UPLOAD_KEYSTORE }}
-      - uses: actions-ecosystem/action-get-latest-tag@v1
-        id: get-latest-tag
-      - uses: actions/setup-java@v1
+      - uses: muxfd/flutter-actions/build-apk@latest
         with:
-          java-version: "12.x"
-      - uses: subosito/flutter-action@v1
+          keystore-jks: ${{ secrets.UPLOAD_KEYSTORE }}
+          store-password: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+          key-password: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+
+      - uses: muxfd/flutter-actions/upload-aapk@latest
+
+  aab:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: muxfd/flutter-actions/build-aab@latest
         with:
-          channel: "stable"
-      - run: flutter pub get
+          keystore-jks: ${{ secrets.UPLOAD_KEYSTORE }}
+          store-password: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+          key-password: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
 
-      - name: Build aab
-        run: flutter build appbundle --release --build-name=${{ steps.get-latest-tag.outputs.tag }}
-        env:
-          STORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: upload
-          STORE_FILE: upload-keystore.jks
-
-      - name: Build apk
-        run: flutter build apk --split-per-abi --release --build-name=${{ steps.get-latest-tag.outputs.tag }}
-        env:
-          STORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: upload
-          STORE_FILE: upload-keystore.jks
-
-      - name: Upload artifact to Google Play
-        uses: r0adkll/upload-google-play@v1
+      - uses: muxfd/flutter-actions/publish-aab@latest
         with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.rtirl.chat
-          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          service-account-json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          package-name: com.rtirl.chat
           track: alpha
-          mappingFile: build/app/outputs/mapping/release/mapping.txt
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: app-release.aab
-          path: build/app/outputs/bundle/release/app-release.aab
-      - uses: actions/upload-artifact@v2
-        with:
-          name: app-armeabi-v7a-release.apk
-          path: build/app/outputs/apk/release/app-armeabi-v7a-release.apk
-      - uses: actions/upload-artifact@v2
-        with:
-          name: app-arm64-v8a-release.apk
-          path: build/app/outputs/apk/release/app-arm64-v8a-release.apk
-      - uses: actions/upload-artifact@v2
-        with:
-          name: app-x86_64-release.apk
-          path: build/app/outputs/apk/release/app-x86_64-release.apk
+      - uses: muxfd/flutter-actions/upload-aab@latest
