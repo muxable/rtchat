@@ -10,21 +10,12 @@ on:
       - "pubspec.yaml"
     branches:
       - main
-  release:
-    types: [released]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Set environment to prod
-        if: ${{ github.event_name == 'release' }}
-        run: echo "track=production" >> $GITHUB_ENV
-      - name: Set environment to alpha
-        if: ${{ github.event_name == 'push' }}
-        run: echo "track=alpha" >> $GITHUB_ENV
-
       - uses: actions/checkout@v2
       - run: echo $UPLOAD_KEYSTORE | base64 -d > android/app/upload-keystore.jks
         env:
@@ -61,7 +52,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.rtirl.chat
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
-          track: ${{ env.track }}
+          track: alpha
           mappingFile: build/app/outputs/mapping/release/mapping.txt
 
       - uses: actions/upload-artifact@v2
