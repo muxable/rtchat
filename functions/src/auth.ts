@@ -124,16 +124,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
 
   const token = await admin.auth().createCustomToken(firebaseUserId);
 
-  const url = "com.rtirl.chat://success?token=" + encodeURIComponent(token);
-
-  // workaround for some old browsers: https://stackoverflow.com/a/15601063/86433
-  res.setHeader("Content-Type", "text/html");
-  res
-    .status(200)
-    .send(
-      `"<script language='javascript'>window.location = '${url}';</script>";`
-    );
-  // res.redirect("com.rtirl.chat://success?token=" + encodeURIComponent(token));
+  res.redirect("com.rtirl.chat://success?token=" + encodeURIComponent(token));
 });
 
 export { app };
