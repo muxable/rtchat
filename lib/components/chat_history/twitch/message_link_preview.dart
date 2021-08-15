@@ -42,8 +42,8 @@ class TwitchMessageLinkPreviewWidget extends StatelessWidget {
       children: [
         Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
-            child: RichText(
-              text: TextSpan(style: messageStyle, children: children),
+            child: Text.rich(
+              TextSpan(style: messageStyle, children: children),
             )),
         Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),

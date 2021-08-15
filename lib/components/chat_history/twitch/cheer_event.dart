@@ -49,8 +49,8 @@ class TwitchCheerEventWidget extends StatelessWidget {
           }),
           const SizedBox(width: 12),
           Expanded(
-            child: RichText(
-              text: TextSpan(
+            child: Text.rich(
+              TextSpan(
                 children: [
                   TextSpan(text: name, style: boldStyle),
                   const TextSpan(text: " gifted you"),

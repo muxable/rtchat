@@ -23,8 +23,8 @@ class TwitchFollowEventWidget extends StatelessWidget {
         child: Row(children: [
           const SizedBox(width: 12),
           Expanded(
-            child: RichText(
-              text: TextSpan(
+            child: Text.rich(
+              TextSpan(
                 children: [
                   TextSpan(
                       text: model.followerName,

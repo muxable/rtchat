@@ -106,8 +106,8 @@ class TwitchMessageWidget extends StatelessWidget {
         opacity: model.deleted ? 0.6 : 1.0,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
-          child: RichText(
-            text: TextSpan(
+          child: Text.rich(
+            TextSpan(
               children: [
                 ...children,
                 ...model.tokenized.map((token) {
