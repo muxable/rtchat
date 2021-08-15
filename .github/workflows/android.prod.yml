@@ -1,18 +1,8 @@
 name: Release tag to Google Play Store
 
 on:
-  push:
-    paths:
-      - "android/**"
-      - "assets/**"
-      - "lib/**"
-      - "pubspec.lock"
-      - "pubspec.yaml"
-    branches:
-      - main
   release:
     types: [released]
-  workflow_dispatch:
 
 jobs:
   build:
