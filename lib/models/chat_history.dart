@@ -224,12 +224,7 @@ Stream<DeltaEvent> _handleDocumentChange(
       yield AppendDeltaEvent(model);
       break;
     case "channel.poll.begin":
-      final model = TwitchPollEventModel(
-          choices: data['event']['choices'],
-          pollTitle: data['event']['title'],
-          isCompleted: false,
-          messageId: "poll${data['event']['id']}",
-          pinned: false);
+      final model = TwitchPollEventModel.fromDocumentData(data);
       yield AppendDeltaEvent(model);
       break;
     case "channel.poll.progress":
@@ -237,12 +232,7 @@ Stream<DeltaEvent> _handleDocumentChange(
         if (message is! TwitchPollEventModel) {
           return message;
         }
-        return TwitchPollEventModel(
-            choices: data['event']['choices'],
-            pollTitle: data['event']['title'],
-            isCompleted: false,
-            messageId: "poll${data['event']['id']}",
-            pinned: false);
+        return message.withProgress(data);
       });
       break;
     case "channel.poll.end":
@@ -250,12 +240,7 @@ Stream<DeltaEvent> _handleDocumentChange(
         if (message is! TwitchPollEventModel) {
           return message;
         }
-        return TwitchPollEventModel(
-            choices: data['event']['choices'],
-            pollTitle: data['event']['title'],
-            isCompleted: true,
-            messageId: "poll${data['event']['id']}",
-            pinned: false);
+        return message.withEnd(data);
       });
       break;
     case "stream.online":
