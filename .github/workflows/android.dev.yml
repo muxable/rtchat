@@ -16,27 +16,27 @@ jobs:
   apk:
     runs-on: ubuntu-latest
     steps:
-      - uses: muxfd/flutter-actions/build-apk@v1
+      - uses: muxfd/flutter-build-apk@v1
         with:
           keystore-jks: ${{ secrets.UPLOAD_KEYSTORE }}
           store-password: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
           key-password: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
 
-      - uses: muxfd/flutter-actions/upload-aapk@v1
+      - uses: muxfd/flutter-upload-aapk@v1
 
   aab:
     runs-on: ubuntu-latest
     steps:
-      - uses: muxfd/flutter-actions/build-aab@v1
+      - uses: muxfd/flutter-build-aab@v1
         with:
           keystore-jks: ${{ secrets.UPLOAD_KEYSTORE }}
           store-password: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
           key-password: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
 
-      - uses: muxfd/flutter-actions/publish-aab@v1
+      - uses: muxfd/flutter-publish-aab@v1
         with:
           service-account-json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           package-name: com.rtirl.chat
           track: alpha
 
-      - uses: muxfd/flutter-actions/upload-aab@v1
+      - uses: muxfd/flutter-upload-aab@v1
