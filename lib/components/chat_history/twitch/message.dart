@@ -67,23 +67,17 @@ class TwitchMessageWidget extends StatelessWidget {
       if (!styleModel.isDeletedMessagesVisible && model.deleted) {
         return Container();
       }
-      var authorStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
-          fontSize: styleModel.fontSize,
-          fontWeight: FontWeight.w500,
-          color: styleModel.applyLightnessBoost(context, color));
+      var authorStyle = Theme.of(context)
+          .textTheme
+          .subtitle2!
+          .copyWith(color: styleModel.applyLightnessBoost(context, color));
 
-      var messageStyle = Theme.of(context)
+      final linkStyle = Theme.of(context)
           .textTheme
           .bodyText2!
-          .copyWith(fontSize: styleModel.fontSize);
+          .copyWith(color: Theme.of(context).accentColor);
 
-      final linkStyle = Theme.of(context).textTheme.bodyText2!.copyWith(
-          fontSize: styleModel.fontSize, color: Theme.of(context).accentColor);
-
-      final tagStyle = Theme.of(context)
-          .textTheme
-          .bodyText2!
-          .copyWith(fontSize: styleModel.fontSize, fontWeight: FontWeight.bold);
+      final tagStyle = Theme.of(context).textTheme.subtitle2;
 
       final List<InlineSpan> children = [];
 
@@ -103,9 +97,9 @@ class TwitchMessageWidget extends StatelessWidget {
 
       // add demarcator.
       if (model.isAction) {
-        children.add(TextSpan(text: " ", style: messageStyle));
+        children.add(const TextSpan(text: " "));
       } else {
-        children.add(TextSpan(text: ": ", style: messageStyle));
+        children.add(const TextSpan(text: ": "));
       }
 
       return Opacity(
@@ -118,7 +112,7 @@ class TwitchMessageWidget extends StatelessWidget {
                 ...children,
                 ...model.tokenized.map((token) {
                   if (token is TextToken) {
-                    return TextSpan(text: token.text, style: messageStyle);
+                    return TextSpan(text: token.text);
                   } else if (token is EmoteToken) {
                     return WidgetSpan(
                         alignment: PlaceholderAlignment.middle,

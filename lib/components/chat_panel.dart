@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/pinnable/scroll_view.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/style.dart';
 
 class ChatPanelWidget extends StatefulWidget {
   final void Function(bool)? onScrollback;
@@ -52,7 +53,20 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
         return PinnableMessageScrollView(
           vsync: this,
           controller: _controller,
-          itemBuilder: (index) => ChatHistoryMessage(message: messages[index]),
+          itemBuilder: (index) =>
+              Consumer<StyleModel>(builder: (context, styleModel, child) {
+            final textTheme = Theme.of(context).textTheme;
+            return Theme(
+              data: Theme.of(context).copyWith(
+                  textTheme: textTheme.copyWith(
+                bodyText2: textTheme.bodyText2!
+                    .copyWith(fontSize: styleModel.fontSize),
+                subtitle2: textTheme.subtitle2!
+                    .copyWith(fontSize: styleModel.fontSize),
+              )),
+              child: ChatHistoryMessage(message: messages[index]),
+            );
+          }),
           isPinnedBuilder: (index) => messages[index].pinned,
           count: messages.length,
         );

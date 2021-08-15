@@ -38,7 +38,7 @@ class TwitchMessageLinkPreviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return (Column(
+    return Column(
       children: [
         Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
@@ -64,6 +64,6 @@ class TwitchMessageLinkPreviewWidget extends StatelessWidget {
                   );
                 }))
       ],
-    ));
+    );
   }
 }
