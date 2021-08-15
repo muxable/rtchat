@@ -1,4 +1,4 @@
-name: Build & upload to Google Play Store
+name: Release tag to Google Play Store
 
 on:
   push:
