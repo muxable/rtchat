@@ -5,18 +5,9 @@ import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/style.dart';
 
 String getCorrespondingImageUrl(int bits) {
-  if (bits <= 1) {
-    return 'https://cdn.twitchalerts.com/twitch-bits/images/hd/10.gif';
-  } else if (bits > 1 && bits < 1000) {
-    return 'https://cdn.twitchalerts.com/twitch-bits/images/hd/100.gif';
-  } else if (bits >= 1000 && bits < 5000) {
-    return 'https://cdn.twitchalerts.com/twitch-bits/images/hd/1000.gif';
-  } else if (bits >= 5000 && bits < 10000) {
-    return 'https://cdn.twitchalerts.com/twitch-bits/images/hd/5000.gif';
-  } else if (bits >= 10000 && bits < 100000) {
-    return 'https://cdn.twitchalerts.com/twitch-bits/images/hd/10000.gif';
-  }
-  return 'https://cdn.twitchalerts.com/twitch-bits/images/hd/10.gif';
+  final key = [100000, 10000, 5000, 1000, 100]
+      .firstWhere((k) => k <= bits, orElse: () => 10);
+  return 'https://cdn.twitchalerts.com/twitch-bits/images/hd/$key.gif';
 }
 
 class TwitchCheerEventWidget extends StatelessWidget {
