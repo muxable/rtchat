@@ -104,25 +104,30 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                         return "This link already exists";
                       }
                       return null;
-                    }),
+                    },
+                    keyboardType: TextInputType.url,
+                    textInputAction: TextInputAction.done,
+                    onEditingComplete: addLink),
               ),
-              IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      // fetch the title for the page.
-                      final url = _textEditingController.text;
-                      final metadata = await MetadataFetch.extract(url);
-
-                      Provider.of<QuickLinksModel>(context, listen: false)
-                          .addSource(QuickLinkSource(
-                              metadata?.title, _activeIcon, Uri.parse(url)));
-                    }
-                  }),
+              IconButton(icon: const Icon(Icons.add), onPressed: addLink),
             ]),
           ),
         ),
       ]),
     );
+  }
+
+  void addLink() async {
+    if (_formKey.currentState!.validate()) {
+      // fetch the title for the page.
+      final url = _textEditingController.text;
+      final metadata = await MetadataFetch.extract(url);
+
+      Provider.of<QuickLinksModel>(context, listen: false).addSource(
+          QuickLinkSource(metadata?.title, _activeIcon, Uri.parse(url)));
+
+      _textEditingController.clear();
+      FocusScope.of(context).unfocus();
+    }
   }
 }

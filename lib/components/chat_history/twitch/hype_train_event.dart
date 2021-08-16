@@ -47,7 +47,7 @@ class TwitchHypeTrainEventWidget extends StatelessWidget {
             TextSpan(text: model.level.toString(), style: boldStyle),
             model.isSuccessful
                 ? const TextSpan(text: " succeeded! ")
-                : const TextSpan(text: " was not succesful. "),
+                : const TextSpan(text: " was not successful. "),
           ]
         : [
             const TextSpan(text: "Hype Train level "),

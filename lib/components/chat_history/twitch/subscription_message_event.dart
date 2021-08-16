@@ -39,7 +39,7 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
                       text:
                           " subscribed at Tier ${model.tier.replaceAll("000", "")}. They've subscribed for "),
                   TextSpan(
-                      text: "${model.durationMonths} months",
+                      text: "${model.cumulativeMonths} months",
                       style: Theme.of(context).textTheme.subtitle2),
                   TextSpan(
                       text: model.streakMonths > 1
@@ -48,7 +48,7 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
                 ],
               ),
             ),
-          )
+          ),
         ]),
       ),
     );
