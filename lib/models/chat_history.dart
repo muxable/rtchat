@@ -3,13 +3,14 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/message.dart';
+import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
-import 'package:rtchat/models/messages/message.dart';
-import 'package:rtchat/models/messages/twitch/event.dart';
-import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/messages/twitch/third_party_emote.dart';
+import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -30,8 +31,7 @@ class UpdateDeltaEvent extends DeltaEvent {
   const UpdateDeltaEvent(this.messageId, this.update);
 }
 
-Stream<DeltaEvent> _handleDocumentChange(
-    Map<String, List<ThirdPartyEmote>> emotes,
+Stream<DeltaEvent> _handleDocumentChange(Map<String, List<Emote>> emotes,
     DocumentChange<Map<String, dynamic>> change) async* {
   final data = change.doc.data();
   if (data == null) {
@@ -87,7 +87,7 @@ Stream<DeltaEvent> _handleDocumentChange(
               userId: data['event']['from_broadcaster_user_id'],
               login: data['event']['from_broadcaster_user_login'],
               displayName: data['event']['from_broadcaster_user_name']),
-          viewers: data['viewers'],
+          viewers: data['event']['viewers'],
           pinned: remaining > Duration.zero);
       yield AppendDeltaEvent(model);
 
@@ -103,7 +103,7 @@ Stream<DeltaEvent> _handleDocumentChange(
                   userId: data['event']['from_broadcaster_user_id'],
                   login: data['event']['from_broadcaster_user_login'],
                   displayName: data['event']['from_broadcaster_user_name']),
-              viewers: data['viewers'],
+              viewers: data['event']['viewers'],
               pinned: false);
         });
       }
@@ -223,6 +223,46 @@ Stream<DeltaEvent> _handleDocumentChange(
           pinned: false);
       yield AppendDeltaEvent(model);
       break;
+    case "channel.hype_train.begin":
+      final model = TwitchHypeTrainEventModel.fromDocumentData(data);
+      yield AppendDeltaEvent(model);
+      break;
+    case "channel.hype_train.progress":
+      yield UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
+          (message) {
+        if (message is! TwitchHypeTrainEventModel) {
+          return message;
+        }
+
+        return message.withProgress(data);
+      });
+      break;
+    case "channel.hype_train.end":
+      final DateTime timestamp = data['timestamp'].toDate();
+      final expiration = timestamp.add(const Duration(seconds: 20));
+      final remaining = expiration.difference(DateTime.now());
+
+      yield UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
+          (message) {
+        if (message is! TwitchHypeTrainEventModel) {
+          return message;
+        }
+        return message.withEnd(data: data, pinned: remaining > Duration.zero);
+      });
+
+      if (remaining > Duration.zero) {
+        await Future.delayed(remaining);
+        yield UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
+            (message) {
+          if (message is! TwitchHypeTrainEventModel) {
+            return message;
+          }
+
+          return message.withEnd(data: data, pinned: false);
+        });
+      }
+
+      break;
     case "stream.online":
     case "stream.offline":
       final model = StreamStateEventModel(
@@ -244,7 +284,7 @@ Stream<DeltaEvent> getChatHistory(Set<Channel> channels) async* {
   if (channels.isEmpty) {
     return;
   }
-  Map<String, List<ThirdPartyEmote>> emotes = {};
+  Map<String, List<Emote>> emotes = {};
   for (final channel in channels) {
     emotes[channel.toString()] =
         await getThirdPartyEmotes(channel.provider, channel.channelId);

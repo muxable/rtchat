@@ -4,6 +4,7 @@ import * as crypto from "crypto";
 import * as express from "express";
 import * as expressSession from "express-session";
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
 import fetch from "node-fetch";
 import { AuthorizationCode } from "simple-oauth2";
 import { TWITCH_CLIENT_ID, TWITCH_OAUTH_CONFIG } from "./oauth";
@@ -17,7 +18,7 @@ app.use(
       kind: "express-sessions",
     }),
     name: "__session",
-    secret: "ishdcr78aw34rycn*&#FHCa8e7fh32c",
+    secret: functions.config().express.secret,
     resave: true,
     saveUninitialized: true,
     rolling: true,
@@ -51,6 +52,7 @@ app.get("/auth/twitch/redirect", (req, res) => {
       "channel:manage:broadcast",
       "channel:manage:polls",
       "channel:manage:predictions",
+      "channel:read:hype_train",
       "channel:read:subscriptions",
       "channel:read:redemptions",
       "moderation:read",
@@ -121,6 +123,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
     .set({ twitch: twitchProfile }, { merge: true });
 
   const token = await admin.auth().createCustomToken(firebaseUserId);
+
   res.redirect("com.rtirl.chat://success?token=" + encodeURIComponent(token));
 });
 

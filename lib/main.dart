@@ -11,6 +11,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
@@ -18,7 +19,6 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/tts_audio_handler.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
-import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
@@ -83,6 +83,11 @@ void main() async {
         androidNotificationChannelName: 'Text to speech',
       ),
     );
+
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarBrightness: Brightness.dark,
+    ));
+
     runApp(App(prefs: prefs, ttsHandler: ttsHandler));
   }, FirebaseCrashlytics.instance.recordError);
 
@@ -191,15 +196,6 @@ class App extends StatelessWidget {
           model.addListener(() {
             prefs.setString('twitch_badge', jsonEncode(model.toJson()));
           });
-          final channels = Provider.of<ChannelsModel>(context, listen: false);
-          model.subscribe(channels.subscribedChannels);
-          channels.addListener(() {
-            model.subscribe(channels.subscribedChannels);
-          });
-          return model;
-        }),
-        ChangeNotifierProvider(create: (context) {
-          final model = TwitchEmoteSets();
           final channels = Provider.of<ChannelsModel>(context, listen: false);
           model.subscribe(channels.subscribedChannels);
           channels.addListener(() {

@@ -1,9 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
+import 'package:rtchat/components/style_model_theme.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
+
+final messageModel = TwitchMessageModel(
+    messageId: "placeholder",
+    author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
+    tags: {
+      "message-type": "chat",
+      "color": "#800000",
+      "badges-raw": "premium/1",
+      "emotes-raw": "25:36-40",
+      "room-id": "158394109",
+    },
+    thirdPartyEmotes: [],
+    timestamp: DateTime.now(),
+    message: "have you followed @muxfd on twitch? Kappa",
+    deleted: false,
+    channelId: 'placeholder');
 
 class FontSizePickerWidget extends StatelessWidget {
   const FontSizePickerWidget({Key? key}) : super(key: key);
@@ -22,22 +39,8 @@ class FontSizePickerWidget extends StatelessWidget {
                   height: 120,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: TwitchMessageWidget(TwitchMessageModel(
-                        messageId: "placeholder",
-                        author: const TwitchUserModel(
-                            userId: 'muxfd', login: 'muxfd'),
-                        tags: {
-                          "message-type": "chat",
-                          "color": "#800000",
-                          "badges-raw": "premium/1",
-                          "emotes-raw": "25:36-40",
-                          "room-id": "158394109",
-                        },
-                        thirdPartyEmotes: [],
-                        timestamp: DateTime.now(),
-                        message: "have you followed @muxfd on twitch? Kappa",
-                        deleted: false,
-                        channelId: 'placeholder')),
+                    child: StyleModelTheme(
+                        child: TwitchMessageWidget(messageModel)),
                   ),
                 ),
                 Text("Font size",

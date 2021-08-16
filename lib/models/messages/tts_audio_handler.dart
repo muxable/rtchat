@@ -6,6 +6,7 @@ import 'package:rtchat/models/messages/twitch/message.dart';
 
 class TtsMediaItem extends MediaItem {
   final bool isBot;
+  final bool isCommand;
   final MessageModel model;
 
   static TtsMediaItem? fromMessageModel(MessageModel model) {
@@ -16,6 +17,7 @@ class TtsMediaItem extends MediaItem {
         author: model.author.display,
         message: model.tokenized.join(""),
         isBot: model.author.isBot,
+        isCommand: model.isCommand,
       );
     } else if (model is StreamStateEventModel) {
       return TtsMediaItem._(
@@ -31,7 +33,8 @@ class TtsMediaItem extends MediaItem {
       {required String messageId,
       required String author,
       required String message,
-      this.isBot = false})
+      this.isBot = false,
+      this.isCommand = false})
       : super(id: messageId, artist: author, title: message);
 
   String getVocalization({required bool emotes}) {
@@ -54,6 +57,9 @@ class TtsMediaItem extends MediaItem {
           return token.url.host;
         }
       }).join("");
+      if (text.trim().isEmpty) {
+        return "";
+      }
       final author = model.author.displayName ?? model.author.login;
       return model.isAction ? "$author $text" : "$author said $text";
     } else if (model is StreamStateEventModel) {
@@ -109,7 +115,7 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     }
 
     final message = queue.value[index] as TtsMediaItem;
-    if (fromAutoplay && isBotMuted && message.isBot) {
+    if (fromAutoplay && ((isBotMuted && message.isBot) || message.isCommand)) {
       if (index < queue.value.length - 1) {
         await fastForward();
         await play(fromAutoplay: true);
@@ -187,7 +193,7 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     await super.addQueueItem(mediaItem);
     if (enabled && !isSeeking && !isPlaying) {
       await skipToEnd();
-      await play();
+      await play(fromAutoplay: true);
     }
   }
 
@@ -196,7 +202,7 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     await super.addQueueItems(mediaItems);
     if (enabled && !isSeeking && !isPlaying) {
       await skipToEnd();
-      await play();
+      await play(fromAutoplay: true);
     }
   }
 
