@@ -38,12 +38,12 @@ class TwitchMessageLinkPreviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return (Column(
+    return Column(
       children: [
         Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
-            child: RichText(
-              text: TextSpan(style: messageStyle, children: children),
+            child: Text.rich(
+              TextSpan(style: messageStyle, children: children),
             )),
         Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
@@ -64,6 +64,6 @@ class TwitchMessageLinkPreviewWidget extends StatelessWidget {
                   );
                 }))
       ],
-    ));
+    );
   }
 }

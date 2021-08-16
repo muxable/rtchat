@@ -11,58 +11,50 @@ class TwitchHypeTrainEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<StyleModel>(builder: (context, styleModel, child) {
-      var boldStyle = Theme.of(context)
-          .textTheme
-          .bodyText2!
-          .copyWith(fontSize: styleModel.fontSize, fontWeight: FontWeight.w500);
-      var baseStyle = Theme.of(context)
-          .textTheme
-          .bodyText2!
-          .copyWith(fontSize: styleModel.fontSize);
-      return Container(
-        decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              width: 4,
-              color: Theme.of(context).accentColor,
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(
+            width: 4,
+            color: Theme.of(context).accentColor,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 4, 16, 4),
-          child: Row(children: [
-            Icon(Icons.train, size: styleModel.fontSize * 1.5),
-            const SizedBox(width: 12),
-            Expanded(
-              child: RichText(
-                text: TextSpan(
-                  children: buildMessage(baseStyle, boldStyle),
-                ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 4, 16, 4),
+        child: Row(children: [
+          Consumer<StyleModel>(
+            builder: (context, styleModel, child) =>
+                Icon(Icons.train, size: styleModel.fontSize * 1.5),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                children: buildMessage(Theme.of(context).textTheme.subtitle2),
               ),
-            )
-          ]),
-        ),
-      );
-    });
+            ),
+          )
+        ]),
+      ),
+    );
   }
 
-  List<InlineSpan> buildMessage(TextStyle baseStyle, TextStyle boldStyle) {
+  List<InlineSpan> buildMessage(TextStyle? boldStyle) {
     return model.hasEnded
         ? [
-            TextSpan(text: "Hype Train level ", style: baseStyle),
+            const TextSpan(text: "Hype Train level "),
             TextSpan(text: model.level.toString(), style: boldStyle),
             model.isSuccessful
-                ? TextSpan(text: " succeeded! ", style: baseStyle)
-                : TextSpan(text: " was not successful. ", style: baseStyle),
+                ? const TextSpan(text: " succeeded! ")
+                : const TextSpan(text: " was not successful. "),
           ]
         : [
-            TextSpan(text: "Hype Train level ", style: baseStyle),
+            const TextSpan(text: "Hype Train level "),
             TextSpan(text: model.level.toString(), style: boldStyle),
-            TextSpan(text: " in progress! ", style: baseStyle),
+            const TextSpan(text: " in progress! "),
             TextSpan(
-                text: "${(model.progress * 100) ~/ model.goal}% completed!",
-                style: baseStyle),
+                text: "${(model.progress * 100) ~/ model.goal}% completed!"),
           ];
   }
 }
