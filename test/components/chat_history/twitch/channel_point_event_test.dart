@@ -18,18 +18,7 @@ void main() {
         rewardName: "Sprint",
         rewardCost: 100,
         userInput: null);
-    await tester.pumpWidget(ChangeNotifierProvider<StyleModel>.value(
-      value: StyleModel.fromJson({
-        "fontSize": 20.0,
-        "lightnessBoost": 0.179,
-        "isDeletedMessagesVisible": true
-      }),
-      child: const Directionality(
-          textDirection: TextDirection.ltr,
-          child: MediaQuery(
-              data: MediaQueryData(),
-              child: TwitchChannelPointRedemptionEventWidget(model))),
-    ));
+    await tester.pumpWidget(buildWidget(model));
 
     final findText = find.byWidgetPredicate((Widget widget) =>
         widget is RichText &&
