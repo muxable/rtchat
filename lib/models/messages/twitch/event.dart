@@ -13,19 +13,27 @@ class TwitchRaidEventModel extends MessageModel {
       required this.from,
       required this.viewers})
       : super(messageId: messageId, pinned: pinned);
-
-  String get profilePictureUrl =>
-      "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=${from.userId}";
 }
 
 class TwitchFollowEventModel extends MessageModel {
-  final String followerName;
+  final TwitchUserModel follower;
 
   const TwitchFollowEventModel({
-    required this.followerName,
+    required this.follower,
     required String messageId,
     required bool pinned,
   }) : super(messageId: messageId, pinned: pinned);
+
+  static TwitchFollowEventModel fromDocumentData(
+      String messageId, Map<String, dynamic> data) {
+    return TwitchFollowEventModel(
+        follower: TwitchUserModel(
+            userId: data['event']['user_id'],
+            login: data['event']['user_login'],
+            displayName: data['event']['user_name']),
+        messageId: messageId,
+        pinned: false);
+  }
 }
 
 class TwitchCheerEventModel extends MessageModel {

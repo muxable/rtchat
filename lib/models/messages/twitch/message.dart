@@ -1,7 +1,7 @@
 import 'package:linkify/linkify.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
-import 'package:rtchat/models/messages/twitch/third_party_emote.dart';
+import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
 class _EmoteData {
@@ -74,7 +74,7 @@ Iterable<MessageToken> tokenizeLinks(Iterable<MessageToken> tokens) sync* {
 }
 
 Iterable<MessageToken> tokenizeEmotes(
-    Iterable<MessageToken> tokens, List<ThirdPartyEmote> emotes) sync* {
+    Iterable<MessageToken> tokens, List<Emote> emotes) sync* {
   final emotesMap = {for (final emote in emotes) emote.code: emote};
   for (final token in tokens) {
     if (token is TextToken) {
@@ -159,7 +159,7 @@ class TwitchMessageModel extends MessageModel {
   final TwitchUserModel author;
   final String message;
   final Map<String, dynamic> tags;
-  final List<ThirdPartyEmote> thirdPartyEmotes;
+  final List<Emote> thirdPartyEmotes;
   final DateTime timestamp;
   final bool deleted;
   final String channelId;
@@ -175,19 +175,13 @@ class TwitchMessageModel extends MessageModel {
       required this.channelId})
       : super(messageId: messageId, pinned: null);
 
-  bool get emoteOnly {
-    return tags['emote-only'] == true;
-  }
-
-  bool get hasEmote {
-    return tags['emotes'] != null ? true : false;
-  }
-
   List<_BadgeData> get badges =>
       _badges ??= parseBadges(tags['badges-raw'] ?? "");
   List<_BadgeData>? _badges;
 
   bool get isAction => tags['message-type'] == "action";
+
+  bool get isCommand => !isAction && message.startsWith("!");
 
   List<MessageToken> get tokenized => _tokenized ??= tokenize();
   List<MessageToken>? _tokenized;

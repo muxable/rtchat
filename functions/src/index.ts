@@ -2,7 +2,6 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
 import { EmoteObj } from "tmi.js";
-import * as serviceAccount from "../service_account.json";
 import { app as authApp } from "./auth";
 import { eventsub } from "./eventsub";
 import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
@@ -10,10 +9,7 @@ import { subscribe, unsubscribe } from "./subscriptions";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
 import { search } from "./search";
 
-admin.initializeApp({
-  ...JSON.parse(process.env.FIREBASE_CONFIG || "{}"),
-  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-});
+admin.initializeApp();
 
 export const send = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -345,6 +341,11 @@ export const getUserEmotes = functions.https.onCall(async (data, context) => {
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
+});
+
+export const demoAuth = functions.https.onCall(async (data, context) => {
+  // sign in with automux
+  return await admin.auth().createCustomToken("kKa9SYk5eFTjQXaz1soSCdlZMan2");
 });
 
 export { subscribe, unsubscribe, eventsub, search };

@@ -22,11 +22,12 @@ jobs:
           FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON }}
       - uses: w9jds/firebase-action@master
         with:
-          args: functions:config:set twitch.id="$TWITCH_CLIENT_ID" twitch.secret="$TWITCH_CLIENT_SECRET"
+          args: functions:config:set twitch.id="$TWITCH_CLIENT_ID" twitch.secret="$TWITCH_CLIENT_SECRET" express.secret="$EXPRESS_SESSION_SECRET"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
           TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
+          EXPRESS_SESSION_SECRET: ${{ secrets.EXPRESS_SESSION_SECRET }}
       - uses: w9jds/firebase-action@master
         with:
           args: deploy --only functions,firestore

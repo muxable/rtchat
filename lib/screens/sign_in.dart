@@ -45,16 +45,21 @@ class _SignInScreenState extends State<SignInScreen> {
                 onPressed: () async {
                   setState(() => _isLoading = true);
                   final user = Provider.of<UserModel>(context, listen: false);
-                  final result = await FlutterWebAuth.authenticate(
-                      url: url.toString(), callbackUrlScheme: "com.rtirl.chat");
-                  final token = Uri.parse(result).queryParameters['token'];
-                  if (token != null) {
-                    await user.signIn(token);
-                  } else {
-                    await FirebaseCrashlytics.instance.log("failed to sign in");
-                  }
-                  if (mounted) {
-                    setState(() => _isLoading = false);
+                  try {
+                    final result = await FlutterWebAuth.authenticate(
+                        url: url.toString(),
+                        callbackUrlScheme: "com.rtirl.chat");
+                    final token = Uri.parse(result).queryParameters['token'];
+                    if (token != null) {
+                      await user.signIn(token);
+                    } else {
+                      await FirebaseCrashlytics.instance
+                          .log("failed to sign in");
+                    }
+                  } finally {
+                    if (mounted) {
+                      setState(() => _isLoading = false);
+                    }
                   }
                 },
               )),

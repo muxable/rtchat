@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/messages/twitch/third_party_emote.dart';
+import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
 TwitchMessageModel createMessageModel(String? badgesRaw, String? emotesRaw,
-    List<ThirdPartyEmote> thirdPartyEmotes, String message) {
+    List<Emote> thirdPartyEmotes, String message) {
   return TwitchMessageModel(
       messageId: "placeholder",
       author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
@@ -119,7 +119,7 @@ void main() {
       final model = createMessageModel(
           null,
           null,
-          [ThirdPartyEmote(id: "", code: code, source: source)],
+          [Emote(id: "", code: code, source: source)],
           "mooooo asdf mooooo cows mooooocows cowsmooooo mooooomooooo");
 
       expect(
@@ -148,5 +148,75 @@ void main() {
                 code: "Kappa")
           ]));
     });
+  });
+
+  test('detect actions and commands', () {
+    const author = TwitchUserModel(userId: 'muxfd', login: 'muxfd');
+
+    final chatMessage = TwitchMessageModel(
+        messageId: "placeholder",
+        author: author,
+        tags: {
+          "message-type": "chat",
+          "color": "#800000",
+          "room-id": "158394109",
+        },
+        thirdPartyEmotes: [],
+        timestamp: DateTime.now(),
+        message: "moooo",
+        deleted: false,
+        channelId: 'placeholder');
+
+    final chatCommand = TwitchMessageModel(
+        messageId: "placeholder",
+        author: author,
+        tags: {
+          "message-type": "chat",
+          "color": "#800000",
+          "room-id": "158394109",
+        },
+        thirdPartyEmotes: [],
+        timestamp: DateTime.now(),
+        message: "!moooo",
+        deleted: false,
+        channelId: 'placeholder');
+
+    final actionMessage = TwitchMessageModel(
+        messageId: "placeholder",
+        author: author,
+        tags: {
+          "message-type": "action",
+          "color": "#800000",
+          "room-id": "158394109",
+        },
+        thirdPartyEmotes: [],
+        timestamp: DateTime.now(),
+        message: "mooooo",
+        deleted: false,
+        channelId: 'placeholder');
+
+    final actionCommand = TwitchMessageModel(
+        messageId: "placeholder",
+        author: author,
+        tags: {
+          "message-type": "action",
+          "color": "#800000",
+          "room-id": "158394109",
+        },
+        thirdPartyEmotes: [],
+        timestamp: DateTime.now(),
+        message: "!mooooo",
+        deleted: false,
+        channelId: 'placeholder');
+
+    expect(chatMessage.isAction, equals(false));
+    expect(actionMessage.isAction, equals(true));
+    expect(chatCommand.isAction, equals(false));
+    expect(actionCommand.isAction, equals(true));
+
+    expect(chatMessage.isCommand, equals(false));
+    expect(actionMessage.isCommand, equals(false));
+    expect(chatCommand.isCommand, equals(true));
+    expect(actionCommand.isCommand, equals(false));
   });
 }
