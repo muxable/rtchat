@@ -3,13 +3,14 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/messages/twitch/subscription_event.dart';
-import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
-import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rxdart/rxdart.dart';
@@ -223,6 +224,22 @@ Stream<DeltaEvent> _handleDocumentChange(Map<String, List<Emote>> emotes,
           pinned: false);
       yield AppendDeltaEvent(model);
       break;
+    case "channel.channel_points_custom_reward_redemption.add":
+      final model =
+          TwitchChannelPointRedemptionEventModel.fromDocumentData(data: data);
+      yield AppendDeltaEvent(model);
+
+      break;
+    case "channel.channel_points_custom_reward_redemption.update":
+      yield UpdateDeltaEvent("channel.point-redemption-${data['event']['id']}",
+          (message) {
+        if (message is! TwitchChannelPointRedemptionEventModel) {
+          return message;
+        }
+        return TwitchChannelPointRedemptionEventModel.fromDocumentData(
+            data: data);
+      });
+      break;
     case "channel.hype_train.begin":
       final model = TwitchHypeTrainEventModel.fromDocumentData(data);
       yield AppendDeltaEvent(model);
@@ -261,7 +278,6 @@ Stream<DeltaEvent> _handleDocumentChange(Map<String, List<Emote>> emotes,
           return message.withEnd(data: data, pinned: false);
         });
       }
-
       break;
     case "stream.online":
     case "stream.offline":
