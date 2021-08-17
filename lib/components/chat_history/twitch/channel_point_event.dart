@@ -26,7 +26,7 @@ class TwitchChannelPointRedemptionEventWidget extends StatelessWidget {
         child: Row(children: [
           Consumer<StyleModel>(
               builder: (context, styleModel, child) =>
-                  Icon(model.iconName, size: styleModel.fontSize * 1.5)),
+                  Icon(model.icon, size: styleModel.fontSize * 1.5)),
           const SizedBox(width: 12),
           Expanded(
             child: Text.rich(

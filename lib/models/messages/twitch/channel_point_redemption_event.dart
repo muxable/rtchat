@@ -31,7 +31,7 @@ class TwitchChannelPointRedemptionEventModel extends MessageModel {
         userInput: data['event']['user_input']);
   }
 
-  IconData get iconName {
+  IconData get icon {
     switch (status) {
       case "fulfilled":
         return Icons.done;
