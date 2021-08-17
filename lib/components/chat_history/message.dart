@@ -12,8 +12,7 @@ import 'package:rtchat/components/chat_history/twitch/hype_train_event.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
-import 'package:rtchat/components/chat_history/twitch/subscription_gift_event.dart';
-import 'package:rtchat/components/chat_history/twitch/subscription_message_event.dart';
+import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -63,12 +62,10 @@ class ChatHistoryMessage extends StatelessWidget {
                         ListTile(
                             title: const Text('Delete Message'),
                             onTap: () {
-                              final userModel = Provider.of<UserModel>(context,
-                                  listen: false);
                               final channelsModel = Provider.of<ChannelsModel>(
                                   context,
                                   listen: false);
-                              userModel.delete(
+                              ActionsAdapter.instance.delete(
                                   channelsModel.subscribedChannels.first,
                                   m.messageId);
                               Navigator.pop(context);
@@ -81,12 +78,10 @@ class ChatHistoryMessage extends StatelessWidget {
                         ListTile(
                             title: Text('Ban ${m.author.displayName}'),
                             onTap: () {
-                              final userModel = Provider.of<UserModel>(context,
-                                  listen: false);
                               final channelsModel = Provider.of<ChannelsModel>(
                                   context,
                                   listen: false);
-                              userModel.ban(
+                              ActionsAdapter.instance.ban(
                                   channelsModel.subscribedChannels.first,
                                   m.author.login,
                                   "banned by streamer");
@@ -95,12 +90,10 @@ class ChatHistoryMessage extends StatelessWidget {
                         ListTile(
                             title: Text('Unban ${m.author.displayName}'),
                             onTap: () {
-                              final userModel = Provider.of<UserModel>(context,
-                                  listen: false);
                               final channelsModel = Provider.of<ChannelsModel>(
                                   context,
                                   listen: false);
-                              userModel.unban(
+                              ActionsAdapter.instance.unban(
                                   channelsModel.subscribedChannels.first,
                                   m.author.login);
                               Navigator.pop(context);
@@ -115,12 +108,10 @@ class ChatHistoryMessage extends StatelessWidget {
                       return TimeoutDialog(
                           title: "Timeout ${m.author.displayName}",
                           onPressed: (duration) {
-                            final userModel =
-                                Provider.of<UserModel>(context, listen: false);
                             final channelsModel = Provider.of<ChannelsModel>(
                                 context,
                                 listen: false);
-                            userModel.timeout(
+                            ActionsAdapter.instance.timeout(
                                 channelsModel.subscribedChannels.first,
                                 m.author.login,
                                 "timed out by streamer",

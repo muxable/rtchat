@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -37,55 +36,6 @@ class UserModel extends ChangeNotifier {
   }
 
   bool isSignedIn() => _user != null;
-
-  Future<void> send(Channel channel, String message) async {
-    final call = FirebaseFunctions.instance.httpsCallable('send');
-    await call({
-      "provider": channel.provider,
-      "channelId": channel.channelId,
-      "message": message,
-    });
-  }
-
-  Future<void> ban(Channel channel, String username, String reason) async {
-    final call = FirebaseFunctions.instance.httpsCallable('ban');
-    await call({
-      "provider": channel.provider,
-      "channelId": channel.channelId,
-      "username": username,
-      "reason": reason,
-    });
-  }
-
-  Future<void> unban(Channel channel, String username) async {
-    final call = FirebaseFunctions.instance.httpsCallable('unban');
-    await call({
-      "provider": channel.provider,
-      "channelId": channel.channelId,
-      "username": username,
-    });
-  }
-
-  Future<void> timeout(Channel channel, String username, String reason,
-      Duration duration) async {
-    final call = FirebaseFunctions.instance.httpsCallable('timeout');
-    await call({
-      "provider": channel.provider,
-      "channelId": channel.channelId,
-      "username": username,
-      "reason": reason,
-      "length": duration.inSeconds,
-    });
-  }
-
-  Future<void> delete(Channel channel, String messageId) async {
-    final call = FirebaseFunctions.instance.httpsCallable('deleteMessage');
-    await call({
-      "provider": channel.provider,
-      "channelId": channel.channelId,
-      "messageId": messageId,
-    });
-  }
 
   Channel? get userChannel => _userChannel;
 
