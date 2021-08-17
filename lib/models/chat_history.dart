@@ -225,30 +225,20 @@ Stream<DeltaEvent> _handleDocumentChange(
       yield AppendDeltaEvent(model);
       break;
     case "channel.channel_points_custom_reward_redemption.add":
-      final status = data['event']['status'];
-      if (status == "fulfilled") {
-        final model = TwitchChannelPointRedemptionEventModel(
-            pinned: false,
-            messageId: change.doc.id,
-            redeemerUsername: data['event']['user_name'],
-            status: status,
-            rewardName: data['event']['reward']['title'],
-            rewardCost: data['event']['reward']['cost']);
-        yield AppendDeltaEvent(model);
-      }
+      final model =
+          TwitchChannelPointRedemptionEventModel.fromDocumentData(data: data);
+      yield AppendDeltaEvent(model);
+
       break;
     case "channel.channel_points_custom_reward_redemption.update":
-      final status = data['event']['status'];
-      if (status == "fulfilled") {
-        final model = TwitchChannelPointRedemptionEventModel(
-            pinned: false,
-            messageId: change.doc.id,
-            redeemerUsername: data['event']['user_name'],
-            status: status,
-            rewardName: data['event']['reward']['title'],
-            rewardCost: data['event']['reward']['cost']);
-        yield AppendDeltaEvent(model);
-      }
+      yield UpdateDeltaEvent("channel.point-redemption-${data['event']['id']}",
+          (message) {
+        if (message is! TwitchChannelPointRedemptionEventModel) {
+          return message;
+        }
+        return TwitchChannelPointRedemptionEventModel.fromDocumentData(
+            data: data);
+      });
       break;
     case "stream.online":
     case "stream.offline":

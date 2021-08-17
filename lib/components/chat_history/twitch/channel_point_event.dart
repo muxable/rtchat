@@ -12,44 +12,53 @@ class TwitchChannelPointRedemptionEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<StyleModel>(builder: (context, styleModel, child) {
-      var boldStyle = Theme.of(context)
-          .textTheme
-          .bodyText2!
-          .copyWith(fontSize: styleModel.fontSize, fontWeight: FontWeight.w500);
-      var baseStyle = Theme.of(context)
-          .textTheme
-          .bodyText2!
-          .copyWith(fontSize: styleModel.fontSize);
-      return Container(
-        decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              width: 4,
-              color: Theme.of(context).accentColor,
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(
+            width: 4,
+            color: Theme.of(context).accentColor,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(1, 4, 16, 4),
-          child: Row(children: [
-            const SizedBox(width: 12),
-            Expanded(
-              child: RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(text: model.redeemerUsername, style: boldStyle),
-                    TextSpan(
-                        text:
-                            " redeemed ${model.rewardName} for ${model.rewardCost} points.",
-                        style: baseStyle),
-                  ],
-                ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 4, 16, 4),
+        child: Row(children: [
+          Consumer<StyleModel>(
+              builder: (context, styleModel, child) =>
+                  Icon(defineIcon(), size: styleModel.fontSize * 1.5)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                      text: model.redeemerUsername,
+                      style: Theme.of(context).textTheme.subtitle2),
+                  TextSpan(
+                      text:
+                          " redeemed ${model.rewardName} for ${model.rewardCost} points. ${model.userInput ?? ''}"),
+                ],
               ),
-            )
-          ]),
-        ),
-      );
-    });
+            ),
+          )
+        ]),
+      ),
+    );
+  }
+
+  IconData defineIcon() {
+    switch (model.status) {
+      case "fulfilled":
+        return Icons.done;
+      case "cancelled":
+        return Icons.close;
+      case "unfulfilled":
+        return Icons.timer;
+      case "unknown":
+        return Icons.help;
+      default:
+        return Icons.done;
+    }
   }
 }
