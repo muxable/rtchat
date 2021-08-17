@@ -9,7 +9,6 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rxdart/rxdart.dart';
 
 class UserModel extends ChangeNotifier {
-  User? _user = FirebaseAuth.instance.currentUser;
   late final StreamSubscription<void> _subscription;
   Channel? _userChannel;
 
@@ -17,8 +16,6 @@ class UserModel extends ChangeNotifier {
     _subscription = FirebaseAuth.instance
         .authStateChanges()
         .doOnData((user) {
-          _user = user;
-          notifyListeners();
           FirebaseCrashlytics.instance.setUserIdentifier(user?.uid ?? "");
         })
         .switchMap((user) => user == null
@@ -36,7 +33,7 @@ class UserModel extends ChangeNotifier {
     super.dispose();
   }
 
-  bool isSignedIn() => _user != null;
+  bool isSignedIn() => _userChannel != null;
 
   Future<void> send(Channel channel, String message) async {
     final call = FirebaseFunctions.instance.httpsCallable('send');
