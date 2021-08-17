@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_panel.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/components/statistics_bar.dart';
+import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
-import 'package:rtchat/models/user.dart';
 
 import 'channel_search_dialog.dart';
 
@@ -197,11 +197,10 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                   if (value.isEmpty) {
                     return;
                   }
-                  final userModel =
-                      Provider.of<UserModel>(context, listen: false);
                   final channelsModel =
                       Provider.of<ChannelsModel>(context, listen: false);
-                  userModel.send(channelsModel.subscribedChannels.first, value);
+                  ActionsAdapter.instance
+                      .send(channelsModel.subscribedChannels.first, value);
                   _textEditingController.clear();
                 },
                 onTap: () => setState(() => _isEmotePickerVisible = false),
@@ -247,10 +246,10 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
             if (text.isEmpty) {
               return;
             }
-            final userModel = Provider.of<UserModel>(context, listen: false);
             final channelsModel =
                 Provider.of<ChannelsModel>(context, listen: false);
-            userModel.send(channelsModel.subscribedChannels.first, text);
+            ActionsAdapter.instance
+                .send(channelsModel.subscribedChannels.first, text);
             _textEditingController.clear();
           })
       : Container();
