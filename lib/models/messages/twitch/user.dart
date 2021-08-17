@@ -54,4 +54,7 @@ class TwitchUserModel {
     final n = display.codeUnits.first + display.codeUnits.last;
     return colors[n % colors.length];
   }
+
+  String get profilePictureUrl =>
+      "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$userId";
 }

@@ -12,8 +12,6 @@ import 'package:rtchat/components/chat_history/twitch/hype_train_event.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
-import 'package:rtchat/components/chat_history/twitch/subscription_gift_event.dart';
-import 'package:rtchat/components/chat_history/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/message.dart';
