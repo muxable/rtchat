@@ -10,6 +10,7 @@ import 'package:rtchat/components/chat_history/twitch/cheer_event.dart';
 import 'package:rtchat/components/chat_history/twitch/follow_event.dart';
 import 'package:rtchat/components/chat_history/twitch/hype_train_event.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
+import 'package:rtchat/components/chat_history/twitch/poll_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
 import 'package:rtchat/models/adapters/actions.dart';
@@ -143,6 +144,8 @@ class ChatHistoryMessage extends StatelessWidget {
       return enableInlineEvents ? TwitchFollowEventWidget(m) : Container();
     } else if (m is TwitchCheerEventModel) {
       return enableInlineEvents ? TwitchCheerEventWidget(m) : Container();
+    } else if (m is TwitchPollEventModel) {
+      return enableInlineEvents ? TwitchPollEventWidget(m) : Container();
     } else if (m is TwitchChannelPointRedemptionEventModel) {
       return enableInlineEvents
           ? TwitchChannelPointRedemptionEventWidget(m)
