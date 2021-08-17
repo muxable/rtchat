@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:rtchat/models/messages/message.dart';
 
 class TwitchChannelPointRedemptionEventModel extends MessageModel {
@@ -27,5 +29,20 @@ class TwitchChannelPointRedemptionEventModel extends MessageModel {
         rewardName: data['event']['reward']['title'],
         rewardCost: data['event']['reward']['cost'],
         userInput: data['event']['user_input']);
+  }
+
+  IconData get iconName {
+    switch (status) {
+      case "fulfilled":
+        return Icons.done;
+      case "cancelled":
+        return Icons.close;
+      case "unfulfilled":
+        return Icons.timer;
+      case "unknown":
+        return Icons.help;
+      default:
+        return Icons.done;
+    }
   }
 }

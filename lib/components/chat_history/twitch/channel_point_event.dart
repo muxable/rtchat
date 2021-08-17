@@ -26,7 +26,7 @@ class TwitchChannelPointRedemptionEventWidget extends StatelessWidget {
         child: Row(children: [
           Consumer<StyleModel>(
               builder: (context, styleModel, child) =>
-                  Icon(defineIcon(), size: styleModel.fontSize * 1.5)),
+                  Icon(model.iconName, size: styleModel.fontSize * 1.5)),
           const SizedBox(width: 12),
           Expanded(
             child: Text.rich(
@@ -45,20 +45,5 @@ class TwitchChannelPointRedemptionEventWidget extends StatelessWidget {
         ]),
       ),
     );
-  }
-
-  IconData defineIcon() {
-    switch (model.status) {
-      case "fulfilled":
-        return Icons.done;
-      case "cancelled":
-        return Icons.close;
-      case "unfulfilled":
-        return Icons.timer;
-      case "unknown":
-        return Icons.help;
-      default:
-        return Icons.done;
-    }
   }
 }
