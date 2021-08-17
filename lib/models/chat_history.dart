@@ -208,11 +208,8 @@ Stream<DeltaEvent> _handleDocumentChange(Map<String, List<Emote>> emotes,
 
       break;
     case "channel.follow":
-      final model = TwitchFollowEventModel(
-          followerName: data['event']['user_name'],
-          messageId: change.doc.id,
-          pinned: false);
-      yield AppendDeltaEvent(model);
+      yield AppendDeltaEvent(
+          TwitchFollowEventModel.fromDocumentData(change.doc.id, data));
       break;
     case "channel.cheer":
       final model = TwitchCheerEventModel(
