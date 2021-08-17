@@ -123,6 +123,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
     .set({ twitch: twitchProfile }, { merge: true });
 
   const token = await admin.auth().createCustomToken(firebaseUserId);
+
   res.redirect("com.rtirl.chat://success?token=" + encodeURIComponent(token));
 });
 

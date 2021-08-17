@@ -347,5 +347,10 @@ export const getUserEmotes = functions.https.onCall(async (data, context) => {
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
+export const demoAuth = functions.https.onCall(async (data, context) => {
+  // sign in with automux
+  return await admin.auth().createCustomToken("kKa9SYk5eFTjQXaz1soSCdlZMan2");
+});
+
 export { subscribe, unsubscribe, eventsub, search };
 export const auth = functions.https.onRequest(authApp);

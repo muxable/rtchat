@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rtchat/models/messages/twitch/third_party_emote.dart';
+import 'package:rtchat/models/messages/twitch/emote.dart';
 
 void main() {
   test('bttv global has emotes', () async {
