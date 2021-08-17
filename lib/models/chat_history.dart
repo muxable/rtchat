@@ -221,6 +221,26 @@ Stream<DeltaEvent> _handleDocumentChange(Map<String, List<Emote>> emotes,
           pinned: false);
       yield AppendDeltaEvent(model);
       break;
+    case "channel.poll.begin":
+      final model = TwitchPollEventModel.fromDocumentData(data);
+      yield AppendDeltaEvent(model);
+      break;
+    case "channel.poll.progress":
+      yield UpdateDeltaEvent("poll${data['event']['id']}", (message) {
+        if (message is! TwitchPollEventModel) {
+          return message;
+        }
+        return message.withProgress(data);
+      });
+      break;
+    case "channel.poll.end":
+      yield UpdateDeltaEvent("poll${data['event']['id']}", (message) {
+        if (message is! TwitchPollEventModel) {
+          return message;
+        }
+        return message.withEnd(data);
+      });
+      break;
     case "channel.channel_points_custom_reward_redemption.add":
       final model =
           TwitchChannelPointRedemptionEventModel.fromDocumentData(data: data);
