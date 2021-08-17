@@ -240,6 +240,7 @@ Stream<DeltaEvent> _handleDocumentChange(Map<String, List<Emote>> emotes,
         }
         return message.withEnd(data);
       });
+      break;
     case "channel.channel_points_custom_reward_redemption.add":
       final model =
           TwitchChannelPointRedemptionEventModel.fromDocumentData(data: data);
