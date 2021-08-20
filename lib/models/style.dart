@@ -88,6 +88,13 @@ class StyleModel extends ChangeNotifier {
 
   bool get isDeletedMessagesVisible => _isDeletedMessagesVisible;
 
+  set compactMessages(CompactMessages compactMessages) {
+    _compactMessages = compactMessages;
+    notifyListeners();
+  }
+
+  CompactMessages get compactMessages => _compactMessages;
+
   StyleModel.fromJson(Map<String, dynamic> json) {
     if (json['fontSize'] != null) {
       _fontSize = json['fontSize'];

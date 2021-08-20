@@ -66,16 +66,17 @@ class EmoteToken extends MessageToken {
   String toString() => code;
 }
 
-class _CompactionResult {
-  final Iterable<MessageToken> tokens;
+class CompactedToken extends MessageToken {
+  final Iterable<MessageToken> children;
   final int multiplicity;
 
-  const _CompactionResult(this.tokens, this.multiplicity);
+  const CompactedToken(this.children, this.multiplicity);
 }
 
 extension IterableMessageToken<T extends MessageToken> on Iterable<T> {
   /// Returns the shortest repeating tokenization.
-  _CompactionResult get compacted {
+  List<MessageToken> get compacted {
+    // TODO: We can be more clever around partial compactions.
     final list = toList();
     for (var length = 1; length <= list.length / 2; length++) {
       if (list.length % length != 0) {
@@ -90,10 +91,9 @@ extension IterableMessageToken<T extends MessageToken> on Iterable<T> {
         }
       }
       if (repeating) {
-        return _CompactionResult(
-            list.sublist(0, length), list.length ~/ length);
+        return [CompactedToken(list.sublist(0, length), list.length ~/ length)];
       }
     }
-    return _CompactionResult(list, 1);
+    return [CompactedToken(list, 1)];
   }
 }
