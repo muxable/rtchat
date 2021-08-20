@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 abstract class MessageToken {
   const MessageToken();
 }
@@ -22,6 +24,8 @@ class TextToken extends MessageToken {
   final String text;
 
   const TextToken(this.text);
+
+  bool get isWhitespace => text.trim().isEmpty;
 
   @override
   bool operator ==(other) => other is TextToken && text == other.text;
@@ -67,19 +71,32 @@ class EmoteToken extends MessageToken {
 }
 
 class CompactedToken extends MessageToken {
-  final Iterable<MessageToken> children;
+  final List<MessageToken> children;
   final int multiplicity;
 
   const CompactedToken(this.children, this.multiplicity);
+
+  @override
+  bool operator ==(other) =>
+      other is CompactedToken && listEquals(children, other.children);
+
+  @override
+  int get hashCode =>
+      children.map((child) => child.hashCode).reduce((a, b) => a ^ b);
+
+  @override
+  String toString() => children.toString();
 }
 
 extension IterableMessageToken<T extends MessageToken> on Iterable<T> {
   /// Returns the shortest repeating tokenization.
-  List<MessageToken> get compacted {
+  Iterable<MessageToken> get compacted sync* {
     // TODO: We can be more clever around partial compactions.
     final list = toList();
     for (var length = 1; length <= list.length / 2; length++) {
-      if (list.length % length != 0) {
+      final last = list[length - 1];
+      final isSpaceDelimited = last is TextToken && last.isWhitespace;
+      if ((list.length + (isSpaceDelimited ? 1 : 0)) % length != 0) {
         // must be a divisor of the list length.
         continue;
       }
@@ -91,9 +108,12 @@ extension IterableMessageToken<T extends MessageToken> on Iterable<T> {
         }
       }
       if (repeating) {
-        return [CompactedToken(list.sublist(0, length), list.length ~/ length)];
+        yield CompactedToken(
+            list.sublist(0, length - (isSpaceDelimited ? 1 : 0)),
+            list.length ~/ length);
+        return;
       }
     }
-    return [CompactedToken(list, 1)];
+    yield* list;
   }
 }

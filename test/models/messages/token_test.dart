@@ -15,14 +15,33 @@ void main() {
         const TextToken("raid"),
       ];
 
-      final compacted = tokens.compacted;
-
-      expect(compacted.multiplicity, equals(4));
       expect(
-          compacted.tokens,
+          tokens.compacted,
           orderedEquals([
-            EmoteToken(url: Uri.parse("https://mugit.lol"), code: "moo"),
-            const TextToken("raid"),
+            CompactedToken([
+              EmoteToken(url: Uri.parse("https://mugit.lol"), code: "moo"),
+              const TextToken("raid"),
+            ], 4),
+          ]));
+    });
+
+    test('space separators are ignored', () {
+      List<MessageToken> tokens = [
+        EmoteToken(url: Uri.parse("https://mugit.lol"), code: "moo"),
+        const TextToken(" "),
+        EmoteToken(url: Uri.parse("https://mugit.lol"), code: "moo"),
+        const TextToken(" "),
+        EmoteToken(url: Uri.parse("https://mugit.lol"), code: "moo"),
+        const TextToken(" "),
+        EmoteToken(url: Uri.parse("https://mugit.lol"), code: "moo"),
+      ];
+
+      expect(
+          tokens.compacted,
+          orderedEquals([
+            CompactedToken([
+              EmoteToken(url: Uri.parse("https://mugit.lol"), code: "moo"),
+            ], 4),
           ]));
     });
 
@@ -36,10 +55,7 @@ void main() {
         const TextToken("raid2"),
       ];
 
-      final compacted = tokens.compacted;
-
-      expect(compacted.multiplicity, equals(1));
-      expect(compacted.tokens, orderedEquals(tokens));
+      expect(tokens.compacted, orderedEquals(tokens));
     });
 
     test('repeated text doesn\'t tokenize', () {
@@ -47,10 +63,7 @@ void main() {
         const TextToken("raid raid raid"),
       ];
 
-      final compacted = tokens.compacted;
-
-      expect(compacted.multiplicity, equals(1));
-      expect(compacted.tokens, orderedEquals(tokens));
+      expect(tokens.compacted, orderedEquals(tokens));
     });
   });
 }
