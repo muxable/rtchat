@@ -45,6 +45,20 @@ void main() {
           ]));
     });
 
+    test('text separators are not ignored', () {
+      List<MessageToken> tokens = [
+        EmoteToken(url: Uri.parse("https://mugit.lol"), code: "moo"),
+        const TextToken(" RAID "),
+        EmoteToken(url: Uri.parse("https://mugit.lol"), code: "moo"),
+        const TextToken(" RAID "),
+        EmoteToken(url: Uri.parse("https://mugit.lol"), code: "moo"),
+        const TextToken(" RAID "),
+        EmoteToken(url: Uri.parse("https://mugit.lol"), code: "moo"),
+      ];
+
+      expect(tokens.compacted, orderedEquals(tokens));
+    });
+
     test('late non-repeat doesn\'t tokenize', () {
       List<MessageToken> tokens = [
         EmoteToken(url: Uri.parse("https://mugit.lol"), code: "moo"),
