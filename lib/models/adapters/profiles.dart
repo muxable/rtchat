@@ -21,12 +21,13 @@ class ProfilesAdapter {
   static ProfilesAdapter get instance =>
       ProfilesAdapter.instanceFor(db: FirebaseFirestore.instance);
 
-  Stream<Channel?> getChannel({required String userId}) {
+  Stream<Channel?> getChannel(
+      {required String userId, required String provider}) {
     return db.collection("profiles").doc(userId).snapshots().map((event) {
       final data = event.data();
-      if (data != null && data.containsKey('twitch')) {
+      if (data != null && data.containsKey(provider)) {
         return Channel(
-            "twitch", data['twitch']['id'], data['twitch']['displayName']);
+            provider, data['twitch']['id'], data['twitch']['displayName']);
       }
     });
   }
