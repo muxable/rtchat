@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/style_model_theme.dart';
+import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
 
-final messageModel = TwitchMessageModel(
-    messageId: "placeholder",
+final message1 = TwitchMessageModel(
+    messageId: "placeholder1",
     author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
     tags: {
       "message-type": "chat",
@@ -21,6 +22,40 @@ final messageModel = TwitchMessageModel(
     message: "have you followed @muxfd on twitch? Kappa",
     deleted: false,
     channelId: 'placeholder');
+final message2 = TwitchMessageModel(
+    messageId: "placeholder2",
+    author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
+    tags: {
+      "message-type": "action",
+      "color": "#DAA520",
+      "badges-raw": "moderator/1",
+      "room-id": "158394109",
+    },
+    thirdPartyEmotes: [],
+    timestamp: DateTime.now(),
+    message: "likes cows and stuff",
+    deleted: true,
+    channelId: 'placeholder');
+final message3 = TwitchMessageModel(
+    messageId: "placeholder3",
+    author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
+    tags: {
+      "message-type": "chat",
+      "color": "#00FF7F",
+      "badges-raw": "broadcaster/1,moderator/1",
+      "room-id": "158394109",
+    },
+    thirdPartyEmotes: [
+      Emote(
+          id: 'catJAM',
+          code: 'catJAM',
+          source: Uri.parse(
+              'https://cdn.betterttv.net/emote/5f1abd75fe85fb4472d132b4/1x')),
+    ],
+    timestamp: DateTime.now(),
+    message: "catJAM catJAM catJAM catJAM catJAM catJAM",
+    deleted: false,
+    channelId: 'placeholder');
 
 class FontSizePickerWidget extends StatelessWidget {
   const FontSizePickerWidget({Key? key}) : super(key: key);
@@ -29,20 +64,24 @@ class FontSizePickerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<StyleModel>(builder: (context, model, child) {
       return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(
+            height: 180,
+            child: StyleModelTheme(
+                child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: [
+                  TwitchMessageWidget(message1),
+                  TwitchMessageWidget(message2),
+                  TwitchMessageWidget(message3),
+                ])),
+          ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  height: 120,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: StyleModelTheme(
-                        child: TwitchMessageWidget(messageModel)),
-                  ),
-                ),
                 Text("Font size",
                     style: TextStyle(
                       color: Theme.of(context).accentColor,
@@ -90,6 +129,36 @@ class FontSizePickerWidget extends StatelessWidget {
             value: model.isDeletedMessagesVisible,
             onChanged: (value) {
               model.isDeletedMessagesVisible = value;
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text("Compact messages",
+                style: TextStyle(
+                  color: Theme.of(context).accentColor,
+                  fontWeight: FontWeight.bold,
+                )),
+          ),
+          RadioListTile(
+            title: const Text('Don\'t compact messages'),
+            subtitle: const Text("Messages are shown unchanged"),
+            value: CompactMessages.none,
+            groupValue: model.compactMessages,
+            onChanged: (CompactMessages? value) {
+              if (value != null) {
+                model.compactMessages = value;
+              }
+            },
+          ),
+          RadioListTile(
+            title: const Text('Compact individual messages'),
+            subtitle: const Text("Repetitive text in messages is shortened"),
+            value: CompactMessages.withinMessage,
+            groupValue: model.compactMessages,
+            onChanged: (CompactMessages? value) {
+              if (value != null) {
+                model.compactMessages = value;
+              }
             },
           ),
         ],
