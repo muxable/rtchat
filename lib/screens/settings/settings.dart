@@ -50,6 +50,13 @@ class SettingsScreen extends StatelessWidget {
               layoutModel.isStatsVisible = value;
             },
           ),
+          ListTile(
+            title: const Text('Event Configuration'),
+            // subtitle: const Text("Control which badges are visible"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/events-config");
+            },
+          ),
           const FontSizePickerWidget(),
           const Divider(),
           const TtsOptionsWidget(),

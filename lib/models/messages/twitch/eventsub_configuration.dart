@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class FollowEventConfig {
-  final bool showEvent;
-  final bool isEventPinnable;
-  final int eventDuration;
+  bool showEvent;
+  bool isEventPinnable;
+  double eventDuration;
 
   FollowEventConfig(this.showEvent, this.isEventPinnable, this.eventDuration);
 
@@ -20,9 +20,9 @@ class FollowEventConfig {
 }
 
 class SubscriptionEventConfig {
-  final bool showEvent;
-  final bool isEventPinnable;
-  final int eventDuration;
+  bool showEvent;
+  bool isEventPinnable;
+  double eventDuration;
 
   SubscriptionEventConfig(
       this.showEvent, this.isEventPinnable, this.eventDuration);
@@ -40,9 +40,9 @@ class SubscriptionEventConfig {
 }
 
 class CheerEventConfig {
-  final bool showEvent;
-  final bool isEventPinnable;
-  final int eventDuration;
+  bool showEvent;
+  bool isEventPinnable;
+  double eventDuration;
 
   CheerEventConfig(this.showEvent, this.isEventPinnable, this.eventDuration);
 
@@ -59,18 +59,39 @@ class CheerEventConfig {
 }
 
 class EventSubConfigurationModel extends ChangeNotifier {
-  FollowEventConfig followEventConfig = FollowEventConfig(false, false, 5);
+  FollowEventConfig followEventConfig = FollowEventConfig(false, false, 5.0);
   SubscriptionEventConfig subscriptionEventConfig =
       SubscriptionEventConfig(false, false, 5);
   CheerEventConfig cheerEventConfig = CheerEventConfig(true, true, 5);
-  // other event configs
+  // other configs
   // final HypeTrainEventConfig;
 
+  setFollowEventDuration(double value) {
+    followEventConfig.eventDuration = value;
+    notifyListeners();
+  }
+
+  setFollowEventShowable(bool value) {
+    followEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setFollowEventPinnable(bool value) {
+    followEventConfig.isEventPinnable = value;
+    notifyListeners();
+  }
+
   EventSubConfigurationModel.fromJson(Map<String, dynamic> json) {
-    followEventConfig = FollowEventConfig.fromJson(json['followEventConfig']);
-    subscriptionEventConfig =
-        SubscriptionEventConfig.fromJson(json['subscriptionEventConfig']);
-    cheerEventConfig = CheerEventConfig.fromJson(json['cheerEventConfig']);
+    if (json['followEventConfig'] != null) {
+      followEventConfig = FollowEventConfig.fromJson(json['followEventConfig']);
+    }
+    if (json['subscriptionEventConfig'] != null) {
+      subscriptionEventConfig =
+          SubscriptionEventConfig.fromJson(json['subscriptionEventConfig']);
+    }
+    if (json['cheerEventConfig'] != null) {
+      cheerEventConfig = CheerEventConfig.fromJson(json['cheerEventConfig']);
+    }
   }
 
   Map<String, dynamic> toJson() => {
