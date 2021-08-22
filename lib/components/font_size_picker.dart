@@ -70,6 +70,8 @@ class FontSizePickerWidget extends StatelessWidget {
             height: 180,
             child: StyleModelTheme(
                 child: ListView(
+                    shrinkWrap: true,
+                    physics: const ClampingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
                   TwitchMessageWidget(message1),
