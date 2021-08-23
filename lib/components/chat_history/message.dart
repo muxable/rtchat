@@ -35,7 +35,7 @@ class ChatHistoryMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final m = message;
     final enableInlineEvents =
-        kDebugMode || RemoteConfig.instance.getBool('inline_events_enabled');
+        RemoteConfig.instance.getBool('inline_events_enabled');
     if (m is TwitchMessageModel) {
       return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         final child = Padding(
