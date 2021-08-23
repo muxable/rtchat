@@ -9,7 +9,7 @@ class FollowEventConfigWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Follow Config"),
+          title: const Text("Follow Configuration"),
         ),
         body: Consumer<EventSubConfigurationModel>(
             builder: (context, model, child) {
@@ -26,24 +26,28 @@ class FollowEventConfigWidget extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         )),
                     Slider.adaptive(
-                      value: model.followEventConfig.eventDuration,
+                      value: model.followEventConfig.eventDuration.inSeconds
+                          .toDouble(),
                       min: 2,
                       max: 14,
                       divisions: 4,
-                      label: "${model.followEventConfig.eventDuration}seconds",
+                      label:
+                          "${model.followEventConfig.eventDuration.inSeconds} seconds",
                       onChanged: (value) {
-                        model.setFollowEventDuration(value);
+                        model.setFollowEventDuration(value.toInt());
                       },
                     ),
                     SwitchListTile.adaptive(
-                      title: const Text('show event'),
+                      title: const Text('Enable event'),
+                      subtitle: const Text('Show event in chat history'),
                       value: model.followEventConfig.showEvent,
                       onChanged: (value) {
                         model.setFollowEventShowable(value);
                       },
                     ),
                     SwitchListTile.adaptive(
-                      title: const Text('able to pin event'),
+                      title: const Text('Pin event'),
+                      subtitle: const Text('Pin event to chat history'),
                       value: model.followEventConfig.isEventPinnable,
                       onChanged: (value) {
                         model.setFollowEventPinnable(value);

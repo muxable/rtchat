@@ -52,7 +52,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           ListTile(
             title: const Text('Event Configuration'),
-            // subtitle: const Text("Control which badges are visible"),
+            subtitle: const Text("Configure twitch events"),
             onTap: () {
               Navigator.pushNamed(context, "/settings/events-config");
             },
