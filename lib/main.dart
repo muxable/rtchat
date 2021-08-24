@@ -28,8 +28,8 @@ import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
-import 'package:rtchat/screens/settings/eventsub_page.dart';
-import 'package:rtchat/screens/settings/follow_event_config.dart';
+import 'package:rtchat/screens/settings/events.dart';
+import 'package:rtchat/screens/settings/events/follow.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
@@ -246,9 +246,8 @@ class App extends StatelessWidget {
             '/settings/audio-sources': (context) => const AudioSourcesScreen(),
             '/settings/quick-links': (context) => const QuickLinksScreen(),
             '/settings/backup': (context) => const BackupScreen(),
-            '/settings/events-config': (context) => const EventConfigScreen(),
-            '/settings/follow-config': (context) =>
-                const FollowEventConfigWidget()
+            '/settings/events': (context) => const EventsScreen(),
+            '/settings/events/follow': (context) => const FollowEventScreen()
           },
         ),
       ),

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
-class FollowEventConfigWidget extends StatelessWidget {
-  const FollowEventConfigWidget({Key? key}) : super(key: key);
+class FollowEventScreen extends StatelessWidget {
+  const FollowEventScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,8 @@ class FollowEventConfigWidget extends StatelessWidget {
                       label:
                           "${model.followEventConfig.eventDuration.inSeconds} seconds",
                       onChanged: (value) {
-                        model.setFollowEventDuration(value.toInt());
+                        model.setFollowEventDuration(
+                            Duration(seconds: value.toInt()));
                       },
                     ),
                     SwitchListTile.adaptive(

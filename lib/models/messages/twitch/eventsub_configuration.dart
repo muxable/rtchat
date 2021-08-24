@@ -68,8 +68,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
   // other configs
   // final HypeTrainEventConfig;
 
-  setFollowEventDuration(int value) {
-    followEventConfig.eventDuration = Duration(seconds: value);
+  setFollowEventDuration(Duration duration) {
+    followEventConfig.eventDuration = duration;
     notifyListeners();
   }
 
