@@ -61,6 +61,54 @@ class TwitchMessageWidget extends StatelessWidget {
     return model.author.color;
   }
 
+  Iterable<InlineSpan> _render(
+      BuildContext context, StyleModel styleModel, MessageToken token) sync* {
+    final linkStyle = Theme.of(context)
+        .textTheme
+        .bodyText2!
+        .copyWith(color: Theme.of(context).accentColor);
+
+    final tagStyle = Theme.of(context).textTheme.subtitle2;
+
+    final multiplierStyle = Theme.of(context)
+        .textTheme
+        .caption!
+        .copyWith(color: Theme.of(context).accentColor);
+
+    if (token is TextToken) {
+      yield TextSpan(text: token.text);
+    } else if (token is EmoteToken) {
+      yield WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          // NetworkImageWithRetry doesn't support animated gifs.
+          // https://github.com/flutter/flutter/issues/81664
+          child:
+              Image.network(token.url.toString(), height: styleModel.fontSize));
+    } else if (token is LinkToken) {
+      yield WidgetSpan(
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: Text.rich(
+            TextSpan(
+              text: token.text,
+              style: linkStyle,
+              recognizer: (TapGestureRecognizer()
+                ..onTap = () => launch(token.url.toString())),
+            ),
+          ),
+        ),
+      );
+    } else if (token is UserMentionToken) {
+      yield TextSpan(text: "@${token.username}", style: tagStyle);
+    } else if (token is CompactedToken) {
+      yield* token.children
+          .expand((child) => _render(context, styleModel, child));
+      yield TextSpan(text: "×${token.multiplicity}", style: multiplierStyle);
+    } else {
+      throw Exception("invalid token");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleModel>(builder: (context, styleModel, child) {
@@ -71,13 +119,6 @@ class TwitchMessageWidget extends StatelessWidget {
           .textTheme
           .subtitle2!
           .copyWith(color: styleModel.applyLightnessBoost(context, color));
-
-      final linkStyle = Theme.of(context)
-          .textTheme
-          .bodyText2!
-          .copyWith(color: Theme.of(context).accentColor);
-
-      final tagStyle = Theme.of(context).textTheme.subtitle2;
 
       final List<InlineSpan> children = [];
 
@@ -102,6 +143,10 @@ class TwitchMessageWidget extends StatelessWidget {
         children.add(const TextSpan(text: ": "));
       }
 
+      final tokens = styleModel.compactMessages == CompactMessages.none
+          ? model.tokenized
+          : model.tokenized.compacted;
+
       return Opacity(
         opacity: model.deleted ? 0.6 : 1.0,
         child: Padding(
@@ -110,37 +155,9 @@ class TwitchMessageWidget extends StatelessWidget {
             TextSpan(
               children: [
                 ...children,
-                ...model.tokenized.map((token) {
-                  if (token is TextToken) {
-                    return TextSpan(text: token.text);
-                  } else if (token is EmoteToken) {
-                    return WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        // NetworkImageWithRetry doesn't support animated gifs.
-                        // https://github.com/flutter/flutter/issues/81664
-                        child: Image.network(token.url.toString(),
-                            height: styleModel.fontSize));
-                  } else if (token is LinkToken) {
-                    return WidgetSpan(
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Text.rich(
-                          TextSpan(
-                            text: token.text,
-                            style: linkStyle,
-                            recognizer: (TapGestureRecognizer()
-                              ..onTap = () => launch(token.url.toString())),
-                          ),
-                        ),
-                      ),
-                    );
-                  } else if (token is UserMentionToken) {
-                    return TextSpan(
-                        text: "@${token.username}", style: tagStyle);
-                  } else {
-                    throw Exception("invalid token");
-                  }
-                }).toList(),
+                ...tokens
+                    .expand((token) => _render(context, styleModel, token))
+                    .toList(),
               ],
             ),
           ),
