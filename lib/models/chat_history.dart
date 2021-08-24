@@ -59,10 +59,6 @@ Stream<DeltaEvent> _handleDocumentChange(Map<String, List<Emote>> emotes,
           deleted: false,
           channelId: data['channelId']);
 
-      if (model.isCommand) {
-        print("Yeah. This is a command.");
-      }
-
       yield AppendDeltaEvent(model);
       break;
     case "messagedeleted":
