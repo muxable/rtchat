@@ -22,10 +22,39 @@ Color lighten(Color color, [double amount = .1]) {
   return hslLight.toColor();
 }
 
+enum CompactMessages { none, withinMessage, acrossMessages }
+
+extension CompactMessagesJson on CompactMessages {
+  static fromJson(dynamic value) {
+    switch (value) {
+      case 0:
+        return CompactMessages.none;
+      case 1:
+        return CompactMessages.withinMessage;
+      case 2:
+        return CompactMessages.acrossMessages;
+      default:
+        return CompactMessages.none;
+    }
+  }
+
+  toJson() {
+    switch (this) {
+      case CompactMessages.none:
+        return 0;
+      case CompactMessages.withinMessage:
+        return 1;
+      case CompactMessages.acrossMessages:
+        return 2;
+    }
+  }
+}
+
 class StyleModel extends ChangeNotifier {
   double _fontSize = 20;
   double _lightnessBoost = 0.179;
   bool _isDeletedMessagesVisible = true;
+  CompactMessages _compactMessages = CompactMessages.none;
 
   double get fontSize {
     return _fontSize;
@@ -59,6 +88,13 @@ class StyleModel extends ChangeNotifier {
 
   bool get isDeletedMessagesVisible => _isDeletedMessagesVisible;
 
+  set compactMessages(CompactMessages compactMessages) {
+    _compactMessages = compactMessages;
+    notifyListeners();
+  }
+
+  CompactMessages get compactMessages => _compactMessages;
+
   StyleModel.fromJson(Map<String, dynamic> json) {
     if (json['fontSize'] != null) {
       _fontSize = json['fontSize'];
@@ -69,11 +105,15 @@ class StyleModel extends ChangeNotifier {
     if (json['isDeletedMessagesVisible'] != null) {
       _isDeletedMessagesVisible = json['isDeletedMessagesVisible'];
     }
+    if (json['compactMessages'] != null) {
+      _compactMessages = CompactMessagesJson.fromJson(json['compactMessages']);
+    }
   }
 
   Map<String, dynamic> toJson() => {
         "lightnessBoost": _lightnessBoost,
         "fontSize": _fontSize,
         "isDeletedMessagesVisible": _isDeletedMessagesVisible,
+        "compactMessages": _compactMessages.toJson(),
       };
 }
