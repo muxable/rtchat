@@ -70,10 +70,10 @@ class TwitchMessageWidget extends StatelessWidget {
         .copyWith(color: Theme.of(context).accentColor);
 
     final tagStyleStreamer = TextStyle(
-        color: Theme.of(context).canvasColor.computeLuminance() > 0.5
+        color: Theme.of(context).brightness == Brightness.light
             ? Colors.white
             : Colors.black,
-        backgroundColor: Theme.of(context).canvasColor.computeLuminance() > 0.5
+        backgroundColor: Theme.of(context).brightness == Brightness.light
             ? Colors.black
             : Colors.white);
     //for streamermention
@@ -112,7 +112,7 @@ class TwitchMessageWidget extends StatelessWidget {
     } else if (token is UserMentionToken) {
       final userModel = Provider.of<UserModel>(context, listen: false);
       final loginChannel = userModel.userChannel!.displayName;
-      if (token.username == loginChannel) {
+      if (token.username.toLowerCase() == loginChannel.toLowerCase()) {
         yield TextSpan(text: " @${token.username} ", style: tagStyleStreamer);
       } else {
         yield TextSpan(text: " @${token.username} ", style: tagStyle);
