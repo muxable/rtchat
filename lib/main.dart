@@ -28,10 +28,12 @@ import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
+import 'package:rtchat/screens/settings/chat_history.dart';
 import 'package:rtchat/screens/settings/events.dart';
 import 'package:rtchat/screens/settings/events/follow.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
+import 'package:rtchat/screens/settings/tts.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/screens/sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -245,6 +247,8 @@ class App extends StatelessWidget {
             '/settings/badges': (context) => const TwitchBadgesScreen(),
             '/settings/activity-feed': (context) => const ActivityFeedScreen(),
             '/settings/audio-sources': (context) => const AudioSourcesScreen(),
+            '/settings/chat-history': (context) => const ChatHistoryScreen(),
+            '/settings/text-to-speech': (context) => const TextToSpeechScreen(),
             '/settings/quick-links': (context) => const QuickLinksScreen(),
             '/settings/backup': (context) => const BackupScreen(),
             '/settings/events': (context) => const EventsScreen(),

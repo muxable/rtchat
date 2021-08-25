@@ -2,8 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/font_size_picker.dart';
-import 'package:rtchat/components/tts_options_panel.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -43,6 +41,20 @@ class SettingsScreen extends StatelessWidget {
               Navigator.pushNamed(context, "/settings/quick-links");
             },
           ),
+          ListTile(
+            title: const Text('Chat history'),
+            subtitle: const Text("Change the chat appearance"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/chat-history");
+            },
+          ),
+          ListTile(
+            title: const Text('Text-to-speech'),
+            subtitle: const Text("Change text-to-speech settings"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/text-to-speech");
+            },
+          ),
           const Divider(),
           SwitchListTile.adaptive(
             title: const Text('Show viewer and follower count'),
@@ -60,10 +72,6 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
           ],
-          const FontSizePickerWidget(),
-          const Divider(),
-          const TtsOptionsWidget(),
-          const Divider(),
           SwitchListTile.adaptive(
             title: const Text('Disable interaction when layout locked'),
             subtitle: const Text(
