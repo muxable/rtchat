@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -50,6 +51,15 @@ class SettingsScreen extends StatelessWidget {
               layoutModel.isStatsVisible = value;
             },
           ),
+          if (kDebugMode) ...[
+            ListTile(
+              title: const Text('Event Configuration'),
+              subtitle: const Text("Configure twitch events"),
+              onTap: () {
+                Navigator.pushNamed(context, "/settings/events");
+              },
+            ),
+          ],
           const FontSizePickerWidget(),
           const Divider(),
           const TtsOptionsWidget(),
