@@ -65,7 +65,7 @@ class TwitchMessageWidget extends StatelessWidget {
   Iterable<InlineSpan> _render(
       BuildContext context, StyleModel styleModel, MessageToken token) sync* {
     const linkStyle = TextStyle(
-      color: Color(0xFF9d5cff),
+      color: Color(0xFF9D5CFF),
       decoration: TextDecoration.underline,
     );
 
