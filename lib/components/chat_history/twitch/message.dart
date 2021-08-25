@@ -7,6 +7,7 @@ import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/style.dart';
+import 'package:rtchat/models/user.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const colors = [
@@ -63,12 +64,22 @@ class TwitchMessageWidget extends StatelessWidget {
 
   Iterable<InlineSpan> _render(
       BuildContext context, StyleModel styleModel, MessageToken token) sync* {
-    final linkStyle = Theme.of(context)
-        .textTheme
-        .bodyText2!
-        .copyWith(color: Theme.of(context).accentColor);
+    const linkStyle = TextStyle(
+      color: Color(0xFF9d5cff),
+      decoration: TextDecoration.underline,
+    );
 
-    final tagStyle = Theme.of(context).textTheme.subtitle2;
+    final tagStyleStreamer = TextStyle(
+        color: Theme.of(context).canvasColor.computeLuminance() > 0.5
+            ? Colors.white
+            : Colors.black,
+        backgroundColor: Theme.of(context).canvasColor.computeLuminance() > 0.5
+            ? Colors.black
+            : Colors.white);
+    //for streamermention
+
+    final tagStyle = TextStyle(
+        backgroundColor: Theme.of(context).highlightColor); //for usermention
 
     final multiplierStyle = Theme.of(context)
         .textTheme
@@ -99,7 +110,13 @@ class TwitchMessageWidget extends StatelessWidget {
         ),
       );
     } else if (token is UserMentionToken) {
-      yield TextSpan(text: "@${token.username}", style: tagStyle);
+      final userModel = Provider.of<UserModel>(context, listen: false);
+      final loginChannel = userModel.userChannel!.displayName;
+      if (token.username == loginChannel) {
+        yield TextSpan(text: " @${token.username} ", style: tagStyleStreamer);
+      } else {
+        yield TextSpan(text: " @${token.username} ", style: tagStyle);
+      }
     } else if (token is CompactedToken) {
       yield* token.children
           .expand((child) => _render(context, styleModel, child));
