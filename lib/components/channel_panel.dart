@@ -183,13 +183,13 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                 decoration:
                     const InputDecoration(hintText: "Send a message..."),
                 onChanged: (text) {
-                  if (text[0] == '!') print("Command <${text}> detected.");
-
+                  if (text.startsWith('!')) {
+                    print("Command <${text}> detected.");
+                  }
                   final filtered = text.replaceAll('\n', ' ');
                   if (filtered == text) {
                     return;
                   }
-
                   _textEditingController.value = TextEditingValue(
                       text: filtered,
                       selection: TextSelection.fromPosition(TextPosition(
@@ -200,8 +200,9 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                   if (value.isEmpty) {
                     return;
                   }
-                  if (value[0] == '!') print("Command <${value}> sent.");
-
+                  if (value.startsWith('!')) {
+                    print("Command <${value}> sent.");
+                  }
                   final channelsModel =
                       Provider.of<ChannelsModel>(context, listen: false);
                   ActionsAdapter.instance
