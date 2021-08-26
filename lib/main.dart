@@ -28,10 +28,12 @@ import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
+import 'package:rtchat/screens/settings/chat_history.dart';
 import 'package:rtchat/screens/settings/events.dart';
 import 'package:rtchat/screens/settings/events/follow.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
+import 'package:rtchat/screens/settings/tts.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/screens/sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -69,7 +71,17 @@ void main() async {
   if (kDebugMode) {
     await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
   }
-  runZonedGuarded(() async {
+
+  // Add remote config
+  RemoteConfig.instance.setConfigSettings(RemoteConfigSettings(
+      minimumFetchInterval: const Duration(hours: 1),
+      fetchTimeout: const Duration(seconds: 10)));
+
+  await RemoteConfig.instance
+      .setDefaults({'inline_events_enabled': kDebugMode});
+  await RemoteConfig.instance.fetchAndActivate();
+
+  await runZonedGuarded(() async {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
 
     final session = await AudioSession.instance;
@@ -93,15 +105,6 @@ void main() async {
 
     runApp(App(prefs: prefs, ttsHandler: ttsHandler));
   }, FirebaseCrashlytics.instance.recordError);
-
-  // Add remote config
-  final _remoteConfig = RemoteConfig.instance;
-  _remoteConfig.setConfigSettings(RemoteConfigSettings(
-      minimumFetchInterval: const Duration(hours: 1),
-      fetchTimeout: const Duration(seconds: 10)));
-
-  _remoteConfig.setDefaults(<String, dynamic>{'inline_events_enabled': false});
-  await _remoteConfig.fetchAndActivate();
 }
 
 class App extends StatelessWidget {
@@ -244,6 +247,8 @@ class App extends StatelessWidget {
             '/settings/badges': (context) => const TwitchBadgesScreen(),
             '/settings/activity-feed': (context) => const ActivityFeedScreen(),
             '/settings/audio-sources': (context) => const AudioSourcesScreen(),
+            '/settings/chat-history': (context) => const ChatHistoryScreen(),
+            '/settings/text-to-speech': (context) => const TextToSpeechScreen(),
             '/settings/quick-links': (context) => const QuickLinksScreen(),
             '/settings/backup': (context) => const BackupScreen(),
             '/settings/events': (context) => const EventsScreen(),
