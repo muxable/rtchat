@@ -184,7 +184,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                     const InputDecoration(hintText: "Send a message..."),
                 onChanged: (text) {
                   if (text.startsWith('!')) {
-                    print("Command <${text}> detected.");
+                    print("Command <$text> detected.");
                   }
                   final filtered = text.replaceAll('\n', ' ');
                   if (filtered == text) {
@@ -201,7 +201,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                     return;
                   }
                   if (value.startsWith('!')) {
-                    print("Command <${value}> sent.");
+                    print("Command <$value> sent.");
                   }
                   final channelsModel =
                       Provider.of<ChannelsModel>(context, listen: false);
