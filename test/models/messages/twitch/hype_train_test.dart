@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 
@@ -24,6 +25,7 @@ TwitchHypeTrainEventModel createHypeTrainModel(
 Map<String, dynamic> createData(
     String id, int level, int progress, int goal, int total) {
   return {
+    'timestamp': Timestamp.fromDate(DateTime.now()),
     'event': {
       'id': id,
       'level': level,
@@ -36,6 +38,7 @@ Map<String, dynamic> createData(
 
 Map<String, dynamic> createEndData(int level, int total) {
   return {
+    'timestamp': Timestamp.fromDate(DateTime.now()),
     'event': {
       'level': level,
       'total': total,
