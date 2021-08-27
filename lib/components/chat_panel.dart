@@ -121,7 +121,6 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
         final messages = model.messages.reversed.toList();
         final expirations =
             messages.map((message) => _getExpiration(message)).toList();
-        print(expirations.whereType<DateTime>().toSet());
         return _RebuildableWidget(
             rebuildAt: expirations.whereType<DateTime>().toSet(),
             builder: (context) {
