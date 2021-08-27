@@ -188,35 +188,50 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
   }
 }
 
-Stream<DeltaEvent> getChatHistory(Set<Channel> channels) async* {
-  final subscribe = FirebaseFunctions.instance.httpsCallable('subscribe');
-  for (final channel in channels) {
-    subscribe({
-      "provider": channel.provider,
-      "channelId": channel.channelId,
+class MessagesAdapter {
+  final FirebaseFirestore db;
+  final FirebaseFunctions functions;
+
+  MessagesAdapter._({required this.db, required this.functions});
+
+  factory MessagesAdapter.instanceFor(
+      {required FirebaseFirestore db, required FirebaseFunctions functions}) {
+    return MessagesAdapter._(db: db, functions: functions);
+  }
+
+  static MessagesAdapter get instance => MessagesAdapter.instanceFor(
+      db: FirebaseFirestore.instance, functions: FirebaseFunctions.instance);
+
+  Stream<DeltaEvent> forChannels(Set<Channel> channels) async* {
+    final subscribe = functions.httpsCallable('subscribe');
+    for (final channel in channels) {
+      subscribe({
+        "provider": channel.provider,
+        "channelId": channel.channelId,
+      });
+    }
+    if (channels.isEmpty) {
+      return;
+    }
+    Map<String, List<Emote>> emotes = {};
+    for (final channel in channels) {
+      emotes[channel.toString()] =
+          await getThirdPartyEmotes(channel.provider, channel.channelId);
+    }
+    yield* db
+        .collection("messages")
+        .where("channelId",
+            whereIn: channels.map((channel) => channel.toString()).toList())
+        .orderBy("timestamp")
+        .limitToLast(250)
+        .snapshots()
+        .expand((event) => event.docChanges)
+        .where((change) => change.type == DocumentChangeType.added)
+        .expand((change) sync* {
+      final event = _toDeltaEvent(emotes, change);
+      if (event != null) {
+        yield event;
+      }
     });
   }
-  if (channels.isEmpty) {
-    return;
-  }
-  Map<String, List<Emote>> emotes = {};
-  for (final channel in channels) {
-    emotes[channel.toString()] =
-        await getThirdPartyEmotes(channel.provider, channel.channelId);
-  }
-  yield* FirebaseFirestore.instance
-      .collection("messages")
-      .where("channelId",
-          whereIn: channels.map((channel) => channel.toString()).toList())
-      .orderBy("timestamp")
-      .limitToLast(250)
-      .snapshots()
-      .expand((event) => event.docChanges)
-      .where((change) => change.type == DocumentChangeType.added)
-      .expand((change) sync* {
-    final event = _toDeltaEvent(emotes, change);
-    if (event != null) {
-      yield event;
-    }
-  });
 }
