@@ -160,7 +160,6 @@ class TwitchMessageModel extends MessageModel {
   final String message;
   final Map<String, dynamic> tags;
   final List<Emote> thirdPartyEmotes;
-  final DateTime timestamp;
   final bool deleted;
   final String channelId;
 
@@ -170,10 +169,10 @@ class TwitchMessageModel extends MessageModel {
       required this.message,
       required this.tags,
       required this.thirdPartyEmotes,
-      required this.timestamp,
+      required DateTime timestamp,
       required this.deleted,
       required this.channelId})
-      : super(messageId: messageId, pinned: null);
+      : super(messageId: messageId, timestamp: timestamp);
 
   List<_BadgeData> get badges =>
       _badges ??= parseBadges(tags['badges-raw'] ?? "");
