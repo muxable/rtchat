@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
+import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -293,6 +294,51 @@ Stream<DeltaEvent> _handleDocumentChange(Map<String, List<Emote>> emotes,
           }
 
           return message.withEnd(data: data, pinned: false);
+        });
+      }
+      break;
+    case "channel.prediction.begin":
+      final model =
+          TwitchPredictionEventModel.fromDocumentData(data: data, pinned: true);
+      yield AppendDeltaEvent(model);
+      break;
+    case "channel.prediction.progress":
+      yield UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
+          (message) {
+        if (message is! TwitchPredictionEventModel) {
+          return message;
+        }
+        return TwitchPredictionEventModel.fromDocumentData(
+            data: data, pinned: true);
+      });
+      break;
+    case "channel.prediction.end":
+      final DateTime timestamp = data['timestamp'].toDate();
+      final expiration = timestamp.add(const Duration(seconds: 20));
+      final remaining = expiration.difference(DateTime.now());
+
+      // Whenever the prediction is cancelled, we don't do the timed pinning.
+      final endedSuccessfully = data['event']['status'] != "cancelled";
+
+      yield UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
+          (message) {
+        if (message is! TwitchPredictionEventModel) {
+          return message;
+        }
+        return TwitchPredictionEventModel.fromEndEvent(
+            data: data, pinned: endedSuccessfully && remaining > Duration.zero);
+      });
+
+      if (endedSuccessfully && remaining > Duration.zero) {
+        await Future.delayed(remaining);
+        yield UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
+            (message) {
+          if (message is! TwitchPredictionEventModel) {
+            return message;
+          }
+
+          return TwitchPredictionEventModel.fromEndEvent(
+              data: data, pinned: false);
         });
       }
       break;
