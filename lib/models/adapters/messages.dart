@@ -194,13 +194,9 @@ class MessagesAdapter {
 
   MessagesAdapter._({required this.db, required this.functions});
 
-  factory MessagesAdapter.instanceFor(
-      {required FirebaseFirestore db, required FirebaseFunctions functions}) {
-    return MessagesAdapter._(db: db, functions: functions);
-  }
-
-  static MessagesAdapter get instance => MessagesAdapter.instanceFor(
+  MessagesAdapter get instance => _instance ??= MessagesAdapter._(
       db: FirebaseFirestore.instance, functions: FirebaseFunctions.instance);
+  MessagesAdapter? _instance;
 
   Stream<DeltaEvent> forChannels(Set<Channel> channels) async* {
     final subscribe = functions.httpsCallable('subscribe');
