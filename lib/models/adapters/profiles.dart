@@ -6,9 +6,9 @@ class ProfilesAdapter {
 
   ProfilesAdapter._({required this.db});
 
-  ProfilesAdapter get instance =>
+  static ProfilesAdapter get instance =>
       _instance ??= ProfilesAdapter._(db: FirebaseFirestore.instance);
-  ProfilesAdapter? _instance;
+  static ProfilesAdapter? _instance;
 
   Stream<Channel?> getChannel(
       {required String userId, required String provider}) {

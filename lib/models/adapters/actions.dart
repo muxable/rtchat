@@ -6,9 +6,9 @@ class ActionsAdapter {
 
   ActionsAdapter._({required this.functions});
 
-  ActionsAdapter get instance =>
+  static ActionsAdapter get instance =>
       _instance ??= ActionsAdapter._(functions: FirebaseFunctions.instance);
-  ActionsAdapter? _instance;
+  static ActionsAdapter? _instance;
 
   Future<void> send(Channel channel, String message) async {
     final call = functions.httpsCallable('send');
