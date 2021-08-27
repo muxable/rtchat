@@ -103,13 +103,10 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     return Stack(children: [
       Consumer<ChannelsModel>(builder: (context, model, child) {
         final messages = model.messages.reversed.toList();
+        final expirations =
+            messages.map((message) => _getExpiration(message)).toList();
         return _RebuildableWidget(
-            rebuildAt: messages.expand((message) sync* {
-              final expiration = _getExpiration(message);
-              if (expiration != null) {
-                yield expiration;
-              }
-            }).toSet(),
+            rebuildAt: expirations.whereType<DateTime>().toSet(),
             builder: (context) {
               final now = DateTime.now();
               return PinnableMessageScrollView(
@@ -119,7 +116,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                   child: ChatHistoryMessage(message: messages[index]),
                 ),
                 isPinnedBuilder: (index) {
-                  final expiration = _getExpiration(messages[index]);
+                  final expiration = expirations[index];
                   if (expiration != null) {
                     return expiration.isAfter(now);
                   }
