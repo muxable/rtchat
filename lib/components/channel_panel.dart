@@ -183,10 +183,11 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                 decoration:
                     const InputDecoration(hintText: "Send a message..."),
                 onChanged: (text) {
-                  if (text.startsWith('!')) {
-                    print("Command <$text> detected.");
-                  }
                   final filtered = text.replaceAll('\n', ' ');
+                  if (filtered.startsWith('!') && !filtered.contains(' ')) {
+                    // continous string with no whitespaces
+                    print("Command <$filtered> detected.");
+                  }
                   if (filtered == text) {
                     return;
                   }
@@ -240,9 +241,68 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
           ]),
         );
       }),
+      _buildCommandSuggestion(),
       _buildEmotePicker(context)
     ]);
   }
+
+  Widget _buildCommandSuggestion() =>
+      _chatInputFocusNode.hasFocus // if keyboard is opened
+          ? SizedBox(
+              height: 55,
+              child: Scrollbar(
+                isAlwaysShown: false,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        TextButton(
+                            child: Text("!slow"),
+                            onPressed: () {
+                              final channelsModel = Provider.of<ChannelsModel>(
+                                  context,
+                                  listen: false);
+                              ActionsAdapter.instance.send(
+                                  channelsModel.subscribedChannels.first,
+                                  "!slow");
+                              _chatInputFocusNode.unfocus(); //closes keyboard,
+                            }),
+                        TextButton(
+                          child: Text("!show"),
+                          onPressed: () {},
+                        ),
+                        TextButton(
+                          child: Text("!shoe"),
+                          onPressed: () {},
+                        ),
+                        TextButton(
+                          child: Text("!flow"),
+                          onPressed: () {},
+                        ),
+                        TextButton(
+                          child: Text("!roll1"),
+                          onPressed: () {},
+                        ),
+                        TextButton(
+                          child: Text("!roll2"),
+                          onPressed: () {},
+                        ),
+                        TextButton(
+                          child: Text("!roll3"),
+                          onPressed: () {},
+                        ),
+                        TextButton(
+                          child: Text("!roll4"),
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : Container();
 
   Widget _buildSendButton() => _isEmotePickerVisible
       ? IconButton(
