@@ -29,7 +29,26 @@ class _RebuildableWidgetState extends State<_RebuildableWidget> {
   @override
   void initState() {
     super.initState();
-    // create timers for each future date.
+
+    _setTimers();
+  }
+
+  @override
+  void didUpdateWidget(_RebuildableWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    _clearTimers();
+    _setTimers();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _clearTimers();
+  }
+
+  void _setTimers() {
     final now = DateTime.now();
     timers = widget.rebuildAt.expand((dateTime) sync* {
       final duration = dateTime.difference(now);
@@ -39,13 +58,10 @@ class _RebuildableWidgetState extends State<_RebuildableWidget> {
     }).toSet();
   }
 
-  @override
-  void dispose() {
-    // clean up all the timers.
+  void _clearTimers() {
     for (final timer in timers) {
       timer.cancel();
     }
-    super.dispose();
   }
 
   @override
@@ -105,6 +121,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
         final messages = model.messages.reversed.toList();
         final expirations =
             messages.map((message) => _getExpiration(message)).toList();
+        print(expirations.whereType<DateTime>().toSet());
         return _RebuildableWidget(
             rebuildAt: expirations.whereType<DateTime>().toSet(),
             builder: (context) {
