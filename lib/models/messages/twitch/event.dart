@@ -8,11 +8,11 @@ class TwitchRaidEventModel extends MessageModel {
   final int viewers;
 
   const TwitchRaidEventModel(
-      {required bool pinned,
+      {required DateTime timestamp,
       required String messageId,
       required this.from,
       required this.viewers})
-      : super(messageId: messageId, pinned: pinned);
+      : super(messageId: messageId, timestamp: timestamp);
 }
 
 class TwitchFollowEventModel extends MessageModel {
@@ -21,8 +21,8 @@ class TwitchFollowEventModel extends MessageModel {
   const TwitchFollowEventModel({
     required this.follower,
     required String messageId,
-    required bool pinned,
-  }) : super(messageId: messageId, pinned: pinned);
+    required DateTime timestamp,
+  }) : super(messageId: messageId, timestamp: timestamp);
 
   static TwitchFollowEventModel fromDocumentData(
       String messageId, Map<String, dynamic> data) {
@@ -32,7 +32,7 @@ class TwitchFollowEventModel extends MessageModel {
             login: data['event']['user_login'],
             displayName: data['event']['user_name']),
         messageId: messageId,
-        pinned: false);
+        timestamp: data['timestamp'].toDate());
   }
 }
 
@@ -48,8 +48,8 @@ class TwitchCheerEventModel extends MessageModel {
     required this.cheerMessage,
     required this.giverName,
     required String messageId,
-    required bool pinned,
-  }) : super(messageId: messageId, pinned: pinned);
+    required DateTime timestamp,
+  }) : super(messageId: messageId, timestamp: timestamp);
 }
 
 class PollChoiceModel {
@@ -77,8 +77,8 @@ class TwitchPollEventModel extends MessageModel {
     required this.pollTitle,
     required this.isCompleted,
     required String messageId,
-    required bool pinned,
-  }) : super(messageId: messageId, pinned: pinned);
+    required DateTime timestamp,
+  }) : super(messageId: messageId, timestamp: timestamp);
 
   static TwitchPollEventModel fromDocumentData(Map<String, dynamic>? data) {
     final m = TwitchPollEventModel(
@@ -86,7 +86,7 @@ class TwitchPollEventModel extends MessageModel {
         pollTitle: data['event']['title'],
         isCompleted: false,
         messageId: "poll${data['event']['id']}",
-        pinned: false);
+        timestamp: data['timestamp'].toDate());
     return m;
   }
 
@@ -100,7 +100,7 @@ class TwitchPollEventModel extends MessageModel {
         pollTitle: data['event']['title'],
         isCompleted: true,
         messageId: "poll${data['event']['id']}",
-        pinned: false);
+        timestamp: data['timestamp'].toDate());
     return m;
   }
 

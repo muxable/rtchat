@@ -7,6 +7,7 @@ import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/style.dart';
+import 'package:rtchat/models/user.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const colors = [
@@ -68,7 +69,17 @@ class TwitchMessageWidget extends StatelessWidget {
         .bodyText2!
         .copyWith(color: Theme.of(context).accentColor);
 
-    final tagStyle = Theme.of(context).textTheme.subtitle2;
+    final tagStyleStreamer = TextStyle(
+        color: Theme.of(context).brightness == Brightness.light
+            ? Colors.white
+            : Colors.black,
+        backgroundColor: Theme.of(context).brightness == Brightness.light
+            ? Colors.black
+            : Colors.white);
+    //for streamermention
+
+    final tagStyle = TextStyle(
+        backgroundColor: Theme.of(context).highlightColor); //for usermention
 
     final multiplierStyle = Theme.of(context)
         .textTheme
@@ -99,7 +110,13 @@ class TwitchMessageWidget extends StatelessWidget {
         ),
       );
     } else if (token is UserMentionToken) {
-      yield TextSpan(text: "@${token.username}", style: tagStyle);
+      final userModel = Provider.of<UserModel>(context, listen: false);
+      final loginChannel = userModel.userChannel!.displayName;
+      if (token.username.toLowerCase() == loginChannel.toLowerCase()) {
+        yield TextSpan(text: " @${token.username} ", style: tagStyleStreamer);
+      } else {
+        yield TextSpan(text: " @${token.username} ", style: tagStyle);
+      }
     } else if (token is CompactedToken) {
       yield* token.children
           .expand((child) => _render(context, styleModel, child));
