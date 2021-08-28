@@ -24,26 +24,26 @@ class TwitchPollEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      return DecoratedEventWidget(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // title
-          Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(model.pollTitle,
-                  style: Theme.of(context).textTheme.subtitle2)),
-          // polls
-          ...getPollsWidget(model),
-          // some breakdowns
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text("channel point votes: ${model.totalChannelPointsVotes}",
-                  style: Theme.of(context).textTheme.subtitle1),
-              Text("  bit votes: ${model.totalBitVotes}",
-                  style: Theme.of(context).textTheme.subtitle1),
-            ],
-          )
-        ]),
-      );
+    return DecoratedEventWidget(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // title
+        Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(model.pollTitle,
+                style: Theme.of(context).textTheme.subtitle2)),
+        // polls
+        ...getPollsWidget(model),
+        // some breakdowns
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text("channel point votes: ${model.totalChannelPointsVotes}",
+                style: Theme.of(context).textTheme.subtitle1),
+            Text("  bit votes: ${model.totalBitVotes}",
+                style: Theme.of(context).textTheme.subtitle1),
+          ],
+        )
+      ]),
+    );
   }
 }
