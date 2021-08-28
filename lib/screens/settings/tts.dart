@@ -8,7 +8,7 @@ class TextToSpeechScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Activity feed")),
+      appBar: AppBar(title: const Text("Text to speech")),
       body: Consumer<TtsModel>(builder: (context, model, child) {
         return ListView(
           children: [
