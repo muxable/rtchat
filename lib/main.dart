@@ -30,6 +30,7 @@ import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
 import 'package:rtchat/screens/settings/events.dart';
+import 'package:rtchat/screens/settings/events/cheer.dart';
 import 'package:rtchat/screens/settings/events/follow.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
@@ -252,7 +253,8 @@ class App extends StatelessWidget {
             '/settings/quick-links': (context) => const QuickLinksScreen(),
             '/settings/backup': (context) => const BackupScreen(),
             '/settings/events': (context) => const EventsScreen(),
-            '/settings/events/follow': (context) => const FollowEventScreen()
+            '/settings/events/follow': (context) => const FollowEventScreen(),
+            '/settings/events/cheer': (context) => const CheerEventScreen()
           },
         ),
       ),

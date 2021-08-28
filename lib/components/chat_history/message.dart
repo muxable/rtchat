@@ -150,7 +150,11 @@ class ChatHistoryMessage extends StatelessWidget {
             config.showEvent ? TwitchFollowEventWidget(m) : Container(),
       );
     } else if (m is TwitchCheerEventModel) {
-      return enableInlineEvents ? TwitchCheerEventWidget(m) : Container();
+      return Selector<EventSubConfigurationModel, CheerEventConfig>(
+        selector: (_, model) => model.cheerEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchCheerEventWidget(m) : Container(),
+      );
     } else if (m is TwitchPollEventModel) {
       return enableInlineEvents ? TwitchPollEventWidget(m) : Container();
     } else if (m is TwitchChannelPointRedemptionEventModel) {
