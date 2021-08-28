@@ -274,6 +274,24 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
 
   switch (provider) {
     case "twitch":
+      // check if it exists in firestore already.
+      const snapshot = await admin
+        .firestore()
+        .collection("profiles")
+        .where("twitch.id", "==", channelId)
+        .limit(1)
+        .get();
+      if (!snapshot.empty) {
+        // return the profile picture url from the database instead.
+        const url = snapshot.docs[0].get("twitch")[
+          "profilePictureUrl"
+        ] as string;
+        const image = await fetch(url);
+        res.setHeader("Content-Type", "image/png");
+        res.status(200).send(await image.buffer());
+        return;
+      }
+
       const token = await getAppAccessToken(provider);
       if (!token) {
         throw new functions.https.HttpsError("internal", "auth error");
@@ -282,17 +300,23 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
         Authorization: `Bearer ${token.token["access_token"]}`,
         "Client-Id": TWITCH_CLIENT_ID,
       };
-      const response = await fetch(
-        `https://api.twitch.tv/helix/users?id=${channelId}`,
-        { headers: headers }
-      );
-      const json = await response.json();
-      if (!json["data"] || json["data"].length === 0) {
+      try {
+        const response = await fetch(
+          `https://api.twitch.tv/helix/users?id=${channelId}`,
+          { headers: headers }
+        );
+        const json = await response.json();
+        if (!json["data"] || json["data"].length === 0) {
+          console.log(json);
+          throw new functions.https.HttpsError("not-found", "image not found");
+        }
+        const image = await fetch(json["data"][0]["profile_image_url"]);
+        res.setHeader("Content-Type", "image/png");
+        res.status(200).send(await image.buffer());
+      } catch (err) {
+        console.error(err);
         throw new functions.https.HttpsError("not-found", "image not found");
       }
-      const image = await fetch(json["data"][0]["profile_image_url"]);
-      res.setHeader("Content-Type", "image/png");
-      res.status(200).send(await image.buffer());
   }
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
