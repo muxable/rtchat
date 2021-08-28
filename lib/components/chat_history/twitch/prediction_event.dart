@@ -50,66 +50,62 @@ class _TwitchOutcomeWidget extends StatelessWidget {
     final outcomePercentage =
         "${((outcome.points / max(1, totalPoints)) * 100).floor()}%";
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Stack(alignment: AlignmentDirectional.center, children: [
-        SizedBox(
-          height: 37,
-          child: LinearProgressIndicator(
-            value: outcome.points / max(1, totalPoints),
-            valueColor: AlwaysStoppedAnimation<Color>(outcome.widgetColor),
-            backgroundColor: outcome.widgetColor.shade200,
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Stack(alignment: AlignmentDirectional.center, children: [
+          SizedBox(
+            height: 37,
+            child: LinearProgressIndicator(
+              value: outcome.points / max(1, totalPoints),
+              valueColor: AlwaysStoppedAnimation<Color>(outcome.widgetColor),
+              backgroundColor: outcome.widgetColor.shade200,
+            ),
           ),
-        ),
-        ...(isWinner
-            ? buildWinnerIndicators(outcomePercentage)
-            : buildRegularIndicators(outcomePercentage))
-      ]),
-    );
-  }
-
-  List<Widget> buildRegularIndicators(String outcomePercentage) {
-    return [
-      Padding(
-        padding: const EdgeInsets.only(left: 12),
-        child: Align(
-          child: Text(outcome.title),
-          alignment: Alignment.centerLeft,
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(right: 12),
-        child: Align(
-            child: Text(outcomePercentage), alignment: Alignment.centerRight),
-      )
-    ];
-  }
-
-  List<Widget> buildWinnerIndicators(String outcomePercentage) {
-    return [
-      const Padding(
-        padding: EdgeInsets.only(left: 8),
-        child: Align(
-          child: Icon(
-            Icons.emoji_events_outlined,
-            size: 32,
-          ),
-          alignment: Alignment.centerLeft,
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(left: 48),
-        child: Align(
-          child: Text(
-            outcome.title,
-          ),
-          alignment: Alignment.centerLeft,
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(right: 12),
-        child: Align(
-            child: Text(outcomePercentage), alignment: Alignment.centerRight),
-      )
-    ];
+          Builder(builder: (context) {
+            if (isWinner) {
+              return Stack(alignment: AlignmentDirectional.center, children: [
+                const Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: Align(
+                    child: Icon(
+                      Icons.emoji_events_outlined,
+                    ),
+                    alignment: Alignment.centerLeft,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 48),
+                  child: Align(
+                    child: Text(
+                      outcome.title,
+                    ),
+                    alignment: Alignment.centerLeft,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Align(
+                      child: Text(outcomePercentage),
+                      alignment: Alignment.centerRight),
+                )
+              ]);
+            } else {
+              return Stack(alignment: AlignmentDirectional.center, children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: Align(
+                    child: Text(outcome.title),
+                    alignment: Alignment.centerLeft,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Align(
+                      child: Text(outcomePercentage),
+                      alignment: Alignment.centerRight),
+                )
+              ]);
+            }
+          }),
+        ]));
   }
 }
