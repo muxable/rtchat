@@ -73,15 +73,13 @@ class _RebuildableWidgetState extends State<_RebuildableWidget> {
 
 DateTime? _getExpiration(
     MessageModel model, EventSubConfigurationModel eventSubConfigurationModel) {
-  FollowEventConfig followEventConfig =
-      eventSubConfigurationModel.followEventConfig;
-
   if (model is TwitchRaidEventModel) {
     return model.timestamp.add(const Duration(seconds: 15));
   } else if (model is TwitchFollowEventModel) {
+    final followEventConfig = eventSubConfigurationModel.followEventConfig;
     return followEventConfig.isEventPinnable
         ? model.timestamp.add(followEventConfig.eventDuration)
-        : model.timestamp.subtract(const Duration(milliseconds: 600));
+        : null;
   }
 }
 
