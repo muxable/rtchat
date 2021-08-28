@@ -141,7 +141,7 @@ class ChatHistoryMessage extends StatelessWidget {
     } else if (m is StreamStateEventModel) {
       return StreamStateEventWidget(m);
     } else if (m is TwitchFollowEventModel) {
-      return enableInlineEvents ? TwitchFollowEventWidget(m) : Container();
+      return TwitchFollowEventWidget(m);
     } else if (m is TwitchCheerEventModel) {
       return enableInlineEvents ? TwitchCheerEventWidget(m) : Container();
     } else if (m is TwitchPollEventModel) {

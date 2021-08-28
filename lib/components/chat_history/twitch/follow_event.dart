@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_image/network.dart';
+import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class TwitchFollowEventWidget extends StatelessWidget {
   final TwitchFollowEventModel model;
@@ -11,6 +13,11 @@ class TwitchFollowEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final eventSubConfigurationModel =
+        Provider.of<EventSubConfigurationModel>(context, listen: false);
+    if (!eventSubConfigurationModel.followEventConfig.showEvent) {
+      return Container();
+    }
     return DecoratedEventWidget.avatar(
       avatar: NetworkImageWithRetry(model.follower.profilePictureUrl),
       child: Text.rich(
