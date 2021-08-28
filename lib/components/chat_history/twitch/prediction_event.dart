@@ -61,49 +61,55 @@ class _TwitchOutcomeWidget extends StatelessWidget {
           ),
         ),
         ...(isWinner
-            ? [
-                const Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: Align(
-                    child: Icon(
-                      Icons.emoji_events_outlined,
-                      size: 32,
-                    ),
-                    alignment: Alignment.centerLeft,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 48),
-                  child: Align(
-                    child: Text(
-                      outcome.title,
-                    ),
-                    alignment: Alignment.centerLeft,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Align(
-                      child: Text(outcomePercentage),
-                      alignment: Alignment.centerRight),
-                )
-              ]
-            : [
-                Padding(
-                  padding: const EdgeInsets.only(left: 12),
-                  child: Align(
-                    child: Text(outcome.title),
-                    alignment: Alignment.centerLeft,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Align(
-                      child: Text(outcomePercentage),
-                      alignment: Alignment.centerRight),
-                )
-              ])
+            ? buildWinnerIndicators(outcomePercentage)
+            : buildRegularIndicators(outcomePercentage))
       ]),
     );
+  }
+
+  List<Widget> buildRegularIndicators(String outcomePercentage) {
+    return [
+      Padding(
+        padding: const EdgeInsets.only(left: 12),
+        child: Align(
+          child: Text(outcome.title),
+          alignment: Alignment.centerLeft,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(right: 12),
+        child: Align(
+            child: Text(outcomePercentage), alignment: Alignment.centerRight),
+      )
+    ];
+  }
+
+  List<Widget> buildWinnerIndicators(String outcomePercentage) {
+    return [
+      const Padding(
+        padding: EdgeInsets.only(left: 8),
+        child: Align(
+          child: Icon(
+            Icons.emoji_events_outlined,
+            size: 32,
+          ),
+          alignment: Alignment.centerLeft,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(left: 48),
+        child: Align(
+          child: Text(
+            outcome.title,
+          ),
+          alignment: Alignment.centerLeft,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(right: 12),
+        child: Align(
+            child: Text(outcomePercentage), alignment: Alignment.centerRight),
+      )
+    ];
   }
 }

@@ -10,7 +10,7 @@ void main() {
   testWidgets('started prediction should have title and 0 progress',
       (WidgetTester tester) async {
     final model = TwitchPredictionEventModel(
-        pinned: true,
+        timestamp: DateTime.now(),
         messageId: "prediction1",
         title: "Begin prediction",
         status: "in_progress",
@@ -43,7 +43,7 @@ void main() {
   testWidgets('updated prediction should have over zero progress',
       (WidgetTester tester) async {
     final model = TwitchPredictionEventModel(
-        pinned: true,
+        timestamp: DateTime.now(),
         messageId: "prediction1",
         title: "In Progress prediction",
         status: "in_progress",
@@ -82,7 +82,7 @@ void main() {
       'resolved prediction should have over zero progress and winner icon',
       (WidgetTester tester) async {
     final model = TwitchPredictionEventModel(
-        pinned: true,
+        timestamp: DateTime.now(),
         messageId: "prediction1",
         title: "Resolved prediction",
         status: "resolved",
@@ -117,7 +117,7 @@ void main() {
   testWidgets('cancelled prediction should be empty',
       (WidgetTester tester) async {
     final model = TwitchPredictionEventModel(
-        pinned: true,
+        timestamp: DateTime.now(),
         messageId: "prediction1",
         title: "Unresolved prediction",
         status: "cancelled",

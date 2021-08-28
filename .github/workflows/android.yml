@@ -72,7 +72,8 @@ jobs:
           KEY_ALIAS: upload
           STORE_FILE: upload-keystore.jks
 
-      - run: mkdir whatsnew && echo "${{ github.event.release.body }}" > whatsnew/whatsnew-en-US
+      - run: mkdir whatsnew
+      - run: echo "${{ github.event.release.body }}" > whatsnew/whatsnew-en-US
         if: github.event_name == 'release'
 
       - uses: r0adkll/upload-google-play@v1

@@ -19,19 +19,19 @@ class TwitchPredictionEventModel extends MessageModel {
   final List<TwitchPredictionOutcomeModel> outcomes;
 
   const TwitchPredictionEventModel(
-      {required bool pinned,
+      {required DateTime timestamp,
       required String messageId,
       required this.title,
       this.status,
       this.winningOutcomeId,
       required this.outcomes})
-      : super(messageId: messageId, pinned: pinned);
+      : super(messageId: messageId, timestamp: timestamp);
 
   static TwitchPredictionEventModel fromDocumentData(
-      {required Map<String, dynamic>? data, bool pinned = false}) {
+      Map<String, dynamic> data) {
     return TwitchPredictionEventModel(
-        pinned: pinned,
-        messageId: "channel.prediction-${data!['event']['id']}",
+        timestamp: data['timestamp'].toDate(),
+        messageId: "channel.prediction-${data['event']['id']}",
         title: data['event']['title'],
         status: "in_progress",
         outcomes: List.from(data['event']['outcomes'].values.map((outcome) {
@@ -43,11 +43,10 @@ class TwitchPredictionEventModel extends MessageModel {
         })));
   }
 
-  static TwitchPredictionEventModel fromEndEvent(
-      {required Map<String, dynamic>? data, bool pinned = false}) {
+  static TwitchPredictionEventModel fromEndEvent(Map<String, dynamic> data) {
     return TwitchPredictionEventModel(
-        pinned: pinned,
-        messageId: "channel.prediction-${data!['event']['id']}",
+        timestamp: data['timestamp'].toDate(),
+        messageId: "channel.prediction-${data['event']['id']}",
         title: data['event']['title'],
         status: data['event']['status'],
         winningOutcomeId: data['event']['winning_outcome_id'],
