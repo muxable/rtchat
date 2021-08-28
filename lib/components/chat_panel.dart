@@ -128,34 +128,35 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
 
   @override
   Widget build(BuildContext context) {
-    final eventSubConfigurationModel =
-        Provider.of<EventSubConfigurationModel>(context, listen: false);
     return Stack(children: [
       Consumer<ChannelsModel>(builder: (context, model, child) {
-        final messages = model.messages.reversed.toList();
-        final expirations = messages
-            .map((message) =>
-                _getExpiration(message, eventSubConfigurationModel))
-            .toList();
-        return _RebuildableWidget(
-            rebuildAt: expirations.whereType<DateTime>().toSet(),
-            builder: (context) {
-              final now = DateTime.now();
-              return PinnableMessageScrollView(
-                vsync: this,
-                controller: _controller,
-                itemBuilder: (index) => StyleModelTheme(
-                  child: ChatHistoryMessage(message: messages[index]),
-                ),
-                isPinnedBuilder: (index) {
-                  final expiration = expirations[index];
-                  if (expiration != null) {
-                    return expiration.isAfter(now);
-                  }
-                },
-                count: messages.length,
-              );
-            });
+        return Consumer<EventSubConfigurationModel>(
+            builder: (context, eventSubConfigurationModel, child) {
+          final messages = model.messages.reversed.toList();
+          final expirations = messages
+              .map((message) =>
+                  _getExpiration(message, eventSubConfigurationModel))
+              .toList();
+          return _RebuildableWidget(
+              rebuildAt: expirations.whereType<DateTime>().toSet(),
+              builder: (context) {
+                final now = DateTime.now();
+                return PinnableMessageScrollView(
+                  vsync: this,
+                  controller: _controller,
+                  itemBuilder: (index) => StyleModelTheme(
+                    child: ChatHistoryMessage(message: messages[index]),
+                  ),
+                  isPinnedBuilder: (index) {
+                    final expiration = expirations[index];
+                    if (expiration != null) {
+                      return expiration.isAfter(now);
+                    }
+                  },
+                  count: messages.length,
+                );
+              });
+        });
       }),
       Builder(builder: (context) {
         if (_atBottom) {
