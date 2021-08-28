@@ -6,10 +6,10 @@ class TwitchSubscriptionGiftEventModel extends MessageModel {
   final int total;
 
   const TwitchSubscriptionGiftEventModel(
-      {required bool pinned,
+      {required DateTime timestamp,
       required String messageId,
       required this.gifterUserName,
       required this.tier,
       required this.total})
-      : super(messageId: messageId, pinned: pinned);
+      : super(messageId: messageId, timestamp: timestamp);
 }

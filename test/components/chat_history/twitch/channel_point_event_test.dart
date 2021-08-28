@@ -10,8 +10,8 @@ void main() {
   testWidgets(
       'fulfilled channel point redemption should have done icon and message',
       (WidgetTester tester) async {
-    const model = TwitchChannelPointRedemptionEventModel(
-        pinned: false,
+    final model = TwitchChannelPointRedemptionEventModel(
+        timestamp: DateTime.now(),
         messageId: "testMessageId",
         redeemerUsername: "automux",
         status: "fulfilled",
@@ -34,8 +34,8 @@ void main() {
   testWidgets(
       'unfulfilled channel point redemption should have timer icon and message',
       (WidgetTester tester) async {
-    const model = TwitchChannelPointRedemptionEventModel(
-        pinned: false,
+    final model = TwitchChannelPointRedemptionEventModel(
+        timestamp: DateTime.now(),
         messageId: "testMessageId",
         redeemerUsername: "automux",
         status: "unfulfilled",
