@@ -11,6 +11,7 @@ import 'package:rtchat/components/chat_history/twitch/follow_event.dart';
 import 'package:rtchat/components/chat_history/twitch/hype_train_event.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/poll_event.dart';
+import 'package:rtchat/components/chat_history/twitch/prediction_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
 import 'package:rtchat/models/adapters/actions.dart';
@@ -22,6 +23,7 @@ import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -157,6 +159,8 @@ class ChatHistoryMessage extends StatelessWidget {
           : Container();
     } else if (m is TwitchHypeTrainEventModel) {
       return enableInlineEvents ? TwitchHypeTrainEventWidget(m) : Container();
+    } else if (m is TwitchPredictionEventModel) {
+      return enableInlineEvents ? TwitchPredictionEventWidget(m) : Container();
     } else {
       throw AssertionError("invalid message type");
     }

@@ -2,24 +2,13 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rtchat/models/channels.dart';
 
 class ActionsAdapter {
-  static final Map<FirebaseFunctions, ActionsAdapter> _cachedInstances = {};
-
   final FirebaseFunctions functions;
 
   ActionsAdapter._({required this.functions});
 
-  factory ActionsAdapter.instanceFor({required FirebaseFunctions functions}) {
-    if (_cachedInstances.containsKey(functions)) {
-      return _cachedInstances[functions]!;
-    }
-
-    final newInstance = ActionsAdapter._(functions: functions);
-    _cachedInstances[functions] = newInstance;
-    return newInstance;
-  }
-
   static ActionsAdapter get instance =>
-      ActionsAdapter.instanceFor(functions: FirebaseFunctions.instance);
+      _instance ??= ActionsAdapter._(functions: FirebaseFunctions.instance);
+  static ActionsAdapter? _instance;
 
   Future<void> send(Channel channel, String message) async {
     final call = functions.httpsCallable('send');
