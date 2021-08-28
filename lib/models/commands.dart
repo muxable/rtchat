@@ -1,50 +1,52 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-class Command {
-  final String prefix;
-  final String word;
+// class Command {
+//   final String prefix;
+//   final String word;
 
-  Command(this.prefix, this.word);
+//   Command(this.prefix, this.word);
 
-  Command.fromJson(Map<String, dynamic> json)
-      : prefix = json['prefix'],
-        word = json['word'];
+//   Command.fromJson(Map<String, dynamic> json)
+//       : prefix = json['prefix'],
+//         word = json['word'];
 
-  Map<String, dynamic> toJson() => {
-        "prefix": prefix,
-        "word": word,
-      };
+//   Map<String, dynamic> toJson() => {
+//         "prefix": prefix,
+//         "word": word,
+//       };
 
-  @override
-  String toString() => "$prefix$word";
-}
+//   @override
+//   String toString() => "$prefix$word";
+// }
 
 class CommandsModel extends ChangeNotifier {
-  final List<Command> _commands = [];
+  List<String> _commands = [];
   static const _maxNumberOfCommands = 10;
 
-  List<Command> get commands => _commands;
+  List<String> get commands => _commands;
 
-  void addCommand(Command command) {
-    if (_commands.length == _maxNumberOfCommands) {
+  void clear() {
+    _commands = [];
+  }
+
+  void addCommand(String command) {
+    if (_commands.contains(command)) {
+      _commands.remove(command);
+    }
+    if (_commands.length >= _maxNumberOfCommands) {
       _commands.removeLast();
     }
-    _commands.insert(
-        0, command); // command is always added to the first index (last used)
+    _commands.insert(0, command);
     notifyListeners();
   }
 
   CommandsModel.fromJson(Map<String, dynamic> json) {
     final commands = json['commands'];
     if (commands != null) {
-      for (dynamic command in commands) {
-        _commands.add(Command.fromJson(command));
-      }
+      _commands.add(commands);
     }
   }
 
-  Map<String, dynamic> toJson() => {
-        "commands": _commands.map((command) => command.toJson()).toList(),
-      };
+  Map<String, dynamic> toJson() => {"commands": _commands};
 }

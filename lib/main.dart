@@ -24,6 +24,7 @@ import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
@@ -214,6 +215,14 @@ class App extends StatelessWidget {
               jsonDecode(prefs.getString("event_sub_configs") ?? "{}"));
           model.addListener(() {
             prefs.setString('event_sub_configs', jsonEncode(model.toJson()));
+          });
+          return model;
+        }),
+        ChangeNotifierProvider(create: (context) {
+          final model = CommandsModel.fromJson(
+              jsonDecode(prefs.getString("commands") ?? "{}"));
+          model.addListener(() {
+            prefs.setString("commands", jsonEncode(model.toJson()));
           });
           return model;
         }),

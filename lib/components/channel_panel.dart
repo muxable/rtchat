@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_panel.dart';
@@ -7,6 +9,7 @@ import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/commands.dart';
 
 import 'channel_search_dialog.dart';
 
@@ -184,10 +187,6 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                     const InputDecoration(hintText: "Send a message..."),
                 onChanged: (text) {
                   final filtered = text.replaceAll('\n', ' ');
-                  if (filtered.startsWith('!') && !filtered.contains(' ')) {
-                    // continous string with no whitespaces
-                    print("Command <$filtered> detected.");
-                  }
                   if (filtered == text) {
                     return;
                   }
@@ -202,7 +201,9 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                     return;
                   }
                   if (value.startsWith('!')) {
-                    print("Command <$value> sent.");
+                    final commandsModel =
+                        Provider.of<CommandsModel>(context, listen: false);
+                    commandsModel.addCommand(value);
                   }
                   final channelsModel =
                       Provider.of<ChannelsModel>(context, listen: false);
@@ -241,13 +242,35 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
           ]),
         );
       }),
-      _buildCommandSuggestion(),
+      Consumer<CommandsModel>(builder: (context, commandsModel, child) {
+        return _buildCommandsShortcutBar(commandsModel.commands);
+      }),
       _buildEmotePicker(context)
     ]);
   }
 
-  Widget _buildCommandSuggestion() =>
-      _chatInputFocusNode.hasFocus // if keyboard is opened
+  List<TextButton> _commandButtonsBuilder(List<String> commands) {
+    List<TextButton> commandsButton = [];
+    for (String command in commands) {
+      commandsButton.add(TextButton(
+          child: Text(command),
+          onPressed: () {
+            final channelsModel =
+                Provider.of<ChannelsModel>(context, listen: false);
+            final commandsModel =
+                Provider.of<CommandsModel>(context, listen: false);
+            ActionsAdapter.instance
+                .send(channelsModel.subscribedChannels.first, command);
+            commandsModel.addCommand(command);
+            _chatInputFocusNode.unfocus();
+          }));
+    }
+    return commandsButton;
+  }
+
+  Widget _buildCommandsShortcutBar(List<String> commands) =>
+      _chatInputFocusNode.hasFocus &&
+              commands.isNotEmpty //keyboard is opened and cache is not empty
           ? SizedBox(
               height: 55,
               child: Scrollbar(
@@ -255,49 +278,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        TextButton(
-                            child: Text("!slow"),
-                            onPressed: () {
-                              final channelsModel = Provider.of<ChannelsModel>(
-                                  context,
-                                  listen: false);
-                              ActionsAdapter.instance.send(
-                                  channelsModel.subscribedChannels.first,
-                                  "!slow");
-                              _chatInputFocusNode.unfocus(); //closes keyboard,
-                            }),
-                        TextButton(
-                          child: Text("!show"),
-                          onPressed: () {},
-                        ),
-                        TextButton(
-                          child: Text("!shoe"),
-                          onPressed: () {},
-                        ),
-                        TextButton(
-                          child: Text("!flow"),
-                          onPressed: () {},
-                        ),
-                        TextButton(
-                          child: Text("!roll1"),
-                          onPressed: () {},
-                        ),
-                        TextButton(
-                          child: Text("!roll2"),
-                          onPressed: () {},
-                        ),
-                        TextButton(
-                          child: Text("!roll3"),
-                          onPressed: () {},
-                        ),
-                        TextButton(
-                          child: Text("!roll4"),
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
+                    Row(children: _commandButtonsBuilder(commands)),
                   ],
                 ),
               ),
