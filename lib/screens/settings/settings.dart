@@ -49,8 +49,8 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           ListTile(
-            title: const Text('Text-to-speech'),
-            subtitle: const Text("Change text-to-speech settings"),
+            title: const Text('Text to speech'),
+            subtitle: const Text("Change text to speech settings"),
             onTap: () {
               Navigator.pushNamed(context, "/settings/text-to-speech");
             },

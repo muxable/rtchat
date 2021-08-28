@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
@@ -177,6 +178,25 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
           return message;
         }
         return message.withEnd(data);
+      });
+    case "channel.prediction.begin":
+      final model = TwitchPredictionEventModel.fromDocumentData(data);
+      return AppendDeltaEvent(model);
+    case "channel.prediction.progress":
+      return UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
+          (message) {
+        if (message is! TwitchPredictionEventModel) {
+          return message;
+        }
+        return TwitchPredictionEventModel.fromDocumentData(data);
+      });
+    case "channel.prediction.end":
+      return UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
+          (message) {
+        if (message is! TwitchPredictionEventModel) {
+          return message;
+        }
+        return TwitchPredictionEventModel.fromEndEvent(data);
       });
     case "stream.online":
     case "stream.offline":
