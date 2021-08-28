@@ -3,7 +3,7 @@ import 'dart:core';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
-import 'package:rtchat/models/chat_history.dart';
+import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -85,8 +85,9 @@ class ChannelsModel extends ChangeNotifier {
 
     _subscription?.cancel();
     if (channels.isNotEmpty) {
-      _subscription =
-          getChatHistory(channels).scan<List<MessageModel>>((acc, event, i) {
+      _subscription = MessagesAdapter.instance
+          .forChannels(channels)
+          .scan<List<MessageModel>>((acc, event, i) {
         if (event is AppendDeltaEvent) {
           acc.add(event.model);
         } else if (event is UpdateDeltaEvent) {
