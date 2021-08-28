@@ -83,6 +83,21 @@ class EventSubConfigurationModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  setCheerEventDuration(Duration duration) {
+    cheerEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setCheerEventShowable(bool value) {
+    cheerEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setCheerEventPinnable(bool value) {
+    cheerEventConfig.isEventPinnable = value;
+    notifyListeners();
+  }
+
   EventSubConfigurationModel.fromJson(Map<String, dynamic> json) {
     if (json['followEventConfig'] != null) {
       followEventConfig = FollowEventConfig.fromJson(json['followEventConfig']);

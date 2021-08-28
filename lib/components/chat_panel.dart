@@ -80,6 +80,11 @@ DateTime? _getExpiration(
     return followEventConfig.isEventPinnable
         ? model.timestamp.add(followEventConfig.eventDuration)
         : null;
+  } else if (model is TwitchCheerEventModel) {
+    final cheerEventConfig = eventSubConfigurationModel.cheerEventConfig;
+    return cheerEventConfig.isEventPinnable
+        ? model.timestamp.add(cheerEventConfig.eventDuration)
+        : null;
   }
 }
 
