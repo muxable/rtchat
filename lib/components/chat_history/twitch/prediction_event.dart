@@ -1,10 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
-import 'package:rtchat/models/style.dart';
 
 class TwitchPredictionEventWidget extends StatelessWidget {
   final TwitchPredictionEventModel model;
@@ -13,105 +11,99 @@ class TwitchPredictionEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<StyleModel>(builder: (context, styleModel, child) {
-      final baseStyle = Theme.of(context)
-          .textTheme
-          .bodyText2!
-          .copyWith(fontSize: styleModel.fontSize);
-
-      return model.status != "cancelled"
-          ? DecoratedEventWidget(
-              child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(model.title,
-                        style: Theme.of(context).textTheme.subtitle2)),
-                ...model.outcomes
-                    .map((outcome) => buildOutcomeWidget(baseStyle, outcome))
-                    .toList(),
-              ],
-            ))
-          : Container();
-    });
+    return model.status != "cancelled"
+        ? DecoratedEventWidget(
+            child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(model.title,
+                      style: Theme.of(context).textTheme.subtitle2)),
+              ...model.outcomes.map((outcome) {
+                final isWinner = model.status == "resolved" &&
+                    model.winningOutcomeId == outcome.id;
+                return _TwitchOutcomeWidget(
+                    outcome: outcome,
+                    isWinner: isWinner,
+                    totalPoints: model.totalPoints);
+              }).toList(),
+            ],
+          ))
+        : Container();
   }
+}
 
-  Widget buildOutcomeWidget(
-      TextStyle baseStyle, TwitchPredictionOutcomeModel outcome) {
+class _TwitchOutcomeWidget extends StatelessWidget {
+  const _TwitchOutcomeWidget(
+      {Key? key,
+      required this.outcome,
+      required this.isWinner,
+      required this.totalPoints})
+      : super(key: key);
+  final TwitchPredictionOutcomeModel outcome;
+  final bool isWinner;
+  final int totalPoints;
+
+  @override
+  Widget build(BuildContext context) {
+    final outcomePercentage =
+        "${((outcome.points / max(1, totalPoints)) * 100).floor()}%";
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Stack(alignment: AlignmentDirectional.center, children: [
         SizedBox(
           height: 37,
           child: LinearProgressIndicator(
-            value: outcome.points / max(1, model.totalPoints),
+            value: outcome.points / max(1, totalPoints),
             valueColor: AlwaysStoppedAnimation<Color>(outcome.widgetColor),
             backgroundColor: outcome.widgetColor.shade200,
           ),
         ),
-        ...(model.status == "resolved" && model.winningOutcomeId == outcome.id
-            ? buildWinnerTexts(baseStyle, outcome)
-            : buildRegularTexts(baseStyle, outcome))
+        ...(isWinner
+            ? [
+                const Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: Align(
+                    child: Icon(
+                      Icons.emoji_events_outlined,
+                      size: 32,
+                    ),
+                    alignment: Alignment.centerLeft,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 48),
+                  child: Align(
+                    child: Text(
+                      outcome.title,
+                    ),
+                    alignment: Alignment.centerLeft,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Align(
+                      child: Text(outcomePercentage),
+                      alignment: Alignment.centerRight),
+                )
+              ]
+            : [
+                Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: Align(
+                    child: Text(outcome.title),
+                    alignment: Alignment.centerLeft,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Align(
+                      child: Text(outcomePercentage),
+                      alignment: Alignment.centerRight),
+                )
+              ])
       ]),
     );
-  }
-
-  List<Widget> buildRegularTexts(
-      TextStyle baseStyle, TwitchPredictionOutcomeModel outcome) {
-    return <Widget>[
-      Padding(
-        padding: const EdgeInsets.only(left: 12),
-        child: Align(
-          child: Text(
-            outcome.title,
-            style: baseStyle,
-          ),
-          alignment: Alignment.centerLeft,
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(right: 12),
-        child: Align(
-            child: Text(
-                "${((outcome.points / max(1, model.totalPoints)) * 100).floor()}%",
-                style: baseStyle),
-            alignment: Alignment.centerRight),
-      )
-    ];
-  }
-
-  List<Widget> buildWinnerTexts(
-      TextStyle baseStyle, TwitchPredictionOutcomeModel outcome) {
-    return <Widget>[
-      const Padding(
-        padding: EdgeInsets.only(left: 8),
-        child: Align(
-          child: Icon(
-            Icons.emoji_events_outlined,
-            size: 32,
-          ),
-          alignment: Alignment.centerLeft,
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(left: 48),
-        child: Align(
-          child: Text(
-            outcome.title,
-            style: baseStyle,
-          ),
-          alignment: Alignment.centerLeft,
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(right: 12),
-        child: Align(
-            child: Text(
-                "${((outcome.points / max(1, model.totalPoints)) * 100).floor()}%",
-                style: baseStyle),
-            alignment: Alignment.centerRight),
-      )
-    ];
   }
 }
