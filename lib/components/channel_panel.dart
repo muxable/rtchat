@@ -241,22 +241,20 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
         );
       }),
       Consumer<CommandsModel>(builder: (context, commandsModel, child) {
-        return _buildCommandsShortcutBar(commandsModel.commands);
+        return _buildCommandsShortcutBar(commandsModel);
       }),
       _buildEmotePicker(context)
     ]);
   }
 
-  List<TextButton> _commandButtonsBuilder(List<String> commands) {
+  List<TextButton> _commandButtonsBuilder(CommandsModel commandsModel) {
     List<TextButton> commandsButton = [];
-    for (String command in commands) {
+    for (String command in commandsModel.commands) {
       commandsButton.add(TextButton(
           child: Text(command),
           onPressed: () {
             final channelsModel =
                 Provider.of<ChannelsModel>(context, listen: false);
-            final commandsModel =
-                Provider.of<CommandsModel>(context, listen: false);
             ActionsAdapter.instance
                 .send(channelsModel.subscribedChannels.first, command);
             commandsModel.addCommand(command);
@@ -266,9 +264,10 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
     return commandsButton;
   }
 
-  Widget _buildCommandsShortcutBar(List<String> commands) =>
+  Widget _buildCommandsShortcutBar(CommandsModel commandsModel) =>
       _chatInputFocusNode.hasFocus &&
-              commands.isNotEmpty //keyboard is opened and cache is not empty
+              commandsModel.commands
+                  .isNotEmpty //keyboard is opened and cache is not empty
           ? SizedBox(
               height: 55,
               child: Scrollbar(
@@ -276,7 +275,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: <Widget>[
-                    Row(children: _commandButtonsBuilder(commands)),
+                    Row(children: _commandButtonsBuilder(commandsModel)),
                   ],
                 ),
               ),
