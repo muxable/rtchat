@@ -22,8 +22,13 @@ class UserModel extends ChangeNotifier {
         })
         .switchMap((user) => user == null
             ? Stream.value(null)
-            : ProfilesAdapter.instance.getChannel(userId: user.uid))
+            : ProfilesAdapter.instance
+                .getChannel(userId: user.uid, provider: "twitch"))
         .listen((channel) {
+          if (_userChannel != null && channel == null) {
+            // we've lost channel data (likely invalid auth) so sign the user out.
+            FirebaseAuth.instance.signOut();
+          }
           _userChannel = channel;
           notifyListeners();
         });

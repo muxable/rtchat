@@ -10,7 +10,7 @@ class TwitchHypeTrainEventModel extends MessageModel {
   final bool hasEnded;
 
   const TwitchHypeTrainEventModel(
-      {required bool pinned,
+      {required DateTime timestamp,
       required String messageId,
       required this.level,
       required this.progress,
@@ -18,21 +18,20 @@ class TwitchHypeTrainEventModel extends MessageModel {
       required this.total,
       this.isSuccessful = false,
       this.hasEnded = false})
-      : super(messageId: messageId, pinned: pinned);
+      : super(messageId: messageId, timestamp: timestamp);
 
-  static TwitchHypeTrainEventModel fromDocumentData(
-      Map<String, dynamic>? data) {
+  static TwitchHypeTrainEventModel fromDocumentData(Map<String, dynamic> data) {
     return TwitchHypeTrainEventModel(
-        pinned: true,
-        messageId: "channel.hype_train-${data!['event']['id']}",
+        timestamp: data['timestamp'].toDate(),
+        messageId: "channel.hype_train-${data['event']['id']}",
         level: data['event']['level'] ?? 1,
         progress: data['event']['progress'],
         goal: data['event']['goal'],
         total: data['event']['total']);
   }
 
-  TwitchHypeTrainEventModel withProgress(Map<String, dynamic>? data) {
-    final level = data!['event']['level'];
+  TwitchHypeTrainEventModel withProgress(Map<String, dynamic> data) {
+    final level = data['event']['level'];
     final total = data['event']['total'];
 
     if (this.level > level || this.total > total) {
@@ -42,9 +41,8 @@ class TwitchHypeTrainEventModel extends MessageModel {
     return fromDocumentData(data);
   }
 
-  TwitchHypeTrainEventModel withEnd(
-      {required Map<String, dynamic>? data, required bool pinned}) {
-    final level = data!['event']['level'];
+  TwitchHypeTrainEventModel withEnd(Map<String, dynamic> data) {
+    final level = data['event']['level'];
     final total = data['event']['total'];
 
     final wasSuccessful = level > 1;
@@ -52,7 +50,7 @@ class TwitchHypeTrainEventModel extends MessageModel {
     final endLevel = progress >= goal ? level : previousLevel;
 
     return TwitchHypeTrainEventModel(
-        pinned: pinned,
+        timestamp: data['timestamp'].toDate(),
         messageId: messageId,
         level: endLevel,
         progress: progress,

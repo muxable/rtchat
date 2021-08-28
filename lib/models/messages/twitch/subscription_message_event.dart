@@ -8,12 +8,12 @@ class TwitchSubscriptionMessageEventModel extends MessageModel {
   final int streakMonths;
 
   const TwitchSubscriptionMessageEventModel(
-      {required bool pinned,
+      {required DateTime timestamp,
       required String messageId,
       required this.subscriberUserName,
       required this.tier,
       required this.cumulativeMonths,
       required this.durationMonths,
       required this.streakMonths})
-      : super(messageId: messageId, pinned: pinned);
+      : super(messageId: messageId, timestamp: timestamp);
 }

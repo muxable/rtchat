@@ -1,13 +1,8 @@
-name: Deploy to Firebase on merge
+name: Deploy to Firebase Functions on merge
 on:
   push:
     paths:
       - "functions/**"
-      - "database.rules.json"
-      - ".firebaserc"
-      - "firebase.json"
-      - "firestore.indexes.json"
-      - "firestore.rules"
     branches:
       - main
   workflow_dispatch:
@@ -17,9 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: echo $FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON > functions/service_account.json
-        env:
-          FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON }}
       - uses: w9jds/firebase-action@master
         with:
           args: functions:config:set twitch.id="$TWITCH_CLIENT_ID" twitch.secret="$TWITCH_CLIENT_SECRET" express.secret="$EXPRESS_SESSION_SECRET"
@@ -30,6 +22,6 @@ jobs:
           EXPRESS_SESSION_SECRET: ${{ secrets.EXPRESS_SESSION_SECRET }}
       - uses: w9jds/firebase-action@master
         with:
-          args: deploy --only functions,firestore
+          args: deploy --only functions
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/chat_history/twitch/poll_indicator.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
-import 'package:rtchat/models/style.dart';
 
 List<Widget> getPollsWidget(TwitchPollEventModel model) {
   var choices = model.choices;
@@ -26,28 +24,26 @@ class TwitchPollEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<StyleModel>(builder: (context, styleModel, child) {
-      return DecoratedEventWidget(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // title
-          Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(model.pollTitle,
-                  style: Theme.of(context).textTheme.subtitle2)),
-          // polls
-          ...getPollsWidget(model),
-          // some breakdowns
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text("channel point votes: ${model.totalChannelPointsVotes}",
-                  style: Theme.of(context).textTheme.subtitle1),
-              Text("  bit votes: ${model.totalBitVotes}",
-                  style: Theme.of(context).textTheme.subtitle1),
-            ],
-          )
-        ]),
-      );
-    });
+    return DecoratedEventWidget(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // title
+        Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(model.pollTitle,
+                style: Theme.of(context).textTheme.subtitle2)),
+        // polls
+        ...getPollsWidget(model),
+        // some breakdowns
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text("channel point votes: ${model.totalChannelPointsVotes}",
+                style: Theme.of(context).textTheme.subtitle1),
+            Text("  bit votes: ${model.totalBitVotes}",
+                style: Theme.of(context).textTheme.subtitle1),
+          ],
+        )
+      ]),
+    );
   }
 }

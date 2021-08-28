@@ -30,7 +30,6 @@ export async function getAccessToken(userId: string, provider: string) {
   const ref = admin.firestore().collection("tokens").doc(userId);
   const encoded = (await ref.get()).get(provider);
   if (!encoded) {
-    await unlink(userId, provider);
     return null;
   }
   const client = new AuthorizationCode(TWITCH_OAUTH_CONFIG);
@@ -40,7 +39,17 @@ export async function getAccessToken(userId: string, provider: string) {
       accessToken = await accessToken.refresh();
     } catch (err) {
       if (err.data?.payload?.message === "Invalid refresh token") {
-        await unlink(userId, provider);
+        await admin
+          .firestore()
+          .collection("tokens")
+          .doc(userId)
+          .update({ [provider]: null });
+        // this will sign the user out.
+        await admin
+          .firestore()
+          .collection("profiles")
+          .doc(userId)
+          .update({ [provider]: null });
         return null;
       }
       throw err;
@@ -56,26 +65,4 @@ export async function getAppAccessToken(provider: string) {
       return new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken({ scope: [] });
   }
   return null;
-}
-
-async function unlink(userId: string, provider: string) {
-  const snapshot = await admin
-    .database()
-    .ref("userIds")
-    .orderByValue()
-    .equalTo(userId)
-    .get();
-  for (const key of Object.keys(snapshot.val())) {
-    await admin.database().ref("userIds").child(key).set(null);
-  }
-  await admin
-    .firestore()
-    .collection("tokens")
-    .doc(userId)
-    .update({ [provider]: null });
-  await admin
-    .firestore()
-    .collection("profiles")
-    .doc(userId)
-    .update({ [provider]: null });
 }

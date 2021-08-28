@@ -10,8 +10,7 @@
     "predeploy": "npm --prefix \"$RESOURCE_DIR\" ci && npm --prefix \"$RESOURCE_DIR\" run build"
   },
   "hosting": {
-    "public": "build/web",
-    "predeploy": "flutter build web",
+    "public": "public",
     "rewrites": [
       {
         "source": "/auth/**",
@@ -24,10 +23,6 @@
       {
         "source": "/api/subscribe",
         "function": "subscribe"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
       }
     ]
   }

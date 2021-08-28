@@ -72,11 +72,16 @@ jobs:
           KEY_ALIAS: upload
           STORE_FILE: upload-keystore.jks
 
+      - run: mkdir whatsnew
+      - run: echo "${{ github.event.release.body }}" > whatsnew/whatsnew-en-US
+        if: github.event_name == 'release'
+
       - uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.rtirl.chat
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          whatsNewDirectory: whatsnew
           track: ${{ github.event_name == 'release' && 'production' || 'alpha' }}
           mappingFile: build/app/outputs/mapping/release/mapping.txt
 

@@ -11,6 +11,7 @@ import 'package:rtchat/components/chat_history/twitch/follow_event.dart';
 import 'package:rtchat/components/chat_history/twitch/hype_train_event.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/poll_event.dart';
+import 'package:rtchat/components/chat_history/twitch/prediction_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
 import 'package:rtchat/models/adapters/actions.dart';
@@ -19,8 +20,10 @@ import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -35,7 +38,7 @@ class ChatHistoryMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final m = message;
     final enableInlineEvents =
-        kDebugMode || RemoteConfig.instance.getBool('inline_events_enabled');
+        RemoteConfig.instance.getBool('inline_events_enabled');
     if (m is TwitchMessageModel) {
       return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         final child = Padding(
@@ -141,9 +144,17 @@ class ChatHistoryMessage extends StatelessWidget {
     } else if (m is StreamStateEventModel) {
       return StreamStateEventWidget(m);
     } else if (m is TwitchFollowEventModel) {
-      return enableInlineEvents ? TwitchFollowEventWidget(m) : Container();
+      return Selector<EventSubConfigurationModel, FollowEventConfig>(
+        selector: (_, model) => model.followEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchFollowEventWidget(m) : Container(),
+      );
     } else if (m is TwitchCheerEventModel) {
-      return enableInlineEvents ? TwitchCheerEventWidget(m) : Container();
+      return Selector<EventSubConfigurationModel, CheerEventConfig>(
+        selector: (_, model) => model.cheerEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchCheerEventWidget(m) : Container(),
+      );
     } else if (m is TwitchPollEventModel) {
       return enableInlineEvents ? TwitchPollEventWidget(m) : Container();
     } else if (m is TwitchChannelPointRedemptionEventModel) {
@@ -152,6 +163,8 @@ class ChatHistoryMessage extends StatelessWidget {
           : Container();
     } else if (m is TwitchHypeTrainEventModel) {
       return enableInlineEvents ? TwitchHypeTrainEventWidget(m) : Container();
+    } else if (m is TwitchPredictionEventModel) {
+      return enableInlineEvents ? TwitchPredictionEventWidget(m) : Container();
     } else {
       throw AssertionError("invalid message type");
     }

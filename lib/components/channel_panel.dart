@@ -256,23 +256,22 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
 
   Widget _buildEmotePicker(BuildContext context) {
     var channelProvider = Provider.of<ChannelsModel>(context, listen: false);
-    return channelProvider.subscribedChannels.isNotEmpty
-        ? Offstage(
-            child: EmotePickerWidget(
-                channelId: channelProvider.subscribedChannels.first.channelId,
-                onDismiss: () => setState(() => _isEmotePickerVisible = false),
-                onDelete: () {
-                  var initialText = _textEditingController.text;
-                  if (initialText.isNotEmpty) {
-                    _textEditingController.text =
-                        initialText.substring(0, initialText.length - 1);
-                  }
-                },
-                onEmoteSelected: (emote) {
-                  _textEditingController.text =
-                      _textEditingController.text + " " + emote.code;
-                }),
-            offstage: !_isEmotePickerVisible)
+    return channelProvider.subscribedChannels.isNotEmpty &&
+            _isEmotePickerVisible
+        ? EmotePickerWidget(
+            channelId: channelProvider.subscribedChannels.first.channelId,
+            onDismiss: () => setState(() => _isEmotePickerVisible = false),
+            onDelete: () {
+              var initialText = _textEditingController.text;
+              if (initialText.isNotEmpty) {
+                _textEditingController.text =
+                    initialText.substring(0, initialText.length - 1);
+              }
+            },
+            onEmoteSelected: (emote) {
+              _textEditingController.text =
+                  _textEditingController.text + " " + emote.code;
+            })
         : Container();
   }
 }
