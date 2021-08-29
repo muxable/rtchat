@@ -1,25 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-// class Command {
-//   final String prefix;
-//   final String word;
-
-//   Command(this.prefix, this.word);
-
-//   Command.fromJson(Map<String, dynamic> json)
-//       : prefix = json['prefix'],
-//         word = json['word'];
-
-//   Map<String, dynamic> toJson() => {
-//         "prefix": prefix,
-//         "word": word,
-//       };
-
-//   @override
-//   String toString() => "$prefix$word";
-// }
-
 class CommandsModel extends ChangeNotifier {
   List<String> _commands = [];
   static const _maxNumberOfCommands = 10;
@@ -42,9 +23,9 @@ class CommandsModel extends ChangeNotifier {
   }
 
   CommandsModel.fromJson(Map<String, dynamic> json) {
-    final commands = json['commands'];
-    if (commands != null) {
-      _commands.add(commands);
+    if (json['commands'] != null) {
+      final commands = List<String>.from(json['commands']);
+      _commands = commands;
     }
   }
 
