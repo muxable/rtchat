@@ -249,18 +249,29 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
 
   List<TextButton> _commandButtonsBuilder(CommandsModel commandsModel) {
     List<TextButton> commandsButton = [];
+    final channelsModel = Provider.of<ChannelsModel>(context, listen: false);
     for (String command in commandsModel.commands) {
       commandsButton.add(TextButton(
           child: Text(command),
           onPressed: () {
-            final channelsModel =
-                Provider.of<ChannelsModel>(context, listen: false);
             ActionsAdapter.instance
                 .send(channelsModel.subscribedChannels.first, command);
             commandsModel.addCommand(command);
             _chatInputFocusNode.unfocus();
           }));
     }
+    commandsButton.add(
+      TextButton(
+          child: const Text('Clear'),
+          onPressed: () {
+            commandsModel.clear();
+            _chatInputFocusNode.unfocus();
+          },
+          style: TextButton.styleFrom(
+            primary: Colors.red,
+            textStyle: const TextStyle(fontWeight: FontWeight.bold),
+          )),
+    );
     return commandsButton;
   }
 
