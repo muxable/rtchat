@@ -58,6 +58,25 @@ class CheerEventConfig {
       };
 }
 
+class RaidEventConfig {
+  bool showEvent;
+  bool isEventPinnable;
+  Duration eventDuration;
+
+  RaidEventConfig(this.showEvent, this.isEventPinnable, this.eventDuration);
+
+  RaidEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
+        isEventPinnable = json['isEventPinnable'],
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "isEventPinnable": isEventPinnable,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
+}
+
 class EventSubConfigurationModel extends ChangeNotifier {
   FollowEventConfig followEventConfig =
       FollowEventConfig(false, false, const Duration(seconds: 5));
@@ -65,6 +84,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
       SubscriptionEventConfig(false, false, const Duration(seconds: 5));
   CheerEventConfig cheerEventConfig =
       CheerEventConfig(true, true, const Duration(seconds: 5));
+  RaidEventConfig raidEventConfig =
+      RaidEventConfig(true, true, const Duration(seconds: 5));
   // other configs
   // final HypeTrainEventConfig;
 
@@ -95,6 +116,21 @@ class EventSubConfigurationModel extends ChangeNotifier {
 
   setCheerEventPinnable(bool value) {
     cheerEventConfig.isEventPinnable = value;
+    notifyListeners();
+  }
+
+  setRaidEventDuration(Duration duration) {
+    raidEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setRaidEventShowable(bool value) {
+    raidEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setRaidEventPinnable(bool value) {
+    raidEventConfig.isEventPinnable = value;
     notifyListeners();
   }
 
