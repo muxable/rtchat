@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_panel.dart';
 import 'package:rtchat/components/emote_picker.dart';
+import 'package:rtchat/components/command_bar.dart';
 import 'package:rtchat/components/statistics_bar.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
@@ -240,58 +241,10 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
           ]),
         );
       }),
-      Consumer<CommandsModel>(builder: (context, commandsModel, child) {
-        return _buildCommandsShortcutBar(commandsModel);
-      }),
+      _buildCommandBar(context),
       _buildEmotePicker(context)
     ]);
   }
-
-  List<TextButton> _commandButtonsBuilder(CommandsModel commandsModel) {
-    List<TextButton> commandButtons = [];
-    final channelsModel = Provider.of<ChannelsModel>(context, listen: false);
-    for (String command in commandsModel.commands) {
-      commandButtons.add(TextButton(
-          child: Text(command),
-          onPressed: () {
-            ActionsAdapter.instance
-                .send(channelsModel.subscribedChannels.first, command);
-            commandsModel.addCommand(command);
-            _chatInputFocusNode.unfocus();
-          }));
-    }
-    commandButtons.add(
-      TextButton(
-          child: const Text('Clear'),
-          onPressed: () {
-            commandsModel.clear();
-            _chatInputFocusNode.unfocus();
-          },
-          style: TextButton.styleFrom(
-            primary: Colors.red,
-            textStyle: const TextStyle(fontWeight: FontWeight.bold),
-          )),
-    );
-    return commandButtons;
-  }
-
-  Widget _buildCommandsShortcutBar(CommandsModel commandsModel) =>
-      _chatInputFocusNode.hasFocus &&
-              commandsModel.commands
-                  .isNotEmpty //keyboard is opened and cache is not empty
-          ? SizedBox(
-              height: 55,
-              child: Scrollbar(
-                isAlwaysShown: false,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: <Widget>[
-                    Row(children: _commandButtonsBuilder(commandsModel)),
-                  ],
-                ),
-              ),
-            )
-          : Container();
 
   Widget _buildSendButton() => _isEmotePickerVisible
       ? IconButton(
@@ -308,6 +261,18 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
             _textEditingController.clear();
           })
       : Container();
+
+  Widget _buildCommandBar(BuildContext context) {
+    final commandsModel = Provider.of<CommandsModel>(context, listen: false);
+    final channelsModel = Provider.of<ChannelsModel>(context, listen: false);
+    return _chatInputFocusNode.hasFocus && commandsModel.commands.isNotEmpty
+        ? CommandBarWidget(
+            commandsModel: commandsModel,
+            channelsModel: channelsModel,
+            chatInputFocusNode: _chatInputFocusNode,
+          )
+        : Container();
+  }
 
   Widget _buildEmotePicker(BuildContext context) {
     var channelProvider = Provider.of<ChannelsModel>(context, listen: false);
