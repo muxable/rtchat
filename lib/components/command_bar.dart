@@ -1,20 +1,14 @@
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 
 class CommandBarWidget extends StatelessWidget {
-  // final void Function() onPressed;
-  final CommandsModel commandsModel;
-  final ChannelsModel channelsModel;
-  final FocusNode chatInputFocusNode;
+  final void Function() chatInputUnfocus;
   static const _commandBarHeight = 55.0;
 
-  const CommandBarWidget(
-      {Key? key,
-      required this.commandsModel,
-      required this.channelsModel,
-      required this.chatInputFocusNode})
+  const CommandBarWidget({Key? key, required this.chatInputUnfocus})
       : super(key: key);
 
   @override
@@ -25,37 +19,28 @@ class CommandBarWidget extends StatelessWidget {
         isAlwaysShown: false,
         child: ListView(
           scrollDirection: Axis.horizontal,
-          children: _commandButtonsBuilder(commandsModel),
+          children: _commandButtonsBuilder(context),
         ),
       ),
     );
   }
 
-  List<TextButton> _commandButtonsBuilder(CommandsModel commandsModel) {
+  List<TextButton> _commandButtonsBuilder(context) {
     List<TextButton> commandButtons = [];
+    final commandsModel = Provider.of<CommandsModel>(context, listen: false);
     for (String command in commandsModel.commands) {
       commandButtons.add(TextButton(
         child: Text(command),
         onPressed: () {
+          final channelsModel =
+              Provider.of<ChannelsModel>(context, listen: false);
           ActionsAdapter.instance
               .send(channelsModel.subscribedChannels.first, command);
           commandsModel.addCommand(command);
-          chatInputFocusNode.unfocus();
+          chatInputUnfocus();
         },
       ));
     }
-    commandButtons.add(
-      TextButton(
-          child: const Text('Clear'),
-          onPressed: () {
-            commandsModel.clear();
-            chatInputFocusNode.unfocus();
-          },
-          style: TextButton.styleFrom(
-            primary: Colors.red,
-            textStyle: const TextStyle(fontWeight: FontWeight.bold),
-          )),
-    );
     return commandButtons;
   }
 }

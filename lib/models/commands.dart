@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class CommandsModel extends ChangeNotifier {
   List<String> _commands = [];
-  static const _maxNumberOfCommands = 7;
+  static const _maxNumberOfCommands = 10;
 
   List<String> get commands => _commands;
 
@@ -29,5 +29,5 @@ class CommandsModel extends ChangeNotifier {
     }
   }
 
-  Map<String, dynamic> toJson() => {"commands": _commands};
+  Map<String, dynamic> toJson() => {'commands': _commands};
 }

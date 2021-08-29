@@ -263,15 +263,13 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
       : Container();
 
   Widget _buildCommandBar(BuildContext context) {
-    final commandsModel = Provider.of<CommandsModel>(context, listen: false);
-    final channelsModel = Provider.of<ChannelsModel>(context, listen: false);
-    return _chatInputFocusNode.hasFocus && commandsModel.commands.isNotEmpty
-        ? CommandBarWidget(
-            commandsModel: commandsModel,
-            channelsModel: channelsModel,
-            chatInputFocusNode: _chatInputFocusNode,
-          )
-        : Container();
+    return Consumer<CommandsModel>(builder: (context, commandsModel, child) {
+      if (!_chatInputFocusNode.hasFocus || commandsModel.commands.isEmpty) {
+        return Container();
+      }
+      return CommandBarWidget(
+          chatInputUnfocus: () => _chatInputFocusNode.unfocus());
+    });
   }
 
   Widget _buildEmotePicker(BuildContext context) {
