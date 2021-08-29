@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class CommandsModel extends ChangeNotifier {
   List<String> _commands = [];
-  static const _maxNumberOfCommands = 10;
+  static const _maxNumberOfCommands = 4;
 
   List<String> get commands => _commands;
 
@@ -16,7 +16,8 @@ class CommandsModel extends ChangeNotifier {
       _commands.remove(command);
     }
     if (_commands.length >= _maxNumberOfCommands) {
-      _commands.removeLast();
+      _commands.removeAt(
+          _maxNumberOfCommands - 2); // remove 2nd last, last is clear button
     }
     _commands.insert(0, command);
     notifyListeners();
