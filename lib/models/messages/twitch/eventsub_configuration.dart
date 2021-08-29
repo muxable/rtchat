@@ -21,19 +21,22 @@ class FollowEventConfig {
 
 class SubscriptionEventConfig {
   bool showEvent;
+  bool showIndividualGifts;
   bool isEventPinnable;
   Duration eventDuration;
 
-  SubscriptionEventConfig(
-      this.showEvent, this.isEventPinnable, this.eventDuration);
+  SubscriptionEventConfig(this.showEvent, this.showIndividualGifts,
+      this.isEventPinnable, this.eventDuration);
 
   SubscriptionEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
+        showIndividualGifts = json['showIndividualGifts'],
         isEventPinnable = json['isEventPinnable'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
         "showEvent": showEvent,
+        "showIndividualGifts": showIndividualGifts,
         "isEventPinnable": isEventPinnable,
         "eventDuration": eventDuration.inSeconds.toInt(),
       };
@@ -62,7 +65,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
   FollowEventConfig followEventConfig =
       FollowEventConfig(false, false, const Duration(seconds: 5));
   SubscriptionEventConfig subscriptionEventConfig =
-      SubscriptionEventConfig(false, false, const Duration(seconds: 5));
+      SubscriptionEventConfig(false, false, false, const Duration(seconds: 5));
   CheerEventConfig cheerEventConfig =
       CheerEventConfig(true, true, const Duration(seconds: 5));
   // other configs
@@ -95,6 +98,26 @@ class EventSubConfigurationModel extends ChangeNotifier {
 
   setCheerEventPinnable(bool value) {
     cheerEventConfig.isEventPinnable = value;
+    notifyListeners();
+  }
+
+  setSubscriptionEventDuration(Duration duration) {
+    subscriptionEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setSubscriptionEventShowable(bool value) {
+    subscriptionEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setGiftSubscriptionStatus(bool value) {
+    subscriptionEventConfig.showIndividualGifts = value;
+    notifyListeners();
+  }
+
+  setSubscriptionEventPinnable(bool value) {
+    subscriptionEventConfig.isEventPinnable = value;
     notifyListeners();
   }
 

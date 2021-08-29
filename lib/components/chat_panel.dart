@@ -11,6 +11,9 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
+import 'package:rtchat/models/messages/twitch/subscription_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 
 class _RebuildableWidget extends StatefulWidget {
   final Widget Function(BuildContext) builder;
@@ -84,6 +87,13 @@ DateTime? _getExpiration(
     final cheerEventConfig = eventSubConfigurationModel.cheerEventConfig;
     return cheerEventConfig.isEventPinnable
         ? model.timestamp.add(cheerEventConfig.eventDuration)
+        : null;
+  } else if (model is TwitchSubscriptionEventModel ||
+      model is TwitchSubscriptionGiftEventModel ||
+      model is TwitchSubscriptionMessageEventModel) {
+    final subEventConfig = eventSubConfigurationModel.subscriptionEventConfig;
+    return subEventConfig.isEventPinnable
+        ? model.timestamp.add(subEventConfig.eventDuration)
         : null;
   }
 }
