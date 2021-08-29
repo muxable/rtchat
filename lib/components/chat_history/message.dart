@@ -128,7 +128,11 @@ class ChatHistoryMessage extends StatelessWidget {
             child: child);
       });
     } else if (m is TwitchRaidEventModel) {
-      return TwitchRaidEventWidget(m);
+      return Selector<EventSubConfigurationModel, RaidEventConfig>(
+        selector: (_, model) => model.raidEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchRaidEventWidget(m) : Container(),
+      );
     } else if (m is TwitchSubscriptionEventModel) {
       return enableInlineEvents
           ? TwitchSubscriptionEventWidget(m)
