@@ -58,6 +58,25 @@ class CheerEventConfig {
       };
 }
 
+class RaidEventConfig {
+  bool showEvent;
+  bool isEventPinnable;
+  Duration eventDuration;
+
+  RaidEventConfig(this.showEvent, this.isEventPinnable, this.eventDuration);
+
+  RaidEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
+        isEventPinnable = json['isEventPinnable'],
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "isEventPinnable": isEventPinnable,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
+}
+
 class EventSubConfigurationModel extends ChangeNotifier {
   FollowEventConfig followEventConfig =
       FollowEventConfig(false, false, const Duration(seconds: 5));
@@ -65,6 +84,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
       SubscriptionEventConfig(false, false, const Duration(seconds: 5));
   CheerEventConfig cheerEventConfig =
       CheerEventConfig(true, true, const Duration(seconds: 5));
+  RaidEventConfig raidEventConfig =
+      RaidEventConfig(true, true, const Duration(seconds: 5));
   // other configs
   // final HypeTrainEventConfig;
 
@@ -83,6 +104,36 @@ class EventSubConfigurationModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  setCheerEventDuration(Duration duration) {
+    cheerEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setCheerEventShowable(bool value) {
+    cheerEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setCheerEventPinnable(bool value) {
+    cheerEventConfig.isEventPinnable = value;
+    notifyListeners();
+  }
+
+  setRaidEventDuration(Duration duration) {
+    raidEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setRaidEventShowable(bool value) {
+    raidEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setRaidEventPinnable(bool value) {
+    raidEventConfig.isEventPinnable = value;
+    notifyListeners();
+  }
+
   EventSubConfigurationModel.fromJson(Map<String, dynamic> json) {
     if (json['followEventConfig'] != null) {
       followEventConfig = FollowEventConfig.fromJson(json['followEventConfig']);
@@ -94,11 +145,15 @@ class EventSubConfigurationModel extends ChangeNotifier {
     if (json['cheerEventConfig'] != null) {
       cheerEventConfig = CheerEventConfig.fromJson(json['cheerEventConfig']);
     }
+    if (json['raidEventConfig'] != null) {
+      raidEventConfig = RaidEventConfig.fromJson(json['raidEventConfig']);
+    }
   }
 
   Map<String, dynamic> toJson() => {
         "followEventConfig": followEventConfig,
-        'subscriptionEventConfig': subscriptionEventConfig,
-        'cheerEventConfig': cheerEventConfig
+        "subscriptionEventConfig": subscriptionEventConfig,
+        "cheerEventConfig": cheerEventConfig,
+        "raidEventConfig": raidEventConfig,
       };
 }

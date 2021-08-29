@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
@@ -178,6 +179,25 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
         }
         return message.withEnd(data);
       });
+    case "channel.prediction.begin":
+      final model = TwitchPredictionEventModel.fromDocumentData(data);
+      return AppendDeltaEvent(model);
+    case "channel.prediction.progress":
+      return UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
+          (message) {
+        if (message is! TwitchPredictionEventModel) {
+          return message;
+        }
+        return TwitchPredictionEventModel.fromDocumentData(data);
+      });
+    case "channel.prediction.end":
+      return UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
+          (message) {
+        if (message is! TwitchPredictionEventModel) {
+          return message;
+        }
+        return TwitchPredictionEventModel.fromEndEvent(data);
+      });
     case "stream.online":
     case "stream.offline":
       final model = StreamStateEventModel(
@@ -188,35 +208,46 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
   }
 }
 
-Stream<DeltaEvent> getChatHistory(Set<Channel> channels) async* {
-  final subscribe = FirebaseFunctions.instance.httpsCallable('subscribe');
-  for (final channel in channels) {
-    subscribe({
-      "provider": channel.provider,
-      "channelId": channel.channelId,
+class MessagesAdapter {
+  final FirebaseFirestore db;
+  final FirebaseFunctions functions;
+
+  MessagesAdapter._({required this.db, required this.functions});
+
+  static MessagesAdapter get instance => _instance ??= MessagesAdapter._(
+      db: FirebaseFirestore.instance, functions: FirebaseFunctions.instance);
+  static MessagesAdapter? _instance;
+
+  Stream<DeltaEvent> forChannels(Set<Channel> channels) async* {
+    final subscribe = functions.httpsCallable('subscribe');
+    for (final channel in channels) {
+      subscribe({
+        "provider": channel.provider,
+        "channelId": channel.channelId,
+      });
+    }
+    if (channels.isEmpty) {
+      return;
+    }
+    Map<String, List<Emote>> emotes = {};
+    for (final channel in channels) {
+      emotes[channel.toString()] =
+          await getThirdPartyEmotes(channel.provider, channel.channelId);
+    }
+    yield* db
+        .collection("messages")
+        .where("channelId",
+            whereIn: channels.map((channel) => channel.toString()).toList())
+        .orderBy("timestamp")
+        .limitToLast(250)
+        .snapshots()
+        .expand((event) => event.docChanges)
+        .where((change) => change.type == DocumentChangeType.added)
+        .expand((change) sync* {
+      final event = _toDeltaEvent(emotes, change);
+      if (event != null) {
+        yield event;
+      }
     });
   }
-  if (channels.isEmpty) {
-    return;
-  }
-  Map<String, List<Emote>> emotes = {};
-  for (final channel in channels) {
-    emotes[channel.toString()] =
-        await getThirdPartyEmotes(channel.provider, channel.channelId);
-  }
-  yield* FirebaseFirestore.instance
-      .collection("messages")
-      .where("channelId",
-          whereIn: channels.map((channel) => channel.toString()).toList())
-      .orderBy("timestamp")
-      .limitToLast(250)
-      .snapshots()
-      .expand((event) => event.docChanges)
-      .where((change) => change.type == DocumentChangeType.added)
-      .expand((change) sync* {
-    final event = _toDeltaEvent(emotes, change);
-    if (event != null) {
-      yield event;
-    }
-  });
 }
