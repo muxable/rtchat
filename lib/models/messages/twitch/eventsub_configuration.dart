@@ -145,11 +145,15 @@ class EventSubConfigurationModel extends ChangeNotifier {
     if (json['cheerEventConfig'] != null) {
       cheerEventConfig = CheerEventConfig.fromJson(json['cheerEventConfig']);
     }
+    if (json['raidEventConfig'] != null) {
+      raidEventConfig = RaidEventConfig.fromJson(json['raidEventConfig']);
+    }
   }
 
   Map<String, dynamic> toJson() => {
         "followEventConfig": followEventConfig,
-        'subscriptionEventConfig': subscriptionEventConfig,
-        'cheerEventConfig': cheerEventConfig
+        "subscriptionEventConfig": subscriptionEventConfig,
+        "cheerEventConfig": cheerEventConfig,
+        "raidEventConfig": raidEventConfig,
       };
 }
