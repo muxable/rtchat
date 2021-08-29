@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 
 class CommandsModel extends ChangeNotifier {
   List<String> _commands = [];
-  static const _maxNumberOfCommands = 10;
+  static const _maxNumberOfCommands = 7;
 
   List<String> get commands => _commands;
 
   void clear() {
-    _commands = [];
+    _commands.clear();
+    notifyListeners();
   }
 
   void addCommand(String command) {
@@ -16,8 +17,7 @@ class CommandsModel extends ChangeNotifier {
       _commands.remove(command);
     }
     if (_commands.length >= _maxNumberOfCommands) {
-      _commands.removeAt(
-          _maxNumberOfCommands - 2); // remove 2nd last, last is clear button
+      _commands.removeLast();
     }
     _commands.insert(0, command);
     notifyListeners();
@@ -25,8 +25,7 @@ class CommandsModel extends ChangeNotifier {
 
   CommandsModel.fromJson(Map<String, dynamic> json) {
     if (json['commands'] != null) {
-      final commands = List<String>.from(json['commands']);
-      _commands = commands;
+      _commands = List<String>.from(json['commands']);
     }
   }
 
