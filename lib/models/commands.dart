@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class CommandsModel extends ChangeNotifier {
   List<String> _commands = [];
-  static const _maxNumberOfCommands = 4;
+  static const _maxNumberOfCommands = 10;
 
   List<String> get commands => _commands;
 
