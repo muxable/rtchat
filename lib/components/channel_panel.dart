@@ -248,10 +248,10 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
   }
 
   List<TextButton> _commandButtonsBuilder(CommandsModel commandsModel) {
-    List<TextButton> commandsButton = [];
+    List<TextButton> commandButtons = [];
     final channelsModel = Provider.of<ChannelsModel>(context, listen: false);
     for (String command in commandsModel.commands) {
-      commandsButton.add(TextButton(
+      commandButtons.add(TextButton(
           child: Text(command),
           onPressed: () {
             ActionsAdapter.instance
@@ -260,7 +260,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
             _chatInputFocusNode.unfocus();
           }));
     }
-    commandsButton.add(
+    commandButtons.add(
       TextButton(
           child: const Text('Clear'),
           onPressed: () {
@@ -272,7 +272,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
             textStyle: const TextStyle(fontWeight: FontWeight.bold),
           )),
     );
-    return commandsButton;
+    return commandButtons;
   }
 
   Widget _buildCommandsShortcutBar(CommandsModel commandsModel) =>
