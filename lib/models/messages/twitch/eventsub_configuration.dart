@@ -80,6 +80,22 @@ class RaidEventConfig {
       };
 }
 
+class PollEventConfig {
+  bool showEvent;
+  Duration eventDuration;
+
+  PollEventConfig(this.showEvent, this.eventDuration);
+
+  PollEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
+}
+
 class EventSubConfigurationModel extends ChangeNotifier {
   FollowEventConfig followEventConfig =
       FollowEventConfig(false, false, const Duration(seconds: 5));
@@ -89,6 +105,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
       CheerEventConfig(true, true, const Duration(seconds: 5));
   RaidEventConfig raidEventConfig =
       RaidEventConfig(true, true, const Duration(seconds: 5));
+  PollEventConfig pollEventConfig =
+      PollEventConfig(true, const Duration(seconds: 5));
   // other configs
   // final HypeTrainEventConfig;
 
@@ -157,6 +175,16 @@ class EventSubConfigurationModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  setPollEventDuration(Duration duration) {
+    pollEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setPollEventShowable(bool value) {
+    pollEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
   EventSubConfigurationModel.fromJson(Map<String, dynamic> json) {
     if (json['followEventConfig'] != null) {
       followEventConfig = FollowEventConfig.fromJson(json['followEventConfig']);
@@ -171,6 +199,9 @@ class EventSubConfigurationModel extends ChangeNotifier {
     if (json['raidEventConfig'] != null) {
       raidEventConfig = RaidEventConfig.fromJson(json['raidEventConfig']);
     }
+    if (json['pollEventConfig'] != null) {
+      pollEventConfig = PollEventConfig.fromJson(json['pollEventConfig']);
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -178,5 +209,6 @@ class EventSubConfigurationModel extends ChangeNotifier {
         "subscriptionEventConfig": subscriptionEventConfig,
         "cheerEventConfig": cheerEventConfig,
         "raidEventConfig": raidEventConfig,
+        "pollEventConfig": pollEventConfig,
       };
 }

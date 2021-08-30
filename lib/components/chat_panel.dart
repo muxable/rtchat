@@ -98,6 +98,9 @@ DateTime? _getExpiration(
     return subEventConfig.isEventPinnable
         ? model.timestamp.add(subEventConfig.eventDuration)
         : null;
+  } else if (model is TwitchPollEventModel) {
+    final pollEventConfig = eventSubConfigurationModel.pollEventConfig;
+    return model.endTimestamp.add(pollEventConfig.eventDuration);
   }
 }
 

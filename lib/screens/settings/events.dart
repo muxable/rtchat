@@ -115,25 +115,26 @@ class EventsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: StyleModelTheme(
                   child: TwitchPollEventWidget(TwitchPollEventModel(
-                messageId: '',
-                timestamp: DateTime.now(),
-                choices: const [
-                  PollChoiceModel(
-                      bitVotes: 3,
-                      channelPointVotes: 75,
-                      id: 'yes',
-                      title: 'yes',
-                      votes: 10),
-                  PollChoiceModel(
-                      bitVotes: 74,
-                      channelPointVotes: 125,
-                      id: 'no',
-                      title: 'no',
-                      votes: 60)
-                ],
-                isCompleted: false,
-                pollTitle: 'Have you streamed today?',
-              )))),
+                      messageId: '',
+                      timestamp: DateTime.now(),
+                      choices: const [
+                        PollChoiceModel(
+                            bitVotes: 3,
+                            channelPointVotes: 75,
+                            id: 'yes',
+                            title: 'yes',
+                            votes: 10),
+                        PollChoiceModel(
+                            bitVotes: 74,
+                            channelPointVotes: 125,
+                            id: 'no',
+                            title: 'no',
+                            votes: 60)
+                      ],
+                      isCompleted: false,
+                      pollTitle: 'Have you streamed today?',
+                      startTimestamp: DateTime(2021),
+                      endTimestamp: DateTime(2021))))),
           ListTile(
             title: const Text('Poll event config'),
             subtitle: const Text("Customize your poll event"),
