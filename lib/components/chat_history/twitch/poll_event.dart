@@ -34,15 +34,9 @@ class TwitchPollEventWidget extends StatelessWidget {
         // polls
         ...getPollsWidget(model),
         // some breakdowns
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text("channel point votes: ${model.totalChannelPointsVotes}",
-                style: Theme.of(context).textTheme.subtitle1),
-            Text("  bit votes: ${model.totalBitVotes}",
-                style: Theme.of(context).textTheme.subtitle1),
-          ],
-        )
+        Text(
+            "channel point votes: ${model.totalChannelPointsVotes}. bit votes: ${model.totalBitVotes}",
+            style: Theme.of(context).textTheme.subtitle1)
       ]),
     );
   }

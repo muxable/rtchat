@@ -32,6 +32,7 @@ import 'package:rtchat/screens/settings/chat_history.dart';
 import 'package:rtchat/screens/settings/events.dart';
 import 'package:rtchat/screens/settings/events/cheer.dart';
 import 'package:rtchat/screens/settings/events/follow.dart';
+import 'package:rtchat/screens/settings/events/raid.dart';
 import 'package:rtchat/screens/settings/events/subscription.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
@@ -257,7 +258,8 @@ class App extends StatelessWidget {
             '/settings/events/follow': (context) => const FollowEventScreen(),
             '/settings/events/cheer': (context) => const CheerEventScreen(),
             '/settings/events/subscription': (context) =>
-                const SubscriptionEventScreen()
+                const SubscriptionEventScreen(),
+            '/settings/events/raid': (context) => const RaidEventScreen(),
           },
         ),
       ),
