@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_panel.dart';
 import 'package:rtchat/components/emote_picker.dart';
-import 'package:rtchat/components/command_bar.dart';
 import 'package:rtchat/components/statistics_bar.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
@@ -267,8 +266,27 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
       if (!_chatInputFocusNode.hasFocus || commandsModel.commands.isEmpty) {
         return Container();
       }
-      return CommandBarWidget(
-          chatInputUnfocus: () => _chatInputFocusNode.unfocus());
+      return SizedBox(
+        height: 55,
+        child: Scrollbar(
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: commandsModel.commands.length,
+            itemBuilder: (context, index) => TextButton(
+              child: Text(commandsModel.commands[index]),
+              onPressed: () {
+                final channelsModel =
+                    Provider.of<ChannelsModel>(context, listen: false);
+                ActionsAdapter.instance.send(
+                    channelsModel.subscribedChannels.first,
+                    commandsModel.commands[index]);
+                commandsModel.addCommand(commandsModel.commands[index]);
+                _chatInputFocusNode.unfocus();
+              },
+            ),
+          ),
+        ),
+      );
     });
   }
 
