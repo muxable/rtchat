@@ -134,7 +134,8 @@ class EventsScreen extends StatelessWidget {
                       isCompleted: false,
                       pollTitle: 'Have you streamed today?',
                       startTimestamp: DateTime(2021),
-                      endTimestamp: DateTime(2021))))),
+                      endTimestamp: DateTime(2021),
+                      status: 'placeholder')))),
           ListTile(
             title: const Text('Poll event config'),
             subtitle: const Text("Customize your poll event"),

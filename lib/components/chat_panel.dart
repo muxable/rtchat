@@ -100,6 +100,9 @@ DateTime? _getExpiration(
         : null;
   } else if (model is TwitchPollEventModel) {
     final pollEventConfig = eventSubConfigurationModel.pollEventConfig;
+    if (model.status == 'archived' || model.status == 'terminated') {
+      return null;
+    }
     return model.endTimestamp.add(pollEventConfig.eventDuration);
   }
 }
