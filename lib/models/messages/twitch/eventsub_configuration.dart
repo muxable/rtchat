@@ -204,6 +204,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
 
   setChannelPointRedemptionEventPinnnable(bool value) {
     channelPointRedemptionEventConfig.isEventPinnable = value;
+    notifyListeners();
   }
 
   setPollEventDuration(Duration duration) {
