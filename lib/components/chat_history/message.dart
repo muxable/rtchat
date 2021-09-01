@@ -134,17 +134,27 @@ class ChatHistoryMessage extends StatelessWidget {
             config.showEvent ? TwitchRaidEventWidget(m) : Container(),
       );
     } else if (m is TwitchSubscriptionEventModel) {
-      return enableInlineEvents
-          ? TwitchSubscriptionEventWidget(m)
-          : Container();
+      return Selector<EventSubConfigurationModel, SubscriptionEventConfig>(
+        selector: (_, model) => model.subscriptionEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent || (config.showIndividualGifts && m.isGift)
+                ? TwitchSubscriptionEventWidget(m)
+                : Container(),
+      );
     } else if (m is TwitchSubscriptionGiftEventModel) {
-      return enableInlineEvents
-          ? TwitchSubscriptionGiftEventWidget(m)
-          : Container();
+      return Selector<EventSubConfigurationModel, SubscriptionEventConfig>(
+        selector: (_, model) => model.subscriptionEventConfig,
+        builder: (_, config, __) => config.showEvent
+            ? TwitchSubscriptionGiftEventWidget(m)
+            : Container(),
+      );
     } else if (m is TwitchSubscriptionMessageEventModel) {
-      return enableInlineEvents
-          ? TwitchSubscriptionMessageEventWidget(m)
-          : Container();
+      return Selector<EventSubConfigurationModel, SubscriptionEventConfig>(
+        selector: (_, model) => model.subscriptionEventConfig,
+        builder: (_, config, __) => config.showEvent
+            ? TwitchSubscriptionMessageEventWidget(m)
+            : Container(),
+      );
     } else if (m is StreamStateEventModel) {
       return StreamStateEventWidget(m);
     } else if (m is TwitchFollowEventModel) {
