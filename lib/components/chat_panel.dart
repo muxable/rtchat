@@ -9,6 +9,7 @@ import 'package:rtchat/components/pinnable/scroll_view.dart';
 import 'package:rtchat/components/style_model_theme.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
+import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
@@ -104,6 +105,12 @@ DateTime? _getExpiration(
       return null;
     }
     return model.endTimestamp.add(pollEventConfig.eventDuration);
+  } else if (model is TwitchChannelPointRedemptionEventModel) {
+    final channelPointRedemptionEventConfig =
+        eventSubConfigurationModel.channelPointRedemptionEventConfig;
+    return channelPointRedemptionEventConfig.isEventPinnable
+        ? model.timestamp.add(channelPointRedemptionEventConfig.eventDuration)
+        : null;
   }
 }
 
