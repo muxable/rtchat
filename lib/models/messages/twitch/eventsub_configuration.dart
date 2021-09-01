@@ -91,6 +91,15 @@ class ChannelPointRedemptionEventConfig {
   ChannelPointRedemptionEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
         isEventPinnable = json['isEventPinnable'],
+  
+class PollEventConfig {
+  bool showEvent;
+  Duration eventDuration;
+
+  PollEventConfig(this.showEvent, this.eventDuration);
+
+  PollEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
@@ -111,6 +120,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
       RaidEventConfig(true, true, const Duration(seconds: 5));
   ChannelPointRedemptionEventConfig channelPointRedemptionEventConfig =
       ChannelPointRedemptionEventConfig(true, true, const Duration(seconds: 5));
+  PollEventConfig pollEventConfig =
+      PollEventConfig(true, const Duration(seconds: 5));
   // other configs
   // final HypeTrainEventConfig;
 
@@ -191,6 +202,14 @@ class EventSubConfigurationModel extends ChangeNotifier {
 
   setChannelPointRedemptionEventPinnnable(bool value) {
     channelPointRedemptionEventConfig.isEventPinnable = value;
+
+  setPollEventDuration(Duration duration) {
+    pollEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setPollEventShowable(bool value) {
+    pollEventConfig.showEvent = value;
     notifyListeners();
   }
 
@@ -212,6 +231,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
       channelPointRedemptionEventConfig =
           ChannelPointRedemptionEventConfig.fromJson(
               json['channelPointRedemptionEventConfig']);
+    if (json['pollEventConfig'] != null) {
+      pollEventConfig = PollEventConfig.fromJson(json['pollEventConfig']);
     }
   }
 
@@ -220,5 +241,6 @@ class EventSubConfigurationModel extends ChangeNotifier {
         "subscriptionEventConfig": subscriptionEventConfig,
         "cheerEventConfig": cheerEventConfig,
         "raidEventConfig": raidEventConfig,
+        "pollEventConfig": pollEventConfig,
       };
 }
