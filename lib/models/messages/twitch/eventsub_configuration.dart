@@ -91,7 +91,15 @@ class ChannelPointRedemptionEventConfig {
   ChannelPointRedemptionEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
         isEventPinnable = json['isEventPinnable'],
-  
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "isEventPinnable": isEventPinnable,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
+}
+
 class PollEventConfig {
   bool showEvent;
   Duration eventDuration;
@@ -101,12 +109,6 @@ class PollEventConfig {
   PollEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt());
-
-  Map<String, dynamic> toJson() => {
-        "showEvent": showEvent,
-        "isEventPinnable": isEventPinnable,
-        "eventDuration": eventDuration.inSeconds.toInt(),
-      };
 }
 
 class EventSubConfigurationModel extends ChangeNotifier {
@@ -202,6 +204,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
 
   setChannelPointRedemptionEventPinnnable(bool value) {
     channelPointRedemptionEventConfig.isEventPinnable = value;
+  }
 
   setPollEventDuration(Duration duration) {
     pollEventConfig.eventDuration = duration;
@@ -231,6 +234,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
       channelPointRedemptionEventConfig =
           ChannelPointRedemptionEventConfig.fromJson(
               json['channelPointRedemptionEventConfig']);
+    }
     if (json['pollEventConfig'] != null) {
       pollEventConfig = PollEventConfig.fromJson(json['pollEventConfig']);
     }
