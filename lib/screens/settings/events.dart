@@ -96,24 +96,6 @@ class EventsScreen extends StatelessWidget {
           Padding(
               padding: const EdgeInsets.all(16),
               child: StyleModelTheme(
-                  child: TwitchHypeTrainEventWidget(TwitchHypeTrainEventModel(
-                messageId: '',
-                timestamp: DateTime.now(),
-                goal: 500,
-                level: 2,
-                progress: 75,
-                total: 88,
-              )))),
-          ListTile(
-            title: const Text('Hypetrain event config'),
-            subtitle: const Text("Customize your hypetrain event"),
-            onTap: () {
-              Navigator.pushNamed(context, "/settings/events/hypetrain");
-            },
-          ),
-          Padding(
-              padding: const EdgeInsets.all(16),
-              child: StyleModelTheme(
                   child: TwitchPollEventWidget(TwitchPollEventModel(
                 messageId: '',
                 timestamp: DateTime.now(),
