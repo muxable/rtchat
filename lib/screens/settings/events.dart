@@ -6,8 +6,10 @@ import 'package:rtchat/components/chat_history/twitch/hype_train_event.dart';
 import 'package:rtchat/components/chat_history/twitch/poll_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
+import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
 import 'package:rtchat/components/style_model_theme.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
@@ -141,6 +143,26 @@ class EventsScreen extends StatelessWidget {
               Navigator.pushNamed(context, "/settings/events/poll");
             },
           ),
+          Padding(
+              padding: const EdgeInsets.all(16),
+              child: StyleModelTheme(
+                  child: TwitchChannelPointRedemptionEventWidget(
+                      TwitchChannelPointRedemptionEventModel(
+                messageId: '',
+                timestamp: DateTime.now(),
+                redeemerUsername: 'muxfd',
+                status: 'unfulfilled',
+                rewardName: 'do a backflip',
+                rewardCost: 1000,
+                userInput: 'Infront of Topaz!',
+              )))),
+          ListTile(
+              title: const Text('Channel point redemption event config'),
+              subtitle:
+                  const Text("Customize your channel point redemption event"),
+              onTap: () {
+                Navigator.pushNamed(context, "/settings/events/channel-point");
+              })
         ]);
       }),
     );

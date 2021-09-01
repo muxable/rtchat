@@ -80,6 +80,26 @@ class RaidEventConfig {
       };
 }
 
+class ChannelPointRedemptionEventConfig {
+  bool showEvent;
+  bool isEventPinnable;
+  Duration eventDuration;
+
+  ChannelPointRedemptionEventConfig(
+      this.showEvent, this.isEventPinnable, this.eventDuration);
+
+  ChannelPointRedemptionEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
+        isEventPinnable = json['isEventPinnable'],
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "isEventPinnable": isEventPinnable,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
+}
+
 class EventSubConfigurationModel extends ChangeNotifier {
   FollowEventConfig followEventConfig =
       FollowEventConfig(false, false, const Duration(seconds: 5));
@@ -89,6 +109,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
       CheerEventConfig(true, true, const Duration(seconds: 5));
   RaidEventConfig raidEventConfig =
       RaidEventConfig(true, true, const Duration(seconds: 5));
+  ChannelPointRedemptionEventConfig channelPointRedemptionEventConfig =
+      ChannelPointRedemptionEventConfig(true, true, const Duration(seconds: 5));
   // other configs
   // final HypeTrainEventConfig;
 
@@ -157,6 +179,21 @@ class EventSubConfigurationModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  setChannelPointRedemptionEventDuration(Duration value) {
+    channelPointRedemptionEventConfig.eventDuration = value;
+    notifyListeners();
+  }
+
+  setChannelPointRedemptionEventShowable(bool value) {
+    channelPointRedemptionEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setChannelPointRedemptionEventPinnnable(bool value) {
+    channelPointRedemptionEventConfig.isEventPinnable = value;
+    notifyListeners();
+  }
+
   EventSubConfigurationModel.fromJson(Map<String, dynamic> json) {
     if (json['followEventConfig'] != null) {
       followEventConfig = FollowEventConfig.fromJson(json['followEventConfig']);
@@ -170,6 +207,11 @@ class EventSubConfigurationModel extends ChangeNotifier {
     }
     if (json['raidEventConfig'] != null) {
       raidEventConfig = RaidEventConfig.fromJson(json['raidEventConfig']);
+    }
+    if (json['channelPointRedemptionEventConfig'] != null) {
+      channelPointRedemptionEventConfig =
+          ChannelPointRedemptionEventConfig.fromJson(
+              json['channelPointRedemptionEventConfig']);
     }
   }
 
