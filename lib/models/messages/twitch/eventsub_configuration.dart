@@ -247,5 +247,6 @@ class EventSubConfigurationModel extends ChangeNotifier {
         "cheerEventConfig": cheerEventConfig,
         "raidEventConfig": raidEventConfig,
         "pollEventConfig": pollEventConfig,
+        "channelPointsRedemptionEventConfig": channelPointRedemptionEventConfig,
       };
 }
