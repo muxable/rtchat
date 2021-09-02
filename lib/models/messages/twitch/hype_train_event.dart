@@ -8,6 +8,8 @@ class TwitchHypeTrainEventModel extends MessageModel {
   final int total;
   final bool isSuccessful;
   final bool hasEnded;
+  final DateTime startTimestamp;
+  final DateTime endTimestamp;
 
   const TwitchHypeTrainEventModel(
       {required DateTime timestamp,
@@ -16,6 +18,8 @@ class TwitchHypeTrainEventModel extends MessageModel {
       required this.progress,
       required this.goal,
       required this.total,
+      required this.startTimestamp,
+      required this.endTimestamp,
       this.isSuccessful = false,
       this.hasEnded = false})
       : super(messageId: messageId, timestamp: timestamp);
@@ -27,7 +31,9 @@ class TwitchHypeTrainEventModel extends MessageModel {
         level: data['event']['level'] ?? 1,
         progress: data['event']['progress'],
         goal: data['event']['goal'],
-        total: data['event']['total']);
+        total: data['event']['total'],
+        startTimestamp: data['event']['started_at'].toDate(),
+        endTimestamp: data['event']['expires_at'].toDate());
   }
 
   TwitchHypeTrainEventModel withProgress(Map<String, dynamic> data) {
@@ -57,7 +63,9 @@ class TwitchHypeTrainEventModel extends MessageModel {
         goal: goal,
         total: total,
         isSuccessful: wasSuccessful,
-        hasEnded: true);
+        hasEnded: true,
+        startTimestamp: data['event']['started_at'].toDate(),
+        endTimestamp: data['event']['ended_at'].toDate());
   }
 
   @override

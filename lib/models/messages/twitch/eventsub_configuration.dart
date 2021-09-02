@@ -96,6 +96,22 @@ class PollEventConfig {
       };
 }
 
+class HypetrainEventConfig {
+  bool showEvent;
+  Duration eventDuration;
+
+  HypetrainEventConfig(this.showEvent, this.eventDuration);
+
+  HypetrainEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
+}
+
 class EventSubConfigurationModel extends ChangeNotifier {
   FollowEventConfig followEventConfig =
       FollowEventConfig(false, false, const Duration(seconds: 5));
@@ -107,6 +123,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
       RaidEventConfig(true, true, const Duration(seconds: 5));
   PollEventConfig pollEventConfig =
       PollEventConfig(true, const Duration(seconds: 5));
+  HypetrainEventConfig hypetrainEventConfig =
+      HypetrainEventConfig(true, const Duration(seconds: 5));
   // other configs
   // final HypeTrainEventConfig;
 
@@ -185,6 +203,16 @@ class EventSubConfigurationModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  setHypetrainEventDuration(Duration duration) {
+    hypetrainEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setHypetrainEventShowable(bool value) {
+    hypetrainEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
   EventSubConfigurationModel.fromJson(Map<String, dynamic> json) {
     if (json['followEventConfig'] != null) {
       followEventConfig = FollowEventConfig.fromJson(json['followEventConfig']);
@@ -202,6 +230,10 @@ class EventSubConfigurationModel extends ChangeNotifier {
     if (json['pollEventConfig'] != null) {
       pollEventConfig = PollEventConfig.fromJson(json['pollEventConfig']);
     }
+    if (json['hypetrainEventConfig'] != null) {
+      hypetrainEventConfig =
+          HypetrainEventConfig.fromJson(json['hypetrainEventConfig']);
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -210,5 +242,6 @@ class EventSubConfigurationModel extends ChangeNotifier {
         "cheerEventConfig": cheerEventConfig,
         "raidEventConfig": raidEventConfig,
         "pollEventConfig": pollEventConfig,
+        "hypeTrainConfig": hypetrainEventConfig,
       };
 }
