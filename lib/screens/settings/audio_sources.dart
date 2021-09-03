@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
@@ -21,7 +22,11 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
       final url = _textEditingController.text;
       final metadata = await MetadataFetch.extract(url);
 
-      await Provider.of<AudioModel>(context, listen: false)
+      final model = Provider.of<AudioModel>(context, listen: false);
+      if (!await AudioChannel.hasPermission()) {
+        await model.showAudioPermissionDialog(context);
+      }
+      await model
           .addSource(AudioSource(metadata?.title, Uri.parse(url), false));
 
       _textEditingController.clear();
@@ -34,19 +39,6 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("Audio sources")),
       body: Column(children: [
-        Consumer<AudioModel>(builder: (context, audioModel, child) {
-          return SwitchListTile.adaptive(
-            title: const Text('Keep app running in the background when online'),
-            subtitle: audioModel.isForegroundServiceEnabled
-                ? const Text(
-                    'Audio sources will play even when you\'re using other apps')
-                : const Text('Audio sources may not play when you switch apps'),
-            value: audioModel.isForegroundServiceEnabled,
-            onChanged: (value) {
-              audioModel.isForegroundServiceEnabled = value;
-            },
-          );
-        }),
         const Divider(),
         Expanded(
             child: Consumer<AudioModel>(builder: (context, audioModel, child) {
