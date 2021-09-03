@@ -3,34 +3,34 @@ import 'dart:core';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-enum OrientationPreference {
+enum PreferredOrientation {
   portrait,
   landscape,
   system,
 }
 
-extension _OrientationPreferenceJson on OrientationPreference {
+extension _OrientationPreferenceJson on PreferredOrientation {
   int toJson() {
     switch (this) {
-      case OrientationPreference.portrait:
+      case PreferredOrientation.portrait:
         return 0;
-      case OrientationPreference.landscape:
+      case PreferredOrientation.landscape:
         return 1;
-      case OrientationPreference.system:
+      case PreferredOrientation.system:
         return 2;
     }
   }
 
-  static OrientationPreference fromJson(dynamic json) {
+  static PreferredOrientation fromJson(dynamic json) {
     switch (json) {
       case 0:
-        return OrientationPreference.portrait;
+        return PreferredOrientation.portrait;
       case 1:
-        return OrientationPreference.landscape;
+        return PreferredOrientation.landscape;
       case 2:
-        return OrientationPreference.system;
+        return PreferredOrientation.system;
     }
-    return OrientationPreference.system;
+    return PreferredOrientation.system;
   }
 }
 
@@ -40,7 +40,7 @@ class LayoutModel extends ChangeNotifier {
   bool _isStatsVisible = true;
   bool _isInteractionLockable = false;
   bool _locked = false;
-  OrientationPreference _orientationPreference = OrientationPreference.system;
+  PreferredOrientation _orientationPreference = PreferredOrientation.system;
 
   void updatePanelHeight({required double dy}) {
     _panelHeight += dy;
@@ -77,30 +77,30 @@ class LayoutModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  OrientationPreference get orientationPreference => _orientationPreference;
+  PreferredOrientation get preferredOrientation => _orientationPreference;
 
-  set orientationPreference(OrientationPreference value) {
+  set preferredOrientation(PreferredOrientation value) {
     _orientationPreference = value;
     _bindOrientationPreference();
     notifyListeners();
   }
 
-  void _bindOrientationPreference() {
+  void _bindOrientationPreference() async {
     switch (_orientationPreference) {
-      case OrientationPreference.portrait:
-        SystemChrome.setPreferredOrientations([
+      case PreferredOrientation.portrait:
+        await SystemChrome.setPreferredOrientations([
           DeviceOrientation.portraitUp,
           DeviceOrientation.portraitDown,
         ]);
         break;
-      case OrientationPreference.landscape:
-        SystemChrome.setPreferredOrientations([
+      case PreferredOrientation.landscape:
+        await SystemChrome.setPreferredOrientations([
           DeviceOrientation.landscapeLeft,
           DeviceOrientation.landscapeRight,
         ]);
         break;
-      case OrientationPreference.system:
-        SystemChrome.setPreferredOrientations([]);
+      case PreferredOrientation.system:
+        await SystemChrome.setPreferredOrientations([]);
         break;
     }
   }
