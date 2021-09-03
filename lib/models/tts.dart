@@ -8,24 +8,15 @@ class TtsModel extends ChangeNotifier {
   set messages(List<MessageModel> messages) {
     // for tts, we sort of cheat a bit and just append the new messages to the end of the list.
     final queue = ttsHandler.queue.value;
-    if (queue.isEmpty) {
-      for (final message in messages) {
-        final mediaItem = TtsMediaItem.fromMessageModel(message);
-        if (mediaItem != null) {
-          ttsHandler.addQueueItem(mediaItem);
-        }
-      }
-      return;
-    }
-    final index = messages
-        .lastIndexWhere((message) => message.messageId == queue.last.id);
-    List<TtsMediaItem> mediaItems = [];
-    for (var i = index + 1; i < messages.length; i++) {
-      final mediaItem = TtsMediaItem.fromMessageModel(messages[i]);
-      if (mediaItem != null) {
-        mediaItems.add(mediaItem);
-      }
-    }
+    final index = queue.isNotEmpty
+        ? messages
+            .lastIndexWhere((message) => message.messageId == queue.last.id)
+        : -1;
+    final mediaItems = messages
+        .sublist(index + 1)
+        .map((message) => TtsMediaItem.fromMessageModel(message))
+        .whereType<TtsMediaItem>()
+        .toList();
     if (index == -1) {
       // looks like we wiped the history, so reset the queue.
       enabled = false;
