@@ -3,8 +3,10 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/channel_panel.dart';
 import 'package:rtchat/components/notification_panel.dart';
+import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:wakelock/wakelock.dart';
 
@@ -22,6 +24,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     Wakelock.enable();
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      final model = Provider.of<AudioModel>(context, listen: false);
+      if (model.sources.isNotEmpty && !(await AudioChannel.hasPermission())) {
+        model.showAudioPermissionDialog(context);
+      }
+    });
   }
 
   @override
