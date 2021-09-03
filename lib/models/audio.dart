@@ -4,8 +4,7 @@ import 'dart:core';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:rtchat/foreground_service_channel.dart';
+import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
 
@@ -41,13 +40,12 @@ class AudioSource {
 
 class AudioModel extends ChangeNotifier {
   final List<AudioSource> _sources = [];
-  final Map<AudioSource, HeadlessInAppWebView> _views = {};
   late final Timer _speakerDisconnectTimer;
   final _audioCache = AudioCache();
-  final initialOptions = InAppWebViewGroupOptions(
-      crossPlatform: InAppWebViewOptions(
-          mediaPlaybackRequiresUserGesture: false, javaScriptEnabled: true));
-  var _isForegroundServiceEnabled = false;
+
+  bool _isOnline = false;
+  bool _isSettingsVisible = false;
+  bool _isAlwaysEnabled = false;
 
   Channel? _hostChannel;
   StreamSubscription? _hostChannelStateSubscription;
@@ -60,56 +58,58 @@ class AudioModel extends ChangeNotifier {
     super.dispose();
   }
 
-  bool get isForegroundServiceEnabled => _isForegroundServiceEnabled;
-
-  set isForegroundServiceEnabled(bool isEnabled) {
-    _isForegroundServiceEnabled = isEnabled;
-    _bindHostChannelStateSubscription();
-    notifyListeners();
-  }
-
   Channel? get hostChannel => _hostChannel;
 
   set hostChannel(Channel? channel) {
     _hostChannel = channel;
-    _bindHostChannelStateSubscription();
-  }
-
-  void _bindHostChannelStateSubscription() {
     _hostChannelStateSubscription?.cancel();
-    if (_hostChannel == null || !_isForegroundServiceEnabled) {
+    if (_hostChannel == null) {
       _hostChannelStateSubscription = null;
-      ForegroundServiceChannel.stop();
+      _isOnline = false;
+      _syncWebViews();
+      notifyListeners();
       return;
     }
     _hostChannelStateSubscription = ProfilesAdapter.instance
         .getIsOnline(channelId: _hostChannel.toString())
         .listen((isOnline) {
-      if (isOnline) {
-        ForegroundServiceChannel.start();
-      } else {
-        ForegroundServiceChannel.stop();
-      }
+      _isOnline = isOnline;
+      _syncWebViews();
+      notifyListeners();
     });
+  }
+
+  bool get isSettingsVisible => _isSettingsVisible;
+
+  set isSettingsVisible(bool value) {
+    _isSettingsVisible = value;
+    // this is just a signal from the view so don't trigger a notification.
+    _syncWebViews();
+  }
+
+  bool get isAlwaysEnabled => _isAlwaysEnabled;
+
+  set isAlwaysEnabled(bool value) {
+    _isAlwaysEnabled = value;
+    notifyListeners();
   }
 
   List<AudioSource> get sources => _sources;
 
-  int get unmutedSourceCount =>
-      _sources.where((element) => !element.muted).length;
+  bool get enabled => _isOnline || _isSettingsVisible || _isAlwaysEnabled;
 
   Future<void> addSource(AudioSource source) async {
     if (_sources.contains(source)) {
       return;
     }
     _sources.add(source);
-    await _syncWebView(source);
+    _syncWebViews();
     notifyListeners();
   }
 
   Future<void> removeSource(AudioSource source) async {
     _sources.remove(source);
-    await _syncWebView(source);
+    _syncWebViews();
     notifyListeners();
   }
 
@@ -117,28 +117,57 @@ class AudioModel extends ChangeNotifier {
     final index = _sources.indexOf(source);
     if (index != -1) {
       _sources[index] = source.withMuted(!source.muted);
-      await _syncWebView(_sources[index]);
-    }
-    notifyListeners();
-  }
-
-  Future<void> refreshAllSources() async {
-    for (final source in _sources) {
-      await _syncWebView(source);
+      _syncWebViews();
+      notifyListeners();
     }
   }
 
-  Future<void> _syncWebView(AudioSource source) async {
-    _views[source]?.dispose();
-    if (source.muted) {
-      _views.remove(source);
+  Future<int> refreshAllSources() async {
+    final activeSources = _sources.where((element) => !element.muted).toList();
+    for (final source in activeSources) {
+      await AudioChannel.reload(source.url.toString());
+    }
+    return activeSources.length;
+  }
+
+  void _syncWebViews() {
+    if (!_isOnline && !_isSettingsVisible) {
+      AudioChannel.set([]);
     } else {
-      final view = HeadlessInAppWebView(
-          initialOptions: initialOptions,
-          initialUrlRequest: URLRequest(url: source.url));
-      _views[source] = view;
-      await view.run();
+      AudioChannel.set(_sources
+          .where((element) => !element.muted)
+          .map((element) => element.url.toString())
+          .toList());
     }
+  }
+
+  showAudioPermissionDialog(BuildContext context) {
+    return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Audio sources require permissions'),
+            content: const Text(
+                'Approve RealtimeChat to draw over other apps to use audio sources.'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Remove audio sources'),
+                onPressed: () {
+                  _sources.clear();
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text('Open Settings'),
+                onPressed: () async {
+                  await AudioChannel.requestPermission();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
   }
 
   AudioModel.fromJson(Map<String, dynamic> json) {
@@ -149,17 +178,17 @@ class AudioModel extends ChangeNotifier {
     final sources = json['sources'];
     if (sources != null) {
       for (dynamic source in sources) {
-        addSource(AudioSource.fromJson(source));
+        _sources.add(AudioSource.fromJson(source));
       }
+      notifyListeners();
     }
-    if (json['isForegroundServiceEnabled'] ?? false) {
-      _isForegroundServiceEnabled = json['isForegroundServiceEnabled'];
-      ForegroundServiceChannel.start();
+    if (json['isAlwaysEnabled'] != null) {
+      _isAlwaysEnabled = json['isAlwaysEnabled'];
     }
   }
 
   Map<String, dynamic> toJson() => {
         "sources": _sources.map((source) => source.toJson()).toList(),
-        "isForegroundServiceEnabled": _isForegroundServiceEnabled,
+        "isAlwaysEnabled": _isAlwaysEnabled,
       };
 }
