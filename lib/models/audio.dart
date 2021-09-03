@@ -45,6 +45,7 @@ class AudioModel extends ChangeNotifier {
 
   bool _isOnline = false;
   bool _isSettingsVisible = false;
+  bool _isAlwaysEnabled = false;
 
   Channel? _hostChannel;
   StreamSubscription? _hostChannelStateSubscription;
@@ -86,9 +87,16 @@ class AudioModel extends ChangeNotifier {
     _syncWebViews();
   }
 
+  bool get isAlwaysEnabled => _isAlwaysEnabled;
+
+  set isAlwaysEnabled(bool value) {
+    _isAlwaysEnabled = value;
+    notifyListeners();
+  }
+
   List<AudioSource> get sources => _sources;
 
-  bool get enabled => _isOnline || _isSettingsVisible;
+  bool get enabled => _isOnline || _isSettingsVisible || _isAlwaysEnabled;
 
   Future<void> addSource(AudioSource source) async {
     if (_sources.contains(source)) {
@@ -174,9 +182,13 @@ class AudioModel extends ChangeNotifier {
       }
       notifyListeners();
     }
+    if (json['isAlwaysEnabled'] != null) {
+      _isAlwaysEnabled = json['isAlwaysEnabled'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
         "sources": _sources.map((source) => source.toJson()).toList(),
+        "isAlwaysEnabled": _isAlwaysEnabled,
       };
 }
