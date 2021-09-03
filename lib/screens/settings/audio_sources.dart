@@ -15,6 +15,22 @@ class AudioSourcesScreen extends StatefulWidget {
 class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textEditingController = TextEditingController();
+  late final AudioModel _audioModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _audioModel = Provider.of<AudioModel>(context, listen: false);
+    // tell the audio model we're on the settings page.
+    _audioModel.isSettingsVisible = true;
+  }
+
+  @override
+  void dispose() {
+    // tell the audio model we're off the settings page.
+    _audioModel.isSettingsVisible = false;
+    super.dispose();
+  }
 
   void add() async {
     if (_formKey.currentState!.validate()) {
@@ -38,7 +54,11 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Audio sources")),
-      body: Column(children: [
+      body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+                "Audio sources are automatically muted when your stream is offline.")),
         const Divider(),
         Expanded(
             child: Consumer<AudioModel>(builder: (context, audioModel, child) {

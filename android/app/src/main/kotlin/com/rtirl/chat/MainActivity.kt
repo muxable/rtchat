@@ -1,5 +1,6 @@
 package com.rtirl.chat
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
@@ -34,6 +35,7 @@ class MainActivity : FlutterActivity() {
         views.values.forEach { wm.removeView(it) }
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -41,11 +43,9 @@ class MainActivity : FlutterActivity() {
         ).setMethodCallHandler { call, result ->
             val wm = getSystemService(WINDOW_SERVICE) as WindowManager
             when (call.method) {
-                "add" -> {
-                    val url = call.argument<String>("url")
-                    if (url == null || views[url] != null) {
-                        result.success(false)
-                    } else {
+                "set" -> {
+                    val urls = (call.argument<List<String>>("urls") ?: listOf()).toHashSet()
+                    (urls subtract views.keys).forEach {
                         val view = WebView(context)
                         view.settings.javaScriptEnabled = true
                         view.settings.mediaPlaybackRequiresUserGesture = false
@@ -59,7 +59,7 @@ class MainActivity : FlutterActivity() {
                         }
                         view.visibility = View.INVISIBLE
                         view.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                        view.loadUrl(url)
+                        view.loadUrl(it)
 
                         wm.addView(
                             view, WindowManager.LayoutParams(
@@ -70,18 +70,21 @@ class MainActivity : FlutterActivity() {
                                 PixelFormat.OPAQUE
                             )
                         )
-                        views[url] = view
+                        views[it] = view
                         result.success(true)
                     }
+                    (views.keys subtract urls).forEach {
+                        wm.removeView(views[it])
+                        views.remove(it)?.destroy()
+                    }
+                    result.success(true)
                 }
-                "remove" -> {
+                "reload" -> {
                     val url = call.argument<String>("url")
                     if (url == null || views[url] == null) {
                         result.success(false)
                     } else {
-                        Log.d("WebView", "removing url " + url)
-                        wm.removeView(views[url])
-                        views.remove(url)?.destroy()
+                        views[url]?.reload()
                         result.success(true)
                     }
                 }
