@@ -29,9 +29,9 @@ class SubscriptionEventScreen extends StatelessWidget {
                       value: model
                           .subscriptionEventConfig.eventDuration.inSeconds
                           .toDouble(),
-                      min: 2,
-                      max: 14,
-                      divisions: 4,
+                      min: 0,
+                      max: 30,
+                      divisions: 15,
                       label:
                           "${model.subscriptionEventConfig.eventDuration.inSeconds} seconds",
                       onChanged: (value) {
@@ -56,15 +56,7 @@ class SubscriptionEventScreen extends StatelessWidget {
                       onChanged: (value) {
                         model.setGiftSubscriptionStatus(value);
                       },
-                    ),
-                    SwitchListTile.adaptive(
-                      title: const Text('Pin event'),
-                      subtitle: const Text('Pin event to chat history'),
-                      value: model.subscriptionEventConfig.isEventPinnable,
-                      onChanged: (value) {
-                        model.setSubscriptionEventPinnable(value);
-                      },
-                    ),
+                    )
                   ],
                 ),
               ),

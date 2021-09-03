@@ -28,9 +28,9 @@ class CheerEventScreen extends StatelessWidget {
                     Slider.adaptive(
                       value: model.cheerEventConfig.eventDuration.inSeconds
                           .toDouble(),
-                      min: 2,
-                      max: 14,
-                      divisions: 4,
+                      min: 0,
+                      max: 30,
+                      divisions: 15,
                       label:
                           "${model.cheerEventConfig.eventDuration.inSeconds} seconds",
                       onChanged: (value) {
@@ -44,14 +44,6 @@ class CheerEventScreen extends StatelessWidget {
                       value: model.cheerEventConfig.showEvent,
                       onChanged: (value) {
                         model.setCheerEventShowable(value);
-                      },
-                    ),
-                    SwitchListTile.adaptive(
-                      title: const Text('Pin event'),
-                      subtitle: const Text('Pin event to chat history'),
-                      value: model.cheerEventConfig.isEventPinnable,
-                      onChanged: (value) {
-                        model.setCheerEventPinnable(value);
                       },
                     ),
                   ],
