@@ -28,9 +28,9 @@ class FollowEventScreen extends StatelessWidget {
                     Slider.adaptive(
                       value: model.followEventConfig.eventDuration.inSeconds
                           .toDouble(),
-                      min: 2,
-                      max: 14,
-                      divisions: 4,
+                      min: 0,
+                      max: 30,
+                      divisions: 15,
                       label:
                           "${model.followEventConfig.eventDuration.inSeconds} seconds",
                       onChanged: (value) {
@@ -44,14 +44,6 @@ class FollowEventScreen extends StatelessWidget {
                       value: model.followEventConfig.showEvent,
                       onChanged: (value) {
                         model.setFollowEventShowable(value);
-                      },
-                    ),
-                    SwitchListTile.adaptive(
-                      title: const Text('Pin event'),
-                      subtitle: const Text('Pin event to chat history'),
-                      value: model.followEventConfig.isEventPinnable,
-                      onChanged: (value) {
-                        model.setFollowEventPinnable(value);
                       },
                     ),
                   ],
