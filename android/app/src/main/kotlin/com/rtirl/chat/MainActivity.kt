@@ -45,7 +45,9 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "set" -> {
                     val urls = (call.argument<List<String>>("urls") ?: listOf()).toHashSet()
-                    (urls subtract views.keys).forEach {
+                    val add = (urls subtract views.keys)
+                    val remove = (views.keys subtract urls)
+                    add.forEach {
                         val view = WebView(context)
                         view.settings.javaScriptEnabled = true
                         view.settings.mediaPlaybackRequiresUserGesture = false
@@ -73,7 +75,7 @@ class MainActivity : FlutterActivity() {
                         views[it] = view
                         result.success(true)
                     }
-                    (views.keys subtract urls).forEach {
+                    remove.forEach {
                         wm.removeView(views[it])
                         views.remove(it)?.destroy()
                     }
