@@ -7,6 +7,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 const discordUrl = "https://discord.gg/UKHJMQs74u";
 
+Widget _iconWithText(IconData icon, String text) {
+  return Column(children: [
+    Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4), child: Icon(icon)),
+    Text(text),
+  ]);
+}
+
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
@@ -56,6 +64,50 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           const Divider(),
+          Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Screen orientation",
+                        style: TextStyle(
+                          color: Theme.of(context).accentColor,
+                          fontWeight: FontWeight.bold,
+                        )),
+                    const SizedBox(height: 8),
+                    ToggleButtons(
+                      children: [
+                        _iconWithText(Icons.screen_rotation, "System"),
+                        _iconWithText(Icons.screen_lock_landscape, "Landscape"),
+                        _iconWithText(Icons.screen_lock_portrait, "Portrait"),
+                      ],
+                      onPressed: (index) {
+                        switch (index) {
+                          case 0:
+                            layoutModel.preferredOrientation =
+                                PreferredOrientation.system;
+                            break;
+                          case 1:
+                            layoutModel.preferredOrientation =
+                                PreferredOrientation.landscape;
+                            break;
+                          case 2:
+                            layoutModel.preferredOrientation =
+                                PreferredOrientation.portrait;
+                            break;
+                        }
+                      },
+                      isSelected: [
+                        layoutModel.preferredOrientation ==
+                            PreferredOrientation.system,
+                        layoutModel.preferredOrientation ==
+                            PreferredOrientation.landscape,
+                        layoutModel.preferredOrientation ==
+                            PreferredOrientation.portrait,
+                      ],
+                      selectedColor: Theme.of(context).accentColor,
+                    ),
+                  ])),
           SwitchListTile.adaptive(
             title: const Text('Show viewer and follower count'),
             value: layoutModel.isStatsVisible,
