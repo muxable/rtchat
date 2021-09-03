@@ -84,26 +84,26 @@ class SettingsScreen extends StatelessWidget {
                       onPressed: (index) {
                         switch (index) {
                           case 0:
-                            layoutModel.orientationPreference =
-                                OrientationPreference.system;
+                            layoutModel.preferredOrientation =
+                                PreferredOrientation.system;
                             break;
                           case 1:
-                            layoutModel.orientationPreference =
-                                OrientationPreference.landscape;
+                            layoutModel.preferredOrientation =
+                                PreferredOrientation.landscape;
                             break;
                           case 2:
-                            layoutModel.orientationPreference =
-                                OrientationPreference.portrait;
+                            layoutModel.preferredOrientation =
+                                PreferredOrientation.portrait;
                             break;
                         }
                       },
                       isSelected: [
-                        layoutModel.orientationPreference ==
-                            OrientationPreference.system,
-                        layoutModel.orientationPreference ==
-                            OrientationPreference.landscape,
-                        layoutModel.orientationPreference ==
-                            OrientationPreference.portrait,
+                        layoutModel.preferredOrientation ==
+                            PreferredOrientation.system,
+                        layoutModel.preferredOrientation ==
+                            PreferredOrientation.landscape,
+                        layoutModel.preferredOrientation ==
+                            PreferredOrientation.portrait,
                       ],
                       selectedColor: Theme.of(context).accentColor,
                     ),
