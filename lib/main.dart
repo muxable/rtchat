@@ -130,7 +130,7 @@ class App extends StatelessWidget {
             create: (context) {
               final model = AudioModel.fromJson(
                   jsonDecode(prefs.getString("audio") ?? "{}"));
-              model.addListener(() async {
+              model.addListener(() {
                 prefs.setString('audio', jsonEncode(model.toJson()));
               });
               final user = Provider.of<UserModel>(context, listen: false);

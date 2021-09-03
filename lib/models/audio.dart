@@ -4,7 +4,6 @@ import 'dart:core';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
@@ -43,10 +42,6 @@ class AudioModel extends ChangeNotifier {
   final List<AudioSource> _sources = [];
   late final Timer _speakerDisconnectTimer;
   final _audioCache = AudioCache();
-  final initialOptions = InAppWebViewGroupOptions(
-      crossPlatform: InAppWebViewOptions(
-          mediaPlaybackRequiresUserGesture: false, javaScriptEnabled: true),
-      android: AndroidInAppWebViewOptions(useHybridComposition: true));
 
   bool _isOnline = false;
   Channel? _hostChannel;
@@ -78,7 +73,6 @@ class AudioModel extends ChangeNotifier {
     }
     _hostChannelStateSubscription = ProfilesAdapter.instance
         .getIsOnline(channelId: _hostChannel.toString())
-        .map((x) => true)
         .listen((isOnline) {
       _isOnline = isOnline;
       final activeSources =
