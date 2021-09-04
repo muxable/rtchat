@@ -3,7 +3,7 @@ import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/models/audio.dart';
-import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
+import 'package:rtchat/screens/settings/dismissible_background.dart';
 
 class AudioSourcesScreen extends StatefulWidget {
   const AudioSourcesScreen({Key? key}) : super(key: key);
@@ -57,12 +57,10 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
       body: Consumer<AudioModel>(builder: (context, model, child) {
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           SwitchListTile.adaptive(
-            title: const Text('Play off-stream (uses more battery)'),
+            title: const Text('Enable off-stream (uses more battery)'),
             subtitle: model.isAlwaysEnabled
-                ? const Text(
-                    'Audio sources will play when your stream is offline')
-                : const Text(
-                    'Audio sources will play only when your stream is online'),
+                ? const Text('Audio will also play when you\'re offline')
+                : const Text('Audio will only play when you\'re online'),
             value: model.isAlwaysEnabled,
             onChanged: (value) {
               model.isAlwaysEnabled = value;
@@ -75,7 +73,14 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                 final name = source.name;
                 return Dismissible(
                   key: ValueKey(source),
-                  background: const DismissibleDeleteBackground(),
+                  background: const DismissibleBackground(
+                    color: Colors.red,
+                    icon: Icons.delete,
+                  ),
+                  secondaryBackground: const DismissibleBackground(
+                    color: Colors.green,
+                    icon: Icons.bug_report,
+                  ),
                   child: CheckboxListTile(
                       title: name == null
                           ? Text(source.url.toString())
@@ -87,7 +92,15 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                         model.toggleSource(source);
                       }),
                   onDismissed: (direction) {
-                    model.removeSource(source);
+                    switch (direction) {
+                      case DismissDirection.startToEnd:
+                        model.removeSource(source);
+                        break;
+                      case DismissDirection.endToStart:
+                        model.showConsoleLogDialog(context, source);
+                        break;
+                      default:
+                    }
                   },
                 );
               }).toList(),

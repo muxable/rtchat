@@ -9,6 +9,7 @@ class AudioChannel {
     if (!Platform.isAndroid) {
       return;
     }
+    print("set urls $urls");
     if (await hasPermission()) {
       await _channel.invokeMethod<bool>('set', {"urls": urls});
     }

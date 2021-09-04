@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/quick_links.dart';
-import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
+import 'package:rtchat/screens/settings/dismissible_background.dart';
 
 class QuickLinksScreen extends StatefulWidget {
   const QuickLinksScreen({Key? key}) : super(key: key);
@@ -48,7 +48,10 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
               final name = source.name;
               return Dismissible(
                 key: ValueKey(source),
-                background: const DismissibleDeleteBackground(),
+                background: const DismissibleBackground(
+                  color: Colors.red,
+                  icon: Icons.delete,
+                ),
                 child: ListTile(
                   key: ValueKey(source),
                   leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),

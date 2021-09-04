@@ -131,26 +131,28 @@ class AudioModel extends ChangeNotifier {
   }
 
   void _syncWebViews() {
-    if (!_isOnline && !_isSettingsVisible) {
-      AudioChannel.set([]);
-    } else {
+    print("$_isOnline $_isSettingsVisible $_isAlwaysEnabled");
+    print("print sync webview $enabled");
+    if (enabled) {
       AudioChannel.set(_sources
           .where((element) => !element.muted)
           .map((element) => element.url.toString())
           .toList());
+    } else {
+      AudioChannel.set([]);
     }
   }
 
   showAudioPermissionDialog(BuildContext context) {
     return showDialog<void>(
         context: context,
-        barrierDismissible: false, // user must tap button!
+        barrierDismissible: false,
         builder: (context) {
           return AlertDialog(
             title: const Text('Audio sources require permissions'),
             content: const Text(
                 'Approve RealtimeChat to draw over other apps to use audio sources.'),
-            actions: <Widget>[
+            actions: [
               TextButton(
                 child: const Text('Remove audio sources'),
                 onPressed: () {
@@ -158,6 +160,27 @@ class AudioModel extends ChangeNotifier {
                   Navigator.of(context).pop();
                 },
               ),
+              TextButton(
+                child: const Text('Open Settings'),
+                onPressed: () async {
+                  await AudioChannel.requestPermission();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  showConsoleLogDialog(BuildContext context, AudioSource source) {
+    return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Audio source console log'),
+            content: const Text(''),
+            actions: [
               TextButton(
                 child: const Text('Open Settings'),
                 onPressed: () async {
