@@ -15,6 +15,22 @@ class AudioSourcesScreen extends StatefulWidget {
 class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textEditingController = TextEditingController();
+  late final AudioModel _audioModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _audioModel = Provider.of<AudioModel>(context, listen: false);
+    // tell the audio model we're on the settings page.
+    _audioModel.isSettingsVisible = true;
+  }
+
+  @override
+  void dispose() {
+    // tell the audio model we're off the settings page.
+    _audioModel.isSettingsVisible = false;
+    super.dispose();
+  }
 
   void add() async {
     if (_formKey.currentState!.validate()) {
@@ -38,58 +54,71 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Audio sources")),
-      body: Column(children: [
-        const Divider(),
-        Expanded(
-            child: Consumer<AudioModel>(builder: (context, audioModel, child) {
-          return ListView(
-            children: audioModel.sources.map((source) {
-              final name = source.name;
-              return Dismissible(
-                key: ValueKey(source),
-                background: const DismissibleDeleteBackground(),
-                child: CheckboxListTile(
-                    title:
-                        name == null ? Text(source.url.toString()) : Text(name),
-                    subtitle: name == null ? null : Text(source.url.toString()),
-                    value: !source.muted,
-                    onChanged: (value) {
-                      audioModel.toggleSource(source);
-                    }),
-                onDismissed: (direction) {
-                  audioModel.removeSource(source);
-                },
-              );
-            }).toList(),
-          );
-        })),
-        const Divider(),
-        Padding(
-          padding: const EdgeInsets.only(left: 16, bottom: 16),
-          child: Form(
-            key: _formKey,
-            child: Row(children: [
-              Expanded(
-                child: TextFormField(
-                    controller: _textEditingController,
-                    decoration: const InputDecoration(hintText: "URL"),
-                    validator: (value) {
-                      if (value == null ||
-                          value.isEmpty ||
-                          Uri.tryParse(value) == null) {
-                        return "This doesn't look like a valid URL.";
-                      }
-                      return null;
-                    },
-                    keyboardType: TextInputType.url,
-                    textInputAction: TextInputAction.done,
-                    onEditingComplete: add),
-              ),
-              IconButton(icon: const Icon(Icons.add), onPressed: add),
-            ]),
+      body: Consumer<AudioModel>(builder: (context, model, child) {
+        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          SwitchListTile.adaptive(
+            title: const Text('Enable off-stream (uses more battery)'),
+            subtitle: model.isAlwaysEnabled
+                ? const Text('Audio will also play when you\'re offline')
+                : const Text('Audio will only play when you\'re online'),
+            value: model.isAlwaysEnabled,
+            onChanged: (value) {
+              model.isAlwaysEnabled = value;
+            },
           ),
-        ),
-      ]),
+          const Divider(),
+          Expanded(
+            child: ListView(
+              children: model.sources.map((source) {
+                final name = source.name;
+                return Dismissible(
+                  key: ValueKey(source),
+                  background: const DismissibleDeleteBackground(),
+                  child: CheckboxListTile(
+                      title: name == null
+                          ? Text(source.url.toString())
+                          : Text(name),
+                      subtitle:
+                          name == null ? null : Text(source.url.toString()),
+                      value: !source.muted,
+                      onChanged: (value) {
+                        model.toggleSource(source);
+                      }),
+                  onDismissed: (direction) {
+                    model.removeSource(source);
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.only(left: 16, bottom: 16),
+            child: Form(
+              key: _formKey,
+              child: Row(children: [
+                Expanded(
+                  child: TextFormField(
+                      controller: _textEditingController,
+                      decoration: const InputDecoration(hintText: "URL"),
+                      validator: (value) {
+                        if (value == null ||
+                            value.isEmpty ||
+                            Uri.tryParse(value) == null) {
+                          return "This doesn't look like a valid URL.";
+                        }
+                        return null;
+                      },
+                      keyboardType: TextInputType.url,
+                      textInputAction: TextInputAction.done,
+                      onEditingComplete: add),
+                ),
+                IconButton(icon: const Icon(Icons.add), onPressed: add),
+              ]),
+            ),
+          ),
+        ]);
+      }),
     );
   }
 }

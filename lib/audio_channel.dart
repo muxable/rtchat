@@ -5,28 +5,20 @@ import 'package:flutter/services.dart';
 class AudioChannel {
   static const _channel = MethodChannel('com.rtirl.chat/audio');
 
-  static add(String url) async {
+  static set(List<String> urls) async {
     if (!Platform.isAndroid) {
       return;
     }
     if (await hasPermission()) {
-      await _channel.invokeMethod<bool>('add', {"url": url});
+      await _channel.invokeMethod<bool>('set', {"urls": urls});
     }
-  }
-
-  static remove(String url) async {
-    if (!Platform.isAndroid) {
-      return;
-    }
-    await _channel.invokeMethod<bool>('remove', {"url": url});
   }
 
   static reload(String url) async {
     if (!Platform.isAndroid) {
       return;
     }
-    await _channel.invokeMethod<bool>('remove', {"url": url});
-    await _channel.invokeMethod<bool>('add', {"url": url});
+    await _channel.invokeMethod<bool>('reload', {"url": url});
   }
 
   static Future<bool> requestPermission() async {

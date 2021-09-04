@@ -31,6 +31,6 @@ class ProfilesAdapter {
         .snapshots()
         .map((event) =>
             event.docs.isNotEmpty &&
-            event.docs.first.get("type") == "stream.online");
+            event.docs.single.get("type") == "stream.online");
   }
 }

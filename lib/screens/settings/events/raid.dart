@@ -28,9 +28,9 @@ class RaidEventScreen extends StatelessWidget {
                     Slider.adaptive(
                       value: model.raidEventConfig.eventDuration.inSeconds
                           .toDouble(),
-                      min: 2,
-                      max: 14,
-                      divisions: 4,
+                      min: 0,
+                      max: 30,
+                      divisions: 15,
                       label:
                           "${model.raidEventConfig.eventDuration.inSeconds} seconds",
                       onChanged: (value) {
@@ -44,14 +44,6 @@ class RaidEventScreen extends StatelessWidget {
                       value: model.raidEventConfig.showEvent,
                       onChanged: (value) {
                         model.setRaidEventShowable(value);
-                      },
-                    ),
-                    SwitchListTile.adaptive(
-                      title: const Text('Pin event'),
-                      subtitle: const Text('Pin event to chat history'),
-                      value: model.raidEventConfig.isEventPinnable,
-                      onChanged: (value) {
-                        model.setRaidEventPinnable(value);
                       },
                     ),
                   ],

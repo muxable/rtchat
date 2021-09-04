@@ -28,9 +28,9 @@ class PollEventScreen extends StatelessWidget {
                     Slider.adaptive(
                       value: model.pollEventConfig.eventDuration.inSeconds
                           .toDouble(),
-                      min: 2,
-                      max: 14,
-                      divisions: 4,
+                      min: 0,
+                      max: 30,
+                      divisions: 15,
                       label:
                           "${model.pollEventConfig.eventDuration.inSeconds} seconds",
                       onChanged: (value) {
