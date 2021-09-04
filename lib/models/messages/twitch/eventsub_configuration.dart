@@ -229,6 +229,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
     if (json['hypetrainEventConfig'] != null) {
       hypetrainEventConfig =
           HypetrainEventConfig.fromJson(json['hypetrainEventConfig']);
+    }
     if (json['predictionEventConfig'] != null) {
       predictionEventConfig =
           PredictionEventConfig.fromJson(json['predictionEventConfig']);
