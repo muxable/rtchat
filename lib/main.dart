@@ -20,6 +20,7 @@ import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/tts_audio_handler.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
@@ -111,7 +112,7 @@ void main() async {
   }, FirebaseCrashlytics.instance.recordError);
 }
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   final SharedPreferences prefs;
   final TtsAudioHandler ttsHandler;
 
@@ -122,6 +123,14 @@ class App extends StatelessWidget {
       : super(key: key);
 
   @override
+  _AppState createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  bool _isDiscoModeRunning = false;
+  Timer? _discoModeTimer;
+
+  @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
@@ -129,9 +138,9 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(
             create: (context) {
               final model = AudioModel.fromJson(
-                  jsonDecode(prefs.getString("audio") ?? "{}"));
+                  jsonDecode(widget.prefs.getString("audio") ?? "{}"));
               model.addListener(() {
-                prefs.setString('audio', jsonEncode(model.toJson()));
+                widget.prefs.setString('audio', jsonEncode(model.toJson()));
               });
               final user = Provider.of<UserModel>(context, listen: false);
               model.hostChannel = user.userChannel;
@@ -143,25 +152,25 @@ class App extends StatelessWidget {
             lazy: false),
         ChangeNotifierProvider(create: (context) {
           final model = QuickLinksModel.fromJson(
-              jsonDecode(prefs.getString("quick_links") ?? "{}"));
+              jsonDecode(widget.prefs.getString("quick_links") ?? "{}"));
           model.addListener(() {
-            prefs.setString('quick_links', jsonEncode(model.toJson()));
+            widget.prefs.setString('quick_links', jsonEncode(model.toJson()));
           });
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
-          final model =
-              StyleModel.fromJson(jsonDecode(prefs.getString("style") ?? "{}"));
+          final model = StyleModel.fromJson(
+              jsonDecode(widget.prefs.getString("style") ?? "{}"));
           model.addListener(() {
-            prefs.setString('style', jsonEncode(model.toJson()));
+            widget.prefs.setString('style', jsonEncode(model.toJson()));
           });
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
           final model = LayoutModel.fromJson(
-              jsonDecode(prefs.getString("layout") ?? "{}"));
+              jsonDecode(widget.prefs.getString("layout") ?? "{}"));
           model.addListener(() {
-            prefs.setString('layout', jsonEncode(model.toJson()));
+            widget.prefs.setString('layout', jsonEncode(model.toJson()));
           });
           return model;
         }),
@@ -174,14 +183,27 @@ class App extends StatelessWidget {
             final userChannel = user.userChannel;
             model.subscribedChannels = userChannel == null ? {} : {userChannel};
           });
+          model.addListener(() {
+            if (model.messages.isNotEmpty) {
+              final message = model.messages.last;
+              if (message is TwitchMessageModel &&
+                  message.message == "!disco") {
+                _discoModeTimer?.cancel();
+                setState(() => _isDiscoModeRunning = true);
+                _discoModeTimer = Timer(const Duration(seconds: 5), () {
+                  setState(() => _isDiscoModeRunning = false);
+                });
+              }
+            }
+          });
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
-          final model = TtsModel.fromJson(
-              ttsHandler, jsonDecode(prefs.getString("tts") ?? "{}"));
+          final model = TtsModel.fromJson(widget.ttsHandler,
+              jsonDecode(widget.prefs.getString("tts") ?? "{}"));
           final channels = Provider.of<ChannelsModel>(context, listen: false);
           model.addListener(() {
-            prefs.setString('tts', jsonEncode(model.toJson()));
+            widget.prefs.setString('tts', jsonEncode(model.toJson()));
           });
           channels.addListener(() {
             model.messages = channels.messages;
@@ -190,21 +212,22 @@ class App extends StatelessWidget {
         }),
         ChangeNotifierProvider(create: (context) {
           final model = ActivityFeedModel.fromJson(
-              jsonDecode(prefs.getString("activity_feed") ?? "{}"));
+              jsonDecode(widget.prefs.getString("activity_feed") ?? "{}"));
           final channels = Provider.of<ChannelsModel>(context, listen: false);
           channels.addListener(() {
             model.bind(channels);
           });
           return model
             ..addListener(() {
-              prefs.setString("activity_feed", jsonEncode(model.toJson()));
+              widget.prefs
+                  .setString("activity_feed", jsonEncode(model.toJson()));
             });
         }),
         ChangeNotifierProvider(create: (context) {
           final model = TwitchBadgeModel.fromJson(
-              jsonDecode(prefs.getString("twitch_badge") ?? "{}"));
+              jsonDecode(widget.prefs.getString("twitch_badge") ?? "{}"));
           model.addListener(() {
-            prefs.setString('twitch_badge', jsonEncode(model.toJson()));
+            widget.prefs.setString('twitch_badge', jsonEncode(model.toJson()));
           });
           final channels = Provider.of<ChannelsModel>(context, listen: false);
           model.subscribe(channels.subscribedChannels);
@@ -215,9 +238,10 @@ class App extends StatelessWidget {
         }),
         ChangeNotifierProvider(create: (context) {
           final model = EventSubConfigurationModel.fromJson(
-              jsonDecode(prefs.getString("event_sub_configs") ?? "{}"));
+              jsonDecode(widget.prefs.getString("event_sub_configs") ?? "{}"));
           model.addListener(() {
-            prefs.setString('event_sub_configs', jsonEncode(model.toJson()));
+            widget.prefs
+                .setString('event_sub_configs', jsonEncode(model.toJson()));
           });
           return model;
         }),
@@ -237,14 +261,14 @@ class App extends StatelessWidget {
             scaffoldBackgroundColor: Colors.black,
           ),
           initialRoute: '/',
-          navigatorObservers: [observer],
+          navigatorObservers: [App.observer],
           routes: {
             '/': (context) {
               return Consumer<UserModel>(builder: (context, model, child) {
                 if (!model.isSignedIn()) {
                   return const SignInScreen();
                 }
-                return const HomeScreen();
+                return HomeScreen(isDiscoModeEnabled: _isDiscoModeRunning);
               });
             },
             '/settings': (context) => const SettingsScreen(),
