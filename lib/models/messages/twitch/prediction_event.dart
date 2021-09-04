@@ -16,6 +16,7 @@ class TwitchPredictionEventModel extends MessageModel {
   final String title;
   final String? status;
   final String? winningOutcomeId;
+  final DateTime? endTime;
   final List<TwitchPredictionOutcomeModel> outcomes;
 
   const TwitchPredictionEventModel(
@@ -24,6 +25,7 @@ class TwitchPredictionEventModel extends MessageModel {
       required this.title,
       this.status,
       this.winningOutcomeId,
+      required this.endTime,
       required this.outcomes})
       : super(messageId: messageId, timestamp: timestamp);
 
@@ -34,6 +36,7 @@ class TwitchPredictionEventModel extends MessageModel {
         messageId: "channel.prediction-${data['event']['id']}",
         title: data['event']['title'],
         status: "in_progress",
+        endTime: DateTime.parse(data['event']['locks_at']),
         outcomes: List.from(data['event']['outcomes'].values.map((outcome) {
           return TwitchPredictionOutcomeModel(
               outcome['id'],
@@ -50,6 +53,7 @@ class TwitchPredictionEventModel extends MessageModel {
         title: data['event']['title'],
         status: data['event']['status'],
         winningOutcomeId: data['event']['winning_outcome_id'],
+        endTime: DateTime.parse(data['event']['ended_at']),
         outcomes: List.from(data['event']['outcomes'].values.map((outcome) {
           return TwitchPredictionOutcomeModel(outcome['id'],
               outcome['channel_points'], outcome['color'], outcome['title']);
