@@ -3,11 +3,13 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/cheer_event.dart';
 import 'package:rtchat/components/chat_history/twitch/follow_event.dart';
 import 'package:rtchat/components/chat_history/twitch/poll_event.dart';
+import 'package:rtchat/components/chat_history/twitch/prediction_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
 import 'package:rtchat/components/style_model_theme.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
@@ -21,6 +23,7 @@ class EventsScreen extends StatelessWidget {
         title: const Text("Event Configuration Selection"),
       ),
       body: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+        final dateTime = DateTime.now();
         return ListView(children: [
           Padding(
               padding: const EdgeInsets.all(16),
@@ -123,6 +126,28 @@ class EventsScreen extends StatelessWidget {
               Navigator.pushNamed(context, "/settings/events/poll");
             },
           ),
+          Padding(
+              padding: const EdgeInsets.all(16),
+              child: StyleModelTheme(
+                  child: TwitchPredictionEventWidget(TwitchPredictionEventModel(
+                      timestamp: dateTime,
+                      messageId: '',
+                      title: 'Coin flip prediction',
+                      endTime: dateTime,
+                      status: 'in_progress',
+                      outcomes: [
+                    TwitchPredictionOutcomeModel(
+                        'outcome1', 50, 'pink', 'Heads'),
+                    TwitchPredictionOutcomeModel(
+                        'outcome2', 100, 'blue', 'Tails')
+                  ])))),
+          ListTile(
+            title: const Text('Prediction event config'),
+            subtitle: const Text('Customize your prediction event'),
+            onTap: () {
+              Navigator.pushNamed(context, '/settings/events/prediction');
+            },
+          )
         ]);
       }),
     );
