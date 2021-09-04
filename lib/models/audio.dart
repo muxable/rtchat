@@ -131,8 +131,6 @@ class AudioModel extends ChangeNotifier {
   }
 
   void _syncWebViews() {
-    print("$_isOnline $_isSettingsVisible $_isAlwaysEnabled");
-    print("print sync webview $enabled");
     if (enabled) {
       AudioChannel.set(_sources
           .where((element) => !element.muted)
