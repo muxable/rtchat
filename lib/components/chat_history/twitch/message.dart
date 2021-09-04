@@ -113,9 +113,12 @@ class TwitchMessageWidget extends StatelessWidget {
       final userModel = Provider.of<UserModel>(context, listen: false);
       final loginChannel = userModel.userChannel!.displayName;
       if (token.username.toLowerCase() == loginChannel.toLowerCase()) {
-        yield TextSpan(text: " @${token.username} ", style: tagStyleStreamer);
+        yield TextSpan(
+            text: "\u{00A0}@${token.username}\u{00A0}",
+            style: tagStyleStreamer);
       } else {
-        yield TextSpan(text: " @${token.username} ", style: tagStyle);
+        yield TextSpan(
+            text: "\u{00A0}@${token.username}\u{00A0}", style: tagStyle);
       }
     } else if (token is CompactedToken) {
       yield* token.children
