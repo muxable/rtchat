@@ -9,9 +9,7 @@ import android.os.Build
 import android.provider.Settings
 import android.view.View
 import android.view.WindowManager
-import android.webkit.ConsoleMessage
-import android.webkit.WebChromeClient
-import android.webkit.WebView
+import android.webkit.*
 import androidx.annotation.NonNull
 import com.ryanheise.audioservice.AudioServicePlugin
 import io.flutter.Log
@@ -53,20 +51,28 @@ class MainActivity : FlutterActivity() {
                         view.settings.mediaPlaybackRequiresUserGesture = false
                         view.settings.domStorageEnabled = true
                         view.settings.databaseEnabled = true
+                        view.settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
                         view.webChromeClient = object : WebChromeClient() {
                             override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
                                 Log.d("WebView", consoleMessage.message())
                                 return true
                             }
                         }
-                        view.visibility = View.INVISIBLE
                         view.setLayerType(View.LAYER_TYPE_HARDWARE, null)
                         view.loadUrl(it)
+                        view.webViewClient = object : WebViewClient() {
+                            override fun shouldOverrideUrlLoading(
+                                view: WebView?,
+                                request: WebResourceRequest?
+                            ): Boolean {
+                                return false
+                            }
+                        }
 
                         wm.addView(
                             view, WindowManager.LayoutParams(
-                                WindowManager.LayoutParams.WRAP_CONTENT,
-                                WindowManager.LayoutParams.WRAP_CONTENT,
+                                0,
+                                0,
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else WindowManager.LayoutParams.TYPE_PHONE,
                                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                                 PixelFormat.OPAQUE
