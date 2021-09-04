@@ -57,12 +57,10 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
       body: Consumer<AudioModel>(builder: (context, model, child) {
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           SwitchListTile.adaptive(
-            title: const Text('Play off-stream (uses more battery)'),
+            title: const Text('Enable off-stream (uses more battery)'),
             subtitle: model.isAlwaysEnabled
-                ? const Text(
-                    'Audio sources will play when your stream is offline')
-                : const Text(
-                    'Audio sources will play only when your stream is online'),
+                ? const Text('Audio will also play when you\'re offline')
+                : const Text('Audio will only play when you\'re online'),
             value: model.isAlwaysEnabled,
             onChanged: (value) {
               model.isAlwaysEnabled = value;
