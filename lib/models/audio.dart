@@ -131,13 +131,13 @@ class AudioModel extends ChangeNotifier {
   }
 
   void _syncWebViews() {
-    if (!_isOnline && !_isSettingsVisible) {
-      AudioChannel.set([]);
-    } else {
+    if (enabled) {
       AudioChannel.set(_sources
           .where((element) => !element.muted)
           .map((element) => element.url.toString())
           .toList());
+    } else {
+      AudioChannel.set([]);
     }
   }
 
