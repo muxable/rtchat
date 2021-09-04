@@ -124,7 +124,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
   PollEventConfig pollEventConfig =
       PollEventConfig(true, const Duration(seconds: 5));
   HypetrainEventConfig hypetrainEventConfig =
-      HypetrainEventConfig(true, const Duration(seconds: 5));
+      HypetrainEventConfig(true, const Duration(seconds: 6));
   // other configs
   // final HypeTrainEventConfig;
 
