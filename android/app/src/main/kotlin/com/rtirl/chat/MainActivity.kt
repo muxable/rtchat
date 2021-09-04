@@ -51,13 +51,13 @@ class MainActivity : FlutterActivity() {
                         view.settings.mediaPlaybackRequiresUserGesture = false
                         view.settings.domStorageEnabled = true
                         view.settings.databaseEnabled = true
+                        view.settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
                         view.webChromeClient = object : WebChromeClient() {
                             override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
                                 Log.d("WebView", consoleMessage.message())
                                 return true
                             }
                         }
-                        view.visibility = View.INVISIBLE
                         view.setLayerType(View.LAYER_TYPE_HARDWARE, null)
                         view.loadUrl(it)
                         view.webViewClient = object : WebViewClient() {
@@ -71,8 +71,8 @@ class MainActivity : FlutterActivity() {
 
                         wm.addView(
                             view, WindowManager.LayoutParams(
-                                WindowManager.LayoutParams.WRAP_CONTENT,
-                                WindowManager.LayoutParams.WRAP_CONTENT,
+                                0,
+                                0,
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else WindowManager.LayoutParams.TYPE_PHONE,
                                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                                 PixelFormat.OPAQUE

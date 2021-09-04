@@ -186,7 +186,11 @@ class ChatHistoryMessage extends StatelessWidget {
             config.showEvent ? TwitchHypeTrainEventWidget(m) : Container(),
       );
     } else if (m is TwitchPredictionEventModel) {
-      return enableInlineEvents ? TwitchPredictionEventWidget(m) : Container();
+      return Selector<EventSubConfigurationModel, PredictionEventConfig>(
+        selector: (_, model) => model.predictionEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchPredictionEventWidget(m) : Container(),
+      );
     } else {
       throw AssertionError("invalid message type");
     }

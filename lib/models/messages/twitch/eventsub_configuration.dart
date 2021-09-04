@@ -92,6 +92,22 @@ class HypetrainEventConfig {
 
   HypetrainEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());  
+  
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
+}
+
+class PredictionEventConfig {
+  bool showEvent;
+  Duration eventDuration;
+
+  PredictionEventConfig(this.showEvent, this.eventDuration);
+
+  PredictionEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
@@ -113,6 +129,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
       PollEventConfig(true, const Duration(seconds: 6));
   HypetrainEventConfig hypetrainEventConfig =
       HypetrainEventConfig(true, const Duration(seconds: 6));
+  PredictionEventConfig predictionEventConfig =
+      PredictionEventConfig(true, const Duration(seconds: 6));
   // other configs
   // final HypeTrainEventConfig;
 
@@ -180,6 +198,16 @@ class EventSubConfigurationModel extends ChangeNotifier {
     hypetrainEventConfig.showEvent = value;
     notifyListeners();
   }
+  
+  setPredictionEventDuration(Duration duration) {
+    predictionEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setPredictionEventShowable(bool value) {
+    predictionEventConfig.showEvent = value;
+    notifyListeners();
+  }
 
   EventSubConfigurationModel.fromJson(Map<String, dynamic> json) {
     if (json['followEventConfig'] != null) {
@@ -201,6 +229,9 @@ class EventSubConfigurationModel extends ChangeNotifier {
     if (json['hypetrainEventConfig'] != null) {
       hypetrainEventConfig =
           HypetrainEventConfig.fromJson(json['hypetrainEventConfig']);
+    if (json['predictionEventConfig'] != null) {
+      predictionEventConfig =
+          PredictionEventConfig.fromJson(json['predictionEventConfig']);
     }
   }
 
@@ -211,5 +242,6 @@ class EventSubConfigurationModel extends ChangeNotifier {
         "raidEventConfig": raidEventConfig,
         "pollEventConfig": pollEventConfig,
         "hypeTrainConfig": hypetrainEventConfig,
+        "predictionEventConfig": predictionEventConfig
       };
 }
