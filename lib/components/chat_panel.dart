@@ -113,11 +113,7 @@ DateTime? _getExpiration(
       return null;
     }
 
-    if (model.endTime != null) {
-      return model.endTime!.add(predictionEventConfig.eventDuration);
-    } else {
-      return null;
-    }
+    return model.endTime.add(predictionEventConfig.eventDuration);
   }
 }
 

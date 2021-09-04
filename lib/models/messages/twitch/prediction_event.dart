@@ -16,7 +16,7 @@ class TwitchPredictionEventModel extends MessageModel {
   final String title;
   final String? status;
   final String? winningOutcomeId;
-  final DateTime? endTime;
+  final DateTime endTime;
   final List<TwitchPredictionOutcomeModel> outcomes;
 
   const TwitchPredictionEventModel(
