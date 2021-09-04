@@ -79,24 +79,24 @@ DateTime? _getExpiration(
     MessageModel model, EventSubConfigurationModel eventSubConfigurationModel) {
   if (model is TwitchRaidEventModel) {
     final raidEventConfig = eventSubConfigurationModel.raidEventConfig;
-    return raidEventConfig.isEventPinnable
+    return raidEventConfig.eventDuration > Duration.zero
         ? model.timestamp.add(raidEventConfig.eventDuration)
         : null;
   } else if (model is TwitchFollowEventModel) {
     final followEventConfig = eventSubConfigurationModel.followEventConfig;
-    return followEventConfig.isEventPinnable
+    return followEventConfig.eventDuration > Duration.zero
         ? model.timestamp.add(followEventConfig.eventDuration)
         : null;
   } else if (model is TwitchCheerEventModel) {
     final cheerEventConfig = eventSubConfigurationModel.cheerEventConfig;
-    return cheerEventConfig.isEventPinnable
+    return cheerEventConfig.eventDuration > Duration.zero
         ? model.timestamp.add(cheerEventConfig.eventDuration)
         : null;
   } else if (model is TwitchSubscriptionEventModel ||
       model is TwitchSubscriptionGiftEventModel ||
       model is TwitchSubscriptionMessageEventModel) {
     final subEventConfig = eventSubConfigurationModel.subscriptionEventConfig;
-    return subEventConfig.isEventPinnable
+    return subEventConfig.eventDuration > Duration.zero
         ? model.timestamp.add(subEventConfig.eventDuration)
         : null;
   } else if (model is TwitchPollEventModel) {
