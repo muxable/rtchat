@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/style.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const discordUrl = "https://discord.gg/UKHJMQs74u";
@@ -15,10 +16,15 @@ Widget _iconWithText(IconData icon, String text) {
   ]);
 }
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
-  void authenticate(BuildContext context) {}
+  @override
+  _SettingsScreenState createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  int _versionTapCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -185,11 +191,25 @@ class SettingsScreen extends StatelessWidget {
                 final version = packageInfo.version;
                 final buildNumber = packageInfo.buildNumber;
                 return ListTile(
-                  title: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Text('$appName v$version ($buildNumber)')]),
-                  dense: true,
-                );
+                    title: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [Text('$appName v$version ($buildNumber)')]),
+                    dense: true,
+                    onTap: () {
+                      setState(() {
+                        if (++_versionTapCount == 6) {
+                          _versionTapCount = 0;
+                          final model =
+                              Provider.of<StyleModel>(context, listen: false);
+                          model.isDiscoModeAvailable =
+                              !model.isDiscoModeAvailable;
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: model.isDiscoModeAvailable
+                                  ? const Text("🕺 Disco mode enabled! :D")
+                                  : const Text("🕺 Disco mode disabled D:")));
+                        }
+                      });
+                    });
               })
         ]);
       }),
