@@ -19,7 +19,9 @@ TwitchHypeTrainEventModel createHypeTrainModel(
       goal: goal,
       total: total,
       isSuccessful: isSuccessful,
-      hasEnded: hasEnded);
+      hasEnded: hasEnded,
+      startTimestamp: DateTime.now(),
+      endTimestamp: DateTime.now());
 }
 
 Map<String, dynamic> createData(
@@ -32,6 +34,8 @@ Map<String, dynamic> createData(
       'progress': progress,
       'goal': goal,
       'total': total,
+      'started_at': '2020-07-15T17:16:03.17106713Z',
+      'expires_at': '2020-07-15T17:16:13.17106713Z'
     }
   };
 }
@@ -42,6 +46,8 @@ Map<String, dynamic> createEndData(int level, int total) {
     'event': {
       'level': level,
       'total': total,
+      'started_at': '2020-07-15T17:16:03.17106713Z',
+      'ended_at': '2020-07-15T17:16:13.17106713Z'
     }
   };
 }
@@ -64,7 +70,6 @@ void main() {
           goal: 200,
           total: 126);
       final data = createData('123', 2, 126, 200, 126);
-
       expect(initialModel.withProgress(data), expectedModel);
     });
 
