@@ -270,22 +270,20 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
         }
         return SizedBox(
           height: 55,
-          child: Scrollbar(
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: commandsModel.commands.length,
-              itemBuilder: (context, index) => TextButton(
-                child: Text(commandsModel.commands[index]),
-                onPressed: () {
-                  final channelsModel =
-                      Provider.of<ChannelsModel>(context, listen: false);
-                  ActionsAdapter.instance.send(
-                      channelsModel.subscribedChannels.first,
-                      commandsModel.commands[index]);
-                  commandsModel.addCommand(commandsModel.commands[index]);
-                  _chatInputFocusNode.unfocus();
-                },
-              ),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: commandsModel.commands.length,
+            itemBuilder: (context, index) => TextButton(
+              child: Text(commandsModel.commands[index]),
+              onPressed: () {
+                final channelsModel =
+                    Provider.of<ChannelsModel>(context, listen: false);
+                ActionsAdapter.instance.send(
+                    channelsModel.subscribedChannels.first,
+                    commandsModel.commands[index]);
+                commandsModel.addCommand(commandsModel.commands[index]);
+                _chatInputFocusNode.unfocus();
+              },
             ),
           ),
         );
