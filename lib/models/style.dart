@@ -55,6 +55,7 @@ class StyleModel extends ChangeNotifier {
   double _lightnessBoost = 0.179;
   bool _isDeletedMessagesVisible = true;
   CompactMessages _compactMessages = CompactMessages.none;
+  bool _isDiscoModeAvailable = false;
 
   double get fontSize {
     return _fontSize;
@@ -95,6 +96,13 @@ class StyleModel extends ChangeNotifier {
 
   CompactMessages get compactMessages => _compactMessages;
 
+  set isDiscoModeAvailable(bool isDiscoModeAvailable) {
+    _isDiscoModeAvailable = isDiscoModeAvailable;
+    notifyListeners();
+  }
+
+  bool get isDiscoModeAvailable => _isDiscoModeAvailable;
+
   StyleModel.fromJson(Map<String, dynamic> json) {
     if (json['fontSize'] != null) {
       _fontSize = json['fontSize'];
@@ -108,6 +116,9 @@ class StyleModel extends ChangeNotifier {
     if (json['compactMessages'] != null) {
       _compactMessages = CompactMessagesJson.fromJson(json['compactMessages']);
     }
+    if (json['isDiscoModeEnabled'] != null) {
+      _isDiscoModeAvailable = json['isDiscoModeEnabled'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -115,5 +126,6 @@ class StyleModel extends ChangeNotifier {
         "fontSize": _fontSize,
         "isDeletedMessagesVisible": _isDeletedMessagesVisible,
         "compactMessages": _compactMessages.toJson(),
+        "isDiscoModeEnabled": _isDiscoModeAvailable,
       };
 }
