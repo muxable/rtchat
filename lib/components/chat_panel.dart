@@ -110,7 +110,6 @@ DateTime? _getExpiration(
   } else if (model is TwitchChannelPointRedemptionEventModel) {
     final channelPointRedemptionEventConfig =
         eventSubConfigurationModel.channelPointRedemptionEventConfig;
-
     if (channelPointRedemptionEventConfig.manualClear == true &&
         model.status == 'unfulfilled') {
       return model.timestamp.add(
