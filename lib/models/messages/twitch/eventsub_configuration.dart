@@ -92,8 +92,8 @@ class HypetrainEventConfig {
 
   HypetrainEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
-        eventDuration = Duration(seconds: json['eventDuration'].toInt());  
-  
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
   Map<String, dynamic> toJson() => {
         "showEvent": showEvent,
         "eventDuration": eventDuration.inSeconds.toInt(),
@@ -198,7 +198,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
     hypetrainEventConfig.showEvent = value;
     notifyListeners();
   }
-  
+
   setPredictionEventDuration(Duration duration) {
     predictionEventConfig.eventDuration = duration;
     notifyListeners();
