@@ -29,9 +29,9 @@ class ChannelPointRedemptionEventScreen extends StatelessWidget {
                       value: model.channelPointRedemptionEventConfig
                           .eventDuration.inSeconds
                           .toDouble(),
-                      min: 2,
-                      max: 14,
-                      divisions: 4,
+                      min: 0,
+                      max: 30,
+                      divisions: 15,
                       label:
                           "${model.channelPointRedemptionEventConfig.eventDuration.inSeconds} seconds",
                       onChanged: (value) {
@@ -45,15 +45,6 @@ class ChannelPointRedemptionEventScreen extends StatelessWidget {
                       value: model.channelPointRedemptionEventConfig.showEvent,
                       onChanged: (value) {
                         model.setChannelPointRedemptionEventShowable(value);
-                      },
-                    ),
-                    SwitchListTile.adaptive(
-                      title: const Text('Pin Event'),
-                      subtitle: const Text('Pin event to chat history'),
-                      value: model
-                          .channelPointRedemptionEventConfig.isEventPinnable,
-                      onChanged: (value) {
-                        model.setChannelPointRedemptionEventPinnnable(value);
                       },
                     ),
                   ],

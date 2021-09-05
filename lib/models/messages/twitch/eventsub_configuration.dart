@@ -70,20 +70,16 @@ class RaidEventConfig {
 
 class ChannelPointRedemptionEventConfig {
   bool showEvent;
-  bool isEventPinnable;
   Duration eventDuration;
 
-  ChannelPointRedemptionEventConfig(
-      this.showEvent, this.isEventPinnable, this.eventDuration);
+  ChannelPointRedemptionEventConfig(this.showEvent, this.eventDuration);
 
   ChannelPointRedemptionEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
-        isEventPinnable = json['isEventPinnable'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
         "showEvent": showEvent,
-        "isEventPinnable": isEventPinnable,
         "eventDuration": eventDuration.inSeconds.toInt(),
       };
 }
@@ -141,7 +137,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
   RaidEventConfig raidEventConfig =
       RaidEventConfig(true, const Duration(seconds: 6));
   ChannelPointRedemptionEventConfig channelPointRedemptionEventConfig =
-      ChannelPointRedemptionEventConfig(true, true, const Duration(seconds: 5));
+      ChannelPointRedemptionEventConfig(true, const Duration(seconds: 5));
   PollEventConfig pollEventConfig =
       PollEventConfig(true, const Duration(seconds: 6));
   HypetrainEventConfig hypetrainEventConfig =
@@ -203,11 +199,6 @@ class EventSubConfigurationModel extends ChangeNotifier {
 
   setChannelPointRedemptionEventShowable(bool value) {
     channelPointRedemptionEventConfig.showEvent = value;
-    notifyListeners();
-  }
-
-  setChannelPointRedemptionEventPinnnable(bool value) {
-    channelPointRedemptionEventConfig.isEventPinnable = value;
     notifyListeners();
   }
 

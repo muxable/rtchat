@@ -110,7 +110,7 @@ DateTime? _getExpiration(
   } else if (model is TwitchChannelPointRedemptionEventModel) {
     final channelPointRedemptionEventConfig =
         eventSubConfigurationModel.channelPointRedemptionEventConfig;
-    return channelPointRedemptionEventConfig.isEventPinnable
+    return channelPointRedemptionEventConfig.eventDuration > Duration.zero
         ? model.timestamp.add(channelPointRedemptionEventConfig.eventDuration)
         : null;
   } else if (model is TwitchHypeTrainEventModel) {
