@@ -69,6 +69,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pushNamed(context, "/settings/text-to-speech");
             },
           ),
+          ListTile(
+            title: const Text('Event Configuration'),
+            subtitle: const Text("Configure twitch events"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/events");
+            },
+          ),
           const Divider(),
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -121,15 +128,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               layoutModel.isStatsVisible = value;
             },
           ),
-          if (kDebugMode) ...[
-            ListTile(
-              title: const Text('Event Configuration'),
-              subtitle: const Text("Configure twitch events"),
-              onTap: () {
-                Navigator.pushNamed(context, "/settings/events");
-              },
-            ),
-          ],
           SwitchListTile.adaptive(
             title: const Text('Disable interaction when layout locked'),
             subtitle: const Text(
