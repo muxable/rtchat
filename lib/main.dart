@@ -25,6 +25,7 @@ import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
@@ -244,6 +245,14 @@ class _AppState extends State<App> {
           model.addListener(() {
             widget.prefs
                 .setString('event_sub_configs', jsonEncode(model.toJson()));
+          });
+          return model;
+        }),
+        ChangeNotifierProvider(create: (context) {
+          final model = CommandsModel.fromJson(
+              jsonDecode(widget.prefs.getString("commands") ?? "{}"));
+          model.addListener(() {
+            widget.prefs.setString("commands", jsonEncode(model.toJson()));
           });
           return model;
         }),

@@ -7,6 +7,8 @@ import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/commands.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
 import 'channel_search_dialog.dart';
 
@@ -197,6 +199,11 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                   if (value.isEmpty) {
                     return;
                   }
+                  if (value.startsWith('!')) {
+                    final commandsModel =
+                        Provider.of<CommandsModel>(context, listen: false);
+                    commandsModel.addCommand(value);
+                  }
                   final channelsModel =
                       Provider.of<ChannelsModel>(context, listen: false);
                   ActionsAdapter.instance
@@ -234,6 +241,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
           ]),
         );
       }),
+      _buildCommandBar(context),
       _buildEmotePicker(context)
     ]);
   }
@@ -253,6 +261,35 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
             _textEditingController.clear();
           })
       : Container();
+
+  Widget _buildCommandBar(BuildContext context) {
+    return KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
+      return Consumer<CommandsModel>(builder: (context, commandsModel, child) {
+        if (!isKeyboardVisible || commandsModel.commands.isEmpty) {
+          return Container();
+        }
+        return SizedBox(
+          height: 55,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: commandsModel.commands.length,
+            itemBuilder: (context, index) => TextButton(
+              child: Text(commandsModel.commands[index]),
+              onPressed: () {
+                final channelsModel =
+                    Provider.of<ChannelsModel>(context, listen: false);
+                ActionsAdapter.instance.send(
+                    channelsModel.subscribedChannels.first,
+                    commandsModel.commands[index]);
+                commandsModel.addCommand(commandsModel.commands[index]);
+                _chatInputFocusNode.unfocus();
+              },
+            ),
+          ),
+        );
+      });
+    });
+  }
 
   Widget _buildEmotePicker(BuildContext context) {
     var channelProvider = Provider.of<ChannelsModel>(context, listen: false);
