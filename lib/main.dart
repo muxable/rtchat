@@ -250,9 +250,9 @@ class _AppState extends State<App> {
         }),
         ChangeNotifierProvider(create: (context) {
           final model = CommandsModel.fromJson(
-              jsonDecode(prefs.getString("commands") ?? "{}"));
+              jsonDecode(widget.prefs.getString("commands") ?? "{}"));
           model.addListener(() {
-            prefs.setString("commands", jsonEncode(model.toJson()));
+            widget.prefs.setString("commands", jsonEncode(model.toJson()));
           });
           return model;
         }),
