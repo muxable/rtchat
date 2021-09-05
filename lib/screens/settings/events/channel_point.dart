@@ -47,6 +47,16 @@ class ChannelPointRedemptionEventScreen extends StatelessWidget {
                         model.setChannelPointRedemptionEventShowable(value);
                       },
                     ),
+                    SwitchListTile.adaptive(
+                      title: const Text('Pin unfulfilled rewards'),
+                      subtitle:
+                          const Text('Manually clear unfulfilled rewards'),
+                      value:
+                          model.channelPointRedemptionEventConfig.manualClear,
+                      onChanged: (value) {
+                        model.setChannelPointRedemptionEventManualClear(value);
+                      },
+                    )
                   ],
                 ),
               )

@@ -153,26 +153,6 @@ class EventsScreen extends StatelessWidget {
           Padding(
               padding: const EdgeInsets.all(16),
               child: StyleModelTheme(
-                  child: TwitchChannelPointRedemptionEventWidget(
-                      TwitchChannelPointRedemptionEventModel(
-                messageId: '',
-                timestamp: DateTime.now(),
-                redeemerUsername: 'muxfd',
-                status: 'unfulfilled',
-                rewardName: 'do a backflip',
-                rewardCost: 1000,
-                userInput: 'Infront of Topaz!',
-              )))),
-          ListTile(
-              title: const Text('Channel point redemption event config'),
-              subtitle:
-                  const Text("Customize your channel point redemption event"),
-              onTap: () {
-                Navigator.pushNamed(context, "/settings/events/channel-point");
-              }),
-          Padding(
-              padding: const EdgeInsets.all(16),
-              child: StyleModelTheme(
                   child: TwitchPredictionEventWidget(TwitchPredictionEventModel(
                       timestamp: dateTime,
                       messageId: '',
@@ -191,7 +171,27 @@ class EventsScreen extends StatelessWidget {
             onTap: () {
               Navigator.pushNamed(context, '/settings/events/prediction');
             },
-          )
+          ),
+          Padding(
+              padding: const EdgeInsets.all(16),
+              child: StyleModelTheme(
+                  child: TwitchChannelPointRedemptionEventWidget(
+                      TwitchChannelPointRedemptionEventModel(
+                messageId: '',
+                timestamp: DateTime.now(),
+                redeemerUsername: 'muxfd',
+                status: 'unfulfilled',
+                rewardName: 'do a backflip',
+                rewardCost: 1000,
+                userInput: 'Infront of Topaz!',
+              )))),
+          ListTile(
+              title: const Text('Channel point redemption event config'),
+              subtitle:
+                  const Text("Customize your channel point redemption event"),
+              onTap: () {
+                Navigator.pushNamed(context, "/settings/events/channel-point");
+              }),
         ]);
       }),
     );

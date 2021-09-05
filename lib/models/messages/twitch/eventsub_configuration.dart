@@ -70,12 +70,15 @@ class RaidEventConfig {
 
 class ChannelPointRedemptionEventConfig {
   bool showEvent;
+  bool manualClear;
   Duration eventDuration;
 
-  ChannelPointRedemptionEventConfig(this.showEvent, this.eventDuration);
+  ChannelPointRedemptionEventConfig(
+      this.showEvent, this.manualClear, this.eventDuration);
 
   ChannelPointRedemptionEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
+        manualClear = json['manualClear'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
@@ -137,7 +140,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
   RaidEventConfig raidEventConfig =
       RaidEventConfig(true, const Duration(seconds: 6));
   ChannelPointRedemptionEventConfig channelPointRedemptionEventConfig =
-      ChannelPointRedemptionEventConfig(true, const Duration(seconds: 5));
+      ChannelPointRedemptionEventConfig(
+          true, false, const Duration(seconds: 6));
   PollEventConfig pollEventConfig =
       PollEventConfig(true, const Duration(seconds: 6));
   HypetrainEventConfig hypetrainEventConfig =
@@ -199,6 +203,11 @@ class EventSubConfigurationModel extends ChangeNotifier {
 
   setChannelPointRedemptionEventShowable(bool value) {
     channelPointRedemptionEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setChannelPointRedemptionEventManualClear(bool value) {
+    channelPointRedemptionEventConfig.manualClear = value;
     notifyListeners();
   }
 
