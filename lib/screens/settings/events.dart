@@ -169,7 +169,7 @@ class EventsScreen extends StatelessWidget {
                   const Text("Customize your channel point redemption event"),
               onTap: () {
                 Navigator.pushNamed(context, "/settings/events/channel-point");
-              })
+              }),
           Padding(
               padding: const EdgeInsets.all(16),
               child: StyleModelTheme(

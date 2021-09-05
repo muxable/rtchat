@@ -97,6 +97,7 @@ class PollEventConfig {
   PollEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt());
+}
 
 class HypetrainEventConfig {
   bool showEvent;
@@ -192,11 +193,6 @@ class EventSubConfigurationModel extends ChangeNotifier {
 
   setRaidEventShowable(bool value) {
     raidEventConfig.showEvent = value;
-    notifyListeners();
-  }
-  
-  setRaidEventPinnable(bool value) {
-    raidEventConfig.isEventPinnable = value;
     notifyListeners();
   }
 
