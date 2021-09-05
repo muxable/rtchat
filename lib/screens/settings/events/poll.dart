@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
-class FollowEventScreen extends StatelessWidget {
-  const FollowEventScreen({Key? key}) : super(key: key);
+class PollEventScreen extends StatelessWidget {
+  const PollEventScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Follow Configuration"),
+          title: const Text("Poll Configuration"),
         ),
         body: Consumer<EventSubConfigurationModel>(
             builder: (context, model, child) {
@@ -20,30 +20,30 @@ class FollowEventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Pin Duration",
+                    Text("Pin duration after the result is finalized",
                         style: TextStyle(
                           color: Theme.of(context).accentColor,
                           fontWeight: FontWeight.bold,
                         )),
                     Slider.adaptive(
-                      value: model.followEventConfig.eventDuration.inSeconds
+                      value: model.pollEventConfig.eventDuration.inSeconds
                           .toDouble(),
                       min: 0,
                       max: 30,
                       divisions: 15,
                       label:
-                          "${model.followEventConfig.eventDuration.inSeconds} seconds",
+                          "${model.pollEventConfig.eventDuration.inSeconds} seconds",
                       onChanged: (value) {
-                        model.setFollowEventDuration(
+                        model.setPollEventDuration(
                             Duration(seconds: value.toInt()));
                       },
                     ),
                     SwitchListTile.adaptive(
                       title: const Text('Enable event'),
                       subtitle: const Text('Show event in chat history'),
-                      value: model.followEventConfig.showEvent,
+                      value: model.pollEventConfig.showEvent,
                       onChanged: (value) {
-                        model.setFollowEventShowable(value);
+                        model.setPollEventShowable(value);
                       },
                     ),
                   ],

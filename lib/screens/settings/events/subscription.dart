@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
-class FollowEventScreen extends StatelessWidget {
-  const FollowEventScreen({Key? key}) : super(key: key);
+class SubscriptionEventScreen extends StatelessWidget {
+  const SubscriptionEventScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Follow Configuration"),
+          title: const Text("Subscription Configuration"),
         ),
         body: Consumer<EventSubConfigurationModel>(
             builder: (context, model, child) {
@@ -26,26 +26,37 @@ class FollowEventScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         )),
                     Slider.adaptive(
-                      value: model.followEventConfig.eventDuration.inSeconds
+                      value: model
+                          .subscriptionEventConfig.eventDuration.inSeconds
                           .toDouble(),
                       min: 0,
                       max: 30,
                       divisions: 15,
                       label:
-                          "${model.followEventConfig.eventDuration.inSeconds} seconds",
+                          "${model.subscriptionEventConfig.eventDuration.inSeconds} seconds",
                       onChanged: (value) {
-                        model.setFollowEventDuration(
+                        model.setSubscriptionEventDuration(
                             Duration(seconds: value.toInt()));
                       },
                     ),
                     SwitchListTile.adaptive(
                       title: const Text('Enable event'),
                       subtitle: const Text('Show event in chat history'),
-                      value: model.followEventConfig.showEvent,
+                      value: model.subscriptionEventConfig.showEvent,
                       onChanged: (value) {
-                        model.setFollowEventShowable(value);
+                        model.setSubscriptionEventShowable(value);
                       },
                     ),
+                    SwitchListTile.adaptive(
+                      title:
+                          const Text('Enable individual gifted subscriptions'),
+                      subtitle:
+                          const Text('Show every subscription that is gifted'),
+                      value: model.subscriptionEventConfig.showIndividualGifts,
+                      onChanged: (value) {
+                        model.setGiftSubscriptionStatus(value);
+                      },
+                    )
                   ],
                 ),
               ),

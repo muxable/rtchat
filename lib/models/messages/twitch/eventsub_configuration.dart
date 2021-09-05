@@ -2,69 +2,135 @@ import 'package:flutter/material.dart';
 
 class FollowEventConfig {
   bool showEvent;
-  bool isEventPinnable;
   Duration eventDuration;
 
-  FollowEventConfig(this.showEvent, this.isEventPinnable, this.eventDuration);
+  FollowEventConfig(this.showEvent, this.eventDuration);
 
   FollowEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
-        isEventPinnable = json['isEventPinnable'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
         "showEvent": showEvent,
-        "isEventPinnable": isEventPinnable,
         "eventDuration": eventDuration.inSeconds.toInt(),
       };
 }
 
 class SubscriptionEventConfig {
   bool showEvent;
-  bool isEventPinnable;
+  bool showIndividualGifts;
   Duration eventDuration;
 
   SubscriptionEventConfig(
-      this.showEvent, this.isEventPinnable, this.eventDuration);
+      this.showEvent, this.showIndividualGifts, this.eventDuration);
 
   SubscriptionEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
-        isEventPinnable = json['isEventPinnable'],
+        showIndividualGifts = json['showIndividualGifts'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
         "showEvent": showEvent,
-        "isEventPinnable": isEventPinnable,
+        "showIndividualGifts": showIndividualGifts,
         "eventDuration": eventDuration.inSeconds.toInt(),
       };
 }
 
 class CheerEventConfig {
   bool showEvent;
-  bool isEventPinnable;
   Duration eventDuration;
 
-  CheerEventConfig(this.showEvent, this.isEventPinnable, this.eventDuration);
+  CheerEventConfig(this.showEvent, this.eventDuration);
 
   CheerEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
-        isEventPinnable = json['isEventPinnable'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
         "showEvent": showEvent,
-        "isEventPinnable": isEventPinnable,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
+}
+
+class RaidEventConfig {
+  bool showEvent;
+  Duration eventDuration;
+
+  RaidEventConfig(this.showEvent, this.eventDuration);
+
+  RaidEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
+}
+
+class PollEventConfig {
+  bool showEvent;
+  Duration eventDuration;
+
+  PollEventConfig(this.showEvent, this.eventDuration);
+
+  PollEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
+}
+
+class HypetrainEventConfig {
+  bool showEvent;
+  Duration eventDuration;
+
+  HypetrainEventConfig(this.showEvent, this.eventDuration);
+
+  HypetrainEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
+}
+
+class PredictionEventConfig {
+  bool showEvent;
+  Duration eventDuration;
+
+  PredictionEventConfig(this.showEvent, this.eventDuration);
+
+  PredictionEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
         "eventDuration": eventDuration.inSeconds.toInt(),
       };
 }
 
 class EventSubConfigurationModel extends ChangeNotifier {
   FollowEventConfig followEventConfig =
-      FollowEventConfig(false, false, const Duration(seconds: 5));
+      FollowEventConfig(false, const Duration(seconds: 2));
   SubscriptionEventConfig subscriptionEventConfig =
-      SubscriptionEventConfig(false, false, const Duration(seconds: 5));
+      SubscriptionEventConfig(false, false, const Duration(seconds: 6));
   CheerEventConfig cheerEventConfig =
-      CheerEventConfig(true, true, const Duration(seconds: 5));
+      CheerEventConfig(true, const Duration(seconds: 6));
+  RaidEventConfig raidEventConfig =
+      RaidEventConfig(true, const Duration(seconds: 6));
+  PollEventConfig pollEventConfig =
+      PollEventConfig(true, const Duration(seconds: 6));
+  HypetrainEventConfig hypetrainEventConfig =
+      HypetrainEventConfig(true, const Duration(seconds: 6));
+  PredictionEventConfig predictionEventConfig =
+      PredictionEventConfig(true, const Duration(seconds: 6));
   // other configs
   // final HypeTrainEventConfig;
 
@@ -78,8 +144,68 @@ class EventSubConfigurationModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  setFollowEventPinnable(bool value) {
-    followEventConfig.isEventPinnable = value;
+  setCheerEventDuration(Duration duration) {
+    cheerEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setCheerEventShowable(bool value) {
+    cheerEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setSubscriptionEventDuration(Duration duration) {
+    subscriptionEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setSubscriptionEventShowable(bool value) {
+    subscriptionEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setGiftSubscriptionStatus(bool value) {
+    subscriptionEventConfig.showIndividualGifts = value;
+    notifyListeners();
+  }
+
+  setRaidEventDuration(Duration duration) {
+    raidEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setRaidEventShowable(bool value) {
+    raidEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setPollEventDuration(Duration duration) {
+    pollEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setPollEventShowable(bool value) {
+    pollEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setHypetrainEventDuration(Duration duration) {
+    hypetrainEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setHypetrainEventShowable(bool value) {
+    hypetrainEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setPredictionEventDuration(Duration duration) {
+    predictionEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setPredictionEventShowable(bool value) {
+    predictionEventConfig.showEvent = value;
     notifyListeners();
   }
 
@@ -94,11 +220,29 @@ class EventSubConfigurationModel extends ChangeNotifier {
     if (json['cheerEventConfig'] != null) {
       cheerEventConfig = CheerEventConfig.fromJson(json['cheerEventConfig']);
     }
+    if (json['raidEventConfig'] != null) {
+      raidEventConfig = RaidEventConfig.fromJson(json['raidEventConfig']);
+    }
+    if (json['pollEventConfig'] != null) {
+      pollEventConfig = PollEventConfig.fromJson(json['pollEventConfig']);
+    }
+    if (json['hypetrainEventConfig'] != null) {
+      hypetrainEventConfig =
+          HypetrainEventConfig.fromJson(json['hypetrainEventConfig']);
+    }
+    if (json['predictionEventConfig'] != null) {
+      predictionEventConfig =
+          PredictionEventConfig.fromJson(json['predictionEventConfig']);
+    }
   }
 
   Map<String, dynamic> toJson() => {
         "followEventConfig": followEventConfig,
-        'subscriptionEventConfig': subscriptionEventConfig,
-        'cheerEventConfig': cheerEventConfig
+        "subscriptionEventConfig": subscriptionEventConfig,
+        "cheerEventConfig": cheerEventConfig,
+        "raidEventConfig": raidEventConfig,
+        "pollEventConfig": pollEventConfig,
+        "hypeTrainConfig": hypetrainEventConfig,
+        "predictionEventConfig": predictionEventConfig
       };
 }

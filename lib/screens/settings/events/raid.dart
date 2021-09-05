@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
-class FollowEventScreen extends StatelessWidget {
-  const FollowEventScreen({Key? key}) : super(key: key);
+class RaidEventScreen extends StatelessWidget {
+  const RaidEventScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Follow Configuration"),
+          title: const Text("Raid Configuration"),
         ),
         body: Consumer<EventSubConfigurationModel>(
             builder: (context, model, child) {
@@ -26,24 +26,24 @@ class FollowEventScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         )),
                     Slider.adaptive(
-                      value: model.followEventConfig.eventDuration.inSeconds
+                      value: model.raidEventConfig.eventDuration.inSeconds
                           .toDouble(),
                       min: 0,
                       max: 30,
                       divisions: 15,
                       label:
-                          "${model.followEventConfig.eventDuration.inSeconds} seconds",
+                          "${model.raidEventConfig.eventDuration.inSeconds} seconds",
                       onChanged: (value) {
-                        model.setFollowEventDuration(
+                        model.setRaidEventDuration(
                             Duration(seconds: value.toInt()));
                       },
                     ),
                     SwitchListTile.adaptive(
                       title: const Text('Enable event'),
                       subtitle: const Text('Show event in chat history'),
-                      value: model.followEventConfig.showEvent,
+                      value: model.raidEventConfig.showEvent,
                       onChanged: (value) {
-                        model.setFollowEventShowable(value);
+                        model.setRaidEventShowable(value);
                       },
                     ),
                   ],

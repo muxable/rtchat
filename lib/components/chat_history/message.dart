@@ -128,19 +128,33 @@ class ChatHistoryMessage extends StatelessWidget {
             child: child);
       });
     } else if (m is TwitchRaidEventModel) {
-      return TwitchRaidEventWidget(m);
+      return Selector<EventSubConfigurationModel, RaidEventConfig>(
+        selector: (_, model) => model.raidEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchRaidEventWidget(m) : Container(),
+      );
     } else if (m is TwitchSubscriptionEventModel) {
-      return enableInlineEvents
-          ? TwitchSubscriptionEventWidget(m)
-          : Container();
+      return Selector<EventSubConfigurationModel, SubscriptionEventConfig>(
+        selector: (_, model) => model.subscriptionEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent || (config.showIndividualGifts && m.isGift)
+                ? TwitchSubscriptionEventWidget(m)
+                : Container(),
+      );
     } else if (m is TwitchSubscriptionGiftEventModel) {
-      return enableInlineEvents
-          ? TwitchSubscriptionGiftEventWidget(m)
-          : Container();
+      return Selector<EventSubConfigurationModel, SubscriptionEventConfig>(
+        selector: (_, model) => model.subscriptionEventConfig,
+        builder: (_, config, __) => config.showEvent
+            ? TwitchSubscriptionGiftEventWidget(m)
+            : Container(),
+      );
     } else if (m is TwitchSubscriptionMessageEventModel) {
-      return enableInlineEvents
-          ? TwitchSubscriptionMessageEventWidget(m)
-          : Container();
+      return Selector<EventSubConfigurationModel, SubscriptionEventConfig>(
+        selector: (_, model) => model.subscriptionEventConfig,
+        builder: (_, config, __) => config.showEvent
+            ? TwitchSubscriptionMessageEventWidget(m)
+            : Container(),
+      );
     } else if (m is StreamStateEventModel) {
       return StreamStateEventWidget(m);
     } else if (m is TwitchFollowEventModel) {
@@ -150,17 +164,33 @@ class ChatHistoryMessage extends StatelessWidget {
             config.showEvent ? TwitchFollowEventWidget(m) : Container(),
       );
     } else if (m is TwitchCheerEventModel) {
-      return enableInlineEvents ? TwitchCheerEventWidget(m) : Container();
+      return Selector<EventSubConfigurationModel, CheerEventConfig>(
+        selector: (_, model) => model.cheerEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchCheerEventWidget(m) : Container(),
+      );
     } else if (m is TwitchPollEventModel) {
-      return enableInlineEvents ? TwitchPollEventWidget(m) : Container();
+      return Selector<EventSubConfigurationModel, PollEventConfig>(
+        selector: (_, model) => model.pollEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchPollEventWidget(m) : Container(),
+      );
     } else if (m is TwitchChannelPointRedemptionEventModel) {
       return enableInlineEvents
           ? TwitchChannelPointRedemptionEventWidget(m)
           : Container();
     } else if (m is TwitchHypeTrainEventModel) {
-      return enableInlineEvents ? TwitchHypeTrainEventWidget(m) : Container();
+      return Selector<EventSubConfigurationModel, HypetrainEventConfig>(
+        selector: (_, model) => model.hypetrainEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchHypeTrainEventWidget(m) : Container(),
+      );
     } else if (m is TwitchPredictionEventModel) {
-      return enableInlineEvents ? TwitchPredictionEventWidget(m) : Container();
+      return Selector<EventSubConfigurationModel, PredictionEventConfig>(
+        selector: (_, model) => model.predictionEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchPredictionEventWidget(m) : Container(),
+      );
     } else {
       throw AssertionError("invalid message type");
     }

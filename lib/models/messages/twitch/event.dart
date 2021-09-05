@@ -71,11 +71,17 @@ class TwitchPollEventModel extends MessageModel {
   final List<PollChoiceModel> choices;
   final String pollTitle;
   final bool isCompleted;
+  final DateTime startTimestamp;
+  final DateTime endTimestamp;
+  final String status;
 
   TwitchPollEventModel({
     required this.choices,
     required this.pollTitle,
     required this.isCompleted,
+    required this.startTimestamp,
+    required this.endTimestamp,
+    required this.status,
     required String messageId,
     required DateTime timestamp,
   }) : super(messageId: messageId, timestamp: timestamp);
@@ -86,7 +92,10 @@ class TwitchPollEventModel extends MessageModel {
         pollTitle: data['event']['title'],
         isCompleted: false,
         messageId: "poll${data['event']['id']}",
-        timestamp: data['timestamp'].toDate());
+        timestamp: data['timestamp'].toDate(),
+        startTimestamp: DateTime.parse(data['event']['started_at']),
+        endTimestamp: DateTime.parse(data['event']['ends_at']),
+        status: 'ongoing');
     return m;
   }
 
@@ -100,7 +109,10 @@ class TwitchPollEventModel extends MessageModel {
         pollTitle: data['event']['title'],
         isCompleted: true,
         messageId: "poll${data['event']['id']}",
-        timestamp: data['timestamp'].toDate());
+        timestamp: data['timestamp'].toDate(),
+        startTimestamp: DateTime.parse(data['event']['started_at']),
+        endTimestamp: DateTime.parse(data['event']['ended_at']),
+        status: data['event']['status']);
     return m;
   }
 

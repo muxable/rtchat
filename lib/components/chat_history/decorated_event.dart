@@ -16,6 +16,7 @@ class DecoratedEventWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
+        color: Theme.of(context).highlightColor,
         border: Border(
           left: BorderSide(
             width: 4,
