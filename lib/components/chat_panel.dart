@@ -11,6 +11,7 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
+import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
@@ -105,6 +106,10 @@ DateTime? _getExpiration(
       return null;
     }
     return model.endTimestamp.add(pollEventConfig.eventDuration);
+  } else if (model is TwitchHypeTrainEventModel) {
+    final hypetrainEventConfig =
+        eventSubConfigurationModel.hypetrainEventConfig;
+    return model.endTimestamp.add(hypetrainEventConfig.eventDuration);
   } else if (model is TwitchPredictionEventModel) {
     final predictionEventConfig =
         eventSubConfigurationModel.predictionEventConfig;
