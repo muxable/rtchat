@@ -44,6 +44,9 @@ class AudioModel extends ChangeNotifier {
   final _audioCache = AudioCache();
 
   bool _isOnline = false;
+  bool _isSettingsVisible = false;
+  bool _isAlwaysEnabled = false;
+
   Channel? _hostChannel;
   StreamSubscription? _hostChannelStateSubscription;
 
@@ -63,11 +66,7 @@ class AudioModel extends ChangeNotifier {
     if (_hostChannel == null) {
       _hostChannelStateSubscription = null;
       _isOnline = false;
-      final activeSources =
-          _sources.where((element) => !element.muted).toList();
-      for (final source in activeSources) {
-        AudioChannel.remove(source.url.toString());
-      }
+      _syncWebViews();
       notifyListeners();
       return;
     }
@@ -75,37 +74,42 @@ class AudioModel extends ChangeNotifier {
         .getIsOnline(channelId: _hostChannel.toString())
         .listen((isOnline) {
       _isOnline = isOnline;
-      final activeSources =
-          _sources.where((element) => !element.muted).toList();
-      for (final source in activeSources) {
-        if (_isOnline) {
-          AudioChannel.add(source.url.toString());
-        } else {
-          AudioChannel.remove(source.url.toString());
-        }
-      }
+      _syncWebViews();
       notifyListeners();
     });
   }
 
+  bool get isSettingsVisible => _isSettingsVisible;
+
+  set isSettingsVisible(bool value) {
+    _isSettingsVisible = value;
+    // this is just a signal from the view so don't trigger a notification.
+    _syncWebViews();
+  }
+
+  bool get isAlwaysEnabled => _isAlwaysEnabled;
+
+  set isAlwaysEnabled(bool value) {
+    _isAlwaysEnabled = value;
+    notifyListeners();
+  }
+
   List<AudioSource> get sources => _sources;
+
+  bool get enabled => _isOnline || _isSettingsVisible || _isAlwaysEnabled;
 
   Future<void> addSource(AudioSource source) async {
     if (_sources.contains(source)) {
       return;
     }
     _sources.add(source);
-    if (_isOnline) {
-      await AudioChannel.add(source.url.toString());
-    }
+    _syncWebViews();
     notifyListeners();
   }
 
   Future<void> removeSource(AudioSource source) async {
     _sources.remove(source);
-    if (_isOnline) {
-      await AudioChannel.remove(source.url.toString());
-    }
+    _syncWebViews();
     notifyListeners();
   }
 
@@ -113,15 +117,9 @@ class AudioModel extends ChangeNotifier {
     final index = _sources.indexOf(source);
     if (index != -1) {
       _sources[index] = source.withMuted(!source.muted);
-      if (_isOnline) {
-        if (source.muted) {
-          await AudioChannel.add(source.url.toString());
-        } else {
-          await AudioChannel.remove(source.url.toString());
-        }
-      }
+      _syncWebViews();
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   Future<int> refreshAllSources() async {
@@ -130,6 +128,17 @@ class AudioModel extends ChangeNotifier {
       await AudioChannel.reload(source.url.toString());
     }
     return activeSources.length;
+  }
+
+  void _syncWebViews() {
+    if (enabled) {
+      AudioChannel.set(_sources
+          .where((element) => !element.muted)
+          .map((element) => element.url.toString())
+          .toList());
+    } else {
+      AudioChannel.set([]);
+    }
   }
 
   showAudioPermissionDialog(BuildContext context) {
@@ -169,12 +178,17 @@ class AudioModel extends ChangeNotifier {
     final sources = json['sources'];
     if (sources != null) {
       for (dynamic source in sources) {
-        addSource(AudioSource.fromJson(source));
+        _sources.add(AudioSource.fromJson(source));
       }
+      notifyListeners();
+    }
+    if (json['isAlwaysEnabled'] != null) {
+      _isAlwaysEnabled = json['isAlwaysEnabled'];
     }
   }
 
   Map<String, dynamic> toJson() => {
         "sources": _sources.map((source) => source.toJson()).toList(),
+        "isAlwaysEnabled": _isAlwaysEnabled,
       };
 }

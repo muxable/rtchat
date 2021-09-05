@@ -1,5 +1,6 @@
 package com.rtirl.chat
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
@@ -8,9 +9,7 @@ import android.os.Build
 import android.provider.Settings
 import android.view.View
 import android.view.WindowManager
-import android.webkit.ConsoleMessage
-import android.webkit.WebChromeClient
-import android.webkit.WebView
+import android.webkit.*
 import androidx.annotation.NonNull
 import com.ryanheise.audioservice.AudioServicePlugin
 import io.flutter.Log
@@ -34,6 +33,7 @@ class MainActivity : FlutterActivity() {
         views.values.forEach { wm.removeView(it) }
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -41,47 +41,58 @@ class MainActivity : FlutterActivity() {
         ).setMethodCallHandler { call, result ->
             val wm = getSystemService(WINDOW_SERVICE) as WindowManager
             when (call.method) {
-                "add" -> {
-                    val url = call.argument<String>("url")
-                    if (url == null || views[url] != null) {
-                        result.success(false)
-                    } else {
+                "set" -> {
+                    val urls = (call.argument<List<String>>("urls") ?: listOf()).toHashSet()
+                    val add = (urls subtract views.keys)
+                    val remove = (views.keys subtract urls)
+                    add.forEach {
                         val view = WebView(context)
                         view.settings.javaScriptEnabled = true
                         view.settings.mediaPlaybackRequiresUserGesture = false
                         view.settings.domStorageEnabled = true
                         view.settings.databaseEnabled = true
+                        view.settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
                         view.webChromeClient = object : WebChromeClient() {
                             override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
                                 Log.d("WebView", consoleMessage.message())
                                 return true
                             }
                         }
-                        view.visibility = View.INVISIBLE
                         view.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-                        view.loadUrl(url)
+                        view.loadUrl(it)
+                        view.webViewClient = object : WebViewClient() {
+                            override fun shouldOverrideUrlLoading(
+                                view: WebView?,
+                                request: WebResourceRequest?
+                            ): Boolean {
+                                return false
+                            }
+                        }
 
                         wm.addView(
                             view, WindowManager.LayoutParams(
-                                WindowManager.LayoutParams.WRAP_CONTENT,
-                                WindowManager.LayoutParams.WRAP_CONTENT,
+                                0,
+                                0,
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else WindowManager.LayoutParams.TYPE_PHONE,
                                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                                 PixelFormat.OPAQUE
                             )
                         )
-                        views[url] = view
+                        views[it] = view
                         result.success(true)
                     }
+                    remove.forEach {
+                        wm.removeView(views[it])
+                        views.remove(it)?.destroy()
+                    }
+                    result.success(true)
                 }
-                "remove" -> {
+                "reload" -> {
                     val url = call.argument<String>("url")
                     if (url == null || views[url] == null) {
                         result.success(false)
                     } else {
-                        Log.d("WebView", "removing url " + url)
-                        wm.removeView(views[url])
-                        views.remove(url)?.destroy()
+                        views[url]?.reload()
                         result.success(true)
                     }
                 }
