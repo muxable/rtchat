@@ -20,7 +20,7 @@ class HypetrainEventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Pin Duration",
+                    Text("Pin duration after hypetrain is over",
                         style: TextStyle(
                           color: Theme.of(context).accentColor,
                           fontWeight: FontWeight.bold,
@@ -28,9 +28,9 @@ class HypetrainEventScreen extends StatelessWidget {
                     Slider.adaptive(
                       value: model.hypetrainEventConfig.eventDuration.inSeconds
                           .toDouble(),
-                      min: 2,
-                      max: 14,
-                      divisions: 4,
+                      min: 0,
+                      max: 30,
+                      divisions: 15,
                       label:
                           "${model.hypetrainEventConfig.eventDuration.inSeconds} seconds",
                       onChanged: (value) {
