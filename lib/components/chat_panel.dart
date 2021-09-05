@@ -12,6 +12,8 @@ import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
+import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
+import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -79,24 +81,24 @@ DateTime? _getExpiration(
     MessageModel model, EventSubConfigurationModel eventSubConfigurationModel) {
   if (model is TwitchRaidEventModel) {
     final raidEventConfig = eventSubConfigurationModel.raidEventConfig;
-    return raidEventConfig.isEventPinnable
+    return raidEventConfig.eventDuration > Duration.zero
         ? model.timestamp.add(raidEventConfig.eventDuration)
         : null;
   } else if (model is TwitchFollowEventModel) {
     final followEventConfig = eventSubConfigurationModel.followEventConfig;
-    return followEventConfig.isEventPinnable
+    return followEventConfig.eventDuration > Duration.zero
         ? model.timestamp.add(followEventConfig.eventDuration)
         : null;
   } else if (model is TwitchCheerEventModel) {
     final cheerEventConfig = eventSubConfigurationModel.cheerEventConfig;
-    return cheerEventConfig.isEventPinnable
+    return cheerEventConfig.eventDuration > Duration.zero
         ? model.timestamp.add(cheerEventConfig.eventDuration)
         : null;
   } else if (model is TwitchSubscriptionEventModel ||
       model is TwitchSubscriptionGiftEventModel ||
       model is TwitchSubscriptionMessageEventModel) {
     final subEventConfig = eventSubConfigurationModel.subscriptionEventConfig;
-    return subEventConfig.isEventPinnable
+    return subEventConfig.eventDuration > Duration.zero
         ? model.timestamp.add(subEventConfig.eventDuration)
         : null;
   } else if (model is TwitchPollEventModel) {
@@ -111,6 +113,19 @@ DateTime? _getExpiration(
     return channelPointRedemptionEventConfig.isEventPinnable
         ? model.timestamp.add(channelPointRedemptionEventConfig.eventDuration)
         : null;
+  } else if (model is TwitchHypeTrainEventModel) {
+    final hypetrainEventConfig =
+        eventSubConfigurationModel.hypetrainEventConfig;
+    return model.endTimestamp.add(hypetrainEventConfig.eventDuration);
+  } else if (model is TwitchPredictionEventModel) {
+    final predictionEventConfig =
+        eventSubConfigurationModel.predictionEventConfig;
+
+    if (model.status == 'canceled') {
+      return null;
+    }
+
+    return model.endTime.add(predictionEventConfig.eventDuration);
   }
 }
 

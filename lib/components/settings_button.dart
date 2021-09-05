@@ -21,11 +21,10 @@ class SettingsButtonWidget extends StatelessWidget {
             break;
           case _Value.refreshAudio:
             final audioModel = Provider.of<AudioModel>(context, listen: false);
-            await audioModel.refreshAllSources();
-            final count = audioModel.sources.length;
+            final count = await audioModel.refreshAllSources();
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(count == 1
-                    ? '1 audio source refreshsed'
+                    ? '1 audio source refreshed'
                     : '$count audio sources refreshed')));
             break;
           case _Value.layout:

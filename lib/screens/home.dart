@@ -3,13 +3,19 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/channel_panel.dart';
+import 'package:rtchat/components/disco.dart';
 import 'package:rtchat/components/notification_panel.dart';
+import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:wakelock/wakelock.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  final bool isDiscoModeEnabled;
+
+  const HomeScreen({required this.isDiscoModeEnabled, Key? key})
+      : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -22,6 +28,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     Wakelock.enable();
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      final model = Provider.of<AudioModel>(context, listen: false);
+      if (model.sources.isNotEmpty && !(await AudioChannel.hasPermission())) {
+        model.showAudioPermissionDialog(context);
+      }
+    });
   }
 
   @override
@@ -43,16 +55,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             );
           }),
           Expanded(
-              child: ChannelPanelWidget(
-            onScrollback: (isScrolled) {
-              setState(() {
-                _minimized = isScrolled;
-              });
-            },
-            onResize: (dy) {
-              layoutModel.updatePanelHeight(dy: dy);
-            },
-          )),
+              child: DiscoWidget(
+                  isEnabled: widget.isDiscoModeEnabled,
+                  child: ChannelPanelWidget(
+                    onScrollback: (isScrolled) {
+                      setState(() {
+                        _minimized = isScrolled;
+                      });
+                    },
+                    onResize: (dy) {
+                      layoutModel.updatePanelHeight(dy: dy);
+                    },
+                  ))),
         ]);
       } else {
         return Row(children: [
@@ -65,7 +79,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               onHorizontalDragUpdate: (details) {
                 layoutModel.updatePanelWidth(dx: details.delta.dx);
               }),
-          const Expanded(child: ChannelPanelWidget()),
+          Expanded(
+              child: DiscoWidget(
+                  isEnabled: widget.isDiscoModeEnabled,
+                  child: const ChannelPanelWidget())),
         ]);
       }
     });
