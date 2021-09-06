@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/channel_panel.dart';
@@ -48,9 +49,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Consumer<LayoutModel>(builder: (context, layoutModel, child) {
       if (MediaQuery.of(context).orientation == Orientation.portrait) {
         return Column(children: [
-          LayoutBuilder(builder: (context, constraints) {
+          KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
             return NotificationPanelWidget(
-              height: _minimized ? 56 : layoutModel.panelHeight.clamp(56, 500),
+              height: _minimized || isKeyboardVisible
+                  ? 56
+                  : layoutModel.panelHeight.clamp(56, 500),
               maxHeight: layoutModel.panelHeight.clamp(56, 500),
             );
           }),
