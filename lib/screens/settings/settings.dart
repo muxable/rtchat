@@ -89,10 +89,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         )),
                     const SizedBox(height: 8),
                     ToggleButtons(
+                      constraints:
+                          const BoxConstraints(minWidth: 80, minHeight: 50),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(10.0)),
                       children: [
                         _iconWithText(Icons.screen_rotation, "System"),
-                        _iconWithText(Icons.screen_lock_landscape, "Landscape"),
                         _iconWithText(Icons.screen_lock_portrait, "Portrait"),
+                        _iconWithText(Icons.screen_lock_landscape, "Landscape"),
                       ],
                       onPressed: (index) {
                         switch (index) {
@@ -102,11 +106,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             break;
                           case 1:
                             layoutModel.preferredOrientation =
-                                PreferredOrientation.landscape;
+                                PreferredOrientation.portrait;
                             break;
                           case 2:
                             layoutModel.preferredOrientation =
-                                PreferredOrientation.portrait;
+                                PreferredOrientation.landscape;
                             break;
                         }
                       },
@@ -114,9 +118,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         layoutModel.preferredOrientation ==
                             PreferredOrientation.system,
                         layoutModel.preferredOrientation ==
-                            PreferredOrientation.landscape,
-                        layoutModel.preferredOrientation ==
                             PreferredOrientation.portrait,
+                        layoutModel.preferredOrientation ==
+                            PreferredOrientation.landscape,
                       ],
                       selectedColor: Theme.of(context).accentColor,
                     ),
