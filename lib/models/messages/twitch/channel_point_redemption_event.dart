@@ -35,7 +35,7 @@ class TwitchChannelPointRedemptionEventModel extends MessageModel {
     switch (status) {
       case "fulfilled":
         return Icons.done;
-      case "cancelled":
+      case "canceled":
         return Icons.close;
       case "unfulfilled":
         return Icons.timer;

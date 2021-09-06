@@ -110,7 +110,7 @@ DateTime? _getExpiration(
   } else if (model is TwitchChannelPointRedemptionEventModel) {
     final channelPointRedemptionEventConfig =
         eventSubConfigurationModel.channelPointRedemptionEventConfig;
-    if (model.status == 'cancelled' ||
+    if (model.status == 'canceled' ||
         channelPointRedemptionEventConfig.eventDuration == Duration.zero) {
       return null;
     }
