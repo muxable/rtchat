@@ -5,7 +5,7 @@ class CommandsModel extends ChangeNotifier {
   var _showCommandSuggestion = true;
   var _alwaysOn = false;
   List<String> _commands = [];
-  static const _maxNumberOfCommands = 10;
+  static const _maxNumberOfCommands = 15;
 
   bool get showCommandSuggestion => _showCommandSuggestion;
 
