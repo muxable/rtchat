@@ -173,7 +173,7 @@ class EventsScreen extends StatelessWidget {
             },
           ),
           Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
               child: StyleModelTheme(
                   child: TwitchChannelPointRedemptionEventWidget(
                       TwitchChannelPointRedemptionEventModel(
