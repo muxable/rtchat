@@ -2,49 +2,67 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Command {
-  String _command;
-  DateTime _timeLastUsed;
+  String command;
+  DateTime timeLastUsed;
+  static const daysToLive = 7;
 
-  Command(this._command, this._timeLastUsed);
+  Command(this.command, this.timeLastUsed);
 
-  String get command => _command;
-
-  DateTime get timeLastUsed => _timeLastUsed;
-
-  @override
-  bool operator ==(other) => other is Command && other.command == _command;
+  bool get isDead =>
+      DateTime.now().difference(timeLastUsed) >=
+      const Duration(days: daysToLive);
 
   @override
-  String toString() => '$_command:$_timeLastUsed';
+  int get hashCode => command.hashCode;
+
+  @override
+  bool operator ==(other) => other is Command && other.command == command;
+
+  @override
+  String toString() => '$command:$timeLastUsed';
+
+  Command.fromJson(Map<String, dynamic> json)
+      : command = json['command'],
+        timeLastUsed = DateTime.parse(json['timeLastUsed']);
+
+  Map<String, dynamic> toJson() => {
+        'command': command,
+        'timeLastUsed': timeLastUsed.toString(),
+      };
 }
 
 class CommandsModel extends ChangeNotifier {
-  List<Command> _commandList = [];
-  static const _maxNumberOfCommands = 10;
-
-  List<Command> get commandList => _commandList;
+  List<Command> commandList = [];
+  static const maxNumberOfCommands = 15;
 
   void clear() {
-    _commandList.clear();
+    commandList.clear();
     notifyListeners();
   }
 
   void addCommand(Command command) {
-    if (_commandList.contains(command)) {
-      _commandList.remove(command);
+    if (commandList.contains(command)) {
+      commandList.remove(command);
     }
-    if (_commandList.length >= _maxNumberOfCommands) {
-      _commandList.removeLast();
+    if (commandList.length >= maxNumberOfCommands) {
+      commandList.removeLast();
     }
-    _commandList.insert(0, command);
+    commandList.insert(0, command);
     notifyListeners();
   }
 
   CommandsModel.fromJson(Map<String, dynamic> json) {
-    if (json['commands'] != null) {
-      _commandList = List<Command>.from(json['commands']);
+    if (json['commandList'] != null) {
+      for (var item in json['commandList']) {
+        Command command = Command.fromJson(item);
+        if (!command.isDead) {
+          commandList.add(command);
+        } else {
+          break;
+        }
+      }
     }
   }
 
-  Map<String, dynamic> toJson() => {'commands': _commandList};
+  Map<String, dynamic> toJson() => {'commandList': commandList};
 }

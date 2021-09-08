@@ -281,7 +281,8 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                 ActionsAdapter.instance.send(
                     channelsModel.subscribedChannels.first,
                     commandsModel.commandList[index].command);
-                commandsModel.addCommand(commandsModel.commandList[index]);
+                commandsModel.addCommand(Command(
+                    commandsModel.commandList[index].command, DateTime.now()));
                 _chatInputFocusNode.unfocus();
               },
             ),
