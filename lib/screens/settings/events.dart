@@ -180,7 +180,7 @@ class EventsScreen extends StatelessWidget {
                 messageId: '',
                 timestamp: DateTime.now(),
                 redeemerUsername: 'muxfd',
-                status: 'unfulfilled',
+                status: TwitchChannelPointRedemptionStatus.fulfilled,
                 rewardName: 'do a backflip',
                 rewardCost: 1000,
                 userInput: 'Infront of Topaz!',
