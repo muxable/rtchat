@@ -32,7 +32,9 @@ class TwitchChannelPointRedemptionEventModel extends MessageModel {
         timestamp: data['timestamp'].toDate(),
         messageId: "channel.point-redemption-${data['event']['id']}",
         redeemerUsername: data['event']['user_name'],
-        status: data['event']['status'],
+        status: TwitchChannelPointRedemptionStatus.values.firstWhere((e) =>
+            e.toString() ==
+            'TwitchChannelPointRedemptionStatus.' + data['event']['status']),
         rewardName: data['event']['reward']['title'],
         rewardCost: data['event']['reward']['cost'],
         userInput: data['event']['user_input']);
