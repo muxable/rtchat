@@ -76,6 +76,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pushNamed(context, "/settings/events");
             },
           ),
+          ListTile(
+              title: const Text('Command Suggestion'),
+              subtitle: const Text('Change command suggestion settings'),
+              onTap: () {
+                Navigator.pushNamed(context, "/settings/command-suggestion");
+              }),
           const Divider(),
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),

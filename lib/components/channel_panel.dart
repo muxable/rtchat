@@ -265,28 +265,30 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
   Widget _buildCommandBar(BuildContext context) {
     return KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
       return Consumer<CommandsModel>(builder: (context, commandsModel, child) {
-        if (!isKeyboardVisible || commandsModel.commands.isEmpty) {
-          return Container();
-        }
-        return SizedBox(
-          height: 55,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: commandsModel.commands.length,
-            itemBuilder: (context, index) => TextButton(
-              child: Text(commandsModel.commands[index]),
-              onPressed: () {
-                final channelsModel =
-                    Provider.of<ChannelsModel>(context, listen: false);
-                ActionsAdapter.instance.send(
-                    channelsModel.subscribedChannels.first,
-                    commandsModel.commands[index]);
-                commandsModel.addCommand(commandsModel.commands[index]);
-                _chatInputFocusNode.unfocus();
-              },
+        if (commandsModel.showCommandSuggestion &&
+            commandsModel.commands.isNotEmpty &&
+            (isKeyboardVisible || commandsModel.alwaysOn)) {
+          return SizedBox(
+            height: 55,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: commandsModel.commands.length,
+              itemBuilder: (context, index) => TextButton(
+                child: Text(commandsModel.commands[index]),
+                onPressed: () {
+                  final channelsModel =
+                      Provider.of<ChannelsModel>(context, listen: false);
+                  ActionsAdapter.instance.send(
+                      channelsModel.subscribedChannels.first,
+                      commandsModel.commands[index]);
+                  commandsModel.addCommand(commandsModel.commands[index]);
+                  _chatInputFocusNode.unfocus();
+                },
+              ),
             ),
-          ),
-        );
+          );
+        }
+        return Container();
       });
     });
   }

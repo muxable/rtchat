@@ -31,6 +31,7 @@ import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
+import 'package:rtchat/screens/settings/command_suggestion.dart';
 import 'package:rtchat/screens/settings/events.dart';
 import 'package:rtchat/screens/settings/events/cheer.dart';
 import 'package:rtchat/screens/settings/events/follow.dart';
@@ -290,6 +291,8 @@ class _AppState extends State<App> {
             '/settings/text-to-speech': (context) => const TextToSpeechScreen(),
             '/settings/quick-links': (context) => const QuickLinksScreen(),
             '/settings/backup': (context) => const BackupScreen(),
+            '/settings/command-suggestion': (context) =>
+                const CommandSuggestionScreen(),
             '/settings/events': (context) => const EventsScreen(),
             '/settings/events/follow': (context) => const FollowEventScreen(),
             '/settings/events/cheer': (context) => const CheerEventScreen(),
