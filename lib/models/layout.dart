@@ -35,8 +35,8 @@ extension _OrientationPreferenceJson on PreferredOrientation {
 }
 
 class LayoutModel extends ChangeNotifier {
-  double _panelHeight = 100.0;
-  double _panelWidth = 100.0;
+  double _panelHeight = 300.0;
+  double _panelWidth = 300.0;
   bool _isStatsVisible = true;
   bool _isInteractionLockable = false;
   bool _locked = false;
