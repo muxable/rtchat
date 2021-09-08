@@ -17,7 +17,7 @@ class _BackupScreenState extends State<BackupScreen> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text("Cloud backup",
               style: TextStyle(
-                color: Theme.of(context).accentColor,
+                color: Theme.of(context).colorScheme.secondary,
                 fontWeight: FontWeight.bold,
               )),
           const Text("Last backup: never"),
@@ -34,7 +34,7 @@ class _BackupScreenState extends State<BackupScreen> {
           const Divider(),
           Text("Local backup",
               style: TextStyle(
-                color: Theme.of(context).accentColor,
+                color: Theme.of(context).colorScheme.secondary,
                 fontWeight: FontWeight.bold,
               )),
           Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [

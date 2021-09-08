@@ -19,7 +19,7 @@ class TextToSpeechScreen extends StatelessWidget {
                 children: [
                   Text("Text to Speech Rate",
                       style: TextStyle(
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
                       )),
                   Slider.adaptive(
@@ -33,7 +33,7 @@ class TextToSpeechScreen extends StatelessWidget {
                   ),
                   Text("Text to Speech Pitch",
                       style: TextStyle(
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
                       )),
                   Slider.adaptive(

@@ -22,7 +22,7 @@ class ChannelPointRedemptionEventScreen extends StatelessWidget {
                   children: [
                     Text("Pin Duration",
                         style: TextStyle(
-                          color: Theme.of(context).accentColor,
+                          color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                         )),
                     Slider.adaptive(
@@ -41,7 +41,7 @@ class ChannelPointRedemptionEventScreen extends StatelessWidget {
                     ),
                     Text("Additional Pin Duration for Unfulfilled Rewards",
                         style: TextStyle(
-                          color: Theme.of(context).accentColor,
+                          color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                         )),
                     Slider.adaptive(
