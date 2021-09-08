@@ -39,6 +39,7 @@ import 'package:rtchat/screens/settings/events/poll.dart';
 import 'package:rtchat/screens/settings/events/prediction.dart';
 import 'package:rtchat/screens/settings/events/raid.dart';
 import 'package:rtchat/screens/settings/events/subscription.dart';
+import 'package:rtchat/screens/settings/events/channel_point.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/tts.dart';
@@ -296,6 +297,8 @@ class _AppState extends State<App> {
             '/settings/events/subscription': (context) =>
                 const SubscriptionEventScreen(),
             '/settings/events/raid': (context) => const RaidEventScreen(),
+            '/settings/events/channel-point': (context) =>
+                const ChannelPointRedemptionEventScreen(),
             '/settings/events/poll': (context) => const PollEventScreen(),
             '/settings/events/hypetrain': (context) =>
                 const HypetrainEventScreen(),

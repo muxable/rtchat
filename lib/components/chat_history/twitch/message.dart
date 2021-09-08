@@ -67,7 +67,7 @@ class TwitchMessageWidget extends StatelessWidget {
     final linkStyle = Theme.of(context)
         .textTheme
         .bodyText2!
-        .copyWith(color: Theme.of(context).accentColor);
+        .copyWith(color: Theme.of(context).colorScheme.secondary);
 
     final tagStyleStreamer = TextStyle(
         color: Theme.of(context).brightness == Brightness.light
@@ -84,7 +84,7 @@ class TwitchMessageWidget extends StatelessWidget {
     final multiplierStyle = Theme.of(context)
         .textTheme
         .caption!
-        .copyWith(color: Theme.of(context).accentColor);
+        .copyWith(color: Theme.of(context).colorScheme.secondary);
 
     if (token is TextToken) {
       yield TextSpan(text: token.text);

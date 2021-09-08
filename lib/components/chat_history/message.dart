@@ -1,4 +1,3 @@
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -37,8 +36,6 @@ class ChatHistoryMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final m = message;
-    final enableInlineEvents =
-        RemoteConfig.instance.getBool('inline_events_enabled');
     if (m is TwitchMessageModel) {
       return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         final child = Padding(
@@ -64,6 +61,8 @@ class ChatHistoryMessage extends StatelessWidget {
                     return Dialog(
                       child: ListView(shrinkWrap: true, children: [
                         ListTile(
+                            leading: const Icon(Icons.delete,
+                                color: Colors.redAccent),
                             title: const Text('Delete Message'),
                             onTap: () {
                               final channelsModel = Provider.of<ChannelsModel>(
@@ -75,11 +74,15 @@ class ChatHistoryMessage extends StatelessWidget {
                               Navigator.pop(context);
                             }),
                         ListTile(
+                            leading: const Icon(Icons.timer_outlined,
+                                color: Colors.orangeAccent),
                             title: Text('Timeout ${m.author.displayName}'),
                             onTap: () {
                               Navigator.pop(context, true);
                             }),
                         ListTile(
+                            leading: const Icon(Icons.dnd_forwardslash_outlined,
+                                color: Colors.redAccent),
                             title: Text('Ban ${m.author.displayName}'),
                             onTap: () {
                               final channelsModel = Provider.of<ChannelsModel>(
@@ -92,6 +95,8 @@ class ChatHistoryMessage extends StatelessWidget {
                               Navigator.pop(context);
                             }),
                         ListTile(
+                            leading: const Icon(Icons.circle_outlined,
+                                color: Colors.greenAccent),
                             title: Text('Unban ${m.author.displayName}'),
                             onTap: () {
                               final channelsModel = Provider.of<ChannelsModel>(
@@ -176,9 +181,13 @@ class ChatHistoryMessage extends StatelessWidget {
             config.showEvent ? TwitchPollEventWidget(m) : Container(),
       );
     } else if (m is TwitchChannelPointRedemptionEventModel) {
-      return enableInlineEvents
-          ? TwitchChannelPointRedemptionEventWidget(m)
-          : Container();
+      return Selector<EventSubConfigurationModel,
+          ChannelPointRedemptionEventConfig>(
+        selector: (_, model) => model.channelPointRedemptionEventConfig,
+        builder: (_, config, __) => config.showEvent
+            ? TwitchChannelPointRedemptionEventWidget(m)
+            : Container(),
+      );
     } else if (m is TwitchHypeTrainEventModel) {
       return Selector<EventSubConfigurationModel, HypetrainEventConfig>(
         selector: (_, model) => model.hypetrainEventConfig,

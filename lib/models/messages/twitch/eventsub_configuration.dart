@@ -68,6 +68,28 @@ class RaidEventConfig {
       };
 }
 
+class ChannelPointRedemptionEventConfig {
+  bool showEvent;
+  Duration eventDuration;
+  Duration unfulfilledAdditionalDuration;
+
+  ChannelPointRedemptionEventConfig(
+      this.showEvent, this.eventDuration, this.unfulfilledAdditionalDuration);
+
+  ChannelPointRedemptionEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
+        eventDuration = Duration(seconds: json['eventDuration'].toInt()),
+        unfulfilledAdditionalDuration =
+            Duration(seconds: json['unfulfilledAdditionalDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+        "unfulfilledAdditionalDuration":
+            unfulfilledAdditionalDuration.inSeconds.toInt(),
+      };
+}
+
 class PollEventConfig {
   bool showEvent;
   Duration eventDuration;
@@ -77,11 +99,6 @@ class PollEventConfig {
   PollEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt());
-
-  Map<String, dynamic> toJson() => {
-        "showEvent": showEvent,
-        "eventDuration": eventDuration.inSeconds.toInt(),
-      };
 }
 
 class HypetrainEventConfig {
@@ -125,6 +142,9 @@ class EventSubConfigurationModel extends ChangeNotifier {
       CheerEventConfig(true, const Duration(seconds: 6));
   RaidEventConfig raidEventConfig =
       RaidEventConfig(true, const Duration(seconds: 6));
+  ChannelPointRedemptionEventConfig channelPointRedemptionEventConfig =
+      ChannelPointRedemptionEventConfig(
+          true, const Duration(seconds: 6), const Duration(seconds: 0));
   PollEventConfig pollEventConfig =
       PollEventConfig(true, const Duration(seconds: 6));
   HypetrainEventConfig hypetrainEventConfig =
@@ -179,6 +199,21 @@ class EventSubConfigurationModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  setChannelPointRedemptionEventDuration(Duration value) {
+    channelPointRedemptionEventConfig.eventDuration = value;
+    notifyListeners();
+  }
+
+  setChannelPointRedemptionEventShowable(bool value) {
+    channelPointRedemptionEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setChannelPointRedemptionEventUnfulfilledAdditionalDuration(Duration value) {
+    channelPointRedemptionEventConfig.unfulfilledAdditionalDuration = value;
+    notifyListeners();
+  }
+
   setPollEventDuration(Duration duration) {
     pollEventConfig.eventDuration = duration;
     notifyListeners();
@@ -223,6 +258,11 @@ class EventSubConfigurationModel extends ChangeNotifier {
     if (json['raidEventConfig'] != null) {
       raidEventConfig = RaidEventConfig.fromJson(json['raidEventConfig']);
     }
+    if (json['channelPointRedemptionEventConfig'] != null) {
+      channelPointRedemptionEventConfig =
+          ChannelPointRedemptionEventConfig.fromJson(
+              json['channelPointRedemptionEventConfig']);
+    }
     if (json['pollEventConfig'] != null) {
       pollEventConfig = PollEventConfig.fromJson(json['pollEventConfig']);
     }
@@ -242,6 +282,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
         "cheerEventConfig": cheerEventConfig,
         "raidEventConfig": raidEventConfig,
         "pollEventConfig": pollEventConfig,
+        "channelPointsRedemptionEventConfig": channelPointRedemptionEventConfig,
         "hypeTrainConfig": hypetrainEventConfig,
         "predictionEventConfig": predictionEventConfig
       };

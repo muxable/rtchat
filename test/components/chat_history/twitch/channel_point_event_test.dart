@@ -14,7 +14,7 @@ void main() {
         timestamp: DateTime.now(),
         messageId: "testMessageId",
         redeemerUsername: "automux",
-        status: "fulfilled",
+        status: TwitchChannelPointRedemptionStatus.fulfilled,
         rewardName: "Sprint",
         rewardCost: 100,
         userInput: null);
@@ -38,7 +38,7 @@ void main() {
         timestamp: DateTime.now(),
         messageId: "testMessageId",
         redeemerUsername: "automux",
-        status: "unfulfilled",
+        status: TwitchChannelPointRedemptionStatus.unfulfilled,
         rewardName: "WaTeER",
         rewardCost: 350,
         userInput: "user input Kappa");
