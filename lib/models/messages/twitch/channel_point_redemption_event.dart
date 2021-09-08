@@ -2,9 +2,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/models/messages/message.dart';
 
+enum TwitchChannelPointRedemptionStatus {
+  fulfilled,
+  canceled,
+  unfulfilled,
+  unknown
+}
+
 class TwitchChannelPointRedemptionEventModel extends MessageModel {
   final String redeemerUsername;
-  final String status;
+  final TwitchChannelPointRedemptionStatus status;
   final String rewardName;
   final int rewardCost;
   final String? userInput;
@@ -33,13 +40,13 @@ class TwitchChannelPointRedemptionEventModel extends MessageModel {
 
   IconData get icon {
     switch (status) {
-      case "fulfilled":
+      case TwitchChannelPointRedemptionStatus.fulfilled:
         return Icons.done;
-      case "canceled":
+      case TwitchChannelPointRedemptionStatus.canceled:
         return Icons.close;
-      case "unfulfilled":
+      case TwitchChannelPointRedemptionStatus.unfulfilled:
         return Icons.timer;
-      case "unknown":
+      case TwitchChannelPointRedemptionStatus.unknown:
         return Icons.help;
       default:
         return Icons.done;

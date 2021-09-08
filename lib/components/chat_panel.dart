@@ -113,10 +113,12 @@ DateTime? _getExpiration(
     final unfulfilledDuration =
         channelPointRedemptionEventConfig.eventDuration +
             channelPointRedemptionEventConfig.unfulfilledAdditionalDuration;
-    if (model.status == 'unfulfilled' && unfulfilledDuration > Duration.zero) {
+
+    if (model.status == TwitchChannelPointRedemptionStatus.unfulfilled &&
+        unfulfilledDuration > Duration.zero) {
       return model.timestamp.add(unfulfilledDuration);
     }
-    if (model.status == 'fulfilled' &&
+    if (model.status == TwitchChannelPointRedemptionStatus.fulfilled &&
         channelPointRedemptionEventConfig.eventDuration > Duration.zero) {
       return model.timestamp
           .add(channelPointRedemptionEventConfig.eventDuration);
