@@ -61,6 +61,8 @@ class ChatHistoryMessage extends StatelessWidget {
                     return Dialog(
                       child: ListView(shrinkWrap: true, children: [
                         ListTile(
+                            leading: const Icon(Icons.delete,
+                                color: Colors.redAccent),
                             title: const Text('Delete Message'),
                             onTap: () {
                               final channelsModel = Provider.of<ChannelsModel>(
@@ -72,11 +74,15 @@ class ChatHistoryMessage extends StatelessWidget {
                               Navigator.pop(context);
                             }),
                         ListTile(
+                            leading: const Icon(Icons.timer_outlined,
+                                color: Colors.orangeAccent),
                             title: Text('Timeout ${m.author.displayName}'),
                             onTap: () {
                               Navigator.pop(context, true);
                             }),
                         ListTile(
+                            leading: const Icon(Icons.dnd_forwardslash_outlined,
+                                color: Colors.redAccent),
                             title: Text('Ban ${m.author.displayName}'),
                             onTap: () {
                               final channelsModel = Provider.of<ChannelsModel>(
@@ -89,6 +95,8 @@ class ChatHistoryMessage extends StatelessWidget {
                               Navigator.pop(context);
                             }),
                         ListTile(
+                            leading: const Icon(Icons.circle_outlined,
+                                color: Colors.greenAccent),
                             title: Text('Unban ${m.author.displayName}'),
                             onTap: () {
                               final channelsModel = Provider.of<ChannelsModel>(

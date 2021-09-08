@@ -30,7 +30,7 @@ class EventsScreen extends StatelessWidget {
         final dateTime = DateTime.now();
         return ListView(children: [
           Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: StyleModelTheme(
                   child: TwitchFollowEventWidget(TwitchFollowEventModel(
                 follower: const TwitchUserModel(
@@ -46,7 +46,7 @@ class EventsScreen extends StatelessWidget {
             },
           ),
           Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
               child: StyleModelTheme(
                   child: TwitchSubscriptionEventWidget(
                       TwitchSubscriptionEventModel(
@@ -64,7 +64,7 @@ class EventsScreen extends StatelessWidget {
             },
           ),
           Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
               child: StyleModelTheme(
                   child: TwitchCheerEventWidget(TwitchCheerEventModel(
                 messageId: '',
@@ -82,7 +82,7 @@ class EventsScreen extends StatelessWidget {
             },
           ),
           Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
               child: StyleModelTheme(
                   child: TwitchRaidEventWidget(TwitchRaidEventModel(
                 messageId: '',
@@ -99,7 +99,7 @@ class EventsScreen extends StatelessWidget {
             },
           ),
           Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
               child: StyleModelTheme(
                   child: TwitchHypeTrainEventWidget(TwitchHypeTrainEventModel(
                 messageId: '',
@@ -119,7 +119,7 @@ class EventsScreen extends StatelessWidget {
             },
           ),
           Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
               child: StyleModelTheme(
                   child: TwitchPollEventWidget(TwitchPollEventModel(
                       messageId: '',
@@ -151,7 +151,7 @@ class EventsScreen extends StatelessWidget {
             },
           ),
           Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
               child: StyleModelTheme(
                   child: TwitchPredictionEventWidget(TwitchPredictionEventModel(
                       timestamp: dateTime,
