@@ -2,9 +2,32 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/models/messages/message.dart';
 
+enum TwitchChannelPointRedemptionStatus {
+  fulfilled,
+  canceled,
+  unfulfilled,
+  unknown
+}
+
+extension TwitchChannelPointRedemptionStatusParser
+    on TwitchChannelPointRedemptionStatus {
+  static TwitchChannelPointRedemptionStatus toEnum(String value) {
+    switch (value) {
+      case 'fulfilled':
+        return TwitchChannelPointRedemptionStatus.fulfilled;
+      case 'canceled':
+        return TwitchChannelPointRedemptionStatus.canceled;
+      case 'unfulfilled':
+        return TwitchChannelPointRedemptionStatus.unfulfilled;
+      default:
+        return TwitchChannelPointRedemptionStatus.unknown;
+    }
+  }
+}
+
 class TwitchChannelPointRedemptionEventModel extends MessageModel {
   final String redeemerUsername;
-  final String status;
+  final TwitchChannelPointRedemptionStatus status;
   final String rewardName;
   final int rewardCost;
   final String? userInput;
@@ -25,7 +48,8 @@ class TwitchChannelPointRedemptionEventModel extends MessageModel {
         timestamp: data['timestamp'].toDate(),
         messageId: "channel.point-redemption-${data['event']['id']}",
         redeemerUsername: data['event']['user_name'],
-        status: data['event']['status'],
+        status: TwitchChannelPointRedemptionStatusParser.toEnum(
+            data['event']['status']),
         rewardName: data['event']['reward']['title'],
         rewardCost: data['event']['reward']['cost'],
         userInput: data['event']['user_input']);
@@ -33,13 +57,13 @@ class TwitchChannelPointRedemptionEventModel extends MessageModel {
 
   IconData get icon {
     switch (status) {
-      case "fulfilled":
+      case TwitchChannelPointRedemptionStatus.fulfilled:
         return Icons.done;
-      case "cancelled":
+      case TwitchChannelPointRedemptionStatus.canceled:
         return Icons.close;
-      case "unfulfilled":
+      case TwitchChannelPointRedemptionStatus.unfulfilled:
         return Icons.timer;
-      case "unknown":
+      case TwitchChannelPointRedemptionStatus.unknown:
         return Icons.help;
       default:
         return Icons.done;
