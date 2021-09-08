@@ -19,6 +19,14 @@ class CommandSuggestionScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Center(
+                      child: Text(' "!" commands are added automatically',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic,
+                          )),
+                    ),
                     SwitchListTile.adaptive(
                       title: const Text('Enable suggestion'),
                       value: model.showCommandSuggestion,
