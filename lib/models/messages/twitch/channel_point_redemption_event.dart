@@ -9,6 +9,22 @@ enum TwitchChannelPointRedemptionStatus {
   unknown
 }
 
+extension TwitchChannelPointRedemptionStatusParser
+    on TwitchChannelPointRedemptionStatus {
+  static TwitchChannelPointRedemptionStatus toEnum(String value) {
+    switch (value) {
+      case 'fulfilled':
+        return TwitchChannelPointRedemptionStatus.fulfilled;
+      case 'canceled':
+        return TwitchChannelPointRedemptionStatus.canceled;
+      case 'unfulfilled':
+        return TwitchChannelPointRedemptionStatus.unfulfilled;
+      default:
+        return TwitchChannelPointRedemptionStatus.unknown;
+    }
+  }
+}
+
 class TwitchChannelPointRedemptionEventModel extends MessageModel {
   final String redeemerUsername;
   final TwitchChannelPointRedemptionStatus status;
@@ -32,9 +48,8 @@ class TwitchChannelPointRedemptionEventModel extends MessageModel {
         timestamp: data['timestamp'].toDate(),
         messageId: "channel.point-redemption-${data['event']['id']}",
         redeemerUsername: data['event']['user_name'],
-        status: TwitchChannelPointRedemptionStatus.values.firstWhere((e) =>
-            e.toString() ==
-            'TwitchChannelPointRedemptionStatus.' + data['event']['status']),
+        status: TwitchChannelPointRedemptionStatusParser.toEnum(
+            data['event']['status']),
         rewardName: data['event']['reward']['title'],
         rewardCost: data['event']['reward']['cost'],
         userInput: data['event']['user_input']);
