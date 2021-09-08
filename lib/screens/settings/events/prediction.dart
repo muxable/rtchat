@@ -22,7 +22,7 @@ class PredictionEventScreen extends StatelessWidget {
                   children: [
                     Text('Pin Duration',
                         style: TextStyle(
-                          color: Theme.of(context).accentColor,
+                          color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                         )),
                     Slider.adaptive(

@@ -20,7 +20,7 @@ class DecoratedEventWidget extends StatelessWidget {
         border: Border(
           left: BorderSide(
             width: 4,
-            color: Theme.of(context).accentColor,
+            color: Theme.of(context).colorScheme.secondary,
           ),
         ),
       ),

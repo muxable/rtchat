@@ -84,7 +84,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     Text("Screen orientation",
                         style: TextStyle(
-                          color: Theme.of(context).accentColor,
+                          color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                         )),
                     const SizedBox(height: 8),
@@ -122,7 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         layoutModel.preferredOrientation ==
                             PreferredOrientation.landscape,
                       ],
-                      selectedColor: Theme.of(context).accentColor,
+                      selectedColor: Theme.of(context).colorScheme.secondary,
                     ),
                   ])),
           SwitchListTile.adaptive(
@@ -167,7 +167,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(16),
             child: Text("Thanks to all the testers who sent bug reports!",
                 style: TextStyle(
-                  color: Theme.of(context).accentColor,
+                  color: Theme.of(context).colorScheme.secondary,
                   fontWeight: FontWeight.bold,
                 )),
           ),

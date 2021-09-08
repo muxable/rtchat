@@ -22,7 +22,7 @@ class HypetrainEventScreen extends StatelessWidget {
                   children: [
                     Text("Pin duration after hypetrain is over",
                         style: TextStyle(
-                          color: Theme.of(context).accentColor,
+                          color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                         )),
                     Slider.adaptive(

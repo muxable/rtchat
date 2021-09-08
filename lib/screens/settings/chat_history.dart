@@ -87,7 +87,7 @@ class ChatHistoryScreen extends StatelessWidget {
                 children: [
                   Text("Font size",
                       style: TextStyle(
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
                       )),
                   Slider.adaptive(
@@ -102,7 +102,7 @@ class ChatHistoryScreen extends StatelessWidget {
                   ),
                   Text("Username contrast boost",
                       style: TextStyle(
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
                       )),
                   Slider.adaptive(
@@ -138,7 +138,7 @@ class ChatHistoryScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Text("Compact messages",
                   style: TextStyle(
-                    color: Theme.of(context).accentColor,
+                    color: Theme.of(context).colorScheme.secondary,
                     fontWeight: FontWeight.bold,
                   )),
             ),
