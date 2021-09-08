@@ -241,7 +241,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
           ]),
         );
       }),
-      _buildCommandBar(context),
+      _buildCommandShortcut(context),
       _buildEmotePicker(context)
     ]);
   }
@@ -262,12 +262,12 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
           })
       : Container();
 
-  Widget _buildCommandBar(BuildContext context) {
+  Widget _buildCommandShortcut(BuildContext context) {
     return KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
       return Consumer<CommandsModel>(builder: (context, commandsModel, child) {
-        if (commandsModel.showCommandSuggestion &&
+        if (commandsModel.showCommandShortcut &&
             commandsModel.commands.isNotEmpty &&
-            (isKeyboardVisible || commandsModel.alwaysOn)) {
+            (isKeyboardVisible || commandsModel.isAlwaysOn)) {
           return SizedBox(
             height: 55,
             child: ListView.builder(

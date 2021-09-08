@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/commands.dart';
 
-class CommandSuggestionScreen extends StatelessWidget {
-  const CommandSuggestionScreen({Key? key}) : super(key: key);
+class CommandShortcutScreen extends StatelessWidget {
+  const CommandShortcutScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Command Suggestion Settings"),
+          title: const Text("Command Shortcut Settings"),
         ),
         body: Consumer<CommandsModel>(builder: (context, model, child) {
           return Column(
@@ -28,19 +28,19 @@ class CommandSuggestionScreen extends StatelessWidget {
                           )),
                     ),
                     SwitchListTile.adaptive(
-                      title: const Text('Enable suggestion'),
-                      value: model.showCommandSuggestion,
+                      title: const Text('Enable shortcut'),
+                      value: model.showCommandShortcut,
                       onChanged: (value) {
-                        model.showCommandSuggestion = value;
+                        model.showCommandShortcut = value;
                       },
                     ),
                     SwitchListTile.adaptive(
                       title: const Text('Always on'),
-                      subtitle: const Text('Keep command bar always on'),
-                      value: model.alwaysOn,
-                      onChanged: model.showCommandSuggestion
+                      subtitle: const Text('Keep command shortcut always on'),
+                      value: model.isAlwaysOn,
+                      onChanged: model.showCommandShortcut
                           ? (value) {
-                              model.alwaysOn = value;
+                              model.isAlwaysOn = value;
                             }
                           : null,
                     ),

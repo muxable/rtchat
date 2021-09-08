@@ -2,22 +2,22 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class CommandsModel extends ChangeNotifier {
-  var _showCommandSuggestion = true;
-  var _alwaysOn = false;
+  var _showCommandShortcut = true;
+  var _isAlwaysOn = false;
   List<String> _commands = [];
   static const _maxNumberOfCommands = 15;
 
-  bool get showCommandSuggestion => _showCommandSuggestion;
+  bool get showCommandShortcut => _showCommandShortcut;
 
-  set showCommandSuggestion(bool value) {
-    _showCommandSuggestion = value;
+  set showCommandShortcut(bool value) {
+    _showCommandShortcut = value;
     notifyListeners();
   }
 
-  bool get alwaysOn => _alwaysOn;
+  bool get isAlwaysOn => _isAlwaysOn;
 
-  set alwaysOn(bool value) {
-    _alwaysOn = value;
+  set isAlwaysOn(bool value) {
+    _isAlwaysOn = value;
     notifyListeners();
   }
 
@@ -43,17 +43,17 @@ class CommandsModel extends ChangeNotifier {
     if (json['commands'] != null) {
       _commands = List<String>.from(json['commands']);
     }
-    if (json['showCommandSuggestion'] != null) {
-      _showCommandSuggestion = json['showCommandSuggestion'];
+    if (json['showCommandShortcut'] != null) {
+      _showCommandShortcut = json['showCommandShortcut'];
     }
-    if (json['alwaysOn'] != null) {
-      _alwaysOn = json['alwaysOn'];
+    if (json['isAlwaysOn'] != null) {
+      _isAlwaysOn = json['isAlwaysOn'];
     }
   }
 
   Map<String, dynamic> toJson() => {
         'commands': _commands,
-        'showCommandSuggestion': _showCommandSuggestion,
-        'alwaysOn': _alwaysOn,
+        'showCommandShortcut': _showCommandShortcut,
+        'isAlwaysOn': _isAlwaysOn,
       };
 }

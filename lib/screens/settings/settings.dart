@@ -77,10 +77,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           ListTile(
-              title: const Text('Command Suggestion'),
-              subtitle: const Text('Change command suggestion settings'),
+              title: const Text('Command Shortcut'),
+              subtitle: const Text('Change command shortcut settings'),
               onTap: () {
-                Navigator.pushNamed(context, "/settings/command-suggestion");
+                Navigator.pushNamed(context, "/settings/command-shortcut");
               }),
           const Divider(),
           Padding(
