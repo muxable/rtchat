@@ -39,6 +39,26 @@ class ChannelPointRedemptionEventScreen extends StatelessWidget {
                             Duration(seconds: value.toInt()));
                       },
                     ),
+                    Text("Additional Pin Duration for Unfulfilled Rewards",
+                        style: TextStyle(
+                          color: Theme.of(context).accentColor,
+                          fontWeight: FontWeight.bold,
+                        )),
+                    Slider.adaptive(
+                      value: model.channelPointRedemptionEventConfig
+                          .unfulfilledAdditionalDuration.inSeconds
+                          .toDouble(),
+                      min: 0,
+                      max: 30,
+                      divisions: 15,
+                      label:
+                          "${model.channelPointRedemptionEventConfig.unfulfilledAdditionalDuration.inSeconds} seconds",
+                      onChanged: (value) {
+                        model
+                            .setChannelPointRedemptionEventUnfulfilledAdditionalDuration(
+                                Duration(seconds: value.toInt()));
+                      },
+                    ),
                     SwitchListTile.adaptive(
                       title: const Text('Enable event'),
                       subtitle: const Text('Show event in chat history'),
@@ -47,16 +67,6 @@ class ChannelPointRedemptionEventScreen extends StatelessWidget {
                         model.setChannelPointRedemptionEventShowable(value);
                       },
                     ),
-                    SwitchListTile.adaptive(
-                      title: const Text('Manually clear unfulfilled rewards'),
-                      subtitle:
-                          const Text('Unfulfilled rewards will remain pinned'),
-                      value:
-                          model.channelPointRedemptionEventConfig.manualClear,
-                      onChanged: (value) {
-                        model.setChannelPointRedemptionEventManualClear(value);
-                      },
-                    )
                   ],
                 ),
               )

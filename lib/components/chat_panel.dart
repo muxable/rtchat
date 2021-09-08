@@ -110,16 +110,18 @@ DateTime? _getExpiration(
   } else if (model is TwitchChannelPointRedemptionEventModel) {
     final channelPointRedemptionEventConfig =
         eventSubConfigurationModel.channelPointRedemptionEventConfig;
-    if (model.status == 'canceled' ||
-        channelPointRedemptionEventConfig.eventDuration == Duration.zero) {
-      return null;
+    final unfulfilledDuration =
+        channelPointRedemptionEventConfig.eventDuration +
+            channelPointRedemptionEventConfig.unfulfilledAdditionalDuration;
+    if (model.status == 'unfulfilled' && unfulfilledDuration > Duration.zero) {
+      return model.timestamp.add(unfulfilledDuration);
     }
-    if (channelPointRedemptionEventConfig.manualClear == true &&
-        model.status == 'unfulfilled') {
-      return model.timestamp.add(
-          const Duration(days: 365)); // Not sure how to add duration forever
+    if (model.status == 'fulfilled' &&
+        channelPointRedemptionEventConfig.eventDuration > Duration.zero) {
+      return model.timestamp
+          .add(channelPointRedemptionEventConfig.eventDuration);
     }
-    return model.timestamp.add(channelPointRedemptionEventConfig.eventDuration);
+    return null;
   } else if (model is TwitchHypeTrainEventModel) {
     final hypetrainEventConfig =
         eventSubConfigurationModel.hypetrainEventConfig;
