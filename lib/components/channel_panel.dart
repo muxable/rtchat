@@ -202,7 +202,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                   if (value.startsWith('!')) {
                     final commandsModel =
                         Provider.of<CommandsModel>(context, listen: false);
-                    commandsModel.addCommand(value);
+                    commandsModel.addCommand(Command(value, DateTime.now()));
                   }
                   final channelsModel =
                       Provider.of<ChannelsModel>(context, listen: false);
@@ -265,23 +265,24 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
   Widget _buildCommandBar(BuildContext context) {
     return KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
       return Consumer<CommandsModel>(builder: (context, commandsModel, child) {
-        if (!isKeyboardVisible || commandsModel.commands.isEmpty) {
+        if (!isKeyboardVisible || commandsModel.commandList.isEmpty) {
           return Container();
         }
         return SizedBox(
           height: 55,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: commandsModel.commands.length,
+            itemCount: commandsModel.commandList.length,
             itemBuilder: (context, index) => TextButton(
-              child: Text(commandsModel.commands[index]),
+              child: Text(commandsModel.commandList[index].command),
               onPressed: () {
                 final channelsModel =
                     Provider.of<ChannelsModel>(context, listen: false);
                 ActionsAdapter.instance.send(
                     channelsModel.subscribedChannels.first,
-                    commandsModel.commands[index]);
-                commandsModel.addCommand(commandsModel.commands[index]);
+                    commandsModel.commandList[index].command);
+                commandsModel.addCommand(Command(
+                    commandsModel.commandList[index].command, DateTime.now()));
                 _chatInputFocusNode.unfocus();
               },
             ),
