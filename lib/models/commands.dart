@@ -2,15 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Command {
-  String command;
-  DateTime timeLastUsed;
-  static const daysToLive = 7;
+  final String command;
+  final DateTime timeLastUsed;
+  static const daysToLive = Duration(days: 7);
 
   Command(this.command, this.timeLastUsed);
 
-  bool get isDead =>
-      DateTime.now().difference(timeLastUsed) >=
-      const Duration(days: daysToLive);
+  bool get isDead => DateTime.now().difference(timeLastUsed) >= daysToLive;
 
   @override
   int get hashCode => command.hashCode;
