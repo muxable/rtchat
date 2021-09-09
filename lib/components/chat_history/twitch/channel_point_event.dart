@@ -19,9 +19,13 @@ class TwitchChannelPointRedemptionEventWidget extends StatelessWidget {
             TextSpan(
                 text: model.redeemerUsername,
                 style: Theme.of(context).textTheme.subtitle2),
+            const TextSpan(text: " redeemed "),
+            TextSpan(
+                text: "${model.rewardName} ",
+                style: Theme.of(context).textTheme.subtitle2),
             TextSpan(
                 text:
-                    " redeemed ${model.rewardName} for ${model.rewardCost} points. ${model.userInput ?? ''}"),
+                    "for ${model.rewardCost} points. ${model.userInput ?? ''}"),
           ],
         ),
       ),

@@ -22,7 +22,7 @@ class PollEventScreen extends StatelessWidget {
                   children: [
                     Text("Pin duration after the result is finalized",
                         style: TextStyle(
-                          color: Theme.of(context).accentColor,
+                          color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                         )),
                     Slider.adaptive(

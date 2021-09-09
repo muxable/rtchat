@@ -1,26 +1,22 @@
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/models/layout.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+  // WidgetsFlutterBinding.ensureInitialized();
 
   final List<MethodCall> log = [];
 
-  setUp(() {
-    SystemChannels.platform
-        .setMockMethodCallHandler((MethodCall methodCall) async {
-      log.add(methodCall);
-    });
-  });
-
   tearDown(() {
-    SystemChannels.platform.setMockMethodCallHandler(null);
     log.clear();
   });
 
-  test("LayoutModel json roundtrip", () {
+  testWidgets("LayoutModel json roundtrip", (tester) async {
+    tester.binding.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (methodCall) {
+      log.add(methodCall);
+    });
+
     final model = LayoutModel.fromJson({});
 
     final want = model.toJson();
@@ -29,7 +25,12 @@ void main() {
     expect(got, equals(want));
   });
 
-  test("setting orientation propagates to system", () {
+  testWidgets("setting orientation propagates to system", (tester) async {
+    tester.binding.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (methodCall) {
+      log.add(methodCall);
+    });
+
     final model = LayoutModel.fromJson({});
 
     expect(log, hasLength(0));
