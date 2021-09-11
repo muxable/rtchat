@@ -117,7 +117,6 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
 
     final message = queue.value[index] as TtsMediaItem;
     final author = message.artist; // author
-    print('blacklist: $blackList');
 
     if (fromAutoplay &&
         ((isBotMuted && message.isBot) ||
