@@ -26,6 +26,7 @@ import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
+import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 
 class ChatHistoryMessage extends StatelessWidget {
@@ -52,7 +53,7 @@ class ChatHistoryMessage extends StatelessWidget {
         if (loginChannel != viewingChannel) {
           return child;
         }
-
+        final ttsModel = Provider.of<TtsModel>(context, listen: false);
         return InkWell(
             onLongPress: () async {
               var showTimeoutDialog = await showDialog<bool>(
@@ -60,6 +61,30 @@ class ChatHistoryMessage extends StatelessWidget {
                   builder: (context) {
                     return Dialog(
                       child: ListView(shrinkWrap: true, children: [
+                        if (!ttsModel.blacklist
+                            .contains(m.author.displayName)) ...[
+                          ListTile(
+                              leading: const Icon(Icons.volume_off_rounded,
+                                  color: Colors.redAccent),
+                              title: Text('Mute ${m.author.displayName}'),
+                              onTap: () {
+                                ttsModel
+                                    .addNameToBlacklist(m.author.displayName!);
+                                Navigator.pop(context);
+                              }),
+                        ],
+                        if (ttsModel.blacklist
+                            .contains(m.author.displayName)) ...[
+                          ListTile(
+                              leading: const Icon(Icons.volume_up_rounded,
+                                  color: Colors.deepPurpleAccent),
+                              title: Text('Unmute ${m.author.displayName}'),
+                              onTap: () {
+                                ttsModel.removeNameFromBlacklist(
+                                    m.author.displayName!);
+                                Navigator.pop(context);
+                              }),
+                        ],
                         ListTile(
                             leading: const Icon(Icons.delete,
                                 color: Colors.redAccent),

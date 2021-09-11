@@ -4,6 +4,7 @@ import 'package:rtchat/models/messages/tts_audio_handler.dart';
 
 class TtsModel extends ChangeNotifier {
   TtsAudioHandler ttsHandler;
+  Set<String> blacklist = {};
 
   set messages(List<MessageModel> messages) {
     // for tts, we sort of cheat a bit and just append the new messages to the end of the list.
@@ -73,6 +74,20 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addNameToBlacklist(String name) {
+    blacklist.add(name);
+    ttsHandler.blackList = blacklist;
+    notifyListeners();
+  }
+
+  void removeNameFromBlacklist(String name) {
+    if (blacklist.isNotEmpty && blacklist.contains(name)) {
+      blacklist.remove(name);
+      ttsHandler.blackList = blacklist;
+      notifyListeners();
+    }
+  }
+
   TtsModel.fromJson(this.ttsHandler, Map<String, dynamic> json) {
     if (json['isBotMuted'] != null) {
       ttsHandler.isBotMuted = json['isBotMuted'];
@@ -86,6 +101,12 @@ class TtsModel extends ChangeNotifier {
     if (json['isEmoteMuted'] != null) {
       ttsHandler.isEmoteMuted = json['isEmoteMuted'];
     }
+    final blacklist = json['blacklist'];
+    if (blacklist != null) {
+      for (String item in blacklist) {
+        blacklist.add(item);
+      }
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -93,5 +114,6 @@ class TtsModel extends ChangeNotifier {
         "isEmoteMuted": isEmoteMuted,
         "pitch": pitch,
         "speed": speed,
+        'blacklist': blacklist
       };
 }

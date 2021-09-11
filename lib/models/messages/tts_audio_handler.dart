@@ -75,6 +75,7 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
   var isEmoteMuted = false;
   var speed = 1.0;
   var pitch = 1.0;
+  Set<String> blackList = {};
 
   var isPlaying = false;
   // when the user explicitly chooses to seek forward/backward through the history,
@@ -115,7 +116,13 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     }
 
     final message = queue.value[index] as TtsMediaItem;
-    if (fromAutoplay && ((isBotMuted && message.isBot) || message.isCommand)) {
+    final author = message.artist; // author
+    print('blacklist: $blackList');
+
+    if (fromAutoplay &&
+        ((isBotMuted && message.isBot) ||
+            message.isCommand ||
+            blackList.contains(author))) {
       if (index < queue.value.length - 1) {
         await fastForward();
         await play(fromAutoplay: true);
