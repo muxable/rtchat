@@ -39,6 +39,19 @@ class TwitchUserModel {
   const TwitchUserModel(
       {required this.userId, this.displayName, required this.login});
 
+  @override
+  String toString() => login;
+
+  @override
+  int get hashCode => login.hashCode;
+
+  @override
+  bool operator ==(other) =>
+      other is TwitchUserModel &&
+      other.userId == userId &&
+      other.displayName == displayName &&
+      other.login == login;
+
   bool get isBot => botList.contains(login.toLowerCase());
 
   String get display {
@@ -57,4 +70,15 @@ class TwitchUserModel {
 
   String get profilePictureUrl =>
       "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$userId";
+
+  TwitchUserModel.fromJson(Map<String, dynamic> json)
+      : userId = json["userId"],
+        displayName = json["displayName"],
+        login = json["login"];
+
+  Map<String, dynamic> toJson() => {
+        "userId": userId,
+        "displayName": displayName,
+        "login": login,
+      };
 }

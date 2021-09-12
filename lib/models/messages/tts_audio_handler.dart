@@ -3,6 +3,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 
 class TtsMediaItem extends MediaItem {
   final bool isBot;
@@ -75,6 +76,7 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
   var isEmoteMuted = false;
   var speed = 1.0;
   var pitch = 1.0;
+  Set<TwitchUserModel> mutedUsers = {};
 
   var isPlaying = false;
   // when the user explicitly chooses to seek forward/backward through the history,
@@ -115,7 +117,14 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
     }
 
     final message = queue.value[index] as TtsMediaItem;
-    if (fromAutoplay && ((isBotMuted && message.isBot) || message.isCommand)) {
+    bool hasMutedUser = false;
+    if (message.model is TwitchMessageModel) {
+      final m = message.model as TwitchMessageModel;
+      hasMutedUser = mutedUsers.contains(m.author);
+    }
+
+    if (fromAutoplay &&
+        ((isBotMuted && message.isBot) || message.isCommand || hasMutedUser)) {
       if (index < queue.value.length - 1) {
         await fastForward();
         await play(fromAutoplay: true);

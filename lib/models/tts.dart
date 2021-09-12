@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tts_audio_handler.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 
 class TtsModel extends ChangeNotifier {
   TtsAudioHandler ttsHandler;
@@ -73,6 +74,17 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void mute(TwitchUserModel model) {
+    ttsHandler.mutedUsers.add(model);
+    notifyListeners();
+  }
+
+  void unmute(TwitchUserModel model) {
+    if (ttsHandler.mutedUsers.remove(model)) {
+      notifyListeners();
+    }
+  }
+
   TtsModel.fromJson(this.ttsHandler, Map<String, dynamic> json) {
     if (json['isBotMuted'] != null) {
       ttsHandler.isBotMuted = json['isBotMuted'];
@@ -86,6 +98,12 @@ class TtsModel extends ChangeNotifier {
     if (json['isEmoteMuted'] != null) {
       ttsHandler.isEmoteMuted = json['isEmoteMuted'];
     }
+    final mutedUsers = json['mutedUsers'];
+    if (mutedUsers != null) {
+      for (var user in mutedUsers) {
+        mutedUsers.add(TwitchUserModel.fromJson(user));
+      }
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -93,5 +111,6 @@ class TtsModel extends ChangeNotifier {
         "isEmoteMuted": isEmoteMuted,
         "pitch": pitch,
         "speed": speed,
+        'mutedUsers': ttsHandler.mutedUsers
       };
 }
