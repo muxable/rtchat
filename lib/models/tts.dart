@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tts_audio_handler.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 
 class TtsModel extends ChangeNotifier {
   TtsAudioHandler ttsHandler;
-  Set<String> blacklist = {};
+  Set<TwitchUserModel> mutedUsers = {};
 
   set messages(List<MessageModel> messages) {
     // for tts, we sort of cheat a bit and just append the new messages to the end of the list.
@@ -74,16 +75,16 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addNameToBlacklist(String name) {
-    blacklist.add(name);
-    ttsHandler.blackList = blacklist;
+  void addNameToBlacklist(TwitchUserModel model) {
+    mutedUsers.add(model);
+    ttsHandler.mutedUsers = mutedUsers;
     notifyListeners();
   }
 
-  void removeNameFromBlacklist(String name) {
-    if (blacklist.isNotEmpty && blacklist.contains(name)) {
-      blacklist.remove(name);
-      ttsHandler.blackList = blacklist;
+  void removeNameFromBlacklist(TwitchUserModel model) {
+    if (mutedUsers.isNotEmpty && mutedUsers.contains(model)) {
+      mutedUsers.remove(model);
+      ttsHandler.mutedUsers = mutedUsers;
       notifyListeners();
     }
   }
@@ -101,10 +102,10 @@ class TtsModel extends ChangeNotifier {
     if (json['isEmoteMuted'] != null) {
       ttsHandler.isEmoteMuted = json['isEmoteMuted'];
     }
-    final blacklist = json['blacklist'];
-    if (blacklist != null) {
-      for (String item in blacklist) {
-        blacklist.add(item);
+    final mutedUsers = json['mutedUsers'];
+    if (mutedUsers != null) {
+      for (var user in mutedUsers) {
+        mutedUsers.add(TwitchUserModel.fromJson(user));
       }
     }
   }
@@ -114,6 +115,6 @@ class TtsModel extends ChangeNotifier {
         "isEmoteMuted": isEmoteMuted,
         "pitch": pitch,
         "speed": speed,
-        'blacklist': blacklist
+        'mutedUsers': mutedUsers
       };
 }

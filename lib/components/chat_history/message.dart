@@ -61,27 +61,23 @@ class ChatHistoryMessage extends StatelessWidget {
                   builder: (context) {
                     return Dialog(
                       child: ListView(shrinkWrap: true, children: [
-                        if (!ttsModel.blacklist
-                            .contains(m.author.displayName)) ...[
+                        if (!ttsModel.mutedUsers.contains(m.author)) ...[
                           ListTile(
                               leading: const Icon(Icons.volume_off_rounded,
                                   color: Colors.redAccent),
                               title: Text('Mute ${m.author.displayName}'),
                               onTap: () {
-                                ttsModel
-                                    .addNameToBlacklist(m.author.displayName!);
+                                ttsModel.addNameToBlacklist(m.author);
                                 Navigator.pop(context);
                               }),
                         ],
-                        if (ttsModel.blacklist
-                            .contains(m.author.displayName)) ...[
+                        if (ttsModel.mutedUsers.contains(m.author)) ...[
                           ListTile(
                               leading: const Icon(Icons.volume_up_rounded,
                                   color: Colors.deepPurpleAccent),
                               title: Text('Unmute ${m.author.displayName}'),
                               onTap: () {
-                                ttsModel.removeNameFromBlacklist(
-                                    m.author.displayName!);
+                                ttsModel.removeNameFromBlacklist(m.author);
                                 Navigator.pop(context);
                               }),
                         ],
