@@ -80,9 +80,7 @@ class TtsModel extends ChangeNotifier {
   }
 
   void unmute(TwitchUserModel model) {
-    if (ttsHandler.mutedUsers.isNotEmpty &&
-        ttsHandler.mutedUsers.contains(model)) {
-      ttsHandler.mutedUsers.remove(model);
+    if (ttsHandler.mutedUsers.remove(model)) {
       notifyListeners();
     }
   }
