@@ -5,7 +5,6 @@ import 'package:rtchat/models/messages/twitch/user.dart';
 
 class TtsModel extends ChangeNotifier {
   TtsAudioHandler ttsHandler;
-  Set<TwitchUserModel> mutedUsers = {};
 
   set messages(List<MessageModel> messages) {
     // for tts, we sort of cheat a bit and just append the new messages to the end of the list.
@@ -75,16 +74,15 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addNameToBlacklist(TwitchUserModel model) {
-    mutedUsers.add(model);
-    ttsHandler.mutedUsers = mutedUsers;
+  void mute(TwitchUserModel model) {
+    ttsHandler.mutedUsers.add(model);
     notifyListeners();
   }
 
-  void removeNameFromBlacklist(TwitchUserModel model) {
-    if (mutedUsers.isNotEmpty && mutedUsers.contains(model)) {
-      mutedUsers.remove(model);
-      ttsHandler.mutedUsers = mutedUsers;
+  void unmute(TwitchUserModel model) {
+    if (ttsHandler.mutedUsers.isNotEmpty &&
+        ttsHandler.mutedUsers.contains(model)) {
+      ttsHandler.mutedUsers.remove(model);
       notifyListeners();
     }
   }
@@ -115,6 +113,6 @@ class TtsModel extends ChangeNotifier {
         "isEmoteMuted": isEmoteMuted,
         "pitch": pitch,
         "speed": speed,
-        'mutedUsers': mutedUsers
+        'mutedUsers': ttsHandler.mutedUsers
       };
 }

@@ -53,7 +53,7 @@ class ChatHistoryMessage extends StatelessWidget {
         if (loginChannel != viewingChannel) {
           return child;
         }
-        final ttsModel = Provider.of<TtsModel>(context, listen: false);
+
         return InkWell(
             onLongPress: () async {
               var showTimeoutDialog = await showDialog<bool>(
@@ -61,26 +61,29 @@ class ChatHistoryMessage extends StatelessWidget {
                   builder: (context) {
                     return Dialog(
                       child: ListView(shrinkWrap: true, children: [
-                        if (!ttsModel.mutedUsers.contains(m.author)) ...[
-                          ListTile(
+                        Builder(builder: (context) {
+                          final ttsModel =
+                              Provider.of<TtsModel>(context, listen: false);
+                          if (ttsModel.ttsHandler.mutedUsers
+                              .contains(m.author)) {
+                            return ListTile(
+                                leading: const Icon(Icons.volume_up_rounded,
+                                    color: Colors.deepPurpleAccent),
+                                title: Text('Unmute ${m.author.displayName}'),
+                                onTap: () {
+                                  ttsModel.unmute(m.author);
+                                  Navigator.pop(context);
+                                });
+                          }
+                          return ListTile(
                               leading: const Icon(Icons.volume_off_rounded,
                                   color: Colors.redAccent),
                               title: Text('Mute ${m.author.displayName}'),
                               onTap: () {
-                                ttsModel.addNameToBlacklist(m.author);
+                                ttsModel.mute(m.author);
                                 Navigator.pop(context);
-                              }),
-                        ],
-                        if (ttsModel.mutedUsers.contains(m.author)) ...[
-                          ListTile(
-                              leading: const Icon(Icons.volume_up_rounded,
-                                  color: Colors.deepPurpleAccent),
-                              title: Text('Unmute ${m.author.displayName}'),
-                              onTap: () {
-                                ttsModel.removeNameFromBlacklist(m.author);
-                                Navigator.pop(context);
-                              }),
-                        ],
+                              });
+                        }),
                         ListTile(
                             leading: const Icon(Icons.delete,
                                 color: Colors.redAccent),
