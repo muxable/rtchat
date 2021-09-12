@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -46,6 +47,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   setState(() => _isLoading = true);
                   final user = Provider.of<UserModel>(context, listen: false);
                   try {
+                    await FirebaseAnalytics().logLogin(loginMethod: "twitch");
                     final result = await FlutterWebAuth.authenticate(
                         url: url.toString(),
                         callbackUrlScheme: "com.rtirl.chat");

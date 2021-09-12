@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -10,15 +11,18 @@ import 'package:rxdart/rxdart.dart';
 class UserModel extends ChangeNotifier {
   User? _user = FirebaseAuth.instance.currentUser;
   late final StreamSubscription<void> _subscription;
+  static final analytics = FirebaseAnalytics();
   Channel? _userChannel;
 
   UserModel() {
     _subscription = FirebaseAuth.instance
         .authStateChanges()
-        .doOnData((user) {
+        .doOnData((user) async {
           _user = user;
           notifyListeners();
-          FirebaseCrashlytics.instance.setUserIdentifier(user?.uid ?? "");
+          await FirebaseCrashlytics.instance.setUserIdentifier(user?.uid ?? "");
+          await analytics.setUserId(user?.uid);
+          await analytics.setUserProperty(name: "provider", value: "twitch");
         })
         .switchMap((user) => user == null
             ? Stream.value(null)
