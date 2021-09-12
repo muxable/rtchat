@@ -122,8 +122,6 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
       final m = message.model as TwitchMessageModel;
       hasMutedUser = mutedUsers.contains(m.author);
     }
-    print('hasMutedUser: $hasMutedUser');
-    print('mutedUsers: $mutedUsers');
 
     if (fromAutoplay &&
         ((isBotMuted && message.isBot) || message.isCommand || hasMutedUser)) {
