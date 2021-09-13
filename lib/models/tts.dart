@@ -98,10 +98,10 @@ class TtsModel extends ChangeNotifier {
     if (json['isEmoteMuted'] != null) {
       ttsHandler.isEmoteMuted = json['isEmoteMuted'];
     }
-    final mutedUsers = json['mutedUsers'];
-    if (mutedUsers != null) {
-      for (var user in mutedUsers) {
-        mutedUsers.add(TwitchUserModel.fromJson(user));
+    final userJson = json['mutedUsers'];
+    if (userJson != null) {
+      for (var user in userJson) {
+        ttsHandler.mutedUsers.add(TwitchUserModel.fromJson(user));
       }
     }
   }
