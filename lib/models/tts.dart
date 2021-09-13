@@ -111,6 +111,6 @@ class TtsModel extends ChangeNotifier {
         "isEmoteMuted": isEmoteMuted,
         "pitch": pitch,
         "speed": speed,
-        'mutedUsers': ttsHandler.mutedUsers
+        'mutedUsers': ttsHandler.mutedUsers.toList()
       };
 }
