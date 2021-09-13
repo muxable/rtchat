@@ -9,8 +9,7 @@ class TtsModel extends ChangeNotifier {
   set messages(List<MessageModel> messages) {
     // for tts, we sort of cheat a bit and just append the new messages to the end of the list.
     final index = ttsHandler.messages.isNotEmpty
-        ? messages
-            .lastIndexWhere(
+        ? messages.lastIndexWhere(
             (message) => message.messageId == ttsHandler.messages.last.id)
         : -1;
     final mediaItems = messages

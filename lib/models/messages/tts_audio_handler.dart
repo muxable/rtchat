@@ -188,7 +188,7 @@ class TtsAudioHandler extends BaseAudioHandler {
   Future<void> add(List<TtsMediaItem> mediaItems) async {
     messages.addAll(mediaItems);
     if (enabled && !isSeeking && !isPlaying) {
-    index = messages.length - mediaItems.length;
+      index = messages.length - mediaItems.length;
       updateMediaControls();
       await play(fromAutoplay: true);
     }
