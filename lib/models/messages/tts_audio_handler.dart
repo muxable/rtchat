@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -70,53 +71,41 @@ class TtsMediaItem extends MediaItem {
   }
 }
 
-class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
+class TtsAudioHandler extends BaseAudioHandler {
   final FlutterTts _tts = FlutterTts();
   var isBotMuted = false;
   var isEmoteMuted = false;
   var speed = 1.0;
   var pitch = 1.0;
-  Set<TwitchUserModel> mutedUsers = {};
+  final Set<TwitchUserModel> mutedUsers = {};
+
+  final List<TtsMediaItem> messages = [];
+  var index = 0;
 
   var isPlaying = false;
   // when the user explicitly chooses to seek forward/backward through the history,
   // autoplay is disabled.
   var isSeeking = false;
+  var isEnabled = false;
 
   TtsAudioHandler() {
     _tts.setCompletionHandler(() async {
-      final index = playbackState.value.queueIndex;
-      if (index != null && index < queue.value.length - 1) {
-        await fastForward();
+      if (index < messages.length - 1) {
+        index++;
         await play(fromAutoplay: true);
       } else {
         await stop();
       }
     });
-
-    playbackState.add(PlaybackState(
-      controls: const [
-        MediaControl.rewind,
-        MediaControl.play,
-        MediaControl.fastForward,
-      ],
-      androidCompactActionIndices: const [0, 1, 2],
-      processingState: AudioProcessingState.ready,
-      playing: false,
-      queueIndex: 0,
-    ));
   }
 
   @override
   Future<void> play({bool fromAutoplay = false}) async {
     isSeeking = false;
     isPlaying = true;
-    final index = playbackState.value.queueIndex;
-    if (index == null) {
-      return;
-    }
+    updateMediaControls();
 
-    final message = queue.value[index] as TtsMediaItem;
+    final message = messages[index];
     bool hasMutedUser = false;
     if (message.model is TwitchMessageModel) {
       final m = message.model as TwitchMessageModel;
@@ -125,20 +114,14 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
 
     if (fromAutoplay &&
         ((isBotMuted && message.isBot) || message.isCommand || hasMutedUser)) {
-      if (index < queue.value.length - 1) {
-        await fastForward();
+      if (index < messages.length - 1) {
+        index++;
         await play(fromAutoplay: true);
       } else {
         await stop();
       }
       return;
     }
-    playbackState.add(playbackState.value.copyWith(controls: const [
-      MediaControl.rewind,
-      MediaControl.stop,
-      MediaControl.fastForward,
-      MediaControl.skipToNext,
-    ]));
     final vocalization = message.getVocalization(emotes: !isEmoteMuted);
     await _tts.setSpeechRate(speed);
     await _tts.setPitch(pitch);
@@ -149,12 +132,8 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
   Future<void> stop() async {
     isSeeking = false;
     isPlaying = false;
-    playbackState.add(playbackState.value.copyWith(controls: const [
-      MediaControl.rewind,
-      MediaControl.play,
-      MediaControl.fastForward,
-      MediaControl.skipToNext
-    ]));
+    updateMediaControls();
+
     await _tts.stop();
   }
 
@@ -162,82 +141,94 @@ class TtsAudioHandler extends BaseAudioHandler with QueueHandler {
   Future<void> fastForward() async {
     isSeeking = true;
     await stop();
-    super.skipToNext();
+    if (index < messages.length - 1) {
+      index++;
+    }
+    updateMediaControls();
   }
 
   set enabled(bool enabled) {
-    playbackState.add(playbackState.value.copyWith(playing: enabled));
+    isEnabled = enabled;
     if (enabled) {
-      skipToEnd();
+      index = messages.length - 1;
+      updateMediaControls();
     } else {
       stop();
     }
   }
 
-  bool get enabled => playbackState.value.playing;
+  bool get enabled => isEnabled;
 
   @override
   Future<void> rewind() async {
     isSeeking = true;
+    index = max(0, index - 1);
     await stop();
-    super.skipToPrevious();
+    updateMediaControls();
   }
 
   @override
   Future<void> skipToPrevious() async {
     // this might come from a media button. basically if this happens,
     // immediately play the previous message.
-    super.skipToPrevious();
+    index = max(0, index - 1);
     await play();
+    updateMediaControls();
   }
 
   @override
   Future<void> skipToNext() async {
+    // this is actually skip to end.
     isSeeking = false;
-    await skipToEnd();
-  }
-
-  @override
-  Future<void> addQueueItem(MediaItem mediaItem) async {
-    await super.addQueueItem(mediaItem);
-    if (enabled && !isSeeking && !isPlaying) {
-      await skipToEnd();
-      await play(fromAutoplay: true);
-    }
-  }
-
-  @override
-  Future<void> addQueueItems(List<MediaItem> mediaItems) async {
-    await super.addQueueItems(mediaItems);
-    if (enabled && !isSeeking && !isPlaying) {
-      await skipToEnd();
-      await play(fromAutoplay: true);
-    }
-  }
-
-  Future<void> setQueueItem(int index, MediaItem mediaItem) async {
-    queue.add(queue.value..setAll(index, [mediaItem]));
-  }
-
-  @override
-  Future<void> skipToQueueItem(int index) async {
-    if (index < 0 || index >= queue.value.length) {
-      return;
-    }
-    playbackState.add(playbackState.value.copyWith(queueIndex: index));
-    mediaItem.add(queue.value[index]);
-    await super.skipToQueueItem(index);
-  }
-
-  Future<void> skipToEnd() async {
+    index = messages.length - 1;
     await stop();
-    await skipToQueueItem(queue.value.length - 1);
+    updateMediaControls();
+  }
+
+  Future<void> add(List<TtsMediaItem> mediaItems) async {
+    messages.addAll(mediaItems);
+    if (enabled && !isSeeking && !isPlaying) {
+    index = messages.length - mediaItems.length;
+      updateMediaControls();
+      await play(fromAutoplay: true);
+    }
+  }
+
+  Future<void> set(List<TtsMediaItem> mediaItems) async {
+    messages
+      ..clear()
+      ..addAll(mediaItems);
+    if (enabled && !isSeeking && !isPlaying) {
+      index = messages.length - 1;
+      updateMediaControls();
+    }
   }
 
   Future<void> force(String message) async {
-    await skipToEnd();
+    index = messages.length;
+    updateMediaControls();
     await _tts.setSpeechRate(speed);
     await _tts.setPitch(pitch);
     await _tts.speak(message);
+  }
+
+  void updateMediaControls() {
+    playbackState.add(playbackState.value.copyWith(
+      controls: [
+        MediaControl.rewind,
+        isPlaying ? MediaControl.stop : MediaControl.play,
+        MediaControl.fastForward,
+        MediaControl.skipToNext
+      ],
+      androidCompactActionIndices: const [0, 1, 2],
+      processingState: AudioProcessingState.ready,
+      playing: isEnabled,
+      queueIndex: 0,
+    ));
+    if (messages.isNotEmpty) {
+      mediaItem.add(messages[index]);
+    } else {
+      mediaItem.add(null);
+    }
   }
 }

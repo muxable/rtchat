@@ -8,10 +8,10 @@ class TtsModel extends ChangeNotifier {
 
   set messages(List<MessageModel> messages) {
     // for tts, we sort of cheat a bit and just append the new messages to the end of the list.
-    final queue = ttsHandler.queue.value;
-    final index = queue.isNotEmpty
+    final index = ttsHandler.messages.isNotEmpty
         ? messages
-            .lastIndexWhere((message) => message.messageId == queue.last.id)
+            .lastIndexWhere(
+            (message) => message.messageId == ttsHandler.messages.last.id)
         : -1;
     final mediaItems = messages
         .sublist(index + 1)
@@ -21,18 +21,10 @@ class TtsModel extends ChangeNotifier {
     if (index == -1) {
       // looks like we wiped the history, so reset the queue.
       enabled = false;
-      ttsHandler.updateQueue(mediaItems);
+      ttsHandler.set(mediaItems);
     } else {
-      ttsHandler.addQueueItems(mediaItems);
+      ttsHandler.add(mediaItems);
     }
-  }
-
-  Future<void> clearQueue() async {
-    await ttsHandler.updateQueue([]);
-  }
-
-  List<TtsMediaItem> get queue {
-    return ttsHandler.queue.value as List<TtsMediaItem>;
   }
 
   Future<void> force(String message) => ttsHandler.force(message);
