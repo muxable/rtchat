@@ -137,7 +137,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
   FollowEventConfig followEventConfig =
       FollowEventConfig(false, const Duration(seconds: 2));
   SubscriptionEventConfig subscriptionEventConfig =
-      SubscriptionEventConfig(false, false, const Duration(seconds: 6));
+      SubscriptionEventConfig(true, false, const Duration(seconds: 6));
   CheerEventConfig cheerEventConfig =
       CheerEventConfig(true, const Duration(seconds: 6));
   RaidEventConfig raidEventConfig =
