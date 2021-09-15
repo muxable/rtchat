@@ -99,6 +99,11 @@ class PollEventConfig {
   PollEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
 }
 
 class HypetrainEventConfig {
@@ -135,7 +140,7 @@ class PredictionEventConfig {
 
 class EventSubConfigurationModel extends ChangeNotifier {
   FollowEventConfig followEventConfig =
-      FollowEventConfig(false, const Duration(seconds: 2));
+      FollowEventConfig(true, const Duration(seconds: 2));
   SubscriptionEventConfig subscriptionEventConfig =
       SubscriptionEventConfig(true, false, const Duration(seconds: 6));
   CheerEventConfig cheerEventConfig =
@@ -277,13 +282,14 @@ class EventSubConfigurationModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-        "followEventConfig": followEventConfig,
-        "subscriptionEventConfig": subscriptionEventConfig,
-        "cheerEventConfig": cheerEventConfig,
-        "raidEventConfig": raidEventConfig,
-        "pollEventConfig": pollEventConfig,
-        "channelPointsRedemptionEventConfig": channelPointRedemptionEventConfig,
-        "hypeTrainConfig": hypetrainEventConfig,
-        "predictionEventConfig": predictionEventConfig
+        "followEventConfig": followEventConfig.toJson(),
+        "subscriptionEventConfig": subscriptionEventConfig.toJson(),
+        "cheerEventConfig": cheerEventConfig.toJson(),
+        "raidEventConfig": raidEventConfig.toJson(),
+        "pollEventConfig": pollEventConfig.toJson(),
+        "channelPointRedemptionEventConfig":
+            channelPointRedemptionEventConfig.toJson(),
+        "hypetrainEventConfig": hypetrainEventConfig.toJson(),
+        "predictionEventConfig": predictionEventConfig.toJson(),
       };
 }
