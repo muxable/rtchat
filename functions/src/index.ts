@@ -306,11 +306,10 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
           { headers: headers }
         );
         const json = await response.json();
-        if (!json["data"] || json["data"].length === 0) {
-          console.log(json);
-          throw new functions.https.HttpsError("not-found", "image not found");
-        }
-        const image = await fetch(json["data"][0]["profile_image_url"]);
+        const imageUrl =
+          json["data"]?.[0]?.["profile_image_url"] ??
+          "https://static-cdn.jtvnw.net/user-default-pictures-uv/ebb84563-db81-4b9c-8940-64ed33ccfc7b-profile_image-300x300.png";
+        const image = await fetch(imageUrl);
         res.setHeader("Content-Type", "image/png");
         res.status(200).send(await image.buffer());
       } catch (err) {
