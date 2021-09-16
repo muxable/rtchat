@@ -205,7 +205,7 @@ class TtsAudioHandler extends BaseAudioHandler {
   }
 
   Future<void> force(String message) async {
-    index = messages.length;
+    index = messages.length - 1;
     updateMediaControls();
     await _tts.setSpeechRate(speed);
     await _tts.setPitch(pitch);
