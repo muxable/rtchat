@@ -180,57 +180,58 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      Consumer<ChannelsModel>(builder: (context, model, child) {
-        return Consumer<EventSubConfigurationModel>(
-            builder: (context, eventSubConfigurationModel, child) {
-          final messages = model.messages.reversed.toList();
-          final expirations = messages
-              .map((message) =>
-                  _getExpiration(message, eventSubConfigurationModel))
-              .toList();
-          return _RebuildableWidget(
-              rebuildAt: expirations.whereType<DateTime>().toSet(),
-              builder: (context) {
-                final now = DateTime.now();
-                return PinnableMessageScrollView(
-                  vsync: this,
-                  controller: _controller,
-                  itemBuilder: (index) => StyleModelTheme(
-                    child: ChatHistoryMessage(message: messages[index]),
-                  ),
-                  isPinnedBuilder: (index) {
-                    final expiration = expirations[index];
-                    if (expiration != null) {
-                      return expiration.isAfter(now);
-                    }
-                  },
-                  count: messages.length,
-                );
-              });
-        });
-      }),
-      Builder(builder: (context) {
-        if (_atBottom) {
-          return Container();
-        }
-        return Container(
-          alignment: Alignment.bottomCenter,
-          child: TextButton(
-              onPressed: () {
-                _controller.animateTo(0,
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeInOut);
-              },
-              style: ButtonStyle(
-                backgroundColor:
-                    MaterialStateProperty.all(Colors.black.withOpacity(0.6)),
-                padding: MaterialStateProperty.all(
-                    const EdgeInsets.only(left: 16, right: 16)),
-              ),
-              child: const Text("Scroll to bottom")),
-        );
-      }),
-    ]);
+    return Stack(
+      alignment: AlignmentDirectional.topCenter,
+      children: [
+        Consumer<ChannelsModel>(builder: (context, model, child) {
+          return Consumer<EventSubConfigurationModel>(
+              builder: (context, eventSubConfigurationModel, child) {
+            final messages = model.messages.reversed.toList();
+            final expirations = messages
+                .map((message) =>
+                    _getExpiration(message, eventSubConfigurationModel))
+                .toList();
+            return _RebuildableWidget(
+                rebuildAt: expirations.whereType<DateTime>().toSet(),
+                builder: (context) {
+                  final now = DateTime.now();
+                  return PinnableMessageScrollView(
+                    vsync: this,
+                    controller: _controller,
+                    itemBuilder: (index) => StyleModelTheme(
+                      child: ChatHistoryMessage(message: messages[index]),
+                    ),
+                    isPinnedBuilder: (index) {
+                      final expiration = expirations[index];
+                      if (expiration != null) {
+                        return expiration.isAfter(now);
+                      }
+                    },
+                    count: messages.length,
+                  );
+                });
+          });
+        }),
+        AnimatedPositioned(
+          duration: const Duration(milliseconds: 300),
+          bottom: _atBottom ? -72 : 16,
+          curve: Curves.easeOut,
+          child: Center(
+            child: ElevatedButton(
+                onPressed: () {
+                  _controller.animateTo(0,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut);
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Theme.of(context).primaryColor,
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(16),
+                ),
+                child: const Icon(Icons.arrow_downward, color: Colors.white)),
+          ),
+        ),
+      ],
+    );
   }
 }
