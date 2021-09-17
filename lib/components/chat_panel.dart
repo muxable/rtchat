@@ -180,7 +180,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
+    return Stack(
+      alignment: AlignmentDirectional.topCenter,
+      children: [
       Consumer<ChannelsModel>(builder: (context, model, child) {
         return Consumer<EventSubConfigurationModel>(
             builder: (context, eventSubConfigurationModel, child) {
@@ -210,27 +212,26 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
               });
         });
       }),
-      Builder(builder: (context) {
-        if (_atBottom) {
-          return Container();
-        }
-        return Container(
-          alignment: Alignment.bottomCenter,
-          child: TextButton(
+      AnimatedPositioned(
+          duration: const Duration(milliseconds: 300),
+          bottom: _atBottom ? -72 : 16,
+          curve: Curves.easeOut,
+          child: Center(
+            child: ElevatedButton(
               onPressed: () {
                 _controller.animateTo(0,
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeInOut);
               },
-              style: ButtonStyle(
-                backgroundColor:
-                    MaterialStateProperty.all(Colors.black.withOpacity(0.6)),
-                padding: MaterialStateProperty.all(
-                    const EdgeInsets.only(left: 16, right: 16)),
+              style: ElevatedButton.styleFrom(
+                  primary: Theme.of(context).primaryColor,
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(16),
               ),
-              child: const Text("Scroll to bottom")),
-        );
-      }),
-    ]);
+              child: const Icon(Icons.arrow_downward, color: Colors.white)),
+          ),
+        ),
+      ],
+    );
   }
 }
