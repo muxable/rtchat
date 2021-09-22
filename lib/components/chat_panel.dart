@@ -13,6 +13,8 @@ import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dar
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/message_configuration.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
@@ -78,7 +80,9 @@ class _RebuildableWidgetState extends State<_RebuildableWidget> {
 }
 
 DateTime? _getExpiration(
-    MessageModel model, EventSubConfigurationModel eventSubConfigurationModel) {
+    MessageModel model,
+    EventSubConfigurationModel eventSubConfigurationModel,
+    TwitchMessageConfig twitchMessageConfig) {
   if (model is TwitchRaidEventModel) {
     final raidEventConfig = eventSubConfigurationModel.raidEventConfig;
     return raidEventConfig.eventDuration > Duration.zero
@@ -137,6 +141,17 @@ DateTime? _getExpiration(
     }
 
     return model.endTime.add(predictionEventConfig.eventDuration);
+  } else if (model is TwitchMessageModel) {
+    if (model.isMod) {
+      return twitchMessageConfig.modMessageDuration > Duration.zero
+          ? model.timestamp.add(twitchMessageConfig.modMessageDuration)
+          : null;
+    } else if (model.isVip) {
+      return twitchMessageConfig.vipMessageDuration > Duration.zero
+          ? model.timestamp.add(twitchMessageConfig.vipMessageDuration)
+          : null;
+    }
+    return null;
   }
 }
 
@@ -184,12 +199,13 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
       alignment: AlignmentDirectional.topCenter,
       children: [
         Consumer<ChannelsModel>(builder: (context, model, child) {
-          return Consumer<EventSubConfigurationModel>(
-              builder: (context, eventSubConfigurationModel, child) {
+          return Consumer2<EventSubConfigurationModel, TwitchMessageConfig>(
+              builder: (context, eventSubConfigurationModel,
+                  twitchMessageConfig, child) {
             final messages = model.messages.reversed.toList();
             final expirations = messages
-                .map((message) =>
-                    _getExpiration(message, eventSubConfigurationModel))
+                .map((message) => _getExpiration(
+                    message, eventSubConfigurationModel, twitchMessageConfig))
                 .toList();
             return _RebuildableWidget(
                 rebuildAt: expirations.whereType<DateTime>().toSet(),

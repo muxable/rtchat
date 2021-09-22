@@ -182,6 +182,10 @@ class TwitchMessageModel extends MessageModel {
 
   bool get isCommand => !isAction && message.startsWith("!");
 
+  bool get isVip => badges.any((element) => element.key == 'vip');
+
+  bool get isMod => badges.any((element) => element.key == 'moderator');
+
   List<MessageToken> get tokenized => _tokenized ??= tokenize();
   List<MessageToken>? _tokenized;
   List<MessageToken> tokenize() {

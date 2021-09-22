@@ -4,6 +4,7 @@ import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/style_model_theme.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/message_configuration.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
 
@@ -164,6 +165,50 @@ class ChatHistoryScreen extends StatelessWidget {
                 }
               },
             ),
+            Consumer<TwitchMessageConfig>(builder: (context, model, child) {
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Pin mod message duration",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontWeight: FontWeight.bold,
+                        )),
+                    Slider.adaptive(
+                      value: model.modMessageDuration.inSeconds.toDouble(),
+                      min: 0,
+                      max: 30,
+                      divisions: 15,
+                      label:
+                          "${model.modMessageDuration.inSeconds.toDouble()} seconds",
+                      onChanged: (value) {
+                        model.setModMessageDuration(
+                            Duration(seconds: value.toInt()));
+                      },
+                    ),
+                    Text("Pin vip message duration",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontWeight: FontWeight.bold,
+                        )),
+                    Slider.adaptive(
+                      value: model.vipMessageDuration.inSeconds.toDouble(),
+                      min: 0,
+                      max: 30,
+                      divisions: 15,
+                      label:
+                          "${model.vipMessageDuration.inSeconds.toDouble()} seconds",
+                      onChanged: (value) {
+                        model.setVipMessageDuration(
+                            Duration(seconds: value.toInt()));
+                      },
+                    ),
+                  ],
+                ),
+              );
+            }),
           ],
         );
       }),
