@@ -21,6 +21,7 @@ import 'package:rtchat/models/messages/tts_audio_handler.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/message_configuration.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
@@ -254,6 +255,15 @@ class _AppState extends State<App> {
               jsonDecode(widget.prefs.getString("commands") ?? "{}"));
           model.addListener(() {
             widget.prefs.setString("commands", jsonEncode(model.toJson()));
+          });
+          return model;
+        }),
+        ChangeNotifierProvider(create: (context) {
+          final model = TwitchMessageConfig.fromJson(
+              jsonDecode(widget.prefs.getString("message_config") ?? "{}"));
+          model.addListener(() {
+            widget.prefs
+                .setString("message_config", jsonEncode(model.toJson()));
           });
           return model;
         }),

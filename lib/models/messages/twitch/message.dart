@@ -182,6 +182,20 @@ class TwitchMessageModel extends MessageModel {
 
   bool get isCommand => !isAction && message.startsWith("!");
 
+  bool get isVip {
+    if (tags['badges'] == null) {
+      return false;
+    }
+    return tags['badges']['vip'] != null;
+  }
+
+  bool get isModerator {
+    if (tags['badges'] == null) {
+      return false;
+    }
+    return tags['badges']['moderator'] != null;
+  }
+
   List<MessageToken> get tokenized => _tokenized ??= tokenize();
   List<MessageToken>? _tokenized;
   List<MessageToken> tokenize() {
