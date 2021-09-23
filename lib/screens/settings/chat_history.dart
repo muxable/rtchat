@@ -171,7 +171,7 @@ class ChatHistoryScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Pin mod message duration",
+                    Text("Moderator message pin duration",
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
@@ -188,7 +188,7 @@ class ChatHistoryScreen extends StatelessWidget {
                             Duration(seconds: value.toInt()));
                       },
                     ),
-                    Text("Pin vip message duration",
+                    Text("VIP message pin duration",
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,

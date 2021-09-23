@@ -142,7 +142,7 @@ DateTime? _getExpiration(
 
     return model.endTime.add(predictionEventConfig.eventDuration);
   } else if (model is TwitchMessageModel) {
-    if (model.isMod) {
+    if (model.isModerator) {
       return twitchMessageConfig.modMessageDuration > Duration.zero
           ? model.timestamp.add(twitchMessageConfig.modMessageDuration)
           : null;
