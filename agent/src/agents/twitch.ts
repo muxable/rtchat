@@ -66,14 +66,7 @@ export async function runTwitchAgent(agentId: string) {
   });
 
   twitch.chat.on(TwitchJs.Chat.Events.PRIVATE_MESSAGE, (message) => {
-    if (message.command !== TwitchJs.Chat.Commands.PRIVATE_MESSAGE) {
-      return;
-    }
-    if (
-      message.event !== TwitchJs.Chat.Commands.PRIVATE_MESSAGE &&
-      // TODO: Stop sending cheer events and use event sub instead.
-      message.event !== "CHEER"
-    ) {
+    if (message.event !== TwitchJs.Chat.Commands.PRIVATE_MESSAGE) {
       return;
     }
 
