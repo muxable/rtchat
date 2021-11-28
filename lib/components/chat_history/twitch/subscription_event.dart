@@ -48,9 +48,11 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
                 style: Theme.of(context).textTheme.subtitle2),
             TextSpan(
                 text:
-                    " gifted ${model.total} Tier ${model.tier.replaceAll("000", "")} to ${model.recipient}"),
+                    " gifted ${model.total} Tier ${model.tier.replaceAll("000", "")}"),
             TextSpan(
-                text: model.total > 1 ? "subscriptions." : "subscription. "),
+                text: model.total > 1
+                    ? "subscriptions."
+                    : "subscription to ${model.recipient} "),
             TextSpan(
                 text:
                     "They've gifted ${model.cumulativeTotal} months in the channel"),
