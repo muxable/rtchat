@@ -3,7 +3,6 @@ import 'package:rtchat/models/messages/message.dart';
 class TwitchSubscriptionGiftEventModel extends MessageModel {
   final String gifterUserName;
   final String tier;
-  final String recipient;
   final int total;
   final int cumulativeTotal;
 
@@ -12,7 +11,6 @@ class TwitchSubscriptionGiftEventModel extends MessageModel {
       required String messageId,
       required this.gifterUserName,
       required this.tier,
-      required this.recipient,
       required this.total,
       required this.cumulativeTotal})
       : super(messageId: messageId, timestamp: timestamp);
