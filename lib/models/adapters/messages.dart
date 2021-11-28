@@ -104,7 +104,8 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
           messageId: change.doc.id,
           gifterUserName: gifterName,
           tier: data['event']['tier'],
-          total: data['event']['total']);
+          total: data['event']['total'],
+          cumulativeTotal: data['event']['cumulativeTotal'] ?? 0);
 
       return AppendDeltaEvent(model);
     case "channel.subscription.message":
