@@ -103,7 +103,7 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
           timestamp: data['timestamp'].toDate(),
           messageId: change.doc.id,
           gifterUserName: gifterName,
-          recipient: data['event']['broadcaster_user_name'],
+          recipient: data['event']['user_name'],
           tier: data['event']['tier'],
           total: data['event']['total'],
           cumulativeTotal: data['event']['cumulative_total'] ?? 0);
