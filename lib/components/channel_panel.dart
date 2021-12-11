@@ -21,9 +21,11 @@ class _ChannelPickerValue {
 
 class ChannelPanelWidget extends StatefulWidget {
   final void Function(bool)? onScrollback;
+  final void Function()? onRequestExpand;
   final void Function(double)? onResize;
 
-  const ChannelPanelWidget({Key? key, this.onScrollback, this.onResize})
+  const ChannelPanelWidget(
+      {Key? key, this.onScrollback, this.onResize, this.onRequestExpand})
       : super(key: key);
 
   @override
@@ -47,6 +49,11 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
     final header = Padding(
       padding: const EdgeInsets.only(left: 16),
       child: GestureDetector(
+        onDoubleTap: () {
+          if (widget.onRequestExpand != null) {
+            widget.onRequestExpand!();
+          }
+        },
         onVerticalDragUpdate: (details) {
           final layoutModel = Provider.of<LayoutModel>(context, listen: false);
           if (layoutModel.locked || widget.onResize == null) {

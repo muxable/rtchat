@@ -60,6 +60,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: DiscoWidget(
                   isEnabled: widget.isDiscoModeEnabled,
                   child: ChannelPanelWidget(
+                    onRequestExpand: () {
+                      setState(() {
+                        _minimized = !_minimized;
+                      });
+                    },
                     onScrollback: (isScrolled) {
                       setState(() {
                         _minimized = isScrolled;
