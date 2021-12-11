@@ -1,8 +1,6 @@
 import 'dart:core';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 Color darken(Color color, [double amount = .1]) {
   assert(amount >= 0 && amount <= 1);

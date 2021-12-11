@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_image/network.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';

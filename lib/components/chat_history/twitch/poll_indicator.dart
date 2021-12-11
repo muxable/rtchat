@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/style.dart';

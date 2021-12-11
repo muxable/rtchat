@@ -5,7 +5,6 @@ import 'dart:math';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_analytics/observer.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
@@ -121,8 +120,8 @@ class App extends StatefulWidget {
   final SharedPreferences prefs;
   final TtsAudioHandler ttsHandler;
 
-  static final analytics = FirebaseAnalytics();
-  static final observer = FirebaseAnalyticsObserver(analytics: analytics);
+  static final observer =
+      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
 
   const App({Key? key, required this.prefs, required this.ttsHandler})
       : super(key: key);

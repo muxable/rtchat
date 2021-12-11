@@ -47,7 +47,8 @@ class _SignInScreenState extends State<SignInScreen> {
                   setState(() => _isLoading = true);
                   final user = Provider.of<UserModel>(context, listen: false);
                   try {
-                    await FirebaseAnalytics().logLogin(loginMethod: "twitch");
+                    await FirebaseAnalytics.instance
+                        .logLogin(loginMethod: "twitch");
                     final result = await FlutterWebAuth.authenticate(
                         url: url.toString(),
                         callbackUrlScheme: "com.rtirl.chat");

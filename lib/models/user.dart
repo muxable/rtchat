@@ -11,7 +11,7 @@ import 'package:rxdart/rxdart.dart';
 class UserModel extends ChangeNotifier {
   User? _user = FirebaseAuth.instance.currentUser;
   late final StreamSubscription<void> _subscription;
-  static final analytics = FirebaseAnalytics();
+
   Channel? _userChannel;
 
   UserModel() {
@@ -21,8 +21,9 @@ class UserModel extends ChangeNotifier {
           _user = user;
           notifyListeners();
           await FirebaseCrashlytics.instance.setUserIdentifier(user?.uid ?? "");
-          await analytics.setUserId(user?.uid);
-          await analytics.setUserProperty(name: "provider", value: "twitch");
+          await FirebaseAnalytics.instance.setUserId(id: user?.uid);
+          await FirebaseAnalytics.instance
+              .setUserProperty(name: "provider", value: "twitch");
         })
         .switchMap((user) => user == null
             ? Stream.value(null)

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:core';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
