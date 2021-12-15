@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
@@ -127,6 +128,14 @@ class ChatHistoryMessage extends StatelessWidget {
                               ActionsAdapter.instance.unban(
                                   channelsModel.subscribedChannels.first,
                                   m.author.login);
+                              Navigator.pop(context);
+                            }),
+                        ListTile(
+                            leading: const Icon(Icons.copy_outlined,
+                                color: Colors.greenAccent),
+                            title: const Text('Copy message'),
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(text: m.message));
                               Navigator.pop(context);
                             }),
                       ]),
