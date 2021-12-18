@@ -34,7 +34,7 @@ export async function getTwitchLogin(uid: string, id: string) {
 
   const json = await response.json();
 
-  if (json["data"].length == 0) {
+  if (!json || !json["data"] || json["data"].length == 0) {
     return null;
   }
   return json["data"][0]["login"] as string;
