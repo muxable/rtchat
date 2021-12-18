@@ -316,8 +316,9 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
         console.error(err);
         throw new functions.https.HttpsError("not-found", "image not found");
       }
+    default:
+      throw new functions.https.HttpsError("invalid-argument", "invalid provider");
   }
-  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
 export const getUserEmotes = functions.https.onCall(async (data, context) => {
