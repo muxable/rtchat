@@ -35,6 +35,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textEditingController = TextEditingController();
   String _activeIcon = "view_list";
+  final ValueNotifier<bool> _isAddingLink = ValueNotifier<bool>(false);
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +110,13 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                     textInputAction: TextInputAction.done,
                     onEditingComplete: addLink),
               ),
-              IconButton(icon: const Icon(Icons.add), onPressed: addLink),
+              ValueListenableBuilder<bool>(
+                  valueListenable: _isAddingLink,
+                  builder: (context, _isAdding, _) {
+                    return IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: !_isAdding ? addLink : null);
+                  })
             ]),
           ),
         ),
@@ -121,6 +128,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
     if (_formKey.currentState!.validate()) {
       // fetch the title for the page.
       final url = _textEditingController.text;
+      _isAddingLink.value = true;
       final metadata = await MetadataFetch.extract(url);
 
       Provider.of<QuickLinksModel>(context, listen: false).addSource(
@@ -128,6 +136,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
 
       _textEditingController.clear();
       FocusScope.of(context).unfocus();
+      _isAddingLink.value = true;
     }
   }
 }
