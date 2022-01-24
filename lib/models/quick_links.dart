@@ -7,7 +7,7 @@ class QuickLinkSource {
   final String icon;
   final Uri url;
 
-  QuickLinkSource( this.icon, this.url);
+  QuickLinkSource(this.icon, this.url);
 
   @override
   bool operator ==(other) => other is QuickLinkSource && other.url == url;
@@ -16,8 +16,7 @@ class QuickLinkSource {
   int get hashCode => url.hashCode;
 
   QuickLinkSource.fromJson(Map<String, dynamic> json)
-      : 
-        icon = json['icon'],
+      : icon = json['icon'],
         url = Uri.parse(json['url']);
 
   Map<String, dynamic> toJson() => {
