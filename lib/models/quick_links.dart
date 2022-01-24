@@ -4,11 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class QuickLinkSource {
-  final String? name;
   final String icon;
   final Uri url;
 
-  QuickLinkSource(this.name, this.icon, this.url);
+  QuickLinkSource( this.icon, this.url);
 
   @override
   bool operator ==(other) => other is QuickLinkSource && other.url == url;
@@ -17,12 +16,11 @@ class QuickLinkSource {
   int get hashCode => url.hashCode;
 
   QuickLinkSource.fromJson(Map<String, dynamic> json)
-      : name = json['name'],
+      : 
         icon = json['icon'],
         url = Uri.parse(json['url']);
 
   Map<String, dynamic> toJson() => {
-        "name": name,
         "url": url.toString(),
         "icon": icon,
       };
