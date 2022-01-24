@@ -53,8 +53,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                 child: ListTile(
                   key: ValueKey(source),
                   leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-                  title:
-                      name == null ? Text(source.url.toString()) : Text(name),
+                  title: name == null ? Text(source.url.toString()) : Text(name),
                   subtitle: name == null ? null : Text(source.url.toString()),
                   trailing: const Icon(Icons.drag_handle),
                 ),
@@ -124,6 +123,11 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
     );
   }
 
+  Future<String> retrieveName(QuickLinkSource link) async {
+    final metadata = await MetadataFetch.extract(link.url.toString());
+    return metadata?.title ?? link.url.toString();
+  }
+
   void addLink() async {
     if (_formKey.currentState!.validate()) {
       // fetch the title for the page.
@@ -136,7 +140,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
 
       _textEditingController.clear();
       FocusScope.of(context).unfocus();
-      _isAddingLink.value = true;
+      _isAddingLink.value = false;
     }
   }
 }
