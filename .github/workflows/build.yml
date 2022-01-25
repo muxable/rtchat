@@ -55,10 +55,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - run: echo $FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON > agent/service_account.json
-        env:
-          FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_JSON }}
-
   deploy:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
