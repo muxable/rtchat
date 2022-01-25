@@ -188,6 +188,14 @@ export class FirebaseAdapter {
             await leave(channel);
             channels.delete(channel);
           }
+          // register a disconnect handler too in case our cleanup isn't called.
+          // if we get preempted here we're in for a bad time.
+          const update: { [key: string]: "" } = {};
+          for (const channel of channels) {
+            update[channel] = "";
+          }
+          await ref.onDisconnect().cancel();
+          await ref.onDisconnect().update(update);
         })
       )
       .subscribe();
@@ -204,6 +212,7 @@ export class FirebaseAdapter {
         update[channel] = "";
       }
       await ref.update(update);
+      await ref.onDisconnect().cancel();
     };
   }
 }
