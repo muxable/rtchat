@@ -1,9 +1,8 @@
 import * as admin from "firebase-admin";
 import { v4 as uuidv4 } from "uuid";
-import * as serviceAccount from "../service_account.json";
 import { runTwitchAgent } from "./agents/twitch";
 
-const PROJECT_ID = serviceAccount.project_id;
+const PROJECT_ID = process.env["PROJECT_ID"] || "rtchat-47692";
 
 admin.initializeApp({
   databaseURL: `https://${PROJECT_ID}-default-rtdb.firebaseio.com`,
