@@ -149,7 +149,7 @@ export class FirebaseAdapter {
         return;
       }
       // incur a slight delay to reduce contesting and load balance a little.
-      const delay = 250 * Math.random() + 50 * Math.log1p(channels.size);
+      const delay = 250 * Math.random() + 250 * Math.log1p(channels.size);
       await new Promise((resolve) => setTimeout(resolve, delay));
       await ref.child(channel).transaction((data) => {
         if (data !== "") {
@@ -181,12 +181,21 @@ export class FirebaseAdapter {
           const add = diff(requestedChannels, channels);
           const remove = diff(channels, requestedChannels);
           for (const channel of add) {
-            await join(channel);
-            channels.add(channel);
+            try {
+              await join(channel);
+              channels.add(channel);
+            } catch (e) {
+              console.error("failed to join " + channel);
+              await ref.child(channel).update("");
+            }
           }
           for (const channel of remove) {
-            await leave(channel);
-            channels.delete(channel);
+            try {
+              await leave(channel);
+              channels.delete(channel);
+            } catch (e) {
+              console.warn("failed to leave " + channel);
+            }
           }
           // register a disconnect handler too in case our cleanup isn't called.
           // if we get preempted here we're in for a bad time.
@@ -198,7 +207,7 @@ export class FirebaseAdapter {
           await ref.onDisconnect().update(update);
         })
       )
-      .subscribe();
+      .subscribe({ error: (err) => console.error(err) });
 
     claimRef.on("value", claimListener);
 
