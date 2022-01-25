@@ -5,6 +5,7 @@ import { runTwitchAgent } from "./agents/twitch";
 const PROJECT_ID = process.env["PROJECT_ID"] || "rtchat-47692";
 
 admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
   databaseURL: `https://${PROJECT_ID}-default-rtdb.firebaseio.com`,
 });
 
