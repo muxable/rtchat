@@ -44,16 +44,6 @@ jobs:
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            
-      - run: |
-          echo "GCP_PROJ_ID=rtchat-47692" >> agent/.env
-          echo "GOOGLE_APPLICATION_CREDENTIALS=service_account.json" >> agent/.env
-          echo "TWITCH_CLIENT_ID=$TWITCH_CLIENT_ID" >> agent/.env
-          echo "TWITCH_CLIENT_SECRET=$TWITCH_CLIENT_SECRET" >> agent/.env
-          echo "TWITCH_BOT_USER_ID=JSdHKOEgwcZijVsuXXdftmizt6E3" >> agent/.env
-        env:
-          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
-          TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
           
       - name: Build and push Docker image
         uses: docker/build-push-action@v2

@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@google-cloud/pubsub": "^2.16.1",
+    "@google-cloud/secret-manager": "^3.10.1",
     "@types/node": "^16.4.13",
     "@types/node-fetch": "^2.5.12",
     "@types/simple-oauth2": "^4.1.1",

@@ -1,29 +1,36 @@
 import * as admin from "firebase-admin";
-import { concatMap, fromEvent, Observable } from "rxjs";
+import { concatMap, Observable } from "rxjs";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
+import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 
-const TWITCH_CLIENT_ID = process.env["TWITCH_CLIENT_ID"];
-const TWITCH_CLIENT_SECRET = process.env["TWITCH_CLIENT_SECRET"];
-const TWITCH_BOT_USER_ID = process.env["TWITCH_BOT_USER_ID"];
-if (!TWITCH_CLIENT_ID || !TWITCH_CLIENT_SECRET || !TWITCH_BOT_USER_ID) {
-  throw new Error("Missing environment variables");
+async function getTwitchOAuthConfig(): Promise<ModuleOptions<"client_id">> {
+  const client = new SecretManagerServiceClient();
+  const id =
+    process.env["TWITCH_CLIENT_ID"] || "edfnh2q85za8phifif9jxt3ey6t9b9";
+  let secret = process.env["TWITCH_CLIENT_SECRET"];
+  if (!secret) {
+    // pull from secret manager.
+    const [version] = await client.accessSecretVersion({
+      name: "projects/rtchat-47692/secrets/twitch-client-secret/versions/latest",
+    });
+    secret = version.payload?.data?.toString();
+  }
+  if (!secret) {
+    throw new Error("twitch client secret missing");
+  }
+  return {
+    client: { id, secret },
+    auth: {
+      tokenHost: "https://id.twitch.tv",
+      tokenPath: "/oauth2/token",
+      authorizePath: "/oauth2/authorize",
+    },
+    options: {
+      bodyFormat: "json",
+      authorizationMethod: "body",
+    },
+  };
 }
-
-export const TWITCH_OAUTH_CONFIG = {
-  client: {
-    id: TWITCH_CLIENT_ID,
-    secret: TWITCH_CLIENT_SECRET,
-  },
-  auth: {
-    tokenHost: "https://id.twitch.tv",
-    tokenPath: "/oauth2/token",
-    authorizePath: "/oauth2/authorize",
-  },
-  options: {
-    bodyFormat: "json",
-    authorizationMethod: "body",
-  },
-} as ModuleOptions<"client_id">;
 
 export function parseTimestamp(
   timestamp: string | undefined
@@ -34,7 +41,9 @@ export function parseTimestamp(
 function getBotUserId(provider: "twitch") {
   switch (provider) {
     case "twitch":
-      return TWITCH_BOT_USER_ID!;
+      return (
+        process.env["TWITCH_BOT_USER_ID"] || "JSdHKOEgwcZijVsuXXdftmizt6E3"
+      );
   }
 }
 
@@ -71,7 +80,7 @@ export class FirebaseAdapter {
     if (!encoded) {
       throw new Error("token not found");
     }
-    const client = new AuthorizationCode(TWITCH_OAUTH_CONFIG);
+    const client = new AuthorizationCode(await getTwitchOAuthConfig());
     let accessToken = client.createToken(JSON.parse(encoded));
     while (accessToken.expired(3600) || forceRefresh) {
       try {
