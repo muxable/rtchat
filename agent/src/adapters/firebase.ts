@@ -149,9 +149,8 @@ export class FirebaseAdapter {
         return;
       }
       // incur a slight delay to reduce contesting and load balance a little.
-      await new Promise((resolve) =>
-        setTimeout(resolve, 250 * Math.random() + 50 * channels.size)
-      );
+      const delay = 250 * Math.random() + 50 * Math.log1p(channels.size);
+      await new Promise((resolve) => setTimeout(resolve, delay));
       await ref.child(channel).transaction((data) => {
         if (data !== "") {
           return;
