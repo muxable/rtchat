@@ -116,6 +116,8 @@ export async function runTwitchAgent(agentId: string) {
     }
   );
 
+  twitch.chat.on(TwitchJs.Chat.Events.DISCONNECTED, () => unsubscribe());
+
   return async () => {
     console.log(`[twitch] Disconnecting from Twitch`);
 
