@@ -106,14 +106,20 @@ export async function runTwitchAgent(agentId: string) {
     agentId,
     async (channel) => {
       console.log(`[twitch] Assigned to channel: ${channel}`);
-      await twitch.chat.join(channel);
+      await Promise.race([
+        twitch.chat.join(channel),
+        new Promise<void>((_, reject) => setTimeout(() => reject("failed to join in time"), 5000)),
+      ]);
       console.log(`[twitch] Joined channel: ${channel}`);
     },
-    async (channel) => {
-      console.log(`[twitch] Unassigned from channel: ${channel}`);
-      await twitch.chat.part(channel);
-      console.log(`[twitch] Parted channel: ${channel}`);
-    }
+      async (channel) => {
+        console.log(`[twitch] Unassigned from channel: ${channel}`);
+        await Promise.race([
+          twitch.chat.part(channel),
+          new Promise<void>((_, reject) => setTimeout(() => reject("failed to part in time"), 5000)),
+        ]);
+        console.log(`[twitch] Parted channel: ${channel}`);
+      };
   );
 
   twitch.chat.on(TwitchJs.Chat.Events.DISCONNECTED, () => unsubscribe());
