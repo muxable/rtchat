@@ -51,7 +51,7 @@ function getBotUserId(provider: "twitch") {
  * Computes the difference between two sets.
  */
 function diff<T>(a: Set<T>, b: Set<T>) {
-  return new Set<T>(Array.from(a).filter((x) => !b.has(x)));
+  return Array.from(a).filter((x) => !b.has(x));
 }
 
 export class FirebaseAdapter {
@@ -200,7 +200,7 @@ export class FirebaseAdapter {
           // register a disconnect handler too in case our cleanup isn't called.
           // if we get preempted here we're in for a bad time.
           const update: { [key: string]: "" } = {};
-          for (const channel of channels) {
+          for (const channel of Array.from(channels)) {
             update[channel] = "";
           }
           await ref.onDisconnect().cancel();
