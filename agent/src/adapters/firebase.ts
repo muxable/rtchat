@@ -1,29 +1,36 @@
 import * as admin from "firebase-admin";
-import { concatMap, fromEvent, Observable } from "rxjs";
+import { concatMap, Observable } from "rxjs";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
+import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 
-const TWITCH_CLIENT_ID = process.env["TWITCH_CLIENT_ID"];
-const TWITCH_CLIENT_SECRET = process.env["TWITCH_CLIENT_SECRET"];
-const TWITCH_BOT_USER_ID = process.env["TWITCH_BOT_USER_ID"];
-if (!TWITCH_CLIENT_ID || !TWITCH_CLIENT_SECRET || !TWITCH_BOT_USER_ID) {
-  throw new Error("Missing environment variables");
+async function getTwitchOAuthConfig(): Promise<ModuleOptions<"client_id">> {
+  const client = new SecretManagerServiceClient();
+  const id =
+    process.env["TWITCH_CLIENT_ID"] || "edfnh2q85za8phifif9jxt3ey6t9b9";
+  let secret = process.env["TWITCH_CLIENT_SECRET"];
+  if (!secret) {
+    // pull from secret manager.
+    const [version] = await client.accessSecretVersion({
+      name: "projects/rtchat-47692/secrets/twitch-client-secret/versions/latest",
+    });
+    secret = version.payload?.data?.toString();
+  }
+  if (!secret) {
+    throw new Error("twitch client secret missing");
+  }
+  return {
+    client: { id, secret },
+    auth: {
+      tokenHost: "https://id.twitch.tv",
+      tokenPath: "/oauth2/token",
+      authorizePath: "/oauth2/authorize",
+    },
+    options: {
+      bodyFormat: "json",
+      authorizationMethod: "body",
+    },
+  };
 }
-
-export const TWITCH_OAUTH_CONFIG = {
-  client: {
-    id: TWITCH_CLIENT_ID,
-    secret: TWITCH_CLIENT_SECRET,
-  },
-  auth: {
-    tokenHost: "https://id.twitch.tv",
-    tokenPath: "/oauth2/token",
-    authorizePath: "/oauth2/authorize",
-  },
-  options: {
-    bodyFormat: "json",
-    authorizationMethod: "body",
-  },
-} as ModuleOptions<"client_id">;
 
 export function parseTimestamp(
   timestamp: string | undefined
@@ -34,7 +41,9 @@ export function parseTimestamp(
 function getBotUserId(provider: "twitch") {
   switch (provider) {
     case "twitch":
-      return TWITCH_BOT_USER_ID!;
+      return (
+        process.env["TWITCH_BOT_USER_ID"] || "JSdHKOEgwcZijVsuXXdftmizt6E3"
+      );
   }
 }
 
@@ -42,7 +51,7 @@ function getBotUserId(provider: "twitch") {
  * Computes the difference between two sets.
  */
 function diff<T>(a: Set<T>, b: Set<T>) {
-  return new Set<T>(Array.from(a).filter((x) => !b.has(x)));
+  return Array.from(a).filter((x) => !b.has(x));
 }
 
 export class FirebaseAdapter {
@@ -71,7 +80,7 @@ export class FirebaseAdapter {
     if (!encoded) {
       throw new Error("token not found");
     }
-    const client = new AuthorizationCode(TWITCH_OAUTH_CONFIG);
+    const client = new AuthorizationCode(await getTwitchOAuthConfig());
     let accessToken = client.createToken(JSON.parse(encoded));
     while (accessToken.expired(3600) || forceRefresh) {
       try {
@@ -140,9 +149,8 @@ export class FirebaseAdapter {
         return;
       }
       // incur a slight delay to reduce contesting and load balance a little.
-      await new Promise((resolve) =>
-        setTimeout(resolve, 250 * Math.random() + 50 * channels.size)
-      );
+      const delay = 250 * Math.random() + 250 * Math.log1p(channels.size);
+      await new Promise((resolve) => setTimeout(resolve, delay));
       await ref.child(channel).transaction((data) => {
         if (data !== "") {
           return;
@@ -173,16 +181,33 @@ export class FirebaseAdapter {
           const add = diff(requestedChannels, channels);
           const remove = diff(channels, requestedChannels);
           for (const channel of add) {
-            await join(channel);
-            channels.add(channel);
+            try {
+              await join(channel);
+              channels.add(channel);
+            } catch (e) {
+              console.error("failed to join " + channel);
+              await ref.child(channel).update("");
+            }
           }
           for (const channel of remove) {
-            await leave(channel);
-            channels.delete(channel);
+            try {
+              await leave(channel);
+              channels.delete(channel);
+            } catch (e) {
+              console.warn("failed to leave " + channel);
+            }
           }
+          // register a disconnect handler too in case our cleanup isn't called.
+          // if we get preempted here we're in for a bad time.
+          const update: { [key: string]: "" } = {};
+          for (const channel of Array.from(channels)) {
+            update[channel] = "";
+          }
+          await ref.onDisconnect().cancel();
+          await ref.onDisconnect().update(update);
         })
       )
-      .subscribe();
+      .subscribe({ error: (err) => console.error(err) });
 
     claimRef.on("value", claimListener);
 
@@ -196,6 +221,7 @@ export class FirebaseAdapter {
         update[channel] = "";
       }
       await ref.update(update);
+      await ref.onDisconnect().cancel();
     };
   }
 }

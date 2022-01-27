@@ -62,6 +62,10 @@ export async function runTwitchAgent(agentId: string) {
       console.log("auth failure", token);
       return token["access_token"];
     },
+    chat: {
+      connectionTimeout: 5 * 1000,
+      joinTimeout: 3 * 1000,
+    },
     log: { level: "warn" },
   });
 
@@ -106,15 +110,27 @@ export async function runTwitchAgent(agentId: string) {
     agentId,
     async (channel) => {
       console.log(`[twitch] Assigned to channel: ${channel}`);
-      await twitch.chat.join(channel);
+      await Promise.race([
+        twitch.chat.join(channel),
+        new Promise<void>((_, reject) =>
+          setTimeout(() => reject("failed to join in time"), 5000)
+        ),
+      ]);
       console.log(`[twitch] Joined channel: ${channel}`);
     },
     async (channel) => {
       console.log(`[twitch] Unassigned from channel: ${channel}`);
-      await twitch.chat.part(channel);
+      await Promise.race([
+        twitch.chat.part(channel),
+        new Promise<void>((_, reject) =>
+          setTimeout(() => reject("failed to part in time"), 5000)
+        ),
+      ]);
       console.log(`[twitch] Parted channel: ${channel}`);
     }
   );
+
+  twitch.chat.on(TwitchJs.Chat.Events.DISCONNECTED, () => unsubscribe());
 
   return async () => {
     console.log(`[twitch] Disconnecting from Twitch`);
