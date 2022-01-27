@@ -186,7 +186,7 @@ export class FirebaseAdapter {
               channels.add(channel);
             } catch (e) {
               console.error("failed to join " + channel);
-              await ref.child(channel).update("");
+              await ref.child(channel).set("");
             }
           }
           for (const channel of remove) {
