@@ -132,6 +132,7 @@ List<_BadgeData> parseBadges(String badges) {
 
 Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
   if (emotes.isNotEmpty) {
+    final messsageGrapheme = message.characters;
     final parsed = parseEmotes(emotes);
     parsed.sort((a, b) => a.start.compareTo(b.start));
 
@@ -139,7 +140,7 @@ Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
     for (final child in parsed) {
       if (child.start > index) {
         final substring =
-            message.characters.getRange(index, child.start).toString();
+            messsageGrapheme.getRange(index, child.start).toString();
         yield TextToken(substring);
       }
       final url = Uri.parse(
@@ -149,8 +150,8 @@ Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
       index = child.end + 1;
     }
 
-    if (index < message.characters.length) {
-      yield TextToken(message.characters.getRange(index).toString());
+    if (index < messsageGrapheme.length) {
+      yield TextToken(messsageGrapheme.getRange(index).toString());
     }
   } else {
     yield TextToken(message);
