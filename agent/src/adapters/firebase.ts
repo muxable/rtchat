@@ -217,7 +217,7 @@ export class FirebaseAdapter {
 
       // remove all existing channel claims.
       const update: { [key: string]: "" } = {};
-      for (const channel of channels) {
+      for (const channel of Array.from(channels)) {
         update[channel] = "";
       }
       await ref.update(update);
