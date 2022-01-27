@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import TwitchJs, { PrivateMessage, PrivateMessageWithBits } from "twitch-js";
 import { FirebaseAdapter } from "../adapters/firebase";
+import { log } from "../log";
 
 const ACTION_MESSAGE_REGEX = /^\u0001ACTION ([^\u0001]+)\u0001$/;
 const BADGES_RAW_REGEX = /badges=([^;]+);/;
@@ -46,10 +47,12 @@ function tmiJsTagsShim(
 }
 
 export async function runTwitchAgent(agentId: string) {
+  const provider = "twitch";
+
   const firebase = new FirebaseAdapter(
     admin.database(),
     admin.firestore(),
-    "twitch"
+    provider
   );
 
   const { username, token } = await firebase.getCredentials();
@@ -59,7 +62,7 @@ export async function runTwitchAgent(agentId: string) {
     token: token["access_token"],
     onAuthenticationFailure: async () => {
       const { token } = await firebase.getCredentials(true);
-      console.log("auth failure", token);
+      log.warn({ agentId, provider }, "authentication failure");
       return token["access_token"];
     },
     chat: {
@@ -106,34 +109,38 @@ export async function runTwitchAgent(agentId: string) {
   await twitch.chat.connect();
 
   const unsubscribe = firebase.onAssignment(
-    "twitch",
+    provider,
     agentId,
     async (channel) => {
-      console.log(`[twitch] Assigned to channel: ${channel}`);
+      log.info({ channel, agentId, provider }, "assigned to channel");
       await Promise.race([
         twitch.chat.join(channel),
         new Promise<void>((_, reject) =>
           setTimeout(() => reject("failed to join in time"), 5000)
         ),
       ]);
-      console.log(`[twitch] Joined channel: ${channel}`);
+      log.info({ channel, agentId, provider }, "joined channel");
     },
     async (channel) => {
-      console.log(`[twitch] Unassigned from channel: ${channel}`);
+      log.info({ channel, agentId, provider }, "unassigned from channel");
       await Promise.race([
         twitch.chat.part(channel),
         new Promise<void>((_, reject) =>
           setTimeout(() => reject("failed to part in time"), 5000)
         ),
       ]);
-      console.log(`[twitch] Parted channel: ${channel}`);
+      log.info({ channel, agentId, provider }, "parted channel");
     }
   );
 
-  twitch.chat.on(TwitchJs.Chat.Events.DISCONNECTED, () => unsubscribe());
+  twitch.chat.on(TwitchJs.Chat.Events.DISCONNECTED, async () => {
+    log.info({ agentId, provider }, "disconnected");
+
+    await unsubscribe();
+  });
 
   return async () => {
-    console.log(`[twitch] Disconnecting from Twitch`);
+    log.info({ agentId, provider }, "disconnecting");
 
     await unsubscribe();
 

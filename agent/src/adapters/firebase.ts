@@ -186,7 +186,7 @@ export class FirebaseAdapter {
               channels.add(channel);
             } catch (e) {
               console.error("failed to join " + channel);
-              await ref.child(channel).update("");
+              await ref.child(channel).set("");
             }
           }
           for (const channel of remove) {
@@ -217,11 +217,12 @@ export class FirebaseAdapter {
 
       // remove all existing channel claims.
       const update: { [key: string]: "" } = {};
-      for (const channel of channels) {
+      for (const channel of Array.from(channels)) {
         update[channel] = "";
       }
       await ref.update(update);
       await ref.onDisconnect().cancel();
+      channels.clear();
     };
   }
 }
