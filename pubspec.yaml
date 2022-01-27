@@ -36,6 +36,7 @@ dependencies:
   flutter_image: ^4.1.0
   firebase_remote_config: ^1.0.2
   flutter_keyboard_visibility: ^5.0.3
+  characters: ^1.2.0
 
 dev_dependencies:
   flutter_lints: ^1.0.3
