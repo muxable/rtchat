@@ -112,7 +112,7 @@ void main() {
           ]));
     });
 
-    test('third party emotes should token', () {
+    test('third party emotes should tokenize', () {
       final source = Uri.parse("https://3pemote");
       const code = "mooooo";
 
@@ -146,6 +146,71 @@ void main() {
                 url: Uri.parse(
                     "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0"),
                 code: "Kappa")
+          ]));
+    });
+
+    test('emojis, emotes and text should tokenize', () {
+      final model = createMessageModel("premium/1", "25:38-42", [],
+          "\u{1F603} have you followed @muxfd on twitch? Kappa");
+
+      expect(
+          model.tokenized,
+          orderedEquals([
+            const TextToken("\u{1F603} have you followed "),
+            const UserMentionToken("muxfd"),
+            const TextToken(" on twitch? "),
+            EmoteToken(
+                url: Uri.parse(
+                    "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0"),
+                code: "Kappa")
+          ]));
+    });
+
+    test('emojis and emotes should tokenize', () {
+      final model = createMessageModel(
+          "premium/1", "25:4-8", [], "\u{1F351} \u{1F971} Kappa");
+
+      expect(
+          model.tokenized,
+          orderedEquals([
+            const TextToken("\u{1F351} \u{1F971} "),
+            EmoteToken(
+                url: Uri.parse(
+                    "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0"),
+                code: "Kappa")
+          ]));
+    });
+
+    test('emojis, emotes and trailing text should tokenize', () {
+      final model = createMessageModel(
+          "premium/1", "25:4-8", [], "\u{1F351} \u{1F965} Kappa pew");
+
+      expect(
+          model.tokenized,
+          orderedEquals([
+            const TextToken("\u{1F351} \u{1F965} "),
+            EmoteToken(
+                url: Uri.parse(
+                    "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0"),
+                code: "Kappa"),
+            const TextToken(" pew"),
+          ]));
+    });
+
+    test('third party emotes and emojis tokenize', () {
+      final source = Uri.parse("https://3pemote");
+      const code = "monkaS";
+      final model = createMessageModel(
+          null,
+          null,
+          [Emote(id: "", code: code, source: source)],
+          "monkaS \u{1F351} \u{1F965}");
+
+      expect(
+          model.tokenized,
+          orderedEquals([
+            EmoteToken(url: source, code: code),
+            const TextToken(" \u{1F351} \u{1F965}")
           ]));
     });
   });

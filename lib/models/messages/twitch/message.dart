@@ -1,3 +1,5 @@
+
+import 'package:characters/characters.dart';
 import 'package:linkify/linkify.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
@@ -137,18 +139,19 @@ Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
     var index = 0;
     for (final child in parsed) {
       if (child.start > index) {
-        final substring = message.substring(index, child.start);
+        final substring = message.characters.getRange(index, child.start).toString();
         yield TextToken(substring);
       }
       final url = Uri.parse(
           "https://static-cdn.jtvnw.net/emoticons/v2/${child.key}/default/dark/1.0");
       yield EmoteToken(
-          url: url, code: message.substring(child.start, child.end));
+          url: url,
+          code: message.substring(child.start, child.end));
       index = child.end + 1;
     }
 
-    if (index < message.length) {
-      yield TextToken(message.substring(index));
+    if (index < message.characters.length) {
+      yield TextToken(message.characters.getRange(index).toString());
     }
   } else {
     yield TextToken(message);
