@@ -2,6 +2,7 @@ import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import * as admin from "firebase-admin";
 import { v4 as uuidv4 } from "uuid";
 import { runTwitchAgent } from "./agents/twitch";
+import { log } from "./log";
 
 const PROJECT_ID = process.env["PROJECT_ID"] || "rtchat-47692";
 
@@ -29,7 +30,7 @@ async function main() {
 
   const AGENT_ID = uuidv4();
 
-  console.log("running agent", AGENT_ID);
+  log.info({ agentId: AGENT_ID }, "running agent");
 
   runTwitchAgent(AGENT_ID).then((close) => {
     for (const signal of ["SIGINT", "SIGTERM", "uncaughtException"]) {
@@ -42,4 +43,6 @@ async function main() {
   });
 }
 
-main().catch(console.error);
+main().catch((err) => {
+  log.error(err);
+});

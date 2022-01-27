@@ -222,6 +222,7 @@ export class FirebaseAdapter {
       }
       await ref.update(update);
       await ref.onDisconnect().cancel();
+      channels.clear();
     };
   }
 }
