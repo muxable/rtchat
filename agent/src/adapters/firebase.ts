@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import { concatMap, Observable } from "rxjs";
 import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
+import { log } from "../log";
 
 async function getTwitchOAuthConfig(): Promise<ModuleOptions<"client_id">> {
   const client = new SecretManagerServiceClient();
@@ -185,7 +186,7 @@ export class FirebaseAdapter {
               await join(channel);
               channels.add(channel);
             } catch (e) {
-              console.error("failed to join " + channel);
+              log.error({ provider, agentId, channel }, "failed to join");
               await ref.child(channel).set("");
             }
           }
@@ -194,7 +195,7 @@ export class FirebaseAdapter {
               await leave(channel);
               channels.delete(channel);
             } catch (e) {
-              console.warn("failed to leave " + channel);
+              log.error({ provider, agentId, channel }, "failed to leave");
             }
           }
           // register a disconnect handler too in case our cleanup isn't called.
@@ -207,7 +208,7 @@ export class FirebaseAdapter {
           await ref.onDisconnect().update(update);
         })
       )
-      .subscribe({ error: (err) => console.error(err) });
+      .subscribe({ error: (err) => log.error(err) });
 
     claimRef.on("value", claimListener);
 
