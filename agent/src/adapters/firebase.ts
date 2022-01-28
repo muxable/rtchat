@@ -109,6 +109,7 @@ export class FirebaseAdapter {
     timestamp: Date,
     tags: any
   ) {
+    log.debug({ channelId, channel, messageId, message }, "adding message");
     await this.getMessage(`twitch:${messageId}`).set({
       channelId: `${this.provider}:${channelId}`,
       channel,
