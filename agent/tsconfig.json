@@ -5,6 +5,12 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "types": ["node", "jest"],
+    "rootDir": "src",
+    "outDir": "lib",
+    "skipLibCheck": true,
     "strict": true
-  }
+  },
+  "exclude": [
+    "test/**/*"
+  ]
 }

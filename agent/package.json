@@ -1,10 +1,11 @@
 {
   "name": "rtchat",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "main": "lib/index.js",
   "scripts": {
-    "build": "tsc ./src/index.ts",
-    "start": "ts-node -r dotenv/config ./src/index.ts",
+    "build": "tsc",
+    "start": "node -r dotenv/config .",
+    "dev": "ts-node -r dotenv/config ./src/index.ts",
     "test": "jest --setupFiles dotenv/config"
   },
   "dependencies": {
