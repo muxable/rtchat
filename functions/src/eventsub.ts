@@ -105,11 +105,10 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
     `sha256=${signature}`
   ) {
     console.error(new Error("failed to match signature"));
-    res.status(403).send();
-    return;
-  } else {
-    console.log("/eventsub", JSON.stringify(req.body));
+    // res.status(403).send();
+    // return;
   }
+  console.log("/eventsub", JSON.stringify(req.body));
 
   const status = req.body?.subscription?.status;
   if (status === "webhook_callback_verification_pending") {

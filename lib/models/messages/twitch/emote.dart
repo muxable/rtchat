@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:core';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:http/http.dart' as http;
 
 final Map<String, Future<List<Emote>>> _bttvChannelCache = {};
@@ -14,12 +15,15 @@ final getUserEmotes = FirebaseFunctions.instance.httpsCallable("getUserEmotes");
 
 Future<List<Emote>> getBttvGlobalEmotes() async {
   final uri = Uri.parse("https://api.betterttv.net/3/cached/emotes/global");
-  final response = await http.get(uri);
-
-  if (response.statusCode == 200) {
-    return (jsonDecode(response.body) as List<dynamic>)
-        .map((emote) => Emote.fromBttvJson(emote))
-        .toList();
+  try {
+    final response = await http.get(uri).timeout(const Duration(seconds: 5));
+    if (response.statusCode == 200) {
+      return (jsonDecode(response.body) as List<dynamic>)
+          .map((emote) => Emote.fromBttvJson(emote))
+          .toList();
+    }
+  } catch (e, stackTrace) {
+    FirebaseCrashlytics.instance.recordError(e, stackTrace);
   }
 
   return [];
@@ -28,15 +32,18 @@ Future<List<Emote>> getBttvGlobalEmotes() async {
 Future<List<Emote>> getBttvChannelEmotes(String channelId) async {
   final uri =
       Uri.parse("https://api.betterttv.net/3/cached/users/twitch/$channelId");
-  final response = await http.get(uri);
-
-  if (response.statusCode == 200) {
-    return [
-      ...(jsonDecode(response.body)['channelEmotes'] as List<dynamic>)
-          .map((emote) => Emote.fromBttvJson(emote)),
-      ...(jsonDecode(response.body)['sharedEmotes'] as List<dynamic>)
-          .map((emote) => Emote.fromBttvJson(emote)),
-    ];
+  try {
+    final response = await http.get(uri).timeout(const Duration(seconds: 5));
+    if (response.statusCode == 200) {
+      return [
+        ...(jsonDecode(response.body)['channelEmotes'] as List<dynamic>)
+            .map((emote) => Emote.fromBttvJson(emote)),
+        ...(jsonDecode(response.body)['sharedEmotes'] as List<dynamic>)
+            .map((emote) => Emote.fromBttvJson(emote)),
+      ];
+    }
+  } catch (e, stackTrace) {
+    FirebaseCrashlytics.instance.recordError(e, stackTrace);
   }
 
   return [];
@@ -45,12 +52,15 @@ Future<List<Emote>> getBttvChannelEmotes(String channelId) async {
 Future<List<Emote>> getFfzChannelEmotes(String channelId) async {
   final uri = Uri.parse(
       "https://api.betterttv.net/3/cached/frankerfacez/users/twitch/$channelId");
-  final response = await http.get(uri);
-
-  if (response.statusCode == 200) {
-    return (jsonDecode(response.body) as List<dynamic>)
-        .map((emote) => Emote.fromFFZJson(emote))
-        .toList();
+  try {
+    final response = await http.get(uri).timeout(const Duration(seconds: 5));
+    if (response.statusCode == 200) {
+      return (jsonDecode(response.body) as List<dynamic>)
+          .map((emote) => Emote.fromFFZJson(emote))
+          .toList();
+    }
+  } catch (e, stackTrace) {
+    FirebaseCrashlytics.instance.recordError(e, stackTrace);
   }
 
   return [];
@@ -58,27 +68,31 @@ Future<List<Emote>> getFfzChannelEmotes(String channelId) async {
 
 Future<List<Emote>> get7tvGlobalEmotes() async {
   final uri = Uri.parse("https://api.7tv.app/v2/emotes/global");
-  final response = await http.get(uri);
-
-  if (response.statusCode == 200) {
-    return (jsonDecode(response.body) as List<dynamic>)
-        .map((emote) => Emote.from7tvJson(emote))
-        .toList();
+  try {
+    final response = await http.get(uri).timeout(const Duration(seconds: 5));
+    if (response.statusCode == 200) {
+      return (jsonDecode(response.body) as List<dynamic>)
+          .map((emote) => Emote.from7tvJson(emote))
+          .toList();
+    }
+  } catch (e, stackTrace) {
+    FirebaseCrashlytics.instance.recordError(e, stackTrace);
   }
-
   return [];
 }
 
 Future<List<Emote>> get7tvChannelEmotes(String channelId) async {
   final uri = Uri.parse("https://api.7tv.app/v2/users/$channelId/emotes");
-  final response = await http.get(uri);
-
-  if (response.statusCode == 200) {
-    return (jsonDecode(response.body) as List<dynamic>)
-        .map((emote) => Emote.from7tvJson(emote))
-        .toList();
+  try {
+    final response = await http.get(uri).timeout(const Duration(seconds: 5));
+    if (response.statusCode == 200) {
+      return (jsonDecode(response.body) as List<dynamic>)
+          .map((emote) => Emote.from7tvJson(emote))
+          .toList();
+    }
+  } catch (e, stackTrace) {
+    FirebaseCrashlytics.instance.recordError(e, stackTrace);
   }
-
   return [];
 }
 
