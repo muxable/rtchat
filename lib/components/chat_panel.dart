@@ -248,9 +248,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
         ),
         Align(
             alignment: Alignment.topRight,
-            child: SizedBox(
-              width: 128,
-              height: 48,
+            child: FittedBox(
               child: Consumer<ChannelsModel>(
                   builder: (context, channelsModel, child) {
                 if (channelsModel.subscribedChannels.isEmpty) {
