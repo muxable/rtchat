@@ -126,14 +126,14 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                   }),
             );
           }),
-          Consumer<ChannelsModel>(builder: (context, channelsModel, child) {
-            if (channelsModel.subscribedChannels.isEmpty) {
-              return Container();
-            }
-            final first = channelsModel.subscribedChannels.first;
-            return StatisticsBarWidget(
-                provider: first.provider, channelId: first.channelId);
-          }),
+          // Consumer<ChannelsModel>(builder: (context, channelsModel, child) {
+          //   if (channelsModel.subscribedChannels.isEmpty) {
+          //     return Container();
+          //   }
+          //   final first = channelsModel.subscribedChannels.first;
+          //   return StatisticsBarWidget(
+          //       provider: first.provider, channelId: first.channelId);
+          // }),
           Consumer<TtsModel>(builder: (context, ttsModel, child) {
             return IconButton(
                 icon: Icon(ttsModel.enabled
@@ -160,7 +160,9 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                   child: header))),
 
       // body
-      Expanded(child: ChatPanelWidget(onScrollback: widget.onScrollback)),
+      Expanded(
+        child: ChatPanelWidget(onScrollback: widget.onScrollback),
+      ),
 
       // input
       Consumer<LayoutModel>(builder: (context, layoutModel, child) {

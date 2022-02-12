@@ -47,34 +47,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final content =
         Consumer<LayoutModel>(builder: (context, layoutModel, child) {
       if (MediaQuery.of(context).orientation == Orientation.portrait) {
-        return Column(children: [
-          KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
-            return NotificationPanelWidget(
-              height: _minimized || isKeyboardVisible
-                  ? 56
-                  : layoutModel.panelHeight.clamp(56, 500),
-              maxHeight: layoutModel.panelHeight.clamp(56, 500),
-            );
-          }),
-          Expanded(
-              child: DiscoWidget(
-                  isEnabled: widget.isDiscoModeEnabled,
-                  child: ChannelPanelWidget(
-                    onRequestExpand: () {
-                      setState(() {
-                        _minimized = !_minimized;
-                      });
-                    },
-                    onScrollback: (isScrolled) {
-                      setState(() {
-                        _minimized = isScrolled;
-                      });
-                    },
-                    onResize: (dy) {
-                      layoutModel.updatePanelHeight(dy: dy);
-                    },
-                  ))),
-        ]);
+        return Stack(
+          children: [
+            const NotificationPanelWidget(
+              height: 700,
+            ),
+            // KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
+            //   return const NotificationPanelWidget(
+            //     height: 700,
+            //     // height: _minimized || isKeyboardVisible
+            //     //     ? 56
+            //     //     : layoutModel.panelHeight.clamp(56, 500),
+            //     // maxHeight: layoutModel.panelHeight.clamp(56, 500),
+            //   );
+            // }),
+            Column(
+              children: [
+                SizedBox(
+                  height: layoutModel.panelHeight.clamp(56, 490),
+                ),
+                Expanded(
+                  child: Container(
+                    color: Colors.blueGrey,
+                    child: DiscoWidget(
+                      isEnabled: widget.isDiscoModeEnabled,
+                      child: ChannelPanelWidget(
+                        onRequestExpand: () {
+                          setState(() {
+                            _minimized = !_minimized;
+                          });
+                        },
+                        onScrollback: (isScrolled) {
+                          setState(() {
+                            _minimized = isScrolled;
+                          });
+                        },
+                        onResize: (dy) {
+                          layoutModel.updatePanelHeight(dy: dy);
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          ],
+        );
       } else {
         return Row(children: [
           NotificationPanelWidget(
