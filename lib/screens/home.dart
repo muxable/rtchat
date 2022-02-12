@@ -67,7 +67,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Column(
               children: [
                 SizedBox(
-                  height: layoutModel.panelHeight.clamp(56, 490),
+                  height:
+                      _minimized ? 56 : layoutModel.panelHeight.clamp(56, 490),
                 ),
                 Expanded(
                   child: Container(
@@ -76,9 +77,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       isEnabled: widget.isDiscoModeEnabled,
                       child: ChannelPanelWidget(
                         onRequestExpand: () {
-                          setState(() {
-                            _minimized = !_minimized;
-                          });
+                          // setState(() {
+                          //   _minimized = !_minimized;
+                          // });
                         },
                         onScrollback: (isScrolled) {
                           setState(() {
