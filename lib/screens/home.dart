@@ -47,6 +47,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final content =
         Consumer<LayoutModel>(builder: (context, layoutModel, child) {
       if (MediaQuery.of(context).orientation == Orientation.portrait) {
+        var brightness = MediaQuery.of(context).platformBrightness;
+        bool isDarkMode = brightness == Brightness.dark;
+        Color chathistoryBackground = isDarkMode ? Colors.black : Colors.white;
         return Stack(
           children: [
             const NotificationPanelWidget(
@@ -68,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 Expanded(
                   child: Container(
-                    color: Colors.blueGrey,
+                    color: chathistoryBackground,
                     child: DiscoWidget(
                       isEnabled: widget.isDiscoModeEnabled,
                       child: ChannelPanelWidget(
