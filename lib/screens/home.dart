@@ -47,14 +47,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final content =
         Consumer<LayoutModel>(builder: (context, layoutModel, child) {
       if (MediaQuery.of(context).orientation == Orientation.portrait) {
+        // color of the chat background
         var brightness = MediaQuery.of(context).platformBrightness;
         bool isDarkMode = brightness == Brightness.dark;
         Color chathistoryBackground = isDarkMode ? Colors.black : Colors.white;
+
+        // dragEnd, user release finger
+        bool dragEnd = layoutModel.dragEnd;
+        Widget notifPanel = NotificationPanelWidget(
+          height: dragEnd
+              ? layoutModel.panelHeight.clamp(57, 500)
+              : layoutModel.onDragStartHeight.clamp(57, 500),
+        );
         return Stack(
           children: [
-            const NotificationPanelWidget(
-              height: 700,
-            ),
+            notifPanel,
             // KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
             //   return const NotificationPanelWidget(
             //     height: 700,
@@ -68,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               children: [
                 SizedBox(
                   height:
-                      _minimized ? 56 : layoutModel.panelHeight.clamp(56, 490),
+                      _minimized ? 56 : layoutModel.panelHeight.clamp(56, 500),
                 ),
                 Expanded(
                   child: Container(

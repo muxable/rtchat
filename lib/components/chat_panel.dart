@@ -246,19 +246,6 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                 child: const Icon(Icons.arrow_downward, color: Colors.white)),
           ),
         ),
-        Align(
-            alignment: Alignment.topRight,
-            child: FittedBox(
-              child: Consumer<ChannelsModel>(
-                  builder: (context, channelsModel, child) {
-                if (channelsModel.subscribedChannels.isEmpty) {
-                  return Container();
-                }
-                final first = channelsModel.subscribedChannels.first;
-                return StatisticsBarWidget(
-                    provider: first.provider, channelId: first.channelId);
-              }),
-            )),
       ],
     );
   }

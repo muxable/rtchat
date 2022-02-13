@@ -54,6 +54,14 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
             widget.onRequestExpand!();
           }
         },
+        onVerticalDragStart: (details) {
+          final layoutModel = Provider.of<LayoutModel>(context, listen: false);
+          layoutModel.onDragStartHeight = layoutModel.panelHeight;
+        },
+        onVerticalDragEnd: (details) {
+          final layoutModel = Provider.of<LayoutModel>(context, listen: false);
+          layoutModel.dragEnd = true;
+        },
         onVerticalDragUpdate: (details) {
           final layoutModel = Provider.of<LayoutModel>(context, listen: false);
           if (layoutModel.locked || widget.onResize == null) {
@@ -126,14 +134,14 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                   }),
             );
           }),
-          // Consumer<ChannelsModel>(builder: (context, channelsModel, child) {
-          //   if (channelsModel.subscribedChannels.isEmpty) {
-          //     return Container();
-          //   }
-          //   final first = channelsModel.subscribedChannels.first;
-          //   return StatisticsBarWidget(
-          //       provider: first.provider, channelId: first.channelId);
-          // }),
+          Consumer<ChannelsModel>(builder: (context, channelsModel, child) {
+            if (channelsModel.subscribedChannels.isEmpty) {
+              return Container();
+            }
+            final first = channelsModel.subscribedChannels.first;
+            return StatisticsBarWidget(
+                provider: first.provider, channelId: first.channelId);
+          }),
           Consumer<TtsModel>(builder: (context, ttsModel, child) {
             return IconButton(
                 icon: Icon(ttsModel.enabled
