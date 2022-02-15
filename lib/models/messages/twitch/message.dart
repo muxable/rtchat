@@ -1,3 +1,4 @@
+import 'package:characters/characters.dart';
 import 'package:linkify/linkify.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
@@ -131,13 +132,15 @@ List<_BadgeData> parseBadges(String badges) {
 
 Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
   if (emotes.isNotEmpty) {
+    final messsageGrapheme = message.characters;
     final parsed = parseEmotes(emotes);
     parsed.sort((a, b) => a.start.compareTo(b.start));
 
     var index = 0;
     for (final child in parsed) {
       if (child.start > index) {
-        final substring = message.substring(index, child.start);
+        final substring =
+            messsageGrapheme.getRange(index, child.start).toString();
         yield TextToken(substring);
       }
       final url = Uri.parse(
@@ -147,8 +150,8 @@ Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
       index = child.end + 1;
     }
 
-    if (index < message.length) {
-      yield TextToken(message.substring(index));
+    if (index < messsageGrapheme.length) {
+      yield TextToken(messsageGrapheme.getRange(index).toString());
     }
   } else {
     yield TextToken(message);

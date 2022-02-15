@@ -1,18 +1,24 @@
 {
   "name": "rtchat",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "main": "lib/index.js",
   "scripts": {
-    "build": "tsc ./src/index.ts",
-    "start": "ts-node -r dotenv/config ./src/index.ts",
+    "build": "tsc",
+    "start": "node -r dotenv/config .",
+    "dev": "ts-node -r dotenv/config ./src/index.ts",
     "test": "jest --setupFiles dotenv/config"
   },
   "dependencies": {
+    "@google-cloud/logging-bunyan": "^3.2.0",
     "@google-cloud/pubsub": "^2.16.1",
+    "@google-cloud/secret-manager": "^3.10.1",
+    "@types/bunyan": "^1.8.8",
+    "@types/jest": "^27.4.0",
     "@types/node": "^16.4.13",
     "@types/node-fetch": "^2.5.12",
     "@types/simple-oauth2": "^4.1.1",
     "@types/uuid": "^8.3.1",
+    "bunyan": "^1.8.15",
     "dotenv": "^10.0.0",
     "firebase-admin": "^9.11.0",
     "node-fetch": "^2.6.1",
@@ -24,7 +30,6 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.24",
     "@types/sinon": "^10.0.2",
     "jest": "^27.0.6",
     "prettier": "^2.3.2",
