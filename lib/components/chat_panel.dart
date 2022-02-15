@@ -221,7 +221,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                       if (expiration != null) {
                         return expiration.isAfter(now);
                       }
-                      return null;
+                      return false;
                     },
                     count: messages.length,
                   );
