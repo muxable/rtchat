@@ -60,7 +60,9 @@ class DecoratedEventWidget extends StatelessWidget {
     );
   }
 
-  Widget? get prefixWidget {}
+  Widget? get prefixWidget {
+    return null;
+  }
 
   const DecoratedEventWidget.avatar(
       {Key? key, required Widget child, required ImageProvider avatar})

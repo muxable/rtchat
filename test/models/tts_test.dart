@@ -6,7 +6,9 @@ import 'package:rtchat/models/tts.dart';
 void main() {
   testWidgets("TtsModel json roundtrip", (tester) async {
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        const MethodChannel('flutter_tts'), (methodCall) {});
+        const MethodChannel('flutter_tts'), (methodCall) {
+      return null;
+    });
     final handler = TtsAudioHandler();
     final model = TtsModel.fromJson(handler, {});
     final want = model.toJson();
