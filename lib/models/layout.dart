@@ -56,6 +56,11 @@ class LayoutModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  set panelHeight(double panelHeight) {
+    _panelHeight = panelHeight;
+    notifyListeners();
+  }
+
   double get panelHeight => _panelHeight;
 
   double get panelWidth => _panelWidth;
@@ -64,6 +69,7 @@ class LayoutModel extends ChangeNotifier {
 
   set onDragStartHeight(double onDragStartHeight) {
     _onDragStartHeight = onDragStartHeight;
+    notifyListeners();
   }
 
   bool get dragEnd => _dragEnd;

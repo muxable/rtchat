@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/channel_panel.dart';
@@ -62,15 +61,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         return Stack(
           children: [
             notifPanel,
-            // KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
-            //   return const NotificationPanelWidget(
-            //     height: 700,
-            //     // height: _minimized || isKeyboardVisible
-            //     //     ? 56
-            //     //     : layoutModel.panelHeight.clamp(56, 500),
-            //     // maxHeight: layoutModel.panelHeight.clamp(56, 500),
-            //   );
-            // }),
             Column(
               children: [
                 SizedBox(
@@ -84,9 +74,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       isEnabled: widget.isDiscoModeEnabled,
                       child: ChannelPanelWidget(
                         onRequestExpand: () {
-                          // setState(() {
-                          //   _minimized = !_minimized;
-                          // });
+                          setState(() {
+                            _minimized = !_minimized;
+                          });
                         },
                         onScrollback: (isScrolled) {
                           setState(() {
