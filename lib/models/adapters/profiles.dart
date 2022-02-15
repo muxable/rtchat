@@ -18,6 +18,7 @@ class ProfilesAdapter {
         return Channel(
             provider, data['twitch']['id'], data['twitch']['displayName']);
       }
+      return null;
     });
   }
 

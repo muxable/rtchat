@@ -61,6 +61,7 @@ class ActivityFeedModel extends ChangeNotifier {
         return Uri.tryParse(
             "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
     }
+    return null;
   }
 
   ActivityFeedModel.fromJson(Map<String, dynamic> json) {

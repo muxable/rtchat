@@ -207,6 +207,7 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
   }
+  return null;
 }
 
 class MessagesAdapter {
