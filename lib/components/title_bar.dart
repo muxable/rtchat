@@ -43,7 +43,6 @@ class TitleBarWidget extends StatelessWidget {
           children: quickLinksModel.sources.reversed.map((source) {
             return IconButton(
                 icon: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-                tooltip: source.name,
                 onPressed: () => launchLink(source));
           }).toList(),
         ));
