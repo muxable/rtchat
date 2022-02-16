@@ -47,7 +47,7 @@ android {
     defaultConfig {
         applicationId "com.rtirl.chat"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode vcode
         versionName flutterVersionName
         multiDexEnabled true

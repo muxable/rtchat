@@ -15,6 +15,7 @@ void main() {
     tester.binding.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (methodCall) {
       log.add(methodCall);
+      return null;
     });
 
     final model = LayoutModel.fromJson({});
@@ -29,6 +30,7 @@ void main() {
     tester.binding.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (methodCall) {
       log.add(methodCall);
+      return null;
     });
 
     final model = LayoutModel.fromJson({});
