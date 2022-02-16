@@ -152,6 +152,7 @@ DateTime? _getExpiration(
     }
     return null;
   }
+  return null;
 }
 
 class ChatPanelWidget extends StatefulWidget {
@@ -221,6 +222,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                       if (expiration != null) {
                         return expiration.isAfter(now);
                       }
+                      return false;
                     },
                     count: messages.length,
                   );

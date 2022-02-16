@@ -45,16 +45,22 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
             Consumer<QuickLinksModel>(builder: (context, quickLinks, child) {
           return ReorderableListView(
             children: quickLinks.sources.map((source) {
-              final name = source.name;
               return Dismissible(
                 key: ValueKey(source),
                 background: const DismissibleDeleteBackground(),
                 child: ListTile(
                   key: ValueKey(source),
                   leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-                  title:
-                      name == null ? Text(source.url.toString()) : Text(name),
-                  subtitle: name == null ? null : Text(source.url.toString()),
+                  title: FutureBuilder<String>(
+                      future: retrieveName(source),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
+                        if (snapshot.connectionState != ConnectionState.done) {
+                          return const Text("Loading title");
+                        }
+                        return Text(snapshot.data!);
+                      }),
+                  subtitle: Text(source.url.toString()),
                   trailing: const Icon(Icons.drag_handle),
                 ),
                 onDismissed: (direction) {
@@ -109,7 +115,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                     textInputAction: TextInputAction.done,
                     onEditingComplete: addLink),
               ),
-              IconButton(icon: const Icon(Icons.add), onPressed: addLink),
+              IconButton(icon: const Icon(Icons.add), onPressed: addLink)
             ]),
           ),
         ),
@@ -117,15 +123,15 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
     );
   }
 
-  void addLink() async {
+  Future<String> retrieveName(QuickLinkSource link) async {
+    final metadata = await MetadataFetch.extract(link.url.toString());
+    return metadata?.title ?? link.url.toString();
+  }
+
+  void addLink() {
     if (_formKey.currentState!.validate()) {
-      // fetch the title for the page.
-      final url = _textEditingController.text;
-      final metadata = await MetadataFetch.extract(url);
-
       Provider.of<QuickLinksModel>(context, listen: false).addSource(
-          QuickLinkSource(metadata?.title, _activeIcon, Uri.parse(url)));
-
+          QuickLinkSource(_activeIcon, Uri.parse(_textEditingController.text)));
       _textEditingController.clear();
       FocusScope.of(context).unfocus();
     }

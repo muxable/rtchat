@@ -29,6 +29,7 @@ class TtsMediaItem extends MediaItem {
         message: model.isOnline ? "Stream is online" : "Stream is offline",
       );
     }
+    return null;
   }
 
   TtsMediaItem._(this.model,
