@@ -82,13 +82,13 @@ void main() async {
   }
 
   // Add remote config
-  RemoteConfig.instance.setConfigSettings(RemoteConfigSettings(
+  FirebaseRemoteConfig.instance.setConfigSettings(RemoteConfigSettings(
       minimumFetchInterval: const Duration(hours: 1),
       fetchTimeout: const Duration(seconds: 10)));
 
-  await RemoteConfig.instance
+  await FirebaseRemoteConfig.instance
       .setDefaults({'inline_events_enabled': kDebugMode});
-  await RemoteConfig.instance.fetchAndActivate();
+  await FirebaseRemoteConfig.instance.fetchAndActivate();
 
   await runZonedGuarded(() async {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
