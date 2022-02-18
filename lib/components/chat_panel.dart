@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/pinnable/scroll_view.dart';
+import 'package:rtchat/components/statistics_bar.dart';
 import 'package:rtchat/components/style_model_theme.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -247,6 +248,23 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                 child: const Icon(Icons.arrow_downward, color: Colors.white)),
           ),
         ),
+        Container(
+          margin: const EdgeInsets.only(top: 8),
+          child: Align(
+            alignment: Alignment.topRight,
+            child: FittedBox(
+              child: Consumer<ChannelsModel>(
+                  builder: (context, channelsModel, child) {
+                if (channelsModel.subscribedChannels.isEmpty) {
+                  return Container();
+                }
+                final first = channelsModel.subscribedChannels.first;
+                return StatisticsBarWidget(
+                    provider: first.provider, channelId: first.channelId);
+              }),
+            ),
+          ),
+        )
       ],
     );
   }
