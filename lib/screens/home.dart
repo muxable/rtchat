@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/channel_panel.dart';
@@ -47,34 +46,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final content =
         Consumer<LayoutModel>(builder: (context, layoutModel, child) {
       if (MediaQuery.of(context).orientation == Orientation.portrait) {
-        return Column(children: [
-          KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
-            return NotificationPanelWidget(
-              height: _minimized || isKeyboardVisible
-                  ? 56
-                  : layoutModel.panelHeight.clamp(56, 500),
-              maxHeight: layoutModel.panelHeight.clamp(56, 500),
-            );
-          }),
-          Expanded(
-              child: DiscoWidget(
-                  isEnabled: widget.isDiscoModeEnabled,
-                  child: ChannelPanelWidget(
-                    onRequestExpand: () {
-                      setState(() {
-                        _minimized = !_minimized;
-                      });
-                    },
-                    onScrollback: (isScrolled) {
-                      setState(() {
-                        _minimized = isScrolled;
-                      });
-                    },
-                    onResize: (dy) {
-                      layoutModel.updatePanelHeight(dy: dy);
-                    },
-                  ))),
-        ]);
+        // color of the chat background
+        var brightness = MediaQuery.of(context).platformBrightness;
+        bool isDarkMode = brightness == Brightness.dark;
+        Color chathistoryBackground = isDarkMode ? Colors.black : Colors.white;
+
+        // dragEnd, user release finger
+        bool dragEnd = layoutModel.dragEnd;
+        Widget notifPanel = NotificationPanelWidget(
+          height: dragEnd
+              ? layoutModel.panelHeight.clamp(57, 500)
+              : layoutModel.onDragStartHeight.clamp(57, 500),
+        );
+        return Stack(
+          children: [
+            notifPanel,
+            Column(
+              children: [
+                SizedBox(
+                  height:
+                      _minimized ? 56 : layoutModel.panelHeight.clamp(56, 500),
+                ),
+                Expanded(
+                  child: Container(
+                    color: chathistoryBackground,
+                    child: DiscoWidget(
+                      isEnabled: widget.isDiscoModeEnabled,
+                      child: ChannelPanelWidget(
+                        onRequestExpand: () {
+                          setState(() {
+                            _minimized = !_minimized;
+                          });
+                        },
+                        onScrollback: (isScrolled) {
+                          setState(() {
+                            _minimized = isScrolled;
+                          });
+                        },
+                        onResize: (dy) {
+                          layoutModel.updatePanelHeight(dy: dy);
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          ],
+        );
       } else {
         return Row(children: [
           NotificationPanelWidget(

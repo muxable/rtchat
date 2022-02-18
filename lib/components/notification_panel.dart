@@ -110,13 +110,7 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
           if (widget.height == double.infinity) {
             return tabs;
           }
-          return ClipRect(
-            child: OverflowBox(
-                alignment: Alignment.topCenter,
-                minHeight: widget.maxHeight,
-                maxHeight: widget.maxHeight,
-                child: tabs),
-          );
+          return tabs;
         })),
       ]),
     );

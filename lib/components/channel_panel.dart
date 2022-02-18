@@ -54,6 +54,14 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
             widget.onRequestExpand!();
           }
         },
+        onVerticalDragStart: (details) {
+          final layoutModel = Provider.of<LayoutModel>(context, listen: false);
+          layoutModel.onDragStartHeight = layoutModel.panelHeight;
+        },
+        onVerticalDragEnd: (details) {
+          final layoutModel = Provider.of<LayoutModel>(context, listen: false);
+          layoutModel.dragEnd = true;
+        },
         onVerticalDragUpdate: (details) {
           final layoutModel = Provider.of<LayoutModel>(context, listen: false);
           if (layoutModel.locked || widget.onResize == null) {
@@ -160,7 +168,9 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                   child: header))),
 
       // body
-      Expanded(child: ChatPanelWidget(onScrollback: widget.onScrollback)),
+      Expanded(
+        child: ChatPanelWidget(onScrollback: widget.onScrollback),
+      ),
 
       // input
       Consumer<LayoutModel>(builder: (context, layoutModel, child) {
