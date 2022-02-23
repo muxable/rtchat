@@ -120,6 +120,16 @@ export class FirebaseAdapter {
     });
   }
 
+  async addHost(channel: string, timestamp: Date, viewers: number) {
+    log.debug({ channel, viewers }, "adding host");
+    await this.getMessage(`twitch:host-${timestamp.toISOString()}`).set({
+      channel,
+      type: "host",
+      timestamp: admin.firestore.Timestamp.fromDate(timestamp),
+      viewers,
+    });
+  }
+
   async deleteMessage(messageId: string, timestamp: Date, tags: any) {
     const original = await this.getMessage(`twitch:${messageId}`).get();
 
