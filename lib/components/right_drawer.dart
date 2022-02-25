@@ -37,6 +37,7 @@ class RightDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('rebuilding drawer');
     return Drawer(
       child: Column(
         children: [
@@ -77,16 +78,18 @@ class RightDrawer extends StatelessWidget {
               return ListTile(
                 leading: const Icon(Icons.lock_open_outlined),
                 title: const Text("lock Layout"),
-                onTap: () {
+                onTap: () async {
                   layoutModel.locked = !layoutModel.locked;
+                  Navigator.pop(context);
                 },
               );
             }
             return ListTile(
               leading: const Icon(Icons.lock_outline),
               title: const Text("unlock Layout"),
-              onTap: () {
+              onTap: () async {
                 layoutModel.locked = !layoutModel.locked;
+                Navigator.pop(context);
               },
             );
           }),

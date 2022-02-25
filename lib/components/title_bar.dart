@@ -26,6 +26,12 @@ class TitleBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final row = Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      IconButton(
+          onPressed: () async {
+            Scaffold.of(context).openDrawer();
+          },
+          icon: const Icon(Icons.menu_outlined)),
+      const Spacer(),
       // tabs
       const SizedBox(
         width: 168,
