@@ -106,6 +106,14 @@ export async function runTwitchAgent(agentId: string) {
     );
   });
 
+  twitch.chat.on(TwitchJs.Chat.Events.HOSTED_WITH_VIEWERS, (message) => {
+    firebase.addHost(
+      message.channel,
+      message.timestamp,
+      message.numberOfViewers || 0
+    );
+  });
+
   await twitch.chat.connect();
 
   const unsubscribe = firebase.onAssignment(
