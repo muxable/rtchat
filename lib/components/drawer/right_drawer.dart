@@ -1,17 +1,14 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_dialog.dart';
+import 'package:rtchat/components/drawer/quicklinks_listview.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
-import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:rtchat/screens/settings/quick_links.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class _ChannelPickerValue {
   final Channel? channel;
@@ -21,50 +18,37 @@ class _ChannelPickerValue {
 }
 
 class RightDrawer extends StatelessWidget {
-  final browser = ChromeSafariBrowser();
-
-  RightDrawer({Key? key}) : super(key: key);
-
-  void launchLink(QuickLinkSource source) async {
-    final isWebUrl =
-        source.url.scheme == 'http' || source.url.scheme == 'https';
-    if (isWebUrl) {
-      await browser.open(url: source.url);
-    } else {
-      await launch(source.url.toString());
-    }
-  }
+  const RightDrawer({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    print('rebuilding drawer');
     return Drawer(
-      child: Column(
+      child: ListView(
+        padding: EdgeInsets.zero,
         children: [
           BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 1, sigmaY: 2),
+            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
             child: Container(
               color: Colors.black.withOpacity(0),
             ),
           ),
-          const SizedBox(
-            height: 100,
-          ),
-          // channel
-          Padding(
-            padding: const EdgeInsets.only(left: 20, bottom: 8),
-            child: _buildChannelListView(),
-          ),
-          const Divider(
-            indent: 30,
-            endIndent: 30,
-            thickness: 2,
+          SizedBox(
+            height: 128,
+            child: DrawerHeader(
+              padding: EdgeInsets.zero,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  top: 8,
+                  bottom: 8,
+                ),
+                child: _buildChannelListView(),
+              ),
+            ),
           ),
 
-          // quicklinks title
-          const Text("Quicklinks"),
           // quicklinks
-          _buildQuicklinksListView(),
+          QuicklinksListView(),
 
           const Divider(
             indent: 30,
@@ -77,7 +61,7 @@ class RightDrawer extends StatelessWidget {
             if (layoutModel.locked) {
               return ListTile(
                 leading: const Icon(Icons.lock_open_outlined),
-                title: const Text("lock Layout"),
+                title: const Text("Lock layout"),
                 onTap: () async {
                   layoutModel.locked = !layoutModel.locked;
                   Navigator.pop(context);
@@ -86,7 +70,7 @@ class RightDrawer extends StatelessWidget {
             }
             return ListTile(
               leading: const Icon(Icons.lock_outline),
-              title: const Text("unlock Layout"),
+              title: const Text("Unlock layout"),
               onTap: () async {
                 layoutModel.locked = !layoutModel.locked;
                 Navigator.pop(context);
@@ -95,7 +79,7 @@ class RightDrawer extends StatelessWidget {
           }),
           ListTile(
             leading: const Icon(Icons.refresh_outlined),
-            title: const Text("refresh audio sources"),
+            title: const Text("Refresh audio sources"),
             onTap: () async {
               final audioModel =
                   Provider.of<AudioModel>(context, listen: false);
@@ -107,16 +91,16 @@ class RightDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.settings_outlined),
-            title: Text("setting"),
+            leading: const Icon(Icons.settings_outlined),
+            title: const Text("Setting"),
             onTap: () async {
               await Navigator.pushNamed(context, "/settings");
             },
           ),
           ListTile(
-            leading: Icon(Icons.exit_to_app_outlined),
+            leading: const Icon(Icons.exit_to_app_outlined),
             iconColor: Colors.redAccent,
-            title: Text("sign out"),
+            title: const Text("Sign out"),
             onTap: () async {
               await showDialog(
                 context: context,
@@ -216,23 +200,6 @@ class RightDrawer extends StatelessWidget {
                         leading: Icon(Icons.add)))
               ];
             }),
-      );
-    });
-  }
-
-  Widget _buildQuicklinksListView() {
-    return Consumer<QuickLinksModel>(
-        builder: (context, quickLinksModel, child) {
-      return Expanded(
-        child: ListView(
-          children: quickLinksModel.sources.reversed.map((source) {
-            return ListTile(
-              leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-              title: Text(source.toString()),
-              onTap: () => launchLink(source),
-            );
-          }).toList(),
-        ),
       );
     });
   }
