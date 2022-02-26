@@ -43,6 +43,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return ListView(children: [
           ListTile(
+            title: const Text('Activity feed'),
+            subtitle: const Text("Customize your activity feed"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/activity-feed");
+            },
+          ),
+          ListTile(
+            title: const Text('Audio sources'),
+            subtitle: const Text("Add web sources for alert sounds"),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/audio-sources");
+            },
+          ),
+          ListTile(
             title: const Text('Quick links'),
             subtitle: const Text("Add shortcuts to commonly-used tools"),
             onTap: () {
