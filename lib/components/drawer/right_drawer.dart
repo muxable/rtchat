@@ -27,7 +27,7 @@ class RightDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
             child: Container(
               color: Colors.black.withOpacity(0),
             ),

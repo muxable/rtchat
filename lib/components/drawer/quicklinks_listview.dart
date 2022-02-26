@@ -24,6 +24,14 @@ class QuicklinksListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<QuickLinksModel>(
         builder: (context, quickLinksModel, child) {
+      if (quickLinksModel.sources.isEmpty) {
+        return const Padding(
+          padding: EdgeInsets.all(16),
+          child: Center(
+            child: Text("Add quicklinks in setting"),
+          ),
+        );
+      }
       return SizedBox(
         height: 300,
         child: ListView(
