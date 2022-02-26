@@ -1,20 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/channel_search_dialog.dart';
-import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const discordUrl = "https://discord.gg/UKHJMQs74u";
-
-class _ChannelPickerValue {
-  final Channel? channel;
-  final bool isAdd;
-
-  const _ChannelPickerValue({this.channel, this.isAdd = false});
-}
 
 Widget _iconWithText(IconData icon, String text) {
   return Column(children: [
