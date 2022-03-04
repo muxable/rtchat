@@ -154,10 +154,11 @@ export class FirebaseAdapter {
   ) {
     const channels = new Set<string>();
     const ref = this.firebase.ref("agents").child(provider);
+    const failures: { [key: string]: number } = {};
 
     const claimListener = async (snapshot: admin.database.DataSnapshot) => {
       const channel = Object.keys(snapshot.val() || {}).pop();
-      if (!channel) {
+      if (!channel || failures[channel] >= 3) {
         return;
       }
       // incur a slight delay to reduce contesting and load balance a little.
@@ -196,11 +197,13 @@ export class FirebaseAdapter {
             try {
               await join(channel);
               channels.add(channel);
+              delete failures[channel];
             } catch (e) {
               log.error(
                 { provider, agentId, channel, e },
                 "failed to join channel"
               );
+              failures[channel] = (failures[channel] || 0) + 1;
               await ref.child(channel).transaction((data) => {
                 if (data === agentId) {
                   return "";
