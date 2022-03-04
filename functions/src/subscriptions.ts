@@ -87,7 +87,7 @@ export const unsubscribe = functions.pubsub
   });
 
 export const cleanup = functions.pubsub
-  .schedule("0 * */6 * *") // every ten minutes
+  .schedule("*/6 * * * *") // every ten minutes
   .onRun(async (context) => {
     // delete up to 19200 records a day.
     const batch = admin.firestore().batch();
