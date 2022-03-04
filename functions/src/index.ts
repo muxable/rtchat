@@ -6,7 +6,7 @@ import { getUserEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
 import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
-import { subscribe, unsubscribe } from "./subscriptions";
+import { subscribe, unsubscribe, cleanup } from "./subscriptions";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
 
 admin.initializeApp();
@@ -317,7 +317,10 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
         throw new functions.https.HttpsError("not-found", "image not found");
       }
     default:
-      throw new functions.https.HttpsError("invalid-argument", "invalid provider");
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "invalid provider"
+      );
   }
 });
 
@@ -326,5 +329,5 @@ export const demoAuth = functions.https.onCall(async (data, context) => {
   return await admin.auth().createCustomToken("kKa9SYk5eFTjQXaz1soSCdlZMan2");
 });
 
-export { subscribe, unsubscribe, eventsub, search, getUserEmotes };
+export { subscribe, unsubscribe, eventsub, search, getUserEmotes, cleanup };
 export const auth = functions.https.onRequest(authApp);

@@ -55,7 +55,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
 export const unsubscribe = functions.pubsub
   .schedule("0 4 * * *") // daily at 4a
   .onRun(async (context) => {
-    const limit = Date.now() - 7 * 86400 * 1000;
+    const limit = Date.now() - 3 * 86400 * 1000;
     const subscriptionsRef = admin.database().ref("subscriptions");
     const subscriptions = await subscriptionsRef.get();
     const providers = subscriptions.val() as {
@@ -84,4 +84,20 @@ export const unsubscribe = functions.pubsub
         }
       }
     }
+  });
+
+export const cleanup = functions.pubsub
+  .schedule("0 */2 * * *") // every other hour
+  .onRun(async (context) => {
+    // delete up to 12k records a day.
+    const batch = admin.firestore().batch();
+    const snapshot = await admin
+      .firestore()
+      .collection("messages")
+      .where("timestamp", "<", Date.now() - 7 * 86400 * 1000)
+      .orderBy("timestamp", "asc")
+      .limit(1000)
+      .get();
+    snapshot.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
   });
