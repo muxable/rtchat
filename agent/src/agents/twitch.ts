@@ -124,7 +124,7 @@ export async function runTwitchAgent(agentId: string) {
       await Promise.race([
         twitch.chat.join(channel),
         new Promise<void>((_, reject) =>
-          setTimeout(() => reject("failed to join in time"), 5000)
+          setTimeout(() => reject("failed to join in time"), 1000)
         ),
       ]);
       log.info({ channel, agentId, provider }, "joined channel");
@@ -134,11 +134,11 @@ export async function runTwitchAgent(agentId: string) {
       await Promise.race([
         twitch.chat.part(channel),
         new Promise<void>((_, reject) =>
-          setTimeout(() => reject("failed to part in time"), 5000)
+          setTimeout(() => reject("failed to part in time"), 1000)
         ),
       ]);
       log.info({ channel, agentId, provider }, "parted channel");
-    }
+    },
   );
 
   twitch.chat.on(TwitchJs.Chat.Events.DISCONNECTED, async () => {
