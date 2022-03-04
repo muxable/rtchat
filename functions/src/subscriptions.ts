@@ -16,6 +16,8 @@ export const subscribe = functions.https.onCall(async (data, context) => {
     );
   }
 
+  console.log(context.auth.uid, "requested subscribe to", provider, channelId);
+
   switch (provider) {
     case "twitch":
       const channel = await getTwitchLogin(context.auth.uid, channelId);
