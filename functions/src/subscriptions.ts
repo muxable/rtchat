@@ -87,16 +87,16 @@ export const unsubscribe = functions.pubsub
   });
 
 export const cleanup = functions.pubsub
-  .schedule("0 */2 * * *") // every other hour
+  .schedule("0 * */6 * *") // every ten minutes
   .onRun(async (context) => {
-    // delete up to 12k records a day.
+    // delete up to 19200 records a day.
     const batch = admin.firestore().batch();
     const snapshot = await admin
       .firestore()
       .collection("messages")
       .where("timestamp", "<", Date.now() - 7 * 86400 * 1000)
       .orderBy("timestamp", "asc")
-      .limit(1000)
+      .limit(80)
       .get();
     snapshot.forEach((doc) => batch.delete(doc.ref));
     await batch.commit();
