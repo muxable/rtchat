@@ -197,8 +197,15 @@ export class FirebaseAdapter {
               await join(channel);
               channels.add(channel);
             } catch (e) {
-              log.error({ provider, agentId, channel }, "failed to join");
-              await ref.child(channel).set("");
+              log.error(
+                { provider, agentId, channel, e },
+                "failed to join channel"
+              );
+              await ref.child(channel).transaction((data) => {
+                if (data === agentId) {
+                  return "";
+                }
+              });
             }
           }
           for (const channel of remove) {
@@ -206,7 +213,7 @@ export class FirebaseAdapter {
               await leave(channel);
               channels.delete(channel);
             } catch (e) {
-              log.error({ provider, agentId, channel }, "failed to leave");
+              log.error({ provider, agentId, channel, e }, "failed to leave");
             }
           }
           // register a disconnect handler too in case our cleanup isn't called.
