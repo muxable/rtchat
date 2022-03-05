@@ -154,6 +154,8 @@ export async function runTwitchAgent(
 
         await unsubscribe(channel);
       });
+
+      agents[channel] = chat;
     },
     async (channel) => {
       const chat = agents[channel];
