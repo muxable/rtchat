@@ -1,6 +1,7 @@
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import * as admin from "firebase-admin";
 import { v4 as uuidv4 } from "uuid";
+import { FirebaseAdapter } from "./adapters/firebase";
 import { runTwitchAgent } from "./agents/twitch";
 import { log } from "./log";
 
@@ -31,8 +32,13 @@ async function main() {
   const AGENT_ID = uuidv4();
 
   log.info({ agentId: AGENT_ID }, "running agent");
+  const firebase = new FirebaseAdapter(
+    admin.database(),
+    admin.firestore(),
+    "twitch"
+  );
 
-  runTwitchAgent(AGENT_ID).then((close) => {
+  runTwitchAgent(firebase, AGENT_ID).then((close) => {
     for (const signal of ["SIGINT", "SIGTERM", "uncaughtException"]) {
       process.on(signal, async (err) => {
         log.error(err, "received %s", signal);
