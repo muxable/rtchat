@@ -85,6 +85,16 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
           viewers: data['event']['viewers'],
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
+    case "host":
+     final model = TwitchHostEventModel(
+          messageId: change.doc.id,
+          from: TwitchUserModel(
+              userId: null,
+              login: data['displayName'],
+              displayName: data['displayName']),
+          viewers: data['viewers'],
+          timestamp: data['timestamp'].toDate());
+      return AppendDeltaEvent(model);
     case "channel.subscribe":
       final model = TwitchSubscriptionEventModel(
           timestamp: data['timestamp'].toDate(),

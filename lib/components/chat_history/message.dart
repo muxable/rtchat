@@ -6,6 +6,7 @@ import 'package:rtchat/components/chat_history/timeout_dialog.dart';
 import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
 import 'package:rtchat/components/chat_history/twitch/cheer_event.dart';
 import 'package:rtchat/components/chat_history/twitch/follow_event.dart';
+import 'package:rtchat/components/chat_history/twitch/host_event.dart';
 import 'package:rtchat/components/chat_history/twitch/hype_train_event.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/poll_event.dart';
@@ -230,6 +231,12 @@ class ChatHistoryMessage extends StatelessWidget {
         selector: (_, model) => model.predictionEventConfig,
         builder: (_, config, __) =>
             config.showEvent ? TwitchPredictionEventWidget(m) : Container(),
+      );
+    } else if (m is TwitchHostEventModel) {
+      return Selector<EventSubConfigurationModel, HostEventConfig>(
+        selector: (_, model) => model.hostEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchHostEventWidget(m) : Container(),
       );
     } else {
       throw AssertionError("invalid message type");

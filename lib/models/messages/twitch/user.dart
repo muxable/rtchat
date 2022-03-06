@@ -32,7 +32,7 @@ const botList = {
 };
 
 class TwitchUserModel {
-  final String userId;
+  final String? userId;
   final String? displayName;
   final String login;
 
@@ -68,8 +68,10 @@ class TwitchUserModel {
     return colors[n % colors.length];
   }
 
-  String get profilePictureUrl =>
-      "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$userId";
+  String get profilePictureUrl {
+      final param = userId  != null ? "channelId=$userId" : "login=$login";
+      return "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&$param";
+  }
 
   TwitchUserModel.fromJson(Map<String, dynamic> json)
       : userId = json["userId"],
