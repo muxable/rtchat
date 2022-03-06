@@ -68,13 +68,25 @@ export class FirebaseAdapter {
     return this.firestore.collection("messages").doc(key);
   }
 
-  async getCredentials(forceRefresh = false) {
-    const userId = getBotUserId(this.provider);
+  async getAgent(channel: string) {
+    const profile = await this.firestore
+      .collection("profiles")
+      .where(`${this.provider}.login`, "==", channel)
+      .get();
+    if (profile.empty) {
+      const userId = getBotUserId(this.provider);
+      const username = (
+        await this.firestore.collection("profiles").doc(userId).get()
+      ).get(this.provider)["login"] as string;
+      return { userId, username };
+    }
+    return {
+      userId: profile.docs[0].id,
+      username: profile.docs[0].get(this.provider)["login"] as string,
+    };
+  }
 
-    const username = (
-      await this.firestore.collection("profiles").doc(userId).get()
-    ).get(this.provider)["login"] as string;
-
+  async getCredentials(userId: string, forceRefresh = false) {
     // fetch the token from the database.
     const ref = this.firestore.collection("tokens").doc(userId);
     const encoded = (await ref.get()).get(this.provider);
@@ -87,18 +99,15 @@ export class FirebaseAdapter {
       try {
         forceRefresh = false;
         accessToken = await accessToken.refresh();
-      } catch (err) {
-        if (err.data?.payload?.message === "Invalid refresh token") {
+      } catch (err: any) {
+        if (err?.data?.payload?.message === "Invalid refresh token") {
           throw new Error("invalid refresh token");
         }
         throw err;
       }
     }
     await ref.update({ [this.provider]: JSON.stringify(accessToken.token) });
-    return {
-      token: accessToken.token,
-      username,
-    };
+    return accessToken.token;
   }
 
   async addMessage(
@@ -233,7 +242,12 @@ export class FirebaseAdapter {
 
     claimRef.on("value", claimListener);
 
-    return async () => {
+    return async (channel?: string) => {
+      if (channel) {
+        // unsubscribe from a specific channel.
+        await ref.child(channel).set("");
+        return;
+      }
       claimRef.off("value", claimListener);
       subscription.unsubscribe();
 

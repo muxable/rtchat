@@ -1,5 +1,9 @@
 import * as admin from "firebase-admin";
-import TwitchJs, { PrivateMessage, PrivateMessageWithBits } from "twitch-js";
+import TwitchJs, {
+  Chat,
+  PrivateMessage,
+  PrivateMessageWithBits,
+} from "twitch-js";
 import { FirebaseAdapter } from "../adapters/firebase";
 import { log } from "../log";
 
@@ -46,23 +50,28 @@ function tmiJsTagsShim(
   };
 }
 
-export async function runTwitchAgent(agentId: string) {
-  const provider = "twitch";
+const provider = "twitch";
 
-  const firebase = new FirebaseAdapter(
-    admin.database(),
-    admin.firestore(),
-    provider
-  );
+/**
+ * Gets the agent for a given channel. If we have a token (ie the user is actively signed in), we auth as that user. Otherwise, we auth as the bot user.
+ * @param channel the channel to fetch an agent for
+ */
+async function getChatAgent(
+  firebase: FirebaseAdapter,
+  agentId: string,
+  channel: string
+) {
+  const { username, userId } = await firebase.getAgent(channel);
+  const token = await firebase.getCredentials(userId);
 
-  const { username, token } = await firebase.getCredentials();
+  log.info({ username, userId, channel }, "getting chat agent");
 
   const twitch = new TwitchJs({
     username,
     token: token["access_token"],
     onAuthenticationFailure: async () => {
-      const { token } = await firebase.getCredentials(true);
-      log.warn({ agentId, provider }, "authentication failure");
+      const token = await firebase.getCredentials(userId, true);
+      log.warn({ agentId, provider: "twitch" }, "authentication failure");
       return token["access_token"];
     },
     chat: {
@@ -116,42 +125,63 @@ export async function runTwitchAgent(agentId: string) {
 
   await twitch.chat.connect();
 
+  return twitch.chat;
+}
+
+export async function runTwitchAgent(
+  firebase: FirebaseAdapter,
+  agentId: string
+) {
+  const agents: { [key: string]: Chat } = {};
+
   const unsubscribe = firebase.onAssignment(
     provider,
     agentId,
     async (channel) => {
       log.info({ channel, agentId, provider }, "assigned to channel");
+      const chat = await getChatAgent(firebase, agentId, channel);
+
       await Promise.race([
-        twitch.chat.join(channel),
+        chat.join(channel),
         new Promise<void>((_, reject) =>
           setTimeout(() => reject("failed to join in time"), 1000)
         ),
       ]);
       log.info({ channel, agentId, provider }, "joined channel");
+
+      chat.on(TwitchJs.Chat.Events.DISCONNECTED, async () => {
+        log.info({ agentId, provider }, "disconnected");
+
+        await unsubscribe(channel);
+      });
+
+      agents[channel] = chat;
     },
     async (channel) => {
+      const chat = agents[channel];
+      if (!chat) {
+        log.error(
+          { channel, agentId, provider },
+          "agent missing for unsubscribe"
+        );
+        return;
+      }
       log.info({ channel, agentId, provider }, "unassigned from channel");
       await Promise.race([
-        twitch.chat.part(channel),
+        chat.part(channel),
         new Promise<void>((_, reject) =>
           setTimeout(() => reject("failed to part in time"), 1000)
         ),
       ]);
       log.info({ channel, agentId, provider }, "parted channel");
-    },
+      chat.disconnect();
+      delete agents[channel];
+    }
   );
-
-  twitch.chat.on(TwitchJs.Chat.Events.DISCONNECTED, async () => {
-    log.info({ agentId, provider }, "disconnected");
-
-    await unsubscribe();
-  });
 
   return async () => {
     log.info({ agentId, provider }, "disconnecting");
 
     await unsubscribe();
-
-    twitch.chat.disconnect();
   };
 }
