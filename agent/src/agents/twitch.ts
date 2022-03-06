@@ -176,6 +176,15 @@ export async function runTwitchAgent(
       log.info({ channel, agentId, provider }, "parted channel");
       chat.disconnect();
       delete agents[channel];
+    },
+    async (channel, message) => {
+      const chat = agents[channel];
+      if (!chat) {
+        log.error({ channel, agentId, provider }, "agent missing for message");
+        return;
+      }
+      log.info({ channel, agentId, provider }, "sending message");
+      await chat.say(channel, message);
     }
   );
 
