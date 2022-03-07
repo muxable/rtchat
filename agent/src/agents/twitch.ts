@@ -52,6 +52,71 @@ function tmiJsTagsShim(
 
 const provider = "twitch";
 
+async function addMessage(
+  firebase: FirebaseAdapter,
+  channelId: string,
+  channel: string,
+  messageId: string,
+  message: string,
+  timestamp: Date,
+  tags: any
+) {
+  log.debug({ channelId, channel, messageId, message }, "adding message");
+  await firebase.getMessage(`twitch:${messageId}`).set({
+    channelId: `twitch:${channelId}`,
+    channel,
+    type: "message",
+    timestamp: admin.firestore.Timestamp.fromDate(timestamp),
+    tags,
+    message,
+  });
+}
+
+async function addHost(
+  firebase: FirebaseAdapter,
+  channel: string,
+  displayName: string,
+  timestamp: Date,
+  viewers: number
+) {
+  log.debug({ channel, displayName, viewers }, "adding host");
+  const profile = await firebase.getProfile(channel.replace("#", ""));
+  if (!profile) {
+    log.error({ channel, displayName, viewers }, "no profile for host");
+    return;
+  }
+  await firebase.getMessage(`twitch:host-${timestamp.toISOString()}`).set({
+    channel,
+    channelId: profile.id,
+    type: "host",
+    displayName,
+    timestamp: admin.firestore.Timestamp.fromDate(timestamp),
+    viewers,
+  });
+}
+
+async function deleteMessage(
+  firebase: FirebaseAdapter,
+  messageId: string,
+  timestamp: Date,
+  tags: any
+) {
+  const original = await firebase.getMessage(`twitch:${messageId}`).get();
+
+  if (!original.exists) {
+    log.error({ messageId, timestamp, tags }, "no message to delete");
+    return;
+  }
+
+  await firebase.getMessage(`twitch:x-${messageId}`).set({
+    channelId: original.get("channelId"),
+    type: "messagedeleted",
+    timestamp: admin.firestore.Timestamp.fromDate(timestamp),
+    tags,
+    messageId,
+  });
+}
+
 /**
  * Gets the agent for a given channel. If we have a token (ie the user is actively signed in), we auth as that user. Otherwise, we auth as the bot user.
  * @param channel the channel to fetch an agent for
@@ -90,7 +155,8 @@ async function getChatAgent(
     const isAction = Boolean(actionMessage);
 
     // strip off the action data.
-    firebase.addMessage(
+    addMessage(
+      firebase,
       message.tags.roomId,
       message.channel,
       message.tags.id,
@@ -108,7 +174,8 @@ async function getChatAgent(
     if (message.command !== TwitchJs.Chat.Commands.CLEAR_MESSAGE) {
       return;
     }
-    firebase.deleteMessage(
+    deleteMessage(
+      firebase,
       message.tags.targetMsgId,
       message.timestamp,
       message.tags
@@ -116,8 +183,10 @@ async function getChatAgent(
   });
 
   twitch.chat.on(TwitchJs.Chat.Events.HOSTED_WITH_VIEWERS, (message) => {
-    firebase.addHost(
+    addHost(
+      firebase,
       message.channel,
+      message.tags.displayName,
       message.timestamp,
       message.numberOfViewers || 0
     );
