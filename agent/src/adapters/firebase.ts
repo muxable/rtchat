@@ -125,7 +125,8 @@ export class FirebaseAdapter {
     provider: string,
     agentId: string,
     join: (channel: string) => Promise<void>,
-    leave: (channel: string) => Promise<void>
+    leave: (channel: string) => Promise<void>,
+    say: (channel: string, message: string) => Promise<void>
   ) {
     const channels = new Set<string>();
     const ref = this.firebase.ref("agents").child(provider);
