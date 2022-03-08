@@ -192,6 +192,26 @@ async function getChatAgent(
     );
   });
 
+  twitch.chat.on(TwitchJs.Chat.Events.HOSTED_AUTO, (message) => {
+    addHost(
+      firebase,
+      message.channel,
+      message.tags.displayName,
+      message.timestamp,
+      message.numberOfViewers || 0
+    );
+  });
+
+  twitch.chat.on(TwitchJs.Chat.Events.HOSTED_WITHOUT_VIEWERS, (message) => {
+    addHost(
+      firebase,
+      message.channel,
+      message.tags.displayName,
+      message.timestamp,
+      0
+    );
+  });
+
   await twitch.chat.connect();
 
   return twitch.chat;
