@@ -21,7 +21,7 @@
     "bunyan": "^1.8.15",
     "dotenv": "^10.0.0",
     "firebase-admin": "^9.11.0",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "rxjs": "^7.3.0",
     "simple-oauth2": "^4.2.0",
     "ts-node": "^10.1.0",
