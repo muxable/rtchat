@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_image/flutter_image.dart';
 import 'package:intl/intl.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
@@ -14,7 +13,7 @@ class TwitchHostEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedEventWidget.avatar(
-      avatar: NetworkImageWithRetry(model.from.profilePictureUrl),
+      avatar: NetworkImage(model.from.profilePictureUrl),
       child: Text.rich(TextSpan(
         children: [
           TextSpan(
