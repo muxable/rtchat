@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/tts_audio_handler.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
@@ -25,21 +26,21 @@ import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
 import 'package:rtchat/screens/settings/events.dart';
+import 'package:rtchat/screens/settings/events/channel_point.dart';
 import 'package:rtchat/screens/settings/events/cheer.dart';
 import 'package:rtchat/screens/settings/events/follow.dart';
+import 'package:rtchat/screens/settings/events/host.dart';
 import 'package:rtchat/screens/settings/events/hypetrain.dart';
 import 'package:rtchat/screens/settings/events/poll.dart';
 import 'package:rtchat/screens/settings/events/prediction.dart';
 import 'package:rtchat/screens/settings/events/raid.dart';
 import 'package:rtchat/screens/settings/events/subscription.dart';
-import 'package:rtchat/screens/settings/events/channel_point.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/tts.dart';
@@ -309,6 +310,7 @@ class _AppState extends State<App> {
             '/settings/events/channel-point': (context) =>
                 const ChannelPointRedemptionEventScreen(),
             '/settings/events/poll': (context) => const PollEventScreen(),
+            '/settings/events/host': (context) => const HostEventScreen(),
             '/settings/events/hypetrain': (context) =>
                 const HypetrainEventScreen(),
             '/settings/events/prediction': (context) =>

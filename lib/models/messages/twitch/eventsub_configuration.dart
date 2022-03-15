@@ -247,6 +247,16 @@ class EventSubConfigurationModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  setHostEventDuration(Duration duration) {
+    hostEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setHostEventShowable(bool value) {
+    hostEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
   setHypetrainEventDuration(Duration duration) {
     hypetrainEventConfig.eventDuration = duration;
     notifyListeners();
@@ -310,6 +320,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
         "pollEventConfig": pollEventConfig.toJson(),
         "channelPointRedemptionEventConfig":
             channelPointRedemptionEventConfig.toJson(),
+        "hostEventConfig": hostEventConfig.toJson(),
         "hypetrainEventConfig": hypetrainEventConfig.toJson(),
         "predictionEventConfig": predictionEventConfig.toJson(),
       };
