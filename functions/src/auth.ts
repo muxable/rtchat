@@ -65,7 +65,6 @@ app.get("/auth/twitch/redirect", (req, res) => {
 
 app.get("/auth/twitch/callback", async (req, res) => {
   if (!req.session?.state || req.session.state !== req.session.state) {
-    console.error(new Error("invalid state"));
     res.redirect("/auth/twitch/redirect");
     return;
   }
