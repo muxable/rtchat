@@ -131,8 +131,8 @@ class EventsScreen extends StatelessWidget {
                   from: const TwitchUserModel(
                       userId: null,
                       login: 'muxfd',
-                      displayName: null),
-                  viewers: 4,
+                      displayName: 'muxfd'),
+                  viewers: 5,
                 )))),
             ListTile(
               title: const Text('Host event config'),
