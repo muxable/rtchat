@@ -22,6 +22,8 @@ class RightDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final channelsModel = Provider.of<ChannelsModel>(context, listen: false);
+    final first = channelsModel.subscribedChannels.first;
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -42,7 +44,54 @@ class RightDrawer extends StatelessWidget {
                   top: 8,
                   bottom: 8,
                 ),
-                child: _buildChannelListView(),
+                child: PopupMenuButton<_ChannelPickerValue>(
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Image(
+                                height: 24,
+                                image: AssetImage(
+                                    'assets/providers/${first.provider}.png')),
+                          ),
+                          Expanded(
+                            child: Text("/${first.displayName}",
+                                softWrap: false, overflow: TextOverflow.fade),
+                          ),
+                        ]),
+                    onSelected: (value) async {
+                      if (value.isAdd) {
+                        // show the search dialog.
+                        await showDialog(
+                          context: context,
+                          builder: (context) =>
+                              ChannelSearchDialog(onSelect: (channel) {
+                            channelsModel.subscribedChannels = {channel};
+                            Navigator.pop(context);
+                          }),
+                        );
+                      } else {
+                        channelsModel.subscribedChannels = {value.channel!};
+                      }
+                    },
+                    itemBuilder: (context) {
+                      return [
+                        ...channelsModel.availableChannels.map((channel) {
+                          return PopupMenuItem(
+                              value: _ChannelPickerValue(channel: channel),
+                              child: ListTile(
+                                title: Text(channel.displayName),
+                              ));
+                        }),
+                        const PopupMenuItem(
+                            value: _ChannelPickerValue(isAdd: true),
+                            child: ListTile(
+                                title: Text("Find a channel"),
+                                leading: Icon(Icons.add)))
+                      ];
+                    }),
               ),
             ),
           ),
@@ -145,62 +194,60 @@ class RightDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildChannelListView() {
-    return Consumer<ChannelsModel>(builder: (context, channelsModel, child) {
-      if (channelsModel.subscribedChannels.isEmpty) {
-        return const Spacer();
-      }
-      final first = channelsModel.subscribedChannels.first;
-      return Container(
-        child: PopupMenuButton<_ChannelPickerValue>(
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Image(
-                        height: 24,
-                        image: AssetImage(
-                            'assets/providers/${first.provider}.png')),
-                  ),
-                  Expanded(
-                    child: Text("/${first.displayName}",
-                        softWrap: false, overflow: TextOverflow.fade),
-                  ),
-                ]),
-            onSelected: (value) async {
-              if (value.isAdd) {
-                // show the search dialog.
-                await showDialog(
-                  context: context,
-                  builder: (context) =>
-                      ChannelSearchDialog(onSelect: (channel) {
-                    channelsModel.subscribedChannels = {channel};
-                    Navigator.pop(context);
-                  }),
-                );
-              } else {
-                channelsModel.subscribedChannels = {value.channel!};
-              }
-            },
-            itemBuilder: (context) {
-              return [
-                ...channelsModel.availableChannels.map((channel) {
-                  return PopupMenuItem(
-                      value: _ChannelPickerValue(channel: channel),
-                      child: ListTile(
-                        title: Text(channel.displayName),
-                      ));
-                }),
-                const PopupMenuItem(
-                    value: _ChannelPickerValue(isAdd: true),
-                    child: ListTile(
-                        title: Text("Find a channel"),
-                        leading: Icon(Icons.add)))
-              ];
-            }),
-      );
-    });
-  }
+  // Widget _buildChannelListView() {
+  //     if (channelsModel.subscribedChannels.isEmpty) {
+  //       return const Spacer();
+  //     }
+  //     final first = channelsModel.subscribedChannels.first;
+  //     return Container(
+  //       child: PopupMenuButton<_ChannelPickerValue>(
+  //           child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.start,
+  //               crossAxisAlignment: CrossAxisAlignment.center,
+  //               children: [
+  //                 Padding(
+  //                   padding: const EdgeInsets.only(right: 8),
+  //                   child: Image(
+  //                       height: 24,
+  //                       image: AssetImage(
+  //                           'assets/providers/${first.provider}.png')),
+  //                 ),
+  //                 Expanded(
+  //                   child: Text("/${first.displayName}",
+  //                       softWrap: false, overflow: TextOverflow.fade),
+  //                 ),
+  //               ]),
+  //           onSelected: (value) async {
+  //             if (value.isAdd) {
+  //               // show the search dialog.
+  //               await showDialog(
+  //                 context: context,
+  //                 builder: (context) =>
+  //                     ChannelSearchDialog(onSelect: (channel) {
+  //                   channelsModel.subscribedChannels = {channel};
+  //                   Navigator.pop(context);
+  //                 }),
+  //               );
+  //             } else {
+  //               channelsModel.subscribedChannels = {value.channel!};
+  //             }
+  //           },
+  //           itemBuilder: (context) {
+  //             return [
+  //               ...channelsModel.availableChannels.map((channel) {
+  //                 return PopupMenuItem(
+  //                     value: _ChannelPickerValue(channel: channel),
+  //                     child: ListTile(
+  //                       title: Text(channel.displayName),
+  //                     ));
+  //               }),
+  //               const PopupMenuItem(
+  //                   value: _ChannelPickerValue(isAdd: true),
+  //                   child: ListTile(
+  //                       title: Text("Find a channel"),
+  //                       leading: Icon(Icons.add)))
+  //             ];
+  //           }),
+  //     );
+  // }
 }
