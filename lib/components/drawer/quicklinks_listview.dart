@@ -28,7 +28,7 @@ class QuicklinksListView extends StatelessWidget {
         return const Padding(
           padding: EdgeInsets.all(16),
           child: Center(
-            child: Text("Add quicklinks in setting"),
+            child: Text("Add quicklinks in settings"),
           ),
         );
       }

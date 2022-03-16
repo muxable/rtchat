@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/pinnable/scroll_view.dart';
-import 'package:rtchat/components/statistics_bar.dart';
 import 'package:rtchat/components/style_model_theme.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';

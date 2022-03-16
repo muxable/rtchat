@@ -58,7 +58,7 @@ class RightDrawer extends StatelessWidget {
 
           // setting
           Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-            if (layoutModel.locked) {
+            if (!layoutModel.locked) {
               return ListTile(
                 leading: const Icon(Icons.lock_open_outlined),
                 title: const Text("Lock layout"),
@@ -92,7 +92,7 @@ class RightDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.settings_outlined),
-            title: const Text("Setting"),
+            title: const Text("Settings"),
             onTap: () async {
               await Navigator.pushNamed(context, "/settings");
             },
