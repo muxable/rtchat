@@ -266,10 +266,10 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
   const provider = req.query?.provider as string | null;
   const channelId = req.query?.channelId as string | null;
   const login = req.query?.login as string | null;
-  if (!provider || !channelId) {
+  if (!provider || !(channelId || login)) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId"
+      "missing provider, channelId, login"
     );
   }
 
