@@ -16,6 +16,8 @@ export const subscribe = functions.https.onCall(async (data, context) => {
     );
   }
 
+  console.log(context.auth.uid, "requested subscribe to", provider, channelId);
+
   switch (provider) {
     case "twitch":
       const channel = await getTwitchLogin(context.auth.uid, channelId);
@@ -53,7 +55,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
 export const unsubscribe = functions.pubsub
   .schedule("0 4 * * *") // daily at 4a
   .onRun(async (context) => {
-    const limit = Date.now() - 7 * 86400 * 1000;
+    const limit = Date.now() - 3 * 86400 * 1000;
     const subscriptionsRef = admin.database().ref("subscriptions");
     const subscriptions = await subscriptionsRef.get();
     const providers = subscriptions.val() as {
@@ -82,4 +84,20 @@ export const unsubscribe = functions.pubsub
         }
       }
     }
+  });
+
+export const cleanup = functions.pubsub
+  .schedule("*/6 * * * *") // every ten minutes
+  .onRun(async (context) => {
+    // delete up to 19200 records a day.
+    const batch = admin.firestore().batch();
+    const snapshot = await admin
+      .firestore()
+      .collection("messages")
+      .where("timestamp", "<", Date.now() - 7 * 86400 * 1000)
+      .orderBy("timestamp", "asc")
+      .limit(80)
+      .get();
+    snapshot.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
   });
