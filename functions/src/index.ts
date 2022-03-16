@@ -265,6 +265,7 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
 export const getProfilePicture = functions.https.onRequest(async (req, res) => {
   const provider = req.query?.provider as string | null;
   const channelId = req.query?.channelId as string | null;
+  const login = req.query?.login as string | null;
   if (!provider || !channelId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
@@ -272,13 +273,16 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
     );
   }
 
+  const queryParam = channelId ? `twitch.id`: `twitch.login`;
+  const queryValue = channelId ? channelId: login;
+
   switch (provider) {
     case "twitch":
       // check if it exists in firestore already.
       const snapshot = await admin
         .firestore()
         .collection("profiles")
-        .where("twitch.id", "==", channelId)
+        .where(queryParam, "==", queryValue)
         .limit(1)
         .get();
       if (!snapshot.empty) {
@@ -301,8 +305,9 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
         "Client-Id": TWITCH_CLIENT_ID,
       };
       try {
+        const apiParam = channelId ? `id=${channelId}`: `login=${login}`;
         const response = await fetch(
-          `https://api.twitch.tv/helix/users?id=${channelId}`,
+          `https://api.twitch.tv/helix/users?${apiParam}`,
           { headers: headers }
         );
         const json = await response.json();
