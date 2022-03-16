@@ -64,17 +64,40 @@ export class FirebaseAdapter {
     firestore.settings({ ignoreUndefinedProperties: true });
   }
 
-  private getMessage(key: string) {
+  getMessage(key: string) {
     return this.firestore.collection("messages").doc(key);
   }
 
-  async getCredentials(forceRefresh = false) {
-    const userId = getBotUserId(this.provider);
+  async getAgent(channel: string) {
+    const profile = await this.getProfile(channel);
+    if (!profile) {
+      const userId = getBotUserId(this.provider);
+      const username = (
+        await this.firestore.collection("profiles").doc(userId).get()
+      ).get(this.provider)["login"] as string;
+      return { userId, username };
+    }
+    return {
+      userId: profile.id,
+      username: profile.get(this.provider)["login"] as string,
+    };
+  }
 
-    const username = (
-      await this.firestore.collection("profiles").doc(userId).get()
-    ).get(this.provider)["login"] as string;
+  async getProfile(channel: string) {
+    const results = await this.firestore
+      .collection("profiles")
+      .where(`${this.provider}.login`, "==", channel)
+      .get();
+    if (results.size > 1) {
+      log.error(
+        { provider: this.provider, channel },
+        "duplicate profiles found"
+      );
+    }
+    return results.empty ? null : results.docs[0];
+  }
 
+  async getCredentials(userId: string, forceRefresh = false) {
     // fetch the token from the database.
     const ref = this.firestore.collection("tokens").doc(userId);
     const encoded = (await ref.get()).get(this.provider);
@@ -87,70 +110,23 @@ export class FirebaseAdapter {
       try {
         forceRefresh = false;
         accessToken = await accessToken.refresh();
-      } catch (err) {
-        if (err.data?.payload?.message === "Invalid refresh token") {
+      } catch (err: any) {
+        if (err?.data?.payload?.message === "Invalid refresh token") {
           throw new Error("invalid refresh token");
         }
         throw err;
       }
     }
     await ref.update({ [this.provider]: JSON.stringify(accessToken.token) });
-    return {
-      token: accessToken.token,
-      username,
-    };
-  }
-
-  async addMessage(
-    channelId: string,
-    channel: string,
-    messageId: string,
-    message: string,
-    timestamp: Date,
-    tags: any
-  ) {
-    log.debug({ channelId, channel, messageId, message }, "adding message");
-    await this.getMessage(`twitch:${messageId}`).set({
-      channelId: `${this.provider}:${channelId}`,
-      channel,
-      type: "message",
-      timestamp: admin.firestore.Timestamp.fromDate(timestamp),
-      tags,
-      message,
-    });
-  }
-
-  async addHost(channel: string, timestamp: Date, viewers: number) {
-    log.debug({ channel, viewers }, "adding host");
-    await this.getMessage(`twitch:host-${timestamp.toISOString()}`).set({
-      channel,
-      type: "host",
-      timestamp: admin.firestore.Timestamp.fromDate(timestamp),
-      viewers,
-    });
-  }
-
-  async deleteMessage(messageId: string, timestamp: Date, tags: any) {
-    const original = await this.getMessage(`twitch:${messageId}`).get();
-
-    if (!original.exists) {
-      return;
-    }
-
-    await this.getMessage(`twitch:x-${messageId}`).set({
-      channelId: original.get("channelId"),
-      type: "messagedeleted",
-      timestamp: admin.firestore.Timestamp.fromDate(timestamp),
-      tags,
-      messageId,
-    });
+    return accessToken.token;
   }
 
   onAssignment(
     provider: string,
     agentId: string,
     join: (channel: string) => Promise<void>,
-    leave: (channel: string) => Promise<void>
+    leave: (channel: string) => Promise<void>,
+    say: (channel: string, message: string) => Promise<void>
   ) {
     const channels = new Set<string>();
     const ref = this.firebase.ref("agents").child(provider);
@@ -233,7 +209,12 @@ export class FirebaseAdapter {
 
     claimRef.on("value", claimListener);
 
-    return async () => {
+    return async (channel?: string) => {
+      if (channel) {
+        // unsubscribe from a specific channel.
+        await ref.child(channel).set("");
+        return;
+      }
       claimRef.off("value", claimListener);
       subscription.unsubscribe();
 
