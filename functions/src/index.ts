@@ -1,13 +1,13 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
-import { EmoteObj } from "tmi.js";
 import { app as authApp } from "./auth";
+import { getUserEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
 import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
-import { subscribe, unsubscribe } from "./subscriptions";
-import { getTwitchClient, getTwitchLogin } from "./twitch";
 import { search } from "./search";
+import { subscribe, unsubscribe, cleanup } from "./subscriptions";
+import { getTwitchClient, getTwitchLogin } from "./twitch";
 
 admin.initializeApp();
 
@@ -317,54 +317,11 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
         throw new functions.https.HttpsError("not-found", "image not found");
       }
     default:
-      throw new functions.https.HttpsError("invalid-argument", "invalid provider");
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "invalid provider"
+      );
   }
-});
-
-export const getUserEmotes = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("permission-denied", "missing auth");
-  }
-  const provider = data?.provider;
-  const channelId = data?.channelId;
-  if (!provider || !channelId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId"
-    );
-  }
-
-  switch (provider) {
-    case "twitch":
-      const client = await getTwitchClient(context.auth.uid, channelId);
-      await client.connect();
-
-      try {
-        const emoteInfo = await new Promise<EmoteObj>((resolve) =>
-          client.on("emotesets", (set, emotes) => resolve(emotes))
-        );
-        return {
-          emotes: Object.values(emoteInfo)
-            .flat()
-            .map((emote) => {
-              return {
-                ...emote,
-                source: `https://static-cdn.jtvnw.net/emoticons/v2/${emote["id"]}/default/dark/1.0`,
-              };
-            }),
-        };
-      } catch (error) {
-        console.error(error);
-        throw new functions.https.HttpsError(
-          "internal",
-          "error retrieving emotes"
-        );
-      } finally {
-        await client.disconnect();
-      }
-  }
-
-  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
 export const demoAuth = functions.https.onCall(async (data, context) => {
@@ -372,5 +329,5 @@ export const demoAuth = functions.https.onCall(async (data, context) => {
   return await admin.auth().createCustomToken("kKa9SYk5eFTjQXaz1soSCdlZMan2");
 });
 
-export { subscribe, unsubscribe, eventsub, search };
+export { subscribe, unsubscribe, eventsub, search, getUserEmotes, cleanup };
 export const auth = functions.https.onRequest(authApp);

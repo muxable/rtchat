@@ -1,5 +1,9 @@
 import * as admin from "firebase-admin";
-import TwitchJs, { PrivateMessage, PrivateMessageWithBits } from "twitch-js";
+import TwitchJs, {
+  Chat,
+  PrivateMessage,
+  PrivateMessageWithBits,
+} from "twitch-js";
 import { FirebaseAdapter } from "../adapters/firebase";
 import { log } from "../log";
 
@@ -46,23 +50,93 @@ function tmiJsTagsShim(
   };
 }
 
-export async function runTwitchAgent(agentId: string) {
-  const provider = "twitch";
+const provider = "twitch";
 
-  const firebase = new FirebaseAdapter(
-    admin.database(),
-    admin.firestore(),
-    provider
-  );
+async function addMessage(
+  firebase: FirebaseAdapter,
+  channelId: string,
+  channel: string,
+  messageId: string,
+  message: string,
+  timestamp: Date,
+  tags: any
+) {
+  log.debug({ channelId, channel, messageId, message }, "adding message");
+  await firebase.getMessage(`twitch:${messageId}`).set({
+    channelId: `twitch:${channelId}`,
+    channel,
+    type: "message",
+    timestamp: admin.firestore.Timestamp.fromDate(timestamp),
+    tags,
+    message,
+  });
+}
 
-  const { username, token } = await firebase.getCredentials();
+async function addHost(
+  firebase: FirebaseAdapter,
+  channel: string,
+  displayName: string,
+  timestamp: Date,
+  viewers: number
+) {
+  log.debug({ channel, displayName, viewers }, "adding host");
+  const profile = await firebase.getProfile(channel.replace("#", ""));
+  if (!profile) {
+    log.error({ channel, displayName, viewers }, "no profile for host");
+    return;
+  }
+  await firebase.getMessage(`twitch:host-${timestamp.toISOString()}`).set({
+    channel,
+    channelId: profile.id,
+    type: "host",
+    displayName,
+    timestamp: admin.firestore.Timestamp.fromDate(timestamp),
+    viewers,
+  });
+}
+
+async function deleteMessage(
+  firebase: FirebaseAdapter,
+  messageId: string,
+  timestamp: Date,
+  tags: any
+) {
+  const original = await firebase.getMessage(`twitch:${messageId}`).get();
+
+  if (!original.exists) {
+    log.error({ messageId, timestamp, tags }, "no message to delete");
+    return;
+  }
+
+  await firebase.getMessage(`twitch:x-${messageId}`).set({
+    channelId: original.get("channelId"),
+    type: "messagedeleted",
+    timestamp: admin.firestore.Timestamp.fromDate(timestamp),
+    tags,
+    messageId,
+  });
+}
+
+/**
+ * Gets the agent for a given channel. If we have a token (ie the user is actively signed in), we auth as that user. Otherwise, we auth as the bot user.
+ * @param channel the channel to fetch an agent for
+ */
+async function getChatAgent(
+  firebase: FirebaseAdapter,
+  agentId: string,
+  channel: string
+) {
+  const { username, userId } = await firebase.getAgent(channel);
+  const token = await firebase.getCredentials(userId);
+
+  log.info({ username, userId, channel }, "getting chat agent");
 
   const twitch = new TwitchJs({
     username,
     token: token["access_token"],
     onAuthenticationFailure: async () => {
-      const { token } = await firebase.getCredentials(true);
-      log.warn({ agentId, provider }, "authentication failure");
+      const token = await firebase.getCredentials(userId, true);
+      log.warn({ agentId, provider: "twitch" }, "authentication failure");
       return token["access_token"];
     },
     chat: {
@@ -81,7 +155,8 @@ export async function runTwitchAgent(agentId: string) {
     const isAction = Boolean(actionMessage);
 
     // strip off the action data.
-    firebase.addMessage(
+    addMessage(
+      firebase,
       message.tags.roomId,
       message.channel,
       message.tags.id,
@@ -99,7 +174,8 @@ export async function runTwitchAgent(agentId: string) {
     if (message.command !== TwitchJs.Chat.Commands.CLEAR_MESSAGE) {
       return;
     }
-    firebase.deleteMessage(
+    deleteMessage(
+      firebase,
       message.tags.targetMsgId,
       message.timestamp,
       message.tags
@@ -107,51 +183,103 @@ export async function runTwitchAgent(agentId: string) {
   });
 
   twitch.chat.on(TwitchJs.Chat.Events.HOSTED_WITH_VIEWERS, (message) => {
-    firebase.addHost(
+    addHost(
+      firebase,
       message.channel,
+      message.tags.displayName,
       message.timestamp,
       message.numberOfViewers || 0
     );
   });
 
+  twitch.chat.on(TwitchJs.Chat.Events.HOSTED_AUTO, (message) => {
+    addHost(
+      firebase,
+      message.channel,
+      message.tags.displayName,
+      message.timestamp,
+      message.numberOfViewers || 0
+    );
+  });
+
+  twitch.chat.on(TwitchJs.Chat.Events.HOSTED_WITHOUT_VIEWERS, (message) => {
+    addHost(
+      firebase,
+      message.channel,
+      message.tags.displayName,
+      message.timestamp,
+      0
+    );
+  });
+
   await twitch.chat.connect();
+
+  return twitch.chat;
+}
+
+export async function runTwitchAgent(
+  firebase: FirebaseAdapter,
+  agentId: string
+) {
+  const agents: { [key: string]: Chat } = {};
 
   const unsubscribe = firebase.onAssignment(
     provider,
     agentId,
     async (channel) => {
       log.info({ channel, agentId, provider }, "assigned to channel");
+      const chat = await getChatAgent(firebase, agentId, channel);
+
       await Promise.race([
-        twitch.chat.join(channel),
+        chat.join(channel),
         new Promise<void>((_, reject) =>
-          setTimeout(() => reject("failed to join in time"), 5000)
+          setTimeout(() => reject("failed to join in time"), 1000)
         ),
       ]);
       log.info({ channel, agentId, provider }, "joined channel");
+
+      chat.on(TwitchJs.Chat.Events.DISCONNECTED, async () => {
+        log.info({ agentId, provider }, "disconnected");
+
+        await unsubscribe(channel);
+      });
+
+      agents[channel] = chat;
     },
     async (channel) => {
+      const chat = agents[channel];
+      if (!chat) {
+        log.error(
+          { channel, agentId, provider },
+          "agent missing for unsubscribe"
+        );
+        return;
+      }
       log.info({ channel, agentId, provider }, "unassigned from channel");
       await Promise.race([
-        twitch.chat.part(channel),
+        chat.part(channel),
         new Promise<void>((_, reject) =>
-          setTimeout(() => reject("failed to part in time"), 5000)
+          setTimeout(() => reject("failed to part in time"), 1000)
         ),
       ]);
       log.info({ channel, agentId, provider }, "parted channel");
+      chat.disconnect();
+      delete agents[channel];
+    },
+    async (channel, message) => {
+      const chat = agents[channel];
+      if (!chat) {
+        log.error({ channel, agentId, provider }, "agent missing for message");
+        return;
+      }
+      log.info({ channel, agentId, provider }, "sending message");
+      await chat.say(channel, message);
     }
   );
-
-  twitch.chat.on(TwitchJs.Chat.Events.DISCONNECTED, async () => {
-    log.info({ agentId, provider }, "disconnected");
-
-    await unsubscribe();
-  });
 
   return async () => {
     log.info({ agentId, provider }, "disconnecting");
 
     await unsubscribe();
-
-    twitch.chat.disconnect();
   };
 }

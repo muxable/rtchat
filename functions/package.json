@@ -17,7 +17,7 @@
     "express-session": "^1.17.2",
     "firebase-admin": "^9.11.0",
     "firebase-functions": "^3.15.3",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "simple-oauth2": "^4.2.0",
     "tmi.js": "^1.8.4"
   },
