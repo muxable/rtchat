@@ -133,30 +133,29 @@ export class FirebaseAdapter {
     const failures: { [key: string]: number } = {};
 
     const claimListener = async (snapshot: admin.database.DataSnapshot) => {
-      console.error("GOT CLAIM", snapshot.val());
-      const claims = Object.keys(snapshot.val() || {});
-      if (claims.length === 0) {
+      for (const channel of Object.keys(snapshot.val() || {})) {
+        if (failures[channel] >= 3) {
+          log.warn(
+            { channel, failureCount: failures[channel] },
+            "ignoring channel because too many join failures"
+          );
+          continue;
+        }
+        // incur a slight delay to reduce contesting and load balance a little.
+        const delay = 250 * Math.random() + 250 * Math.log1p(channels.size);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        try {
+          await ref.child(channel).transaction((data) => {
+            if (data !== "") {
+              return;
+            }
+            return agentId;
+          });
+        } catch (err) {
+          log.warn({ err }, "failed to claim channel");
+        }
         return;
       }
-      const channel = claims[(Math.random() * claims.length) | 0];
-      if (!channel || failures[channel] >= 3) {
-        log.warn(
-          { channel, failureCount: failures[channel!] },
-          "ignoring channel because too many join failures"
-        );
-        return;
-      }
-      // incur a slight delay to reduce contesting and load balance a little.
-      const delay = 250 * Math.random() + 250 * Math.log1p(channels.size);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      try {
-        await ref.child(channel).transaction((data) => {
-          if (data !== "") {
-            return;
-          }
-          return agentId;
-        });
-      } catch (err) {}
     };
 
     const claimRef = ref.orderByValue().equalTo("");
