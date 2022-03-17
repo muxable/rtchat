@@ -135,6 +135,10 @@ export class FirebaseAdapter {
     const claimListener = async (snapshot: admin.database.DataSnapshot) => {
       const channel = Object.keys(snapshot.val() || {}).pop();
       if (!channel || failures[channel] >= 3) {
+        log.warn(
+          { channel, failureCount: failures[channel!] },
+          "ignoring channel because too many join failures"
+        );
         return;
       }
       // incur a slight delay to reduce contesting and load balance a little.
@@ -170,6 +174,21 @@ export class FirebaseAdapter {
           const add = diff(requestedChannels, channels);
           const remove = diff(channels, requestedChannels);
           for (const channel of add) {
+            // this check is required because the claim listener is not concat-safe
+            // and may claim channels with too many failures if the count hasn't
+            // been updated yet.
+            if (failures[channel] >= 3) {
+              log.warn(
+                { channel, failureCount: failures[channel] },
+                "ignoring channel because too many join failures"
+              );
+              await ref.child(channel).transaction((data) => {
+                if (data === agentId) {
+                  return "";
+                }
+              });
+              continue;
+            }
             try {
               await join(channel);
               channels.add(channel);
