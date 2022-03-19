@@ -80,14 +80,8 @@ async function addHost(
   timestamp: Date,
   viewers: number
 ) {
-  const profile = await firebase.getProfile(channel.replace("#", ""));
-  if (!profile) {
-    log.error({ channel, displayName, viewers }, "no profile for host");
-    return;
-  }
   await firebase.getMessage(`twitch:host-${timestamp.toISOString()}`).set({
     channel,
-    channelId: profile.id,
     type: "host",
     displayName,
     timestamp: admin.firestore.Timestamp.fromDate(timestamp),
