@@ -43,10 +43,9 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
 
   @override
   void initState() {
-    print('left drawer init state');
     final channelsModel = Provider.of<ChannelsModel>(context, listen: false);
     final channel = channelsModel.subscribedChannels.first;
-    viewersFuture = _viewersFuture(channel.displayName);
+    viewersFuture = _viewersFuture(channel.displayName.toLowerCase());
     super.initState();
   }
 
