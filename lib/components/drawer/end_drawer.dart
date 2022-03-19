@@ -18,7 +18,7 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
   Future<dynamic>? viewersFuture;
 
   _viewersFuture(String channel) async {
-    Uri uri = Uri.parse('https://tmi.twitch.tv/group/user/${channel}/chatters');
+    Uri uri = Uri.parse('https://tmi.twitch.tv/group/user/$channel/chatters');
     final res = await http.get(uri);
     if (res.statusCode == 200) {
       List<String> broadcasterList =
