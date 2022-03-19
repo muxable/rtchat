@@ -51,8 +51,12 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+    final brightness = MediaQuery.of(context).platformBrightness;
+    bool isDarkMode = brightness == Brightness.dark;
+    return Container(
+      color: isDarkMode
+          ? Colors.black.withOpacity(0.85)
+          : Colors.white.withOpacity(0.9),
       child: FutureBuilder(
         future: viewersFuture,
         builder: (context, snapshot) {
@@ -70,7 +74,7 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                   delegate: SliverChildListDelegate(
                     const [
                       SizedBox(
-                        height: 56,
+                        height: 64,
                       )
                     ],
                   ),
@@ -85,34 +89,40 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                     childCount: broadcasterList!.length,
                   ),
                 ),
-                const SliverTitleWidget(title: "Moderators"),
+                if (moderatorList!.isNotEmpty) ...[
+                  const SliverTitleWidget(title: "Moderators")
+                ],
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) => Padding(
                       padding: const EdgeInsets.only(left: 16),
-                      child: Text(moderatorList![index]),
+                      child: Text(moderatorList[index]),
                     ),
-                    childCount: moderatorList!.length,
+                    childCount: moderatorList.length,
                   ),
                 ),
-                const SliverTitleWidget(title: "Community VIPs"),
+                if (vipList!.isNotEmpty) ...[
+                  const SliverTitleWidget(title: "Community VIPs")
+                ],
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) => Padding(
                       padding: const EdgeInsets.only(left: 16),
-                      child: Text(vipList![index]),
+                      child: Text(vipList[index]),
                     ),
-                    childCount: vipList!.length,
+                    childCount: vipList.length,
                   ),
                 ),
-                const SliverTitleWidget(title: "Viewers"),
+                if (viewerList!.isNotEmpty) ...[
+                  const SliverTitleWidget(title: "Viewers")
+                ],
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) => Padding(
                       padding: const EdgeInsets.only(left: 16),
-                      child: Text(viewerList![index]),
+                      child: Text(viewerList[index]),
                     ),
-                    childCount: viewerList!.length,
+                    childCount: viewerList.length,
                   ),
                 ),
               ],
