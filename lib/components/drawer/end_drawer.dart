@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/drawer/sliver_search_bar.dart';
 import 'package:rtchat/components/drawer/sliver_title.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/drawer/endrawer/viewers_list_model.dart';
 
 class LeftDrawerWidget extends StatefulWidget {
   const LeftDrawerWidget({Key? key}) : super(key: key);
@@ -15,6 +17,7 @@ class LeftDrawerWidget extends StatefulWidget {
 
 class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
   Future<dynamic>? viewersFuture;
+  late ViewersListModel viewersListModel;
 
   _viewersFuture(String channel) async {
     Uri uri = Uri.parse('https://tmi.twitch.tv/group/user/$channel/chatters');
@@ -66,66 +69,87 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
             final moderatorList = data['moderators'];
             final vipList = data['vips'];
             final viewerList = data['viewers'];
-            return CustomScrollView(
-              slivers: [
-                // const SliverSearchBarWidget(),
-                SliverList(
-                  delegate: SliverChildListDelegate(
-                    const [
-                      SizedBox(
-                        height: 64,
-                      )
-                    ],
-                  ),
-                ),
-                const SliverTitleWidget(title: "Broadcaster"),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) => Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: Text(broadcasterList![index]),
-                    ),
-                    childCount: broadcasterList!.length,
-                  ),
-                ),
-                if (moderatorList!.isNotEmpty) ...[
-                  const SliverTitleWidget(title: "Moderators")
-                ],
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) => Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: Text(moderatorList[index]),
-                    ),
-                    childCount: moderatorList.length,
-                  ),
-                ),
-                if (vipList!.isNotEmpty) ...[
-                  const SliverTitleWidget(title: "Community VIPs")
-                ],
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) => Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: Text(vipList[index]),
-                    ),
-                    childCount: vipList.length,
-                  ),
-                ),
-                if (viewerList!.isNotEmpty) ...[
-                  const SliverTitleWidget(title: "Viewers")
-                ],
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) => Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: Text(viewerList[index]),
-                    ),
-                    childCount: viewerList.length,
-                  ),
-                ),
-              ],
+            final viewersListModel =
+                Provider.of<ViewersListModel>(context, listen: false);
+            viewersListModel.init(
+              [...broadcasterList!],
+              [...moderatorList!],
+              [...vipList!],
+              [...viewerList!],
             );
+            return Consumer<ViewersListModel>(builder: (context, model, child) {
+              print('rebuilding list');
+              // final broadcasterList = model.filteredBroadcasterList;
+              // final moderatorList = model.filteredModeratorList;
+              // final vipList = model.filteredVipList;
+              // final viewerList = model.filteredViewerList;
+              return CustomScrollView(
+                slivers: [
+                  const SliverSearchBarWidget(),
+                  SliverList(
+                    delegate: SliverChildListDelegate(
+                      const [
+                        SizedBox(
+                          height: 64,
+                        )
+                      ],
+                    ),
+                  ),
+                  if (model.filteredBroadcasterList.isNotEmpty) ...[
+                    const SliverTitleWidget(title: "Broadcaster"),
+                  ],
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) => Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: Text(model.filteredBroadcasterList[index]),
+                      ),
+                      childCount: model.filteredBroadcasterList.length,
+                    ),
+                  ),
+                  if (model.filteredModeratorList.isNotEmpty) ...[
+                    const SliverTitleWidget(title: "Moderators")
+                  ],
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) => Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: Text(model.filteredModeratorList[index]),
+                      ),
+                      childCount: model.filteredModeratorList.length,
+                    ),
+                  ),
+                  if (model.filteredVipList.isNotEmpty) ...[
+                    const SliverTitleWidget(title: "Community VIPs")
+                  ],
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) => Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: Text(model.filteredVipList[index]),
+                      ),
+                      childCount: model.filteredVipList.length,
+                    ),
+                  ),
+                  if (model.filteredViewerList.isNotEmpty) ...[
+                    const SliverTitleWidget(title: "Viewers")
+                  ],
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                        print("rebuild text");
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 16),
+                          child: Text(model.filteredViewerList[index]),
+                        );
+                      },
+                      childCount: model.filteredViewerList.length,
+                      addAutomaticKeepAlives: true,
+                    ),
+                  ),
+                ],
+              );
+            });
           } else {
             return const Center(child: CircularProgressIndicator());
           }
