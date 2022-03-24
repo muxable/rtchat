@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -20,15 +19,17 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
   _viewersFuture(String channel) async {
     Uri uri = Uri.parse('https://tmi.twitch.tv/group/user/$channel/chatters');
     final res = await http.get(uri);
-    if (res.statusCode == 200) {
+    if (res.statusCode != 200) {
+      return {"broadcaster": [], "moderators": [], "vips": [], "viewers": []};
+    } else {
+      final jsonBody = jsonDecode(res.body);
       List<String> broadcasterList =
-          List<String>.from(jsonDecode(res.body)['chatters']['broadcaster']);
+          List<String>.from(jsonBody['chatters']['broadcaster']);
       List<String> moderatorList =
-          List<String>.from(jsonDecode(res.body)['chatters']['moderators']);
-      List<String> vipList =
-          List<String>.from(jsonDecode(res.body)['chatters']['vips']);
+          List<String>.from(jsonBody['chatters']['moderators']);
+      List<String> vipList = List<String>.from(jsonBody['chatters']['vips']);
       List<String> viewerList =
-          List<String>.from(jsonDecode(res.body)['chatters']['viewers']);
+          List<String>.from(jsonBody['chatters']['viewers']);
 
       return {
         "broadcaster": broadcasterList,
@@ -36,8 +37,6 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
         "vips": vipList,
         "viewers": viewerList
       };
-    } else {
-      return {"broadcaster": [], "moderators": [], "vips": [], "viewers": []};
     }
   }
 
