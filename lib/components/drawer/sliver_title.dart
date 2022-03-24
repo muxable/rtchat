@@ -6,16 +6,6 @@ class SliverTitleWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // return SliverAppBar(
-    //   toolbarHeight: 16,
-    //   expandedHeight: 32,
-    //   title: Text(
-    //     title,
-    //     style: const TextStyle(color: Colors.redAccent, fontSize: 18),
-    //   ),
-    //   pinned: true,
-    // );
-
     return SliverList(
       delegate: SliverChildListDelegate(
         [
