@@ -133,22 +133,32 @@ export class FirebaseAdapter {
     const failures: { [key: string]: number } = {};
 
     const claimListener = async (snapshot: admin.database.DataSnapshot) => {
-      const channel = Object.keys(snapshot.val() || {}).pop();
-      if (!channel || failures[channel] >= 3) {
+      for (const channel of Object.keys(snapshot.val() || {})) {
+        if (failures[channel] >= 3) {
+          log.warn(
+            { channel, failureCount: failures[channel] },
+            "ignoring channel because too many join failures"
+          );
+          continue;
+        }
+        // incur a slight delay to reduce contesting and load balance a little.
+        const delay = 250 * Math.random() + 250 * Math.log1p(channels.size);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        try {
+          await ref.child(channel).transaction((data) => {
+            if (data !== "") {
+              return;
+            }
+            return agentId;
+          });
+        } catch (err) {
+          log.warn({ err }, "failed to claim channel");
+        }
         return;
       }
-      // incur a slight delay to reduce contesting and load balance a little.
-      const delay = 250 * Math.random() + 250 * Math.log1p(channels.size);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      await ref.child(channel).transaction((data) => {
-        if (data !== "") {
-          return;
-        }
-        return agentId;
-      });
     };
 
-    const claimRef = ref.orderByValue().limitToFirst(1).equalTo("");
+    const claimRef = ref.orderByValue().equalTo("");
     const assignRef = ref.orderByValue().equalTo(agentId);
 
     const subscription = new Observable<admin.database.DataSnapshot>(
@@ -170,6 +180,21 @@ export class FirebaseAdapter {
           const add = diff(requestedChannels, channels);
           const remove = diff(channels, requestedChannels);
           for (const channel of add) {
+            // this check is required because the claim listener is not concat-safe
+            // and may claim channels with too many failures if the count hasn't
+            // been updated yet.
+            if (failures[channel] >= 3) {
+              log.warn(
+                { channel, failureCount: failures[channel] },
+                "ignoring channel because too many join failures"
+              );
+              await ref.child(channel).transaction((data) => {
+                if (data === agentId) {
+                  return "";
+                }
+              });
+              continue;
+            }
             try {
               await join(channel);
               channels.add(channel);
