@@ -15,7 +15,6 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
-import 'package:rtchat/models/drawer/endrawer/viewers_list_model.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/tts_audio_handler.dart';
@@ -141,7 +140,6 @@ class _AppState extends State<App> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserModel()),
-        ChangeNotifierProvider(create: (context) => ViewersListModel()),
         ChangeNotifierProvider(
             create: (context) {
               final model = AudioModel.fromJson(

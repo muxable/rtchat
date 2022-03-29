@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:rtchat/models/drawer/endrawer/viewers_list_model.dart';
 
-class SliverSearchBarWidget extends StatefulWidget {
-  const SliverSearchBarWidget({Key? key}) : super(key: key);
+class SliverSearchBarWidget extends StatelessWidget {
+  final Function filterBySearchBarText;
 
-  @override
-  State<SliverSearchBarWidget> createState() => _SliverSearchBarWidgetState();
-}
+  const SliverSearchBarWidget({Key? key, required this.filterBySearchBarText})
+      : super(key: key);
 
-class _SliverSearchBarWidgetState extends State<SliverSearchBarWidget> {
   @override
   Widget build(BuildContext context) {
-    final viewersListModel =
-        Provider.of<ViewersListModel>(context, listen: false);
     return SliverList(
       delegate: SliverChildListDelegate([
         Padding(
@@ -38,7 +32,8 @@ class _SliverSearchBarWidgetState extends State<SliverSearchBarWidget> {
                         border: InputBorder.none,
                       ),
                       onChanged: (value) async {
-                        viewersListModel.filteredByText(value);
+                        filterBySearchBarText(value);
+                        // viewersListModel.filteredByText(value);
                       },
                       // onSubmitted: (value) {
                       //   viewersListModel.filteredByText(value);
