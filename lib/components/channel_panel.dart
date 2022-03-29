@@ -63,16 +63,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
           if (layoutModel.locked) {
             return Container();
           }
-          // return Center(
-          //   child: ClipRRect(
-          //     borderRadius: BorderRadius.circular(15.0),
-          //     child: Container(
-          //       width: 350,
-          //       height: 16,
-          //       color: Colors.transparent,
-          //     ),
-          //   ),
-          // );
+
           return const Center(
             child: SizedBox(
               width: 350,
