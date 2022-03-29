@@ -13,15 +13,28 @@ class ViewersListModel extends ChangeNotifier {
 
   init(List<String> broadcasterList, List<String> moderatorList,
       List<String> vipList, List<String> viewerList) {
-    originalBroadcasterList = [...broadcasterList];
-    originalModeratorList = [...moderatorList];
-    originalVipList = [...vipList];
-    originalViewerList = [...viewerList];
+    // originalBroadcasterList = [...broadcasterList];
+    // originalModeratorList = [...moderatorList];
+    // originalVipList = [...vipList];
+    // originalViewerList = [...viewerList];
 
-    filteredBroadcasterList = [...broadcasterList];
-    filteredModeratorList = [...moderatorList];
-    filteredVipList = [...vipList];
-    filteredViewerList = [...viewerList];
+    // filteredBroadcasterList = [...broadcasterList];
+    // filteredModeratorList = [...moderatorList];
+    // filteredVipList = [...vipList];
+    // filteredViewerList = [...viewerList];
+
+    Future.wait([
+      copyList(broadcasterList)
+          .then((value) => originalBroadcasterList = value),
+      copyList(moderatorList).then((value) => originalModeratorList = value),
+      copyList(vipList).then((value) => originalVipList = value),
+      copyList(viewerList).then((value) => originalViewerList = value),
+      copyList(broadcasterList)
+          .then((value) => filteredBroadcasterList = value),
+      copyList(moderatorList).then((value) => filteredModeratorList = value),
+      copyList(vipList).then((value) => filteredVipList = value),
+      copyList(viewerList).then((value) => filteredViewerList = value),
+    ]);
   }
 
   // parallelFiltered(String searchBarText) async {
