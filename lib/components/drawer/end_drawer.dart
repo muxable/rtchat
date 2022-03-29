@@ -78,11 +78,10 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
               [...viewerList!],
             );
             return Consumer<ViewersListModel>(builder: (context, model, child) {
-              print('rebuilding list');
-              // final broadcasterList = model.filteredBroadcasterList;
-              // final moderatorList = model.filteredModeratorList;
-              // final vipList = model.filteredVipList;
-              // final viewerList = model.filteredViewerList;
+              final broadcasterList = model.filteredBroadcasterList;
+              final moderatorList = model.filteredModeratorList;
+              final vipList = model.filteredVipList;
+              final viewerList = model.filteredViewerList;
               return CustomScrollView(
                 slivers: [
                   const SliverSearchBarWidget(),
@@ -90,60 +89,59 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                     delegate: SliverChildListDelegate(
                       const [
                         SizedBox(
-                          height: 64,
+                          height: 8,
                         )
                       ],
                     ),
                   ),
-                  if (model.filteredBroadcasterList.isNotEmpty) ...[
+                  if (broadcasterList.isNotEmpty) ...[
                     const SliverTitleWidget(title: "Broadcaster"),
                   ],
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (BuildContext context, int index) => Padding(
                         padding: const EdgeInsets.only(left: 16),
-                        child: Text(model.filteredBroadcasterList[index]),
+                        child: Text(broadcasterList[index]),
                       ),
-                      childCount: model.filteredBroadcasterList.length,
+                      childCount: broadcasterList.length,
                     ),
                   ),
-                  if (model.filteredModeratorList.isNotEmpty) ...[
+                  if (moderatorList.isNotEmpty) ...[
                     const SliverTitleWidget(title: "Moderators")
                   ],
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (BuildContext context, int index) => Padding(
                         padding: const EdgeInsets.only(left: 16),
-                        child: Text(model.filteredModeratorList[index]),
+                        child: Text(moderatorList[index]),
                       ),
-                      childCount: model.filteredModeratorList.length,
+                      childCount: moderatorList.length,
                     ),
                   ),
-                  if (model.filteredVipList.isNotEmpty) ...[
+                  if (vipList.isNotEmpty) ...[
                     const SliverTitleWidget(title: "Community VIPs")
                   ],
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (BuildContext context, int index) => Padding(
                         padding: const EdgeInsets.only(left: 16),
-                        child: Text(model.filteredVipList[index]),
+                        child: Text(vipList[index]),
                       ),
-                      childCount: model.filteredVipList.length,
+                      childCount: vipList.length,
                     ),
                   ),
-                  if (model.filteredViewerList.isNotEmpty) ...[
+                  if (viewerList.isNotEmpty) ...[
                     const SliverTitleWidget(title: "Viewers")
                   ],
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (BuildContext context, int index) {
-                        print("rebuild text");
                         return Padding(
                           padding: const EdgeInsets.only(left: 16),
-                          child: Text(model.filteredViewerList[index]),
+                          child: Text(viewerList[index]),
                         );
                       },
-                      childCount: model.filteredViewerList.length,
+                      childCount: viewerList.length,
                       addAutomaticKeepAlives: true,
                     ),
                   ),
