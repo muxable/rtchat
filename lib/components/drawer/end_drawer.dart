@@ -51,25 +51,11 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
           .then((value) => {originalVipList = value, filteredVipList = value}),
       copyList(viewerList).then(
           (value) => {originalViewerList = value, filteredViewerList = value}),
-      // copyList(broadcasterList)
-      //     .then((value) => filteredBroadcasterList = value),
-      // copyList(moderatorList).then((value) => filteredModeratorList = value),
-      // copyList(vipList).then((value) => filteredVipList = value),
-      // copyList(viewerList).then((value) => filteredViewerList = value),
     ]);
   }
 
   void filteredByText(String searchBarText) {
     if (searchBarText.isEmpty) {
-      // Future.wait([
-      //   copyList(originalBroadcasterList)
-      //       .then((value) => filteredBroadcasterList = value),
-      //   copyList(originalModeratorList)
-      //       .then((value) => filteredModeratorList = value),
-      //   copyList(originalVipList).then((value) => filteredVipList = value),
-      //   copyList(originalViewerList)
-      //       .then((value) => filteredViewerList = value),
-      // ]);
       setState(() {
         filteredBroadcasterList = originalBroadcasterList;
         filteredModeratorList = originalModeratorList;
