@@ -17,7 +17,7 @@ void main() {
       timestamp: DateTime.now(),
       messageId: "testMessageId",
       from: const TwitchUserModel(
-          userId: null, login: "automux", displayName: "automux"),
+          userId: '158394109', login: "automux", displayName: "automux"),
       viewers: 10,
     );
     await tester.pumpWidget(buildWidget(model));

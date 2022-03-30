@@ -89,7 +89,7 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
      final model = TwitchHostEventModel(
           messageId: change.doc.id,
           from: TwitchUserModel(
-              userId: null,
+              userId: data['hosterUserId'],
               login: data['displayName'],
               displayName: data['displayName']),
           viewers: data['viewers'],

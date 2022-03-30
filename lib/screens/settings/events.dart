@@ -129,7 +129,7 @@ class EventsScreen extends StatelessWidget {
                   messageId: '',
                   timestamp: DateTime.now(),
                   from: const TwitchUserModel(
-                      userId: null,
+                      userId: '158394109',
                       login: 'muxfd',
                       displayName: 'muxfd'),
                   viewers: 5,
