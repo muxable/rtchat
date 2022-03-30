@@ -265,16 +265,12 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
 export const getProfilePicture = functions.https.onRequest(async (req, res) => {
   const provider = req.query?.provider as string | null;
   const channelId = req.query?.channelId as string | null;
-  const login = req.query?.login as string | null;
-  if (!provider || !(channelId || login)) {
+  if (!provider || !channelId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
       "missing provider, channelId, login"
     );
   }
-
-  const queryParam = channelId ? `twitch.id`: `twitch.login`;
-  const queryValue = channelId ? channelId: login;
 
   switch (provider) {
     case "twitch":
@@ -282,7 +278,7 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
       const snapshot = await admin
         .firestore()
         .collection("profiles")
-        .where(queryParam, "==", queryValue)
+        .where("twitch.id", "==", channelId)
         .limit(1)
         .get();
       if (!snapshot.empty) {
@@ -305,9 +301,8 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
         "Client-Id": TWITCH_CLIENT_ID,
       };
       try {
-        const apiParam = channelId ? `id=${channelId}`: `login=${login}`;
         const response = await fetch(
-          `https://api.twitch.tv/helix/users?${apiParam}`,
+          `https://api.twitch.tv/helix/users?id=${channelId}`,
           { headers: headers }
         );
         const json = await response.json();
