@@ -100,4 +100,14 @@ export const cleanup = functions.pubsub
       .get();
     snapshot.forEach((doc) => batch.delete(doc.ref));
     await batch.commit();
+
+    const claimRef = admin.database().ref("agents").child("twitch");
+
+    const unclaimed = await claimRef.orderByValue().equalTo("").get();
+    // log an error for any unclaimed agents. we don't want to delete them
+    // because this might be a race condition/false positive but logging an
+    // error will get reported.
+    for (const channel of Object.keys(unclaimed || {})) {
+      functions.logger.error("unclaimed channel detected", channel);
+    }
   });

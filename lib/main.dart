@@ -17,6 +17,7 @@ import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/tts_audio_handler.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
@@ -188,6 +189,14 @@ class _AppState extends State<App> {
             final userChannel = user.userChannel;
             model.subscribedChannels = userChannel == null ? {} : {userChannel};
           });
+          return model;
+        }),
+        ChangeNotifierProvider(create: (context) {
+          final model = MessagesModel();
+          final channels = Provider.of<ChannelsModel>(context, listen: false);
+          channels.addListener(() {
+            model.setSubscribedChannels(channels.subscribedChannels);
+          });
           model.addListener(() {
             if (model.messages.isNotEmpty) {
               final message = model.messages.last;
@@ -206,12 +215,12 @@ class _AppState extends State<App> {
         ChangeNotifierProvider(create: (context) {
           final model = TtsModel.fromJson(widget.ttsHandler,
               jsonDecode(widget.prefs.getString("tts") ?? "{}"));
-          final channels = Provider.of<ChannelsModel>(context, listen: false);
+          final messages = Provider.of<MessagesModel>(context, listen: false);
           model.addListener(() {
             widget.prefs.setString('tts', jsonEncode(model.toJson()));
           });
-          channels.addListener(() {
-            model.messages = channels.messages;
+          messages.addListener(() {
+            model.messages = messages.messages;
           });
           return model;
         }),

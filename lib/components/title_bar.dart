@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/settings_button.dart';
+import 'package:rtchat/components/statistics_bar.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/quick_links.dart';
-import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TitleBarWidget extends StatelessWidget {
@@ -24,31 +24,46 @@ class TitleBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final row = Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      IconButton(
+          onPressed: () async {
+            Scaffold.of(context).openDrawer();
+          },
+          icon: const Icon(Icons.menu_outlined)),
+      const Spacer(),
       // tabs
       const SizedBox(
         width: 168,
         child: TabBar(
           tabs: [
-            Tab(icon: Icon(Icons.calendar_view_day)),
-            Tab(icon: Icon(Icons.preview)),
+            Tab(icon: Icon(Icons.notifications_outlined)),
+            Tab(icon: Icon(Icons.preview_outlined)),
           ],
         ),
       ),
-      // quick links
-      Consumer<QuickLinksModel>(builder: (context, quickLinksModel, child) {
-        return Expanded(
-            child: ListView(
-          scrollDirection: Axis.horizontal,
-          reverse: true,
-          children: quickLinksModel.sources.reversed.map((source) {
-            return IconButton(
-                icon: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-                onPressed: () => launchLink(source));
-          }).toList(),
-        ));
+      const Spacer(),
+      Consumer<ChannelsModel>(builder: (context, channelsModel, child) {
+        if (channelsModel.subscribedChannels.isEmpty) {
+          return Container();
+        }
+        final first = channelsModel.subscribedChannels.first;
+        return StatisticsBarWidget(
+            provider: first.provider, channelId: first.channelId);
       }),
+      // quick links
+      // Consumer<QuickLinksModel>(builder: (context, quickLinksModel, child) {
+      //   return Expanded(
+      //       child: ListView(
+      //     scrollDirection: Axis.horizontal,
+      //     reverse: true,
+      //     children: quickLinksModel.sources.reversed.map((source) {
+      //       return IconButton(
+      //           icon: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
+      //           onPressed: () => launchLink(source));
+      //     }).toList(),
+      //   ));
+      // }),
       // settings button
-      const SettingsButtonWidget(),
+      // const SettingsButtonWidget(),
     ]);
     return IconTheme(
         data: Theme.of(context).primaryIconTheme,

@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/channel_panel.dart';
 import 'package:rtchat/components/disco.dart';
+import 'package:rtchat/components/drawer/end_drawer.dart';
 import 'package:rtchat/components/notification_panel.dart';
+import 'package:rtchat/components/drawer/right_drawer.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:wakelock/wakelock.dart';
@@ -113,6 +115,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     });
     return Scaffold(
+      drawer: const RightDrawer(),
+      endDrawer: const LeftDrawerWidget(),
       body: Container(
         color: Theme.of(context).primaryColor,
         child: SafeArea(

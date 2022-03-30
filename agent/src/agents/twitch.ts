@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import TwitchJs, {
   Chat,
+  ChatEvents,
   PrivateMessage,
   PrivateMessageWithBits,
 } from "twitch-js";
@@ -79,15 +80,8 @@ async function addHost(
   timestamp: Date,
   viewers: number
 ) {
-  log.debug({ channel, displayName, viewers }, "adding host");
-  const profile = await firebase.getProfile(channel.replace("#", ""));
-  if (!profile) {
-    log.error({ channel, displayName, viewers }, "no profile for host");
-    return;
-  }
   await firebase.getMessage(`twitch:host-${timestamp.toISOString()}`).set({
     channel,
-    channelId: profile.id,
     type: "host",
     displayName,
     timestamp: admin.firestore.Timestamp.fromDate(timestamp),
@@ -182,34 +176,16 @@ async function getChatAgent(
     );
   });
 
-  twitch.chat.on(TwitchJs.Chat.Events.HOSTED_WITH_VIEWERS, (message) => {
-    addHost(
-      firebase,
-      message.channel,
-      message.tags.displayName,
-      message.timestamp,
-      message.numberOfViewers || 0
-    );
-  });
-
-  twitch.chat.on(TwitchJs.Chat.Events.HOSTED_AUTO, (message) => {
-    addHost(
-      firebase,
-      message.channel,
-      message.tags.displayName,
-      message.timestamp,
-      message.numberOfViewers || 0
-    );
-  });
-
-  twitch.chat.on(TwitchJs.Chat.Events.HOSTED_WITHOUT_VIEWERS, (message) => {
-    addHost(
-      firebase,
-      message.channel,
-      message.tags.displayName,
-      message.timestamp,
-      0
-    );
+  twitch.chat.on(TwitchJs.Chat.Events.ALL, (message) => {
+    if (message.event.startsWith("HOSTED/")) {
+      addHost(
+        firebase,
+        message.channel,
+        (message as any).tags.displayName,
+        message.timestamp,
+        (message as any).numberOfViewers || 0
+      );
+    }
   });
 
   await twitch.chat.connect();

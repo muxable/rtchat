@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/pinnable/scroll_view.dart';
 import 'package:rtchat/components/style_model_theme.dart';
-import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
@@ -202,7 +202,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     return Stack(
       alignment: AlignmentDirectional.topCenter,
       children: [
-        Consumer<ChannelsModel>(builder: (context, model, child) {
+        Consumer<MessagesModel>(builder: (context, model, child) {
           return Consumer2<EventSubConfigurationModel, TwitchMessageConfig>(
               builder: (context, eventSubConfigurationModel,
                   twitchMessageConfig, child) {
