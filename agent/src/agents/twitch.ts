@@ -1,11 +1,16 @@
 import * as admin from "firebase-admin";
+import fetch from "node-fetch";
+import { ClientCredentials } from "simple-oauth2";
 import TwitchJs, {
   Chat,
-  ChatEvents,
   PrivateMessage,
   PrivateMessageWithBits,
 } from "twitch-js";
-import { FirebaseAdapter } from "../adapters/firebase";
+import {
+  FirebaseAdapter,
+  getTwitchOAuthConfig,
+  TWITCH_CLIENT_ID,
+} from "../adapters/firebase";
 import { log } from "../log";
 
 const ACTION_MESSAGE_REGEX = /^\u0001ACTION ([^\u0001]+)\u0001$/;
@@ -51,6 +56,26 @@ function tmiJsTagsShim(
   };
 }
 
+async function getTwitchUserId(username: string): Promise<string> {
+  const client = new ClientCredentials(await getTwitchOAuthConfig());
+  const token = await client.getToken({});
+  const res = await fetch(
+    "https://api.twitch.tv/helix/users?login=" + username,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Client-Id": TWITCH_CLIENT_ID,
+        Authorization: "Bearer " + token.token["access_token"],
+      },
+    }
+  );
+  const json = await res.json();
+  if (json.data.length === 0) {
+    throw new Error("user not found");
+  }
+  return json.data[0]["id"];
+}
+
 const provider = "twitch";
 
 async function addMessage(
@@ -82,8 +107,10 @@ async function addHost(
 ) {
   await firebase.getMessage(`twitch:host-${timestamp.toISOString()}`).set({
     channel,
+    channelId: `twitch:${await getTwitchUserId(channel)}`,
     type: "host",
     displayName,
+    hosterChannelId: `twitch:${await getTwitchUserId(displayName)}`,
     timestamp: admin.firestore.Timestamp.fromDate(timestamp),
     viewers,
   });
