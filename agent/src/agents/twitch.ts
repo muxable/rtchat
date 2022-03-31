@@ -203,6 +203,16 @@ async function getChatAgent(
     );
   });
 
+  twitch.chat.on(TwitchJs.Chat.Events.CLEAR_CHAT, async (message) => {
+    await firebase
+      .getMessage(`twitch:clear-${message.timestamp.toISOString()}`)
+      .set({
+        channel,
+        channelId: `twitch:${await getTwitchUserId(channel)}`,
+        type: "clear",
+      });
+  });
+
   twitch.chat.on(TwitchJs.Chat.Events.ALL, (message) => {
     if (message.event.startsWith("HOSTED/")) {
       addHost(
