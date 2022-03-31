@@ -4,10 +4,14 @@ import { AuthorizationCode, ModuleOptions } from "simple-oauth2";
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import { log } from "../log";
 
-async function getTwitchOAuthConfig(): Promise<ModuleOptions<"client_id">> {
+export const TWITCH_CLIENT_ID =
+  process.env["TWITCH_CLIENT_ID"] || "edfnh2q85za8phifif9jxt3ey6t9b9";
+
+export async function getTwitchOAuthConfig(): Promise<
+  ModuleOptions<"client_id">
+> {
   const client = new SecretManagerServiceClient();
-  const id =
-    process.env["TWITCH_CLIENT_ID"] || "edfnh2q85za8phifif9jxt3ey6t9b9";
+  const id = TWITCH_CLIENT_ID;
   let secret = process.env["TWITCH_CLIENT_SECRET"];
   if (!secret) {
     // pull from secret manager.
