@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class SliverSearchBarWidget extends StatelessWidget {
-  final Function filterBySearchBarText;
+  final Function(String) onFilterBySearchBarText;
 
-  const SliverSearchBarWidget({Key? key, required this.filterBySearchBarText})
+  const SliverSearchBarWidget({Key? key, required this.onFilterBySearchBarText})
       : super(key: key);
 
   @override
@@ -32,7 +32,7 @@ class SliverSearchBarWidget extends StatelessWidget {
                         border: InputBorder.none,
                       ),
                       onChanged: (value) async {
-                        filterBySearchBarText(value);
+                        onFilterBySearchBarText(value);
                         // viewersListModel.filteredByText(value);
                       },
                       // onSubmitted: (value) {
