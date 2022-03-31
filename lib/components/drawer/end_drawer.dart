@@ -27,6 +27,8 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
   List<String> filteredVipList = [];
   List<String> filteredViewerList = [];
 
+  late final SliverSearchBarWidget sliverSearchBarWidget;
+
   Future<List<String>> filterList(
       List<String> list, String searchBarText) async {
     return list
@@ -109,6 +111,9 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
     final channelsModel = Provider.of<ChannelsModel>(context, listen: false);
     final channel = channelsModel.subscribedChannels.first;
     viewersFuture = _viewersFuture(channel.displayName.toLowerCase());
+    sliverSearchBarWidget = SliverSearchBarWidget(
+      onFilterBySearchBarText: onFilteredByText,
+    );
     super.initState();
   }
 
@@ -128,8 +133,7 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
           } else {
             return CustomScrollView(
               slivers: [
-                SliverSearchBarWidget(
-                    onFilterBySearchBarText: onFilteredByText),
+                sliverSearchBarWidget,
                 SliverList(
                   delegate: SliverChildListDelegate(
                     const [

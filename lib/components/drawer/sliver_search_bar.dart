@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SliverSearchBarWidget extends StatelessWidget {
-  final Function(String) onFilterBySearchBarText;
+  final void Function(String) onFilterBySearchBarText;
 
   const SliverSearchBarWidget({Key? key, required this.onFilterBySearchBarText})
       : super(key: key);
