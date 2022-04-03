@@ -94,7 +94,7 @@ export const cleanup = functions.pubsub
     const snapshot = await admin
       .firestore()
       .collection("messages")
-      .where("timestamp", "<", Date.now() - 7 * 86400 * 1000)
+      .where("timestamp", "<", new Date(Date.now() - 7 * 86400 * 1000))
       .orderBy("timestamp", "asc")
       .limit(80)
       .get();
