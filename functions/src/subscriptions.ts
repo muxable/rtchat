@@ -100,6 +100,7 @@ export const cleanup = functions.pubsub
       .get();
     snapshot.forEach((doc) => batch.delete(doc.ref));
     await batch.commit();
+    functions.logger.info("deleted", snapshot.size, "messages");
 
     const claimRef = admin.database().ref("agents").child("twitch");
 
