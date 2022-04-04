@@ -86,10 +86,15 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
     case "host":
-     final model = TwitchHostEventModel(
+      if (data['hosterChannelId'] == null) {
+        // Since we might have some events saved without this field.
+        return null;
+      }
+      final hosterInfo = data['hosterChannelId'].split(':');
+      final model = TwitchHostEventModel(
           messageId: change.doc.id,
           from: TwitchUserModel(
-              userId: data['hosterUserId'],
+              userId: hosterInfo[1],
               login: data['displayName'],
               displayName: data['displayName']),
           viewers: data['viewers'],
