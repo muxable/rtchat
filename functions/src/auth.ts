@@ -107,13 +107,17 @@ app.get("/auth/twitch/callback", async (req, res) => {
     .set({ twitch: JSON.stringify(results.token) }, { merge: true });
 
   // save the profile information too.
-  const twitchProfile = {
-    ...email ? email: {},
+  const twitchProfile : any = {
     id: users["data"][0]["id"],
     displayName: users["data"][0]["display_name"],
     login: users["data"][0]["login"],
     profilePictureUrl: users["data"][0]["profile_image_url"],
   };
+
+  if (email) {
+    // Twitch accounts can be verified by phone and have no email
+    twitchProfile.email = email;
+  }
 
   await admin
     .firestore()
