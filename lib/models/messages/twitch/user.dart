@@ -68,8 +68,9 @@ class TwitchUserModel {
     return colors[n % colors.length];
   }
 
-  String get profilePictureUrl =>
-      "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$userId";
+  String get profilePictureUrl {
+    return "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$userId";
+  }
 
   TwitchUserModel.fromJson(Map<String, dynamic> json)
       : userId = json["userId"],

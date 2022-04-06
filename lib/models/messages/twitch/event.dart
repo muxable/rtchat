@@ -15,6 +15,18 @@ class TwitchRaidEventModel extends MessageModel {
       : super(messageId: messageId, timestamp: timestamp);
 }
 
+class TwitchHostEventModel extends MessageModel {
+  final TwitchUserModel from;
+  final int viewers;
+
+  const TwitchHostEventModel(
+      {required DateTime timestamp,
+      required String messageId,
+      required this.from,
+      required this.viewers})
+      : super(messageId: messageId, timestamp: timestamp);
+}
+
 class TwitchFollowEventModel extends MessageModel {
   final TwitchUserModel follower;
 
