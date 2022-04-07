@@ -94,12 +94,13 @@ export const cleanup = functions.pubsub
     const snapshot = await admin
       .firestore()
       .collection("messages")
-      .where("timestamp", "<", Date.now() - 7 * 86400 * 1000)
+      .where("timestamp", "<", new Date(Date.now() - 7 * 86400 * 1000))
       .orderBy("timestamp", "asc")
       .limit(80)
       .get();
     snapshot.forEach((doc) => batch.delete(doc.ref));
     await batch.commit();
+    functions.logger.info("deleted", snapshot.size, "messages");
 
     const claimRef = admin.database().ref("agents").child("twitch");
 
@@ -107,7 +108,7 @@ export const cleanup = functions.pubsub
     // log an error for any unclaimed agents. we don't want to delete them
     // because this might be a race condition/false positive but logging an
     // error will get reported.
-    for (const channel of Object.keys(unclaimed || {})) {
+    for (const channel of Object.keys(unclaimed.val() || {})) {
       functions.logger.error("unclaimed channel detected", channel);
     }
   });

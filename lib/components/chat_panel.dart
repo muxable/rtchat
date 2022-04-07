@@ -86,6 +86,11 @@ DateTime? _getExpiration(
     return raidEventConfig.eventDuration > Duration.zero
         ? model.timestamp.add(raidEventConfig.eventDuration)
         : null;
+  } else if (model is TwitchHostEventModel) {
+    final hostEventConfig = eventSubConfigurationModel.hostEventConfig;
+    return hostEventConfig.eventDuration > Duration.zero
+        ? model.timestamp.add(hostEventConfig.eventDuration)
+        : null;
   } else if (model is TwitchFollowEventModel) {
     final followEventConfig = eventSubConfigurationModel.followEventConfig;
     return followEventConfig.eventDuration > Duration.zero
