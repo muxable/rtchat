@@ -20,7 +20,7 @@ export const search = functions.https.onCall(async (data, context) => {
   );
   const twitchJson = await twitchResponse.json();
   return [
-    ...twitchJson.data.map((channel: any) => {
+    ...(twitchJson.data || []).map((channel: any) => {
       return {
         provider: "twitch",
         channelId: channel.id,
