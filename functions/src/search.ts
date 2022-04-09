@@ -27,7 +27,7 @@ export const search = functions.https.onCall(async (data, context) => {
         displayName: channel.display_name,
         isOnline: channel.is_live,
         imageUrl: channel.thumbnail_url,
-        title: channel.title,
+        title: `${channel.game_name} - ${channel.title}`,
       };
     }),
   ];
