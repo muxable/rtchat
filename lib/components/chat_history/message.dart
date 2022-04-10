@@ -14,7 +14,6 @@ import 'package:rtchat/components/chat_history/twitch/prediction_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
 import 'package:rtchat/models/adapters/actions.dart';
-import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
@@ -89,13 +88,14 @@ class ChatHistoryMessage extends StatelessWidget {
                                 color: Colors.redAccent),
                             title: const Text('Delete Message'),
                             onTap: () {
-                              final channelsModel = Provider.of<ChannelsModel>(
-                                  context,
-                                  listen: false);
-                              ActionsAdapter.instance.delete(
-                                  channelsModel.subscribedChannels.first,
-                                  m.messageId);
-                              Navigator.pop(context);
+                              // TODO: Implement
+                              // final channelsModel = Provider.of<ChannelsModel>(
+                              //     context,
+                              //     listen: false);
+                              // ActionsAdapter.instance.delete(
+                              //     channelsModel.subscribedChannels.first,
+                              //     m.messageId);
+                              // Navigator.pop(context);
                             }),
                         ListTile(
                             leading: const Icon(Icons.timer_outlined,
@@ -109,27 +109,29 @@ class ChatHistoryMessage extends StatelessWidget {
                                 color: Colors.redAccent),
                             title: Text('Ban ${m.author.displayName}'),
                             onTap: () {
-                              final channelsModel = Provider.of<ChannelsModel>(
-                                  context,
-                                  listen: false);
-                              ActionsAdapter.instance.ban(
-                                  channelsModel.subscribedChannels.first,
-                                  m.author.login,
-                                  "banned by streamer");
-                              Navigator.pop(context);
+                              // TODO: Implement
+                              // final channelsModel = Provider.of<ChannelsModel>(
+                              //     context,
+                              //     listen: false);
+                              // ActionsAdapter.instance.ban(
+                              //     channelsModel.subscribedChannels.first,
+                              //     m.author.login,
+                              //     "banned by streamer");
+                              // Navigator.pop(context);
                             }),
                         ListTile(
                             leading: const Icon(Icons.circle_outlined,
                                 color: Colors.greenAccent),
                             title: Text('Unban ${m.author.displayName}'),
                             onTap: () {
-                              final channelsModel = Provider.of<ChannelsModel>(
-                                  context,
-                                  listen: false);
-                              ActionsAdapter.instance.unban(
-                                  channelsModel.subscribedChannels.first,
-                                  m.author.login);
-                              Navigator.pop(context);
+                              // TODO: Implement
+                              // final channelsModel = Provider.of<ChannelsModel>(
+                              //     context,
+                              //     listen: false);
+                              // ActionsAdapter.instance.unban(
+                              //     channelsModel.subscribedChannels.first,
+                              //     m.author.login);
+                              // Navigator.pop(context);
                             }),
                         ListTile(
                             leading: const Icon(Icons.copy_outlined,
@@ -149,15 +151,16 @@ class ChatHistoryMessage extends StatelessWidget {
                       return TimeoutDialog(
                           title: "Timeout ${m.author.displayName}",
                           onPressed: (duration) {
-                            final channelsModel = Provider.of<ChannelsModel>(
-                                context,
-                                listen: false);
-                            ActionsAdapter.instance.timeout(
-                                channelsModel.subscribedChannels.first,
-                                m.author.login,
-                                "timed out by streamer",
-                                duration);
-                            Navigator.pop(context);
+                            // TODO: Implement
+                            // final channelsModel = Provider.of<ChannelsModel>(
+                            //     context,
+                            //     listen: false);
+                            // ActionsAdapter.instance.timeout(
+                            //     channelsModel.subscribedChannels.first,
+                            //     m.author.login,
+                            //     "timed out by streamer",
+                            //     duration);
+                            // Navigator.pop(context);
                           });
                     });
               }

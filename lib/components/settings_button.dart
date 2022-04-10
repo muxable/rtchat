@@ -49,16 +49,17 @@ class SettingsButtonWidget extends StatelessWidget {
                     TextButton(
                       child: const Text('Sign Out'),
                       onPressed: () async {
-                        final channelsModel =
-                            Provider.of<ChannelsModel>(context, listen: false);
-                        channelsModel.subscribedChannels = {};
-                        final ttsModel =
-                            Provider.of<TtsModel>(context, listen: false);
-                        ttsModel.enabled = false;
-                        final userModel =
-                            Provider.of<UserModel>(context, listen: false);
-                        await userModel.signOut();
-                        Navigator.of(context).pop();
+                        // TODO: implement
+                        // final channelsModel =
+                        //     Provider.of<ChannelsModel>(context, listen: false);
+                        // channelsModel.subscribedChannels = {};
+                        // final ttsModel =
+                        //     Provider.of<TtsModel>(context, listen: false);
+                        // ttsModel.enabled = false;
+                        // final userModel =
+                        //     Provider.of<UserModel>(context, listen: false);
+                        // await userModel.signOut();
+                        // Navigator.of(context).pop();
                       },
                     ),
                   ],

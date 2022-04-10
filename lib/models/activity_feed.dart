@@ -1,19 +1,10 @@
 import 'dart:core';
 
 import 'package:flutter/foundation.dart';
-import 'package:rtchat/models/channels.dart';
 
 class ActivityFeedModel extends ChangeNotifier {
   bool _isCustom = false;
   String _customUrl = "";
-  Channel? _baseChannel;
-  ChannelsModel? _host;
-
-  @override
-  void dispose() {
-    _host?.removeListener(register);
-    super.dispose();
-  }
 
   bool get isCustom => _isCustom;
 
@@ -27,41 +18,6 @@ class ActivityFeedModel extends ChangeNotifier {
   set customUrl(String customUrl) {
     _customUrl = customUrl;
     notifyListeners();
-  }
-
-  bind(ChannelsModel model) {
-    _host?.removeListener(register);
-    _host = model;
-    register();
-    model.addListener(register);
-  }
-
-  register() {
-    final host = _host;
-    if (host == null) {
-      return;
-    }
-    final base =
-        host.subscribedChannels.isEmpty ? null : host.subscribedChannels.first;
-    if (_baseChannel != base) {
-      _baseChannel = base;
-      notifyListeners();
-    }
-  }
-
-  Uri? get url {
-    final channel = _baseChannel;
-    if (_isCustom) {
-      return Uri.tryParse(_customUrl);
-    } else if (channel == null) {
-      return null;
-    }
-    switch (channel.provider) {
-      case "twitch":
-        return Uri.tryParse(
-            "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
-    }
-    return null;
   }
 
   ActivityFeedModel.fromJson(Map<String, dynamic> json) {

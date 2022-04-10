@@ -13,9 +13,14 @@ class ChannelPanelWidget extends StatefulWidget {
   final void Function(bool)? onScrollback;
   final void Function()? onRequestExpand;
   final void Function(double)? onResize;
+  final Channel channel;
 
   const ChannelPanelWidget(
-      {Key? key, this.onScrollback, this.onResize, this.onRequestExpand})
+      {Key? key,
+      required this.channel,
+      this.onScrollback,
+      this.onResize,
+      this.onRequestExpand})
       : super(key: key);
 
   @override
@@ -132,10 +137,7 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
                         Provider.of<CommandsModel>(context, listen: false);
                     commandsModel.addCommand(Command(value, DateTime.now()));
                   }
-                  final channelsModel =
-                      Provider.of<ChannelsModel>(context, listen: false);
-                  ActionsAdapter.instance
-                      .send(channelsModel.subscribedChannels.first, value);
+                  ActionsAdapter.instance.send(widget.channel, value);
                   _textEditingController.clear();
                 },
                 onTap: () => setState(() => _isEmotePickerVisible = false),
@@ -165,17 +167,17 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
             //     }).toList();
             //   },
             // ),
-            Consumer<TtsModel>(builder: (context, ttsModel, child) {
-              return IconButton(
-                icon: Icon(ttsModel.enabled
-                    ? Icons.record_voice_over
-                    : Icons.voice_over_off),
-                tooltip: "Text to speech",
-                onPressed: () {
-                  ttsModel.enabled = !ttsModel.enabled;
-                },
-              );
-            }),
+            // Consumer<TtsModel>(builder: (context, ttsModel, child) {
+            //   return IconButton(
+            //     icon: Icon(ttsModel.enabled
+            //         ? Icons.record_voice_over
+            //         : Icons.voice_over_off),
+            //     tooltip: "Text to speech",
+            //     onPressed: () {
+            //       ttsModel.enabled = !ttsModel.enabled;
+            //     },
+            //   );
+            // }),
             _buildSendButton(),
           ]),
         );
@@ -193,10 +195,8 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
             if (text.isEmpty) {
               return;
             }
-            final channelsModel =
-                Provider.of<ChannelsModel>(context, listen: false);
             ActionsAdapter.instance
-                .send(channelsModel.subscribedChannels.first, text);
+                .send(widget.channel, text);
             _textEditingController.clear();
           })
       : Container();
@@ -215,10 +215,8 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
             itemBuilder: (context, index) => TextButton(
               child: Text(commandsModel.commandList[index].command),
               onPressed: () {
-                final channelsModel =
-                    Provider.of<ChannelsModel>(context, listen: false);
                 ActionsAdapter.instance.send(
-                    channelsModel.subscribedChannels.first,
+                    widget.channel,
                     commandsModel.commandList[index].command);
                 commandsModel.addCommand(Command(
                     commandsModel.commandList[index].command, DateTime.now()));
@@ -232,11 +230,8 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
   }
 
   Widget _buildEmotePicker(BuildContext context) {
-    var channelProvider = Provider.of<ChannelsModel>(context, listen: false);
-    return channelProvider.subscribedChannels.isNotEmpty &&
-            _isEmotePickerVisible
-        ? EmotePickerWidget(
-            channelId: channelProvider.subscribedChannels.first.channelId,
+    return EmotePickerWidget(
+        channelId: widget.channel.channelId,
             onDismiss: () => setState(() => _isEmotePickerVisible = false),
             onDelete: () {
               var initialText = _textEditingController.text;
@@ -248,7 +243,6 @@ class _ChannelPanelWidgetState extends State<ChannelPanelWidget> {
             onEmoteSelected: (emote) {
               _textEditingController.text =
                   _textEditingController.text + " " + emote.code;
-            })
-        : Container();
+        });
   }
 }

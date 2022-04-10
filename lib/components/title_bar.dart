@@ -31,24 +31,25 @@ class TitleBarWidget extends StatelessWidget {
           icon: const Icon(Icons.menu_outlined)),
       const Spacer(),
       // tabs
-      const SizedBox(
-        width: 168,
-        child: TabBar(
-          tabs: [
-            Tab(icon: Icon(Icons.notifications_outlined)),
-            Tab(icon: Icon(Icons.preview_outlined)),
-          ],
-        ),
-      ),
+      // const SizedBox(
+      //   width: 168,
+      //   child: TabBar(
+      //     tabs: [
+      //       Tab(icon: Icon(Icons.notifications_outlined)),
+      //       Tab(icon: Icon(Icons.preview_outlined)),
+      //     ],
+      //   ),
+      // ),
       const Spacer(),
-      Consumer<ChannelsModel>(builder: (context, channelsModel, child) {
-        if (channelsModel.subscribedChannels.isEmpty) {
-          return Container();
-        }
-        final first = channelsModel.subscribedChannels.first;
-        return StatisticsBarWidget(
-            provider: first.provider, channelId: first.channelId);
-      }),
+      // TODO: implement
+      // Consumer<ChannelsModel>(builder: (context, channelsModel, child) {
+      //   if (channelsModel.subscribedChannels.isEmpty) {
+      //     return Container();
+      //   }
+      //   final first = channelsModel.subscribedChannels.first;
+      //   return StatisticsBarWidget(
+      //       provider: first.provider, channelId: first.channelId);
+      // }),
       // quick links
       // Consumer<QuickLinksModel>(builder: (context, quickLinksModel, child) {
       //   return Expanded(

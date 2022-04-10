@@ -27,6 +27,7 @@ import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/screens/onboarding.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
@@ -46,7 +47,6 @@ import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/tts.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
-import 'package:rtchat/screens/sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 MaterialColor generateMaterialColor(Color color) {
@@ -141,96 +141,9 @@ class _AppState extends State<App> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserModel()),
-        ChangeNotifierProvider(
-            create: (context) {
-              final model = AudioModel.fromJson(
-                  jsonDecode(widget.prefs.getString("audio") ?? "{}"));
-              model.addListener(() {
-                widget.prefs.setString('audio', jsonEncode(model.toJson()));
-              });
-              final user = Provider.of<UserModel>(context, listen: false);
-              model.hostChannel = user.userChannel;
-              user.addListener(() {
-                model.hostChannel = user.userChannel;
-              });
-              return model;
-            },
-            lazy: false),
-        ChangeNotifierProvider(create: (context) {
-          final model = QuickLinksModel.fromJson(
-              jsonDecode(widget.prefs.getString("quick_links") ?? "{}"));
-          model.addListener(() {
-            widget.prefs.setString('quick_links', jsonEncode(model.toJson()));
-          });
-          return model;
-        }),
-        ChangeNotifierProvider(create: (context) {
-          final model = StyleModel.fromJson(
-              jsonDecode(widget.prefs.getString("style") ?? "{}"));
-          model.addListener(() {
-            widget.prefs.setString('style', jsonEncode(model.toJson()));
-          });
-          return model;
-        }),
-        ChangeNotifierProvider(create: (context) {
-          final model = LayoutModel.fromJson(
-              jsonDecode(widget.prefs.getString("layout") ?? "{}"));
-          model.addListener(() {
-            widget.prefs.setString('layout', jsonEncode(model.toJson()));
-          });
-          return model;
-        }),
-        ChangeNotifierProvider(create: (context) {
-          final model = ChannelsModel();
-          final user = Provider.of<UserModel>(context, listen: false);
-          final userChannel = user.userChannel;
-          model.subscribedChannels = userChannel == null ? {} : {userChannel};
-          user.addListener(() {
-            final userChannel = user.userChannel;
-            model.subscribedChannels = userChannel == null ? {} : {userChannel};
-          });
-          return model;
-        }),
-        ChangeNotifierProvider(create: (context) {
-          final model = MessagesModel();
-          final channels = Provider.of<ChannelsModel>(context, listen: false);
-          channels.addListener(() {
-            model.setSubscribedChannels(channels.subscribedChannels);
-          });
-          model.addListener(() {
-            if (model.messages.isNotEmpty) {
-              final message = model.messages.last;
-              if (message is TwitchMessageModel &&
-                  message.message == "!disco") {
-                _discoModeTimer?.cancel();
-                setState(() => _isDiscoModeRunning = true);
-                _discoModeTimer = Timer(const Duration(seconds: 5), () {
-                  setState(() => _isDiscoModeRunning = false);
-                });
-              }
-            }
-          });
-          return model;
-        }),
-        ChangeNotifierProvider(create: (context) {
-          final model = TtsModel.fromJson(widget.ttsHandler,
-              jsonDecode(widget.prefs.getString("tts") ?? "{}"));
-          final messages = Provider.of<MessagesModel>(context, listen: false);
-          model.addListener(() {
-            widget.prefs.setString('tts', jsonEncode(model.toJson()));
-          });
-          messages.addListener(() {
-            model.messages = messages.messages;
-          });
-          return model;
-        }),
         ChangeNotifierProvider(create: (context) {
           final model = ActivityFeedModel.fromJson(
               jsonDecode(widget.prefs.getString("activity_feed") ?? "{}"));
-          final channels = Provider.of<ChannelsModel>(context, listen: false);
-          channels.addListener(() {
-            model.bind(channels);
-          });
           return model
             ..addListener(() {
               widget.prefs
@@ -238,92 +151,158 @@ class _AppState extends State<App> {
             });
         }),
         ChangeNotifierProvider(create: (context) {
-          final model = TwitchBadgeModel.fromJson(
-              jsonDecode(widget.prefs.getString("twitch_badge") ?? "{}"));
-          model.addListener(() {
-            widget.prefs.setString('twitch_badge', jsonEncode(model.toJson()));
-          });
-          final channels = Provider.of<ChannelsModel>(context, listen: false);
-          model.subscribe(channels.subscribedChannels);
-          channels.addListener(() {
-            model.subscribe(channels.subscribedChannels);
-          });
+          final model = LayoutModel.fromJson(
+              jsonDecode(widget.prefs.getString("layout") ?? "{}"));
+          return model
+            ..addListener(() {
+              widget.prefs.setString('layout', jsonEncode(model.toJson()));
+            });
+        }),
+        ChangeNotifierProxyProvider<UserModel, MessagesModel>(
+            create: (context) {
+          final model = MessagesModel();
+          model.channel =
+              Provider.of<UserModel>(context, listen: false).activeChannel;
+          return model
+            ..addListener(() {
+              if (model.messages.isNotEmpty) {
+                final message = model.messages.last;
+                if (message is TwitchMessageModel &&
+                    message.message == "!disco") {
+                  _discoModeTimer?.cancel();
+                  setState(() => _isDiscoModeRunning = true);
+                  _discoModeTimer = Timer(const Duration(seconds: 5), () {
+                    setState(() => _isDiscoModeRunning = false);
+                  });
+                }
+              }
+            });
+        }, update: (context, userModel, model) {
+          model!.channel = userModel.activeChannel;
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
-          final model = EventSubConfigurationModel.fromJson(
-              jsonDecode(widget.prefs.getString("event_sub_configs") ?? "{}"));
-          model.addListener(() {
-            widget.prefs
-                .setString('event_sub_configs', jsonEncode(model.toJson()));
-          });
+          final model = QuickLinksModel.fromJson(
+              jsonDecode(widget.prefs.getString("quick_links") ?? "{}"));
+          return model
+            ..addListener(() {
+              widget.prefs.setString('quick_links', jsonEncode(model.toJson()));
+            });
+        }),
+        ChangeNotifierProvider(create: (context) {
+          final model = StyleModel.fromJson(
+              jsonDecode(widget.prefs.getString("style") ?? "{}"));
+          return model
+            ..addListener(() {
+              widget.prefs.setString('style', jsonEncode(model.toJson()));
+            });
+        }),
+        ChangeNotifierProxyProvider<UserModel, TwitchBadgeModel>(
+            create: (context) {
+          final model = TwitchBadgeModel.fromJson(
+              jsonDecode(widget.prefs.getString("twitch_badge") ?? "{}"));
+          model.channel =
+              Provider.of<UserModel>(context, listen: false).activeChannel;
+          return model
+            ..addListener(() {
+              widget.prefs
+                  .setString('twitch_badge', jsonEncode(model.toJson()));
+            });
+        }, update: (context, userModel, model) {
+          model!.channel = userModel.activeChannel;
           return model;
         }),
         ChangeNotifierProvider(create: (context) {
           final model = CommandsModel.fromJson(
               jsonDecode(widget.prefs.getString("commands") ?? "{}"));
-          model.addListener(() {
-            widget.prefs.setString("commands", jsonEncode(model.toJson()));
-          });
-          return model;
+          return model
+            ..addListener(() {
+              widget.prefs.setString("commands", jsonEncode(model.toJson()));
+            });
         }),
         ChangeNotifierProvider(create: (context) {
           final model = TwitchMessageConfig.fromJson(
               jsonDecode(widget.prefs.getString("message_config") ?? "{}"));
-          model.addListener(() {
-            widget.prefs
-                .setString("message_config", jsonEncode(model.toJson()));
-          });
-          return model;
+          return model
+            ..addListener(() {
+              widget.prefs
+                  .setString("message_config", jsonEncode(model.toJson()));
+            });
+        }),
+        ChangeNotifierProvider(create: (context) {
+          final model = EventSubConfigurationModel.fromJson(
+              jsonDecode(widget.prefs.getString("event_sub_configs") ?? "{}"));
+          return model
+            ..addListener(() {
+              widget.prefs
+                  .setString('event_sub_configs', jsonEncode(model.toJson()));
+            });
         }),
       ],
-      child: DefaultTabController(
-        initialIndex: 0,
-        length: 2,
-        child: MaterialApp(
-          title: 'RealtimeChat',
-          theme: ThemeData(
-            brightness: Brightness.light,
-            primarySwatch: primarySwatch,
-          ),
-          darkTheme: ThemeData(
-            brightness: Brightness.dark,
-            primarySwatch: primarySwatch,
-            scaffoldBackgroundColor: Colors.black,
-          ),
-          initialRoute: '/',
-          navigatorObservers: [App.observer],
-          routes: {
-            '/': (context) {
-              return Consumer<UserModel>(builder: (context, model, child) {
-                if (!model.isSignedIn()) {
-                  return const SignInScreen();
-                }
-                return HomeScreen(isDiscoModeEnabled: _isDiscoModeRunning);
+      //   ChangeNotifierProvider(
+      //       create: (context) {
+      //         final model = AudioModel.fromJson(
+      //             jsonDecode(widget.prefs.getString("audio") ?? "{}"));
+      //         model.addListener(() {
+      //           widget.prefs.setString('audio', jsonEncode(model.toJson()));
+      //         });
+      //         final user = Provider.of<UserModel>(context, listen: false);
+      //         model.hostChannel = user.userChannel;
+      //         user.addListener(() {
+      //           model.hostChannel = user.userChannel;
+      //         });
+      //         return model;
+      //       },
+      //       lazy: false),
+      //   ChangeNotifierProvider(create: (context) {
+      //     final model = TtsModel.fromJson(widget.ttsHandler,
+      //         jsonDecode(widget.prefs.getString("tts") ?? "{}"));
+      //     final messages = Provider.of<MessagesModel>(context, listen: false);
+      //     model.addListener(() {
+      //       widget.prefs.setString('tts', jsonEncode(model.toJson()));
+      //     });
+      //     messages.addListener(() {
+      //       model.messages = messages.messages;
+      //     });
+      //     return model;
+      //   }),
+      //   ChangeNotifierProvider(create: (context) {
+      //     final model = TwitchBadgeModel.fromJson(
+      //         jsonDecode(widget.prefs.getString("twitch_badge") ?? "{}"));
+      //     model.addListener(() {
+      //       widget.prefs.setString('twitch_badge', jsonEncode(model.toJson()));
+      //     });
+      //     final channels = Provider.of<ChannelsModel>(context, listen: false);
+      //     model.subscribe(channels.subscribedChannels);
+      //     channels.addListener(() {
+      //       model.subscribe(channels.subscribedChannels);
+      //     });
+      //     return model;
+      //   }),
+      // ],
+      child: MaterialApp(
+        title: 'RealtimeChat',
+        theme: ThemeData(
+          brightness: Brightness.light,
+          primarySwatch: primarySwatch,
+        ),
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          primarySwatch: primarySwatch,
+          scaffoldBackgroundColor: Colors.black,
+        ),
+        navigatorObservers: [App.observer],
+        home: Consumer<UserModel>(
+          builder: (context, userModel, child) {
+            final activeChannel = userModel.activeChannel;
+            if (activeChannel == null) {
+              return OnboardingScreen(onChannelSelect: (channel) {
+                userModel.activeChannel = channel;
               });
-            },
-            '/settings': (context) => const SettingsScreen(),
-            '/settings/badges': (context) => const TwitchBadgesScreen(),
-            '/settings/activity-feed': (context) => const ActivityFeedScreen(),
-            '/settings/audio-sources': (context) => const AudioSourcesScreen(),
-            '/settings/chat-history': (context) => const ChatHistoryScreen(),
-            '/settings/text-to-speech': (context) => const TextToSpeechScreen(),
-            '/settings/quick-links': (context) => const QuickLinksScreen(),
-            '/settings/backup': (context) => const BackupScreen(),
-            '/settings/events': (context) => const EventsScreen(),
-            '/settings/events/follow': (context) => const FollowEventScreen(),
-            '/settings/events/cheer': (context) => const CheerEventScreen(),
-            '/settings/events/subscription': (context) =>
-                const SubscriptionEventScreen(),
-            '/settings/events/raid': (context) => const RaidEventScreen(),
-            '/settings/events/channel-point': (context) =>
-                const ChannelPointRedemptionEventScreen(),
-            '/settings/events/poll': (context) => const PollEventScreen(),
-            '/settings/events/host': (context) => const HostEventScreen(),
-            '/settings/events/hypetrain': (context) =>
-                const HypetrainEventScreen(),
-            '/settings/events/prediction': (context) =>
-                const PredictionEventScreen(),
+            }
+            return HomeScreen(
+                isDiscoModeEnabled: _isDiscoModeRunning,
+                channel: activeChannel);
           },
         ),
       ),

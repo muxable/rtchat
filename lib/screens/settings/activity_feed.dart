@@ -34,10 +34,11 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   }
 
   void synchronizeUrl() async {
-    final url = _activityFeedModel?.url;
-    if (url != null && url.toString().isNotEmpty) {
-      await _inAppWebViewController?.loadUrl(urlRequest: URLRequest(url: url));
-    }
+    // TODO: implement
+    // final url = _activityFeedModel?.url;
+    // if (url != null && url.toString().isNotEmpty) {
+    //   await _inAppWebViewController?.loadUrl(urlRequest: URLRequest(url: url));
+    // }
   }
 
   @override
@@ -75,9 +76,10 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: InAppWebView(
-                initialUrlRequest: activityFeedModel.url != null
-                    ? URLRequest(url: activityFeedModel.url)
-                    : null,
+                // TODO: implement
+                // initialUrlRequest: activityFeedModel.url != null
+                //     ? URLRequest(url: activityFeedModel.url)
+                //     : null,
                 onWebViewCreated: (controller) =>
                     _inAppWebViewController = controller,
                 initialOptions: InAppWebViewGroupOptions(
