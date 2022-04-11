@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import fetch from "node-fetch";
 import * as tmi from "tmi.js";
-import { getAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 
 export async function getTwitchClient(uid: string, channel: string) {
   const token = await getAccessToken(uid, "twitch");
@@ -22,8 +22,8 @@ export async function getTwitchClient(uid: string, channel: string) {
   return client;
 }
 
-export async function getTwitchLogin(uid: string, id: string) {
-  const token = await getAccessToken(uid, "twitch");
+export async function getTwitchLogin(id: string) {
+  const token = await getAppAccessToken("twitch");
 
   const response = await fetch(`https://api.twitch.tv/helix/users?id=${id}`, {
     headers: {
