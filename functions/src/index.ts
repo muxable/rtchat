@@ -27,7 +27,7 @@ export const send = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
+      const channel = await getTwitchLogin(context.auth.uid, channelId);
       if (!channel) {
         return;
       }
@@ -61,7 +61,7 @@ export const ban = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
+      const channel = await getTwitchLogin(context.auth.uid, channelId);
       if (!channel) {
         return;
       }
@@ -94,7 +94,7 @@ export const unban = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
+      const channel = await getTwitchLogin(context.auth.uid, channelId);
       if (!channel) {
         return;
       }
@@ -129,7 +129,7 @@ export const timeout = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
+      const channel = await getTwitchLogin(context.auth.uid, channelId);
       if (!channel) {
         return;
       }
@@ -162,7 +162,7 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
+      const channel = await getTwitchLogin(context.auth.uid, channelId);
       if (!channel) {
         return;
       }
@@ -194,7 +194,7 @@ export const clear = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
+      const channel = await getTwitchLogin(context.auth.uid, channelId);
       if (!channel) {
         return;
       }

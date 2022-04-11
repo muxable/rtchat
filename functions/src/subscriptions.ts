@@ -4,6 +4,9 @@ import { checkEventSubSubscriptions } from "./eventsub";
 import { getTwitchLogin } from "./twitch";
 
 export const subscribe = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("permission-denied", "missing auth");
+  }
   const provider = data?.provider;
   const channelId = data?.channelId;
   if (!provider || !channelId) {
@@ -13,11 +16,11 @@ export const subscribe = functions.https.onCall(async (data, context) => {
     );
   }
 
-  console.log(context.auth?.uid, "requested subscribe to", provider, channelId);
+  console.log(context.auth.uid, "requested subscribe to", provider, channelId);
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
+      const channel = await getTwitchLogin(context.auth.uid, channelId);
       if (!channel) {
         throw new functions.https.HttpsError(
           "invalid-argument",
@@ -42,10 +45,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         .child(channel)
         .set("");
 
-      // only subscribe to event sub if authenticated.
-      if (context.auth) {
-        await checkEventSubSubscriptions(context.auth.uid);
-      }
+      await checkEventSubSubscriptions(context.auth.uid);
 
       return channel;
   }
