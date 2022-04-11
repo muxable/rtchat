@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/statistics_bar.dart';
+import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:url_launcher/url_launcher.dart';
