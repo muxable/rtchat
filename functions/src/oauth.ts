@@ -1,5 +1,4 @@
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
 import {
   AuthorizationCode,
   ClientCredentials,
@@ -62,7 +61,9 @@ export async function getAccessToken(userId: string, provider: string) {
 export async function getAppAccessToken(provider: string) {
   switch (provider) {
     case "twitch":
-      return new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken({ scope: [] });
+      return new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken({
+        scopes: [],
+      });
   }
   return null;
 }
