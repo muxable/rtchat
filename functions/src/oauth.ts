@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
 import {
   AuthorizationCode,
   ClientCredentials,
@@ -36,7 +37,7 @@ export async function getAccessToken(userId: string, provider: string) {
   while (accessToken.expired(300)) {
     try {
       accessToken = await accessToken.refresh();
-    } catch (err) {
+    } catch (err: any) {
       if (err.data?.payload?.message === "Invalid refresh token") {
         await admin
           .firestore()
