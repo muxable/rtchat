@@ -4,7 +4,7 @@ import fetch from "node-fetch";
 import { app as authApp } from "./auth";
 import { getUserEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
-import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
 import { subscribe, unsubscribe, cleanup } from "./subscriptions";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
