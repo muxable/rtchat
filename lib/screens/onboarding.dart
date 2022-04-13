@@ -1,12 +1,8 @@
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image/flutter_image.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
-import 'package:provider/provider.dart';
+import 'package:rtchat/components/auth/twitch.dart';
 import 'package:rtchat/models/channels.dart';
-import 'package:rtchat/models/user.dart';
 
 final _search = FirebaseFunctions.instance.httpsCallable("search");
 
@@ -90,15 +86,14 @@ class SearchDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-      const Flexible(child: Divider(color: Colors.white)),
+      const Flexible(child: Divider()),
       Padding(
           padding: const EdgeInsets.all(16),
           child: Text("or search for a channel",
               style: Theme.of(context)
                   .textTheme
-                  .subtitle1!
-                  .copyWith(color: Colors.white))),
-      const Flexible(child: Divider(color: Colors.white)),
+                  .subtitle1)),
+      const Flexible(child: Divider()),
     ]);
   }
 }
@@ -141,44 +136,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: Text("RealtimeChat",
                           style: Theme.of(context)
                               .textTheme
-                              .headline6!
-                              .copyWith(color: Colors.white))),
-                  SizedBox(
+                              .headline6)),
+                  const SizedBox(
                     width: 400,
                     child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 64),
-                        child: ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(
-                                const Color(0xFF6441A5)),
-                          ),
-                          child: Consumer<UserModel>(
-                              builder: (context, user, child) {
-                            return const Text("Sign in with Twitch");
-                          }),
-                          onPressed: () async {
-                            final user =
-                                Provider.of<UserModel>(context, listen: false);
-                            try {
-                              await FirebaseAnalytics.instance
-                                  .logLogin(loginMethod: "twitch");
-                              final result = await FlutterWebAuth.authenticate(
-                                  url: url.toString(),
-                                  callbackUrlScheme: "com.rtirl.chat");
-                              final token =
-                                  Uri.parse(result).queryParameters['token'];
-                              if (token != null) {
-                                await user.signIn(token);
-                              } else {
-                                await FirebaseCrashlytics.instance
-                                    .log("failed to sign in");
-                              }
-                            } catch (e, st) {
-                              await FirebaseCrashlytics.instance
-                                  .recordError(e, st);
-                            }
-                          },
-                        )),
+                        padding: EdgeInsets.symmetric(horizontal: 64),
+                        child: SignInWithTwitch()),
                   ),
                   const SearchDivider(),
                 ])),

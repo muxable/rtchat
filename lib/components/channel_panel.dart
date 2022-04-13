@@ -5,7 +5,6 @@ import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
-import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/commands.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 

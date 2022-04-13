@@ -46,7 +46,7 @@ class ChatHistoryMessage extends StatelessWidget {
           return child;
         }
         final userModel = Provider.of<UserModel>(context, listen: false);
-        final loginChannel = userModel.userChannel!.channelId;
+        final loginChannel = userModel.userChannel?.channelId;
         final viewingChannel = m.channelId.split(':')[1];
 
         if (loginChannel != viewingChannel) {
@@ -60,11 +60,8 @@ class ChatHistoryMessage extends StatelessWidget {
                   builder: (context) {
                     return Dialog(
                       child: ListView(shrinkWrap: true, children: [
-                        Builder(builder: (context) {
-                          final ttsModel =
-                              Provider.of<TtsModel>(context, listen: false);
-                          if (ttsModel.ttsHandler.mutedUsers
-                              .contains(m.author)) {
+                        Consumer<TtsModel>(builder: (context, ttsModel, child) {
+                          if (ttsModel.isMuted(m.author)) {
                             return ListTile(
                                 leading: const Icon(Icons.volume_up_rounded,
                                     color: Colors.deepPurpleAccent),

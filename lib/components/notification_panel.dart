@@ -3,7 +3,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/title_bar.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/user.dart';
 
@@ -44,26 +43,28 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
   }
 
   void synchronizeActivityFeedUrl() async {
-    // TODO: implement
-    // final url = _activityFeedModel?.url;
-    // if (url != null && url.toString().isNotEmpty) {
-    //   await _activityFeedController?.loadUrl(urlRequest: URLRequest(url: url));
-    // }
+    final uri = getUri();
+    if (uri != null && uri.toString().isNotEmpty) {
+      await _activityFeedController?.loadUrl(urlRequest: URLRequest(url: uri));
+    }
   }
 
-  Uri? get uri {
-    // final channel = userModel.activeChannel;
-    // if (_isCustom) {
-    //   return Uri.tryParse(_customUrl);
-    // } else if (channel == null) {
-    //   return null;
-    // }
-    // switch (channel.provider) {
-    //   case "twitch":
-    //     return Uri.tryParse(
-    //         "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
-    // }
-    // return null;
+  Uri? getUri() {
+    final activityFeedModel =
+        Provider.of<ActivityFeedModel>(context, listen: false);
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    final channel = userModel.userChannel;
+    if (activityFeedModel.isCustom) {
+      return Uri.tryParse(activityFeedModel.customUrl);
+    } else if (channel == null) {
+      return null;
+    }
+    switch (channel.provider) {
+      case "twitch":
+        return Uri.tryParse(
+            "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
+    }
+    return null;
   }
 
   @override
@@ -73,65 +74,19 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
       height: widget.height,
       curve: Curves.easeOut,
       duration: const Duration(milliseconds: 400),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        TitleBarWidget(),
-        // TODO: implement
-        // Expanded(child: Builder(builder: (context) {
-        //   final tabs = TabBarView(
-        //     children: [
-        //       Consumer<ActivityFeedModel>(
-        //           builder: (context, activityFeedModel, child) {
-        //         return Container();
-        //         // TODO: impelment
-        //         // final url = activityFeedModel.url;
-        //         // if (url == null) {
-        //         //   return Container();
-        //         // }
-        //         // return InAppWebView(
-        //         //   initialOptions: InAppWebViewGroupOptions(
-        //         //     crossPlatform: InAppWebViewOptions(
-        //         //         javaScriptEnabled: true,
-        //         //         mediaPlaybackRequiresUserGesture: false,
-        //         //         transparentBackground: true),
-        //         //   ),
-        //         //   initialUrlRequest: URLRequest(url: url),
-        //         //   onWebViewCreated: (controller) =>
-        //         //       _activityFeedController = controller,
-        //         //   gestureRecognizers: {
-        //         //     Factory<OneSequenceGestureRecognizer>(
-        //         //         () => EagerGestureRecognizer()),
-        //         //   },
-        //         // );
-        //       }),
-        //       Consumer<UserModel>(builder: (context, userModel, child) {
-        //         final channel = userModel.userChannel;
-        //         if (channel == null) {
-        //           return Container();
-        //         }
-        //         return InAppWebView(
-        //           initialOptions: InAppWebViewGroupOptions(
-        //             crossPlatform: InAppWebViewOptions(
-        //                 javaScriptEnabled: true,
-        //                 mediaPlaybackRequiresUserGesture: false,
-        //                 transparentBackground: true),
-        //           ),
-        //           initialUrlRequest: URLRequest(
-        //               url: Uri.parse(
-        //                   "https://player.twitch.tv/?channel=${channel.displayName}&parent=chat.rtirl.com&muted=true&quality=mobile")),
-        //           gestureRecognizers: {
-        //             Factory<OneSequenceGestureRecognizer>(
-        //                 () => EagerGestureRecognizer()),
-        //           },
-        //         );
-        //       }),
-        //     ],
-        //   );
-        //   if (widget.height == double.infinity) {
-        //     return tabs;
-        //   }
-        //   return tabs;
-        // })),
-      ]),
+      child: InAppWebView(
+        initialOptions: InAppWebViewGroupOptions(
+          crossPlatform: InAppWebViewOptions(
+              javaScriptEnabled: true,
+              mediaPlaybackRequiresUserGesture: false,
+              transparentBackground: true),
+        ),
+        initialUrlRequest: URLRequest(url: getUri()),
+        onWebViewCreated: (controller) => _activityFeedController = controller,
+        gestureRecognizers: {
+          Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
+        },
+      ),
     );
   }
 }

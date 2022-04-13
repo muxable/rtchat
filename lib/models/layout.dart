@@ -43,6 +43,8 @@ class LayoutModel extends ChangeNotifier {
   bool _dragEnd = true;
   double _onDragStartHeight = 300.0;
   PreferredOrientation _orientationPreference = PreferredOrientation.system;
+  bool _isShowNotifications = false;
+  bool _isShowPreview = false;
 
   void updatePanelHeight({required double dy}) {
     _panelHeight += dy;
@@ -108,6 +110,22 @@ class LayoutModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get isShowNotifications => _isShowNotifications;
+
+  set isShowNotifications(bool value) {
+    _isShowPreview = false;
+    _isShowNotifications = value;
+    notifyListeners();
+  }
+
+  bool get isShowPreview => _isShowPreview;
+
+  set isShowPreview(bool value) {
+    _isShowNotifications = false;
+    _isShowPreview = value;
+    notifyListeners();
+  }
+
   void _bindOrientationPreference() async {
     switch (_orientationPreference) {
       case PreferredOrientation.portrait:
@@ -149,6 +167,12 @@ class LayoutModel extends ChangeNotifier {
           _OrientationPreferenceJson.fromJson(json['orientationPreference']);
       _bindOrientationPreference();
     }
+    if (json['isShowNotifications'] != null) {
+      _isShowNotifications = json['isShowNotifications'];
+    }
+    if (json['isShowPreview'] != null) {
+      _isShowPreview = json['isShowPreview'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -158,5 +182,7 @@ class LayoutModel extends ChangeNotifier {
         "isStatsVisible": _isStatsVisible,
         "isInputLockable": _isInteractionLockable,
         "orientationPreference": _orientationPreference.toJson(),
+        "isShowNotifications": _isShowNotifications,
+        "isShowPreview": _isShowPreview,
       };
 }

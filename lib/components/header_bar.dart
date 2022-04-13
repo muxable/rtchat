@@ -9,7 +9,9 @@ import 'package:rtchat/models/layout.dart';
 class HeaderBarWidget extends StatefulWidget implements PreferredSizeWidget {
   final Channel channel;
 
-  const HeaderBarWidget({Key? key, required this.channel})
+  final List<Widget>? actions;
+
+  const HeaderBarWidget({Key? key, required this.channel, this.actions})
       : preferredSize = const Size.fromHeight(kToolbarHeight),
         super(key: key);
 
@@ -21,12 +23,15 @@ class HeaderBarWidget extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _HeaderBarWidgetState extends State<HeaderBarWidget> {
-  late Timer _timer;
+  late Timer _pollTimer;
+  late Timer _fadeTimer;
 
   bool _loading = true;
   bool _isOnline = false;
   int _viewers = 0;
   int _followers = 0;
+
+  int _iteration = 0;
 
   final NumberFormat _formatter = NumberFormat.compact();
 
@@ -35,7 +40,12 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
     super.initState();
 
     _poll();
-    _timer = Timer.periodic(const Duration(seconds: 15), (_) => _poll());
+    _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) => _poll());
+    _fadeTimer = Timer.periodic(
+        const Duration(seconds: 5),
+        (_) => setState(() {
+              _iteration++;
+            }));
   }
 
   @override
@@ -71,37 +81,67 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
 
   @override
   void dispose() {
-    _timer.cancel();
+    _fadeTimer.cancel();
+    _pollTimer.cancel();
 
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final title = Row(children: [
+      Text("/${widget.channel.displayName}"),
+      if (_isOnline)
+        Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+              color: Colors.red, borderRadius: BorderRadius.circular(8)),
+          child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: Text("LIVE",
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelMedium!
+                      .copyWith(color: Colors.white))),
+        )
+      else
+        Container()
+    ]);
     return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
       if (!layoutModel.isStatsVisible) {
         return AppBar(
-          title: Text("/${widget.channel.displayName}"),
-          centerTitle: true,
-        );
-      }
-      if (_loading) {
-        return AppBar(
-          title: Column(children: [
-            Text("/${widget.channel.displayName}"),
-            const Text("..."),
-          ]),
-          centerTitle: true,
+          title: title, centerTitle: true, actions: widget.actions
         );
       }
       return AppBar(
-        title: Column(children: [
-          Text("/${widget.channel.displayName}"),
-          Text(
-              "${_formatter.format(_viewers)} viewers, ${_formatter.format(_followers)} followers"),
-        ]),
-        centerTitle: true,
-      );
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(padding: const EdgeInsets.only(bottom: 4), child: title),
+              if (_loading)
+                Text("...",
+                    style: Theme.of(context)
+                        .textTheme
+                        .subtitle2
+                        ?.copyWith(color: Colors.white))
+              else if (_iteration % 2 == 0)
+                Text(
+                    "${_formatter.format(_viewers)} viewers",
+                    style: Theme.of(context)
+                        .textTheme
+                        .subtitle2
+                        ?.copyWith(color: Colors.white))
+              else if (_iteration % 2 == 1)
+                Text("${_formatter.format(_followers)} followers",
+                    style: Theme.of(context)
+                        .textTheme
+                        .subtitle2
+                        ?.copyWith(color: Colors.white))
+              else
+                Container()
+            ],
+          ),
+          actions: widget.actions);
     });
   }
 }

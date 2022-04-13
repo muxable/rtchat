@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
@@ -20,33 +21,41 @@ class QuicklinksListView extends StatelessWidget {
     }
   }
 
+  Future<String> retrieveName(QuickLinkSource link) async {
+    final metadata = await MetadataFetch.extract(link.url.toString());
+    return metadata?.title ?? link.url.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<QuickLinksModel>(
         builder: (context, quickLinksModel, child) {
-      if (quickLinksModel.sources.isEmpty) {
-        return const Padding(
-          padding: EdgeInsets.all(16),
-          child: Center(
-            child: Text("Add quicklinks in settings"),
-          ),
-        );
-      }
-      return SizedBox(
-        height: 300,
-        child: ListView(
-          shrinkWrap: true,
-          physics: const ScrollPhysics(),
+      return Column(children: [
+        Expanded(
+            child: ListView(
           padding: EdgeInsets.zero,
           children: quickLinksModel.sources.reversed.map((source) {
             return ListTile(
               leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-              title: Text(source.toString()),
+              title: FutureBuilder<String>(
+                  future: retrieveName(source),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState != ConnectionState.done) {
+                      return const Text("Loading title");
+                    }
+                    return Text(snapshot.data ?? "");
+                  }),
+              subtitle: Text(source.url.toString()),
               onTap: () => launchLink(source),
             );
           }).toList(),
-        ),
-      );
+        )),
+        ListTile(
+            leading: const Icon(Icons.add),
+            title: const Text("Configure quick links"),
+            onTap: () =>
+                Navigator.of(context).pushNamed("/settings/quick-links")),
+      ]);
     });
   }
 }
