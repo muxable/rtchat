@@ -98,34 +98,21 @@ void main() async {
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.speech());
 
-    final ttsHandler = await AudioService.init(
-      builder: () => TtsAudioHandler(),
-      config: const AudioServiceConfig(
-        notificationColor: Color(0xFF009FDF),
-        androidNotificationIcon: "drawable/notification_icon",
-        androidNotificationOngoing: true,
-        androidStopForegroundOnPause: true,
-        androidNotificationChannelId: 'com.rtirl.chat.tts',
-        androidNotificationChannelName: 'Text to speech',
-      ),
-    );
-
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarBrightness: Brightness.dark,
     ));
 
-    runApp(App(prefs: prefs, ttsHandler: ttsHandler));
+    runApp(App(prefs: prefs));
   }, FirebaseCrashlytics.instance.recordError);
 }
 
 class App extends StatefulWidget {
   final SharedPreferences prefs;
-  final TtsAudioHandler ttsHandler;
 
   static final observer =
       FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
 
-  const App({Key? key, required this.prefs, required this.ttsHandler})
+  const App({Key? key, required this.prefs})
       : super(key: key);
 
   @override
@@ -254,18 +241,18 @@ class _AppState extends State<App> {
       //         return model;
       //       },
       //       lazy: false),
-      //   ChangeNotifierProvider(create: (context) {
-      //     final model = TtsModel.fromJson(widget.ttsHandler,
-      //         jsonDecode(widget.prefs.getString("tts") ?? "{}"));
-      //     final messages = Provider.of<MessagesModel>(context, listen: false);
-      //     model.addListener(() {
-      //       widget.prefs.setString('tts', jsonEncode(model.toJson()));
-      //     });
-      //     messages.addListener(() {
-      //       model.messages = messages.messages;
-      //     });
-      //     return model;
-      //   }),
+        ChangeNotifierProvider(create: (context) {
+          final model = TtsModel.fromJson(widget.ttsHandler,
+              jsonDecode(widget.prefs.getString("tts") ?? "{}"));
+          final messages = Provider.of<MessagesModel>(context, listen: false);
+          model.addListener(() {
+            widget.prefs.setString('tts', jsonEncode(model.toJson()));
+          });
+          messages.addListener(() {
+            model.messages = messages.messages;
+          });
+          return model;
+        }),
       //   ChangeNotifierProvider(create: (context) {
       //     final model = TwitchBadgeModel.fromJson(
       //         jsonDecode(widget.prefs.getString("twitch_badge") ?? "{}"));
@@ -292,7 +279,10 @@ class _AppState extends State<App> {
           scaffoldBackgroundColor: Colors.black,
         ),
         navigatorObservers: [App.observer],
-        home: Consumer<UserModel>(
+        initialRoute: '/',
+        routes: {
+          '/': (context) {
+            return Consumer<UserModel>(
           builder: (context, userModel, child) {
             final activeChannel = userModel.activeChannel;
             if (activeChannel == null) {
@@ -304,7 +294,31 @@ class _AppState extends State<App> {
                 isDiscoModeEnabled: _isDiscoModeRunning,
                 channel: activeChannel);
           },
-        ),
+            );
+          },
+          '/settings': (context) => const SettingsScreen(),
+          '/settings/badges': (context) => const TwitchBadgesScreen(),
+          '/settings/activity-feed': (context) => const ActivityFeedScreen(),
+          '/settings/audio-sources': (context) => const AudioSourcesScreen(),
+          '/settings/chat-history': (context) => const ChatHistoryScreen(),
+          '/settings/text-to-speech': (context) => const TextToSpeechScreen(),
+          '/settings/quick-links': (context) => const QuickLinksScreen(),
+          '/settings/backup': (context) => const BackupScreen(),
+          '/settings/events': (context) => const EventsScreen(),
+          '/settings/events/follow': (context) => const FollowEventScreen(),
+          '/settings/events/cheer': (context) => const CheerEventScreen(),
+          '/settings/events/subscription': (context) =>
+              const SubscriptionEventScreen(),
+          '/settings/events/raid': (context) => const RaidEventScreen(),
+          '/settings/events/channel-point': (context) =>
+              const ChannelPointRedemptionEventScreen(),
+          '/settings/events/poll': (context) => const PollEventScreen(),
+          '/settings/events/host': (context) => const HostEventScreen(),
+          '/settings/events/hypetrain': (context) =>
+              const HypetrainEventScreen(),
+          '/settings/events/prediction': (context) =>
+              const PredictionEventScreen(),
+        },
       ),
     );
   }
