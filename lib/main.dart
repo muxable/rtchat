@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:audio_session/audio_session.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -91,9 +90,6 @@ void main() async {
 
   await runZonedGuarded(() async {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
-
-    final session = await AudioSession.instance;
-    await session.configure(const AudioSessionConfiguration.speech());
 
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarBrightness: Brightness.dark,
