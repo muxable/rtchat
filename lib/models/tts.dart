@@ -5,10 +5,18 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
 class TtsMessage {
-  final String messageId;
+  final String? messageId;
   final String text;
+  final String? author;
+  final bool isBot;
+  final bool isCommand;
 
-  const TtsMessage(this.messageId, this.text);
+  const TtsMessage(
+      {this.messageId,
+      required this.text,
+      this.author,
+      this.isBot = false,
+      this.isCommand = false});
 }
 
 class TtsModel extends ChangeNotifier {
@@ -28,6 +36,8 @@ class TtsModel extends ChangeNotifier {
 
   set enabled(bool value) {
     _isEnabled = value;
+    say(TtsMessage(text: "Text-to-speech ${value ? "enabled" : "disabled"}"),
+        force: true);
     notifyListeners();
   }
 
@@ -82,7 +92,10 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  void say(TtsMessage text) {
+  void say(TtsMessage text, {bool force = false}) {
+    if (!enabled && !force) {
+      return;
+    }
     // we have to manage our own queue here because queueing is not supported on ios.
 
     // add this text to the queue

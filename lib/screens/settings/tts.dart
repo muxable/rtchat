@@ -49,8 +49,11 @@ class TextToSpeechScreen extends StatelessWidget {
                     child: ElevatedButton(
                       child: const Text("Play sample message"),
                       onPressed: () {
-                        model.say(const TtsMessage("",
-                            "muxfd said have you followed muxfd on twitch?"));
+                        model.say(
+                            const TtsMessage(
+                                text:
+                                    "muxfd said have you followed muxfd on twitch?"),
+                            force: true);
                       },
                     ),
                   )

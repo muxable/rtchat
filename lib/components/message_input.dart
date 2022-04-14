@@ -5,7 +5,6 @@ import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/commands.dart';
-import 'package:rtchat/models/messages.dart';
 
 class MessageInputWidget extends StatefulWidget {
   final Channel channel;
@@ -115,15 +114,18 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             onTap: () => setState(() => _isEmotePickerVisible = false),
           ),
         ),
-        Consumer<MessagesModel>(builder: (context, messagesModel, child) {
-          return IconButton(
-              icon: Icon(messagesModel.isTtsEnabled
-                  ? Icons.voice_over_off
-                  : Icons.record_voice_over),
-              onPressed: () {
-                messagesModel.isTtsEnabled = !messagesModel.isTtsEnabled;
-              });
-        }),
+        _isEmotePickerVisible
+            ? IconButton(
+                icon: const Icon(Icons.send),
+                onPressed: () {
+                  var text = _textEditingController.text;
+                  if (text.isEmpty) {
+                    return;
+                  }
+                  ActionsAdapter.instance.send(widget.channel, text);
+                  _textEditingController.clear();
+                })
+            : Container(),
       ]),
       _buildCommandBar(context),
       _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),

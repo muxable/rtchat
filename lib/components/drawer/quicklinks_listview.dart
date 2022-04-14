@@ -30,32 +30,23 @@ class QuicklinksListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<QuickLinksModel>(
         builder: (context, quickLinksModel, child) {
-      return Column(children: [
-        Expanded(
-            child: ListView(
-          padding: EdgeInsets.zero,
-          children: quickLinksModel.sources.reversed.map((source) {
-            return ListTile(
-              leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-              title: FutureBuilder<String>(
-                  future: retrieveName(source),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
-                      return const Text("Loading title");
-                    }
-                    return Text(snapshot.data ?? "");
-                  }),
-              subtitle: Text(source.url.toString()),
-              onTap: () => launchLink(source),
-            );
-          }).toList(),
-        )),
-        ListTile(
-            leading: const Icon(Icons.add),
-            title: const Text("Configure quick links"),
-            onTap: () =>
-                Navigator.of(context).pushNamed("/settings/quick-links")),
-      ]);
+      return Column(
+        children: quickLinksModel.sources.reversed.map((source) {
+          return ListTile(
+            leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
+            title: FutureBuilder<String>(
+                future: retrieveName(source),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const Text("Loading title");
+                  }
+                  return Text(snapshot.data ?? "");
+                }),
+            subtitle: Text(source.url.toString()),
+            onTap: () => launchLink(source),
+          );
+        }).toList(),
+      );
     });
   }
 }

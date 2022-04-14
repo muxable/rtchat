@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 
@@ -89,29 +90,49 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final title = Row(children: [
-      Text("/${widget.channel.displayName}"),
-      if (_isOnline)
-        Container(
-          margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-              color: Colors.red, borderRadius: BorderRadius.circular(8)),
-          child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              child: Text("LIVE",
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelMedium!
-                      .copyWith(color: Colors.white))),
-        )
-      else
-        Container()
-    ]);
+    final title = GestureDetector(
+        onTap: () {
+          showModalBottomSheet<void>(
+            context: context,
+            isScrollControlled: true,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            builder: (context) {
+              return DraggableScrollableSheet(
+                  initialChildSize: 0.7,
+                  minChildSize: 0.7,
+                  maxChildSize: 0.9,
+                  expand: false,
+                  builder: (context, controller) {
+                    return ChannelSearchBottomSheetWidget(
+                        controller: controller);
+                  });
+            },
+          );
+        },
+        child: Row(children: [
+          Text("/${widget.channel.displayName}"),
+          if (_isOnline)
+            Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                  color: Colors.red, borderRadius: BorderRadius.circular(8)),
+              child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Text("LIVE",
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelMedium!
+                          .copyWith(color: Colors.white))),
+            )
+          else
+            Container()
+        ]));
     return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
       if (!layoutModel.isStatsVisible) {
-        return AppBar(
-          title: title, centerTitle: true, actions: widget.actions
-        );
+        return AppBar(title: title, centerTitle: true, actions: widget.actions);
       }
       return AppBar(
           title: Column(
@@ -125,8 +146,7 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                         .subtitle2
                         ?.copyWith(color: Colors.white))
               else if (_iteration % 2 == 0)
-                Text(
-                    "${_formatter.format(_viewers)} viewers",
+                Text("${_formatter.format(_viewers)} viewers",
                     style: Theme.of(context)
                         .textTheme
                         .subtitle2

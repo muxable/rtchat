@@ -110,8 +110,8 @@ class TwitchMessageWidget extends StatelessWidget {
       );
     } else if (token is UserMentionToken) {
       final userModel = Provider.of<UserModel>(context, listen: false);
-      final loginChannel = userModel.userChannel!.displayName;
-      if (token.username.toLowerCase() == loginChannel.toLowerCase()) {
+      final loginChannel = userModel.userChannel?.displayName;
+      if (token.username.toLowerCase() == loginChannel?.toLowerCase()) {
         yield TextSpan(
             // wrap tag with nonbreaking spaces
             text: "\u{00A0}@${token.username}\u{00A0}",

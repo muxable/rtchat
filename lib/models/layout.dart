@@ -40,7 +40,6 @@ class LayoutModel extends ChangeNotifier {
   bool _isStatsVisible = true;
   bool _isInteractionLockable = false;
   bool _locked = false;
-  bool _dragEnd = true;
   double _onDragStartHeight = 300.0;
   PreferredOrientation _orientationPreference = PreferredOrientation.system;
   bool _isShowNotifications = false;
@@ -48,13 +47,11 @@ class LayoutModel extends ChangeNotifier {
 
   void updatePanelHeight({required double dy}) {
     _panelHeight += dy;
-    _dragEnd = false;
     notifyListeners();
   }
 
   void updatePanelWidth({required double dx}) {
     _panelWidth += dx;
-    _dragEnd = false;
     notifyListeners();
   }
 
@@ -66,18 +63,16 @@ class LayoutModel extends ChangeNotifier {
   double get panelHeight => _panelHeight;
 
   double get panelWidth => _panelWidth;
+  
+  set panelWidth(double panelWidth) {
+    _panelWidth = panelWidth;
+    notifyListeners();
+  }
 
   double get onDragStartHeight => _onDragStartHeight;
 
   set onDragStartHeight(double onDragStartHeight) {
     _onDragStartHeight = onDragStartHeight;
-    notifyListeners();
-  }
-
-  bool get dragEnd => _dragEnd;
-
-  set dragEnd(bool dragEnd) {
-    _dragEnd = dragEnd;
     notifyListeners();
   }
 

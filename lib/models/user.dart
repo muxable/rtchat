@@ -8,6 +8,8 @@ import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
 
 class UserModel extends ChangeNotifier {
+  bool _isLoading = true;
+
   late final StreamSubscription<void> _userSubscription;
   StreamSubscription<void>? _profileSubscription;
 
@@ -26,6 +28,7 @@ class UserModel extends ChangeNotifier {
           .setUserProperty(name: "provider", value: "twitch");
       if (user == null) {
         _userChannel = null;
+        _isLoading = false;
         notifyListeners();
         return;
       }
@@ -33,6 +36,7 @@ class UserModel extends ChangeNotifier {
           .getChannel(userId: user.uid, provider: "twitch")
           .listen((channel) {
         _userChannel = channel;
+        _isLoading = false;
         notifyListeners();
       });
     });
@@ -68,6 +72,8 @@ class UserModel extends ChangeNotifier {
     }
     return null;
   }
+
+  bool get isLoading => _isLoading;
 
   Future<void> signOut() => FirebaseAuth.instance.signOut();
 

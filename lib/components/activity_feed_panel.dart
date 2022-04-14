@@ -6,24 +6,15 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/user.dart';
 
-class NotificationPanelWidget extends StatefulWidget {
-  final double width;
-  final double height;
-  final double maxHeight;
-
-  const NotificationPanelWidget(
-      {Key? key,
-      this.width = double.infinity,
-      this.height = double.infinity,
-      this.maxHeight = double.infinity})
-      : super(key: key);
+class ActivityFeedPanelWidget extends StatefulWidget {
+  const ActivityFeedPanelWidget({Key? key}) : super(key: key);
 
   @override
-  _NotificationPanelWidgetState createState() =>
-      _NotificationPanelWidgetState();
+  _ActivityFeedPanelWidgetState createState() =>
+      _ActivityFeedPanelWidgetState();
 }
 
-class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
+class _ActivityFeedPanelWidgetState extends State<ActivityFeedPanelWidget> {
   ActivityFeedModel? _activityFeedModel;
   InAppWebViewController? _activityFeedController;
 
@@ -69,24 +60,18 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      width: widget.width,
-      height: widget.height,
-      curve: Curves.easeOut,
-      duration: const Duration(milliseconds: 400),
-      child: InAppWebView(
-        initialOptions: InAppWebViewGroupOptions(
-          crossPlatform: InAppWebViewOptions(
-              javaScriptEnabled: true,
-              mediaPlaybackRequiresUserGesture: false,
-              transparentBackground: true),
-        ),
-        initialUrlRequest: URLRequest(url: getUri()),
-        onWebViewCreated: (controller) => _activityFeedController = controller,
-        gestureRecognizers: {
-          Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
-        },
+    return InAppWebView(
+      initialOptions: InAppWebViewGroupOptions(
+        crossPlatform: InAppWebViewOptions(
+            javaScriptEnabled: true,
+            mediaPlaybackRequiresUserGesture: false,
+            transparentBackground: true),
       ),
+      initialUrlRequest: URLRequest(url: getUri()),
+      onWebViewCreated: (controller) => _activityFeedController = controller,
+      gestureRecognizers: {
+        Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
+      },
     );
   }
 }
