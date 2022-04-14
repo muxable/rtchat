@@ -1,98 +1,153 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:rtchat/models/messages/message.dart';
-import 'package:rtchat/models/messages/tts_audio_handler.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
+class TtsMessage {
+  final String? messageId;
+  final String text;
+  final String? author;
+  final bool isBot;
+  final bool isCommand;
+
+  const TtsMessage(
+      {this.messageId,
+      required this.text,
+      this.author,
+      this.isBot = false,
+      this.isCommand = false});
+}
+
 class TtsModel extends ChangeNotifier {
-  TtsAudioHandler ttsHandler;
-
-  set messages(List<MessageModel> messages) {
-    // for tts, we sort of cheat a bit and just append the new messages to the end of the list.
-    final index = ttsHandler.messages.isNotEmpty
-        ? messages.lastIndexWhere(
-            (message) => message.messageId == ttsHandler.messages.last.id)
-        : -1;
-    final mediaItems = messages
-        .sublist(index + 1)
-        .map((message) => TtsMediaItem.fromMessageModel(message))
-        .whereType<TtsMediaItem>()
-        .toList();
-    if (index == -1) {
-      // looks like we wiped the history, so reset the queue.
-      enabled = false;
-      ttsHandler.set(mediaItems);
-    } else {
-      ttsHandler.add(mediaItems);
-    }
-  }
-
-  Future<void> force(String message) => ttsHandler.force(message);
+  final _tts = FlutterTts();
+  final _queue = <TtsMessage>[];
+  Timer? _evictionTimer;
+  var _isBotMuted = false;
+  var _isEmoteMuted = false;
+  var _speed = 1.0;
+  var _pitch = 1.0;
+  var _isEnabled = false;
+  final Set<TwitchUserModel> _mutedUsers = {};
 
   bool get enabled {
-    return ttsHandler.enabled;
+    return _isEnabled;
   }
 
   set enabled(bool value) {
-    ttsHandler.enabled = value;
+    _isEnabled = value;
+    say(TtsMessage(text: "Text-to-speech ${value ? "enabled" : "disabled"}"),
+        force: true);
     notifyListeners();
   }
 
-  bool get isBotMuted => ttsHandler.isBotMuted;
+  bool get isBotMuted {
+    return _isBotMuted;
+  }
 
   set isBotMuted(bool value) {
-    ttsHandler.isBotMuted = value;
+    _isBotMuted = value;
     notifyListeners();
   }
 
-  double get speed => ttsHandler.speed;
-
-  set speed(double value) {
-    ttsHandler.speed = value;
-    notifyListeners();
+  bool get isEmoteMuted {
+    return _isEmoteMuted;
   }
-
-  double get pitch => ttsHandler.pitch;
-
-  set pitch(double value) {
-    ttsHandler.pitch = value;
-    notifyListeners();
-  }
-
-  bool get isEmoteMuted => ttsHandler.isEmoteMuted;
 
   set isEmoteMuted(bool value) {
-    ttsHandler.isEmoteMuted = value;
+    _isEmoteMuted = value;
     notifyListeners();
+  }
+
+  double get speed {
+    return _speed;
+  }
+
+  set speed(double value) {
+    _speed = value;
+    notifyListeners();
+  }
+
+  double get pitch {
+    return _pitch;
+  }
+
+  set pitch(double value) {
+    _pitch = value;
+    notifyListeners();
+  }
+
+  bool isMuted(TwitchUserModel user) {
+    return _mutedUsers.contains(user);
   }
 
   void mute(TwitchUserModel model) {
-    ttsHandler.mutedUsers.add(model);
+    _mutedUsers.add(model);
     notifyListeners();
   }
 
   void unmute(TwitchUserModel model) {
-    if (ttsHandler.mutedUsers.remove(model)) {
+    if (_mutedUsers.remove(model)) {
       notifyListeners();
     }
   }
 
-  TtsModel.fromJson(this.ttsHandler, Map<String, dynamic> json) {
+  void say(TtsMessage text, {bool force = false}) {
+    if (!enabled && !force) {
+      return;
+    }
+    // we have to manage our own queue here because queueing is not supported on ios.
+
+    // add this text to the queue
+    _queue.add(text);
+
+    // start the evictor if it isn't already running
+    _evictionTimer ??= _evictNext();
+  }
+
+  void unsay(String messageId) {
+    // remove this text from the queue if it exists.
+    _queue.removeWhere((m) => m.messageId == messageId);
+  }
+
+  Timer _evictNext() {
+    return Timer(const Duration(milliseconds: 100), () {
+      // if the queue is empty, stop the timer
+      if (_queue.isEmpty) {
+        _evictionTimer = null;
+        return;
+      }
+
+      // remove the first item from the queue
+      final message = _queue.removeAt(0);
+
+      // speak with tts.
+      _tts.setSpeechRate(_speed);
+      _tts.setPitch(_pitch);
+      _tts.speak(message.text);
+      _tts.completionHandler = () {
+        _evictionTimer = _evictNext();
+      };
+    });
+  }
+
+  TtsModel.fromJson(Map<String, dynamic> json) {
     if (json['isBotMuted'] != null) {
-      ttsHandler.isBotMuted = json['isBotMuted'];
+      _isBotMuted = json['isBotMuted'];
     }
     if (json['pitch'] != null) {
-      ttsHandler.pitch = json['pitch'];
+      _pitch = json['pitch'];
     }
     if (json['speed'] != null) {
-      ttsHandler.speed = json['speed'];
+      _speed = json['speed'];
     }
     if (json['isEmoteMuted'] != null) {
-      ttsHandler.isEmoteMuted = json['isEmoteMuted'];
+      _isEmoteMuted = json['isEmoteMuted'];
     }
     final userJson = json['mutedUsers'];
     if (userJson != null) {
       for (var user in userJson) {
-        ttsHandler.mutedUsers.add(TwitchUserModel.fromJson(user));
+        _mutedUsers.add(TwitchUserModel.fromJson(user));
       }
     }
   }
@@ -102,6 +157,6 @@ class TtsModel extends ChangeNotifier {
         "isEmoteMuted": isEmoteMuted,
         "pitch": pitch,
         "speed": speed,
-        'mutedUsers': ttsHandler.mutedUsers.toList()
+        'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
       };
 }

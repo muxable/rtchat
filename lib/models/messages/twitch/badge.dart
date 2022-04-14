@@ -1,12 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:rtchat/models/channels.dart';
-
-final Map<String, Future<Map<String, dynamic>>> _localCache = {};
-Future<Map<String, dynamic>>? _globalCache;
 
 Future<Map<String, dynamic>> getBadgeSets(Uri uri) async {
   final response = await http.get(uri);
@@ -22,37 +20,38 @@ Future<Map<String, dynamic>> getBadgeSets(Uri uri) async {
 }
 
 class TwitchBadgeModel extends ChangeNotifier {
+  StreamSubscription<void>? _globalBadgeSubscription;
+  StreamSubscription<void>? _localBadgeSubscription;
+
   Map<String, dynamic> localBadgeSets = {};
   Map<String, dynamic> globalBadgeSets = {};
   Set<String> _enabled = {};
 
-  Future<void> subscribe(Set<Channel> channels) async {
+  set channel(Channel? channel) {
     localBadgeSets.clear();
     globalBadgeSets.clear();
-    if (_globalCache == null) {
-      final uri =
-          Uri.parse("https://badges.twitch.tv/v1/badges/global/display");
-      _globalCache = getBadgeSets(uri);
-    }
-    for (final channel in channels) {
-      if (channel.provider != "twitch") {
-        return;
-      }
-      if (!_localCache.containsKey(channel.channelId)) {
-        final uri = Uri.parse(
-            "https://badges.twitch.tv/v1/badges/channels/${channel.channelId}/display");
-        _localCache[channel.channelId] = getBadgeSets(uri);
-      }
-    }
-    globalBadgeSets.addAll((await _globalCache)!);
-    for (final channel in channels) {
-      if (channel.provider != "twitch") {
-        return;
-      }
-      localBadgeSets.addAll((await _localCache[channel.channelId])!);
-    }
+    _globalBadgeSubscription?.cancel();
+    _localBadgeSubscription?.cancel();
 
-    notifyListeners();
+    _globalBadgeSubscription = getBadgeSets(
+            Uri.parse("https://badges.twitch.tv/v1/badges/global/display"))
+        .asStream()
+        .listen((badgeSets) {
+      globalBadgeSets = badgeSets;
+      notifyListeners();
+    });
+    if (channel != null) {
+      if (channel.provider != "twitch") {
+        return;
+      }
+      _localBadgeSubscription = getBadgeSets(Uri.parse(
+              "https://badges.twitch.tv/v1/badges/channels/${channel.channelId}/display"))
+          .asStream()
+          .listen((badgeSets) {
+        localBadgeSets = badgeSets;
+        notifyListeners();
+      });
+    }
   }
 
   Map<String, dynamic> get badgeSets {

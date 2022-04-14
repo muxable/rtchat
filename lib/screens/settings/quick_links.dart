@@ -53,12 +53,11 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                   leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
                   title: FutureBuilder<String>(
                       future: retrieveName(source),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<String> snapshot) {
+                      builder: (context, snapshot) {
                         if (snapshot.connectionState != ConnectionState.done) {
                           return const Text("Loading title");
                         }
-                        return Text(snapshot.data!);
+                        return Text(snapshot.data ?? "");
                       }),
                   subtitle: Text(source.url.toString()),
                   trailing: const Icon(Icons.drag_handle),

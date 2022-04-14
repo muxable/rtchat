@@ -1,24 +1,23 @@
 import 'dart:core';
 
 import 'package:flutter/foundation.dart';
-import 'package:rtchat/models/channels.dart';
 
 class ActivityFeedModel extends ChangeNotifier {
+  bool _isEnabled = false;
   bool _isCustom = false;
   String _customUrl = "";
-  Channel? _baseChannel;
-  ChannelsModel? _host;
-
-  @override
-  void dispose() {
-    _host?.removeListener(register);
-    super.dispose();
-  }
 
   bool get isCustom => _isCustom;
 
   set isCustom(bool isCustom) {
     _isCustom = isCustom;
+    notifyListeners();
+  }
+
+  bool get isEnabled => _isEnabled;
+
+  set isEnabled(bool isEnabled) {
+    _isEnabled = isEnabled;
     notifyListeners();
   }
 
@@ -29,41 +28,6 @@ class ActivityFeedModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  bind(ChannelsModel model) {
-    _host?.removeListener(register);
-    _host = model;
-    register();
-    model.addListener(register);
-  }
-
-  register() {
-    final host = _host;
-    if (host == null) {
-      return;
-    }
-    final base =
-        host.subscribedChannels.isEmpty ? null : host.subscribedChannels.first;
-    if (_baseChannel != base) {
-      _baseChannel = base;
-      notifyListeners();
-    }
-  }
-
-  Uri? get url {
-    final channel = _baseChannel;
-    if (_isCustom) {
-      return Uri.tryParse(_customUrl);
-    } else if (channel == null) {
-      return null;
-    }
-    switch (channel.provider) {
-      case "twitch":
-        return Uri.tryParse(
-            "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
-    }
-    return null;
-  }
-
   ActivityFeedModel.fromJson(Map<String, dynamic> json) {
     if (json['isCustom'] != null) {
       _isCustom = json['isCustom'];
@@ -71,10 +35,17 @@ class ActivityFeedModel extends ChangeNotifier {
     if (json['customUrl'] != null) {
       _customUrl = json['customUrl'];
     }
+    if (json['isEnabled'] != null) {
+      _isEnabled = json['isEnabled'];
+    } else if (json['isCustom'] != null) {
+      _isEnabled =
+          true; // to migrate users from old activity feed default true.
+    }
   }
 
   Map<String, dynamic> toJson() => {
         "isCustom": _isCustom,
         "customUrl": _customUrl,
+        "isEnabled": _isEnabled,
       };
 }
