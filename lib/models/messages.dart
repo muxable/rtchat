@@ -17,25 +17,6 @@ class MessagesModel extends ChangeNotifier {
   // so it's easier to wire this way.
   TtsModel? _tts;
 
-  TtsMessage? toTtsMessage(MessageModel model) {
-    if (model is TwitchMessageModel) {
-      return TtsMessage(
-        messageId: model.messageId,
-        author: model.author.display,
-        text: "${model.author.display} said ${model.tokenized.join("")}",
-        isBot: model.author.isBot,
-        isCommand: model.isCommand,
-      );
-    } else if (model is StreamStateEventModel) {
-      return TtsMessage(
-        messageId: model.messageId,
-        author: "RealtimeChat",
-        text: model.isOnline ? "Stream is online" : "Stream is offline",
-      );
-    }
-    return null;
-  }
-
   set channel(Channel? channel) {
     // ignore if no update
     if (channel == _channel) {
@@ -51,10 +32,7 @@ class MessagesModel extends ChangeNotifier {
           MessagesAdapter.instance.forChannel(channel).listen((event) {
         if (event is AppendDeltaEvent) {
           _messages.add(event.model);
-          final ttsMessage = toTtsMessage(event.model);
-          if (ttsMessage != null) {
-            _tts?.say(ttsMessage);
-          }
+          _tts?.say(event.model);
         } else if (event is UpdateDeltaEvent) {
           for (var i = 0; i < _messages.length; i++) {
             final message = _messages[i];

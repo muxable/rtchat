@@ -2,26 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:rtchat/models/messages/message.dart';
+import 'package:rtchat/models/messages/tokens.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
-
-class TtsMessage {
-  final String? messageId;
-  final String text;
-  final String? author;
-  final bool isBot;
-  final bool isCommand;
-
-  const TtsMessage(
-      {this.messageId,
-      required this.text,
-      this.author,
-      this.isBot = false,
-      this.isCommand = false});
-}
 
 class TtsModel extends ChangeNotifier {
   final _tts = FlutterTts();
-  final _queue = <TtsMessage>[];
+  final _queue = <MessageModel>[];
   Timer? _evictionTimer;
   var _isBotMuted = false;
   var _isEmoteMuted = false;
@@ -30,13 +18,50 @@ class TtsModel extends ChangeNotifier {
   var _isEnabled = false;
   final Set<TwitchUserModel> _mutedUsers = {};
 
+  String getVocalization(MessageModel model) {
+    if (model is TwitchMessageModel) {
+      final text = model.tokenized
+          .where((token) =>
+              token is TextToken ||
+              (!_isEmoteMuted && token is EmoteToken) ||
+              token is UserMentionToken ||
+              token is LinkToken)
+          .map((token) {
+        if (token is TextToken) {
+          return token.text;
+        } else if (token is EmoteToken) {
+          return token.code;
+        } else if (token is UserMentionToken) {
+          return token.username.replaceAll("_", " ");
+        } else if (token is LinkToken) {
+          return token.url.host;
+        }
+      }).join("");
+      if (text.trim().isEmpty) {
+        return "";
+      }
+      final author = model.author.displayName ?? model.author.login;
+      return model.isAction ? "$author $text" : "$author said $text";
+    } else if (model is StreamStateEventModel) {
+      return model.isOnline ? "Stream is online" : "Stream is offline";
+    }
+    return "";
+  }
+
   bool get enabled {
     return _isEnabled;
   }
 
   set enabled(bool value) {
     _isEnabled = value;
-    say(TtsMessage(text: "Text-to-speech ${value ? "enabled" : "disabled"}"),
+    if (!value) {
+      _queue.clear();
+      _evictionTimer?.cancel();
+      _evictionTimer = null;
+    }
+    say(
+        SystemMessageModel(
+            text: "Text-to-speech ${value ? "enabled" : "disabled"}"),
         force: true);
     notifyListeners();
   }
@@ -92,14 +117,33 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  void say(TtsMessage text, {bool force = false}) {
+  void say(MessageModel model, {bool force = false}) {
     if (!enabled && !force) {
       return;
     }
     // we have to manage our own queue here because queueing is not supported on ios.
 
+    if (model is TwitchMessageModel) {
+      if (_mutedUsers.any((user) =>
+          user.displayName?.toLowerCase() ==
+          model.author.displayName?.toLowerCase())) {
+        return;
+      }
+
+      if ((_isBotMuted && model.author.isBot) || model.isCommand) {
+        return;
+      }
+    }
+
+    final vocalization = getVocalization(model);
+
+    // if the vocalization is empty, skip the message
+    if (vocalization.isEmpty) {
+      return;
+    }
+
     // add this text to the queue
-    _queue.add(text);
+    _queue.add(model);
 
     // start the evictor if it isn't already running
     _evictionTimer ??= _evictNext();
@@ -111,8 +155,8 @@ class TtsModel extends ChangeNotifier {
   }
 
   Timer _evictNext() {
-    return Timer(const Duration(milliseconds: 100), () {
-      // if the queue is empty, stop the timer
+    return Timer(const Duration(milliseconds: 100), () async {
+      // if the queue is empty, stop the evictor
       if (_queue.isEmpty) {
         _evictionTimer = null;
         return;
@@ -122,12 +166,12 @@ class TtsModel extends ChangeNotifier {
       final message = _queue.removeAt(0);
 
       // speak with tts.
-      _tts.setSpeechRate(_speed);
-      _tts.setPitch(_pitch);
-      _tts.speak(message.text);
-      _tts.completionHandler = () {
+      _tts.setCompletionHandler(() {
         _evictionTimer = _evictNext();
-      };
+      });
+      await _tts.setSpeechRate(_speed);
+      await _tts.setPitch(_pitch);
+      await _tts.speak(getVocalization(message));
     });
   }
 

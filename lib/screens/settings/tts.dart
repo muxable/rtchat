@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
 
 class TextToSpeechScreen extends StatelessWidget {
@@ -50,8 +51,8 @@ class TextToSpeechScreen extends StatelessWidget {
                       child: const Text("Play sample message"),
                       onPressed: () {
                         model.say(
-                            const TtsMessage(
-                                text:
+                            SystemMessageModel(
+                                text: 
                                     "muxfd said have you followed muxfd on twitch?"),
                             force: true);
                       },

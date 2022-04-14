@@ -14,3 +14,10 @@ class StreamStateEventModel extends MessageModel {
       required DateTime timestamp})
       : super(messageId: messageId, timestamp: timestamp);
 }
+
+class SystemMessageModel extends MessageModel {
+  final String text;
+
+  SystemMessageModel({required this.text})
+      : super(messageId: "", timestamp: DateTime.now());
+}
