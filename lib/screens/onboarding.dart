@@ -1,6 +1,4 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_image/flutter_image.dart';
 import 'package:rtchat/components/auth/twitch.dart';
 import 'package:rtchat/components/channel_search_results.dart';
 import 'package:rtchat/models/channels.dart';

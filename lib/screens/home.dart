@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -290,7 +288,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       return Container();
                     }
                   }),
-                  const Expanded(child: ChatPanelWidget()),
+                  Expanded(
+                      child: DiscoWidget(
+                          isEnabled: widget.isDiscoModeEnabled,
+                          child: const ChatPanelWidget())),
                   chatPanelFooter,
                 ]);
               } else {
@@ -338,7 +339,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   }),
                   Expanded(
                       child: Column(children: [
-                    const Expanded(child: ChatPanelWidget()),
+                    Expanded(
+                        child: DiscoWidget(
+                            isEnabled: widget.isDiscoModeEnabled,
+                            child: const ChatPanelWidget())),
                     chatPanelFooter,
                   ]))
                 ]);
