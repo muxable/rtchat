@@ -33,8 +33,7 @@ class UpdateDeltaEvent extends DeltaEvent {
 }
 
 DeltaEvent? _toDeltaEvent(
-    List<Emote> emotes,
-    DocumentChange<Map<String, dynamic>> change) {
+    List<Emote> emotes, DocumentChange<Map<String, dynamic>> change) {
   final data = change.doc.data();
   if (data == null) {
     return null;
@@ -239,8 +238,8 @@ class MessagesAdapter {
   Stream<DeltaEvent> forChannel(Channel channel) async* {
     final subscribe = functions.httpsCallable('subscribe');
     await subscribe({
-        "provider": channel.provider,
-        "channelId": channel.channelId,
+      "provider": channel.provider,
+      "channelId": channel.channelId,
     });
     final emotes =
         await getThirdPartyEmotes(channel.provider, channel.channelId);
@@ -258,5 +257,28 @@ class MessagesAdapter {
         yield event;
       }
     });
+  }
+
+  /// Returns a stream of the "stream online" time.
+  /// null indicates that the stream is offline.
+  Stream<DateTime?> forChannelUptime(Channel channel) {
+    return db
+        .collection("messages")
+        .where("channelId", isEqualTo: channel.toString())
+        .where("type", whereIn: ["stream.online", "stream.offline"])
+        .orderBy("timestamp")
+        .limitToLast(1)
+        .snapshots()
+        .map((event) {
+          if (event.docs.isEmpty) {
+            return null;
+          }
+          final doc = event.docs.first;
+          final data = doc.data();
+          if (data['type'] == "stream.offline") {
+            return null;
+          }
+          return data['timestamp'].toDate();
+        });
   }
 }
