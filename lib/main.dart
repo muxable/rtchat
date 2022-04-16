@@ -291,7 +291,10 @@ class _AppState extends State<App> {
                 }
                 return HomeScreen(
                     isDiscoModeEnabled: _isDiscoModeRunning,
-                    channel: activeChannel);
+                    channel: activeChannel,
+                    onChannelSelect: (channel) {
+                      userModel.activeChannel = channel;
+                    });
               },
             );
           },

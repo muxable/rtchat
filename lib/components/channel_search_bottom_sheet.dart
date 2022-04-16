@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/channel_search_results.dart';
+import 'package:rtchat/models/channels.dart';
 
 class ChannelSearchBottomSheetWidget extends StatefulWidget {
   final ScrollController? controller;
+  final void Function(Channel) onChannelSelect;
 
-  const ChannelSearchBottomSheetWidget({Key? key, this.controller})
+  const ChannelSearchBottomSheetWidget(
+      {Key? key, this.controller, required this.onChannelSelect})
       : super(key: key);
 
   @override
@@ -61,7 +64,8 @@ class _ChannelSearchBottomSheetWidgetState
             query: _value,
             controller: widget.controller,
             onChannelSelect: (channel) {
-              Navigator.pop(context, channel);
+              widget.onChannelSelect(channel);
+              Navigator.of(context).pop();
             },
           ))
         ],

@@ -11,8 +11,13 @@ class HeaderBarWidget extends StatefulWidget implements PreferredSizeWidget {
   final Channel channel;
 
   final List<Widget>? actions;
+  final void Function(Channel) onChannelSelect;
 
-  const HeaderBarWidget({Key? key, required this.channel, this.actions})
+  const HeaderBarWidget(
+      {Key? key,
+      required this.channel,
+      this.actions,
+      required this.onChannelSelect})
       : preferredSize = const Size.fromHeight(kToolbarHeight),
         super(key: key);
 
@@ -106,6 +111,7 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                   expand: false,
                   builder: (context, controller) {
                     return ChannelSearchBottomSheetWidget(
+                        onChannelSelect: widget.onChannelSelect,
                         controller: controller);
                   });
             },
