@@ -33,8 +33,7 @@ class UpdateDeltaEvent extends DeltaEvent {
 }
 
 DeltaEvent? _toDeltaEvent(
-    List<Emote> emotes,
-    DocumentChange<Map<String, dynamic>> change) {
+    List<Emote> emotes, DocumentChange<Map<String, dynamic>> change) {
   final data = change.doc.data();
   if (data == null) {
     return null;
@@ -239,8 +238,8 @@ class MessagesAdapter {
   Stream<DeltaEvent> forChannel(Channel channel) async* {
     final subscribe = functions.httpsCallable('subscribe');
     await subscribe({
-        "provider": channel.provider,
-        "channelId": channel.channelId,
+      "provider": channel.provider,
+      "channelId": channel.channelId,
     });
     final emotes =
         await getThirdPartyEmotes(channel.provider, channel.channelId);
