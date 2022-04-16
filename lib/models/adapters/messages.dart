@@ -258,4 +258,27 @@ class MessagesAdapter {
       }
     });
   }
+
+  /// Returns a stream of the "stream online" time.
+  /// null indicates that the stream is offline.
+  Stream<DateTime?> forChannelUptime(Channel channel) {
+    return db
+        .collection("messages")
+        .where("channelId", isEqualTo: channel.toString())
+        .where("type", whereIn: ["stream.online", "stream.offline"])
+        .orderBy("timestamp")
+        .limitToLast(1)
+        .snapshots()
+        .map((event) {
+          if (event.docs.isEmpty) {
+            return null;
+          }
+          final doc = event.docs.first;
+          final data = doc.data();
+          if (data['type'] == "stream.offline") {
+            return null;
+          }
+          return data['timestamp'].toDate();
+        });
+  }
 }
