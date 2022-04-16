@@ -32,7 +32,8 @@ class UpdateDeltaEvent extends DeltaEvent {
   const UpdateDeltaEvent(this.messageId, this.update);
 }
 
-DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
+DeltaEvent? _toDeltaEvent(
+    List<Emote> emotes,
     DocumentChange<Map<String, dynamic>> change) {
   final data = change.doc.data();
   if (data == null) {
@@ -54,7 +55,7 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
           author: author,
           message: message,
           tags: tags,
-          thirdPartyEmotes: emotes[data['channelId']]!,
+          thirdPartyEmotes: emotes,
           timestamp: data['timestamp'].toDate(),
           deleted: false,
           channelId: data['channelId']);
@@ -235,26 +236,17 @@ class MessagesAdapter {
       db: FirebaseFirestore.instance, functions: FirebaseFunctions.instance);
   static MessagesAdapter? _instance;
 
-  Stream<DeltaEvent> forChannels(Set<Channel> channels) async* {
+  Stream<DeltaEvent> forChannel(Channel channel) async* {
     final subscribe = functions.httpsCallable('subscribe');
-    for (final channel in channels) {
-      subscribe({
+    await subscribe({
         "provider": channel.provider,
         "channelId": channel.channelId,
-      });
-    }
-    if (channels.isEmpty) {
-      return;
-    }
-    Map<String, List<Emote>> emotes = {};
-    for (final channel in channels) {
-      emotes[channel.toString()] =
-          await getThirdPartyEmotes(channel.provider, channel.channelId);
-    }
+    });
+    final emotes =
+        await getThirdPartyEmotes(channel.provider, channel.channelId);
     yield* db
         .collection("messages")
-        .where("channelId",
-            whereIn: channels.map((channel) => channel.toString()).toList())
+        .where("channelId", isEqualTo: channel.toString())
         .orderBy("timestamp")
         .limitToLast(250)
         .snapshots()

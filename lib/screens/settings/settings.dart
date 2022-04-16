@@ -164,7 +164,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Text("Thanks to all the testers who sent bug reports!",
+            child: Text("Thanks to all the early testers who sent bug reports!",
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontWeight: FontWeight.bold,

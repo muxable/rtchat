@@ -2,13 +2,14 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 import 'package:rtchat/components/drawer/sliver_search_bar.dart';
 import 'package:rtchat/components/drawer/sliver_title.dart';
 import 'package:rtchat/models/channels.dart';
 
 class LeftDrawerWidget extends StatefulWidget {
-  const LeftDrawerWidget({Key? key}) : super(key: key);
+  final Channel channel;
+
+  const LeftDrawerWidget({required this.channel, Key? key}) : super(key: key);
 
   @override
   State<LeftDrawerWidget> createState() => LeftDrawerWidgetState();
@@ -108,9 +109,7 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
 
   @override
   void initState() {
-    final channelsModel = Provider.of<ChannelsModel>(context, listen: false);
-    final channel = channelsModel.subscribedChannels.first;
-    viewersFuture = _viewersFuture(channel.displayName.toLowerCase());
+    viewersFuture = _viewersFuture(widget.channel.displayName.toLowerCase());
     sliverSearchBarWidget = SliverSearchBarWidget(
       onFilterBySearchBarText: onFilteredByText,
     );

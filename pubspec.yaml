@@ -30,9 +30,6 @@ dependencies:
   audioplayers: ^0.20.1
   metadata_fetch: ^0.4.1
   firebase_analytics: ^9.0.3
-  audio_service: ^0.18.0-beta.0
-  audio_session: ^0.1.5
-  rxdart: ^0.27.1
   flutter_image: ^4.1.0
   firebase_remote_config: ^2.0.0
   flutter_keyboard_visibility: ^5.0.3

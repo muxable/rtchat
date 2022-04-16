@@ -4,7 +4,7 @@ import fetch from "node-fetch";
 import { app as authApp } from "./auth";
 import { getUserEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
-import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
 import { subscribe, unsubscribe, cleanup } from "./subscriptions";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
@@ -27,7 +27,7 @@ export const send = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(context.auth.uid, channelId);
+      const channel = await getTwitchLogin(channelId);
       if (!channel) {
         return;
       }
@@ -61,7 +61,7 @@ export const ban = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(context.auth.uid, channelId);
+      const channel = await getTwitchLogin(channelId);
       if (!channel) {
         return;
       }
@@ -94,7 +94,7 @@ export const unban = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(context.auth.uid, channelId);
+      const channel = await getTwitchLogin(channelId);
       if (!channel) {
         return;
       }
@@ -129,7 +129,7 @@ export const timeout = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(context.auth.uid, channelId);
+      const channel = await getTwitchLogin(channelId);
       if (!channel) {
         return;
       }
@@ -162,7 +162,7 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(context.auth.uid, channelId);
+      const channel = await getTwitchLogin(channelId);
       if (!channel) {
         return;
       }
@@ -194,7 +194,7 @@ export const clear = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(context.auth.uid, channelId);
+      const channel = await getTwitchLogin(channelId);
       if (!channel) {
         return;
       }
@@ -212,9 +212,6 @@ export const clear = functions.https.onCall(async (data, context) => {
 });
 
 export const getStatistics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("permission-denied", "missing auth");
-  }
   const provider = data?.provider;
   const channelId = data?.channelId;
   if (!provider || !channelId) {
@@ -226,13 +223,13 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const token = await getAccessToken(context.auth.uid, provider);
+      const token = await getAppAccessToken(provider);
       if (!token) {
         throw new functions.https.HttpsError("internal", "auth error");
       }
       const headers = {
         "Client-Id": TWITCH_CLIENT_ID,
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token.token["access_token"]}`,
       };
       const viewerResponse = await fetch(
         `https://api.twitch.tv/helix/streams?user_id=${channelId}&first=1`,
