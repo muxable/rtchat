@@ -130,9 +130,13 @@ class _ResizableWidgetState extends State<ResizableWidget> {
 class HomeScreen extends StatefulWidget {
   final bool isDiscoModeEnabled;
   final Channel channel;
+  final void Function(Channel) onChannelSelect;
 
   const HomeScreen(
-      {required this.isDiscoModeEnabled, required this.channel, Key? key})
+      {required this.isDiscoModeEnabled,
+      required this.channel,
+      required this.onChannelSelect,
+      Key? key})
       : super(key: key);
 
   @override
@@ -166,51 +170,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       key: _scaffoldKey,
       drawer: RightDrawer(channel: widget.channel),
       endDrawer: LeftDrawerWidget(channel: widget.channel),
-      appBar: HeaderBarWidget(channel: widget.channel, actions: [
-        Consumer2<ActivityFeedModel, LayoutModel>(
-            builder: (context, activityFeedModel, layoutModel, child) {
-          if (!activityFeedModel.isEnabled) {
-            return Container();
-          }
-          return IconButton(
-            icon: Icon(layoutModel.isShowNotifications
-                ? Icons.notifications
-                : Icons.notifications_outlined),
-            tooltip: 'Activity feed',
-            onPressed: () {
-              layoutModel.isShowNotifications =
-                  !layoutModel.isShowNotifications;
-            },
-          );
-        }),
-        Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-          return IconButton(
-            icon: Icon(layoutModel.isShowPreview
-                ? Icons.preview
-                : Icons.preview_outlined),
-            tooltip: 'Stream preview',
-            onPressed: () {
-              layoutModel.isShowPreview = !layoutModel.isShowPreview;
-            },
-          );
-        }),
-        Consumer<TtsModel>(builder: (context, ttsModel, child) {
-          return IconButton(
-              icon: Icon(ttsModel.enabled
-                  ? Icons.record_voice_over
-                  : Icons.voice_over_off),
+      appBar: HeaderBarWidget(
+          onChannelSelect: widget.onChannelSelect,
+          channel: widget.channel,
+          actions: [
+            Consumer2<ActivityFeedModel, LayoutModel>(
+                builder: (context, activityFeedModel, layoutModel, child) {
+              if (!activityFeedModel.isEnabled) {
+                return Container();
+              }
+              return IconButton(
+                icon: Icon(layoutModel.isShowNotifications
+                    ? Icons.notifications
+                    : Icons.notifications_outlined),
+                tooltip: 'Activity feed',
+                onPressed: () {
+                  layoutModel.isShowNotifications =
+                      !layoutModel.isShowNotifications;
+                },
+              );
+            }),
+            Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+              return IconButton(
+                icon: Icon(layoutModel.isShowPreview
+                    ? Icons.preview
+                    : Icons.preview_outlined),
+                tooltip: 'Stream preview',
+                onPressed: () {
+                  layoutModel.isShowPreview = !layoutModel.isShowPreview;
+                },
+              );
+            }),
+            Consumer<TtsModel>(builder: (context, ttsModel, child) {
+              return IconButton(
+                  icon: Icon(ttsModel.enabled
+                      ? Icons.record_voice_over
+                      : Icons.voice_over_off),
+                  onPressed: () {
+                    ttsModel.enabled = !ttsModel.enabled;
+                  });
+            }),
+            IconButton(
+              icon: const Icon(Icons.people),
+              tooltip: 'Current viewers',
               onPressed: () {
-                ttsModel.enabled = !ttsModel.enabled;
-              });
-        }),
-        IconButton(
-          icon: const Icon(Icons.people),
-          tooltip: 'Current viewers',
-          onPressed: () {
-            _scaffoldKey.currentState?.openEndDrawer();
-          },
-        ),
-      ]),
+                _scaffoldKey.currentState?.openEndDrawer();
+              },
+            ),
+          ]),
       body: Container(
         color: Theme.of(context).primaryColor,
         child: SafeArea(
