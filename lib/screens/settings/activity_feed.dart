@@ -107,21 +107,23 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
           ),
           const Padding(
               padding: EdgeInsets.only(top: 16), child: Text("Preview")),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: InAppWebView(
-                initialUrlRequest: URLRequest(url: getUri()),
-                onWebViewCreated: (controller) =>
-                    _inAppWebViewController = controller,
-                initialOptions: InAppWebViewGroupOptions(
-                    crossPlatform: InAppWebViewOptions(
-                  javaScriptEnabled: true,
-                  transparentBackground: true,
-                )),
-              ),
-            ),
-          ),
+          activityFeedModel.isEnabled
+              ? Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: InAppWebView(
+                      initialUrlRequest: URLRequest(url: getUri()),
+                      onWebViewCreated: (controller) =>
+                          _inAppWebViewController = controller,
+                      initialOptions: InAppWebViewGroupOptions(
+                          crossPlatform: InAppWebViewOptions(
+                        javaScriptEnabled: true,
+                        transparentBackground: true,
+                      )),
+                    ),
+                  ),
+                )
+              : Container(),
         ]);
       }),
     );
