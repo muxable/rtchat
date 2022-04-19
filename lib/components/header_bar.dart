@@ -174,10 +174,12 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                       Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Row(children: [
-                            Text("/${widget.channel.displayName}"),
+                            Expanded(
+                                child: Text("/${widget.channel.displayName}",
+                                    overflow: TextOverflow.fade)),
                             if (onlineAt != null)
                               Container(
-                                margin: const EdgeInsets.all(8),
+                                margin: const EdgeInsets.only(left: 8),
                                 decoration: BoxDecoration(
                                     color: Colors.red,
                                     borderRadius: BorderRadius.circular(8)),
