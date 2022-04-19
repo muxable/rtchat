@@ -11,7 +11,7 @@ import 'package:rtchat/components/drawer/end_drawer.dart';
 import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
-import 'package:rtchat/components/drawer/right_drawer.dart';
+import 'package:rtchat/components/drawer/sidebar.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -168,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: RightDrawer(channel: widget.channel),
+      drawer: Sidebar(channel: widget.channel),
       endDrawer: LeftDrawerWidget(channel: widget.channel),
       appBar: HeaderBarWidget(
           onChannelSelect: widget.onChannelSelect,
