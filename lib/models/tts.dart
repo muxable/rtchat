@@ -44,6 +44,8 @@ class TtsModel extends ChangeNotifier {
       return model.isAction ? "$author $text" : "$author said $text";
     } else if (model is StreamStateEventModel) {
       return model.isOnline ? "Stream is online" : "Stream is offline";
+    } else if (model is SystemMessageModel) {
+      return model.text;
     }
     return "";
   }
