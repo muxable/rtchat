@@ -131,6 +131,7 @@ class Sidebar extends StatelessWidget {
                       onPressed: () async {
                         await Provider.of<UserModel>(context, listen: false)
                             .signOut();
+                        Navigator.of(context).pop();
                       },
                     ),
                   ],
