@@ -85,18 +85,22 @@ class Sidebar extends StatelessWidget {
           },
         );
       }),
-      ListTile(
-        leading: const Icon(Icons.refresh_outlined),
-        title: const Text("Refresh audio sources"),
-        onTap: () async {
-          final audioModel = Provider.of<AudioModel>(context, listen: false);
-          final count = await audioModel.refreshAllSources();
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(count == 1
-                  ? '1 audio source refreshed'
-                  : '$count audio sources refreshed')));
-        },
-      ),
+      Consumer<AudioModel>(builder: (context, audioModel, child) {
+        if (audioModel.sources.isEmpty) {
+          return Container();
+        }
+        return ListTile(
+          leading: const Icon(Icons.refresh_outlined),
+          title: const Text("Refresh audio sources"),
+          onTap: () async {
+            final count = await audioModel.refreshAllSources();
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(count == 1
+                    ? '1 audio source refreshed'
+                    : '$count audio sources refreshed')));
+          },
+        );
+      }),
       ListTile(
         leading: const Icon(Icons.settings_outlined),
         title: const Text("Settings"),
