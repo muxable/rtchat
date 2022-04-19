@@ -27,6 +27,7 @@ class NotificationPanelWidget extends StatefulWidget {
 class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
   ActivityFeedModel? _activityFeedModel;
   InAppWebViewController? _activityFeedController;
+  final InAppLocalhostServer localhostServer = InAppLocalhostServer();
 
   @override
   void initState() {
@@ -34,11 +35,13 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
 
     _activityFeedModel = Provider.of<ActivityFeedModel>(context, listen: false);
     _activityFeedModel!.addListener(synchronizeActivityFeedUrl);
+    startLocalHost();
   }
 
   @override
   void dispose() {
     _activityFeedModel?.removeListener(synchronizeActivityFeedUrl);
+    closeLocalHost();
 
     super.dispose();
   }
@@ -48,6 +51,14 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
     if (url != null && url.toString().isNotEmpty) {
       await _activityFeedController?.loadUrl(urlRequest: URLRequest(url: url));
     }
+  }
+
+  void startLocalHost() async {
+    await localhostServer.start();
+  }
+
+  void closeLocalHost() async {
+    await localhostServer.close();
   }
 
   @override
@@ -98,7 +109,7 @@ class _NotificationPanelWidgetState extends State<NotificationPanelWidget> {
                   ),
                   initialUrlRequest: URLRequest(
                       url: Uri.parse(
-                          "https://player.twitch.tv/?channel=${channel.displayName}&parent=chat.rtirl.com&muted=true&quality=mobile")),
+                          "http://localhost:8080/assets/twitch-player.html?channel=${channel.displayName}&width=412&height=243")),
                   gestureRecognizers: {
                     Factory<OneSequenceGestureRecognizer>(
                         () => EagerGestureRecognizer()),
