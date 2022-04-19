@@ -2,8 +2,8 @@
 
 A chat app for IRL streamers.
 
-Android: https://play.google.com/store/apps/details?id=com.rtirl.chat
-iOS: https://apps.apple.com/app/id1567720948
+- Android: https://play.google.com/store/apps/details?id=com.rtirl.chat
+- iOS: https://apps.apple.com/app/id1567720948
 
 ## Getting Started
 
