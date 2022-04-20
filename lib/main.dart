@@ -10,6 +10,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
@@ -271,10 +272,16 @@ class _AppState extends State<App> {
       child: MaterialApp(
         title: 'RealtimeChat',
         theme: ThemeData(
+          textTheme: GoogleFonts.poppinsTextTheme(
+            Theme.of(context).textTheme,
+          ),
           brightness: Brightness.light,
           primarySwatch: primarySwatch,
         ),
         darkTheme: ThemeData(
+          textTheme: GoogleFonts.poppinsTextTheme(
+            Theme.of(context).textTheme,
+          ),
           brightness: Brightness.dark,
           primarySwatch: primarySwatch,
           scaffoldBackgroundColor: Colors.black,
