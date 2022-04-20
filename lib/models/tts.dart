@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -13,7 +14,7 @@ class TtsModel extends ChangeNotifier {
   Timer? _evictionTimer;
   var _isBotMuted = false;
   var _isEmoteMuted = false;
-  var _speed = 1.0;
+  var _speed = Platform.isAndroid ? 0.8 : 0.395;
   var _pitch = 1.0;
   var _isEnabled = false;
   final Set<TwitchUserModel> _mutedUsers = {};
