@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
@@ -95,7 +96,25 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
               Expanded(
                 child: TextFormField(
                     controller: _textEditingController,
-                    decoration: const InputDecoration(hintText: "URL"),
+                    decoration: InputDecoration(
+                        hintText: "URL",
+                        suffixIcon: IconButton(
+                            icon: const Icon(Icons.qr_code_scanner),
+                            onPressed: () {
+                              showModalBottomSheet<void>(
+                                  context: context,
+                                  builder: (context) {
+                                    return MobileScanner(
+                                        allowDuplicates: false,
+                                        onDetect: (barcode, args) {
+                                          final code = barcode.rawValue;
+                                          if (code != null) {
+                                            _textEditingController.text = code;
+                                          }
+                                          Navigator.of(context).pop();
+                                        });
+                                  });
+                            })),
                     validator: (value) {
                       if (value == null ||
                           value.isEmpty ||
