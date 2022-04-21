@@ -72,10 +72,6 @@ jobs:
           KEY_ALIAS: upload
           STORE_FILE: upload-keystore.jks
 
-      - run: mkdir whatsnew
-      - run: echo "${{ github.event.release.body }}" > whatsnew/whatsnew-en-US
-        if: github.event_name == 'release'
-
       - uses: actions/upload-artifact@v2
         with:
           name: app-release.aab
