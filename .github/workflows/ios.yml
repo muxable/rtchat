@@ -49,10 +49,6 @@ jobs:
       - run: flutter pub get
       - run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
 
-      - run: mkdir whatsnew
-      - run: echo "${{ github.event.release.body }}" > whatsnew/whatsnew-en-US
-        if: github.event_name == 'release'
-
       - uses: actions/upload-artifact@v2
         with:
          name: release.ipa
@@ -72,7 +68,6 @@ jobs:
         run: |
           app-store-connect publish
             --path=build/ios/ipa/RealtimeChat.ipa
-            --whats-new=@file:whatsnew/whatsnew-en-US
             --issuer-id=@env:ISSUER_ID
             --key-id=@env:KEY_ID
             --private-key=@env:PRIVATE_KEY
@@ -86,7 +81,6 @@ jobs:
         run: |
           app-store-connect publish
             --path=build/ios/ipa/RealtimeChat.ipa
-            --whats-new=@file:whatsnew/whatsnew-en-US
             --issuer-id=@env:ISSUER_ID
             --key-id=@env:KEY_ID
             --private-key=@env:PRIVATE_KEY
