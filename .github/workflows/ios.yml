@@ -45,11 +45,9 @@ jobs:
           # apply provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
-      - uses: actions-ecosystem/action-get-latest-tag@v1
-        id: get-latest-tag
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
-      - run: flutter build ipa --release --build-name=${{ steps.get-latest-tag.outputs.tag }} --export-options-plist=ios/ExportOptions.plist
+      - run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
 
       - run: mkdir whatsnew
       - run: echo "${{ github.event.release.body }}" > whatsnew/whatsnew-en-US
