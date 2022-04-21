@@ -11,6 +11,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>RealtimeChat uses your camera to read QR codes</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -39,7 +41,7 @@
 		<string>http</string>
 	</array>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.0</string>
+	<string>11.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIBackgroundModes</key>
