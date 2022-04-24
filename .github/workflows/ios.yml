@@ -38,7 +38,7 @@ jobs:
           PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         run: |
           KEY_PATH=$RUNNER_TEMP/build_key.pem
-          echo $APPLE_CERTIFICATE_KEY_PEM > $KEY_PATH
+          echo -n "$APPLE_CERTIFICATE_KEY_PEM" > $KEY_PATH
           keychain initialize
           keychain use-login
           app-store-connect fetch-signing-files $(xcode-project detect-bundle-id) \
