@@ -33,12 +33,15 @@ jobs:
         if: github.event_name != 'release'
         run: |
           KEY_PATH=$RUNNER_TEMP/build_key.pem
-          echo $APPLE_BUILD_CERTIFICATE_PEM > $KEY_PATH
+          ssh-keygen -t rsa -b 2048 -m PEM -f $KEY_PATH -q -N ""
           keychain initialize
           keychain use-login
           app-store-connect fetch-signing-files $(xcode-project detect-bundle-id) \
             --platform IOS \
             --type IOS_APP_STORE \
+            --issuer-id=@env:ISSUER_ID
+            --key-id=@env:KEY_ID
+            --private-key=@env:PRIVATE_KEY
             --certificate-key=@file:$KEY_PATH \
             --create
           keychain add-certificates
