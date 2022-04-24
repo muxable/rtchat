@@ -36,8 +36,6 @@ import WebKit
                         configuration.allowsAirPlayForMediaPlayback = true
                         configuration.allowsPictureInPictureMediaPlayback = false
                         configuration.mediaTypesRequiringUserActionForPlayback = []
-                        configuration.mediaPlaybackRequiresUserAction = false
-                        configuration.requiresUserActionForMediaPlayback = false
 
                         let view = WKWebView(frame: .zero, configuration: configuration)
                         view.load(URLRequest(url: urlobj))

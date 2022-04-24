@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -68,6 +70,16 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
             },
           ),
           const Divider(),
+          if (Platform.isIOS)
+            const ListTile(
+              leading: Icon(Icons.warning),
+              title: Text("Hey! Listen!"),
+              subtitle: Text(
+                  "iOS doesn't support *.ogg media files. Ensure your audio sources use another format, otherwise they won't play."),
+              tileColor: Colors.yellow,
+            )
+          else
+            Container(),
           Expanded(
             child: ListView(
               children: model.sources.map((source) {
