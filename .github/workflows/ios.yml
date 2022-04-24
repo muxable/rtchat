@@ -32,10 +32,8 @@ jobs:
           PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         if: github.event_name != 'release'
         run: |
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           KEY_PATH=$RUNNER_TEMP/build_key.pem
-          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode --output $CERTIFICATE_PATH
-          openssl pkcs12 -in $CERTIFICATE_PATH -nodes -nocerts -password pass:${{ secrets.P12_PASSWORD }} | openssl rsa -out $KEY_PATH
+          echo $APPLE_BUILD_CERTIFICATE_PEM > $KEY_PATH
           keychain initialize
           keychain use-login
           app-store-connect fetch-signing-files $(xcode-project detect-bundle-id) \
