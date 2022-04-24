@@ -31,6 +31,8 @@ jobs:
 
       - uses: paulhatch/semantic-version@v4
         id: semantic
+        with:
+          tag_prefix: ""
 
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
@@ -70,6 +72,8 @@ jobs:
 
       - uses: paulhatch/semantic-version@v4
         id: semantic
+        with:
+          tag_prefix: ""
 
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
