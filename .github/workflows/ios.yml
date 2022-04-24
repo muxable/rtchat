@@ -13,18 +13,22 @@ on:
   release:
     types: [released]
   workflow_dispatch:
-    
+
 jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v3
         with:
-          python-version: '3.10'
+          python-version: "3.10"
       - run: pip install codemagic-cli-tools
+
+      - uses: paulhatch/semantic-version@v4
+        id: semantic
 
       - env:
           ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
@@ -48,12 +52,12 @@ jobs:
 
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
-      - run: flutter build ipa --release --build-name=$(git describe --tags) --export-options-plist=ios/ExportOptions.plist
+      - run: flutter build ipa --release --build-name=${{ steps.semantic.output.version }} --export-options-plist=ios/ExportOptions.plist
 
       - uses: actions/upload-artifact@v2
         with:
-         name: release.ipa
-         path: build/ios/ipa/RealtimeChat.ipa
+          name: release.ipa
+          path: build/ios/ipa/RealtimeChat.ipa
 
       - env:
           ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1

@@ -19,18 +19,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - run: echo $UPLOAD_KEYSTORE | base64 -d > android/app/upload-keystore.jks
         env:
           UPLOAD_KEYSTORE: ${{ secrets.UPLOAD_KEYSTORE }}
-      - uses: actions-ecosystem/action-get-latest-tag@v1
-        id: get-latest-tag
       - uses: actions/setup-java@v2
         with:
           distribution: "zulu"
           java-version: "16"
+
+      - uses: paulhatch/semantic-version@v4
+        id: semantic
+
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
-      - run: flutter build apk --split-per-abi --release --build-name=${{ steps.get-latest-tag.outputs.tag }}
+      - run: flutter build apk --split-per-abi --release --build-name=${{ steps.semantic.output.version }}
         env:
           STORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
@@ -54,6 +58,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - run: echo $UPLOAD_KEYSTORE | base64 -d > android/app/upload-keystore.jks
         env:
           UPLOAD_KEYSTORE: ${{ secrets.UPLOAD_KEYSTORE }}
@@ -61,9 +67,13 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "16"
+
+      - uses: paulhatch/semantic-version@v4
+        id: semantic
+
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
-      - run: flutter build appbundle --release --build-name=$(git describe --tags)
+      - run: flutter build appbundle --release --build-name=${{ steps.semantic.output.version }}
         env:
           STORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
