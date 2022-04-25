@@ -50,12 +50,12 @@ jobs:
             --certificate-key=@file:$KEY_PATH \
             --create
           keychain add-certificates
-          xcode-project use-profiles
+          xcode-project use-profiles --export-options-list=$RUNNER_TEMP/export_options.plist
 
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
       - run: find . -name "Podfile" -execdir pod install \;
-      - run: flutter build ipa --release --build-name=${{ steps.semantic.outputs.version }} --export-options-plist=/Users/${{ runner.name }}/export_options.plist
+      - run: flutter build ipa --release --build-name=${{ steps.semantic.outputs.version }} --export-options-plist=$RUNNER_TEMP/export_options.plist
 
       - uses: actions/upload-artifact@v2
         with:
