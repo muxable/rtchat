@@ -289,17 +289,15 @@ export async function runTwitchAgent(
           "raid",
           async (message) => {
             const data = message.data as any;
-            await firebase
-              .getMessage(`twitch:${data["type"]}-${data["raid"]["id"]}`)
-              .set(
-                {
-                  channel,
-                  channelId: `twitch:${data["raid"]["source_id"]}`,
-                  ...data,
-                  timestamp: admin.firestore.FieldValue.serverTimestamp(),
-                },
-                { merge: true } // avoid overwriting because pubsub sends duplicates.
-              );
+            await firebase.setIfNotExists(
+              `twitch:${data["type"]}-${data["raid"]["id"]}`,
+              {
+                channel,
+                channelId: `twitch:${data["raid"]["source_id"]}`,
+                ...data,
+                timestamp: admin.firestore.FieldValue.serverTimestamp(),
+              }
+            );
           }
         );
       }
