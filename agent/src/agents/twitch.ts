@@ -1,3 +1,4 @@
+import { PubSubClient, PubSubListener } from "@twurple/pubsub";
 import * as admin from "firebase-admin";
 import fetch from "node-fetch";
 import { ClientCredentials } from "simple-oauth2";
@@ -147,7 +148,7 @@ async function getChatAgent(
   agentId: string,
   channel: string
 ) {
-  const { username, userId } = await firebase.getAgent(channel);
+  const { username, userId, isBot } = await firebase.getAgent(channel);
   const token = await firebase.getCredentials(userId);
 
   log.info({ username, userId, channel }, "getting chat agent");
@@ -227,7 +228,7 @@ async function getChatAgent(
 
   await twitch.chat.connect();
 
-  return twitch.chat;
+  return { chat: twitch.chat, userId, isBot };
 }
 
 export async function runTwitchAgent(
@@ -236,13 +237,20 @@ export async function runTwitchAgent(
 ) {
   const agents: { [key: string]: Chat } = {};
 
+  const raidListeners: { [key: string]: PubSubListener } = {};
+
+  const pubsub = new PubSubClient();
+
   const unsubscribe = firebase.onAssignment(
     provider,
     agentId,
     async (channel) => {
       log.info({ channel, agentId, provider }, "assigned to channel");
-      const chat = await getChatAgent(firebase, agentId, channel);
-
+      const { chat, userId, isBot } = await getChatAgent(
+        firebase,
+        agentId,
+        channel
+      );
       await Promise.race([
         chat.join(channel),
         new Promise<void>((_, reject) =>
@@ -258,6 +266,38 @@ export async function runTwitchAgent(
       });
 
       agents[channel] = chat;
+
+      if (!isBot) {
+        pubsub.registerUserListener(
+          {
+            clientId: TWITCH_CLIENT_ID,
+            tokenType: "user",
+            currentScopes: [],
+            getAccessToken: async () => {
+              const token = await firebase.getCredentials(userId);
+              return token["access_token"];
+            },
+          },
+          userId
+        );
+
+        raidListeners[channel] = await pubsub.onCustomTopic(
+          userId,
+          "raid",
+          async (message) => {
+            const data = JSON.parse(
+              (message.data as { message: string }).message
+            );
+            await firebase
+              .getMessage(`twitch:${data["raid"]["id"]}-${+Date.now()}`)
+              .set({
+                channel,
+                channelId: `twitch:${userId}`,
+                ...data,
+              });
+          }
+        );
+      }
     },
     async (channel) => {
       const chat = agents[channel];
@@ -269,6 +309,10 @@ export async function runTwitchAgent(
         return;
       }
       log.info({ channel, agentId, provider }, "unassigned from channel");
+
+      await raidListeners[channel]?.remove();
+      delete raidListeners[channel];
+
       await Promise.race([
         chat.part(channel),
         new Promise<void>((_, reject) =>

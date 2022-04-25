@@ -12,6 +12,8 @@
     "@google-cloud/logging-bunyan": "^3.2.0",
     "@google-cloud/pubsub": "^2.16.1",
     "@google-cloud/secret-manager": "^3.10.1",
+    "@twurple/auth": "^5.1.4",
+    "@twurple/pubsub": "^5.1.4",
     "@types/bunyan": "^1.8.8",
     "@types/jest": "^27.4.0",
     "@types/node": "^16.4.13",
