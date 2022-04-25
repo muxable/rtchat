@@ -84,7 +84,7 @@ class TwitchRaidingEventWidget extends StatelessWidget {
               TextSpan(
                   text: model.targetUser.displayName,
                   style: Theme.of(context).textTheme.subtitle2),
-              const TextSpan(text: " cancelled."),
+              const TextSpan(text: " canceled."),
             ],
           )));
     }
