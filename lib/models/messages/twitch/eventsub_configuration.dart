@@ -175,8 +175,9 @@ class EventSubConfigurationModel extends ChangeNotifier {
       HypetrainEventConfig(true, const Duration(seconds: 6));
   PredictionEventConfig predictionEventConfig =
       PredictionEventConfig(true, const Duration(seconds: 6));
-  RaidingEventConfig raidingEventConfig =
-      RaidingEventConfig(true, const Duration(seconds: 6));
+  RaidingEventConfig
+      raidingEventConfig = // 90 seconds for raid + 10 for join prompt.
+      RaidingEventConfig(true, const Duration(seconds: 100));
   // other configs
   // final HypeTrainEventConfig;
 
