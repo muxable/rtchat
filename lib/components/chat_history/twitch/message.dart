@@ -175,7 +175,9 @@ class TwitchMessageWidget extends StatelessWidget {
                   final hslColor = HSLColor.fromColor(
                       styleModel.applyLightnessBoost(context, color));
                   final deg =
-                      (orientation.pitch + orientation.roll) * 180 / 3.1415;
+                      (orientation.pitch + orientation.roll + orientation.yaw) *
+                          180 /
+                          3.1415;
                   final shimmer =
                       hslColor.withHue((hslColor.hue - deg) % 360).toColor();
                   return RichText(
