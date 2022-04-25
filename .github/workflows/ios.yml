@@ -15,11 +15,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  ipa:
     runs-on: macos-latest
-    concurrency: 
-      group: ${{ github.ref }}
-      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
         with:
@@ -64,6 +61,21 @@ jobs:
         with:
           name: release.ipa
           path: build/ios/ipa/RealtimeChat.ipa
+          
+  upload:
+    needs: ipa
+    runs-on: macos-latest
+    concurrency: 
+      group: ${{ github.ref }}
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: release.ipa
+
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - run: pip install codemagic-cli-tools
 
       - env:
           ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
@@ -72,7 +84,7 @@ jobs:
         if: github.event_name != 'release'
         run: |
           app-store-connect publish
-            --path=build/ios/ipa/RealtimeChat.ipa
+            --path=release.ipa
             --issuer-id=@env:ISSUER_ID
             --key-id=@env:KEY_ID
             --private-key=@env:PRIVATE_KEY
@@ -85,7 +97,7 @@ jobs:
         if: github.event_name == 'release'
         run: |
           app-store-connect publish
-            --path=build/ios/ipa/RealtimeChat.ipa
+            --path=release.ipa
             --issuer-id=@env:ISSUER_ID
             --key-id=@env:KEY_ID
             --private-key=@env:PRIVATE_KEY
