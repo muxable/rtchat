@@ -15,7 +15,6 @@
     "@twurple/auth": "^5.1.4",
     "@twurple/pubsub": "^5.1.4",
     "@types/bunyan": "^1.8.8",
-    "@types/jest": "^27.4.0",
     "@types/node": "^16.4.13",
     "@types/node-fetch": "^2.5.12",
     "@types/simple-oauth2": "^4.1.1",
@@ -33,9 +32,10 @@
   },
   "devDependencies": {
     "@types/sinon": "^10.0.2",
-    "jest": "^27.0.6",
+    "@types/jest": "^26.0.0",
+    "jest": "^26.0.0",
     "prettier": "^2.5.1",
     "sinon": "^11.1.2",
-    "ts-jest": "^27.0.4"
+    "ts-jest": "^26.0.0"
   }
 }
