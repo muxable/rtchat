@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 
 class FollowEventConfig {
   bool showEvent;
@@ -174,6 +175,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
       HypetrainEventConfig(true, const Duration(seconds: 6));
   PredictionEventConfig predictionEventConfig =
       PredictionEventConfig(true, const Duration(seconds: 6));
+  RaidingEventConfig raidingEventConfig =
+      RaidingEventConfig(true, const Duration(seconds: 6));
   // other configs
   // final HypeTrainEventConfig;
 
@@ -277,6 +280,16 @@ class EventSubConfigurationModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  setRaidingEventDuration(Duration duration) {
+    raidingEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setRaidingEventShowable(bool value) {
+    raidingEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
   EventSubConfigurationModel.fromJson(Map<String, dynamic> json) {
     if (json['followEventConfig'] != null) {
       followEventConfig = FollowEventConfig.fromJson(json['followEventConfig']);
@@ -310,6 +323,10 @@ class EventSubConfigurationModel extends ChangeNotifier {
       predictionEventConfig =
           PredictionEventConfig.fromJson(json['predictionEventConfig']);
     }
+    if (json['raidingEventConfig'] != null) {
+      raidingEventConfig =
+          RaidingEventConfig.fromJson(json['raidingEventConfig']);
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -323,5 +340,6 @@ class EventSubConfigurationModel extends ChangeNotifier {
         "hostEventConfig": hostEventConfig.toJson(),
         "hypetrainEventConfig": hypetrainEventConfig.toJson(),
         "predictionEventConfig": predictionEventConfig.toJson(),
+        "raidingEventConfig": raidingEventConfig.toJson(),
       };
 }

@@ -63,7 +63,7 @@ class LayoutModel extends ChangeNotifier {
   double get panelHeight => _panelHeight;
 
   double get panelWidth => _panelWidth;
-  
+
   set panelWidth(double panelWidth) {
     _panelWidth = panelWidth;
     notifyListeners();

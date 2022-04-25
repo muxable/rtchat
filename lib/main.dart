@@ -39,6 +39,7 @@ import 'package:rtchat/screens/settings/events/hypetrain.dart';
 import 'package:rtchat/screens/settings/events/poll.dart';
 import 'package:rtchat/screens/settings/events/prediction.dart';
 import 'package:rtchat/screens/settings/events/raid.dart';
+import 'package:rtchat/screens/settings/events/raiding.dart';
 import 'package:rtchat/screens/settings/events/subscription.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
@@ -326,6 +327,7 @@ class _AppState extends State<App> {
               const HypetrainEventScreen(),
           '/settings/events/prediction': (context) =>
               const PredictionEventScreen(),
+          '/settings/events/raiding': (context) => const RaidingEventScreen(),
         },
       ),
     );
