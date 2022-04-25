@@ -84,6 +84,7 @@ export class FirebaseAdapter {
     return {
       userId: profile.id,
       username: profile.get(this.provider)["login"] as string,
+      isBot: !profile,
     };
   }
 
