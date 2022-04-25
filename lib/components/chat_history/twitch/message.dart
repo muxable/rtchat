@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:linkify/linkify.dart';
+import 'package:motion_sensors/motion_sensors.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/models/messages/tokens.dart';
@@ -47,6 +48,8 @@ bool isTwitchClip(String url) {
           url.contains(clipsStr) ||
           url.contains(videosStr));
 }
+
+const contributors = ["158394109"];
 
 class TwitchMessageWidget extends StatelessWidget {
   final TwitchMessageModel model;
@@ -156,7 +159,31 @@ class TwitchMessageWidget extends StatelessWidget {
                   height: styleModel.fontSize)))));
 
       // add author.
-      children.add(TextSpan(style: authorStyle, text: model.author.display));
+      if (contributors.contains(model.author.userId)) {
+        children.add(WidgetSpan(
+            child: StreamBuilder<AbsoluteOrientationEvent>(
+                stream: motionSensors.absoluteOrientation,
+                builder: (context, snapshot) {
+                  final orientation = snapshot.data;
+                  if (orientation == null) {
+                    return RichText(
+                        text: TextSpan(
+                            text: model.author.display, style: authorStyle));
+                  }
+                  final hslColor = HSLColor.fromColor(
+                      styleModel.applyLightnessBoost(context, color));
+                  final deg =
+                      (orientation.pitch + orientation.roll) * 180 / 3.1415;
+                  final shimmer =
+                      hslColor.withHue((hslColor.hue - deg) % 360).toColor();
+                  return RichText(
+                      text: TextSpan(
+                          text: model.author.display,
+                          style: authorStyle.copyWith(color: shimmer)));
+                })));
+      } else {
+        children.add(TextSpan(text: model.author.display, style: authorStyle));
+      }
 
       // add demarcator.
       if (model.isAction) {
