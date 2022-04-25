@@ -70,9 +70,7 @@ class SearchDivider extends StatelessWidget {
       Padding(
           padding: const EdgeInsets.all(16),
           child: Text("or search for a channel",
-              style: Theme.of(context)
-                  .textTheme
-                  .subtitle1)),
+              style: Theme.of(context).textTheme.subtitle1)),
       const Flexible(child: Divider()),
     ]);
   }
@@ -100,70 +98,79 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CollapsibleWidget(
-                expand: _value == "",
-                child: Column(children: [
-                  const Image(width: 160, image: AssetImage('assets/logo.png')),
-                  Padding(
-                      padding: const EdgeInsets.only(bottom: 64),
-                      child: Text("RealtimeChat",
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline6)),
-                  const SizedBox(
-                    width: 400,
-                    child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 64),
-                        child: SignInWithTwitch()),
-                  ),
-                  const SearchDivider(),
-                ])),
-            TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    filled: true,
-                    hintStyle: TextStyle(color: Colors.grey[700]),
-                    prefixIcon: Padding(
-                        padding: const EdgeInsets.only(left: 16, right: 8),
-                        child: Text("twitch.tv/",
-                            style: TextStyle(color: Colors.grey[700]))),
-                    prefixIconConstraints:
-                        const BoxConstraints(minWidth: 0, minHeight: 0),
-                    suffixIcon: GestureDetector(
-                        child: const Icon(Icons.cancel),
-                        onTap: () {
-                          _searchController.clear();
-                          setState(() {
-                            _value = "";
-                          });
-                        }),
-                    hintText: "muxfd",
-                    fillColor: Colors.white70),
-                style: const TextStyle(color: Colors.black),
-                onChanged: (value) {
-                  setState(() {
-                    _value = value;
-                  });
-                }),
-            Flexible(
-                child: CollapsibleWidget(
-                    expand: _value != "",
-                    child: ChannelSearchResultsWidget(
-                        query: _value,
-                        onChannelSelect: widget.onChannelSelect))),
-          ],
-        ),
+    return Theme(
+      data: ThemeData(
+        brightness: Brightness.dark,
       ),
-    ));
+      child: Scaffold(
+          backgroundColor: Colors.black,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CollapsibleWidget(
+                      expand: _value == "",
+                      child: Column(children: [
+                        const Image(
+                            width: 160, image: AssetImage('assets/logo.png')),
+                        Padding(
+                            padding: const EdgeInsets.only(bottom: 64),
+                            child: Text("RealtimeChat",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headline6
+                                    ?.copyWith(color: Colors.white))),
+                        const SizedBox(
+                          width: 400,
+                          child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 64),
+                              child: SignInWithTwitch()),
+                        ),
+                        const SearchDivider(),
+                      ])),
+                  TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          filled: true,
+                          hintStyle: TextStyle(color: Colors.grey[700]),
+                          prefixIcon: Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 16, right: 8),
+                              child: Text("twitch.tv/",
+                                  style: TextStyle(color: Colors.grey[700]))),
+                          prefixIconConstraints:
+                              const BoxConstraints(minWidth: 0, minHeight: 0),
+                          suffixIcon: GestureDetector(
+                              child: const Icon(Icons.cancel),
+                              onTap: () {
+                                _searchController.clear();
+                                setState(() {
+                                  _value = "";
+                                });
+                              }),
+                          hintText: "muxfd",
+                          fillColor: Colors.white70),
+                      style: const TextStyle(color: Colors.black),
+                      onChanged: (value) {
+                        setState(() {
+                          _value = value;
+                        });
+                      }),
+                  Flexible(
+                      child: CollapsibleWidget(
+                          expand: _value != "",
+                          child: ChannelSearchResultsWidget(
+                              query: _value,
+                              onChannelSelect: widget.onChannelSelect))),
+                ],
+              ),
+            ),
+          )),
+    );
   }
 }
