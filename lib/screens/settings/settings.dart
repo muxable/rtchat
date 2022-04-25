@@ -156,8 +156,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }
 
                 return ListTile(
-                  title: const Text('RealtimeIRL Discord'),
-                  subtitle: const Text("Join the RealtimeIRL Discord!"),
+                  title: const Text('Muxable Discord'),
+                  subtitle: const Text("Join the Muxable Discord!"),
                   trailing: const Icon(Icons.launch),
                   onTap: () => launch(discordUrl),
                 );

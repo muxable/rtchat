@@ -1,0 +1,104 @@
+name: Release to App Store
+
+on:
+  push:
+    paths:
+      - "ios/**"
+      - "assets/**"
+      - "lib/**"
+      - "pubspec.lock"
+      - "pubspec.yaml"
+    branches:
+      - main
+  release:
+    types: [released]
+  workflow_dispatch:
+
+jobs:
+  ipa:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - run: pip install codemagic-cli-tools
+
+      - uses: paulhatch/semantic-version@v4
+        id: semantic
+        with:
+          tag_prefix: ""
+
+      - env:
+          ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
+          KEY_ID: SUR6CT925Z
+          PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        run: |
+          KEY_PATH=$RUNNER_TEMP/build_key.pem
+          echo -n "${{ secrets.APPLE_CERTIFICATE_KEY_PEM }}" > $KEY_PATH
+          keychain initialize
+          keychain use-login
+          app-store-connect fetch-signing-files $(xcode-project detect-bundle-id) \
+            --platform IOS \
+            --type IOS_APP_STORE \
+            --issuer-id=@env:ISSUER_ID \
+            --key-id=@env:KEY_ID \
+            --private-key=@env:PRIVATE_KEY \
+            --certificate-key=@file:$KEY_PATH \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles --export-options-plist=$RUNNER_TEMP/export_options.plist
+
+      - uses: subosito/flutter-action@v1
+      - run: flutter pub get
+      - run: find . -name "Podfile" -execdir pod install \;
+      - run: flutter build ipa --verbose --release --build-name=${{ steps.semantic.outputs.version }} --export-options-plist=$RUNNER_TEMP/export_options.plist
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: release.ipa
+          path: build/ios/ipa/RealtimeChat.ipa
+          
+  upload:
+    needs: ipa
+    runs-on: macos-latest
+    concurrency: 
+      group: ios-${{ github.ref }}
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: release.ipa
+
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - run: pip install codemagic-cli-tools
+
+      - env:
+          ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
+          KEY_ID: SUR6CT925Z
+          PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        if: github.event_name != 'release'
+        run: |
+          app-store-connect publish
+            --path=release.ipa
+            --issuer-id=@env:ISSUER_ID
+            --key-id=@env:KEY_ID
+            --private-key=@env:PRIVATE_KEY
+            --testflight
+
+      - env:
+          ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
+          KEY_ID: SUR6CT925Z
+          PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        if: github.event_name == 'release'
+        run: |
+          app-store-connect publish
+            --path=release.ipa
+            --issuer-id=@env:ISSUER_ID
+            --key-id=@env:KEY_ID
+            --private-key=@env:PRIVATE_KEY
+            --app-store
