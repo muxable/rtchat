@@ -17,6 +17,9 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    concurrency: 
+      group: ${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
         with:

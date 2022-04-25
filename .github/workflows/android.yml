@@ -17,6 +17,9 @@ on:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    concurrency: 
+      group: ${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
         with:
@@ -58,6 +61,9 @@ jobs:
 
   aab:
     runs-on: ubuntu-latest
+    concurrency: 
+      group: ${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
         with:
