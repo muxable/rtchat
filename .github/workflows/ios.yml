@@ -57,7 +57,8 @@ jobs:
 
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
-      - run: flutter build ipa --release --build-name=${{ steps.semantic.outputs.version }}
+      - run: find . -name "Podfile" -execdir pod install \;
+      - run: flutter build ipa --release --build-name=${{ steps.semantic.outputs.version }} --export-options-plist=/Users/$(whoami)/export_options.plist
 
       - uses: actions/upload-artifact@v2
         with:
