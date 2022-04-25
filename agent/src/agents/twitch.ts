@@ -294,7 +294,7 @@ export async function runTwitchAgent(
               .set(
                 {
                   channel,
-                  channelId: `twitch:${data["raid"]["creator_id"]}`,
+                  channelId: `twitch:${data["raid"]["source_id"]}`,
                   ...data,
                   timestamp: admin.firestore.FieldValue.serverTimestamp(),
                 },
