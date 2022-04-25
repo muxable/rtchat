@@ -1,4 +1,5 @@
-import { PubSubClient, PubSubListener } from "@twurple/pubsub";
+import { AccessToken } from "@twurple/auth";
+import { SingleUserPubSubClient, PubSubListener } from "@twurple/pubsub";
 import * as admin from "firebase-admin";
 import fetch from "node-fetch";
 import { ClientCredentials } from "simple-oauth2";
@@ -239,8 +240,6 @@ export async function runTwitchAgent(
 
   const raidListeners: { [key: string]: PubSubListener } = {};
 
-  const pubsub = new PubSubClient();
-
   const unsubscribe = firebase.onAssignment(
     provider,
     agentId,
@@ -268,33 +267,39 @@ export async function runTwitchAgent(
       agents[channel] = chat;
 
       if (!isBot) {
-        pubsub.registerUserListener(
-          {
+        const pubsub = new SingleUserPubSubClient({
+          authProvider: {
             clientId: TWITCH_CLIENT_ID,
             tokenType: "user",
             currentScopes: [],
-            getAccessToken: async () => {
+            getAccessToken: async (): Promise<AccessToken> => {
               const token = await firebase.getCredentials(userId);
-              return token["access_token"];
+              return {
+                accessToken: token["access_token"],
+                refreshToken: token["refresh_token"],
+                scope: token["scope"],
+                expiresIn: token["expires_in"],
+                obtainmentTimestamp:
+                  +token["expires_at"] - token["expires_in"] * 1000,
+              };
             },
           },
-          userId
-        );
-
+        });
         raidListeners[channel] = await pubsub.onCustomTopic(
-          userId,
           "raid",
           async (message) => {
-            const data = JSON.parse(
-              (message.data as { message: string }).message
-            );
+            const data = message.data as any;
             await firebase
-              .getMessage(`twitch:${data["raid"]["id"]}-${+Date.now()}`)
-              .set({
-                channel,
-                channelId: `twitch:${userId}`,
-                ...data,
-              });
+              .getMessage(`twitch:${data["type"]}-${data["raid"]["id"]}`)
+              .set(
+                {
+                  channel,
+                  channelId: `twitch:${userId}`,
+                  ...data,
+                  timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                },
+                { merge: true } // avoid overwriting because pubsub sends duplicates.
+              );
           }
         );
       }
