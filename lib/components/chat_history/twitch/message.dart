@@ -49,7 +49,9 @@ bool isTwitchClip(String url) {
           url.contains(videosStr));
 }
 
-const contributors = ["158394109"];
+const contributors = [
+  "158394109", // muxfd
+];
 
 class TwitchMessageWidget extends StatelessWidget {
   final TwitchMessageModel model;
