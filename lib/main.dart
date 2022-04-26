@@ -273,16 +273,10 @@ class _AppState extends State<App> {
       child: MaterialApp(
         title: 'RealtimeChat',
         theme: ThemeData(
-          textTheme: GoogleFonts.poppinsTextTheme(
-            Theme.of(context).textTheme,
-          ),
           brightness: Brightness.light,
           primarySwatch: primarySwatch,
         ),
         darkTheme: ThemeData(
-          textTheme: GoogleFonts.poppinsTextTheme(
-            Theme.of(context).textTheme,
-          ),
           brightness: Brightness.dark,
           primarySwatch: primarySwatch,
           scaffoldBackgroundColor: Colors.black,
