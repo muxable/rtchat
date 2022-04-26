@@ -62,11 +62,16 @@ class _ActivityFeedPanelWidgetState extends State<ActivityFeedPanelWidget> {
   Widget build(BuildContext context) {
     return InAppWebView(
       initialOptions: InAppWebViewGroupOptions(
-        crossPlatform: InAppWebViewOptions(
-            javaScriptEnabled: true,
-            mediaPlaybackRequiresUserGesture: false,
-            transparentBackground: true),
-      ),
+          crossPlatform: InAppWebViewOptions(
+              javaScriptEnabled: true,
+              mediaPlaybackRequiresUserGesture: false,
+              transparentBackground: true),
+          android: AndroidInAppWebViewOptions(
+            useHybridComposition: true,
+          ),
+          ios: IOSInAppWebViewOptions(
+            allowsInlineMediaPlayback: true,
+          )),
       initialUrlRequest: URLRequest(url: getUri()),
       onWebViewCreated: (controller) => _activityFeedController = controller,
       gestureRecognizers: {
