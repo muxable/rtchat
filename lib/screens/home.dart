@@ -279,11 +279,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           height: MediaQuery.of(context).size.width * 9 / 16,
                           child: InAppWebView(
                             initialOptions: InAppWebViewGroupOptions(
-                              crossPlatform: InAppWebViewOptions(
-                                  javaScriptEnabled: true,
-                                  mediaPlaybackRequiresUserGesture: false,
-                                  transparentBackground: true),
-                            ),
+                                crossPlatform: InAppWebViewOptions(
+                                    javaScriptEnabled: true,
+                                    mediaPlaybackRequiresUserGesture: false,
+                                    transparentBackground: true),
+                                android: AndroidInAppWebViewOptions(
+                                  useHybridComposition: true,
+                                ),
+                                ios: IOSInAppWebViewOptions(
+                                  allowsInlineMediaPlayback: true,
+                                )),
                             initialUrlRequest: URLRequest(
                                 url: Uri.parse(
                                     "https://player.twitch.tv/?channel=${widget.channel.displayName}&parent=chat.rtirl.com&muted=true&quality=mobile")),
