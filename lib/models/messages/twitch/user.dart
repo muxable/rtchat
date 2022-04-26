@@ -1,4 +1,5 @@
 import 'package:flutter/painting.dart';
+import 'package:rtchat/models/channels.dart';
 
 const colors = [
   Color(0xFFFF0000),
@@ -71,6 +72,8 @@ class TwitchUserModel {
   String get profilePictureUrl {
     return "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$userId";
   }
+
+  Channel get asChannel => Channel("twitch", userId, displayName ?? login);
 
   TwitchUserModel.fromJson(Map<String, dynamic> json)
       : userId = json["userId"],

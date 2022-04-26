@@ -8,6 +8,7 @@ import 'package:rtchat/components/chat_history/twitch/hype_train_event.dart';
 import 'package:rtchat/components/chat_history/twitch/poll_event.dart';
 import 'package:rtchat/components/chat_history/twitch/prediction_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
+import 'package:rtchat/components/chat_history/twitch/raiding_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
 import 'package:rtchat/components/style_model_theme.dart';
 import 'package:rtchat/models/layout.dart';
@@ -16,6 +17,7 @@ import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
+import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
@@ -257,6 +259,28 @@ class EventsScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.pushNamed(
                       context, '/settings/events/channel-point');
+                }),
+            Padding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                child: StyleModelTheme(
+                    child: TwitchRaidingEventWidget(TwitchRaidingEventModel(
+                  messageId: '',
+                  timestamp: DateTime.now(),
+                  duration: const Duration(seconds: 90),
+                  targetUser: const TwitchUserModel(
+                      userId: '158394109',
+                      login: 'muxfd',
+                      displayName: 'muxfd'),
+                )))),
+            ListTile(
+                title: const Text('Outgoing raid event config'),
+                subtitle: const Text('Customize your outgoing raid event'),
+                trailing: Switch.adaptive(
+                    value: eventSubConfig.raidingEventConfig.showEvent,
+                    onChanged: (value) =>
+                        eventSubConfig.setRaidingEventShowable(value)),
+                onTap: () {
+                  Navigator.pushNamed(context, '/settings/events/raiding');
                 }),
           ]);
         });
