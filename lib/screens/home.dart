@@ -59,7 +59,7 @@ class _ResizableWidgetState extends State<ResizableWidget> {
     if (orientation == Orientation.portrait) {
       return Column(children: [
         SizedBox(
-          height: _height,
+          height: _height.clamp(57, MediaQuery.of(context).size.height - 300),
           child: widget.child,
         ),
         if (widget.resizable)
@@ -75,7 +75,6 @@ class _ResizableWidgetState extends State<ResizableWidget> {
             onVerticalDragUpdate: (details) {
               setState(() {
                 _height += details.delta.dy;
-                _height = _height.clamp(57, 500);
               });
             },
             child: const SizedBox(
@@ -92,7 +91,7 @@ class _ResizableWidgetState extends State<ResizableWidget> {
     } else {
       return Row(children: [
         SizedBox(
-          width: _width,
+          width: _width.clamp(57, MediaQuery.of(context).size.width - 400),
           child: widget.child,
         ),
         if (widget.resizable)
@@ -108,7 +107,6 @@ class _ResizableWidgetState extends State<ResizableWidget> {
             onHorizontalDragUpdate: (details) {
               setState(() {
                 _width += details.delta.dx;
-                _width = _width.clamp(57, 500);
               });
             },
             child: const SizedBox(
