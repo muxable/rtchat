@@ -11,7 +11,7 @@ class TwitchPredictionEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return model.status != "cancelled"
+    return model.status != "canceled"
         ? DecoratedEventWidget(
             child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

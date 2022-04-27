@@ -26,10 +26,15 @@ class _ChannelSearchBottomSheetWidgetState
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Text('Find a Channel',
-              style: Theme.of(context).textTheme.displaySmall),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Search Channels',
+                textAlign: TextAlign.left,
+                style: Theme.of(context).textTheme.headlineMedium),
+          ),
           const SizedBox(height: 16),
           TextField(
+              autofocus: true,
               controller: _searchController,
               decoration: InputDecoration(
                   border: OutlineInputBorder(

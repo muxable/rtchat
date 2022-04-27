@@ -72,6 +72,17 @@ export class FirebaseAdapter {
     return this.firestore.collection("messages").doc(key);
   }
 
+  setIfNotExists(key: string, value: any) {
+    return this.firestore.runTransaction(async (transaction) => {
+      const ref = this.firestore.collection("messages").doc(key);
+      const doc = await transaction.get(ref);
+      if (doc.exists) {
+        return;
+      }
+      transaction.set(ref, value);
+    });
+  }
+
   async getAgent(channel: string) {
     const profile = await this.getProfile(channel);
     if (!profile) {
@@ -84,6 +95,7 @@ export class FirebaseAdapter {
     return {
       userId: profile.id,
       username: profile.get(this.provider)["login"] as string,
+      isBot: !profile,
     };
   }
 
