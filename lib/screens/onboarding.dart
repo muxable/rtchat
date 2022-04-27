@@ -21,7 +21,8 @@ class OnboardingScreen extends StatelessWidget {
           resizeToAvoidBottomInset: false,
           backgroundColor: Colors.black,
           body: SafeArea(
-            child: Padding(
+            child: Center(
+              child: Padding(
               padding: const EdgeInsets.all(32),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -40,13 +41,20 @@ class OnboardingScreen extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 64),
                         child: SignInWithTwitch()),
                   ),
-                  Text("or", style: Theme.of(context).textTheme.titleMedium),
+                    Text("or",
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(color: Colors.white)),
                   SizedBox(
                     width: 400,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 64),
                       child: ElevatedButton(
-                        child: const Text("Continue without signing in"),
+                          child: const Text(
+                            "Continue without signing in",
+                            textAlign: TextAlign.center,
+                          ),
                         onPressed: () async {
                           showModalBottomSheet<void>(
                             context: context,
@@ -73,6 +81,7 @@ class OnboardingScreen extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
             ),
           )),
     );
