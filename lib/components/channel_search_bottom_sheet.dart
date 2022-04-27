@@ -34,6 +34,7 @@ class _ChannelSearchBottomSheetWidgetState
           ),
           const SizedBox(height: 16),
           TextField(
+              autofocus: true,
               controller: _searchController,
               decoration: InputDecoration(
                   border: OutlineInputBorder(
