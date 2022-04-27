@@ -27,10 +27,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
           return Container();
         }
         return Padding(
-          padding: const EdgeInsets.only(
-            left: 16,
-            right: 16,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: SizedBox(
             height: 48,
             child: ListView.builder(
@@ -75,7 +72,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   Widget build(BuildContext context) {
     return Column(children: [
       Padding(
-        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Container(
           decoration: BoxDecoration(
               borderRadius: const BorderRadius.all(Radius.circular(50)),
