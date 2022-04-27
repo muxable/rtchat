@@ -54,7 +54,7 @@ class ChannelSearchResultsWidget extends StatelessWidget {
         builder: (context, snapshot) {
           final data = snapshot.data;
           if (data == null) {
-            return const CircularProgressIndicator();
+            return const Center(child: CircularProgressIndicator());
           } else {
             return ListView(
               controller: controller,
