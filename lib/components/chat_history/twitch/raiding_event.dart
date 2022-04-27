@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
-import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/user.dart';
 
