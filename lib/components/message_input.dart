@@ -26,20 +26,27 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
         if (!isKeyboardVisible || commandsModel.commandList.isEmpty) {
           return Container();
         }
-        return SizedBox(
-          height: 55,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: commandsModel.commandList.length,
-            itemBuilder: (context, index) => TextButton(
-              child: Text(commandsModel.commandList[index].command),
-              onPressed: () {
-                ActionsAdapter.instance.send(
-                    widget.channel, commandsModel.commandList[index].command);
-                commandsModel.addCommand(Command(
-                    commandsModel.commandList[index].command, DateTime.now()));
-                _chatInputFocusNode.unfocus();
-              },
+        return Padding(
+          padding: const EdgeInsets.only(
+            left: 16,
+            right: 16,
+          ),
+          child: SizedBox(
+            height: 48,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: commandsModel.commandList.length,
+              itemBuilder: (context, index) => TextButton(
+                child: Text(commandsModel.commandList[index].command),
+                onPressed: () {
+                  ActionsAdapter.instance.send(
+                      widget.channel, commandsModel.commandList[index].command);
+                  commandsModel.addCommand(Command(
+                      commandsModel.commandList[index].command,
+                      DateTime.now()));
+                  _chatInputFocusNode.unfocus();
+                },
+              ),
             ),
           ),
         );
@@ -67,66 +74,78 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      Row(children: [
-        IconButton(
-            onPressed: () {
-              if (_isEmotePickerVisible) {
-                setState(() => _isEmotePickerVisible = false);
-                _chatInputFocusNode.requestFocus();
-              } else {
-                _chatInputFocusNode.unfocus();
-                setState(() => _isEmotePickerVisible = true);
-              }
-            },
-            icon: Icon(_isEmotePickerVisible
-                ? Icons.keyboard_rounded
-                : Icons.tag_faces)),
-        Expanded(
-          child: TextField(
-            focusNode: _chatInputFocusNode,
-            controller: _textEditingController,
-            textInputAction: TextInputAction.send,
-            maxLines: null,
-            decoration: const InputDecoration(hintText: "Send a message..."),
-            onChanged: (text) {
-              final filtered = text.replaceAll('\n', ' ');
-              if (filtered == text) {
-                return;
-              }
-              _textEditingController.value = TextEditingValue(
-                  text: filtered,
-                  selection: TextSelection.fromPosition(TextPosition(
-                      offset: _textEditingController.text.length)));
-            },
-            onSubmitted: (value) async {
-              value = value.trim();
-              if (value.isEmpty) {
-                return;
-              }
-              if (value.startsWith('!')) {
-                final commandsModel =
-                    Provider.of<CommandsModel>(context, listen: false);
-                commandsModel.addCommand(Command(value, DateTime.now()));
-              }
-              ActionsAdapter.instance.send(widget.channel, value);
-              _textEditingController.clear();
-            },
-            onTap: () => setState(() => _isEmotePickerVisible = false),
-          ),
-        ),
-        _isEmotePickerVisible
-            ? IconButton(
-                icon: const Icon(Icons.send),
-                onPressed: () {
-                  var text = _textEditingController.text;
-                  if (text.isEmpty) {
+      Padding(
+        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 8),
+        child: Container(
+          decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(50)),
+              color: Colors.blueGrey.withOpacity(0.30)),
+          child: Row(children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: IconButton(
+                  onPressed: () {
+                    if (_isEmotePickerVisible) {
+                      setState(() => _isEmotePickerVisible = false);
+                      _chatInputFocusNode.requestFocus();
+                    } else {
+                      _chatInputFocusNode.unfocus();
+                      setState(() => _isEmotePickerVisible = true);
+                    }
+                  },
+                  icon: Icon(_isEmotePickerVisible
+                      ? Icons.keyboard_rounded
+                      : Icons.tag_faces_rounded)),
+            ),
+            Expanded(
+              child: TextField(
+                focusNode: _chatInputFocusNode,
+                controller: _textEditingController,
+                textInputAction: TextInputAction.send,
+                maxLines: null,
+                decoration: const InputDecoration(
+                    border: InputBorder.none, hintText: "Send a message..."),
+                onChanged: (text) {
+                  final filtered = text.replaceAll('\n', ' ');
+                  if (filtered == text) {
                     return;
                   }
-                  ActionsAdapter.instance.send(widget.channel, text);
+                  _textEditingController.value = TextEditingValue(
+                      text: filtered,
+                      selection: TextSelection.fromPosition(TextPosition(
+                          offset: _textEditingController.text.length)));
+                },
+                onSubmitted: (value) async {
+                  value = value.trim();
+                  if (value.isEmpty) {
+                    return;
+                  }
+                  if (value.startsWith('!')) {
+                    final commandsModel =
+                        Provider.of<CommandsModel>(context, listen: false);
+                    commandsModel.addCommand(Command(value, DateTime.now()));
+                  }
+                  ActionsAdapter.instance.send(widget.channel, value);
                   _textEditingController.clear();
-                })
-            : Container(),
-      ]),
+                },
+                onTap: () => setState(() => _isEmotePickerVisible = false),
+              ),
+            ),
+            _isEmotePickerVisible
+                ? IconButton(
+                    icon: const Icon(Icons.send),
+                    onPressed: () {
+                      var text = _textEditingController.text;
+                      if (text.isEmpty) {
+                        return;
+                      }
+                      ActionsAdapter.instance.send(widget.channel, text);
+                      _textEditingController.clear();
+                    })
+                : Container(),
+          ]),
+        ),
+      ),
       _buildCommandBar(context),
       _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
     ]);
