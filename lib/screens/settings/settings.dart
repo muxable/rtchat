@@ -88,8 +88,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         )),
                     const SizedBox(height: 8),
                     ToggleButtons(
-                      constraints:
-                          const BoxConstraints(minWidth: 80, minHeight: 50),
+                      constraints: BoxConstraints(
+                          minWidth:
+                              (MediaQuery.of(context).size.width - 36) / 3),
                       borderRadius:
                           const BorderRadius.all(Radius.circular(10.0)),
                       children: [
