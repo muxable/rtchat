@@ -32,6 +32,8 @@ jobs:
         with:
           tag_prefix: ""
 
+      - uses: subosito/flutter-action@v1
+
       - env:
           ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
           KEY_ID: SUR6CT925Z
@@ -51,10 +53,10 @@ jobs:
             --create
           keychain add-certificates
           xcode-project use-profiles --export-options-plist=$RUNNER_TEMP/export_options.plist
-
-      - uses: subosito/flutter-action@v1
-      - run: flutter pub get
-      - run: flutter build ios --no-codesign --verbose --release --build-name=${{ steps.semantic.outputs.version }}
+          flutter pub get
+          # for some reason, flutter build ipa hangs, so we instead build from flutter and use xcode-project to archive + distribute
+          flutter build ios --no-codesign --verbose --release --build-name=${{ steps.semantic.outputs.version }}
+          xcode-project build-ipa --verbose --project ios/Runner.xcodeproj --scheme Runner --export-options-plist=$RUNNER_TEMP/export_options.plist
 
       - uses: actions/upload-artifact@v2
         with:
