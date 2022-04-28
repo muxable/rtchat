@@ -56,7 +56,7 @@ jobs:
       - run: flutter pub get
         # for some reason, flutter build ipa hangs, so we instead build from flutter and use xcode-project to archive + distribute
       - run: flutter build ios --no-codesign --verbose --release --build-name=${{ steps.semantic.outputs.version }}
-      - run: xcode-project build-ipa --project ios/Runner.xcodeproj --scheme Runner --export-options-plist=$RUNNER_TEMP/export_options.plist
+      - run: xcode-project build-ipa --verbose --project ios/Runner.xcodeproj --scheme Runner --export-options-plist=$RUNNER_TEMP/export_options.plist
 
       - uses: actions/upload-artifact@v2
         with:
