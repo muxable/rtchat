@@ -54,7 +54,9 @@ jobs:
 
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
-      - run: flutter build ipa --no-codesign --verbose --release --build-name=${{ steps.semantic.outputs.version }}
+        # for some reason, flutter build ipa hangs, so we instead build from flutter and use xcode-project to archive + distribute
+      - run: flutter build ios --no-codesign --verbose --release --build-name=${{ steps.semantic.outputs.version }}
+      - run: xcode-project build-ipa --project ios/Runner.xcodeproj --scheme Runner --export-options-plist=$RUNNER_TEMP/export_options.plist
 
       - uses: actions/upload-artifact@v2
         with:
