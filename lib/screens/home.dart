@@ -278,6 +278,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: InAppWebView(
                             initialOptions: InAppWebViewGroupOptions(
                                 crossPlatform: InAppWebViewOptions(
+                                    useShouldOverrideUrlLoading: true,
                                     javaScriptEnabled: true,
                                     mediaPlaybackRequiresUserGesture: false,
                                     transparentBackground: true),
@@ -293,6 +294,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             gestureRecognizers: {
                               Factory<OneSequenceGestureRecognizer>(
                                   () => EagerGestureRecognizer()),
+                            },
+                            shouldOverrideUrlLoading:
+                                (controller, action) async {
+                              // Avoid navigation
+                              return NavigationActionPolicy.CANCEL;
                             },
                           ));
                     } else {
