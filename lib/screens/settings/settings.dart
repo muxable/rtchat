@@ -192,26 +192,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final appName = packageInfo.appName;
                 final version = packageInfo.version;
                 final buildNumber = packageInfo.buildNumber;
-                return ListTile(
-                    title: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [Text('$appName v$version ($buildNumber)')]),
-                    dense: true,
-                    onTap: () {
-                      setState(() {
-                        if (++_versionTapCount == 6) {
-                          _versionTapCount = 0;
-                          final model =
-                              Provider.of<StyleModel>(context, listen: false);
-                          model.isDiscoModeAvailable =
-                              !model.isDiscoModeAvailable;
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: model.isDiscoModeAvailable
-                                  ? const Text("🕺 Disco mode enabled! :D")
-                                  : const Text("🕺 Disco mode disabled D:")));
-                        }
-                      });
-                    });
+                return AboutListTile(
+                  icon: const Icon(Icons.info),
+                  applicationName: appName,
+                  applicationVersion: 'Version $version ($buildNumber)',
+                  applicationLegalese: '\u{a9} 2022 Muxable',
+                  dense: true,
+                  aboutBoxChildren: [
+                    const SizedBox(height: 24),
+                    InkWell(
+                        child: const Text(
+                          'Seems legit',
+                          textAlign: TextAlign.center,
+                        ),
+                        onTap: () {
+                          setState(() {
+                            if (++_versionTapCount == 6) {
+                              _versionTapCount = 0;
+                              final model = Provider.of<StyleModel>(context,
+                                  listen: false);
+                              model.isDiscoModeAvailable =
+                                  !model.isDiscoModeAvailable;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: model.isDiscoModeAvailable
+                                          ? const Text(
+                                              "🕺 Disco mode enabled! :D")
+                                          : const Text(
+                                              "🕺 Disco mode disabled D:")));
+                            }
+                          });
+                        })
+                  ],
+                );
               })
         ]);
       }),
