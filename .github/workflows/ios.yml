@@ -54,7 +54,7 @@ jobs:
 
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
-      - run: flutter build ios --no-codesign --verbose --release --build-name=${{ steps.semantic.outputs.version }}
+      - run: flutter build ipa --no-codesign --verbose --release --build-name=${{ steps.semantic.outputs.version }}
 
       - uses: actions/upload-artifact@v2
         with:
