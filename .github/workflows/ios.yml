@@ -29,7 +29,7 @@ jobs:
 
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
-      - run: xcodebuild build -workspace ios/Runner.xcworkspace -scheme Release
+      - run: xcodebuild build -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release
       - env:
           ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
           KEY_ID: SUR6CT925Z
