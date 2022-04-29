@@ -22,18 +22,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v3
-        with:
-          python-version: "3.10"
-      - run: pip install codemagic-cli-tools
-
       - uses: paulhatch/semantic-version@v4
         id: semantic
         with:
           tag_prefix: ""
 
       - uses: subosito/flutter-action@v1
-
+      - run: flutter pub get
+      - run: xcodebuild build -workspace ios/Runner.xcworkspace -scheme Release
       - env:
           ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
           KEY_ID: SUR6CT925Z
