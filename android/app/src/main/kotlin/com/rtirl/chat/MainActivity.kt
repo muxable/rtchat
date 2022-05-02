@@ -11,7 +11,6 @@ import android.view.View
 import android.view.WindowManager
 import android.webkit.*
 import androidx.annotation.NonNull
-import com.ryanheise.audioservice.AudioServicePlugin
 import io.flutter.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -20,10 +19,6 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private val views = HashMap<String, WebView>()
-
-    override fun provideFlutterEngine(context: Context): FlutterEngine? {
-        return AudioServicePlugin.getFlutterEngine(context)
-    }
 
     override fun onDestroy() {
         // there is no corresponding onCreate because Flutter will send us the urls.

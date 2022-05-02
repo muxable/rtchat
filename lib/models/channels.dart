@@ -1,7 +1,6 @@
 import 'dart:core';
 
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:flutter/foundation.dart';
 
 class Channel {
   final String provider;
@@ -21,6 +20,10 @@ class Channel {
 
   @override
   String toString() => "$provider:$channelId";
+
+  String get profilePictureUrl {
+    return "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$channelId";
+  }
 }
 
 class StreamMetadata {
@@ -57,34 +60,4 @@ Future<StreamMetadata> getStreamMetadata(
       );
   }
   throw "invalid provider";
-}
-
-class ChannelsModel extends ChangeNotifier {
-  Set<Channel> _subscribedChannels = {};
-  List<Channel> _availableChannels = [];
-
-  Set<Channel> get subscribedChannels => _subscribedChannels;
-
-  set subscribedChannels(Set<Channel> channels) {
-    _subscribedChannels = channels;
-    for (final channel in channels) {
-      if (!_availableChannels.contains(channel)) {
-        _availableChannels.add(channel);
-      }
-    }
-    notifyListeners();
-  }
-
-  List<Channel> get availableChannels => _availableChannels;
-
-  set availableChannels(List<Channel> channels) {
-    _availableChannels = channels;
-    notifyListeners();
-  }
-
-  void addAvailableChannel(Channel channel) {
-    if (!_availableChannels.contains(channel)) {
-      _availableChannels.add(channel);
-    }
-  }
 }

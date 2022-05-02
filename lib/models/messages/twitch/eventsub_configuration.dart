@@ -68,6 +68,22 @@ class RaidEventConfig {
       };
 }
 
+class HostEventConfig {
+  bool showEvent;
+  Duration eventDuration;
+
+  HostEventConfig(this.showEvent, this.eventDuration);
+
+  HostEventConfig.fromJson(Map<String, dynamic> json)
+      : showEvent = json['showEvent'],
+        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+
+  Map<String, dynamic> toJson() => {
+        "showEvent": showEvent,
+        "eventDuration": eventDuration.inSeconds.toInt(),
+      };
+}
+
 class ChannelPointRedemptionEventConfig {
   bool showEvent;
   Duration eventDuration;
@@ -147,6 +163,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
       CheerEventConfig(true, const Duration(seconds: 6));
   RaidEventConfig raidEventConfig =
       RaidEventConfig(true, const Duration(seconds: 6));
+  HostEventConfig hostEventConfig =
+      HostEventConfig(true, const Duration(seconds: 6));
   ChannelPointRedemptionEventConfig channelPointRedemptionEventConfig =
       ChannelPointRedemptionEventConfig(
           true, const Duration(seconds: 6), const Duration(seconds: 0));
@@ -229,6 +247,16 @@ class EventSubConfigurationModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  setHostEventDuration(Duration duration) {
+    hostEventConfig.eventDuration = duration;
+    notifyListeners();
+  }
+
+  setHostEventShowable(bool value) {
+    hostEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
   setHypetrainEventDuration(Duration duration) {
     hypetrainEventConfig.eventDuration = duration;
     notifyListeners();
@@ -263,6 +291,9 @@ class EventSubConfigurationModel extends ChangeNotifier {
     if (json['raidEventConfig'] != null) {
       raidEventConfig = RaidEventConfig.fromJson(json['raidEventConfig']);
     }
+    if (json['hostEventConfig'] != null) {
+      hostEventConfig = HostEventConfig.fromJson(json['hostEventConfig']);
+    }
     if (json['channelPointRedemptionEventConfig'] != null) {
       channelPointRedemptionEventConfig =
           ChannelPointRedemptionEventConfig.fromJson(
@@ -289,6 +320,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
         "pollEventConfig": pollEventConfig.toJson(),
         "channelPointRedemptionEventConfig":
             channelPointRedemptionEventConfig.toJson(),
+        "hostEventConfig": hostEventConfig.toJson(),
         "hypetrainEventConfig": hypetrainEventConfig.toJson(),
         "predictionEventConfig": predictionEventConfig.toJson(),
       };

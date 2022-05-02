@@ -4,9 +4,6 @@ import { ClientCredentials } from "simple-oauth2";
 import { TWITCH_CLIENT_ID, TWITCH_OAUTH_CONFIG } from "./oauth";
 
 export const search = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("permission-denied", "missing auth");
-  }
   const credentials = await new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken(
     { scopes: [] }
   );
@@ -23,14 +20,14 @@ export const search = functions.https.onCall(async (data, context) => {
   );
   const twitchJson = await twitchResponse.json();
   return [
-    ...twitchJson.data.map((channel: any) => {
+    ...(twitchJson.data || []).map((channel: any) => {
       return {
         provider: "twitch",
         channelId: channel.id,
         displayName: channel.display_name,
         isOnline: channel.is_live,
         imageUrl: channel.thumbnail_url,
-        title: channel.title,
+        title: `${channel.game_name} - ${channel.title}`,
       };
     }),
   ];

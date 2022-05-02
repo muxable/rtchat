@@ -76,6 +76,11 @@ jobs:
       - run: echo "${{ github.event.release.body }}" > whatsnew/whatsnew-en-US
         if: github.event_name == 'release'
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: app-release.aab
+          path: build/app/outputs/bundle/release/app-release.aab
+
       - uses: r0adkll/upload-google-play@v1.0.15
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
@@ -84,8 +89,3 @@ jobs:
           whatsNewDirectory: whatsnew
           track: ${{ github.event_name == 'release' && 'production' || 'alpha' }}
           mappingFile: build/app/outputs/mapping/release/mapping.txt
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: app-release.aab
-          path: build/app/outputs/bundle/release/app-release.aab

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
 import 'package:rtchat/components/chat_history/twitch/cheer_event.dart';
 import 'package:rtchat/components/chat_history/twitch/follow_event.dart';
+import 'package:rtchat/components/chat_history/twitch/host_event.dart';
 import 'package:rtchat/components/chat_history/twitch/hype_train_event.dart';
 import 'package:rtchat/components/chat_history/twitch/poll_event.dart';
 import 'package:rtchat/components/chat_history/twitch/prediction_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
-import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
 import 'package:rtchat/components/style_model_theme.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
@@ -119,6 +120,29 @@ class EventsScreen extends StatelessWidget {
                       eventSubConfig.setRaidEventShowable(value)),
               onTap: () {
                 Navigator.pushNamed(context, '/settings/events/raid');
+              },
+            ),
+            Padding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                child: StyleModelTheme(
+                    child: TwitchHostEventWidget(TwitchHostEventModel(
+                  messageId: '',
+                  timestamp: DateTime.now(),
+                  from: const TwitchUserModel(
+                      userId: '158394109',
+                      login: 'muxfd',
+                      displayName: 'muxfd'),
+                  viewers: 5,
+                )))),
+            ListTile(
+              title: const Text('Host event config'),
+              subtitle: const Text('Customize your host event'),
+              trailing: Switch.adaptive(
+                  value: eventSubConfig.hostEventConfig.showEvent,
+                  onChanged: (value) =>
+                      eventSubConfig.setHostEventShowable(value)),
+              onTap: () {
+                Navigator.pushNamed(context, '/settings/events/host');
               },
             ),
             Padding(

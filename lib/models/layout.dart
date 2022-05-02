@@ -40,19 +40,18 @@ class LayoutModel extends ChangeNotifier {
   bool _isStatsVisible = true;
   bool _isInteractionLockable = false;
   bool _locked = false;
-  bool _dragEnd = true;
   double _onDragStartHeight = 300.0;
   PreferredOrientation _orientationPreference = PreferredOrientation.system;
+  bool _isShowNotifications = false;
+  bool _isShowPreview = false;
 
   void updatePanelHeight({required double dy}) {
     _panelHeight += dy;
-    _dragEnd = false;
     notifyListeners();
   }
 
   void updatePanelWidth({required double dx}) {
     _panelWidth += dx;
-    _dragEnd = false;
     notifyListeners();
   }
 
@@ -64,18 +63,16 @@ class LayoutModel extends ChangeNotifier {
   double get panelHeight => _panelHeight;
 
   double get panelWidth => _panelWidth;
+  
+  set panelWidth(double panelWidth) {
+    _panelWidth = panelWidth;
+    notifyListeners();
+  }
 
   double get onDragStartHeight => _onDragStartHeight;
 
   set onDragStartHeight(double onDragStartHeight) {
     _onDragStartHeight = onDragStartHeight;
-    notifyListeners();
-  }
-
-  bool get dragEnd => _dragEnd;
-
-  set dragEnd(bool dragEnd) {
-    _dragEnd = dragEnd;
     notifyListeners();
   }
 
@@ -105,6 +102,22 @@ class LayoutModel extends ChangeNotifier {
   set preferredOrientation(PreferredOrientation value) {
     _orientationPreference = value;
     _bindOrientationPreference();
+    notifyListeners();
+  }
+
+  bool get isShowNotifications => _isShowNotifications;
+
+  set isShowNotifications(bool value) {
+    _isShowPreview = false;
+    _isShowNotifications = value;
+    notifyListeners();
+  }
+
+  bool get isShowPreview => _isShowPreview;
+
+  set isShowPreview(bool value) {
+    _isShowNotifications = false;
+    _isShowPreview = value;
     notifyListeners();
   }
 
@@ -149,6 +162,12 @@ class LayoutModel extends ChangeNotifier {
           _OrientationPreferenceJson.fromJson(json['orientationPreference']);
       _bindOrientationPreference();
     }
+    if (json['isShowNotifications'] != null) {
+      _isShowNotifications = json['isShowNotifications'];
+    }
+    if (json['isShowPreview'] != null) {
+      _isShowPreview = json['isShowPreview'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -158,5 +177,7 @@ class LayoutModel extends ChangeNotifier {
         "isStatsVisible": _isStatsVisible,
         "isInputLockable": _isInteractionLockable,
         "orientationPreference": _orientationPreference.toJson(),
+        "isShowNotifications": _isShowNotifications,
+        "isShowPreview": _isShowPreview,
       };
 }

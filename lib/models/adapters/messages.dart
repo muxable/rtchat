@@ -32,8 +32,8 @@ class UpdateDeltaEvent extends DeltaEvent {
   const UpdateDeltaEvent(this.messageId, this.update);
 }
 
-DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
-    DocumentChange<Map<String, dynamic>> change) {
+DeltaEvent? _toDeltaEvent(
+    List<Emote> emotes, DocumentChange<Map<String, dynamic>> change) {
   final data = change.doc.data();
   if (data == null) {
     return null;
@@ -54,7 +54,7 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
           author: author,
           message: message,
           tags: tags,
-          thirdPartyEmotes: emotes[data['channelId']]!,
+          thirdPartyEmotes: emotes,
           timestamp: data['timestamp'].toDate(),
           deleted: false,
           channelId: data['channelId']);
@@ -83,6 +83,21 @@ DeltaEvent? _toDeltaEvent(Map<String, List<Emote>> emotes,
               login: data['event']['from_broadcaster_user_login'],
               displayName: data['event']['from_broadcaster_user_name']),
           viewers: data['event']['viewers'],
+          timestamp: data['timestamp'].toDate());
+      return AppendDeltaEvent(model);
+    case "host":
+      if (data['hosterChannelId'] == null) {
+        // Since we might have some events saved without this field.
+        return null;
+      }
+      final hosterInfo = data['hosterChannelId'].split(':');
+      final model = TwitchHostEventModel(
+          messageId: change.doc.id,
+          from: TwitchUserModel(
+              userId: hosterInfo[1],
+              login: data['displayName'],
+              displayName: data['displayName']),
+          viewers: data['viewers'],
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
     case "channel.subscribe":
@@ -220,26 +235,17 @@ class MessagesAdapter {
       db: FirebaseFirestore.instance, functions: FirebaseFunctions.instance);
   static MessagesAdapter? _instance;
 
-  Stream<DeltaEvent> forChannels(Set<Channel> channels) async* {
+  Stream<DeltaEvent> forChannel(Channel channel) async* {
     final subscribe = functions.httpsCallable('subscribe');
-    for (final channel in channels) {
-      subscribe({
-        "provider": channel.provider,
-        "channelId": channel.channelId,
-      });
-    }
-    if (channels.isEmpty) {
-      return;
-    }
-    Map<String, List<Emote>> emotes = {};
-    for (final channel in channels) {
-      emotes[channel.toString()] =
-          await getThirdPartyEmotes(channel.provider, channel.channelId);
-    }
+    await subscribe({
+      "provider": channel.provider,
+      "channelId": channel.channelId,
+    });
+    final emotes =
+        await getThirdPartyEmotes(channel.provider, channel.channelId);
     yield* db
         .collection("messages")
-        .where("channelId",
-            whereIn: channels.map((channel) => channel.toString()).toList())
+        .where("channelId", isEqualTo: channel.toString())
         .orderBy("timestamp")
         .limitToLast(250)
         .snapshots()
@@ -251,5 +257,28 @@ class MessagesAdapter {
         yield event;
       }
     });
+  }
+
+  /// Returns a stream of the "stream online" time.
+  /// null indicates that the stream is offline.
+  Stream<DateTime?> forChannelUptime(Channel channel) {
+    return db
+        .collection("messages")
+        .where("channelId", isEqualTo: channel.toString())
+        .where("type", whereIn: ["stream.online", "stream.offline"])
+        .orderBy("timestamp")
+        .limitToLast(1)
+        .snapshots()
+        .map((event) {
+          if (event.docs.isEmpty) {
+            return null;
+          }
+          final doc = event.docs.first;
+          final data = doc.data();
+          if (data['type'] == "stream.offline") {
+            return null;
+          }
+          return data['timestamp'].toDate();
+        });
   }
 }

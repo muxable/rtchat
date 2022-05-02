@@ -86,6 +86,11 @@ DateTime? _getExpiration(
     return raidEventConfig.eventDuration > Duration.zero
         ? model.timestamp.add(raidEventConfig.eventDuration)
         : null;
+  } else if (model is TwitchHostEventModel) {
+    final hostEventConfig = eventSubConfigurationModel.hostEventConfig;
+    return hostEventConfig.eventDuration > Duration.zero
+        ? model.timestamp.add(hostEventConfig.eventDuration)
+        : null;
   } else if (model is TwitchFollowEventModel) {
     final followEventConfig = eventSubConfigurationModel.followEventConfig;
     return followEventConfig.eventDuration > Duration.zero
@@ -154,10 +159,69 @@ DateTime? _getExpiration(
   return null;
 }
 
-class ChatPanelWidget extends StatefulWidget {
-  final void Function(bool)? onScrollback;
+class _ScrollToBottomWidget extends StatefulWidget {
+  final ScrollController controller;
 
-  const ChatPanelWidget({Key? key, this.onScrollback}) : super(key: key);
+  const _ScrollToBottomWidget({Key? key, required this.controller})
+      : super(key: key);
+
+  @override
+  State<_ScrollToBottomWidget> createState() => _ScrollToBottomWidgetState();
+}
+
+class _ScrollToBottomWidgetState extends State<_ScrollToBottomWidget> {
+  var _atBottom = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.controller.addListener(updateScrollPosition);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(updateScrollPosition);
+
+    super.dispose();
+  }
+
+  void updateScrollPosition() {
+    final value =
+        widget.controller.position.atEdge && widget.controller.offset == 0;
+    if (_atBottom != value) {
+      setState(() {
+        _atBottom = value;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 300),
+      bottom: _atBottom ? -72 : 16,
+      curve: Curves.easeOut,
+      child: Center(
+        child: ElevatedButton(
+            onPressed: () {
+              widget.controller.animateTo(0,
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut);
+            },
+            style: ElevatedButton.styleFrom(
+              primary: Theme.of(context).primaryColor,
+              shape: const CircleBorder(),
+              padding: const EdgeInsets.all(16),
+            ),
+            child: const Icon(Icons.arrow_downward, color: Colors.white)),
+      ),
+    );
+  }
+}
+
+class ChatPanelWidget extends StatefulWidget {
+  const ChatPanelWidget({Key? key}) : super(key: key);
 
   @override
   _ChatPanelWidgetState createState() => _ChatPanelWidgetState();
@@ -166,24 +230,6 @@ class ChatPanelWidget extends StatefulWidget {
 class _ChatPanelWidgetState extends State<ChatPanelWidget>
     with TickerProviderStateMixin {
   final _controller = ScrollController(keepScrollOffset: true);
-  var _atBottom = true;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller.addListener(() {
-      final value = _controller.position.atEdge && _controller.offset == 0;
-      if (_atBottom != value) {
-        setState(() {
-          _atBottom = value;
-        });
-        if (widget.onScrollback != null) {
-          widget.onScrollback!(!_atBottom);
-        }
-      }
-    });
-  }
 
   @override
   void dispose() {
@@ -197,56 +243,37 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     return Stack(
       alignment: AlignmentDirectional.topCenter,
       children: [
-        Consumer<MessagesModel>(builder: (context, model, child) {
-          return Consumer2<EventSubConfigurationModel, TwitchMessageConfig>(
-              builder: (context, eventSubConfigurationModel,
-                  twitchMessageConfig, child) {
-            final messages = model.messages.reversed.toList();
-            final expirations = messages
-                .map((message) => _getExpiration(
-                    message, eventSubConfigurationModel, twitchMessageConfig))
-                .toList();
-            return _RebuildableWidget(
-                rebuildAt: expirations.whereType<DateTime>().toSet(),
-                builder: (context) {
-                  final now = DateTime.now();
-                  return PinnableMessageScrollView(
-                    vsync: this,
-                    controller: _controller,
-                    itemBuilder: (index) => StyleModelTheme(
-                      child: ChatHistoryMessage(message: messages[index]),
-                    ),
-                    isPinnedBuilder: (index) {
-                      final expiration = expirations[index];
-                      if (expiration != null) {
-                        return expiration.isAfter(now);
-                      }
-                      return false;
-                    },
-                    count: messages.length,
-                  );
-                });
-          });
+        Consumer3<MessagesModel, EventSubConfigurationModel,
+                TwitchMessageConfig>(
+            builder: (context, messagesModel, eventSubConfigurationModel,
+                twitchMessageConfig, child) {
+          final messages = messagesModel.messages.reversed.toList();
+          final expirations = messages
+              .map((message) => _getExpiration(
+                  message, eventSubConfigurationModel, twitchMessageConfig))
+              .toList();
+          return _RebuildableWidget(
+              rebuildAt: expirations.whereType<DateTime>().toSet(),
+              builder: (context) {
+                final now = DateTime.now();
+                return PinnableMessageScrollView(
+                  vsync: this,
+                  controller: _controller,
+                  itemBuilder: (index) => StyleModelTheme(
+                    child: ChatHistoryMessage(message: messages[index]),
+                  ),
+                  isPinnedBuilder: (index) {
+                    final expiration = expirations[index];
+                    if (expiration != null) {
+                      return expiration.isAfter(now);
+                    }
+                    return false;
+                  },
+                  count: messages.length,
+                );
+              });
         }),
-        AnimatedPositioned(
-          duration: const Duration(milliseconds: 300),
-          bottom: _atBottom ? -72 : 16,
-          curve: Curves.easeOut,
-          child: Center(
-            child: ElevatedButton(
-                onPressed: () {
-                  _controller.animateTo(0,
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeInOut);
-                },
-                style: ElevatedButton.styleFrom(
-                  primary: Theme.of(context).primaryColor,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(16),
-                ),
-                child: const Icon(Icons.arrow_downward, color: Colors.white)),
-          ),
-        ),
+        _ScrollToBottomWidget(controller: _controller),
       ],
     );
   }

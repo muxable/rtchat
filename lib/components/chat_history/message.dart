@@ -6,6 +6,7 @@ import 'package:rtchat/components/chat_history/timeout_dialog.dart';
 import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
 import 'package:rtchat/components/chat_history/twitch/cheer_event.dart';
 import 'package:rtchat/components/chat_history/twitch/follow_event.dart';
+import 'package:rtchat/components/chat_history/twitch/host_event.dart';
 import 'package:rtchat/components/chat_history/twitch/hype_train_event.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/poll_event.dart';
@@ -46,10 +47,11 @@ class ChatHistoryMessage extends StatelessWidget {
           return child;
         }
         final userModel = Provider.of<UserModel>(context, listen: false);
-        final loginChannel = userModel.userChannel!.channelId;
-        final viewingChannel = m.channelId.split(':')[1];
+        final loginChannelId = userModel.userChannel?.channelId;
+        final viewingChannelId = m.channelId.split(':')[1];
+        final channel = Channel("twitch", viewingChannelId, "");
 
-        if (loginChannel != viewingChannel) {
+        if (loginChannelId != viewingChannelId) {
           return child;
         }
 
@@ -60,11 +62,8 @@ class ChatHistoryMessage extends StatelessWidget {
                   builder: (context) {
                     return Dialog(
                       child: ListView(shrinkWrap: true, children: [
-                        Builder(builder: (context) {
-                          final ttsModel =
-                              Provider.of<TtsModel>(context, listen: false);
-                          if (ttsModel.ttsHandler.mutedUsers
-                              .contains(m.author)) {
+                        Consumer<TtsModel>(builder: (context, ttsModel, child) {
+                          if (ttsModel.isMuted(m.author)) {
                             return ListTile(
                                 leading: const Icon(Icons.volume_up_rounded,
                                     color: Colors.deepPurpleAccent),
@@ -88,12 +87,8 @@ class ChatHistoryMessage extends StatelessWidget {
                                 color: Colors.redAccent),
                             title: const Text('Delete Message'),
                             onTap: () {
-                              final channelsModel = Provider.of<ChannelsModel>(
-                                  context,
-                                  listen: false);
-                              ActionsAdapter.instance.delete(
-                                  channelsModel.subscribedChannels.first,
-                                  m.messageId);
+                              ActionsAdapter.instance
+                                  .delete(channel, m.messageId);
                               Navigator.pop(context);
                             }),
                         ListTile(
@@ -108,13 +103,8 @@ class ChatHistoryMessage extends StatelessWidget {
                                 color: Colors.redAccent),
                             title: Text('Ban ${m.author.displayName}'),
                             onTap: () {
-                              final channelsModel = Provider.of<ChannelsModel>(
-                                  context,
-                                  listen: false);
-                              ActionsAdapter.instance.ban(
-                                  channelsModel.subscribedChannels.first,
-                                  m.author.login,
-                                  "banned by streamer");
+                              ActionsAdapter.instance.ban(channel,
+                                  m.author.login, "banned by streamer");
                               Navigator.pop(context);
                             }),
                         ListTile(
@@ -122,12 +112,8 @@ class ChatHistoryMessage extends StatelessWidget {
                                 color: Colors.greenAccent),
                             title: Text('Unban ${m.author.displayName}'),
                             onTap: () {
-                              final channelsModel = Provider.of<ChannelsModel>(
-                                  context,
-                                  listen: false);
-                              ActionsAdapter.instance.unban(
-                                  channelsModel.subscribedChannels.first,
-                                  m.author.login);
+                              ActionsAdapter.instance
+                                  .unban(channel, m.author.login);
                               Navigator.pop(context);
                             }),
                         ListTile(
@@ -148,11 +134,8 @@ class ChatHistoryMessage extends StatelessWidget {
                       return TimeoutDialog(
                           title: "Timeout ${m.author.displayName}",
                           onPressed: (duration) {
-                            final channelsModel = Provider.of<ChannelsModel>(
-                                context,
-                                listen: false);
                             ActionsAdapter.instance.timeout(
-                                channelsModel.subscribedChannels.first,
+                                channel,
                                 m.author.login,
                                 "timed out by streamer",
                                 duration);
@@ -230,6 +213,12 @@ class ChatHistoryMessage extends StatelessWidget {
         selector: (_, model) => model.predictionEventConfig,
         builder: (_, config, __) =>
             config.showEvent ? TwitchPredictionEventWidget(m) : Container(),
+      );
+    } else if (m is TwitchHostEventModel) {
+      return Selector<EventSubConfigurationModel, HostEventConfig>(
+        selector: (_, model) => model.hostEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchHostEventWidget(m) : Container(),
       );
     } else {
       throw AssertionError("invalid message type");
