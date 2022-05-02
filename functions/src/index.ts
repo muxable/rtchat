@@ -322,10 +322,5 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
   }
 });
 
-export const demoAuth = functions.https.onCall(async (data, context) => {
-  // sign in with automux
-  return await admin.auth().createCustomToken("kKa9SYk5eFTjQXaz1soSCdlZMan2");
-});
-
 export { subscribe, unsubscribe, eventsub, search, getUserEmotes, cleanup };
 export const auth = functions.https.onRequest(authApp);
