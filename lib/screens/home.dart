@@ -145,6 +145,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final InAppLocalhostServer localhostServer = InAppLocalhostServer();
+
+  void startLocalHost() async {
+    await localhostServer.start();
+  }
+
+  void closeLocalHost() async {
+    await localhostServer.close();
+  }
 
   @override
   void initState() {
@@ -156,11 +165,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         model.showAudioPermissionDialog(context);
       }
     });
+    startLocalHost();
   }
 
   @override
   void dispose() {
     Wakelock.disable();
+    closeLocalHost();
     super.dispose();
   }
 
@@ -285,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                             initialUrlRequest: URLRequest(
                                 url: Uri.parse(
-                                    "https://player.twitch.tv/?channel=${widget.channel.displayName}&parent=chat.rtirl.com&muted=true&quality=mobile")),
+                                    "http://localhost:8080/assets/twitch-player.html?channel=${widget.channel.displayName}&width=412&height=243")),
                             gestureRecognizers: {
                               Factory<OneSequenceGestureRecognizer>(
                                   () => EagerGestureRecognizer()),
@@ -333,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               ),
                               initialUrlRequest: URLRequest(
                                   url: Uri.parse(
-                                      "https://player.twitch.tv/?channel=${widget.channel.displayName}&parent=chat.rtirl.com&muted=true&quality=mobile")),
+                                      "http://localhost:8080/assets/twitch-player.html?channel=${widget.channel.displayName}&width=412&height=243")),
                               gestureRecognizers: {
                                 Factory<OneSequenceGestureRecognizer>(
                                     () => EagerGestureRecognizer()),
