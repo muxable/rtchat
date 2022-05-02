@@ -296,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                             initialUrlRequest: URLRequest(
                                 url: Uri.parse(
-                                    "http://localhost:8080/assets/twitch-player.html?channel=${widget.channel.displayName}&width=412&height=243")),
+                                    "http://localhost:8080/assets/twitch-player.html?channel=${widget.channel.displayName}")),
                             gestureRecognizers: {
                               Factory<OneSequenceGestureRecognizer>(
                                   () => EagerGestureRecognizer()),
@@ -344,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               ),
                               initialUrlRequest: URLRequest(
                                   url: Uri.parse(
-                                      "http://localhost:8080/assets/twitch-player.html?channel=${widget.channel.displayName}&width=412&height=243")),
+                                      "http://localhost:8080/assets/twitch-player.html?channel=${widget.channel.displayName}")),
                               gestureRecognizers: {
                                 Factory<OneSequenceGestureRecognizer>(
                                     () => EagerGestureRecognizer()),
