@@ -308,6 +308,7 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
           "https://static-cdn.jtvnw.net/user-default-pictures-uv/ebb84563-db81-4b9c-8940-64ed33ccfc7b-profile_image-300x300.png";
         const image = await fetch(imageUrl);
         res.setHeader("Content-Type", "image/png");
+        res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=86400");
         res.status(200).send(await image.buffer());
       } catch (err) {
         console.error(err);
@@ -319,11 +320,6 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
         "invalid provider"
       );
   }
-});
-
-export const demoAuth = functions.https.onCall(async (data, context) => {
-  // sign in with automux
-  return await admin.auth().createCustomToken("kKa9SYk5eFTjQXaz1soSCdlZMan2");
 });
 
 export { subscribe, unsubscribe, eventsub, search, getUserEmotes, cleanup };

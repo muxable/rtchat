@@ -170,12 +170,17 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Row(children: [
                             Expanded(
                                 child: Text("/${widget.channel.displayName}",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium!
+                                        .copyWith(color: Colors.white),
                                     overflow: TextOverflow.fade)),
                             if (onlineAt != null)
                               Container(
@@ -197,19 +202,15 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                           ])),
                       Consumer<LayoutModel>(
                           builder: (context, layoutModel, child) {
+                        final style = Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(color: Colors.white);
                         if (!layoutModel.isStatsVisible) {
                           return Container();
                         } else if (_loading) {
-                          return Text("...",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .subtitle2
-                                  ?.copyWith(color: Colors.white));
+                          return Text("...", style: style);
                         }
-                        final style = Theme.of(context)
-                            .textTheme
-                            .subtitle2
-                            ?.copyWith(color: Colors.white);
                         final texts = <Widget>[
                           Text("${_formatter.format(_followers)} followers",
                               style: style)

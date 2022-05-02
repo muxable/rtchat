@@ -88,8 +88,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         )),
                     const SizedBox(height: 8),
                     ToggleButtons(
-                      constraints:
-                          const BoxConstraints(minWidth: 80, minHeight: 50),
+                      constraints: BoxConstraints(
+                          minWidth:
+                              (MediaQuery.of(context).size.width - 36) / 3),
                       borderRadius:
                           const BorderRadius.all(Radius.circular(10.0)),
                       children: [
@@ -156,8 +157,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }
 
                 return ListTile(
-                  title: const Text('RealtimeIRL Discord'),
-                  subtitle: const Text("Join the RealtimeIRL Discord!"),
+                  title: const Text('Muxable Discord'),
+                  subtitle: const Text("Join the Muxable Discord!"),
                   trailing: const Icon(Icons.launch),
                   onTap: () => launch(discordUrl),
                 );
@@ -191,26 +192,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final appName = packageInfo.appName;
                 final version = packageInfo.version;
                 final buildNumber = packageInfo.buildNumber;
-                return ListTile(
-                    title: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [Text('$appName v$version ($buildNumber)')]),
-                    dense: true,
-                    onTap: () {
-                      setState(() {
-                        if (++_versionTapCount == 6) {
-                          _versionTapCount = 0;
-                          final model =
-                              Provider.of<StyleModel>(context, listen: false);
-                          model.isDiscoModeAvailable =
-                              !model.isDiscoModeAvailable;
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: model.isDiscoModeAvailable
-                                  ? const Text("🕺 Disco mode enabled! :D")
-                                  : const Text("🕺 Disco mode disabled D:")));
-                        }
-                      });
-                    });
+                return AboutListTile(
+                  icon: const Icon(Icons.info),
+                  applicationName: appName,
+                  applicationVersion: 'Version $version ($buildNumber)',
+                  applicationLegalese: '\u{a9} 2022 Muxable',
+                  dense: true,
+                  aboutBoxChildren: [
+                    const SizedBox(height: 24),
+                    InkWell(
+                        child: const Text(
+                          'Seems legit',
+                          textAlign: TextAlign.center,
+                        ),
+                        onTap: () {
+                          setState(() {
+                            if (++_versionTapCount == 6) {
+                              _versionTapCount = 0;
+                              final model = Provider.of<StyleModel>(context,
+                                  listen: false);
+                              model.isDiscoModeAvailable =
+                                  !model.isDiscoModeAvailable;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: model.isDiscoModeAvailable
+                                          ? const Text(
+                                              "🕺 Disco mode enabled! :D")
+                                          : const Text(
+                                              "🕺 Disco mode disabled D:")));
+                            }
+                          });
+                        })
+                  ],
+                );
               })
         ]);
       }),

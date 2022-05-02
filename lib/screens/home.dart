@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
+import 'package:rtchat/components/activity_feed_panel.dart';
 import 'package:rtchat/components/auth/twitch.dart';
 import 'package:rtchat/components/chat_panel.dart';
 import 'package:rtchat/components/disco.dart';
 import 'package:rtchat/components/drawer/end_drawer.dart';
+import 'package:rtchat/components/drawer/sidebar.dart';
 import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
-import 'package:rtchat/components/activity_feed_panel.dart';
-import 'package:rtchat/components/drawer/sidebar.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -55,75 +55,72 @@ class _ResizableWidgetState extends State<ResizableWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return OrientationBuilder(builder: (context, orientation) {
-      if (orientation == Orientation.portrait) {
-        return Column(children: [
-          SizedBox(
-            height: _height,
-            child: widget.child,
-          ),
-          if (widget.resizable)
-            GestureDetector(
-              onVerticalDragStart: (details) {
-                setState(() {
-                  _height = widget.height;
-                });
-              },
-              onVerticalDragEnd: (details) {
-                widget.onResizeHeight(_height);
-              },
-              onVerticalDragUpdate: (details) {
-                setState(() {
-                  _height += details.delta.dy;
-                  _height = _height.clamp(57, 500);
-                });
-              },
-              child: const SizedBox(
-                width: double.infinity,
-                height: 30,
-                child: Center(
-                  child: Icon(Icons.drag_handle_outlined),
-                ),
+    final orientation = MediaQuery.of(context).orientation;
+    if (orientation == Orientation.portrait) {
+      return Column(children: [
+        SizedBox(
+          height: _height.clamp(57, MediaQuery.of(context).size.height - 300),
+          child: widget.child,
+        ),
+        if (widget.resizable)
+          GestureDetector(
+            onVerticalDragStart: (details) {
+              setState(() {
+                _height = widget.height;
+              });
+            },
+            onVerticalDragEnd: (details) {
+              widget.onResizeHeight(_height);
+            },
+            onVerticalDragUpdate: (details) {
+              setState(() {
+                _height += details.delta.dy;
+              });
+            },
+            child: const SizedBox(
+              width: double.infinity,
+              height: 30,
+              child: Center(
+                child: Icon(Icons.drag_handle_outlined),
               ),
-            )
-          else
-            Container(),
-        ]);
-      } else {
-        return Row(children: [
-          SizedBox(
-            width: _width,
-            child: widget.child,
-          ),
-          if (widget.resizable)
-            GestureDetector(
-              onHorizontalDragStart: (details) {
-                setState(() {
-                  _width = widget.width;
-                });
-              },
-              onHorizontalDragEnd: (details) {
-                widget.onResizeWidth(_width);
-              },
-              onHorizontalDragUpdate: (details) {
-                setState(() {
-                  _width += details.delta.dx;
-                  _width = _width.clamp(57, 500);
-                });
-              },
-              child: const SizedBox(
-                height: double.infinity,
-                width: 30,
-                child: Center(
-                  child: Icon(Icons.drag_indicator),
-                ),
+            ),
+          )
+        else
+          Container(),
+      ]);
+    } else {
+      return Row(children: [
+        SizedBox(
+          width: _width.clamp(57, MediaQuery.of(context).size.width - 400),
+          child: widget.child,
+        ),
+        if (widget.resizable)
+          GestureDetector(
+            onHorizontalDragStart: (details) {
+              setState(() {
+                _width = widget.width;
+              });
+            },
+            onHorizontalDragEnd: (details) {
+              widget.onResizeWidth(_width);
+            },
+            onHorizontalDragUpdate: (details) {
+              setState(() {
+                _width += details.delta.dx;
+              });
+            },
+            child: const SizedBox(
+              height: double.infinity,
+              width: 30,
+              child: Center(
+                child: Icon(Icons.drag_indicator),
               ),
-            )
-          else
-            Container(),
-        ]);
-      }
-    });
+            ),
+          )
+        else
+          Container(),
+      ]);
+    }
   }
 }
 
@@ -177,6 +174,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final orientation = MediaQuery.of(context).orientation;
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: Sidebar(channel: widget.channel),
@@ -234,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: SafeArea(
           child: Container(
             color: Theme.of(context).scaffoldBackgroundColor,
-            child: OrientationBuilder(builder: (context, orientation) {
+            child: Builder(builder: (context) {
               final chatPanelFooter = Consumer<LayoutModel>(
                 builder: (context, layoutModel, child) {
                   if (layoutModel.isInteractionLockable && layoutModel.locked) {
@@ -289,17 +288,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           height: MediaQuery.of(context).size.width * 9 / 16,
                           child: InAppWebView(
                             initialOptions: InAppWebViewGroupOptions(
-                              crossPlatform: InAppWebViewOptions(
-                                  javaScriptEnabled: true,
-                                  mediaPlaybackRequiresUserGesture: false,
-                                  transparentBackground: true),
-                            ),
+                                crossPlatform: InAppWebViewOptions(
+                                    useShouldOverrideUrlLoading: true,
+                                    javaScriptEnabled: true,
+                                    mediaPlaybackRequiresUserGesture: false,
+                                    transparentBackground: true),
+                                android: AndroidInAppWebViewOptions(
+                                  useHybridComposition: true,
+                                ),
+                                ios: IOSInAppWebViewOptions(
+                                  allowsInlineMediaPlayback: true,
+                                )),
                             initialUrlRequest: URLRequest(
                                 url: Uri.parse(
                                     "http://localhost:8080/assets/twitch-player.html?channel=${widget.channel.displayName}")),
                             gestureRecognizers: {
                               Factory<OneSequenceGestureRecognizer>(
                                   () => EagerGestureRecognizer()),
+                            },
+                            shouldOverrideUrlLoading:
+                                (controller, action) async {
+                              // Avoid navigation
+                              return NavigationActionPolicy.CANCEL;
                             },
                           ));
                     } else {

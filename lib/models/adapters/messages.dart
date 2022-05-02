@@ -10,6 +10,7 @@ import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -221,6 +222,22 @@ DeltaEvent? _toDeltaEvent(
           isOnline: data['type'] == "stream.online",
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
+    case "raid_update_v2":
+      return AppendDeltaEvent(TwitchRaidingEventModel.fromDocumentData(data));
+    case "raid_cancel_v2":
+      return UpdateDeltaEvent("raiding.${data['raid']['id']}", (message) {
+        if (message is! TwitchRaidingEventModel) {
+          return message;
+        }
+        return message.withCancel();
+      });
+    case "raid_go_v2":
+      return UpdateDeltaEvent("raiding.${data['raid']['id']}", (message) {
+        if (message is! TwitchRaidingEventModel) {
+          return message;
+        }
+        return message.withSuccessful();
+      });
   }
   return null;
 }

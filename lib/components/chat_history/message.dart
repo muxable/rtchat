@@ -12,6 +12,7 @@ import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/chat_history/twitch/poll_event.dart';
 import 'package:rtchat/components/chat_history/twitch/prediction_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
+import 'package:rtchat/components/chat_history/twitch/raiding_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
@@ -23,6 +24,7 @@ import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
+import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -219,6 +221,12 @@ class ChatHistoryMessage extends StatelessWidget {
         selector: (_, model) => model.hostEventConfig,
         builder: (_, config, __) =>
             config.showEvent ? TwitchHostEventWidget(m) : Container(),
+      );
+    } else if (m is TwitchRaidingEventModel) {
+      return Selector<EventSubConfigurationModel, RaidingEventConfig>(
+        selector: (_, model) => model.raidingEventConfig,
+        builder: (_, config, __) =>
+            config.showEvent ? TwitchRaidingEventWidget(m) : Container(),
       );
     } else {
       throw AssertionError("invalid message type");

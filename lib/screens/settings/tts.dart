@@ -52,7 +52,7 @@ class TextToSpeechScreen extends StatelessWidget {
                       onPressed: () {
                         model.say(
                             SystemMessageModel(
-                                text: 
+                                text:
                                     "muxfd said have you followed muxfd on twitch?"),
                             force: true);
                       },

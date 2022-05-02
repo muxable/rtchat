@@ -152,7 +152,8 @@ class Sidebar extends StatelessWidget {
           const _DrawerHeader(),
 
           // quicklinks
-          Expanded(child: OrientationBuilder(builder: (context, orientation) {
+          Expanded(child: Builder(builder: (context) {
+            final orientation = MediaQuery.of(context).orientation;
             if (orientation == Orientation.portrait) {
               return Column(children: [
                 Expanded(child: ListView(children: [QuicklinksListView()])),
