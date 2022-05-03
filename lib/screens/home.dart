@@ -142,15 +142,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  final InAppLocalhostServer localhostServer = InAppLocalhostServer();
-
-  void startLocalHost() async {
-    await localhostServer.start();
-  }
-
-  void closeLocalHost() async {
-    await localhostServer.close();
-  }
 
   @override
   void initState() {
@@ -162,13 +153,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         model.showAudioPermissionDialog(context);
       }
     });
-    startLocalHost();
   }
 
   @override
   void dispose() {
     Wakelock.disable();
-    closeLocalHost();
     super.dispose();
   }
 

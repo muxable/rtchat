@@ -10,6 +10,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
@@ -75,8 +76,10 @@ Color tintColor(Color color, double factor) => Color.fromRGBO(
 final primarySwatch = generateMaterialColor(const Color(0xFF009FDF));
 
 void main() async {
+  final InAppLocalhostServer localhostServer = new InAppLocalhostServer();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await localhostServer.start();
   final prefs = await SharedPreferences.getInstance();
   if (kDebugMode) {
     await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
