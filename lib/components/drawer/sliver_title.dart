@@ -13,8 +13,8 @@ class SliverTitleWidget extends StatelessWidget {
             padding: const EdgeInsets.only(left: 16, bottom: 4, top: 8),
             child: Text(
               title,
-              style: const TextStyle(
-                  color: Color.fromARGB(255, 238, 80, 80), fontSize: 18),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary, fontSize: 18),
             ),
           )
         ],

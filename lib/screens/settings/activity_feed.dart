@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
+import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
 
 enum ActivityFeedType { disabled, standard, custom }
@@ -63,8 +64,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Activity feed")),
-      body: Consumer2<ActivityFeedModel, UserModel>(
-          builder: (context, activityFeedModel, userModel, child) {
+      body: Consumer3<ActivityFeedModel, UserModel, LayoutModel>(
+          builder: (context, activityFeedModel, userModel, layoutModel, child) {
         return Column(children: [
           RadioListTile(
             title: const Text('Disabled'),
@@ -72,6 +73,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
             groupValue: !activityFeedModel.isEnabled,
             onChanged: (value) {
               activityFeedModel.isEnabled = false;
+              layoutModel.isShowNotifications = false;
             },
           ),
           RadioListTile(
