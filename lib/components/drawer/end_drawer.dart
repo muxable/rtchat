@@ -118,12 +118,8 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = MediaQuery.of(context).platformBrightness;
-    bool isDarkMode = brightness == Brightness.dark;
     return Container(
-      color: isDarkMode
-          ? Colors.black.withOpacity(0.85)
-          : Colors.white.withOpacity(0.9),
+      color: Theme.of(context).canvasColor,
       child: FutureBuilder(
         future: viewersFuture,
         builder: (context, snapshot) {
