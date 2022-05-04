@@ -77,6 +77,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
               subtitle: Text(
                   "iOS doesn't support *.ogg media files. Ensure your audio sources use another format, otherwise they won't play."),
               tileColor: Colors.yellow,
+              textColor: Colors.black,
             )
           else
             Container(),
