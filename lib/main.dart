@@ -282,6 +282,7 @@ class _AppState extends State<App> {
         darkTheme: ThemeData(
             fontFamily: GoogleFonts.poppins().fontFamily,
             canvasColor: Colors.black,
+            cardColor: Colors.black,
             appBarTheme: const AppBarTheme(
               color: detailColor,
             ),
