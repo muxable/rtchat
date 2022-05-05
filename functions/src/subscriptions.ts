@@ -85,6 +85,13 @@ export const unsubscribe = functions.pubsub
               .child(provider)
               .child(channel)
               .set(null);
+            
+            await admin
+              .database()
+              .ref("assignments")
+              .child(provider)
+              .child(channel)
+              .set(null);
 
             await subscriptionsRef.child(provider).child(channel).set(null);
         }
