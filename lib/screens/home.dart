@@ -297,7 +297,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             },
                             shouldOverrideUrlLoading:
                                 (controller, action) async {
-                              // Avoid navigation
+                              // Prevent navigation outside the player
+                              final url = action.request.url;
+                              if (url
+                                  .toString()
+                                  .startsWith("https://player.twitch.tv")) {
+                                return NavigationActionPolicy.ALLOW;
+                              }
                               return NavigationActionPolicy.CANCEL;
                             },
                           ));
