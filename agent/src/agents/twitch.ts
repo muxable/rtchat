@@ -246,8 +246,7 @@ async function getChatAgent(
 async function join(
   firebase: FirebaseAdapter,
   agentId: string,
-  channel: string,
-  forceBot: boolean = false
+  channel: string
 ) {
   let raidListener: PubSubListener | null = null;
   const { chat, userId, isBot } = await getChatAgent(
@@ -303,6 +302,13 @@ async function join(
 
     await firebase.releaseUnexpectedly(provider, channel);
   });
+
+  // wait a random amount of time.
+  // this allows for claims to be a little more uniformly distributed across agents instead
+  // of being dominated by the slowest agent.
+  await new Promise<void>((resolve) =>
+    setTimeout(() => resolve(), 1000 * Math.random())
+  );
 
   // mark us as the claimant.
   await firebase.claim(provider, channel, `${agentId}/${uuidv4()}`);
