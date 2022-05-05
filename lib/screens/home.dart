@@ -1,7 +1,4 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
@@ -12,6 +9,7 @@ import 'package:rtchat/components/drawer/end_drawer.dart';
 import 'package:rtchat/components/drawer/sidebar.dart';
 import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
+import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -275,32 +273,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     } else if (layoutModel.isShowPreview) {
                       return SizedBox(
                           height: MediaQuery.of(context).size.width * 9 / 16,
-                          child: InAppWebView(
-                            initialOptions: InAppWebViewGroupOptions(
-                                crossPlatform: InAppWebViewOptions(
-                                    useShouldOverrideUrlLoading: true,
-                                    javaScriptEnabled: true,
-                                    mediaPlaybackRequiresUserGesture: false,
-                                    transparentBackground: true),
-                                android: AndroidInAppWebViewOptions(
-                                  useHybridComposition: true,
-                                ),
-                                ios: IOSInAppWebViewOptions(
-                                  allowsInlineMediaPlayback: true,
-                                )),
-                            initialUrlRequest: URLRequest(
-                                url: Uri.parse(
-                                    "https://player.twitch.tv/?channel=${widget.channel.displayName}&parent=chat.rtirl.com&muted=true&quality=mobile")),
-                            gestureRecognizers: {
-                              Factory<OneSequenceGestureRecognizer>(
-                                  () => EagerGestureRecognizer()),
-                            },
-                            shouldOverrideUrlLoading:
-                                (controller, action) async {
-                              // Avoid navigation
-                              return NavigationActionPolicy.CANCEL;
-                            },
-                          ));
+                          child: StreamPreview(
+                              channelDisplayName: widget.channel.displayName));
                     } else {
                       return Container();
                     }
@@ -334,21 +308,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           if (layoutModel.isShowNotifications) {
                             return const ActivityFeedPanelWidget();
                           } else if (layoutModel.isShowPreview) {
-                            return InAppWebView(
-                              initialOptions: InAppWebViewGroupOptions(
-                                crossPlatform: InAppWebViewOptions(
-                                    javaScriptEnabled: true,
-                                    mediaPlaybackRequiresUserGesture: false,
-                                    transparentBackground: true),
-                              ),
-                              initialUrlRequest: URLRequest(
-                                  url: Uri.parse(
-                                      "https://player.twitch.tv/?channel=${widget.channel.displayName}&parent=chat.rtirl.com&muted=true&quality=mobile")),
-                              gestureRecognizers: {
-                                Factory<OneSequenceGestureRecognizer>(
-                                    () => EagerGestureRecognizer()),
-                              },
-                            );
+                            return StreamPreview(
+                                channelDisplayName: widget.channel.displayName);
                           } else {
                             return Container();
                           }
