@@ -76,7 +76,7 @@ Color tintColor(Color color, double factor) => Color.fromRGBO(
 final primarySwatch = generateMaterialColor(const Color(0xFF009FDF));
 
 void main() async {
-  final InAppLocalhostServer localhostServer = new InAppLocalhostServer();
+  final InAppLocalhostServer localhostServer = InAppLocalhostServer();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await localhostServer.start();
