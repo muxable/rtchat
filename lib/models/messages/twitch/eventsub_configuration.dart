@@ -56,16 +56,20 @@ class CheerEventConfig {
 class RaidEventConfig {
   bool showEvent;
   Duration eventDuration;
+  bool enableShoutoutButton;
 
-  RaidEventConfig(this.showEvent, this.eventDuration);
+  RaidEventConfig(
+      this.showEvent, this.eventDuration, this.enableShoutoutButton);
 
   RaidEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
-        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+        eventDuration = Duration(seconds: json['eventDuration'].toInt()),
+        enableShoutoutButton = json['enableShoutoutButton'];
 
   Map<String, dynamic> toJson() => {
         "showEvent": showEvent,
         "eventDuration": eventDuration.inSeconds.toInt(),
+        "enableShoutoutButton": enableShoutoutButton,
       };
 }
 
@@ -163,7 +167,7 @@ class EventSubConfigurationModel extends ChangeNotifier {
   CheerEventConfig cheerEventConfig =
       CheerEventConfig(true, const Duration(seconds: 6));
   RaidEventConfig raidEventConfig =
-      RaidEventConfig(true, const Duration(seconds: 6));
+      RaidEventConfig(true, const Duration(seconds: 6), false);
   HostEventConfig hostEventConfig =
       HostEventConfig(true, const Duration(seconds: 6));
   ChannelPointRedemptionEventConfig channelPointRedemptionEventConfig =
@@ -223,6 +227,11 @@ class EventSubConfigurationModel extends ChangeNotifier {
 
   setRaidEventShowable(bool value) {
     raidEventConfig.showEvent = value;
+    notifyListeners();
+  }
+
+  setRaidEventEnableShoutoutButton(bool value) {
+    raidEventConfig.enableShoutoutButton = value;
     notifyListeners();
   }
 

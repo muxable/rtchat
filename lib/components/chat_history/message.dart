@@ -33,8 +33,11 @@ import 'package:rtchat/models/user.dart';
 
 class ChatHistoryMessage extends StatelessWidget {
   final MessageModel message;
+  final Channel channel;
 
-  const ChatHistoryMessage({Key? key, required this.message}) : super(key: key);
+  const ChatHistoryMessage(
+      {Key? key, required this.message, required this.channel})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +155,9 @@ class ChatHistoryMessage extends StatelessWidget {
       return Selector<EventSubConfigurationModel, RaidEventConfig>(
         selector: (_, model) => model.raidEventConfig,
         builder: (_, config, __) =>
-            config.showEvent ? TwitchRaidEventWidget(m) : Container(),
+            config.showEvent
+            ? TwitchRaidEventWidget(m, channel: channel)
+            : Container(),
       );
     } else if (m is TwitchSubscriptionEventModel) {
       return Selector<EventSubConfigurationModel, SubscriptionEventConfig>(

@@ -46,6 +46,15 @@ class RaidEventScreen extends StatelessWidget {
                         model.setRaidEventShowable(value);
                       },
                     ),
+                    SwitchListTile.adaptive(
+                      title: const Text('Enable shoutouts'),
+                      subtitle: const Text(
+                          'Send a link to the raiding channel to chat'),
+                      value: model.raidEventConfig.enableShoutoutButton,
+                      onChanged: (value) {
+                        model.setRaidEventEnableShoutoutButton(value);
+                      },
+                    ),
                   ],
                 ),
               ),
