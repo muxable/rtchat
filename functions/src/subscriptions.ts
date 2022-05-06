@@ -41,6 +41,13 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         .child(provider)
         .child(channel)
         .set("");
+      
+      await admin
+        .database()
+        .ref("requests")
+        .child(provider)
+        .child(channel)
+        .set("");
 
       if (context.auth != null) {
         await checkEventSubSubscriptions(context.auth.uid);
@@ -75,6 +82,13 @@ export const unsubscribe = functions.pubsub
             await admin
               .database()
               .ref("agents")
+              .child(provider)
+              .child(channel)
+              .set(null);
+            
+            await admin
+              .database()
+              .ref("assignments")
               .child(provider)
               .child(channel)
               .set(null);

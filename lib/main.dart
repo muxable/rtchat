@@ -128,6 +128,8 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
+    const accentColor = Color(0xFF009FDF);
+    const detailColor = Color(0xFF121312);
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserModel()),
@@ -281,11 +283,22 @@ class _AppState extends State<App> {
           primarySwatch: primarySwatch,
         ),
         darkTheme: ThemeData(
-          fontFamily: GoogleFonts.poppins().fontFamily,
-          brightness: Brightness.dark,
-          primarySwatch: primarySwatch,
-          scaffoldBackgroundColor: Colors.black,
-        ),
+            fontFamily: GoogleFonts.poppins().fontFamily,
+            canvasColor: Colors.black,
+            cardColor: Colors.black,
+            appBarTheme: const AppBarTheme(
+              color: detailColor,
+            ),
+            colorScheme: ColorScheme.fromSwatch(
+              brightness: Brightness.dark,
+              backgroundColor: detailColor,
+              accentColor: accentColor,
+            ),
+            dialogBackgroundColor: Colors.black,
+            toggleableActiveColor: accentColor,
+            bottomSheetTheme:
+                const BottomSheetThemeData(backgroundColor: detailColor),
+            drawerTheme: const DrawerThemeData(backgroundColor: detailColor)),
         navigatorObservers: [App.observer],
         initialRoute: '/',
         routes: {
