@@ -56,6 +56,9 @@ class TtsModel extends ChangeNotifier {
   }
 
   set enabled(bool value) {
+    if (value == _isEnabled) {
+      return;
+    }
     _isEnabled = value;
     if (!value) {
       _queue.clear();
