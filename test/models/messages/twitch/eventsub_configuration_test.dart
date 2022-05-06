@@ -19,7 +19,11 @@ void main() {
         'eventDuration': 30
       },
       'cheerEventConfig': {'showEvent': false, 'eventDuration': 30},
-      'raidEventConfig': {'showEvent': true, 'eventDuration': 6},
+      'raidEventConfig': {
+        'showEvent': true,
+        'eventDuration': 6,
+        'enableShoutoutButton': true
+      },
       'pollEventConfig': {'showEvent': true, 'eventDuration': 6},
       'channelPointRedemptionEventConfig': {
         'showEvent': true,

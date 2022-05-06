@@ -282,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Expanded(
                       child: DiscoWidget(
                           isEnabled: widget.isDiscoModeEnabled,
-                          child: const ChatPanelWidget())),
+                          child: ChatPanelWidget(channel: widget.channel))),
                   chatPanelFooter,
                 ]);
               } else {
@@ -320,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     Expanded(
                         child: DiscoWidget(
                             isEnabled: widget.isDiscoModeEnabled,
-                            child: const ChatPanelWidget())),
+                            child: ChatPanelWidget(channel: widget.channel))),
                     chatPanelFooter,
                   ]))
                 ]);
