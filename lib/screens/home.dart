@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -164,6 +165,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
+    final urlString = (Platform.isAndroid)
+        ? "http://localhost:8080/assets/twitch-player.html?channel=${widget.channel.displayName}"
+        : "https://player.twitch.tv/?channel=${widget.channel.displayName}&parent=chat.rtirl.com&muted=true&quality=160p30";
 
     return Scaffold(
       key: _scaffoldKey,
@@ -288,9 +292,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 ios: IOSInAppWebViewOptions(
                                   allowsInlineMediaPlayback: true,
                                 )),
-                            initialUrlRequest: URLRequest(
-                                url: Uri.parse(
-                                    "http://localhost:8080/assets/twitch-player.html?channel=${widget.channel.displayName}")),
+                            initialUrlRequest:
+                                URLRequest(url: Uri.parse(urlString)),
                             gestureRecognizers: {
                               Factory<OneSequenceGestureRecognizer>(
                                   () => EagerGestureRecognizer()),
@@ -347,9 +350,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     mediaPlaybackRequiresUserGesture: false,
                                     transparentBackground: true),
                               ),
-                              initialUrlRequest: URLRequest(
-                                  url: Uri.parse(
-                                      "http://localhost:8080/assets/twitch-player.html?channel=${widget.channel.displayName}")),
+                              initialUrlRequest:
+                                  URLRequest(url: Uri.parse(urlString)),
                               gestureRecognizers: {
                                 Factory<OneSequenceGestureRecognizer>(
                                     () => EagerGestureRecognizer()),

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:io' show Platform;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -76,10 +77,12 @@ Color tintColor(Color color, double factor) => Color.fromRGBO(
 final primarySwatch = generateMaterialColor(const Color(0xFF009FDF));
 
 void main() async {
-  final InAppLocalhostServer localhostServer = InAppLocalhostServer();
+  if (Platform.isAndroid) {
+    final InAppLocalhostServer localhostServer = InAppLocalhostServer();
+    await localhostServer.start();
+  }
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await localhostServer.start();
   final prefs = await SharedPreferences.getInstance();
   if (kDebugMode) {
     await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
