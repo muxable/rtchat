@@ -29,7 +29,7 @@ class RaidingEventScreen extends StatelessWidget {
                       value: model.raidingEventConfig.eventDuration.inSeconds
                           .toDouble(),
                       min: 0,
-                      max: 30,
+                      max: 150,
                       divisions: 15,
                       label:
                           "${model.raidingEventConfig.eventDuration.inSeconds} seconds",
