@@ -11,6 +11,7 @@ import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raiding_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
 import 'package:rtchat/components/style_model_theme.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
@@ -112,6 +113,11 @@ class EventsScreen extends StatelessWidget {
                       login: 'muxfd',
                       displayName: 'muxfd'),
                   viewers: 4,
+                        ),
+                        channel: Channel(
+                          "twitch",
+                          "muxfd",
+                          "muxfd",
                 )))),
             ListTile(
               title: const Text('Raid event config'),

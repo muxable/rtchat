@@ -1,8 +1,4 @@
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
@@ -13,6 +9,7 @@ import 'package:rtchat/components/drawer/end_drawer.dart';
 import 'package:rtchat/components/drawer/sidebar.dart';
 import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
+import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -165,9 +162,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
-    final urlString = (Platform.isAndroid)
-        ? "http://localhost:8080/assets/twitch-player.html?channel=${widget.channel.displayName}"
-        : "https://player.twitch.tv/?channel=${widget.channel.displayName}&parent=chat.rtirl.com&muted=true&quality=160p30";
 
     return Scaffold(
       key: _scaffoldKey,
@@ -279,37 +273,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     } else if (layoutModel.isShowPreview) {
                       return SizedBox(
                           height: MediaQuery.of(context).size.width * 9 / 16,
-                          child: InAppWebView(
-                            initialOptions: InAppWebViewGroupOptions(
-                                crossPlatform: InAppWebViewOptions(
-                                    useShouldOverrideUrlLoading: true,
-                                    javaScriptEnabled: true,
-                                    mediaPlaybackRequiresUserGesture: false,
-                                    transparentBackground: true),
-                                android: AndroidInAppWebViewOptions(
-                                  useHybridComposition: true,
-                                ),
-                                ios: IOSInAppWebViewOptions(
-                                  allowsInlineMediaPlayback: true,
-                                )),
-                            initialUrlRequest:
-                                URLRequest(url: Uri.parse(urlString)),
-                            gestureRecognizers: {
-                              Factory<OneSequenceGestureRecognizer>(
-                                  () => EagerGestureRecognizer()),
-                            },
-                            shouldOverrideUrlLoading:
-                                (controller, action) async {
-                              // Prevent navigation outside the player
-                              final url = action.request.url;
-                              if (url
-                                  .toString()
-                                  .startsWith("https://player.twitch.tv")) {
-                                return NavigationActionPolicy.ALLOW;
-                              }
-                              return NavigationActionPolicy.CANCEL;
-                            },
-                          ));
+                          child: StreamPreview(
+                              channelDisplayName: widget.channel.displayName));
                     } else {
                       return Container();
                     }
@@ -317,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Expanded(
                       child: DiscoWidget(
                           isEnabled: widget.isDiscoModeEnabled,
-                          child: const ChatPanelWidget())),
+                          child: ChatPanelWidget(channel: widget.channel))),
                   chatPanelFooter,
                 ]);
               } else {
@@ -343,20 +308,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           if (layoutModel.isShowNotifications) {
                             return const ActivityFeedPanelWidget();
                           } else if (layoutModel.isShowPreview) {
-                            return InAppWebView(
-                              initialOptions: InAppWebViewGroupOptions(
-                                crossPlatform: InAppWebViewOptions(
-                                    javaScriptEnabled: true,
-                                    mediaPlaybackRequiresUserGesture: false,
-                                    transparentBackground: true),
-                              ),
-                              initialUrlRequest:
-                                  URLRequest(url: Uri.parse(urlString)),
-                              gestureRecognizers: {
-                                Factory<OneSequenceGestureRecognizer>(
-                                    () => EagerGestureRecognizer()),
-                              },
-                            );
+                            return StreamPreview(
+                                channelDisplayName: widget.channel.displayName);
                           } else {
                             return Container();
                           }
@@ -367,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     Expanded(
                         child: DiscoWidget(
                             isEnabled: widget.isDiscoModeEnabled,
-                            child: const ChatPanelWidget())),
+                            child: ChatPanelWidget(channel: widget.channel))),
                     chatPanelFooter,
                   ]))
                 ]);
