@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
@@ -13,6 +14,10 @@ class StreamPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final urlString = (Platform.isAndroid)
+        ? "http://localhost:8080/assets/twitch-player.html?channel=$channelDisplayName"
+        : "https://player.twitch.tv/?channel=$channelDisplayName&parent=chat.rtirl.com&muted=true&quality=160p30";
+
     return InAppWebView(
       initialOptions: InAppWebViewGroupOptions(
           crossPlatform: InAppWebViewOptions(
@@ -26,9 +31,7 @@ class StreamPreview extends StatelessWidget {
           ios: IOSInAppWebViewOptions(
             allowsInlineMediaPlayback: true,
           )),
-      initialUrlRequest: URLRequest(
-          url: Uri.parse(
-              "https://player.twitch.tv/?channel=$channelDisplayName&parent=chat.rtirl.com&muted=true&quality=mobile")),
+      initialUrlRequest: URLRequest(url: Uri.parse(urlString)),
       gestureRecognizers: {
         Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
       },

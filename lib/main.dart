@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:io' show Platform;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -10,6 +11,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
@@ -75,6 +77,10 @@ Color tintColor(Color color, double factor) => Color.fromRGBO(
 final primarySwatch = generateMaterialColor(const Color(0xFF009FDF));
 
 void main() async {
+  if (Platform.isAndroid) {
+    final InAppLocalhostServer localhostServer = InAppLocalhostServer();
+    await localhostServer.start();
+  }
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   final prefs = await SharedPreferences.getInstance();
