@@ -11,6 +11,11 @@
       "$provider": {
         ".indexOn": ".value"
       }
+    },
+    "assignments": {
+      "$provider": {
+        ".indexOn": ".value"
+      }
     }
   }
 }

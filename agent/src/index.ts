@@ -39,10 +39,11 @@ async function main() {
   );
 
   runTwitchAgent(firebase, AGENT_ID).then((close) => {
-    for (const signal of ["SIGINT", "SIGTERM", "uncaughtException"]) {
+    for (const signal of ["SIGINT", "SIGTERM"]) {
       process.on(signal, async (err) => {
         log.error(err, "received %s", signal);
         await close();
+        log.info({ agentId: AGENT_ID }, "agent closed");
         process.exit(0);
       });
     }
