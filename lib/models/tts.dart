@@ -10,6 +10,21 @@ import 'package:rtchat/models/messages/twitch/user.dart';
 
 class TtsModel extends ChangeNotifier {
   final _tts = FlutterTts();
+
+  TtsModel() {
+    if (Platform.isIOS) {
+      _tts.setSharedInstance(true);
+      _tts.setIosAudioCategory(
+          IosTextToSpeechAudioCategory.playback,
+          [
+            IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+            IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+            IosTextToSpeechAudioCategoryOptions.duckOthers
+          ],
+          IosTextToSpeechAudioMode.voicePrompt);
+    }
+  }
+
   final _queue = <MessageModel>[];
   Timer? _evictionTimer;
   var _isBotMuted = false;
