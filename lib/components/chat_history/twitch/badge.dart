@@ -21,13 +21,15 @@ class TwitchBadgeWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<TwitchBadgeModel>(builder: (context, model, child) {
       if (!model.isEnabled("$badge/$version")) {
-        return Container();
+        return const SizedBox();
       }
       final url = model.badgeSets["$badge/$version"]?["image_url_4x"];
       if (url == null) {
-        return Container();
+        return const SizedBox();
       }
-      return Image(image: NetworkImageWithRetry(url), height: height);
+      return Padding(
+          padding: const EdgeInsets.only(right: 5),
+          child: Image(image: NetworkImageWithRetry(url), height: height));
     });
   }
 }
