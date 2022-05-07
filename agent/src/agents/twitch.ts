@@ -169,8 +169,11 @@ async function getChatAgent(
     username,
     token: token["access_token"],
     onAuthenticationFailure: async () => {
-      const token = await firebase.getCredentials(userId, true);
-      log.warn({ agentId, provider: "twitch" }, "authentication failure");
+      const token = await firebase.getCredentials(userId);
+      log.warn(
+        { agentId, provider: "twitch", token, username },
+        "authentication failure"
+      );
       return token["access_token"];
     },
     chat: {

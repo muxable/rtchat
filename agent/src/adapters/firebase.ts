@@ -117,7 +117,7 @@ export class FirebaseAdapter {
     return results.empty ? null : results.docs[0];
   }
 
-  async getCredentials(userId: string, forceRefresh = false) {
+  async getCredentials(userId: string) {
     // fetch the token from the database.
     const ref = this.firestore.collection("tokens").doc(userId);
     const encoded = (await ref.get()).get(this.provider);
@@ -126,9 +126,8 @@ export class FirebaseAdapter {
     }
     const client = new AuthorizationCode(await getTwitchOAuthConfig());
     let accessToken = client.createToken(JSON.parse(encoded));
-    while (accessToken.expired(3600) || forceRefresh) {
+    while (accessToken.expired(3600)) {
       try {
-        forceRefresh = false;
         accessToken = await accessToken.refresh();
       } catch (err: any) {
         if (err?.data?.payload?.message === "Invalid refresh token") {
