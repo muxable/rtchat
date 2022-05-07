@@ -18,6 +18,8 @@ class TtsModel extends ChangeNotifier {
   var _pitch = 1.0;
   var _isEnabled = false;
   final Set<TwitchUserModel> _mutedUsers = {};
+  // this is used to ignore messages in the past.
+  var _lastMessageTime = DateTime.now();
 
   String getVocalization(MessageModel model) {
     if (model is TwitchMessageModel) {
@@ -64,6 +66,8 @@ class TtsModel extends ChangeNotifier {
       _queue.clear();
       _evictionTimer?.cancel();
       _evictionTimer = null;
+    } else {
+      _lastMessageTime = DateTime.now();
     }
     say(
         SystemMessageModel(
@@ -139,6 +143,14 @@ class TtsModel extends ChangeNotifier {
       if ((_isBotMuted && model.author.isBot) || model.isCommand) {
         return;
       }
+    }
+
+    // make sure the message is in the future.
+    if (model is! SystemMessageModel) {
+      if (model.timestamp.isBefore(_lastMessageTime)) {
+        return;
+      }
+      _lastMessageTime = model.timestamp;
     }
 
     final vocalization = getVocalization(model);
