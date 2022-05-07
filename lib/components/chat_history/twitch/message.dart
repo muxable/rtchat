@@ -152,13 +152,11 @@ class TwitchMessageWidget extends StatelessWidget {
       // add badges.
       children.addAll(model.badges.map((badge) => WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: Padding(
-              padding: const EdgeInsets.only(right: 5),
-              child: TwitchBadgeWidget(
-                  channelId: model.tags['room-id'],
-                  badge: badge.key,
-                  version: badge.version,
-                  height: styleModel.fontSize)))));
+          child: TwitchBadgeWidget(
+              channelId: model.tags['room-id'],
+              badge: badge.key,
+              version: badge.version,
+              height: styleModel.fontSize))));
 
       // add author.
       if (contributors.contains(model.author.userId)) {

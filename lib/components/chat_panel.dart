@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/pinnable/scroll_view.dart';
 import 'package:rtchat/components/style_model_theme.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
@@ -221,7 +222,9 @@ class _ScrollToBottomWidgetState extends State<_ScrollToBottomWidget> {
 }
 
 class ChatPanelWidget extends StatefulWidget {
-  const ChatPanelWidget({Key? key}) : super(key: key);
+  final Channel channel;
+
+  const ChatPanelWidget({required this.channel, Key? key}) : super(key: key);
 
   @override
   _ChatPanelWidgetState createState() => _ChatPanelWidgetState();
@@ -260,7 +263,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                   vsync: this,
                   controller: _controller,
                   itemBuilder: (index) => StyleModelTheme(
-                    child: ChatHistoryMessage(message: messages[index]),
+                    child: ChatHistoryMessage(
+                        message: messages[index], channel: widget.channel),
                   ),
                   isPinnedBuilder: (index) {
                     final expiration = expirations[index];

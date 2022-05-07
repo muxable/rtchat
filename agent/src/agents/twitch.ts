@@ -14,6 +14,7 @@ import {
   TWITCH_CLIENT_ID,
 } from "../adapters/firebase";
 import { log } from "../log";
+import { v4 as uuidv4 } from "uuid";
 
 const ACTION_MESSAGE_REGEX = /^\u0001ACTION ([^\u0001]+)\u0001$/;
 const BADGES_RAW_REGEX = /badges=([^;]+);/;
@@ -149,10 +150,20 @@ async function getChatAgent(
   agentId: string,
   channel: string
 ) {
-  const { username, userId, isBot } = await firebase.getAgent(channel);
+  let { username, userId, isBot } = await firebase.getAgent(channel);
   const token = await firebase.getCredentials(userId);
 
   log.info({ username, userId, channel }, "getting chat agent");
+
+  const verify = await fetch("https://id.twitch.tv/oauth2/validate", {
+    headers: { Authorization: `OAuth ${token["access_token"]}` },
+  });
+  if (verify.status != 200) {
+    log.error({ username, userId, channel }, "invalid token");
+    const bot = await firebase.getBot();
+    username = bot.username;
+    userId = bot.userId;
+  }
 
   const twitch = new TwitchJs({
     username,
@@ -164,7 +175,7 @@ async function getChatAgent(
     },
     chat: {
       connectionTimeout: 5 * 1000,
-      joinTimeout: 3 * 1000,
+      joinTimeout: 1000,
     },
     log: { level: "warn" },
   });
@@ -232,114 +243,123 @@ async function getChatAgent(
   return { chat: twitch.chat, userId, isBot };
 }
 
+async function join(
+  firebase: FirebaseAdapter,
+  agentId: string,
+  channel: string
+) {
+  let raidListener: PubSubListener | null = null;
+  const { chat, userId, isBot } = await getChatAgent(
+    firebase,
+    agentId,
+    channel
+  );
+  log.info({ channel, agentId, provider }, "assigned to channel");
+  await Promise.race([
+    chat.join(channel),
+    new Promise<void>((_, reject) =>
+      setTimeout(() => reject("failed to join in time"), 1000)
+    ),
+  ]);
+
+  if (!isBot) {
+    const pubsub = new SingleUserPubSubClient({
+      authProvider: {
+        clientId: TWITCH_CLIENT_ID,
+        tokenType: "user",
+        currentScopes: [],
+        getAccessToken: async (): Promise<AccessToken> => {
+          const token = await firebase.getCredentials(userId);
+          return {
+            accessToken: token["access_token"],
+            refreshToken: token["refresh_token"],
+            scope: token["scope"],
+            expiresIn: token["expires_in"],
+            obtainmentTimestamp:
+              +token["expires_at"] - token["expires_in"] * 1000,
+          };
+        },
+      },
+    });
+    raidListener = await pubsub.onCustomTopic("raid", async (message) => {
+      const data = message.data as any;
+      await firebase.setIfNotExists(
+        `twitch:${data["type"]}-${data["raid"]["id"]}`,
+        {
+          channel,
+          channelId: `twitch:${data["raid"]["source_id"]}`,
+          ...data,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        }
+      );
+    });
+  }
+
+  log.info({ channel, agentId, provider }, "joined channel");
+
+  chat.on(TwitchJs.Chat.Events.DISCONNECTED, async () => {
+    log.info({ agentId, provider, channel }, "force disconnected");
+
+    await firebase.releaseUnexpectedly(provider, channel);
+  });
+
+  // wait a random amount of time.
+  // this allows for claims to be a little more uniformly distributed across agents instead
+  // of being dominated by the slowest agent.
+  await new Promise<void>((resolve) =>
+    setTimeout(() => resolve(), 1000 * Math.random())
+  );
+
+  // mark us as the claimant.
+  await firebase.claim(provider, channel, `${agentId}/${uuidv4()}`);
+
+  log.info({ channel, agentId, provider }, "claim released");
+
+  // when that promise completes, we should leave the channel because we are no longer assigned.
+  await raidListener?.remove();
+  chat.disconnect();
+
+  log.info({ channel, agentId, provider }, "disconnected");
+}
+
 export async function runTwitchAgent(
   firebase: FirebaseAdapter,
   agentId: string
 ) {
-  const agents: { [key: string]: Chat } = {};
+  const provider = "twitch";
 
-  const raidListeners: { [key: string]: PubSubListener } = {};
+  const promises: Promise<void>[] = [];
 
-  const unsubscribe = firebase.onAssignment(
-    provider,
-    agentId,
-    async (channel) => {
-      log.info({ channel, agentId, provider }, "assigned to channel");
-      const { chat, userId, isBot } = await getChatAgent(
-        firebase,
-        agentId,
-        channel
-      );
-      await Promise.race([
-        chat.join(channel),
-        new Promise<void>((_, reject) =>
-          setTimeout(() => reject("failed to join in time"), 1000)
-        ),
-      ]);
-      log.info({ channel, agentId, provider }, "joined channel");
+  const channels = new Set<string>();
 
-      chat.on(TwitchJs.Chat.Events.DISCONNECTED, async () => {
-        log.info({ agentId, provider }, "disconnected");
-
-        await unsubscribe(channel);
-      });
-
-      agents[channel] = chat;
-
-      if (!isBot) {
-        const pubsub = new SingleUserPubSubClient({
-          authProvider: {
-            clientId: TWITCH_CLIENT_ID,
-            tokenType: "user",
-            currentScopes: [],
-            getAccessToken: async (): Promise<AccessToken> => {
-              const token = await firebase.getCredentials(userId);
-              return {
-                accessToken: token["access_token"],
-                refreshToken: token["refresh_token"],
-                scope: token["scope"],
-                expiresIn: token["expires_in"],
-                obtainmentTimestamp:
-                  +token["expires_at"] - token["expires_in"] * 1000,
-              };
-            },
-          },
-        });
-        raidListeners[channel] = await pubsub.onCustomTopic(
-          "raid",
-          async (message) => {
-            const data = message.data as any;
-            await firebase.setIfNotExists(
-              `twitch:${data["type"]}-${data["raid"]["id"]}`,
-              {
-                channel,
-                channelId: `twitch:${data["raid"]["source_id"]}`,
-                ...data,
-                timestamp: admin.firestore.FieldValue.serverTimestamp(),
-              }
-            );
-          }
-        );
-      }
-    },
-    async (channel) => {
-      const chat = agents[channel];
-      if (!chat) {
-        log.error(
-          { channel, agentId, provider },
-          "agent missing for unsubscribe"
-        );
-        return;
-      }
-      log.info({ channel, agentId, provider }, "unassigned from channel");
-
-      await raidListeners[channel]?.remove();
-      delete raidListeners[channel];
-
-      await Promise.race([
-        chat.part(channel),
-        new Promise<void>((_, reject) =>
-          setTimeout(() => reject("failed to part in time"), 1000)
-        ),
-      ]);
-      log.info({ channel, agentId, provider }, "parted channel");
-      chat.disconnect();
-      delete agents[channel];
-    },
-    async (channel, message) => {
-      const chat = agents[channel];
-      if (!chat) {
-        log.error({ channel, agentId, provider }, "agent missing for message");
-        return;
-      }
-      log.info({ channel, agentId, provider }, "sending message");
-      await chat.say(channel, message);
+  const unsubscribe = firebase.onRequest(provider, agentId, (channel) => {
+    if (channels.has(channel)) {
+      // ignore duplicate request.
+      log.info({ channel, agentId, provider }, "duplicate request");
+      return;
     }
-  );
+    channels.add(channel);
+    promises.push(
+      join(firebase, agentId, channel).then(() => {
+        channels.delete(channel);
+      })
+    );
+  });
 
   return async () => {
     log.info({ agentId, provider }, "disconnecting");
 
-    await unsubscribe();
+    // stop listening for claims.
+    unsubscribe();
+
+    // release all matching this agent id.
+    await firebase.releaseAll(provider, agentId);
+
+    log.info({ agentId, provider }, "released all");
+
+    // and wait for existing promises.
+    await Promise.all(promises);
+
+    log.info({ agentId, provider }, "close complete");
   };
 }

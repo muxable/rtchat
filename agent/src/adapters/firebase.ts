@@ -86,17 +86,21 @@ export class FirebaseAdapter {
   async getAgent(channel: string) {
     const profile = await this.getProfile(channel);
     if (!profile) {
-      const userId = getBotUserId(this.provider);
-      const username = (
-        await this.firestore.collection("profiles").doc(userId).get()
-      ).get(this.provider)["login"] as string;
-      return { userId, username };
+      return { isBot: true, ...(await this.getBot()) };
     }
     return {
       userId: profile.id,
       username: profile.get(this.provider)["login"] as string,
-      isBot: !profile,
+      isBot: false,
     };
+  }
+
+  async getBot() {
+    const userId = getBotUserId(this.provider);
+    const username = (
+      await this.firestore.collection("profiles").doc(userId).get()
+    ).get(this.provider)["login"] as string;
+    return { userId, username };
   }
 
   async getProfile(channel: string) {
@@ -137,136 +141,76 @@ export class FirebaseAdapter {
     return accessToken.token;
   }
 
-  onAssignment(
+  // Notifies for open join requests.
+  onRequest(
     provider: string,
     agentId: string,
-    join: (channel: string) => Promise<void>,
-    leave: (channel: string) => Promise<void>,
-    say: (channel: string, message: string) => Promise<void>
+    callback: (channel: string) => void
   ) {
-    const channels = new Set<string>();
-    const ref = this.firebase.ref("agents").child(provider);
-    const failures: { [key: string]: number } = {};
-
-    const claimListener = async (snapshot: admin.database.DataSnapshot) => {
-      for (const channel of Object.keys(snapshot.val() || {})) {
-        if (failures[channel] >= 3) {
-          log.warn(
-            { channel, failureCount: failures[channel] },
-            "ignoring channel because too many join failures"
-          );
-          continue;
-        }
-        // incur a slight delay to reduce contesting and load balance a little.
-        const delay = 250 * Math.random() + 250 * Math.log1p(channels.size);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        try {
-          await ref.child(channel).transaction((data) => {
-            if (data !== "") {
-              return;
-            }
-            return agentId;
-          });
-        } catch (err) {
-          log.warn({ err }, "failed to claim channel");
-        }
+    const listener = (snapshot: admin.database.DataSnapshot) => {
+      const requests = snapshot.val();
+      if (!requests) {
         return;
       }
+      for (const channel of Object.keys(requests)) {
+        callback(channel);
+      }
     };
-
-    const claimRef = ref.orderByValue().equalTo("");
-    const assignRef = ref.orderByValue().equalTo(agentId);
-
-    const subscription = new Observable<admin.database.DataSnapshot>(
-      (subscriber) => {
-        const listener = (s: admin.database.DataSnapshot) => {
-          subscriber.next(s);
-        };
-
-        assignRef.on("value", listener);
-
-        return () => assignRef.off("value", listener);
-      }
-    )
-      .pipe(
-        concatMap(async (snapshot) => {
-          const requestedChannels = new Set(Object.keys(snapshot.val() || {}));
-
-          // TODO: handle join failure in a way that doesn't cause infinite loops.
-          const add = diff(requestedChannels, channels);
-          const remove = diff(channels, requestedChannels);
-          for (const channel of add) {
-            // this check is required because the claim listener is not concat-safe
-            // and may claim channels with too many failures if the count hasn't
-            // been updated yet.
-            if (failures[channel] >= 3) {
-              log.warn(
-                { channel, failureCount: failures[channel] },
-                "ignoring channel because too many join failures"
-              );
-              await ref.child(channel).transaction((data) => {
-                if (data === agentId) {
-                  return "";
-                }
-              });
-              continue;
-            }
-            try {
-              await join(channel);
-              channels.add(channel);
-              delete failures[channel];
-            } catch (e) {
-              log.error(
-                { provider, agentId, channel, e },
-                "failed to join channel"
-              );
-              failures[channel] = (failures[channel] || 0) + 1;
-              await ref.child(channel).transaction((data) => {
-                if (data === agentId) {
-                  return "";
-                }
-              });
-            }
-          }
-          for (const channel of remove) {
-            try {
-              await leave(channel);
-              channels.delete(channel);
-            } catch (e) {
-              log.error({ provider, agentId, channel, e }, "failed to leave");
-            }
-          }
-          // register a disconnect handler too in case our cleanup isn't called.
-          // if we get preempted here we're in for a bad time.
-          const update: { [key: string]: "" } = {};
-          for (const channel of Array.from(channels)) {
-            update[channel] = "";
-          }
-          await ref.onDisconnect().cancel();
-          await ref.onDisconnect().update(update);
-        })
-      )
-      .subscribe({ error: (err) => log.error(err) });
-
-    claimRef.on("value", claimListener);
-
-    return async (channel?: string) => {
-      if (channel) {
-        // unsubscribe from a specific channel.
-        await ref.child(channel).set("");
-        return;
-      }
-      claimRef.off("value", claimListener);
-      subscription.unsubscribe();
-
-      // remove all existing channel claims.
-      const update: { [key: string]: "" } = {};
-      for (const channel of Array.from(channels)) {
-        update[channel] = "";
-      }
-      await ref.update(update);
-      await ref.onDisconnect().cancel();
-      channels.clear();
+    this.firebase.ref("requests").child(provider).on("value", listener);
+    return () => {
+      this.firebase.ref("requests").child(provider).off("value", listener);
     };
+  }
+
+  // This function claims the agent for the given id and returns when the agent is released.
+  async claim(provider: string, channel: string, claimId: string) {
+    // set the assignment
+    const assignRef = this.firebase
+      .ref("assignments")
+      .child(provider)
+      .child(channel);
+    await assignRef.set(claimId);
+    // clear the request
+    const requestRef = this.firebase
+      .ref("requests")
+      .child(provider)
+      .child(channel);
+    await requestRef.set(null);
+    const dc = requestRef.onDisconnect();
+    dc.set("");
+    // wait for assignment change
+    await new Promise<void>((resolve) => {
+      const listener = (snapshot: admin.database.DataSnapshot) => {
+        if (snapshot.val() !== claimId) {
+          resolve();
+          assignRef.off("value", listener);
+          dc.cancel();
+        }
+      };
+      assignRef.on("value", listener);
+    });
+  }
+
+  // Issues a new request for a given provider and channel.
+  async releaseUnexpectedly(provider: string, channel: string) {
+    await this.firebase.ref("requests").child(provider).child(channel).set("");
+  }
+
+  // Finds all the channels owned by this agent and issues new join requests for them.
+  async releaseAll(provider: string, agentId: string) {
+    const ref = this.firebase.ref("assignments").child(provider);
+    const results = await ref
+      .orderByValue()
+      .startAt(agentId)
+      .endAt(`${agentId}\uFFFF`)
+      .once("value");
+    const channels = results.val();
+    if (!channels) {
+      return;
+    }
+    for (const key of Object.keys(channels)) {
+      channels[key] = "";
+    }
+    await this.firebase.ref("requests").child(provider).update(channels);
   }
 }
