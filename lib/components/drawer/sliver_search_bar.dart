@@ -26,6 +26,7 @@ class SliverSearchBarWidget extends StatelessWidget {
                   const SizedBox(width: 24.0),
                   Expanded(
                     child: TextField(
+                      textInputAction: TextInputAction.search,
                       decoration: const InputDecoration(
                         hintText: 'Search viewers',
                         isDense: true,
