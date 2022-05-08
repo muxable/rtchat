@@ -229,10 +229,12 @@ async function getChatAgent(
     }
   });
 
+  await twitch.chat.connect();
+
   return twitch.chat;
 }
 
-const agents: { [userId: string]: Chat } = {};
+const agents: { [userId: string]: Promise<Chat> } = {};
 
 async function join(
   firebase: FirebaseAdapter,
@@ -255,10 +257,9 @@ async function join(
   // }
 
   if (!agents[userId]) {
-    agents[userId] = await getChatAgent(firebase, agentId, username, userId);
-    await agents[userId].connect();
+    agents[userId] = getChatAgent(firebase, agentId, username, userId);
   }
-  const chat = agents[userId];
+  const chat = await agents[userId];
   log.info({ channel, agentId, provider }, "assigned to channel");
   await Promise.race([
     chat.join(channel),
