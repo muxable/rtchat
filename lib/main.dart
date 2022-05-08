@@ -48,6 +48,7 @@ import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/tts.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
+import 'package:rtchat/theme_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 MaterialColor generateMaterialColor(Color color) {
@@ -131,8 +132,6 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    const accentColor = Color(0xFF009FDF);
-    const detailColor = Color(0xFF121312);
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserModel()),
@@ -290,18 +289,24 @@ class _AppState extends State<App> {
             canvasColor: Colors.black,
             cardColor: Colors.black,
             appBarTheme: const AppBarTheme(
-              color: detailColor,
+              color: ThemeColors.detailColor,
             ),
             colorScheme: ColorScheme.fromSwatch(
               brightness: Brightness.dark,
-              backgroundColor: detailColor,
-              accentColor: accentColor,
+              backgroundColor: ThemeColors.detailColor,
+              accentColor: ThemeColors.accentColor,
             ),
             dialogBackgroundColor: Colors.black,
-            toggleableActiveColor: accentColor,
-            bottomSheetTheme:
-                const BottomSheetThemeData(backgroundColor: detailColor),
-            drawerTheme: const DrawerThemeData(backgroundColor: detailColor)),
+            toggleableActiveColor: ThemeColors.accentColor,
+            bottomSheetTheme: const BottomSheetThemeData(
+                backgroundColor: ThemeColors.detailColor),
+            drawerTheme:
+                const DrawerThemeData(backgroundColor: ThemeColors.detailColor),
+            inputDecorationTheme: const InputDecorationTheme(
+              fillColor: ThemeColors.textFieldColor,
+            ),
+            textTheme: const TextTheme(
+                headlineMedium: TextStyle(color: Colors.white))),
         navigatorObservers: [App.observer],
         initialRoute: '/',
         routes: {
