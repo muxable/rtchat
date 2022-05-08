@@ -73,7 +73,7 @@ async function getTwitchUserId(username: string): Promise<string> {
     }
   );
   const json = await res.json();
-  if (json.data.length === 0) {
+  if ((json.data || []).length === 0) {
     throw new Error("user not found");
   }
   return json.data[0]["id"];
@@ -192,7 +192,9 @@ async function getChatAgent(
         isAction,
         ...tmiJsTagsShim(message, isAction),
       }
-    );
+    ).catch((err) => {
+      log.error(err);
+    });
   });
 
   twitch.chat.on(TwitchJs.Chat.Events.CLEAR_MESSAGE, (message) => {
@@ -204,18 +206,24 @@ async function getChatAgent(
       message.tags.targetMsgId,
       message.timestamp,
       message.tags
-    );
+    ).catch((err) => {
+      log.error(err);
+    });
   });
 
-  // twitch.chat.on(TwitchJs.Chat.Events.CLEAR_CHAT, async (message) => {
-  //   await firebase
-  //     .getMessage(`twitch:clear-${message.timestamp.toISOString()}`)
-  //     .set({
-  //       channel: message.channel,
-  //       channelId: `twitch:${await getTwitchUserId(message.channel)}`,
-  //       type: "clear",
-  //     });
-  // });
+  twitch.chat.on(TwitchJs.Chat.Events.CLEAR_CHAT, (message) => {
+    (async () => {
+      await firebase
+        .getMessage(`twitch:clear-${message.timestamp.toISOString()}`)
+        .set({
+          channel: message.channel,
+          channelId: `twitch:${await getTwitchUserId(message.channel)}`,
+          type: "clear",
+        });
+    })().catch((err) => {
+      log.error(err);
+    });
+  });
 
   twitch.chat.on(TwitchJs.Chat.Events.ALL, (message) => {
     if (message.event.startsWith("HOSTED/")) {
@@ -225,7 +233,9 @@ async function getChatAgent(
         (message as any).tags.displayName,
         message.timestamp,
         (message as any).numberOfViewers || 0
-      );
+      ).catch((err) => {
+        log.error(err);
+      });
     }
   });
 
@@ -348,9 +358,13 @@ export async function runTwitchAgent(
     }
     channels.add(channel);
     promises.push(
-      join(firebase, agentId, channel).then(() => {
-        channels.delete(channel);
-      })
+      join(firebase, agentId, channel)
+        .catch((e) => {
+          log.error({ channel, agentId, provider }, e);
+        })
+        .finally(() => {
+          channels.delete(channel);
+        })
     );
   });
 
