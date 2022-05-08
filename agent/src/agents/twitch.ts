@@ -229,8 +229,6 @@ async function getChatAgent(
     }
   });
 
-  await twitch.chat.connect();
-
   return twitch.chat;
 }
 
@@ -258,6 +256,7 @@ async function join(
 
   if (!agents[userId]) {
     agents[userId] = await getChatAgent(firebase, agentId, username, userId);
+    await agents[userId].connect();
   }
   const chat = agents[userId];
   log.info({ channel, agentId, provider }, "assigned to channel");
