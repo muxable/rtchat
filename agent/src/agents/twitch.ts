@@ -218,7 +218,7 @@ async function getChatAgent(
     if (message.event.startsWith("HOSTED/")) {
       addHost(
         firebase,
-        message.channel,
+        message.channel.replace("#", ""),
         (message as any).tags.displayName,
         message.timestamp,
         (message as any).numberOfViewers || 0
