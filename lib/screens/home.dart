@@ -203,6 +203,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   icon: Icon(ttsModel.enabled
                       ? Icons.record_voice_over
                       : Icons.voice_over_off),
+                  tooltip: 'Text to speech',
                   onPressed: () {
                     ttsModel.enabled = !ttsModel.enabled;
                   });
