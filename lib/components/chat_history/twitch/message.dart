@@ -51,6 +51,7 @@ bool isTwitchClip(String url) {
 
 const contributors = [
   "158394109", // muxfd
+  "761248557", //ken0095
 ];
 
 class TwitchMessageWidget extends StatelessWidget {
