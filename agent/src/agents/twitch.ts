@@ -2,7 +2,7 @@ import { AccessToken } from "@twurple/auth";
 import { SingleUserPubSubClient, PubSubListener } from "@twurple/pubsub";
 import * as admin from "firebase-admin";
 import fetch from "node-fetch";
-import { ClientCredentials } from "simple-oauth2";
+import { ClientCredentials, Token } from "simple-oauth2";
 import TwitchJs, {
   Chat,
   PrivateMessage,
@@ -73,8 +73,8 @@ async function getTwitchUserId(username: string): Promise<string> {
     }
   );
   const json = await res.json();
-  if (json.data.length === 0) {
-    throw new Error("user not found");
+  if ((json.data || []).length === 0) {
+    throw new Error("user not found " + username);
   }
   return json.data[0]["id"];
 }
@@ -147,35 +147,12 @@ async function deleteMessage(
  */
 async function getChatAgent(
   firebase: FirebaseAdapter,
-  agentId: string,
-  channel: string
+  username: string,
+  token: Token
 ) {
-  let { username, userId, isBot } = await firebase.getAgent(channel);
-  const token = await firebase.getCredentials(userId);
-
-  log.info({ username, userId, channel }, "getting chat agent");
-
-  const verify = await fetch("https://id.twitch.tv/oauth2/validate", {
-    headers: { Authorization: `OAuth ${token["access_token"]}` },
-  });
-  if (verify.status != 200) {
-    log.error({ username, userId, channel }, "invalid token");
-    const bot = await firebase.getBot();
-    username = bot.username;
-    userId = bot.userId;
-  }
-
   const twitch = new TwitchJs({
     username,
     token: token["access_token"],
-    onAuthenticationFailure: async () => {
-      const token = await firebase.getCredentials(userId);
-      log.warn(
-        { agentId, provider: "twitch", token, username },
-        "authentication failure"
-      );
-      return token["access_token"];
-    },
     chat: {
       connectionTimeout: 5 * 1000,
       joinTimeout: 1000,
@@ -204,7 +181,9 @@ async function getChatAgent(
         isAction,
         ...tmiJsTagsShim(message, isAction),
       }
-    );
+    ).catch((err) => {
+      log.error(err);
+    });
   });
 
   twitch.chat.on(TwitchJs.Chat.Events.CLEAR_MESSAGE, (message) => {
@@ -216,17 +195,23 @@ async function getChatAgent(
       message.tags.targetMsgId,
       message.timestamp,
       message.tags
-    );
+    ).catch((err) => {
+      log.error(err);
+    });
   });
 
-  twitch.chat.on(TwitchJs.Chat.Events.CLEAR_CHAT, async (message) => {
-    await firebase
-      .getMessage(`twitch:clear-${message.timestamp.toISOString()}`)
-      .set({
-        channel,
-        channelId: `twitch:${await getTwitchUserId(channel)}`,
-        type: "clear",
-      });
+  twitch.chat.on(TwitchJs.Chat.Events.CLEAR_CHAT, (message) => {
+    (async () => {
+      await firebase
+        .getMessage(`twitch:clear-${message.timestamp.toISOString()}`)
+        .set({
+          channel: message.channel,
+          channelId: `twitch:${await getTwitchUserId(message.channel)}`,
+          type: "clear",
+        });
+    })().catch((err) => {
+      log.error(err);
+    });
   });
 
   twitch.chat.on(TwitchJs.Chat.Events.ALL, (message) => {
@@ -237,13 +222,55 @@ async function getChatAgent(
         (message as any).tags.displayName,
         message.timestamp,
         (message as any).numberOfViewers || 0
-      );
+      ).catch((err) => {
+        log.error(err);
+      });
     }
   });
 
   await twitch.chat.connect();
 
-  return { chat: twitch.chat, userId, isBot };
+  return twitch.chat;
+}
+
+const agents: { [userId: string]: Promise<Chat> } = {};
+
+type Agent = {
+  userId: string;
+  username: string;
+  isBot: boolean;
+  token: Token;
+};
+
+async function getAgent(
+  firebase: FirebaseAdapter,
+  channel: string
+): Promise<Agent> {
+  const profile = await firebase.getProfile(channel);
+  const token = await firebase.getCredentials(channel);
+  if (!profile || !token) {
+    const bot = await firebase.getBot();
+    const token = await firebase.getCredentials(bot.userId);
+    if (!token) {
+      throw new Error("no credentials for bot");
+    }
+    return { isBot: true, token, ...bot };
+  }
+  // validate the auth token we have for this user.
+  const verify = await fetch("https://id.twitch.tv/oauth2/validate", {
+    headers: { Authorization: `OAuth ${token["access_token"]}` },
+  });
+  if (verify.status != 200) {
+    await firebase.clearCredentials(profile.id);
+    await admin.auth().revokeRefreshTokens(profile.id);
+    return await getAgent(firebase, channel);
+  }
+  return {
+    userId: profile.id,
+    username: profile.get("twitch")["login"] as string,
+    isBot: false,
+    token,
+  };
 }
 
 async function join(
@@ -252,11 +279,14 @@ async function join(
   channel: string
 ) {
   let raidListener: PubSubListener | null = null;
-  const { chat, userId, isBot } = await getChatAgent(
-    firebase,
-    agentId,
-    channel
-  );
+  const { username, userId, isBot, token } = await getAgent(firebase, channel);
+
+  log.info({ username, userId, channel }, "getting chat agent");
+
+  if (!agents[userId]) {
+    agents[userId] = getChatAgent(firebase, username, token);
+  }
+  const chat = await agents[userId];
   log.info({ channel, agentId, provider }, "assigned to channel");
   await Promise.race([
     chat.join(channel),
@@ -272,7 +302,6 @@ async function join(
         tokenType: "user",
         currentScopes: [],
         getAccessToken: async (): Promise<AccessToken> => {
-          const token = await firebase.getCredentials(userId);
           return {
             accessToken: token["access_token"],
             refreshToken: token["refresh_token"],
@@ -323,6 +352,8 @@ async function join(
   chat.disconnect();
 
   log.info({ channel, agentId, provider }, "disconnected");
+
+  delete agents[userId];
 }
 
 export async function runTwitchAgent(
@@ -335,7 +366,7 @@ export async function runTwitchAgent(
 
   const channels = new Set<string>();
 
-  const unsubscribe = firebase.onRequest(provider, agentId, (channel) => {
+  const unsubscribe = firebase.onRequest(provider, (channel) => {
     if (channels.has(channel)) {
       // ignore duplicate request.
       log.info({ channel, agentId, provider }, "duplicate request");
@@ -343,9 +374,13 @@ export async function runTwitchAgent(
     }
     channels.add(channel);
     promises.push(
-      join(firebase, agentId, channel).then(() => {
-        channels.delete(channel);
-      })
+      join(firebase, agentId, channel)
+        .catch((e) => {
+          log.error({ channel, agentId, provider }, e);
+        })
+        .finally(() => {
+          channels.delete(channel);
+        })
     );
   });
 

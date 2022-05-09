@@ -37,13 +37,6 @@ export const subscribe = functions.https.onCall(async (data, context) => {
       // the user just opened the app.
       await admin
         .database()
-        .ref("agents")
-        .child(provider)
-        .child(channel)
-        .set("");
-      
-      await admin
-        .database()
         .ref("requests")
         .child(provider)
         .child(channel)
@@ -79,13 +72,6 @@ export const unsubscribe = functions.pubsub
             console.log("unsubscribing from", provider, channel);
 
             // release the agent.
-            await admin
-              .database()
-              .ref("agents")
-              .child(provider)
-              .child(channel)
-              .set(null);
-            
             await admin
               .database()
               .ref("assignments")

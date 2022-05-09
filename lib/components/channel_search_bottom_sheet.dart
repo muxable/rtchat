@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/channel_search_results.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/theme_colors.dart';
 
 class ChannelSearchBottomSheetWidget extends StatefulWidget {
   final ScrollController? controller;
@@ -34,18 +35,18 @@ class _ChannelSearchBottomSheetWidgetState
           ),
           const SizedBox(height: 16),
           TextField(
+              textInputAction: TextInputAction.search,
               autofocus: true,
               controller: _searchController,
               decoration: InputDecoration(
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: BorderSide.none),
                   filled: true,
-                  hintStyle: TextStyle(color: Colors.grey[700]),
-                  prefixIcon: Padding(
-                      padding: const EdgeInsets.only(left: 16, right: 8),
-                      child: Text("twitch.tv/",
-                          style: TextStyle(color: Colors.grey[700]))),
+                  hintStyle: const TextStyle(color: ThemeColors.accentColor),
+                  prefixIcon: const Padding(
+                      padding: EdgeInsets.only(left: 16, right: 8),
+                      child: Text("twitch.tv/")),
                   prefixIconConstraints:
                       const BoxConstraints(minWidth: 0, minHeight: 0),
                   suffixIcon: GestureDetector(
@@ -56,9 +57,7 @@ class _ChannelSearchBottomSheetWidgetState
                           _value = "";
                         });
                       }),
-                  hintText: "muxfd",
-                  fillColor: Colors.white70),
-              style: const TextStyle(color: Colors.black),
+                  hintText: "muxfd"),
               onChanged: (value) {
                 setState(() {
                   _value = value;

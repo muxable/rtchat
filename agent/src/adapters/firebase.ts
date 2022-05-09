@@ -52,13 +52,6 @@ function getBotUserId(provider: "twitch") {
   }
 }
 
-/**
- * Computes the difference between two sets.
- */
-function diff<T>(a: Set<T>, b: Set<T>) {
-  return Array.from(a).filter((x) => !b.has(x));
-}
-
 export class FirebaseAdapter {
   constructor(
     private firebase: admin.database.Database,
@@ -81,18 +74,6 @@ export class FirebaseAdapter {
       }
       transaction.set(ref, value);
     });
-  }
-
-  async getAgent(channel: string) {
-    const profile = await this.getProfile(channel);
-    if (!profile) {
-      return { isBot: true, ...(await this.getBot()) };
-    }
-    return {
-      userId: profile.id,
-      username: profile.get(this.provider)["login"] as string,
-      isBot: false,
-    };
   }
 
   async getBot() {
@@ -122,7 +103,7 @@ export class FirebaseAdapter {
     const ref = this.firestore.collection("tokens").doc(userId);
     const encoded = (await ref.get()).get(this.provider);
     if (!encoded) {
-      throw new Error("token not found");
+      return null;
     }
     const client = new AuthorizationCode(await getTwitchOAuthConfig());
     let accessToken = client.createToken(JSON.parse(encoded));
@@ -131,7 +112,7 @@ export class FirebaseAdapter {
         accessToken = await accessToken.refresh();
       } catch (err: any) {
         if (err?.data?.payload?.message === "Invalid refresh token") {
-          throw new Error("invalid refresh token");
+          return null;
         }
         throw err;
       }
@@ -140,12 +121,15 @@ export class FirebaseAdapter {
     return accessToken.token;
   }
 
+  async clearCredentials(userId: string) {
+    await this.firestore
+      .collection("tokens")
+      .doc(userId)
+      .update({ [this.provider]: null });
+  }
+
   // Notifies for open join requests.
-  onRequest(
-    provider: string,
-    agentId: string,
-    callback: (channel: string) => void
-  ) {
+  onRequest(provider: string, callback: (channel: string) => void) {
     const listener = (snapshot: admin.database.DataSnapshot) => {
       const requests = snapshot.val();
       if (!requests) {
