@@ -7,11 +7,6 @@
         ".indexOn": ".value"
       }
     },
-    "agents": {
-      "$provider": {
-        ".indexOn": ".value"
-      }
-    },
     "assignments": {
       "$provider": {
         ".indexOn": ".value"
