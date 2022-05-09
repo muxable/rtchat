@@ -2,7 +2,7 @@ import { AccessToken } from "@twurple/auth";
 import { SingleUserPubSubClient, PubSubListener } from "@twurple/pubsub";
 import * as admin from "firebase-admin";
 import fetch from "node-fetch";
-import { ClientCredentials } from "simple-oauth2";
+import { ClientCredentials, Token } from "simple-oauth2";
 import TwitchJs, {
   Chat,
   PrivateMessage,
@@ -74,7 +74,7 @@ async function getTwitchUserId(username: string): Promise<string> {
   );
   const json = await res.json();
   if ((json.data || []).length === 0) {
-    throw new Error("user not found");
+    throw new Error("user not found " + username);
   }
   return json.data[0]["id"];
 }
@@ -147,23 +147,12 @@ async function deleteMessage(
  */
 async function getChatAgent(
   firebase: FirebaseAdapter,
-  agentId: string,
   username: string,
-  userId: string
+  token: Token
 ) {
-  const token = await firebase.getCredentials(userId);
-
   const twitch = new TwitchJs({
     username,
     token: token["access_token"],
-    onAuthenticationFailure: async () => {
-      const token = await firebase.getCredentials(userId);
-      log.warn(
-        { agentId, provider: "twitch", username },
-        "authentication failure"
-      );
-      return token["access_token"];
-    },
     chat: {
       connectionTimeout: 5 * 1000,
       joinTimeout: 1000,
@@ -246,28 +235,56 @@ async function getChatAgent(
 
 const agents: { [userId: string]: Promise<Chat> } = {};
 
+type Agent = {
+  userId: string;
+  username: string;
+  isBot: boolean;
+  token: Token;
+};
+
+async function getAgent(
+  firebase: FirebaseAdapter,
+  channel: string
+): Promise<Agent> {
+  const profile = await firebase.getProfile(channel);
+  const token = await firebase.getCredentials(channel);
+  if (!profile || !token) {
+    const bot = await firebase.getBot();
+    const token = await firebase.getCredentials(bot.userId);
+    if (!token) {
+      throw new Error("no credentials for bot");
+    }
+    return { isBot: true, token, ...bot };
+  }
+  // validate the auth token we have for this user.
+  const verify = await fetch("https://id.twitch.tv/oauth2/validate", {
+    headers: { Authorization: `OAuth ${token["access_token"]}` },
+  });
+  if (verify.status != 200) {
+    await firebase.clearCredentials(profile.id);
+    await admin.auth().revokeRefreshTokens(profile.id);
+    return await getAgent(firebase, channel);
+  }
+  return {
+    userId: profile.id,
+    username: profile.get("twitch")["login"] as string,
+    isBot: false,
+    token,
+  };
+}
+
 async function join(
   firebase: FirebaseAdapter,
   agentId: string,
   channel: string
 ) {
   let raidListener: PubSubListener | null = null;
-  let { username, userId, isBot } = await firebase.getAgent(channel);
+  const { username, userId, isBot, token } = await getAgent(firebase, channel);
 
   log.info({ username, userId, channel }, "getting chat agent");
 
-  // const verify = await fetch("https://id.twitch.tv/oauth2/validate", {
-  //   headers: { Authorization: `OAuth ${token["access_token"]}` },
-  // });
-  // if (verify.status != 200) {
-  //   log.error({ username, userId, channel }, "invalid token");
-  //   const bot = await firebase.getBot();
-  //   username = bot.username;
-  //   userId = bot.userId;
-  // }
-
   if (!agents[userId]) {
-    agents[userId] = getChatAgent(firebase, agentId, username, userId);
+    agents[userId] = getChatAgent(firebase, username, token);
   }
   const chat = await agents[userId];
   log.info({ channel, agentId, provider }, "assigned to channel");
@@ -285,7 +302,6 @@ async function join(
         tokenType: "user",
         currentScopes: [],
         getAccessToken: async (): Promise<AccessToken> => {
-          const token = await firebase.getCredentials(userId);
           return {
             accessToken: token["access_token"],
             refreshToken: token["refresh_token"],
@@ -350,7 +366,7 @@ export async function runTwitchAgent(
 
   const channels = new Set<string>();
 
-  const unsubscribe = firebase.onRequest(provider, agentId, (channel) => {
+  const unsubscribe = firebase.onRequest(provider, (channel) => {
     if (channels.has(channel)) {
       // ignore duplicate request.
       log.info({ channel, agentId, provider }, "duplicate request");
