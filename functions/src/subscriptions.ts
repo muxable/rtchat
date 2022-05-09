@@ -40,7 +40,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         .ref("requests")
         .child(provider)
         .child(channel)
-        .set("");
+        .set(admin.database.ServerValue.TIMESTAMP);
 
       if (context.auth != null) {
         await checkEventSubSubscriptions(context.auth.uid);
