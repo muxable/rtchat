@@ -163,173 +163,186 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
 
-    return Scaffold(
-      key: _scaffoldKey,
-      drawer: Sidebar(channel: widget.channel),
-      endDrawer: LeftDrawerWidget(channel: widget.channel),
-      appBar: HeaderBarWidget(
-          onChannelSelect: widget.onChannelSelect,
-          channel: widget.channel,
-          actions: [
-            Consumer2<ActivityFeedModel, LayoutModel>(
-                builder: (context, activityFeedModel, layoutModel, child) {
-              if (!activityFeedModel.isEnabled) {
-                return Container();
-              }
-              return IconButton(
-                icon: Icon(layoutModel.isShowNotifications
-                    ? Icons.notifications
-                    : Icons.notifications_outlined),
-                tooltip: 'Activity feed',
-                onPressed: () {
-                  layoutModel.isShowNotifications =
-                      !layoutModel.isShowNotifications;
-                },
-              );
-            }),
-            Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-              return IconButton(
-                icon: Icon(layoutModel.isShowPreview
-                    ? Icons.preview
-                    : Icons.preview_outlined),
-                tooltip: 'Stream preview',
-                onPressed: () {
-                  layoutModel.isShowPreview = !layoutModel.isShowPreview;
-                },
-              );
-            }),
-            Consumer<TtsModel>(builder: (context, ttsModel, child) {
-              return IconButton(
-                  icon: Icon(ttsModel.enabled
-                      ? Icons.record_voice_over
-                      : Icons.voice_over_off),
-                  tooltip: 'Text to speech',
-                  onPressed: () {
-                    ttsModel.enabled = !ttsModel.enabled;
-                  });
-            }),
-            IconButton(
-              icon: const Icon(Icons.people),
-              tooltip: 'Current viewers',
-              onPressed: () {
-                _scaffoldKey.currentState?.openEndDrawer();
-              },
-            ),
-          ]),
-      body: Container(
-        color: Theme.of(context).primaryColor,
-        child: SafeArea(
-          child: Container(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: Builder(builder: (context) {
-              final chatPanelFooter = Consumer<LayoutModel>(
-                builder: (context, layoutModel, child) {
-                  if (layoutModel.isInteractionLockable && layoutModel.locked) {
+    return GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+          key: _scaffoldKey,
+          drawer: Sidebar(channel: widget.channel),
+          endDrawer: LeftDrawerWidget(channel: widget.channel),
+          onDrawerChanged: (isOpened) =>
+              FocusManager.instance.primaryFocus?.unfocus(),
+          onEndDrawerChanged: (isOpened) =>
+              FocusManager.instance.primaryFocus?.unfocus(),
+          appBar: HeaderBarWidget(
+              onChannelSelect: widget.onChannelSelect,
+              channel: widget.channel,
+              actions: [
+                Consumer2<ActivityFeedModel, LayoutModel>(
+                    builder: (context, activityFeedModel, layoutModel, child) {
+                  if (!activityFeedModel.isEnabled) {
                     return Container();
                   }
-                  return child!;
-                },
-                child: Consumer<UserModel>(
-                  builder: (context, userModel, child) {
-                    if (!userModel.isSignedIn()) {
-                      return Column(children: [
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Flexible(child: Divider()),
-                              Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: Text("Sign in to send messages",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelLarge)),
-                              const Flexible(child: Divider()),
-                            ]),
-                        const SignInWithTwitch(),
-                      ]);
-                    }
-
-                    return child!;
+                  return IconButton(
+                    icon: Icon(layoutModel.isShowNotifications
+                        ? Icons.notifications
+                        : Icons.notifications_outlined),
+                    tooltip: 'Activity feed',
+                    onPressed: () {
+                      layoutModel.isShowNotifications =
+                          !layoutModel.isShowNotifications;
+                    },
+                  );
+                }),
+                Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+                  return IconButton(
+                    icon: Icon(layoutModel.isShowPreview
+                        ? Icons.preview
+                        : Icons.preview_outlined),
+                    tooltip: 'Stream preview',
+                    onPressed: () {
+                      layoutModel.isShowPreview = !layoutModel.isShowPreview;
+                    },
+                  );
+                }),
+                Consumer<TtsModel>(builder: (context, ttsModel, child) {
+                  return IconButton(
+                      icon: Icon(ttsModel.enabled
+                          ? Icons.record_voice_over
+                          : Icons.voice_over_off),
+                      tooltip: 'Text to speech',
+                      onPressed: () {
+                        ttsModel.enabled = !ttsModel.enabled;
+                      });
+                }),
+                IconButton(
+                  icon: const Icon(Icons.people),
+                  tooltip: 'Current viewers',
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openEndDrawer();
                   },
-                  child: MessageInputWidget(
-                    channel: widget.channel,
-                  ),
                 ),
-              );
-              if (orientation == Orientation.portrait) {
-                return Column(children: [
-                  Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-                    if (layoutModel.isShowNotifications) {
-                      return ResizableWidget(
-                          resizable: !layoutModel.locked,
-                          height: layoutModel.panelHeight,
-                          width: layoutModel.panelWidth,
-                          onResizeHeight: (height) {
-                            layoutModel.panelHeight = height;
-                          },
-                          onResizeWidth: (width) {
-                            layoutModel.panelWidth = width;
-                          },
-                          child: const ActivityFeedPanelWidget());
-                    } else if (layoutModel.isShowPreview) {
-                      return SizedBox(
-                          height: MediaQuery.of(context).size.width * 9 / 16,
-                          child: StreamPreview(
-                              channelDisplayName: widget.channel.displayName));
-                    } else {
-                      return Container();
-                    }
-                  }),
-                  Expanded(
-                      child: DiscoWidget(
-                          isEnabled: widget.isDiscoModeEnabled,
-                          child: ChatPanelWidget(channel: widget.channel))),
-                  chatPanelFooter,
-                ]);
-              } else {
-                // landscape
-                return Row(children: [
-                  Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-                    if (!layoutModel.isShowNotifications &&
-                        !layoutModel.isShowPreview) {
-                      return Container();
-                    }
-                    return ResizableWidget(
-                        resizable: !layoutModel.locked,
-                        height: layoutModel.panelHeight,
-                        width: layoutModel.panelWidth,
-                        onResizeHeight: (height) {
-                          layoutModel.panelHeight = height;
-                        },
-                        onResizeWidth: (width) {
-                          layoutModel.panelWidth = width;
-                        },
-                        child: Consumer<LayoutModel>(
-                            builder: (context, layoutModel, child) {
-                          if (layoutModel.isShowNotifications) {
-                            return const ActivityFeedPanelWidget();
-                          } else if (layoutModel.isShowPreview) {
-                            return StreamPreview(
-                                channelDisplayName: widget.channel.displayName);
-                          } else {
-                            return Container();
-                          }
-                        }));
-                  }),
-                  Expanded(
-                      child: Column(children: [
-                    Expanded(
-                        child: DiscoWidget(
-                            isEnabled: widget.isDiscoModeEnabled,
-                            child: ChatPanelWidget(channel: widget.channel))),
-                    chatPanelFooter,
-                  ]))
-                ]);
-              }
-            }),
+              ]),
+          body: Container(
+            color: Theme.of(context).primaryColor,
+            child: SafeArea(
+              child: Container(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: Builder(builder: (context) {
+                  final chatPanelFooter = Consumer<LayoutModel>(
+                    builder: (context, layoutModel, child) {
+                      if (layoutModel.isInteractionLockable &&
+                          layoutModel.locked) {
+                        return Container();
+                      }
+                      return child!;
+                    },
+                    child: Consumer<UserModel>(
+                      builder: (context, userModel, child) {
+                        if (!userModel.isSignedIn()) {
+                          return Column(children: [
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Flexible(child: Divider()),
+                                  Padding(
+                                      padding: const EdgeInsets.all(8),
+                                      child: Text("Sign in to send messages",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge)),
+                                  const Flexible(child: Divider()),
+                                ]),
+                            const SignInWithTwitch(),
+                          ]);
+                        }
+
+                        return child!;
+                      },
+                      child: MessageInputWidget(
+                        channel: widget.channel,
+                      ),
+                    ),
+                  );
+                  if (orientation == Orientation.portrait) {
+                    return Column(children: [
+                      Consumer<LayoutModel>(
+                          builder: (context, layoutModel, child) {
+                        if (layoutModel.isShowNotifications) {
+                          return ResizableWidget(
+                              resizable: !layoutModel.locked,
+                              height: layoutModel.panelHeight,
+                              width: layoutModel.panelWidth,
+                              onResizeHeight: (height) {
+                                layoutModel.panelHeight = height;
+                              },
+                              onResizeWidth: (width) {
+                                layoutModel.panelWidth = width;
+                              },
+                              child: const ActivityFeedPanelWidget());
+                        } else if (layoutModel.isShowPreview) {
+                          return SizedBox(
+                              height:
+                                  MediaQuery.of(context).size.width * 9 / 16,
+                              child: StreamPreview(
+                                  channelDisplayName:
+                                      widget.channel.displayName));
+                        } else {
+                          return Container();
+                        }
+                      }),
+                      Expanded(
+                          child: DiscoWidget(
+                              isEnabled: widget.isDiscoModeEnabled,
+                              child: ChatPanelWidget(channel: widget.channel))),
+                      chatPanelFooter,
+                    ]);
+                  } else {
+                    // landscape
+                    return Row(children: [
+                      Consumer<LayoutModel>(
+                          builder: (context, layoutModel, child) {
+                        if (!layoutModel.isShowNotifications &&
+                            !layoutModel.isShowPreview) {
+                          return Container();
+                        }
+                        return ResizableWidget(
+                            resizable: !layoutModel.locked,
+                            height: layoutModel.panelHeight,
+                            width: layoutModel.panelWidth,
+                            onResizeHeight: (height) {
+                              layoutModel.panelHeight = height;
+                            },
+                            onResizeWidth: (width) {
+                              layoutModel.panelWidth = width;
+                            },
+                            child: Consumer<LayoutModel>(
+                                builder: (context, layoutModel, child) {
+                              if (layoutModel.isShowNotifications) {
+                                return const ActivityFeedPanelWidget();
+                              } else if (layoutModel.isShowPreview) {
+                                return StreamPreview(
+                                    channelDisplayName:
+                                        widget.channel.displayName);
+                              } else {
+                                return Container();
+                              }
+                            }));
+                      }),
+                      Expanded(
+                          child: Column(children: [
+                        Expanded(
+                            child: DiscoWidget(
+                                isEnabled: widget.isDiscoModeEnabled,
+                                child:
+                                    ChatPanelWidget(channel: widget.channel))),
+                        chatPanelFooter,
+                      ]))
+                    ]);
+                  }
+                }),
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 }

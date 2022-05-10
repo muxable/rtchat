@@ -61,6 +61,7 @@ class ChatHistoryMessage extends StatelessWidget {
         }
 
         return InkWell(
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
             onLongPress: () async {
               var showTimeoutDialog = await showDialog<bool>(
                   context: context,
@@ -154,8 +155,7 @@ class ChatHistoryMessage extends StatelessWidget {
     } else if (m is TwitchRaidEventModel) {
       return Selector<EventSubConfigurationModel, RaidEventConfig>(
         selector: (_, model) => model.raidEventConfig,
-        builder: (_, config, __) =>
-            config.showEvent
+        builder: (_, config, __) => config.showEvent
             ? TwitchRaidEventWidget(m, channel: channel)
             : Container(),
       );
