@@ -22,19 +22,20 @@ class TwitchRaidEventWidget extends StatelessWidget {
     return DecoratedEventWidget.avatar(
       avatar: NetworkImageWithRetry(model.from.profilePictureUrl),
       child: Row(children: [
-        Text.rich(TextSpan(
-          children: [
-            TextSpan(
-                text: model.from.displayName,
-                style: Theme.of(context).textTheme.subtitle2),
-            const TextSpan(text: " is raiding with a party of "),
-            TextSpan(
-                text: _formatter.format(model.viewers),
-                style: Theme.of(context).textTheme.subtitle2),
-            const TextSpan(text: "."),
-          ],
-        )),
-        const Spacer(),
+        Expanded(
+          child: Text.rich(TextSpan(
+            children: [
+              TextSpan(
+                  text: model.from.displayName,
+                  style: Theme.of(context).textTheme.subtitle2),
+              const TextSpan(text: " is raiding with a party of "),
+              TextSpan(
+                  text: _formatter.format(model.viewers),
+                  style: Theme.of(context).textTheme.subtitle2),
+              const TextSpan(text: "."),
+            ],
+          )),
+        ),
         Consumer<EventSubConfigurationModel>(
             builder: (context, eventSubConfigurationModel, child) {
           if (!eventSubConfigurationModel
