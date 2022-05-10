@@ -131,40 +131,33 @@ export class FirebaseAdapter {
   // Notifies for open join requests.
   onRequest(provider: string, callback: (channel: string) => void) {
     const listener = (snapshot: admin.database.DataSnapshot) => {
-      const requests = snapshot.val();
-      if (!requests) {
-        return;
-      }
-      for (const channel of Object.keys(requests)) {
+      const channel = snapshot.key;
+      if (channel) {
         callback(channel);
       }
     };
-    this.firebase.ref("requests").child(provider).on("value", listener);
-    return () => {
-      this.firebase.ref("requests").child(provider).off("value", listener);
-    };
+    const ref = this.firebase
+      .ref("requests")
+      .child(provider);
+    ref.on("child_added", listener);
+    return () => ref.off("child_added", listener);
   }
 
   // This function claims the agent for the given id and returns when the agent is released.
-  async claim(provider: string, channel: string, claimId: string) {
+  async claim(provider: string, channel: string, agentId: string) {
     // set the assignment
     const assignRef = this.firebase
-      .ref("assignments")
+      .ref("connections")
       .child(provider)
-      .child(channel);
-    await assignRef.set(claimId);
-    // clear the request
-    const requestRef = this.firebase
-      .ref("requests")
-      .child(provider)
-      .child(channel);
-    await requestRef.set(null);
-    const dc = requestRef.onDisconnect();
-    dc.set("");
+      .child(channel)
+      .child(agentId);
+    await assignRef.set(true);
+    const dc = assignRef.onDisconnect();
+    dc.set(null);
     // wait for assignment change
     await new Promise<void>((resolve) => {
       const listener = (snapshot: admin.database.DataSnapshot) => {
-        if (snapshot.val() !== claimId) {
+        if (!snapshot.val()) {
           resolve();
           assignRef.off("value", listener);
           dc.cancel();
