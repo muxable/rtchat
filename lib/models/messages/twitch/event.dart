@@ -52,7 +52,7 @@ class TwitchCheerEventModel extends MessageModel {
   final int bits;
   final bool isAnonymous;
   final String cheerMessage;
-  final String giverName;
+  final String? giverName;
 
   const TwitchCheerEventModel({
     required this.bits,

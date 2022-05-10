@@ -143,7 +143,7 @@ DeltaEvent? _toDeltaEvent(
           bits: data['event']['bits'],
           isAnonymous: data['event']['is_anonymous'],
           cheerMessage: data['event']['message'],
-          giverName: data['event']['user_name'] ?? "Anonymous",
+          giverName: data['event']['user_name'],
           messageId: change.doc.id,
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
