@@ -64,7 +64,7 @@ class RaidEventConfig {
   RaidEventConfig.fromJson(Map<String, dynamic> json)
       : showEvent = json['showEvent'],
         eventDuration = Duration(seconds: json['eventDuration'].toInt()),
-        enableShoutoutButton = json['enableShoutoutButton'];
+        enableShoutoutButton = json['enableShoutoutButton'] ?? false;
 
   Map<String, dynamic> toJson() => {
         "showEvent": showEvent,
