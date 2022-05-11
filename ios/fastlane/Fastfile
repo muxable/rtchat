@@ -14,7 +14,7 @@ default_platform(:ios)
 
 platform :ios do
   desc "Push a new release build to the App Store"
-  
+
   lane :build do |options|
     app_store_connect_api_key(
       key_id: options[:key_id],
@@ -33,7 +33,7 @@ platform :ios do
     build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
   end
 
-  lane :beta do
+  lane :beta do |options|
     app_store_connect_api_key(
       key_id: options[:key_id],
       issuer_id: options[:issuer_id],
@@ -46,7 +46,7 @@ platform :ios do
     upload_symbols_to_crashlytics
   end
 
-  lane :release do
+  lane :release do |options|
     app_store_connect_api_key(
       key_id: options[:key_id],
       issuer_id: options[:issuer_id],
