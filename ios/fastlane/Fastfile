@@ -24,6 +24,7 @@ platform :ios do
 
     get_certificates
     get_provisioning_profile
+    update_code_signing_settings
   end
 
   lane :build do |options|
