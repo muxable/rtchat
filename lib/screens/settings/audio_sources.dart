@@ -12,7 +12,7 @@ class AudioSourcesScreen extends StatefulWidget {
   const AudioSourcesScreen({Key? key}) : super(key: key);
 
   @override
-  _AudioSourcesScreenState createState() => _AudioSourcesScreenState();
+  State<AudioSourcesScreen> createState() => _AudioSourcesScreenState();
 }
 
 class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
@@ -41,6 +41,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
       final url = _textEditingController.text;
       final metadata = await MetadataFetch.extract(url);
 
+      if (!mounted) return;
       final model = Provider.of<AudioModel>(context, listen: false);
       if (!await AudioChannel.hasPermission()) {
         await model.showAudioPermissionDialog(context);
@@ -49,6 +50,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
           .addSource(AudioSource(metadata?.title, Uri.parse(url), false));
 
       _textEditingController.clear();
+      if (!mounted) return;
       FocusScope.of(context).unfocus();
     }
   }

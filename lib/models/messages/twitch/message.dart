@@ -5,19 +5,19 @@ import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
-class _EmoteData {
+class EmoteData {
   final int start;
   final int end;
   final String key;
 
-  const _EmoteData(this.key, this.start, this.end);
+  const EmoteData(this.key, this.start, this.end);
 }
 
-class _BadgeData {
+class BadgeData {
   final String key;
   final String version;
 
-  const _BadgeData(this.key, this.version);
+  const BadgeData(this.key, this.version);
 }
 
 Iterable<MessageToken> tokenizeTags(Iterable<MessageToken> tokens) sync* {
@@ -105,7 +105,7 @@ Iterable<MessageToken> tokenizeEmotes(
   }
 }
 
-List<_EmoteData> parseEmotes(String emotes) {
+List<EmoteData> parseEmotes(String emotes) {
   return emotes.split("/").expand((block) {
     final blockTokens = block.split(':');
     final key = blockTokens[0];
@@ -113,12 +113,12 @@ List<_EmoteData> parseEmotes(String emotes) {
       final indexTokens = indices.split('-');
       final start = int.parse(indexTokens[0]);
       final end = int.parse(indexTokens[1]);
-      return _EmoteData(key, start, end);
+      return EmoteData(key, start, end);
     });
   }).toList();
 }
 
-List<_BadgeData> parseBadges(String badges) {
+List<BadgeData> parseBadges(String badges) {
   if (badges.isEmpty) {
     return [];
   }
@@ -126,7 +126,7 @@ List<_BadgeData> parseBadges(String badges) {
     final tokens = block.split('/');
     final key = tokens[0];
     final version = tokens[1];
-    return _BadgeData(key, version);
+    return BadgeData(key, version);
   }).toList();
 }
 
@@ -177,9 +177,9 @@ class TwitchMessageModel extends MessageModel {
       required this.channelId})
       : super(messageId: messageId, timestamp: timestamp);
 
-  List<_BadgeData> get badges =>
+  List<BadgeData> get badges =>
       _badges ??= parseBadges(tags['badges-raw'] ?? "");
-  List<_BadgeData>? _badges;
+  List<BadgeData>? _badges;
 
   bool get isAction => tags['message-type'] == "action";
 

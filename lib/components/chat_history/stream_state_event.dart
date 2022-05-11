@@ -14,16 +14,17 @@ class StreamStateEventWidget extends StatelessWidget {
     return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Container(
-            child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Text(
-                  model.isOnline
-                      ? "Stream online at $date, $time"
-                      : "Stream offline at $date, $time",
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.caption,
-                )),
-            color: Theme.of(context).dividerColor,
-            width: double.infinity));
+          color: Theme.of(context).dividerColor,
+          width: double.infinity,
+          child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                model.isOnline
+                    ? "Stream online at $date, $time"
+                    : "Stream offline at $date, $time",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.caption,
+              )),
+        ));
   }
 }

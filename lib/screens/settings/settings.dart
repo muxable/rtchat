@@ -19,7 +19,7 @@ class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
   @override
-  _SettingsScreenState createState() => _SettingsScreenState();
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
@@ -93,11 +93,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               (MediaQuery.of(context).size.width - 36) / 3),
                       borderRadius:
                           const BorderRadius.all(Radius.circular(10.0)),
-                      children: [
-                        _iconWithText(Icons.screen_rotation, "System"),
-                        _iconWithText(Icons.screen_lock_portrait, "Portrait"),
-                        _iconWithText(Icons.screen_lock_landscape, "Landscape"),
-                      ],
                       onPressed: (index) {
                         switch (index) {
                           case 0:
@@ -123,6 +118,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             PreferredOrientation.landscape,
                       ],
                       selectedColor: Theme.of(context).colorScheme.secondary,
+                      children: [
+                        _iconWithText(Icons.screen_rotation, "System"),
+                        _iconWithText(Icons.screen_lock_portrait, "Portrait"),
+                        _iconWithText(Icons.screen_lock_landscape, "Landscape"),
+                      ],
                     ),
                   ])),
           SwitchListTile.adaptive(

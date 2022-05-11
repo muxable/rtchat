@@ -11,7 +11,7 @@ class ActivityFeedScreen extends StatefulWidget {
   const ActivityFeedScreen({Key? key}) : super(key: key);
 
   @override
-  _ActivityFeedScreenState createState() => _ActivityFeedScreenState();
+  State<ActivityFeedScreen> createState() => _ActivityFeedScreenState();
 }
 
 class _ActivityFeedScreenState extends State<ActivityFeedScreen> {

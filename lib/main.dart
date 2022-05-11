@@ -123,7 +123,7 @@ class App extends StatefulWidget {
   const App({Key? key, required this.prefs}) : super(key: key);
 
   @override
-  _AppState createState() => _AppState();
+  State<App> createState() => _AppState();
 }
 
 class _AppState extends State<App> {

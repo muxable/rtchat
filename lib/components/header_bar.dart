@@ -71,7 +71,7 @@ class HeaderBarWidget extends StatefulWidget implements PreferredSizeWidget {
   final Size preferredSize; // default is 56.0
 
   @override
-  _HeaderBarWidgetState createState() => _HeaderBarWidgetState();
+  State<HeaderBarWidget> createState() => _HeaderBarWidgetState();
 }
 
 class _HeaderBarWidgetState extends State<HeaderBarWidget> {

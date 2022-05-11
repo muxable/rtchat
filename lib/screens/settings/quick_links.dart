@@ -9,7 +9,7 @@ class QuickLinksScreen extends StatefulWidget {
   const QuickLinksScreen({Key? key}) : super(key: key);
 
   @override
-  _QuickLinksScreenState createState() => _QuickLinksScreenState();
+  State<QuickLinksScreen> createState() => _QuickLinksScreenState();
 }
 
 const quickLinksIconsMap = {
@@ -45,6 +45,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
         Expanded(child:
             Consumer<QuickLinksModel>(builder: (context, quickLinks, child) {
           return ReorderableListView(
+            onReorder: quickLinks.swapSource,
             children: quickLinks.sources.map((source) {
               return Dismissible(
                 key: ValueKey(source),
@@ -68,7 +69,6 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                 },
               );
             }).toList(),
-            onReorder: quickLinks.swapSource,
           );
         })),
         const Divider(),
