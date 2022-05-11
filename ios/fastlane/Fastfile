@@ -28,9 +28,6 @@ platform :ios do
 
     increment_version_number(version_number: options[:version_number])
 
-    get_certificates
-    get_provisioning_profile
-
     build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
   end
 
