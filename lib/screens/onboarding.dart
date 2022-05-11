@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/auth/twitch.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
@@ -56,6 +57,8 @@ class OnboardingScreen extends StatelessWidget {
                             textAlign: TextAlign.center,
                           ),
                         onPressed: () async {
+                            FirebaseAnalytics.instance
+                                .logLogin(loginMethod: "anonymous");
                           showModalBottomSheet<void>(
                             context: context,
                             isScrollControlled: true,
