@@ -206,6 +206,7 @@ class _ScrollToBottomWidgetState extends State<_ScrollToBottomWidget> {
       child: Center(
         child: ElevatedButton(
             onPressed: () {
+              updateScrollPosition();
               widget.controller.animateTo(0,
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut);
