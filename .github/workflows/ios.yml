@@ -81,11 +81,11 @@ jobs:
           PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         if: github.event_name != 'release'
         run: |
-          app-store-connect publish
-            --path=release.ipa
-            --issuer-id=@env:ISSUER_ID
-            --key-id=@env:KEY_ID
-            --private-key=@env:PRIVATE_KEY
+          app-store-connect publish \
+            --path=release.ipa \
+            --issuer-id=@env:ISSUER_ID \
+            --key-id=@env:KEY_ID \
+            --private-key=@env:PRIVATE_KEY \
             --testflight
 
       - env:
@@ -94,9 +94,22 @@ jobs:
           PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         if: github.event_name == 'release'
         run: |
-          app-store-connect publish
-            --path=release.ipa
-            --issuer-id=@env:ISSUER_ID
-            --key-id=@env:KEY_ID
-            --private-key=@env:PRIVATE_KEY
+          app-store-connect publish \
+            --path=release.ipa \
+            --issuer-id=@env:ISSUER_ID \
+            --key-id=@env:KEY_ID \
+            --private-key=@env:PRIVATE_KEY \
             --app-store
+
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: "2.7"
+      - env:
+          ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
+          KEY_ID: 7V6HA7B3B3
+          PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        run: |
+          echo "{\"key_id\": \"$KEY_ID\",\"issuer_id\":\"$ISSUER_ID\","key":"$(echo $PRIVATE_KEY | sed 's/$/\\n/g' | tr -d '\n')"}" > $RUNNER_TEMP/api_key.json
+          gem install fastlane
+          fastlane download_dsyms api_key_path:$RUNNER_TEMP/api_key.json
+          upload_symbols_to_crashlytics
