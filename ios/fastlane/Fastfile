@@ -14,16 +14,15 @@ default_platform(:ios)
 
 platform :ios do
   desc "Push a new release build to the App Store"
-  before_all do |lane, options|
+
+  lane :build do |options|
     app_store_connect_api_key(
       key_id: options[:key_id],
       issuer_id: options[:issuer_id],
       key_content: options[:key_content],
       is_key_content_base64: true,
     )
-  end
 
-  lane :build do |options|
     cocoapods
 
     increment_version_number(version_number: options[:version_number])
@@ -34,13 +33,27 @@ platform :ios do
     build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
   end
 
-  lane :beta do
+  lane :beta do |options|
+    app_store_connect_api_key(
+      key_id: options[:key_id],
+      issuer_id: options[:issuer_id],
+      key_content: options[:key_content],
+      is_key_content_base64: true,
+    )
+
     upload_to_testflight
     download_dsyms
     upload_symbols_to_crashlytics
   end
 
-  lane :release do
+  lane :release do |options|
+    app_store_connect_api_key(
+      key_id: options[:key_id],
+      issuer_id: options[:issuer_id],
+      key_content: options[:key_content],
+      is_key_content_base64: true,
+    )
+
     upload_to_app_store(skip_metadata: true, skip_screenshots: true)
     download_dsyms
     upload_symbols_to_crashlytics
