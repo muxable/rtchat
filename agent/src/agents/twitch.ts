@@ -1,6 +1,6 @@
 import { AccessToken, AuthProvider } from "@twurple/auth";
-import { ChatClient } from "@twurple/chat";
-import { SingleUserPubSubClient } from "@twurple/pubsub";
+import { ChatClient, LogLevel } from "@twurple/chat";
+import { BasicPubSubClient, SingleUserPubSubClient } from "@twurple/pubsub";
 import * as admin from "firebase-admin";
 import fetch from "node-fetch";
 import { ClientCredentials, Token } from "simple-oauth2";
@@ -89,6 +89,31 @@ async function getAuthProvider(
   };
 }
 
+function bunyanLogger(level: LogLevel, message: string) {
+  switch (level) {
+    case LogLevel.CRITICAL:
+      log.fatal(message);
+      break;
+    case LogLevel.ERROR:
+      log.error(message);
+      break;
+    case LogLevel.WARNING:
+      log.warn(message);
+      break;
+    case LogLevel.INFO:
+      log.info(message);
+      break;
+    case LogLevel.DEBUG:
+      log.debug(message);
+      break;
+    case LogLevel.TRACE:
+      log.trace(message);
+      break;
+    default:
+      throw new Error("unexpected log level");
+  }
+}
+
 async function join(
   firebase: FirebaseAdapter,
   agentId: string,
@@ -99,11 +124,14 @@ async function join(
   const chat = new ChatClient({
     authProvider,
     isAlwaysMod: authProvider.username === channel,
+    logger: { custom: bunyanLogger },
   });
 
-  const disconnectListener = chat.onDisconnect(async () => {
-    log.info({ agentId, provider, channel }, "force disconnected");
-    await firebase.release(provider, channel, agentId, true);
+  chat.onDisconnect(async (manually) => {
+    if (!manually) {
+      log.info({ agentId, provider, channel }, "force disconnected");
+      await firebase.release(provider, channel, agentId, true);
+    }
   });
 
   const registerPromise = new Promise<void>((resolve) =>
@@ -208,7 +236,19 @@ async function join(
   log.info({ channel, agentId, provider }, "joined channel");
 
   if (authProvider.username === channel) {
-    const pubsub = new SingleUserPubSubClient({ authProvider });
+    const basicpubsub = new BasicPubSubClient({
+      logger: { custom: bunyanLogger },
+    });
+    basicpubsub.onDisconnect(async (manually) => {
+      if (!manually) {
+        log.info({ agentId, provider, channel }, "force disconnected");
+        await firebase.release(provider, channel, agentId, true);
+      }
+    });
+    const pubsub = new SingleUserPubSubClient({
+      authProvider,
+      pubSubClient: basicpubsub,
+    });
     const raidListener = await pubsub.onCustomTopic("raid", async (message) => {
       const data = message.data as any;
       await firebase.setIfNotExists(
@@ -228,9 +268,6 @@ async function join(
   } else {
     await firebase.claim(provider, channel, agentId);
   }
-
-  // prevent the disconnect listener from triggering on the next line.
-  disconnectListener.unbind();
 
   await chat.quit();
 
