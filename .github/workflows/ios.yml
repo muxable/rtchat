@@ -62,7 +62,7 @@ jobs:
           
   upload:
     needs: ipa
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     concurrency: 
       group: ios-${{ github.ref }}
     steps:
@@ -77,7 +77,7 @@ jobs:
 
       - env:
           ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
-          KEY_ID: SUR6CT925Z
+          KEY_ID: 7V6HA7B3B3
           PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         if: github.event_name != 'release'
         run: |
@@ -90,7 +90,7 @@ jobs:
 
       - env:
           ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
-          KEY_ID: SUR6CT925Z
+          KEY_ID: 7V6HA7B3B3
           PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         if: github.event_name == 'release'
         run: |
