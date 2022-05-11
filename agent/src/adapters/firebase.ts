@@ -146,6 +146,18 @@ export class FirebaseAdapter {
 
   // Notifies for open join requests.
   onRequest(provider: string, callback: (channel: string) => void) {
+    // attempt to join any existing channels. this will help load shed
+    // existing agents because the canonical operator is uniformly distributed.
+    // if we don't do this, older agents will slowly accrue channels.
+    this.firebase
+      .ref("connections")
+      .child(provider)
+      .get()
+      .then((snapshot) => {
+        for (const channel of Object.keys(snapshot.val() || {})) {
+          callback(channel);
+        }
+      });
     const listener = (snapshot: admin.database.DataSnapshot) => {
       const channel = snapshot.key;
       if (channel) {
