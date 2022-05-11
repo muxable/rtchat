@@ -81,8 +81,8 @@ jobs:
           PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         if: github.event_name != 'release'
         run: |
-          ls -R
           app-store-connect publish \
+            --verbose \
             --issuer-id=@env:ISSUER_ID \
             --key-id=@env:KEY_ID \
             --private-key=@env:PRIVATE_KEY \
@@ -95,6 +95,7 @@ jobs:
         if: github.event_name == 'release'
         run: |
           app-store-connect publish \
+            --verbose \
             --issuer-id=@env:ISSUER_ID \
             --key-id=@env:KEY_ID \
             --private-key=@env:PRIVATE_KEY \
