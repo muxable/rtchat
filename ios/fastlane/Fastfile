@@ -24,7 +24,9 @@ platform :ios do
 
     get_certificates
     get_provisioning_profile
-    update_code_signing_settings
+    update_code_signing_settings(
+      use_automatic_signing: true,
+    )
   end
 
   lane :build do |options|
@@ -32,7 +34,7 @@ platform :ios do
 
     increment_version_number(version_number: options[:version_number])
 
-    build_app(workspace: "Runner.xcworkspace", scheme: "Runner", xcargs: "-allowProvisioningUpdates")
+    build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
   end
 
   lane :beta do
