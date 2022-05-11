@@ -34,7 +34,9 @@ jobs:
           KEY_ID: SUR6CT925Z
           KEY_CONTENT: ${{ secrets.APPSTORE_API_PRIVATE_KEY_BASE64 }}
         working-directory: ios
-        run: bundle exec fastlane build issuer_id:$ISSUER_ID key_id:$KEY_ID key_content:$KEY_CONTENT version_number:${{ steps.semantic.outputs.version }}
+        run: |
+          bundle install
+          bundle exec fastlane build issuer_id:$ISSUER_ID key_id:$KEY_ID key_content:$KEY_CONTENT version_number:${{ steps.semantic.outputs.version }}
 
       - uses: actions/upload-artifact@v2
         with:
@@ -43,13 +45,17 @@ jobs:
           
   upload:
     needs: ipa
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     concurrency: 
       group: ios-${{ github.ref }}
     steps:
       - uses: actions/download-artifact@v3
         with:
           name: release.ipa
+
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
 
       - env:
           ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
