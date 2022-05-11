@@ -62,6 +62,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final uri = getUri();
     return Scaffold(
       appBar: AppBar(title: const Text("Activity feed")),
       body: Consumer3<ActivityFeedModel, UserModel, LayoutModel>(
@@ -114,7 +115,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: InAppWebView(
-                      initialUrlRequest: URLRequest(url: getUri()),
+                      initialUrlRequest:
+                          uri == null ? null : URLRequest(url: uri),
                       onWebViewCreated: (controller) =>
                           _inAppWebViewController = controller,
                       initialOptions: InAppWebViewGroupOptions(
