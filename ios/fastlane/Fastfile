@@ -21,15 +21,18 @@ platform :ios do
       key_content: options[:key_content],
       is_key_content_base64: true,
     )
+
+    get_certificates
+    get_provisioning_profile
+    update_code_signing_settings(
+      use_automatic_signing: true,
+    )
   end
 
   lane :build do |options|
     cocoapods
 
     increment_version_number(version_number: options[:version_number])
-
-    get_certificates
-    get_provisioning_profile
 
     build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
   end

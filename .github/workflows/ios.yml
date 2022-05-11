@@ -31,7 +31,7 @@ jobs:
       - run: flutter pub get
       - env:
           ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
-          KEY_ID: SUR6CT925Z
+          KEY_ID: 7V6HA7B3B3
           KEY_CONTENT: ${{ secrets.APPSTORE_API_PRIVATE_KEY_BASE64 }}
         working-directory: ios
         run: |
@@ -59,14 +59,14 @@ jobs:
 
       - env:
           ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
-          KEY_ID: SUR6CT925Z
+          KEY_ID: 7V6HA7B3B3
           KEY_CONTENT: ${{ secrets.APPSTORE_API_PRIVATE_KEY_BASE64 }}
         if: github.event_name != 'release'
         run: bundle exec fastlane beta
 
       - env:
           ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
-          KEY_ID: SUR6CT925Z
+          KEY_ID: 7V6HA7B3B3
           KEY_CONTENT: ${{ secrets.APPSTORE_API_PRIVATE_KEY_BASE64 }}
         if: github.event_name == 'release'
         run: bundle exec fastlane release
