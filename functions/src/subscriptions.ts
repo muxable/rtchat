@@ -74,7 +74,7 @@ export const unsubscribe = functions.pubsub
             // release the agent.
             await admin
               .database()
-              .ref("assignments")
+              .ref("connections")
               .child(provider)
               .child(channel)
               .set(null);
