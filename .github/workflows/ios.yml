@@ -17,6 +17,11 @@ on:
 jobs:
   ipa:
     runs-on: macos-latest
+    env:
+      APP_STORE_CONNECT_ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
+      APP_STORE_CONNECT_KEY_IDENTIFIER: 7V6HA7B3B3
+      APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+      CERTIFICATE_PRIVATE_KEY: ${{ secrets.APPLE_CERTIFICATE_KEY_PEM }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -34,22 +39,9 @@ jobs:
 
       - uses: subosito/flutter-action@v1
       - run: flutter pub get
-      - env:
-          ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
-          KEY_ID: 7V6HA7B3B3
-          PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-        run: |
-          KEY_PATH=$RUNNER_TEMP/build_key.pem
-          echo -n "${{ secrets.APPLE_CERTIFICATE_KEY_PEM }}" > $KEY_PATH
+      - run: |
           keychain initialize
-          app-store-connect fetch-signing-files $(xcode-project detect-bundle-id) \
-            --platform IOS \
-            --type IOS_APP_STORE \
-            --issuer-id=@env:ISSUER_ID \
-            --key-id=@env:KEY_ID \
-            --private-key=@env:PRIVATE_KEY \
-            --certificate-key=@file:$KEY_PATH \
-            --create
+          app-store-connect fetch-signing-files $(xcode-project detect-bundle-id) --type IOS_APP_STORE --create
           keychain add-certificates
           xcode-project use-profiles --export-options-plist=$RUNNER_TEMP/export_options.plist
           flutter pub get
@@ -63,6 +55,10 @@ jobs:
   upload:
     needs: ipa
     runs-on: macos-latest
+    env:
+      APP_STORE_CONNECT_ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
+      APP_STORE_CONNECT_KEY_IDENTIFIER: 7V6HA7B3B3
+      APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
     concurrency: 
       group: ios-${{ github.ref }}
     steps:
@@ -75,28 +71,17 @@ jobs:
           python-version: "3.10"
       - run: pip install codemagic-cli-tools
 
-      - env:
-          ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
-          KEY_ID: SUR6CT925Z
-          PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-        if: github.event_name != 'release'
-        run: |
-          app-store-connect publish
-            --path=release.ipa
-            --issuer-id=@env:ISSUER_ID
-            --key-id=@env:KEY_ID
-            --private-key=@env:PRIVATE_KEY
-            --testflight
+      - if: github.event_name != 'release'
+        run: app-store-connect publish --verbose --testflight --max-build-processing-wait 360
 
-      - env:
-          ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
-          KEY_ID: SUR6CT925Z
-          PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-        if: github.event_name == 'release'
-        run: |
-          app-store-connect publish
-            --path=release.ipa
-            --issuer-id=@env:ISSUER_ID
-            --key-id=@env:KEY_ID
-            --private-key=@env:PRIVATE_KEY
-            --app-store
+      - if: github.event_name == 'release'
+        run: app-store-connect publish --verbose --app-store --max-build-processing-wait 360
+
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: "2.7"
+      - run: |
+          echo "{\"key_id\": \"$APP_STORE_CONNECT_KEY_IDENTIFIER\",\"issuer_id\":\"$APP_STORE_CONNECT_ISSUER_ID\","key":"$(echo $APP_STORE_CONNECT_PRIVATE_KEY | sed 's/$/\\n/g' | tr -d '\n')"}" > $RUNNER_TEMP/api_key.json
+          gem install fastlane
+          fastlane download_dsyms api_key_path:$RUNNER_TEMP/api_key.json
+          upload_symbols_to_crashlytics
