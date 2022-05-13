@@ -152,7 +152,7 @@ async function join(
       .map((badge) => badge.split("/") as [string, string]);
     const reply = tags["reply-parent-msg-id"]
       ? {
-          messageId: tags["reply-parent-msg-id"],
+          messageId: `twitch:${tags["reply-parent-msg-id"]}`,
           displayName: tags["reply-parent-display-name"],
           userLogin: tags["reply-parent-user-login"],
           userId: tags["reply-parent-user-id"],
