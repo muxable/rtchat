@@ -232,22 +232,13 @@ export class FirebaseAdapter {
     log.info({ provider, channel, agentId }, "claim released");
   }
 
-  async release(
-    provider: string,
-    channel: string,
-    agentId: string,
-    force = false // if true, indicates we didn't have a choice (eg irc disconnect).
-  ) {
+  async forceRelease(provider: string, channel: string, agentId: string) {
     const connRef = this.firebase
       .ref("connections")
       .child(provider)
       .child(channel)
       .child(agentId);
-    if (force) {
-      await connRef.remove();
-    } else {
-      await connRef.set(false);
-    }
+    await connRef.remove();
     await this.firebase
       .ref("requests")
       .child(provider)
@@ -256,16 +247,11 @@ export class FirebaseAdapter {
   }
 
   // Finds all the channels owned by this agent and issues new join requests for them.
-  async releaseAll(provider: string, agentId: string) {
-    const results = await this.firebase
-      .ref("connections")
-      .child(provider)
-      .get();
-    const connections = results.val();
-    for (const channel of Object.keys(connections || {})) {
-      if (agentId in connections[channel]) {
-        await this.release(provider, channel, agentId);
-      }
+  async releaseAll(provider: string, channels: Set<string>, agentId: string) {
+    const updates: { [location: string]: false } = {};
+    for (const channel of channels) {
+      updates[`${channel}/${agentId}`] = false;
     }
+    await this.firebase.ref("connections").child(provider).update(updates);
   }
 }

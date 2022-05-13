@@ -130,7 +130,7 @@ async function join(
   chat.onDisconnect(async (manually) => {
     if (!manually) {
       log.info({ agentId, provider, channel }, "force disconnected");
-      await firebase.release(provider, channel, agentId, true);
+      await firebase.forceRelease(provider, channel, agentId);
     }
   });
 
@@ -242,7 +242,7 @@ async function join(
     basicpubsub.onDisconnect(async (manually) => {
       if (!manually) {
         log.info({ agentId, provider, channel }, "force disconnected");
-        await firebase.release(provider, channel, agentId, true);
+        await firebase.forceRelease(provider, channel, agentId);
       }
     });
     const pubsub = new SingleUserPubSubClient({
@@ -309,7 +309,7 @@ export async function runTwitchAgent(
     unsubscribe();
 
     // release all matching this agent id.
-    await firebase.releaseAll(provider, agentId);
+    await firebase.releaseAll(provider, channels, agentId);
 
     log.info({ agentId, provider }, "released all");
 
