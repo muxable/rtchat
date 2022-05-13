@@ -124,14 +124,7 @@ async function join(
   const chat = new ChatClient({
     authProvider,
     isAlwaysMod: authProvider.username === channel,
-    logger: { custom: bunyanLogger },
-  });
-
-  chat.onDisconnect(async (manually) => {
-    if (!manually) {
-      log.info({ agentId, provider, channel }, "force disconnected");
-      await firebase.release(provider, channel, agentId, true);
-    }
+    logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
   });
 
   const registerPromise = new Promise<void>((resolve) =>
@@ -235,15 +228,16 @@ async function join(
   await chat.join(channel);
   log.info({ channel, agentId, provider }, "joined channel");
 
+  chat.onDisconnect(async (manually) => {
+    if (!manually) {
+      log.info({ agentId, provider, channel }, "force disconnected");
+      await firebase.forceRelease(provider, channel, agentId);
+    }
+  });
+
   if (authProvider.username === channel) {
     const basicpubsub = new BasicPubSubClient({
-      logger: { custom: bunyanLogger },
-    });
-    basicpubsub.onDisconnect(async (manually) => {
-      if (!manually) {
-        log.info({ agentId, provider, channel }, "force disconnected");
-        await firebase.release(provider, channel, agentId, true);
-      }
+      logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
     });
     const pubsub = new SingleUserPubSubClient({
       authProvider,
@@ -260,6 +254,13 @@ async function join(
           timestamp: admin.firestore.FieldValue.serverTimestamp(),
         }
       );
+    });
+
+    basicpubsub.onDisconnect(async (manually) => {
+      if (!manually) {
+        log.info({ agentId, provider, channel }, "force disconnected");
+        await firebase.forceRelease(provider, channel, agentId);
+      }
     });
 
     await firebase.claim(provider, channel, agentId);
@@ -309,7 +310,7 @@ export async function runTwitchAgent(
     unsubscribe();
 
     // release all matching this agent id.
-    await firebase.releaseAll(provider, agentId);
+    await firebase.releaseAll(provider, channels, agentId);
 
     log.info({ agentId, provider }, "released all");
 
