@@ -124,7 +124,7 @@ async function join(
   const chat = new ChatClient({
     authProvider,
     isAlwaysMod: authProvider.username === channel,
-    logger: { custom: bunyanLogger },
+    logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
   });
 
   chat.onDisconnect(async (manually) => {
@@ -237,7 +237,7 @@ async function join(
 
   if (authProvider.username === channel) {
     const basicpubsub = new BasicPubSubClient({
-      logger: { custom: bunyanLogger },
+      logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
     });
     basicpubsub.onDisconnect(async (manually) => {
       if (!manually) {
