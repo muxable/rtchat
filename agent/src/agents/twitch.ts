@@ -127,13 +127,6 @@ async function join(
     logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
   });
 
-  chat.onDisconnect(async (manually) => {
-    if (!manually) {
-      log.info({ agentId, provider, channel }, "force disconnected");
-      await firebase.forceRelease(provider, channel, agentId);
-    }
-  });
-
   const registerPromise = new Promise<void>((resolve) =>
     chat.onRegister(() => resolve())
   );
@@ -235,15 +228,16 @@ async function join(
   await chat.join(channel);
   log.info({ channel, agentId, provider }, "joined channel");
 
+  chat.onDisconnect(async (manually) => {
+    if (!manually) {
+      log.info({ agentId, provider, channel }, "force disconnected");
+      await firebase.forceRelease(provider, channel, agentId);
+    }
+  });
+
   if (authProvider.username === channel) {
     const basicpubsub = new BasicPubSubClient({
       logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
-    });
-    basicpubsub.onDisconnect(async (manually) => {
-      if (!manually) {
-        log.info({ agentId, provider, channel }, "force disconnected");
-        await firebase.forceRelease(provider, channel, agentId);
-      }
     });
     const pubsub = new SingleUserPubSubClient({
       authProvider,
@@ -260,6 +254,13 @@ async function join(
           timestamp: admin.firestore.FieldValue.serverTimestamp(),
         }
       );
+    });
+
+    basicpubsub.onDisconnect(async (manually) => {
+      if (!manually) {
+        log.info({ agentId, provider, channel }, "force disconnected");
+        await firebase.forceRelease(provider, channel, agentId);
+      }
     });
 
     await firebase.claim(provider, channel, agentId);
