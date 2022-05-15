@@ -264,15 +264,13 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                   vsync: this,
                   controller: _controller,
                   itemBuilder: (index) => StyleModelTheme(
-                    child: ChatHistoryMessage(
-                        message: messages[index], channel: widget.channel),
-                  ),
+                      child: ChatHistoryMessage(
+                          key: ValueKey(messages[index].messageId),
+                          message: messages[index],
+                          channel: widget.channel)),
                   isPinnedBuilder: (index) {
                     final expiration = expirations[index];
-                    if (expiration != null) {
-                      return expiration.isAfter(now);
-                    }
-                    return false;
+                    return expiration != null && expiration.isAfter(now);
                   },
                   count: messages.length,
                 );

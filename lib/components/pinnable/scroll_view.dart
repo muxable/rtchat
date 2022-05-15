@@ -9,7 +9,7 @@ import 'package:rtchat/components/pinnable/viewport.dart';
 /// correct location if they're pinned.
 class PinnableMessageScrollView extends ScrollView {
   final TickerProvider vsync;
-  final bool? Function(int) isPinnedBuilder;
+  final bool Function(int) isPinnedBuilder;
   final Widget Function(int) itemBuilder;
   final int count;
 
@@ -37,7 +37,7 @@ class PinnableMessageScrollView extends ScrollView {
     for (var start = 0; start < count;) {
       final nextPinnableIndex =
           Iterable.generate(count - start, (value) => value + start).firstWhere(
-              (index) => isPinnedBuilder(index) != null,
+              (index) => isPinnedBuilder(index),
               orElse: () => count);
       final intermediateCount = nextPinnableIndex - start;
       if (intermediateCount > 0) {
@@ -45,13 +45,14 @@ class PinnableMessageScrollView extends ScrollView {
         final sliver = SliverList(
             delegate: SliverChildBuilderDelegate(
                 (context, index) => itemBuilder(index + offset),
-                childCount: intermediateCount));
+                childCount: intermediateCount,
+                semanticIndexOffset: offset));
         slivers.add(sliver);
       }
       if (nextPinnableIndex == count) {
         break;
       }
-      final pinned = isPinnedBuilder(nextPinnableIndex)!;
+      final pinned = isPinnedBuilder(nextPinnableIndex);
       final sliver = PinnableMessageSliver(
         vsync: vsync,
         pinned: pinned,
