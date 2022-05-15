@@ -270,7 +270,12 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                           channel: widget.channel)),
                   isPinnedBuilder: (index) {
                     final expiration = expirations[index];
-                    return expiration != null && expiration.isAfter(now);
+                    if (expiration == null) {
+                      return PinState.notPinnable;
+                    }
+                    return expiration.isAfter(now)
+                        ? PinState.pinned
+                        : PinState.unpinned;
                   },
                   count: messages.length,
                 );
