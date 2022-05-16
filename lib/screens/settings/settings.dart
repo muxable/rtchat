@@ -3,7 +3,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 const discordUrl = "https://discord.gg/UKHJMQs74u";
