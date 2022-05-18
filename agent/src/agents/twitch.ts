@@ -150,21 +150,25 @@ async function join(
     const badges = tags["badges"]
       .split(",")
       .map((badge) => badge.split("/") as [string, string]);
-    const reply = tags["reply-parent-msg-id"]
-      ? {
-          messageId: `twitch:${tags["reply-parent-msg-id"]}`,
-          displayName: tags["reply-parent-display-name"],
-          userLogin: tags["reply-parent-user-login"],
-          userId: tags["reply-parent-user-id"],
-          message: tags["reply-parent-msg-body"],
-        }
-      : null;
     await firebase.getMessage(`twitch:${msg.id}`).set({
       channelId: `twitch:${msg.channelId}`,
       channel,
       type: "message",
       timestamp: admin.firestore.Timestamp.fromDate(msg.date),
-      reply,
+      reply: tags["reply-parent-msg-id"]
+        ? {
+            messageId: `twitch:${tags["reply-parent-msg-id"]}`,
+            displayName: tags["reply-parent-display-name"],
+            userLogin: tags["reply-parent-user-login"],
+            userId: tags["reply-parent-user-id"],
+            message: tags["reply-parent-msg-body"],
+          }
+        : null,
+      author: {
+        userId: tags["user-id"],
+        displayName: tags["display-name"],
+        login: tags["username"],
+      },
       // we have to shim some tags because the frontend still needs some of these.
       tags: {
         "user-id": tags["user-id"],
