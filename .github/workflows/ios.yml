@@ -38,12 +38,12 @@ jobs:
           tag_prefix: ""
 
       - uses: subosito/flutter-action@v1
-      - run: flutter pub get
       - run: |
           keychain initialize
           app-store-connect fetch-signing-files $(xcode-project detect-bundle-id) --type IOS_APP_STORE --create
           keychain add-certificates
           xcode-project use-profiles --export-options-plist=$RUNNER_TEMP/export_options.plist
+          find . -name "Podfile" -execdir pod install \;
           flutter pub get
           flutter build ipa --verbose --release --build-name=${{ steps.semantic.outputs.version }} --export-options-plist=$RUNNER_TEMP/export_options.plist
 
