@@ -14,20 +14,17 @@ class SliverSearchBarWidget extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(32, 64, 32, 8),
           child: Center(
             child: Container(
+              height: 50,
               decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(50)),
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
                   color: Colors.blueGrey.withOpacity(0.30)),
               child: Row(
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 8),
-                    child: Icon(Icons.search),
-                  ),
                   const SizedBox(width: 24.0),
                   Expanded(
                     child: TextField(
                       decoration: const InputDecoration(
-                        hintText: 'Search viewers',
+                        hintText: 'Search',
                         isDense: true,
                         border: InputBorder.none,
                       ),
@@ -39,6 +36,10 @@ class SliverSearchBarWidget extends StatelessWidget {
                       //   viewersListModel.filteredByText(value);
                       // },
                     ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(right: 20),
+                    child: Icon(Icons.search),
                   ),
                 ],
               ),
