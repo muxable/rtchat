@@ -8,7 +8,7 @@ class TimeoutDialog extends StatefulWidget {
       : super(key: key);
 
   @override
-  _TimeoutDialogState createState() => _TimeoutDialogState();
+  State<TimeoutDialog> createState() => _TimeoutDialogState();
 }
 
 class _TimeoutDialogState extends State<TimeoutDialog> {

@@ -20,11 +20,11 @@ class EmotePickerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _rowNumber =
+    final rowNumber =
         MediaQuery.of(context).orientation == Orientation.portrait ? 3 : 1.5;
 
     return SizedBox(
-      height: (MediaQuery.of(context).size.width / _emoteColumns) * _rowNumber +
+      height: (MediaQuery.of(context).size.width / _emoteColumns) * rowNumber +
           _footerHeight,
       child: Column(children: <Widget>[
         FutureBuilder<List<Emote>>(

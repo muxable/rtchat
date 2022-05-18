@@ -2,22 +2,22 @@ import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image/flutter_image.dart';
 
-class _TwitchClipData {
+class TwitchClipData {
   final String? imageUrl;
   final String? url;
   final String? title;
   final String? description;
 
-  const _TwitchClipData(
+  const TwitchClipData(
       {required this.imageUrl,
       required this.url,
       required this.title,
       required this.description});
 }
 
-Future<_TwitchClipData> fetchClipData(String url) async {
+Future<TwitchClipData> fetchClipData(String url) async {
   final data = await MetadataFetch.extract(url);
-  return _TwitchClipData(
+  return TwitchClipData(
       imageUrl: data!.image,
       url: data.url,
       title: data.title,

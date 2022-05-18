@@ -228,7 +228,7 @@ class ChatPanelWidget extends StatefulWidget {
   const ChatPanelWidget({required this.channel, Key? key}) : super(key: key);
 
   @override
-  _ChatPanelWidgetState createState() => _ChatPanelWidgetState();
+  State<ChatPanelWidget> createState() => _ChatPanelWidgetState();
 }
 
 class _ChatPanelWidgetState extends State<ChatPanelWidget>

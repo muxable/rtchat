@@ -48,11 +48,16 @@ class _DrawerHeader extends StatelessWidget {
   }
 }
 
-class Sidebar extends StatelessWidget {
+class Sidebar extends StatefulWidget {
   final Channel channel;
 
   const Sidebar({required this.channel, Key? key}) : super(key: key);
 
+  @override
+  State<Sidebar> createState() => _SidebarState();
+}
+
+class _SidebarState extends State<Sidebar> {
   @override
   Widget build(BuildContext context) {
     final tiles = <Widget>[
@@ -94,6 +99,7 @@ class Sidebar extends StatelessWidget {
           title: const Text("Refresh audio sources"),
           onTap: () async {
             final count = await audioModel.refreshAllSources();
+            if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(count == 1
                     ? '1 audio source refreshed'
@@ -135,6 +141,7 @@ class Sidebar extends StatelessWidget {
                       onPressed: () async {
                         await Provider.of<UserModel>(context, listen: false)
                             .signOut();
+                        if (!mounted) return;
                         Navigator.of(context).pop();
                       },
                     ),

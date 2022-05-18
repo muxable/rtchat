@@ -17,7 +17,7 @@ class QuicklinksListView extends StatelessWidget {
     if (isWebUrl) {
       await browser.open(url: source.url);
     } else {
-      await launch(source.url.toString());
+      await launchUrl(source.url);
     }
   }
 

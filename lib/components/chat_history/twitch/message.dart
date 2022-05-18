@@ -109,7 +109,7 @@ class TwitchMessageWidget extends StatelessWidget {
               text: token.text,
               style: linkStyle,
               recognizer: (TapGestureRecognizer()
-                ..onTap = () => launch(token.url.toString())),
+                ..onTap = () => launchUrl(token.url)),
             ),
           ),
         ),

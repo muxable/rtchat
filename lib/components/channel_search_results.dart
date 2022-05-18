@@ -62,10 +62,6 @@ class ChannelSearchResultsWidget extends StatelessWidget {
               children: data
                   .map((result) => ListTile(
                       leading: Container(
-                        child: CircleAvatar(
-                          backgroundImage:
-                              NetworkImageWithRetry(result.imageUrl),
-                        ),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
@@ -74,6 +70,10 @@ class ChannelSearchResultsWidget extends StatelessWidget {
                                 : Colors.transparent,
                             width: 2.0,
                           ),
+                        ),
+                        child: CircleAvatar(
+                          backgroundImage:
+                              NetworkImageWithRetry(result.imageUrl),
                         ),
                       ),
                       title: Text(result.displayName),
