@@ -45,7 +45,7 @@ jobs:
           xcode-project use-profiles --export-options-plist=$RUNNER_TEMP/export_options.plist
           find . -name "Podfile" -execdir pod install \;
           flutter pub get
-          flutter build ipa --verbose --release --build-name=${{ steps.semantic.outputs.version }} --export-options-plist=$RUNNER_TEMP/export_options.plist
+          flutter build ipa --verbose --release --build-name=${{ steps.semantic.outputs.version }} --build-version=$(app-store-connect get-latest-app-store-build-number '1567720948') --export-options-plist=$RUNNER_TEMP/export_options.plist
 
       - uses: actions/upload-artifact@v2
         with:
