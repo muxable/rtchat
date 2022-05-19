@@ -64,7 +64,7 @@ class ChatHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Activity feed")),
+      appBar: AppBar(title: const Text("Chat history")),
       body: Consumer<StyleModel>(builder: (context, model, child) {
         return ListView(
           children: [
