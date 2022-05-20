@@ -53,7 +53,7 @@ class OnboardingScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 64),
                       child: ElevatedButton(
                           child: const Text(
-                            "Continue without signing in",
+                            "Continue as Guest",
                             textAlign: TextAlign.center,
                           ),
                         onPressed: () async {
