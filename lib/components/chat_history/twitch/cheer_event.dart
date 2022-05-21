@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_image/network.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 
-String getCorrespondingImageUrl(int bits) {
+Uri getCorrespondingImageUrl(int bits) {
   final key = [100000, 10000, 5000, 1000, 100]
       .firstWhere((k) => k <= bits, orElse: () => 10);
-  return 'https://cdn.twitchalerts.com/twitch-bits/images/hd/$key.gif';
+  return Uri.parse(
+      'https://cdn.twitchalerts.com/twitch-bits/images/hd/$key.gif');
 }
 
 class TwitchCheerEventWidget extends StatelessWidget {
@@ -19,7 +20,7 @@ class TwitchCheerEventWidget extends StatelessWidget {
     final name = model.isAnonymous ? 'Anonymous' : model.giverName;
     final boldStyle = Theme.of(context).textTheme.subtitle2;
     return DecoratedEventWidget.avatar(
-      avatar: NetworkImageWithRetry(getCorrespondingImageUrl(model.bits)),
+      avatar: ResilientNetworkImage(getCorrespondingImageUrl(model.bits)),
       child: Text.rich(
         TextSpan(
           children: [
