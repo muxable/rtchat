@@ -37,13 +37,13 @@ class TwitchPredictionEventModel extends MessageModel {
         title: data['event']['title'],
         status: "in_progress",
         endTime: DateTime.parse(data['event']['locks_at']),
-        outcomes: List.from(data['event']['outcomes'].values.map((outcome) {
+        outcomes: data['event']['outcomes'].map((outcome) {
           return TwitchPredictionOutcomeModel(
               outcome['id'],
               outcome['channel_points'] ?? 0,
               outcome['color'],
               outcome['title']);
-        })));
+        }).toList());
   }
 
   static TwitchPredictionEventModel fromEndEvent(Map<String, dynamic> data) {
