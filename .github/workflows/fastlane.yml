@@ -1,0 +1,21 @@
+name: test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: macos-latest
+    env:
+      APP_STORE_CONNECT_ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
+      APP_STORE_CONNECT_KEY_IDENTIFIER: MM768CLHVH
+      APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+    steps:
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: "2.7"
+      - run: |
+          echo "{\"key_id\": \"$APP_STORE_CONNECT_KEY_IDENTIFIER\",\"issuer_id\":\"$APP_STORE_CONNECT_ISSUER_ID\",\"key\":\"$(echo $APP_STORE_CONNECT_PRIVATE_KEY | sed 's/$/\\n/g' | tr -d '\n')\"}" > $RUNNER_TEMP/api_key.json
+          gem install fastlane
+          fastlane download_dsyms api_key_path:$RUNNER_TEMP/api_key.json
+          fastlane upload_symbols_to_crashlytics
