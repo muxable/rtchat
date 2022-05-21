@@ -42,24 +42,15 @@ DeltaEvent? _toDeltaEvent(
 
   switch (data['type']) {
     case "message":
-      final message = data['message'];
-      final tags = data['tags'];
-
-      final author = TwitchUserModel(
-          userId: tags['user-id'],
-          displayName: tags['display-name'],
-          login: tags['username']);
-
       final model = TwitchMessageModel(
           messageId: change.doc.id,
-          author: author,
-          message: message,
-          tags: tags,
+          author: TwitchUserModel.fromJson(data['author']),
+          message: data['message'],
+          tags: data['tags'],
           thirdPartyEmotes: emotes,
           timestamp: data['timestamp'].toDate(),
           deleted: false,
           channelId: data['channelId']);
-
       return AppendDeltaEvent(model);
     case "messagedeleted":
       return UpdateDeltaEvent(data['messageId'], (message) {
