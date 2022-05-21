@@ -49,14 +49,16 @@ class _ChannelSearchBottomSheetWidgetState
                       child: Text("twitch.tv/")),
                   prefixIconConstraints:
                       const BoxConstraints(minWidth: 0, minHeight: 0),
-                  suffixIcon: GestureDetector(
-                      child: const Icon(Icons.cancel),
-                      onTap: () {
-                        _searchController.clear();
-                        setState(() {
-                          _value = "";
-                        });
-                      }),
+                  suffixIcon: AnimatedScale(
+                    scale: _value == "" ? 0.0 : 1.0,
+                    duration: const Duration(milliseconds: 150),
+                    child: GestureDetector(
+                        child: const Icon(Icons.cancel),
+                        onTap: () {
+                          _searchController.clear();
+                          setState(() => _value = "");
+                        }),
+                  ),
                   hintText: "muxfd"),
               onChanged: (value) {
                 setState(() {
