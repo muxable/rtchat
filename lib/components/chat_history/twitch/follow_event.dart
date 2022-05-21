@@ -1,7 +1,6 @@
 // ignore_for_file: unused_import
 
 import 'package:flutter/material.dart';
-import 'package:flutter_image/network.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
