@@ -76,12 +76,3 @@ jobs:
 
       - if: github.event_name == 'release'
         run: app-store-connect publish --verbose --app-store --max-build-processing-wait 360
-
-      - uses: actions/setup-ruby@v1
-        with:
-          ruby-version: "2.7"
-      - run: |
-          echo "{\"key_id\": \"$APP_STORE_CONNECT_KEY_IDENTIFIER\",\"issuer_id\":\"$APP_STORE_CONNECT_ISSUER_ID\","key":"$(echo $APP_STORE_CONNECT_PRIVATE_KEY | sed 's/$/\\n/g' | tr -d '\n')"}" > $RUNNER_TEMP/api_key.json
-          gem install fastlane
-          fastlane download_dsyms api_key_path:$RUNNER_TEMP/api_key.json
-          upload_symbols_to_crashlytics
