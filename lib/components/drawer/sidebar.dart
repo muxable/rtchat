@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_image/flutter_image.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/drawer/quicklinks_listview.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
@@ -23,7 +23,7 @@ class _DrawerHeader extends StatelessWidget {
                 child: Row(children: [
                   CircleAvatar(
                       backgroundImage: userChannel != null
-                          ? NetworkImageWithRetry(userChannel.profilePictureUrl)
+                          ? ResilientNetworkImage(userChannel.profilePictureUrl)
                           : null),
                   const SizedBox(width: 16),
                   Column(

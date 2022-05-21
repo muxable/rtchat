@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
-import 'package:flutter_image/flutter_image.dart';
 
 class TwitchBadgeWidget extends StatelessWidget {
   final String channelId;
@@ -23,13 +23,14 @@ class TwitchBadgeWidget extends StatelessWidget {
       if (!model.isEnabled("$badge/$version")) {
         return const SizedBox();
       }
-      final url = model.badgeSets["$badge/$version"]?["image_url_4x"];
+      final url =
+          Uri.tryParse(model.badgeSets["$badge/$version"]?["image_url_4x"]);
       if (url == null) {
         return const SizedBox();
       }
       return Padding(
           padding: const EdgeInsets.only(right: 5),
-          child: Image(image: NetworkImageWithRetry(url), height: height));
+          child: Image(image: ResilientNetworkImage(url), height: height));
     });
   }
 }
