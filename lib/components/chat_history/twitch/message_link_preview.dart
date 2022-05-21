@@ -1,7 +1,5 @@
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:flutter/material.dart';
-// ignore: unused_import
-import 'package:flutter_image/flutter_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 
 class TwitchClipData {
