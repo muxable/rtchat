@@ -146,6 +146,7 @@
 				1FEF45693FDDE0A945EEAC47 /* [CP] Embed Pods Frameworks */,
 				2F8B88819D96957581B4A873 /* [CP] Copy Pods Resources */,
 				0AFBB456266814B600F78B40 /* Set Build Number */,
+				0ACF8443283883CB00E86722 /* [firebase_crashlytics] Crashlytics Upload Symbols */,
 			);
 			buildRules = (
 			);
@@ -205,6 +206,26 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		0ACF8443283883CB00E86722 /* [firebase_crashlytics] Crashlytics Upload Symbols */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
+			);
+			name = "[firebase_crashlytics] Crashlytics Upload Symbols";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "$PODS_ROOT/FirebaseCrashlytics/upload-symbols --build-phase --validate -ai 1:832669896677:ios:59504132193d3b4e60290c\n$PODS_ROOT/FirebaseCrashlytics/upload-symbols --build-phase -ai 1:832669896677:ios:59504132193d3b4e60290c\n";
+		};
 		0AFBB456266814B600F78B40 /* Set Build Number */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 8;
