@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/user.dart';
 
@@ -27,7 +28,8 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                           : Theme.of(context).colorScheme.secondary)),
               DecoratedEventWidget.avatar(
                   decoration: const BoxDecoration(color: Colors.transparent),
-                  avatar: NetworkImage(model.targetUser.profilePictureUrl),
+                  avatar:
+                      ResilientNetworkImage(model.targetUser.profilePictureUrl),
                   child: Row(children: [
                     Text.rich(TextSpan(
                       children: [
@@ -50,7 +52,7 @@ class TwitchRaidingEventWidget extends StatelessWidget {
     } else if (model.isSuccessful) {
       return GestureDetector(
           child: DecoratedEventWidget.avatar(
-              avatar: NetworkImage(model.targetUser.profilePictureUrl),
+              avatar: ResilientNetworkImage(model.targetUser.profilePictureUrl),
               child: Row(children: [
                 Text.rich(TextSpan(
                   children: [
@@ -76,7 +78,7 @@ class TwitchRaidingEventWidget extends StatelessWidget {
           });
     } else {
       return DecoratedEventWidget.avatar(
-          avatar: NetworkImage(model.targetUser.profilePictureUrl),
+          avatar: ResilientNetworkImage(model.targetUser.profilePictureUrl),
           child: Text.rich(TextSpan(
             children: [
               const TextSpan(text: "Raid to "),

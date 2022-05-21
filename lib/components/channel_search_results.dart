@@ -1,6 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_image/network.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/theme_colors.dart';
 
@@ -13,7 +13,7 @@ class SearchResult {
   final String provider;
   final String displayName;
   final bool isOnline;
-  final String imageUrl;
+  final Uri imageUrl;
   final String title;
 
   const SearchResult(
@@ -47,7 +47,7 @@ class ChannelSearchResultsWidget extends StatelessWidget {
                   provider: data['provider'],
                   displayName: data['displayName'],
                   isOnline: data['isOnline'],
-                  imageUrl: data['imageUrl'],
+                  imageUrl: Uri.parse(data['imageUrl']),
                   title: data['title']))
               .toList();
         }),
@@ -73,7 +73,7 @@ class ChannelSearchResultsWidget extends StatelessWidget {
                         ),
                         child: CircleAvatar(
                           backgroundImage:
-                              NetworkImageWithRetry(result.imageUrl),
+                              ResilientNetworkImage(result.imageUrl),
                         ),
                       ),
                       title: Text(result.displayName),

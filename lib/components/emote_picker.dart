@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_image/flutter_image.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 
 class EmotePickerWidget extends StatelessWidget {
@@ -43,8 +43,7 @@ class EmotePickerWidget extends StatelessWidget {
                         .map((emote) => IconButton(
                             onPressed: () => onEmoteSelected(emote),
                             icon: Image(
-                                image: NetworkImageWithRetry(
-                                    emote.source.toString()))))
+                                image: ResilientNetworkImage(emote.source))))
                         .toList()),
                   ),
                 ],

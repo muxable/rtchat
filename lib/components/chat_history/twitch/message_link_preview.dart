@@ -1,6 +1,8 @@
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:flutter/material.dart';
+// ignore: unused_import
 import 'package:flutter_image/flutter_image.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 
 class TwitchClipData {
   final String? imageUrl;
@@ -56,7 +58,8 @@ class TwitchMessageLinkPreviewWidget extends StatelessWidget {
                   return Card(
                     child: ListTile(
                       leading: Image(
-                          image: NetworkImageWithRetry(snapshot.data.imageUrl)),
+                          image: ResilientNetworkImage(
+                              Uri.parse(snapshot.data.imageUrl))),
                       title: Text(snapshot.data.title),
                       subtitle: Text(snapshot.data.description),
                       isThreeLine: true,

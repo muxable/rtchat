@@ -1,6 +1,9 @@
+// ignore_for_file: unused_import
+
 import 'package:flutter/material.dart';
 import 'package:flutter_image/network.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 
 class TwitchFollowEventWidget extends StatelessWidget {
@@ -11,7 +14,7 @@ class TwitchFollowEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedEventWidget.avatar(
-      avatar: NetworkImageWithRetry(model.follower.profilePictureUrl),
+      avatar: ResilientNetworkImage(model.follower.profilePictureUrl),
       child: Text.rich(
         TextSpan(
           children: [
