@@ -57,6 +57,7 @@ app.get("/auth/twitch/redirect", (req, res) => {
       "channel:read:redemptions",
       "moderation:read",
       "user:read:email",
+      "user:read:follows",
     ],
     state: state,
   });
