@@ -73,12 +73,6 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
               child: Column(children: [
                 TextFormField(
                   controller: _labelEditingController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a label';
-                    }
-                    return null;
-                  },
                   decoration: const InputDecoration(
                     labelText: "Label",
                     hintText: "Label",
@@ -162,6 +156,9 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
 
   void addLink() {
     if (_formKey.currentState!.validate()) {
+      if (_labelEditingController.text.isEmpty) {
+        _labelEditingController.text = "My Link";
+      }
       Provider.of<QuickLinksModel>(context, listen: false).addSource(
           QuickLinkSource(_activeIcon, Uri.parse(_textEditingController.text),
               _labelEditingController.text));
