@@ -71,21 +71,18 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
           child: Form(
               key: _formKey,
               child: Column(children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: TextFormField(
-                    controller: _labelEditingController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a label';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(
-                      labelText: "Label",
-                      hintText: "Label",
-                      prefixIcon: Icon(Icons.text_fields_outlined),
-                    ),
+                TextFormField(
+                  controller: _labelEditingController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a label';
+                    }
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    labelText: "Label",
+                    hintText: "Label",
+                    prefixIcon: Icon(Icons.abc_outlined),
                   ),
                 ),
                 Row(children: [
