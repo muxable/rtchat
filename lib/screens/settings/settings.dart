@@ -125,6 +125,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                     ),
                   ])),
+          const SizedBox(height: 8),
+          Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("App theme",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontWeight: FontWeight.bold,
+                        )),
+                    const SizedBox(height: 8),
+                    ToggleButtons(
+                      constraints: BoxConstraints(
+                          minWidth:
+                              (MediaQuery.of(context).size.width - 36) / 3),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(10.0)),
+                      onPressed: (index) {
+                        switch (index) {
+                          case 0:
+                            layoutModel.themeMode = ThemeMode.system;
+                            break;
+                          case 1:
+                            layoutModel.themeMode = ThemeMode.light;
+                            break;
+                          case 2:
+                            layoutModel.themeMode = ThemeMode.dark;
+                            break;
+                        }
+                      },
+                      isSelected: [
+                        layoutModel.themeMode == ThemeMode.system,
+                        layoutModel.themeMode == ThemeMode.light,
+                        layoutModel.themeMode == ThemeMode.dark,
+                      ],
+                      selectedColor: Theme.of(context).colorScheme.secondary,
+                      children: [
+                        _iconWithText(Icons.auto_mode, "System"),
+                        _iconWithText(Icons.light_mode, "Light mode"),
+                        _iconWithText(Icons.dark_mode, "Dark mode"),
+                      ],
+                    ),
+                  ])),
           SwitchListTile.adaptive(
             title: const Text('Show viewer and follower count'),
             value: layoutModel.isStatsVisible,
