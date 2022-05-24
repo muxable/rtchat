@@ -69,8 +69,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           ListTile(
-            title: const Text('Event Configuration'),
-            subtitle: const Text("Configure twitch events"),
+            title: const Text('Event configuration'),
+            subtitle: const Text("Configure Twitch events"),
             onTap: () {
               Navigator.pushNamed(context, "/settings/events");
             },
@@ -142,13 +142,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const Divider(),
-          // ListTile(
-          //   title: const Text('Settings backup and restore'),
-          //   subtitle: const Text('Upload your settings to the ~cloud~'),
-          //   onTap: () {
-          //     Navigator.pushNamed(context, "/settings/backup");
-          //   },
-          // ),
           FutureBuilder(
               future: canLaunchUrlString(discordUrl),
               builder: (context, snapshot) {
