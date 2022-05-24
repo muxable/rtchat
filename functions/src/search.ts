@@ -1,3 +1,4 @@
+import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
 import { ClientCredentials } from "simple-oauth2";
@@ -9,8 +10,14 @@ export const search = functions.https.onCall(async (data, context) => {
     const token = await getAccessToken(context.auth.uid, "twitch");
 
     if (token != null) {
+      const profileDoc = await admin
+        .firestore()
+        .collection("profiles")
+        .doc(context.auth.uid)
+        .get();
       const twitchResponse = await fetch(
-        "https://api.twitch.tv/helix/streams/followed",
+        "https://api.twitch.tv/helix/streams/followed?user_id=" +
+          profileDoc.data()?.twitch?.id,
         {
           headers: {
             "Client-ID": TWITCH_CLIENT_ID,
