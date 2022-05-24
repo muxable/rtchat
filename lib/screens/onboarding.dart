@@ -77,6 +77,9 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
                 });
               },
               onComplete: () {
+                if (!mounted) {
+                  return;
+                }
                 setState(() {
                   _isLoading = false;
                 });
