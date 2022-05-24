@@ -142,13 +142,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const Divider(),
-          // ListTile(
-          //   title: const Text('Settings backup and restore'),
-          //   subtitle: const Text('Upload your settings to the ~cloud~'),
-          //   onTap: () {
-          //     Navigator.pushNamed(context, "/settings/backup");
-          //   },
-          // ),
           FutureBuilder(
               future: canLaunchUrlString(discordUrl),
               builder: (context, snapshot) {
