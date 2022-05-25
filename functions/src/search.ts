@@ -31,7 +31,7 @@ export const search = functions.https.onCall(async (data, context) => {
         ...(twitchJson.data || []).map((channel: any) => {
           return {
             provider: "twitch",
-            channelId: channel.id,
+            channelId: channel.user_id,
             displayName: channel.user_name,
             isOnline: channel.type == "live",
             imageUrl: channel.thumbnail_url
