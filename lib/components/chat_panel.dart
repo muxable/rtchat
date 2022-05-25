@@ -160,57 +160,23 @@ DateTime? _getExpiration(
   return null;
 }
 
-class _ScrollToBottomWidget extends StatefulWidget {
-  final ScrollController controller;
+class _ScrollToBottomWidget extends StatelessWidget {
+  final bool show;
+  final void Function() onPressed;
 
-  const _ScrollToBottomWidget({Key? key, required this.controller})
+  const _ScrollToBottomWidget(
+      {Key? key, required this.show, required this.onPressed})
       : super(key: key);
-
-  @override
-  State<_ScrollToBottomWidget> createState() => _ScrollToBottomWidgetState();
-}
-
-class _ScrollToBottomWidgetState extends State<_ScrollToBottomWidget> {
-  var _atBottom = true;
-
-  @override
-  void initState() {
-    super.initState();
-
-    widget.controller.addListener(updateScrollPosition);
-  }
-
-  @override
-  void dispose() {
-    widget.controller.removeListener(updateScrollPosition);
-
-    super.dispose();
-  }
-
-  void updateScrollPosition() {
-    final value =
-        widget.controller.position.atEdge && widget.controller.offset == 0;
-    if (_atBottom != value) {
-      setState(() {
-        _atBottom = value;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 300),
-      bottom: _atBottom ? -72 : 16,
+      bottom: show ? 16 : -72,
       curve: Curves.easeOut,
       child: Center(
         child: ElevatedButton(
-            onPressed: () {
-              updateScrollPosition();
-              widget.controller.animateTo(0,
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInOut);
-            },
+            onPressed: onPressed,
             style: ElevatedButton.styleFrom(
               primary: Theme.of(context).primaryColor,
               shape: const CircleBorder(),
@@ -235,11 +201,33 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     with TickerProviderStateMixin {
   final _controller = ScrollController(keepScrollOffset: true);
 
+  // don't render anything after this message if not null.
+  MessageModel? _pauseAt;
+  MessageModel? _lastMessage;
+  var _atBottom = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller.addListener(updateScrollPosition);
+  }
+
   @override
   void dispose() {
     _controller.dispose();
 
     super.dispose();
+  }
+
+  void updateScrollPosition() {
+    final value = _controller.position.atEdge && _controller.offset == 0;
+    if (_atBottom != value) {
+      setState(() {
+        _atBottom = value;
+        _pauseAt = value ? null : _lastMessage;
+      });
+    }
   }
 
   @override
@@ -251,7 +239,14 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                 TwitchMessageConfig>(
             builder: (context, messagesModel, eventSubConfigurationModel,
                 twitchMessageConfig, child) {
-          final messages = messagesModel.messages.reversed.toList();
+          var messages = messagesModel.messages.reversed.toList();
+          _lastMessage = messages.isEmpty ? null : messages.first;
+          if (_pauseAt != null) {
+            final index = messages.indexOf(_pauseAt!);
+            if (index != -1) {
+              messages = messages.sublist(index);
+            }
+          }
           final expirations = messages
               .map((message) => _getExpiration(
                   message, eventSubConfigurationModel, twitchMessageConfig))
@@ -281,7 +276,15 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                 );
               });
         }),
-        _ScrollToBottomWidget(controller: _controller),
+        _ScrollToBottomWidget(
+          show: !_atBottom,
+          onPressed: () {
+            updateScrollPosition();
+            _controller.animateTo(0,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut);
+          },
+        ),
       ],
     );
   }
