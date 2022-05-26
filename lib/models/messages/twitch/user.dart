@@ -69,8 +69,9 @@ class TwitchUserModel {
     return colors[n % colors.length];
   }
 
-  String get profilePictureUrl {
-    return "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$userId";
+  Uri get profilePictureUrl {
+    return Uri.parse(
+        "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$userId");
   }
 
   Channel get asChannel => Channel("twitch", userId, displayName ?? login);

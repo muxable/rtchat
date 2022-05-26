@@ -21,8 +21,9 @@ class Channel {
   @override
   String toString() => "$provider:$channelId";
 
-  String get profilePictureUrl {
-    return "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$channelId";
+  Uri get profilePictureUrl {
+    return Uri.parse(
+        "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$channelId");
   }
 }
 

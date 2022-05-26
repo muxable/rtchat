@@ -41,21 +41,21 @@ class PollChoiceWidget extends StatelessWidget {
               const Padding(
                 padding: EdgeInsets.only(left: 8),
                 child: Align(
+                  alignment: Alignment.centerLeft,
                   child: Icon(
                     Icons.emoji_events_outlined,
                     size: 32,
                   ),
-                  alignment: Alignment.centerLeft,
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 48),
                 child: Align(
+                  alignment: Alignment.centerLeft,
                   child: Text(
                     data.title,
                     style: baseStyle,
                   ),
-                  alignment: Alignment.centerLeft,
                 ),
               )
             ],
@@ -63,20 +63,20 @@ class PollChoiceWidget extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 12),
                 child: Align(
+                  alignment: Alignment.centerLeft,
                   child: Text(
                     data.title,
                     style: baseStyle,
                   ),
-                  alignment: Alignment.centerLeft,
                 ),
               ),
             ],
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: Align(
+                  alignment: Alignment.centerRight,
                   child: Text("${(percentage * 100).floor()}% (${data.votes})",
-                      style: baseStyle),
-                  alignment: Alignment.centerRight),
+                      style: baseStyle)),
             ),
           ]));
     });

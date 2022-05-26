@@ -4,6 +4,7 @@ import 'package:linkify/linkify.dart';
 import 'package:motion_sensors/motion_sensors.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/style.dart';
@@ -96,10 +97,8 @@ class TwitchMessageWidget extends StatelessWidget {
     } else if (token is EmoteToken) {
       yield WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          // NetworkImageWithRetry doesn't support animated gifs.
-          // https://github.com/flutter/flutter/issues/81664
           child:
-              Image.network(token.url.toString(), height: styleModel.fontSize));
+              Image(image: ResilientNetworkImage(token.url)));
     } else if (token is LinkToken) {
       yield WidgetSpan(
         child: MouseRegion(
@@ -109,7 +108,7 @@ class TwitchMessageWidget extends StatelessWidget {
               text: token.text,
               style: linkStyle,
               recognizer: (TapGestureRecognizer()
-                ..onTap = () => launch(token.url.toString())),
+                ..onTap = () => launchUrl(token.url)),
             ),
           ),
         ),

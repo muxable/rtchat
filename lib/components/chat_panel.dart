@@ -206,6 +206,7 @@ class _ScrollToBottomWidgetState extends State<_ScrollToBottomWidget> {
       child: Center(
         child: ElevatedButton(
             onPressed: () {
+              updateScrollPosition();
               widget.controller.animateTo(0,
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut);
@@ -227,7 +228,7 @@ class ChatPanelWidget extends StatefulWidget {
   const ChatPanelWidget({required this.channel, Key? key}) : super(key: key);
 
   @override
-  _ChatPanelWidgetState createState() => _ChatPanelWidgetState();
+  State<ChatPanelWidget> createState() => _ChatPanelWidgetState();
 }
 
 class _ChatPanelWidgetState extends State<ChatPanelWidget>
@@ -263,15 +264,18 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                   vsync: this,
                   controller: _controller,
                   itemBuilder: (index) => StyleModelTheme(
-                    child: ChatHistoryMessage(
-                        message: messages[index], channel: widget.channel),
-                  ),
+                      child: ChatHistoryMessage(
+                          key: ValueKey(messages[index].messageId),
+                          message: messages[index],
+                          channel: widget.channel)),
                   isPinnedBuilder: (index) {
                     final expiration = expirations[index];
-                    if (expiration != null) {
-                      return expiration.isAfter(now);
+                    if (expiration == null) {
+                      return PinState.notPinnable;
                     }
-                    return false;
+                    return expiration.isAfter(now)
+                        ? PinState.pinned
+                        : PinState.unpinned;
                   },
                   count: messages.length,
                 );

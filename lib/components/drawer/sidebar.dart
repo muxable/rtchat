@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_image/flutter_image.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/drawer/quicklinks_listview.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
@@ -23,7 +23,7 @@ class _DrawerHeader extends StatelessWidget {
                 child: Row(children: [
                   CircleAvatar(
                       backgroundImage: userChannel != null
-                          ? NetworkImageWithRetry(userChannel.profilePictureUrl)
+                          ? ResilientNetworkImage(userChannel.profilePictureUrl)
                           : null),
                   const SizedBox(width: 16),
                   Column(
@@ -48,11 +48,16 @@ class _DrawerHeader extends StatelessWidget {
   }
 }
 
-class Sidebar extends StatelessWidget {
+class Sidebar extends StatefulWidget {
   final Channel channel;
 
   const Sidebar({required this.channel, Key? key}) : super(key: key);
 
+  @override
+  State<Sidebar> createState() => _SidebarState();
+}
+
+class _SidebarState extends State<Sidebar> {
   @override
   Widget build(BuildContext context) {
     final tiles = <Widget>[
@@ -94,6 +99,7 @@ class Sidebar extends StatelessWidget {
           title: const Text("Refresh audio sources"),
           onTap: () async {
             final count = await audioModel.refreshAllSources();
+            if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(count == 1
                     ? '1 audio source refreshed'
@@ -135,6 +141,7 @@ class Sidebar extends StatelessWidget {
                       onPressed: () async {
                         await Provider.of<UserModel>(context, listen: false)
                             .signOut();
+                        if (!mounted) return;
                         Navigator.of(context).pop();
                       },
                     ),

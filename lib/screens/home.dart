@@ -68,7 +68,8 @@ class _ResizableWidgetState extends State<ResizableWidget> {
               });
             },
             onVerticalDragEnd: (details) {
-              widget.onResizeHeight(_height);
+              widget.onResizeHeight(
+                  _height.clamp(57, MediaQuery.of(context).size.height - 300));
             },
             onVerticalDragUpdate: (details) {
               setState(() {
@@ -100,7 +101,8 @@ class _ResizableWidgetState extends State<ResizableWidget> {
               });
             },
             onHorizontalDragEnd: (details) {
-              widget.onResizeWidth(_width);
+              widget.onResizeWidth(
+                  _width.clamp(57, MediaQuery.of(context).size.width - 400));
             },
             onHorizontalDragUpdate: (details) {
               setState(() {
@@ -135,7 +137,7 @@ class HomeScreen extends StatefulWidget {
       : super(key: key);
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
@@ -145,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     Wakelock.enable();
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final model = Provider.of<AudioModel>(context, listen: false);
       if (model.sources.isNotEmpty && !(await AudioChannel.hasPermission())) {
         model.showAudioPermissionDialog(context);

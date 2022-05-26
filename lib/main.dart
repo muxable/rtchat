@@ -123,7 +123,7 @@ class App extends StatefulWidget {
   const App({Key? key, required this.prefs}) : super(key: key);
 
   @override
-  _AppState createState() => _AppState();
+  State<App> createState() => _AppState();
 }
 
 class _AppState extends State<App> {
@@ -277,86 +277,89 @@ class _AppState extends State<App> {
             },
             lazy: false),
       ],
-      child: MaterialApp(
-        title: 'RealtimeChat',
-        theme: ThemeData(
-          fontFamily: GoogleFonts.poppins().fontFamily,
-          brightness: Brightness.light,
-          primarySwatch: primarySwatch,
-        ),
-        darkTheme: ThemeData(
+      child: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+        return MaterialApp(
+          title: 'RealtimeChat',
+          theme: ThemeData(
             fontFamily: GoogleFonts.poppins().fontFamily,
-            canvasColor: Colors.black,
-            cardColor: Colors.black,
-            appBarTheme: const AppBarTheme(
-              color: ThemeColors.detailColor,
-            ),
-            colorScheme: ColorScheme.fromSwatch(
-              brightness: Brightness.dark,
-              backgroundColor: ThemeColors.detailColor,
-              accentColor: ThemeColors.accentColor,
-            ),
-            dialogBackgroundColor: Colors.black,
-            toggleableActiveColor: ThemeColors.accentColor,
-            bottomSheetTheme: const BottomSheetThemeData(
-                backgroundColor: ThemeColors.detailColor),
-            drawerTheme:
-                const DrawerThemeData(backgroundColor: ThemeColors.detailColor),
-            inputDecorationTheme: const InputDecorationTheme(
-              fillColor: ThemeColors.textFieldColor,
-            ),
-            textTheme: const TextTheme(
-                headlineMedium: TextStyle(color: Colors.white))),
-        navigatorObservers: [App.observer],
-        initialRoute: '/',
-        routes: {
-          '/': (context) {
-            return Consumer<UserModel>(
-              builder: (context, userModel, child) {
-                if (userModel.isLoading) {
-                  // don't show anything yet.
-                  return Container();
-                }
-                final activeChannel = userModel.activeChannel;
-                if (activeChannel == null) {
-                  return OnboardingScreen(onChannelSelect: (channel) {
-                    userModel.activeChannel = channel;
-                  });
-                }
-                return HomeScreen(
-                    isDiscoModeEnabled: _isDiscoModeRunning,
-                    channel: activeChannel,
-                    onChannelSelect: (channel) {
+            brightness: Brightness.light,
+            primarySwatch: primarySwatch,
+          ),
+          darkTheme: ThemeData(
+              fontFamily: GoogleFonts.poppins().fontFamily,
+              canvasColor: Colors.black,
+              cardColor: Colors.black,
+              appBarTheme: const AppBarTheme(
+                color: ThemeColors.detailColor,
+              ),
+              colorScheme: ColorScheme.fromSwatch(
+                brightness: Brightness.dark,
+                backgroundColor: ThemeColors.detailColor,
+                accentColor: ThemeColors.accentColor,
+              ),
+              dialogBackgroundColor: Colors.black,
+              toggleableActiveColor: ThemeColors.accentColor,
+              bottomSheetTheme: const BottomSheetThemeData(
+                  backgroundColor: ThemeColors.detailColor),
+              drawerTheme: const DrawerThemeData(
+                  backgroundColor: ThemeColors.detailColor),
+              inputDecorationTheme: const InputDecorationTheme(
+                fillColor: ThemeColors.textFieldColor,
+              ),
+              textTheme: const TextTheme(
+                  headlineMedium: TextStyle(color: Colors.white))),
+          themeMode: layoutModel.themeMode,
+          navigatorObservers: [App.observer],
+          initialRoute: '/',
+          routes: {
+            '/': (context) {
+              return Consumer<UserModel>(
+                builder: (context, userModel, child) {
+                  if (userModel.isLoading) {
+                    // don't show anything yet.
+                    return Container();
+                  }
+                  final activeChannel = userModel.activeChannel;
+                  if (activeChannel == null) {
+                    return OnboardingScreen(onChannelSelect: (channel) {
                       userModel.activeChannel = channel;
                     });
-              },
-            );
+                  }
+                  return HomeScreen(
+                      isDiscoModeEnabled: _isDiscoModeRunning,
+                      channel: activeChannel,
+                      onChannelSelect: (channel) {
+                        userModel.activeChannel = channel;
+                      });
+                },
+              );
+            },
+            '/settings': (context) => const SettingsScreen(),
+            '/settings/badges': (context) => const TwitchBadgesScreen(),
+            '/settings/activity-feed': (context) => const ActivityFeedScreen(),
+            '/settings/audio-sources': (context) => const AudioSourcesScreen(),
+            '/settings/chat-history': (context) => const ChatHistoryScreen(),
+            '/settings/text-to-speech': (context) => const TextToSpeechScreen(),
+            '/settings/quick-links': (context) => const QuickLinksScreen(),
+            '/settings/backup': (context) => const BackupScreen(),
+            '/settings/events': (context) => const EventsScreen(),
+            '/settings/events/follow': (context) => const FollowEventScreen(),
+            '/settings/events/cheer': (context) => const CheerEventScreen(),
+            '/settings/events/subscription': (context) =>
+                const SubscriptionEventScreen(),
+            '/settings/events/raid': (context) => const RaidEventScreen(),
+            '/settings/events/channel-point': (context) =>
+                const ChannelPointRedemptionEventScreen(),
+            '/settings/events/poll': (context) => const PollEventScreen(),
+            '/settings/events/host': (context) => const HostEventScreen(),
+            '/settings/events/hypetrain': (context) =>
+                const HypetrainEventScreen(),
+            '/settings/events/prediction': (context) =>
+                const PredictionEventScreen(),
+            '/settings/events/raiding': (context) => const RaidingEventScreen(),
           },
-          '/settings': (context) => const SettingsScreen(),
-          '/settings/badges': (context) => const TwitchBadgesScreen(),
-          '/settings/activity-feed': (context) => const ActivityFeedScreen(),
-          '/settings/audio-sources': (context) => const AudioSourcesScreen(),
-          '/settings/chat-history': (context) => const ChatHistoryScreen(),
-          '/settings/text-to-speech': (context) => const TextToSpeechScreen(),
-          '/settings/quick-links': (context) => const QuickLinksScreen(),
-          '/settings/backup': (context) => const BackupScreen(),
-          '/settings/events': (context) => const EventsScreen(),
-          '/settings/events/follow': (context) => const FollowEventScreen(),
-          '/settings/events/cheer': (context) => const CheerEventScreen(),
-          '/settings/events/subscription': (context) =>
-              const SubscriptionEventScreen(),
-          '/settings/events/raid': (context) => const RaidEventScreen(),
-          '/settings/events/channel-point': (context) =>
-              const ChannelPointRedemptionEventScreen(),
-          '/settings/events/poll': (context) => const PollEventScreen(),
-          '/settings/events/host': (context) => const HostEventScreen(),
-          '/settings/events/hypetrain': (context) =>
-              const HypetrainEventScreen(),
-          '/settings/events/prediction': (context) =>
-              const PredictionEventScreen(),
-          '/settings/events/raiding': (context) => const RaidingEventScreen(),
-        },
-      ),
+        );
+      }),
     );
   }
 }

@@ -6,9 +6,10 @@ import 'package:rtchat/theme_colors.dart';
 class ChannelSearchBottomSheetWidget extends StatefulWidget {
   final ScrollController? controller;
   final void Function(Channel) onChannelSelect;
+  final void Function(Channel)? onRaid;
 
   const ChannelSearchBottomSheetWidget(
-      {Key? key, this.controller, required this.onChannelSelect})
+      {Key? key, this.controller, required this.onChannelSelect, this.onRaid})
       : super(key: key);
 
   @override
@@ -20,6 +21,7 @@ class _ChannelSearchBottomSheetWidgetState
     extends State<ChannelSearchBottomSheetWidget> {
   final _searchController = TextEditingController();
   var _value = "";
+  var _raid = false;
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +29,15 @@ class _ChannelSearchBottomSheetWidgetState
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text('Search Channels',
-                textAlign: TextAlign.left,
-                style: Theme.of(context).textTheme.headlineMedium),
-          ),
+          Row(children: [
+            Expanded(
+                child: Text(_raid ? 'Raid a Channel' : 'Search Channels',
+                    style: Theme.of(context).textTheme.headlineMedium)),
+            if (widget.onRaid != null)
+              Switch.adaptive(
+                  value: _raid,
+                  onChanged: (value) => setState(() => _raid = value))
+          ]),
           const SizedBox(height: 16),
           TextField(
               textInputAction: TextInputAction.search,
@@ -49,14 +54,16 @@ class _ChannelSearchBottomSheetWidgetState
                       child: Text("twitch.tv/")),
                   prefixIconConstraints:
                       const BoxConstraints(minWidth: 0, minHeight: 0),
-                  suffixIcon: GestureDetector(
-                      child: const Icon(Icons.cancel),
-                      onTap: () {
-                        _searchController.clear();
-                        setState(() {
-                          _value = "";
-                        });
-                      }),
+                  suffixIcon: AnimatedScale(
+                    scale: _value == "" ? 0.0 : 1.0,
+                    duration: const Duration(milliseconds: 150),
+                    child: GestureDetector(
+                        child: const Icon(Icons.cancel),
+                        onTap: () {
+                          _searchController.clear();
+                          setState(() => _value = "");
+                        }),
+                  ),
                   hintText: "muxfd"),
               onChanged: (value) {
                 setState(() {
@@ -68,7 +75,11 @@ class _ChannelSearchBottomSheetWidgetState
             query: _value,
             controller: widget.controller,
             onChannelSelect: (channel) {
-              widget.onChannelSelect(channel);
+              if (_raid) {
+                widget.onRaid!(channel);
+              } else {
+                widget.onChannelSelect(channel);
+              }
               Navigator.of(context).pop();
             },
           ))

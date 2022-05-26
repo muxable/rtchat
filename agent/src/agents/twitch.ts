@@ -1,63 +1,17 @@
-import { AccessToken } from "@twurple/auth";
-import { SingleUserPubSubClient, PubSubListener } from "@twurple/pubsub";
+import { AccessToken, AuthProvider } from "@twurple/auth";
+import { ChatClient, LogLevel } from "@twurple/chat";
+import { BasicPubSubClient, SingleUserPubSubClient } from "@twurple/pubsub";
 import * as admin from "firebase-admin";
 import fetch from "node-fetch";
 import { ClientCredentials, Token } from "simple-oauth2";
-import TwitchJs, {
-  Chat,
-  PrivateMessage,
-  PrivateMessageWithBits,
-} from "twitch-js";
 import {
   FirebaseAdapter,
   getTwitchOAuthConfig,
   TWITCH_CLIENT_ID,
 } from "../adapters/firebase";
 import { log } from "../log";
-import { v4 as uuidv4 } from "uuid";
 
 const ACTION_MESSAGE_REGEX = /^\u0001ACTION ([^\u0001]+)\u0001$/;
-const BADGES_RAW_REGEX = /badges=([^;]+);/;
-const EMOTES_RAW_REGEX = /emotes=([^;]+);/;
-
-function tmiJsEmotes(emotes: string) {
-  if (emotes.length === 0) {
-    return null;
-  }
-  const map: { [key: string]: string[] } = {};
-  for (const block of emotes.split("/")) {
-    const [key, value] = block.split(":");
-    if (map[key]) {
-      map[key].push(value);
-    } else {
-      map[key] = [value];
-    }
-  }
-  return map;
-}
-
-function tmiJsTagsShim(
-  message: PrivateMessage | PrivateMessageWithBits,
-  isAction: boolean
-) {
-  const tags = message.tags;
-
-  const badgesRaw = message._raw.match(BADGES_RAW_REGEX);
-  const emotesRaw = message._raw.match(EMOTES_RAW_REGEX);
-
-  return {
-    "user-id": tags.userId,
-    "display-name": tags.displayName,
-    "room-id": tags.roomId,
-    "message-type": isAction ? "action" : "chat",
-    "badges-raw": badgesRaw ? badgesRaw[1] : null,
-    "emote-only": tags.emoteOnly === "1",
-    emotes: tmiJsEmotes(emotesRaw ? emotesRaw[1] : ""),
-    "emotes-raw": emotesRaw ? emotesRaw[1] : null,
-    // the frontend expects null color instead of an empty string. oops.
-    color: tags.color == "" ? null : tags.color,
-  };
-}
 
 async function getTwitchUserId(username: string): Promise<string> {
   const client = new ClientCredentials(await getTwitchOAuthConfig());
@@ -81,196 +35,83 @@ async function getTwitchUserId(username: string): Promise<string> {
 
 const provider = "twitch";
 
-async function addMessage(
-  firebase: FirebaseAdapter,
-  channelId: string,
-  channel: string,
-  messageId: string,
-  message: string,
-  timestamp: Date,
-  tags: any
-) {
-  log.debug({ channelId, channel, messageId, message }, "adding message");
-  await firebase.getMessage(`twitch:${messageId}`).set({
-    channelId: `twitch:${channelId}`,
-    channel,
-    type: "message",
-    timestamp: admin.firestore.Timestamp.fromDate(timestamp),
-    tags,
-    message,
-  });
+function toAccessToken(token: Token): AccessToken {
+  return {
+    accessToken: token["access_token"],
+    refreshToken: token["refresh_token"],
+    scope: token["scope"],
+    expiresIn: token["expires_in"],
+    obtainmentTimestamp: +token["expires_at"] - token["expires_in"] * 1000,
+  };
 }
 
-async function addHost(
-  firebase: FirebaseAdapter,
-  channel: string,
-  displayName: string,
-  timestamp: Date,
-  viewers: number
-) {
-  await firebase.getMessage(`twitch:host-${timestamp.toISOString()}`).set({
-    channel,
-    channelId: `twitch:${await getTwitchUserId(channel)}`,
-    type: "host",
-    displayName,
-    hosterChannelId: `twitch:${await getTwitchUserId(displayName)}`,
-    timestamp: admin.firestore.Timestamp.fromDate(timestamp),
-    viewers,
-  });
-}
-
-async function deleteMessage(
-  firebase: FirebaseAdapter,
-  messageId: string,
-  timestamp: Date,
-  tags: any
-) {
-  const original = await firebase.getMessage(`twitch:${messageId}`).get();
-
-  if (!original.exists) {
-    log.error({ messageId, timestamp, tags }, "no message to delete");
-    return;
-  }
-
-  await firebase.getMessage(`twitch:x-${messageId}`).set({
-    channelId: original.get("channelId"),
-    type: "messagedeleted",
-    timestamp: admin.firestore.Timestamp.fromDate(timestamp),
-    tags,
-    messageId,
-  });
-}
-
-/**
- * Gets the agent for a given channel. If we have a token (ie the user is actively signed in), we auth as that user. Otherwise, we auth as the bot user.
- * @param channel the channel to fetch an agent for
- */
-async function getChatAgent(
-  firebase: FirebaseAdapter,
-  username: string,
-  token: Token
-) {
-  const twitch = new TwitchJs({
-    username,
-    token: token["access_token"],
-    chat: {
-      connectionTimeout: 5 * 1000,
-      joinTimeout: 1000,
-    },
-    log: { level: "warn" },
-  });
-
-  twitch.chat.on(TwitchJs.Chat.Events.PRIVATE_MESSAGE, (message) => {
-    if (message.event !== TwitchJs.Chat.Commands.PRIVATE_MESSAGE) {
-      return;
-    }
-
-    const actionMessage = message.message.match(ACTION_MESSAGE_REGEX);
-    const isAction = Boolean(actionMessage);
-
-    // strip off the action data.
-    addMessage(
-      firebase,
-      message.tags.roomId,
-      message.channel,
-      message.tags.id,
-      actionMessage ? actionMessage[1] : message.message,
-      message.timestamp,
-      {
-        ...message.tags,
-        isAction,
-        ...tmiJsTagsShim(message, isAction),
-      }
-    ).catch((err) => {
-      log.error(err);
-    });
-  });
-
-  twitch.chat.on(TwitchJs.Chat.Events.CLEAR_MESSAGE, (message) => {
-    if (message.command !== TwitchJs.Chat.Commands.CLEAR_MESSAGE) {
-      return;
-    }
-    deleteMessage(
-      firebase,
-      message.tags.targetMsgId,
-      message.timestamp,
-      message.tags
-    ).catch((err) => {
-      log.error(err);
-    });
-  });
-
-  twitch.chat.on(TwitchJs.Chat.Events.CLEAR_CHAT, (message) => {
-    (async () => {
-      await firebase
-        .getMessage(`twitch:clear-${message.timestamp.toISOString()}`)
-        .set({
-          channel: message.channel,
-          channelId: `twitch:${await getTwitchUserId(message.channel)}`,
-          type: "clear",
-        });
-    })().catch((err) => {
-      log.error(err);
-    });
-  });
-
-  twitch.chat.on(TwitchJs.Chat.Events.ALL, (message) => {
-    if (message.event.startsWith("HOSTED/")) {
-      addHost(
-        firebase,
-        message.channel.replace("#", ""),
-        (message as any).tags.displayName,
-        message.timestamp,
-        (message as any).numberOfViewers || 0
-      ).catch((err) => {
-        log.error(err);
-      });
-    }
-  });
-
-  await twitch.chat.connect();
-
-  return twitch.chat;
-}
-
-const agents: { [userId: string]: Promise<Chat> } = {};
-
-type Agent = {
-  userId: string;
-  username: string;
-  isBot: boolean;
-  token: Token;
-};
-
-async function getAgent(
+async function getAuthProvider(
   firebase: FirebaseAdapter,
   channel: string
-): Promise<Agent> {
+): Promise<AuthProvider & { username: string; userId: string }> {
   const profile = await firebase.getProfile(channel);
-  const token = await firebase.getCredentials(channel);
-  if (!profile || !token) {
+  const credentials = profile
+    ? await firebase.getCredentials(profile.id)
+    : null;
+  if (!profile || !credentials) {
     const bot = await firebase.getBot();
-    const token = await firebase.getCredentials(bot.userId);
-    if (!token) {
-      throw new Error("no credentials for bot");
+    const credentials = await firebase.getCredentials(bot.userId);
+    if (!credentials) {
+      throw new Error("missing bot credentials");
     }
-    return { isBot: true, token, ...bot };
-  }
-  // validate the auth token we have for this user.
-  const verify = await fetch("https://id.twitch.tv/oauth2/validate", {
-    headers: { Authorization: `OAuth ${token["access_token"]}` },
-  });
-  if (verify.status != 200) {
-    await firebase.clearCredentials(profile.id);
-    await admin.auth().revokeRefreshTokens(profile.id);
-    return await getAgent(firebase, channel);
+    return {
+      ...bot,
+      clientId: TWITCH_CLIENT_ID,
+      tokenType: "user",
+      currentScopes: credentials["scope"],
+      async getAccessToken(scopes?: string[]): Promise<AccessToken> {
+        return toAccessToken(credentials);
+      },
+      async refresh(): Promise<AccessToken | null> {
+        const credentials = await firebase.getCredentials(bot.userId);
+        return credentials ? toAccessToken(credentials) : null;
+      },
+    };
   }
   return {
+    username: channel,
     userId: profile.id,
-    username: profile.get("twitch")["login"] as string,
-    isBot: false,
-    token,
+    clientId: TWITCH_CLIENT_ID,
+    tokenType: "user",
+    currentScopes: credentials["scope"],
+    async getAccessToken(scopes?: string[]): Promise<AccessToken> {
+      return toAccessToken(credentials);
+    },
+    async refresh(): Promise<AccessToken | null> {
+      const credentials = await firebase.getCredentials(profile.id);
+      return credentials ? toAccessToken(credentials) : null;
+    },
   };
+}
+
+function bunyanLogger(level: LogLevel, message: string) {
+  switch (level) {
+    case LogLevel.CRITICAL:
+      log.fatal(message);
+      break;
+    case LogLevel.ERROR:
+      log.error(message);
+      break;
+    case LogLevel.WARNING:
+      log.warn(message);
+      break;
+    case LogLevel.INFO:
+      log.info(message);
+      break;
+    case LogLevel.DEBUG:
+      log.debug(message);
+      break;
+    case LogLevel.TRACE:
+      log.trace(message);
+      break;
+    default:
+      throw new Error("unexpected log level");
+  }
 }
 
 async function join(
@@ -278,42 +119,135 @@ async function join(
   agentId: string,
   channel: string
 ) {
-  let raidListener: PubSubListener | null = null;
-  const { username, userId, isBot, token } = await getAgent(firebase, channel);
+  const authProvider = await getAuthProvider(firebase, channel);
 
-  log.info({ username, userId, channel }, "getting chat agent");
+  const chat = new ChatClient({
+    authProvider,
+    isAlwaysMod: authProvider.username === channel,
+    logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
+  });
 
-  if (!agents[userId]) {
-    agents[userId] = getChatAgent(firebase, username, token);
-  }
-  const chat = await agents[userId];
-  log.info({ channel, agentId, provider }, "assigned to channel");
-  await Promise.race([
-    chat.join(channel),
-    new Promise<void>((_, reject) =>
-      setTimeout(() => reject("failed to join in time"), 1000)
-    ),
-  ]);
+  const registerPromise = new Promise<void>((resolve) =>
+    chat.onRegister(() => resolve())
+  );
 
-  if (!isBot) {
-    const pubsub = new SingleUserPubSubClient({
-      authProvider: {
-        clientId: TWITCH_CLIENT_ID,
-        tokenType: "user",
-        currentScopes: [],
-        getAccessToken: async (): Promise<AccessToken> => {
-          return {
-            accessToken: token["access_token"],
-            refreshToken: token["refresh_token"],
-            scope: token["scope"],
-            expiresIn: token["expires_in"],
-            obtainmentTimestamp:
-              +token["expires_at"] - token["expires_in"] * 1000,
-          };
-        },
+  chat.onMessage(async (channel, user, message, msg) => {
+    const actionMessage = message.match(ACTION_MESSAGE_REGEX);
+    const isAction = Boolean(actionMessage);
+    if (!msg.channelId) {
+      return;
+    }
+    log.info(
+      {
+        channelId: msg.channelId,
+        channel,
+        messageId: msg.id,
+        message,
       },
+      "adding message"
+    );
+    const tags = Object.fromEntries(msg.tags);
+    const badges = tags["badges"]
+      .split(",")
+      .map((badge) => badge.split("/") as [string, string]);
+    await firebase.getMessage(`twitch:${msg.id}`).set({
+      channelId: `twitch:${msg.channelId}`,
+      channel,
+      type: "message",
+      timestamp: admin.firestore.Timestamp.fromDate(msg.date),
+      reply: tags["reply-parent-msg-id"]
+        ? {
+            messageId: `twitch:${tags["reply-parent-msg-id"]}`,
+            displayName: tags["reply-parent-display-name"],
+            userLogin: tags["reply-parent-user-login"],
+            userId: tags["reply-parent-user-id"],
+            message: tags["reply-parent-msg-body"],
+          }
+        : null,
+      author: {
+        userId: tags["user-id"],
+        displayName: tags["display-name"],
+        login: tags["username"],
+      },
+      // we have to shim some tags because the frontend still needs some of these.
+      tags: {
+        "user-id": tags["user-id"],
+        "display-name": tags["display-name"],
+        username: user,
+        "room-id": tags["room-id"],
+        color: tags["color"],
+        "message-type": isAction ? "action" : "chat",
+        "badges-raw": tags["badges"],
+        "first-msg": tags["first-msg"],
+        badges: {
+          vip: badges.find((badge) => badge[0] === "vip") !== null,
+          moderator: badges.find((badge) => badge[0] === "moderator") !== null,
+        },
+        "emotes-raw": tags["emotes"],
+      },
+      message,
     });
-    raidListener = await pubsub.onCustomTopic("raid", async (message) => {
+  });
+
+  chat.onMessageRemove(async (channel, messageId, msg) => {
+    const original = await firebase.getMessage(`twitch:${messageId}`).get();
+    if (!original.exists) {
+      log.error({ messageId, timestamp: msg.date }, "no message to delete");
+      return;
+    }
+    await firebase.getMessage(`twitch:x-${messageId}`).set({
+      channel,
+      channelId: original.get("channelId"),
+      type: "messagedeleted",
+      timestamp: admin.firestore.Timestamp.fromDate(msg.date),
+      messageId: `twitch:${messageId}`,
+    });
+  });
+
+  chat.onChatClear(async (channel, msg) => {
+    await firebase.getMessage(`twitch:clear-${msg.date.toISOString()}`).set({
+      channel,
+      channelId: `twitch:${msg.channelId}`,
+      type: "clear",
+    });
+  });
+
+  chat.onHosted(async (channel, hosterChannel, auto, viewers) => {
+    // host messages don't have an associated timestamp so the best we can do is use the current date stamp.
+    const timestamp = new Date();
+    await firebase.getMessage(`twitch:host-${timestamp.toISOString()}`).set({
+      channel: `#${channel}`,
+      channelId: `twitch:${await getTwitchUserId(channel)}`,
+      type: "host",
+      displayName: hosterChannel,
+      hosterChannelId: `twitch:${await getTwitchUserId(hosterChannel)}`,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      viewers: viewers || 0, // includes the original I guess.
+    });
+  });
+
+  log.info({ channel, agentId, provider }, "assigned to channel");
+  await chat.connect();
+  await registerPromise; // this is a bit awkward but the join will race if we don't wait.
+  await chat.join(channel);
+  log.info({ channel, agentId, provider }, "joined channel");
+
+  chat.onDisconnect(async (manually) => {
+    if (!manually) {
+      log.info({ agentId, provider, channel }, "force disconnected");
+      await firebase.forceRelease(provider, channel, agentId);
+    }
+  });
+
+  if (authProvider.username === channel) {
+    const basicpubsub = new BasicPubSubClient({
+      logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
+    });
+    const pubsub = new SingleUserPubSubClient({
+      authProvider,
+      pubSubClient: basicpubsub,
+    });
+    const raidListener = await pubsub.onCustomTopic("raid", async (message) => {
       const data = message.data as any;
       await firebase.setIfNotExists(
         `twitch:${data["type"]}-${data["raid"]["id"]}`,
@@ -325,35 +259,24 @@ async function join(
         }
       );
     });
+
+    basicpubsub.onDisconnect(async (manually) => {
+      if (!manually) {
+        log.info({ agentId, provider, channel }, "force disconnected");
+        await firebase.forceRelease(provider, channel, agentId);
+      }
+    });
+
+    await firebase.claim(provider, channel, agentId);
+
+    await raidListener.remove();
+  } else {
+    await firebase.claim(provider, channel, agentId);
   }
 
-  log.info({ channel, agentId, provider }, "joined channel");
-
-  chat.on(TwitchJs.Chat.Events.DISCONNECTED, async () => {
-    log.info({ agentId, provider, channel }, "force disconnected");
-
-    await firebase.releaseUnexpectedly(provider, channel);
-  });
-
-  // wait a random amount of time.
-  // this allows for claims to be a little more uniformly distributed across agents instead
-  // of being dominated by the slowest agent.
-  await new Promise<void>((resolve) =>
-    setTimeout(() => resolve(), 1000 * Math.random())
-  );
-
-  // mark us as the claimant.
-  await firebase.claim(provider, channel, `${agentId}/${uuidv4()}`);
-
-  log.info({ channel, agentId, provider }, "claim released");
-
-  // when that promise completes, we should leave the channel because we are no longer assigned.
-  await raidListener?.remove();
-  chat.disconnect();
+  await chat.quit();
 
   log.info({ channel, agentId, provider }, "disconnected");
-
-  delete agents[userId];
 }
 
 export async function runTwitchAgent(
@@ -391,7 +314,7 @@ export async function runTwitchAgent(
     unsubscribe();
 
     // release all matching this agent id.
-    await firebase.releaseAll(provider, agentId);
+    await firebase.releaseAll(provider, channels, agentId);
 
     log.info({ agentId, provider }, "released all");
 
