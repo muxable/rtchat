@@ -31,10 +31,12 @@ export const search = functions.https.onCall(async (data, context) => {
         ...(twitchJson.data || []).map((channel: any) => {
           return {
             provider: "twitch",
-            channelId: channel.id,
+            channelId: channel.user_id,
             displayName: channel.user_name,
             isOnline: channel.type == "live",
-            imageUrl: channel.thumbnail_url,
+            imageUrl: channel.thumbnail_url
+              .replace("{width}", "300")
+              .replace("{height}", "300"),
             title: `${channel.game_name} - ${channel.title}`,
           };
         }),
@@ -64,7 +66,9 @@ export const search = functions.https.onCall(async (data, context) => {
         channelId: channel.id,
         displayName: channel.display_name,
         isOnline: channel.is_live,
-        imageUrl: channel.thumbnail_url,
+        imageUrl: channel.thumbnail_url
+          .replace("{width}", "300")
+          .replace("{height}", "300"),
         title: `${channel.game_name} - ${channel.title}`,
       };
     }),
