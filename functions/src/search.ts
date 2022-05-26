@@ -36,6 +36,8 @@ export const search = functions.https.onCall(async (data, context) => {
             isOnline: channel.type == "live",
             imageUrl: channel.thumbnail_url,
             title: `${channel.game_name} - ${channel.title}`,
+            viewerCount: channel.viewer_count,
+            language: channel.language,
           };
         }),
       ];
@@ -66,6 +68,8 @@ export const search = functions.https.onCall(async (data, context) => {
         isOnline: channel.is_live,
         imageUrl: channel.thumbnail_url,
         title: `${channel.game_name} - ${channel.title}`,
+        viewerCount: channel.viewer_count,
+        language: channel.language,
       };
     }),
   ];
