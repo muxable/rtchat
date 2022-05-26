@@ -38,6 +38,8 @@ export const search = functions.https.onCall(async (data, context) => {
               .replace("{width}", "300")
               .replace("{height}", "300"),
             title: `${channel.game_name} - ${channel.title}`,
+            viewerCount: channel.viewer_count,
+            language: channel.language,
           };
         }),
       ];
@@ -70,6 +72,8 @@ export const search = functions.https.onCall(async (data, context) => {
           .replace("{width}", "300")
           .replace("{height}", "300"),
         title: `${channel.game_name} - ${channel.title}`,
+        viewerCount: channel.viewer_count,
+        language: channel.language,
       };
     }),
   ];
