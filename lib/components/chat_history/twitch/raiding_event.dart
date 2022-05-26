@@ -31,16 +31,17 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                   avatar:
                       ResilientNetworkImage(model.targetUser.profilePictureUrl),
                   child: Row(children: [
-                    Text.rich(TextSpan(
-                      children: [
-                        const TextSpan(text: "Raiding "),
-                        TextSpan(
-                            text: model.targetUser.displayName,
-                            style: Theme.of(context).textTheme.subtitle2),
-                        const TextSpan(text: "."),
-                      ],
-                    )),
-                    const Spacer(),
+                    Expanded(
+                      child: Text.rich(TextSpan(
+                        children: [
+                          const TextSpan(text: "Raiding "),
+                          TextSpan(
+                              text: model.targetUser.displayName,
+                              style: Theme.of(context).textTheme.subtitle2),
+                          const TextSpan(text: "."),
+                        ],
+                      )),
+                    ),
                     Text.rich(TextSpan(
                         text: remaining.isNegative
                             ? "0s"
@@ -54,16 +55,17 @@ class TwitchRaidingEventWidget extends StatelessWidget {
           child: DecoratedEventWidget.avatar(
               avatar: ResilientNetworkImage(model.targetUser.profilePictureUrl),
               child: Row(children: [
-                Text.rich(TextSpan(
-                  children: [
-                    const TextSpan(text: "Raided "),
-                    TextSpan(
-                        text: model.targetUser.displayName,
-                        style: Theme.of(context).textTheme.subtitle2),
-                    const TextSpan(text: "."),
-                  ],
-                )),
-                const Spacer(),
+                Expanded(
+                  child: Text.rich(TextSpan(
+                    children: [
+                      const TextSpan(text: "Raided "),
+                      TextSpan(
+                          text: model.targetUser.displayName,
+                          style: Theme.of(context).textTheme.subtitle2),
+                      const TextSpan(text: "."),
+                    ],
+                  )),
+                ),
                 Text.rich(TextSpan(
                     text: "Join",
                     style: Theme.of(context).textTheme.subtitle2?.copyWith(

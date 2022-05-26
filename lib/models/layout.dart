@@ -1,6 +1,6 @@
 import 'dart:core';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 enum PreferredOrientation {
@@ -34,6 +34,31 @@ extension _OrientationPreferenceJson on PreferredOrientation {
   }
 }
 
+extension _ThemeModeJson on ThemeMode {
+  int toJson() {
+    switch (this) {
+      case ThemeMode.light:
+        return 0;
+      case ThemeMode.dark:
+        return 1;
+      case ThemeMode.system:
+        return 2;
+    }
+  }
+
+  static ThemeMode fromJson(dynamic json) {
+    switch (json) {
+      case 0:
+        return ThemeMode.light;
+      case 1:
+        return ThemeMode.dark;
+      case 2:
+        return ThemeMode.system;
+    }
+    return ThemeMode.system;
+  }
+}
+
 class LayoutModel extends ChangeNotifier {
   double _panelHeight = 300.0;
   double _panelWidth = 300.0;
@@ -44,6 +69,7 @@ class LayoutModel extends ChangeNotifier {
   PreferredOrientation _orientationPreference = PreferredOrientation.system;
   bool _isShowNotifications = false;
   bool _isShowPreview = false;
+  ThemeMode _themeMode = ThemeMode.system;
 
   void updatePanelHeight({required double dy}) {
     _panelHeight += dy;
@@ -102,6 +128,13 @@ class LayoutModel extends ChangeNotifier {
   set preferredOrientation(PreferredOrientation value) {
     _orientationPreference = value;
     _bindOrientationPreference();
+    notifyListeners();
+  }
+
+  ThemeMode get themeMode => _themeMode;
+
+  set themeMode(ThemeMode value) {
+    _themeMode = value;
     notifyListeners();
   }
 
@@ -168,6 +201,9 @@ class LayoutModel extends ChangeNotifier {
     if (json['isShowPreview'] != null) {
       _isShowPreview = json['isShowPreview'];
     }
+    if (json['themeMode'] != null) {
+      _themeMode = _ThemeModeJson.fromJson(json['themeMode']);
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -179,5 +215,6 @@ class LayoutModel extends ChangeNotifier {
         "orientationPreference": _orientationPreference.toJson(),
         "isShowNotifications": _isShowNotifications,
         "isShowPreview": _isShowPreview,
+        "themeMode": _themeMode.toJson(),
       };
 }
