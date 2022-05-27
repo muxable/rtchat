@@ -174,32 +174,12 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                     children: [
                       Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(children: [
-                            Expanded(
-                                child: Text("/${widget.channel.displayName}",
+                          child: Text("/${widget.channel.displayName}",
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleMedium!
                                         .copyWith(color: Colors.white),
-                                    overflow: TextOverflow.fade)),
-                            if (onlineAt != null)
-                              Container(
-                                margin: const EdgeInsets.only(left: 8),
-                                decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(8)),
-                                child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 4, vertical: 2),
-                                    child: Text("LIVE",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelMedium!
-                                            .copyWith(color: Colors.white))),
-                              )
-                            else
-                              Container()
-                          ])),
+                              overflow: TextOverflow.fade)),
                       Consumer<LayoutModel>(
                           builder: (context, layoutModel, child) {
                         final style = Theme.of(context)
