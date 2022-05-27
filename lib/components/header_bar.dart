@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
+import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/user.dart';
 
 class _DurationWidget extends StatelessWidget {
   final DateTime from;
@@ -150,14 +152,23 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                 ),
                 builder: (context) {
                   return DraggableScrollableSheet(
-                      initialChildSize: 0.7,
-                      minChildSize: 0.7,
+                      initialChildSize: 0.8,
                       maxChildSize: 0.9,
                       expand: false,
                       builder: (context, controller) {
-                        return ChannelSearchBottomSheetWidget(
-                            onChannelSelect: widget.onChannelSelect,
-                            controller: controller);
+                        return Consumer<UserModel>(
+                            builder: (context, value, child) {
+                          return ChannelSearchBottomSheetWidget(
+                              onChannelSelect: widget.onChannelSelect,
+                              onRaid: value.userChannel == widget.channel
+                                  ? (channel) {
+                                      ActionsAdapter.instance.send(
+                                          widget.channel,
+                                          "/raid ${channel.displayName}");
+                                    }
+                                  : null,
+                              controller: controller);
+                        });
                       });
                 },
               );

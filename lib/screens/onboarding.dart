@@ -110,8 +110,7 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
                 ),
                 builder: (context) {
                   return DraggableScrollableSheet(
-                      initialChildSize: 0.7,
-                      minChildSize: 0.7,
+                      initialChildSize: 0.8,
                       maxChildSize: 0.9,
                       expand: false,
                       builder: (context, controller) {

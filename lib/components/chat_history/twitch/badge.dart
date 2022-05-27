@@ -23,8 +23,11 @@ class TwitchBadgeWidget extends StatelessWidget {
       if (!model.isEnabled("$badge/$version")) {
         return const SizedBox();
       }
-      final url =
-          Uri.tryParse(model.badgeSets["$badge/$version"]?["image_url_4x"]);
+      final badgeSet = model.badgeSets["$badge/$version"]?["image_url_4x"];
+      if (badgeSet == null) {
+        return const SizedBox();
+      }
+      final url = Uri.tryParse(badgeSet);
       if (url == null) {
         return const SizedBox();
       }
