@@ -212,7 +212,7 @@ class _ScrollToBottomWidgetState extends State<_ScrollToBottomWidget> {
                   curve: Curves.easeInOut);
             },
             style: ElevatedButton.styleFrom(
-              primary: Theme.of(context).primaryColor,
+              primary: Theme.of(context).colorScheme.primary,
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(16),
             ),

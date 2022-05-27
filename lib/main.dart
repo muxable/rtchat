@@ -283,31 +283,42 @@ class _AppState extends State<App> {
           theme: ThemeData(
             fontFamily: GoogleFonts.poppins().fontFamily,
             brightness: Brightness.light,
-            primarySwatch: primarySwatch,
+            colorScheme: ColorScheme.fromSwatch(
+              primarySwatch: primarySwatch,
+              accentColor: ThemeColors.lightAccentColor,
+            ).copyWith(
+              primary: ThemeColors.lightAccentColor,
+              secondary: ThemeColors.lightAccentColor,
+              tertiary: ThemeColors.detailColor,
+              background: Colors.white,
+            ),
+            toggleableActiveColor: ThemeColors.lightAccentColor,
+            appBarTheme: const AppBarTheme(color: ThemeColors.detailColor),
           ),
           darkTheme: ThemeData(
-              fontFamily: GoogleFonts.poppins().fontFamily,
-              canvasColor: Colors.black,
-              cardColor: Colors.black,
-              appBarTheme: const AppBarTheme(
-                color: ThemeColors.detailColor,
-              ),
-              colorScheme: ColorScheme.fromSwatch(
-                brightness: Brightness.dark,
-                backgroundColor: ThemeColors.detailColor,
-                accentColor: ThemeColors.accentColor,
-              ),
-              dialogBackgroundColor: Colors.black,
-              toggleableActiveColor: ThemeColors.accentColor,
-              bottomSheetTheme: const BottomSheetThemeData(
-                  backgroundColor: ThemeColors.detailColor),
-              drawerTheme: const DrawerThemeData(
-                  backgroundColor: ThemeColors.detailColor),
-              inputDecorationTheme: const InputDecorationTheme(
-                fillColor: ThemeColors.textFieldColor,
-              ),
-              textTheme: const TextTheme(
-                  headlineMedium: TextStyle(color: Colors.white))),
+            fontFamily: GoogleFonts.poppins().fontFamily,
+            canvasColor: Colors.black,
+            cardColor: Colors.black,
+            appBarTheme: const AppBarTheme(
+              color: ThemeColors.detailColor,
+            ),
+            colorScheme: ColorScheme.fromSwatch(
+              brightness: Brightness.dark,
+              backgroundColor: ThemeColors.detailColor,
+              accentColor: ThemeColors.accentColor,
+            ).copyWith(tertiary: ThemeColors.detailColor),
+            dialogBackgroundColor: Colors.black,
+            toggleableActiveColor: ThemeColors.accentColor,
+            bottomSheetTheme: const BottomSheetThemeData(
+                backgroundColor: ThemeColors.detailColor),
+            drawerTheme:
+                const DrawerThemeData(backgroundColor: ThemeColors.detailColor),
+            inputDecorationTheme: const InputDecorationTheme(
+              fillColor: ThemeColors.textFieldColor,
+            ),
+            textTheme:
+                const TextTheme(headlineMedium: TextStyle(color: Colors.white)),
+          ),
           themeMode: layoutModel.themeMode,
           navigatorObservers: [App.observer],
           initialRoute: '/',
