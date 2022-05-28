@@ -2,13 +2,10 @@
 
 A chat app for IRL streamers.
 
-<p align="left" float="left">
-  <a href="https://apps.apple.com/app/id1567720948"><img height="75" src="assets/apple-download.svg"></a>
-  <a href="https://play.google.com/store/apps/details?id=com.rtirl.chat"><img height="75" src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png"></a>
+<p align="left">
+  <a href="https://apps.apple.com/app/id1567720948"><img height="75" src="https://user-images.githubusercontent.com/54859075/160051843-1d8b2186-97e9-4edd-a957-bb4797b71b4a.svg"></a>
+<a href='https://play.google.com/store/apps/details?id=com.rtirl.chat&hl=en_US&gl=US&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' height="75" src='https://user-images.githubusercontent.com/54859075/160051854-21a57556-6b5a-41e9-8127-334daf1fac47.svg'/></a>
 </p>
-
-- [x] Android
-- [x] IOS
 
 ## Getting Started
 
