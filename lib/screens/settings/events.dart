@@ -29,7 +29,7 @@ class EventsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Event Configuration Selection'),
+        title: const Text('Event configuration selection'),
       ),
       body: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         final dateTime = DateTime.now();
@@ -105,20 +105,21 @@ class EventsScreen extends StatelessWidget {
             Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 child: StyleModelTheme(
-                    child: TwitchRaidEventWidget(TwitchRaidEventModel(
-                  messageId: '',
-                  timestamp: DateTime.now(),
-                  from: const TwitchUserModel(
-                      userId: '158394109',
-                      login: 'muxfd',
-                      displayName: 'muxfd'),
-                  viewers: 4,
+                    child: TwitchRaidEventWidget(
+                        TwitchRaidEventModel(
+                          messageId: '',
+                          timestamp: DateTime.now(),
+                          from: const TwitchUserModel(
+                              userId: '158394109',
+                              login: 'muxfd',
+                              displayName: 'muxfd'),
+                          viewers: 4,
                         ),
                         channel: Channel(
                           "twitch",
                           "muxfd",
                           "muxfd",
-                )))),
+                        )))),
             ListTile(
               title: const Text('Raid event config'),
               subtitle: const Text('Customize your raid event'),
