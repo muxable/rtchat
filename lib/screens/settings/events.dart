@@ -250,7 +250,7 @@ class EventsScreen extends StatelessWidget {
               title: const Text('Channel point redemption event config'),
               subtitle:
                   const Text('Customize your channel point redemption event'),
-              routeName: '/settings/events/channep-point',
+              routeName: '/settings/events/channel-point',
               child: Switch.adaptive(
                 value:
                     eventSubConfig.channelPointRedemptionEventConfig.showEvent,
