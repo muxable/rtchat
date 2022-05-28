@@ -310,7 +310,11 @@ class EventConfigListTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const VerticalDivider(),
+          const VerticalDivider(
+            thickness: 2.0,
+            indent: 8.0,
+            endIndent: 8.0,
+          ),
           child,
         ],
       ),
