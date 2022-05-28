@@ -36,7 +36,10 @@ class PollChoiceWidget extends StatelessWidget {
               height: 37,
               child: LinearProgressIndicator(
                 color: ThemeColors.accentColor,
-                backgroundColor: Theme.of(context).colorScheme.background,
+                backgroundColor:
+                    Theme.of(context).brightness == Brightness.light
+                        ? Theme.of(context).scaffoldBackgroundColor
+                        : Theme.of(context).colorScheme.tertiary,
                 value: percentage,
               ),
             ),
