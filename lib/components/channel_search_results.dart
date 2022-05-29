@@ -74,6 +74,7 @@ class ChannelSearchResultsWidget extends StatelessWidget {
                         child: CircleAvatar(
                           backgroundImage:
                               ResilientNetworkImage(result.imageUrl),
+                          backgroundColor: Colors.transparent,
                         ),
                       ),
                       title: Text(result.displayName),

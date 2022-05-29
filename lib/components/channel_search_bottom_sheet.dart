@@ -48,7 +48,8 @@ class _ChannelSearchBottomSheetWidgetState
                       borderRadius: BorderRadius.circular(10.0),
                       borderSide: BorderSide.none),
                   filled: true,
-                  hintStyle: const TextStyle(color: ThemeColors.accentColor),
+                  hintStyle:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
                   prefixIcon: const Padding(
                       padding: EdgeInsets.only(left: 16, right: 8),
                       child: Text("twitch.tv/")),

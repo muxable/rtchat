@@ -4,6 +4,7 @@ import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/theme_colors.dart';
 
 class TwitchRaidingEventWidget extends StatelessWidget {
   final TwitchRaidingEventModel model;
@@ -21,11 +22,13 @@ class TwitchRaidingEventWidget extends StatelessWidget {
             final remaining = expiration.difference(DateTime.now());
             return Stack(children: [
               Positioned.fill(
-                  child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 500),
-                      color: flash
-                          ? Theme.of(context).highlightColor
-                          : Theme.of(context).colorScheme.secondary)),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  color: flash
+                      ? Theme.of(context).highlightColor
+                      : ThemeColors.accentColor,
+                ),
+              ),
               DecoratedEventWidget.avatar(
                   decoration: const BoxDecoration(color: Colors.transparent),
                   avatar:
