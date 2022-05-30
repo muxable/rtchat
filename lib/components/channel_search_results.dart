@@ -2,7 +2,6 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
-import 'package:rtchat/theme_colors.dart';
 
 final _search = FirebaseFunctions.instance.httpsCallable("search");
 

@@ -4,7 +4,6 @@ import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:rtchat/theme_colors.dart';
 
 class TwitchRaidingEventWidget extends StatelessWidget {
   final TwitchRaidingEventModel model;

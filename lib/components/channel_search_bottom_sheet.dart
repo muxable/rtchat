@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/channel_search_results.dart';
 import 'package:rtchat/models/channels.dart';
-import 'package:rtchat/theme_colors.dart';
 
 class ChannelSearchBottomSheetWidget extends StatefulWidget {
   final ScrollController? controller;
