@@ -128,13 +128,21 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
           } else {
             return CustomScrollView(
               slivers: [
+                const SliverToBoxAdapter(
+                    child: Align(
+                  alignment: Alignment(-0.70, -1.0),
+                  child: Text(
+                    "Search Viewers",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+                  ),
+                )),
                 sliverSearchBarWidget,
                 SliverList(
                   delegate: SliverChildListDelegate(
                     const [
                       SizedBox(
                         height: 8,
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -151,6 +159,16 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                   ),
                 ),
                 if (filteredModeratorList.isNotEmpty) ...[
+                  const SliverPadding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 7.0, horizontal: 0.0)),
+                  const SliverToBoxAdapter(
+                      child: Divider(
+                    height: 1,
+                    endIndent: 32,
+                    color: Color.fromARGB(95, 37, 34, 34),
+                    indent: 32,
+                  )),
                   const SliverTitleWidget(title: "Moderators")
                 ],
                 SliverList(
@@ -163,6 +181,16 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                   ),
                 ),
                 if (filteredVipList.isNotEmpty) ...[
+                  const SliverPadding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 7.0, horizontal: 0.0)),
+                  const SliverToBoxAdapter(
+                      child: Divider(
+                    height: 1,
+                    endIndent: 32,
+                    color: Color.fromARGB(95, 37, 34, 34),
+                    indent: 32,
+                  )),
                   const SliverTitleWidget(title: "Community VIPs")
                 ],
                 SliverList(
@@ -175,6 +203,16 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                   ),
                 ),
                 if (filteredViewerList.isNotEmpty) ...[
+                  const SliverPadding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 7.0, horizontal: 0.0)),
+                  const SliverToBoxAdapter(
+                      child: Divider(
+                    height: 1,
+                    endIndent: 32,
+                    color: Color.fromARGB(95, 37, 34, 34),
+                    indent: 32,
+                  )),
                   const SliverTitleWidget(title: "Viewers")
                 ],
                 SliverList(
