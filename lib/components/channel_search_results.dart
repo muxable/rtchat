@@ -66,7 +66,7 @@ class ChannelSearchResultsWidget extends StatelessWidget {
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: result.isOnline
-                                ? ThemeColors.accentColor
+                                ? Theme.of(context).colorScheme.secondary
                                 : Colors.transparent,
                             width: 2.0,
                           ),

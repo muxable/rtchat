@@ -26,7 +26,7 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                   duration: const Duration(milliseconds: 500),
                   color: flash
                       ? Theme.of(context).highlightColor
-                      : ThemeColors.accentColor,
+                      : Theme.of(context).colorScheme.secondary,
                 ),
               ),
               DecoratedEventWidget.avatar(
