@@ -14,7 +14,7 @@ class _DrawerHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         height: 129,
-        color: Theme.of(context).primaryColor,
+        color: Theme.of(context).colorScheme.tertiary,
         child: Consumer<UserModel>(
           builder: (context, model, child) {
             final userChannel = model.userChannel;
@@ -22,9 +22,11 @@ class _DrawerHeader extends StatelessWidget {
                 margin: EdgeInsets.zero,
                 child: Row(children: [
                   CircleAvatar(
-                      backgroundImage: userChannel != null
-                          ? ResilientNetworkImage(userChannel.profilePictureUrl)
-                          : null),
+                    backgroundImage: userChannel != null
+                        ? ResilientNetworkImage(userChannel.profilePictureUrl)
+                        : null,
+                    backgroundColor: Colors.transparent,
+                  ),
                   const SizedBox(width: 16),
                   Column(
                       mainAxisAlignment: MainAxisAlignment.center,

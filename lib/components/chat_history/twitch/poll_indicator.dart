@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/style.dart';
+import 'package:rtchat/theme_colors.dart';
 
 class PollChoiceWidget extends StatelessWidget {
   final PollChoiceModel data;
@@ -34,6 +35,11 @@ class PollChoiceWidget extends StatelessWidget {
             SizedBox(
               height: 37,
               child: LinearProgressIndicator(
+                color: ThemeColors.accentColor,
+                backgroundColor:
+                    Theme.of(context).brightness == Brightness.light
+                        ? Theme.of(context).scaffoldBackgroundColor
+                        : Theme.of(context).colorScheme.tertiary,
                 value: percentage,
               ),
             ),
