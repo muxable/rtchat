@@ -164,7 +164,8 @@ class TtsModel extends ChangeNotifier {
 
     await previous;
 
-    if (_isEnabled && _pending.contains(model.messageId)) {
+    if ((_isEnabled || model is SystemMessageModel) &&
+        _pending.contains(model.messageId)) {
       await _tts.setSpeechRate(_speed);
       await _tts.setPitch(_pitch);
       await _tts.awaitSpeakCompletion(true);
