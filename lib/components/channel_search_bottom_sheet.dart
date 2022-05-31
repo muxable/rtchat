@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/channel_search_results.dart';
 import 'package:rtchat/models/channels.dart';
@@ -76,8 +77,13 @@ class _ChannelSearchBottomSheetWidgetState
             controller: widget.controller,
             onChannelSelect: (channel) {
               if (_raid) {
+                FirebaseAnalytics.instance.logEvent(
+                    name: "raid", parameters: {"channelId": channel.channelId});
                 widget.onRaid!(channel);
               } else {
+                FirebaseAnalytics.instance.logEvent(
+                    name: "channel_select",
+                    parameters: {"channelId": channel.channelId});
                 widget.onChannelSelect(channel);
               }
               Navigator.of(context).pop();
