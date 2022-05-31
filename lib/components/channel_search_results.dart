@@ -2,7 +2,6 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
-import 'package:rtchat/theme_colors.dart';
 
 final _search = FirebaseFunctions.instance.httpsCallable("search");
 
@@ -66,7 +65,7 @@ class ChannelSearchResultsWidget extends StatelessWidget {
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: result.isOnline
-                                ? ThemeColors.accentColor
+                                ? Theme.of(context).colorScheme.secondary
                                 : Colors.transparent,
                             width: 2.0,
                           ),
@@ -74,6 +73,7 @@ class ChannelSearchResultsWidget extends StatelessWidget {
                         child: CircleAvatar(
                           backgroundImage:
                               ResilientNetworkImage(result.imageUrl),
+                          backgroundColor: Colors.transparent,
                         ),
                       ),
                       title: Text(result.displayName),

@@ -57,7 +57,9 @@ class _TwitchOutcomeWidget extends StatelessWidget {
             child: LinearProgressIndicator(
               value: outcome.points / max(1, totalPoints),
               valueColor: AlwaysStoppedAnimation<Color>(outcome.widgetColor),
-              backgroundColor: outcome.widgetColor.shade200,
+              backgroundColor: Theme.of(context).brightness == Brightness.light
+                  ? outcome.widgetColor.shade200
+                  : outcome.widgetColor.shade900,
             ),
           ),
           Builder(builder: (context) {

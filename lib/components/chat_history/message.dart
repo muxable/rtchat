@@ -62,7 +62,9 @@ class ChatHistoryMessage extends StatelessWidget {
 
         return Material(
           child: InkWell(
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
               onLongPress: () async {
+                FocusManager.instance.primaryFocus?.unfocus();
                 var showTimeoutDialog = await showDialog<bool>(
                     context: context,
                     builder: (context) {
