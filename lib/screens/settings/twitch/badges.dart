@@ -26,7 +26,7 @@ class TwitchBadgesScreen extends StatelessWidget {
                   const Text("Select all"),
                   Theme(
                     data: theme.copyWith(
-                        unselectedWidgetColor: theme.colorScheme.onPrimary),
+                        unselectedWidgetColor: theme.colorScheme.onTertiary),
                     child: Checkbox(
                       tristate: true,
                       value: model.enabledCount == 0
