@@ -6,7 +6,8 @@ import { getUserEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
-import { subscribe, unsubscribe, cleanup } from "./subscriptions";
+import { cleanup, subscribe, unsubscribe } from "./subscriptions";
+import { synthesize } from "./tts";
 import { getTwitchClient, getTwitchLogin } from "./twitch";
 
 admin.initializeApp();
@@ -322,5 +323,13 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
   }
 });
 
-export { subscribe, unsubscribe, eventsub, search, getUserEmotes, cleanup };
+export {
+  subscribe,
+  unsubscribe,
+  eventsub,
+  search,
+  getUserEmotes,
+  cleanup,
+  synthesize,
+};
 export const auth = functions.https.onRequest(authApp);
