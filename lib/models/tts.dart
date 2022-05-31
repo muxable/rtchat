@@ -10,8 +10,8 @@ import 'package:rtchat/models/messages/twitch/user.dart';
 
 class TtsModel extends ChangeNotifier {
   final _tts = FlutterTts();
-  final _queue = <MessageModel>[];
-  Timer? _evictionTimer;
+  Future<void> _previousUtterance = Future.value();
+  final Set<String> _pending = {};
   var _isBotMuted = false;
   var _isEmoteMuted = false;
   var _speed = Platform.isAndroid ? 0.8 : 0.395;
@@ -62,11 +62,7 @@ class TtsModel extends ChangeNotifier {
       return;
     }
     _isEnabled = value;
-    if (!value) {
-      _queue.clear();
-      _evictionTimer?.cancel();
-      _evictionTimer = null;
-    } else {
+    if (value) {
       _lastMessageTime = DateTime.now();
     }
     say(
@@ -127,7 +123,7 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  void say(MessageModel model, {bool force = false}) {
+  void say(MessageModel model, {bool force = false}) async {
     if (!enabled && !force) {
       return;
     }
@@ -160,37 +156,28 @@ class TtsModel extends ChangeNotifier {
       return;
     }
 
-    // add this text to the queue
-    _queue.add(model);
+    final previous = _previousUtterance;
+    final completer = Completer();
 
-    // start the evictor if it isn't already running
-    _evictionTimer ??= _evictNext();
+    _previousUtterance = completer.future;
+    _pending.add(model.messageId);
+
+    await previous;
+
+    if ((_isEnabled || model is SystemMessageModel) &&
+        _pending.contains(model.messageId)) {
+      await _tts.setSpeechRate(_speed);
+      await _tts.setPitch(_pitch);
+      await _tts.awaitSpeakCompletion(true);
+      await _tts.speak(vocalization);
+    }
+
+    completer.complete();
+    _pending.remove(model.messageId);
   }
 
   void unsay(String messageId) {
-    // remove this text from the queue if it exists.
-    _queue.removeWhere((m) => m.messageId == messageId);
-  }
-
-  Timer _evictNext() {
-    return Timer(const Duration(milliseconds: 100), () async {
-      // if the queue is empty, stop the evictor
-      if (_queue.isEmpty) {
-        _evictionTimer = null;
-        return;
-      }
-
-      // remove the first item from the queue
-      final message = _queue.removeAt(0);
-
-      // speak with tts.
-      _tts.setCompletionHandler(() {
-        _evictionTimer = _evictNext();
-      });
-      await _tts.setSpeechRate(_speed);
-      await _tts.setPitch(_pitch);
-      await _tts.speak(getVocalization(message));
-    });
+    _pending.remove(messageId);
   }
 
   TtsModel.fromJson(Map<String, dynamic> json) {
