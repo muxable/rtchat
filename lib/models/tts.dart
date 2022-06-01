@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -166,10 +167,14 @@ class TtsModel extends ChangeNotifier {
 
     if ((_isEnabled || model is SystemMessageModel) &&
         _pending.contains(model.messageId)) {
-      await _tts.setSpeechRate(_speed);
-      await _tts.setPitch(_pitch);
-      await _tts.awaitSpeakCompletion(true);
-      await _tts.speak(vocalization);
+      try {
+        await _tts.setSpeechRate(_speed);
+        await _tts.setPitch(_pitch);
+        await _tts.awaitSpeakCompletion(true);
+        await _tts.speak(vocalization);
+      } catch (e, st) {
+        FirebaseCrashlytics.instance.recordError(e, st);
+      }
     }
 
     completer.complete();
