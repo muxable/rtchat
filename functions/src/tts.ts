@@ -49,5 +49,7 @@ export const synthesize = functions.https.onCall(async (data, context) => {
 
   const json = await response.json();
 
+  console.log(json);
+
   return json["audioContent"];
 });
