@@ -40,6 +40,11 @@ export const synthesize = functions.https.onCall(async (data, context) => {
         input: {
           text: data.text,
         },
+        voice: {
+          languageCode: "en-US",
+          name: "en-US-Standard-A",
+          ssmlGender: "MALE",
+        },
         audioConfig: {
           audioEncoding: "MP3",
         },
