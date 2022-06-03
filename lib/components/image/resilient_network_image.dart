@@ -23,6 +23,8 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
     return client;
   }
 
+  static final Map<String, Future<Codec>> _pending = {};
+
   final Uri uri;
   final double scale;
 
@@ -36,7 +38,10 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiFrameImageStreamCompleter(
       chunkEvents: chunkEvents.stream,
-      codec: _loadAsync(key, chunkEvents, decode),
+      codec: _pending[hash] ??= _loadAsync(key, chunkEvents, decode).then((x) {
+        _pending.remove(hash);
+        return x;
+      }),
       scale: scale,
       debugLabel: key.uri.toString(),
       informationCollector: _imageStreamInformationCollector(key),
