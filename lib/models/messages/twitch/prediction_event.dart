@@ -54,10 +54,10 @@ class TwitchPredictionEventModel extends MessageModel {
         status: data['event']['status'],
         winningOutcomeId: data['event']['winning_outcome_id'],
         endTime: DateTime.parse(data['event']['ended_at']),
-        outcomes: List.from(data['event']['outcomes'].values.map((outcome) {
+        outcomes: data['event']['outcomes'].map((outcome) {
           return TwitchPredictionOutcomeModel(outcome['id'],
               outcome['channel_points'], outcome['color'], outcome['title']);
-        })));
+        }).toList());
   }
 
   int get totalPoints {
