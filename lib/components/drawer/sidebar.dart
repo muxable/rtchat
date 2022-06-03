@@ -21,13 +21,13 @@ class _DrawerHeader extends StatelessWidget {
             return DrawerHeader(
                 margin: EdgeInsets.zero,
                 child: Row(children: [
-                  /*CircleAvatar(
+                  CircleAvatar(
                     backgroundImage: userChannel != null
-                        ? ResilientNetworkImage(userChannel.profilePictureUrl)
+                        ? NetworkImage(userChannel.profilePictureUrl.toString())
                         : null,
                     backgroundColor: Colors.transparent,
                   ),
-                  const SizedBox(width: 16),*/
+                  const SizedBox(width: 16),
                   Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
