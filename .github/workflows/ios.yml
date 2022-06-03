@@ -52,6 +52,12 @@ jobs:
           name: release.ipa
           path: build/ios/ipa/RealtimeChat.ipa
           
+      - uses: softprops/action-gh-release@v1
+        if: github.event_name == 'release'
+        with:
+          files: |
+            build/ios/ipa/RealtimeChat.ipa
+          
   upload:
     needs: ipa
     runs-on: macos-latest
