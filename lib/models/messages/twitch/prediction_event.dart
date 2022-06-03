@@ -12,6 +12,13 @@ class TwitchPredictionOutcomeModel {
   MaterialColor get widgetColor => color == "pink" ? Colors.pink : Colors.blue;
 }
 
+Iterable<dynamic> _coerce(dynamic value) {
+  if (value is Map) {
+    return value.values;
+  }
+  return value;
+}
+
 class TwitchPredictionEventModel extends MessageModel {
   final String title;
   final String? status;
@@ -37,7 +44,7 @@ class TwitchPredictionEventModel extends MessageModel {
         title: data['event']['title'],
         status: "in_progress",
         endTime: DateTime.parse(data['event']['locks_at']),
-        outcomes: data['event']['outcomes'].map((outcome) {
+        outcomes: _coerce(data['event']['outcomes']).map((outcome) {
           return TwitchPredictionOutcomeModel(
               outcome['id'],
               outcome['channel_points'] ?? 0,
@@ -54,10 +61,10 @@ class TwitchPredictionEventModel extends MessageModel {
         status: data['event']['status'],
         winningOutcomeId: data['event']['winning_outcome_id'],
         endTime: DateTime.parse(data['event']['ended_at']),
-        outcomes: List.from(data['event']['outcomes'].values.map((outcome) {
+        outcomes: _coerce(data['event']['outcomes']).map((outcome) {
           return TwitchPredictionOutcomeModel(outcome['id'],
               outcome['channel_points'], outcome['color'], outcome['title']);
-        })));
+        }).toList());
   }
 
   int get totalPoints {
