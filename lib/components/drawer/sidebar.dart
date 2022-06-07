@@ -21,6 +21,7 @@ class _DrawerHeader extends StatelessWidget {
           return DrawerHeader(
             margin: EdgeInsets.zero,
             child: InkWell(
+              borderRadius: BorderRadius.circular(10.0),
               onTap: () {
                 if (model.activeChannel != userChannel) {
                   model.activeChannel = userChannel;
