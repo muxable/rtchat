@@ -26,6 +26,7 @@ class _DrawerHeader extends StatelessWidget {
                 if (model.activeChannel != userChannel) {
                   model.activeChannel = userChannel;
                 }
+                Navigator.of(context).pop();
               },
               child: Row(children: [
                 CircleAvatar(
