@@ -21,26 +21,29 @@ class TwitchRaidingEventWidget extends StatelessWidget {
             final remaining = expiration.difference(DateTime.now());
             return Stack(children: [
               Positioned.fill(
-                  child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 500),
-                      color: flash
-                          ? Theme.of(context).highlightColor
-                          : Theme.of(context).colorScheme.secondary)),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  color: flash
+                      ? Theme.of(context).highlightColor
+                      : Theme.of(context).colorScheme.secondary,
+                ),
+              ),
               DecoratedEventWidget.avatar(
                   decoration: const BoxDecoration(color: Colors.transparent),
                   avatar:
                       ResilientNetworkImage(model.targetUser.profilePictureUrl),
                   child: Row(children: [
-                    Text.rich(TextSpan(
-                      children: [
-                        const TextSpan(text: "Raiding "),
-                        TextSpan(
-                            text: model.targetUser.displayName,
-                            style: Theme.of(context).textTheme.subtitle2),
-                        const TextSpan(text: "."),
-                      ],
-                    )),
-                    const Spacer(),
+                    Expanded(
+                      child: Text.rich(TextSpan(
+                        children: [
+                          const TextSpan(text: "Raiding "),
+                          TextSpan(
+                              text: model.targetUser.displayName,
+                              style: Theme.of(context).textTheme.subtitle2),
+                          const TextSpan(text: "."),
+                        ],
+                      )),
+                    ),
                     Text.rich(TextSpan(
                         text: remaining.isNegative
                             ? "0s"
@@ -54,16 +57,17 @@ class TwitchRaidingEventWidget extends StatelessWidget {
           child: DecoratedEventWidget.avatar(
               avatar: ResilientNetworkImage(model.targetUser.profilePictureUrl),
               child: Row(children: [
-                Text.rich(TextSpan(
-                  children: [
-                    const TextSpan(text: "Raided "),
-                    TextSpan(
-                        text: model.targetUser.displayName,
-                        style: Theme.of(context).textTheme.subtitle2),
-                    const TextSpan(text: "."),
-                  ],
-                )),
-                const Spacer(),
+                Expanded(
+                  child: Text.rich(TextSpan(
+                    children: [
+                      const TextSpan(text: "Raided "),
+                      TextSpan(
+                          text: model.targetUser.displayName,
+                          style: Theme.of(context).textTheme.subtitle2),
+                      const TextSpan(text: "."),
+                    ],
+                  )),
+                ),
                 Text.rich(TextSpan(
                     text: "Join",
                     style: Theme.of(context).textTheme.subtitle2?.copyWith(

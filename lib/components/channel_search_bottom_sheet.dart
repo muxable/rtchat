@@ -1,14 +1,15 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/channel_search_results.dart';
 import 'package:rtchat/models/channels.dart';
-import 'package:rtchat/theme_colors.dart';
 
 class ChannelSearchBottomSheetWidget extends StatefulWidget {
   final ScrollController? controller;
   final void Function(Channel) onChannelSelect;
+  final void Function(Channel)? onRaid;
 
   const ChannelSearchBottomSheetWidget(
-      {Key? key, this.controller, required this.onChannelSelect})
+      {Key? key, this.controller, required this.onChannelSelect, this.onRaid})
       : super(key: key);
 
   @override
@@ -20,6 +21,7 @@ class _ChannelSearchBottomSheetWidgetState
     extends State<ChannelSearchBottomSheetWidget> {
   final _searchController = TextEditingController();
   var _value = "";
+  var _raid = false;
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +29,15 @@ class _ChannelSearchBottomSheetWidgetState
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text('Search Channels',
-                textAlign: TextAlign.left,
-                style: Theme.of(context).textTheme.headlineMedium),
-          ),
+          Row(children: [
+            Expanded(
+                child: Text(_raid ? 'Raid a Channel' : 'Search Channels',
+                    style: Theme.of(context).textTheme.headlineMedium)),
+            if (widget.onRaid != null)
+              Switch.adaptive(
+                  value: _raid,
+                  onChanged: (value) => setState(() => _raid = value))
+          ]),
           const SizedBox(height: 16),
           TextField(
               textInputAction: TextInputAction.search,
@@ -43,7 +48,8 @@ class _ChannelSearchBottomSheetWidgetState
                       borderRadius: BorderRadius.circular(10.0),
                       borderSide: BorderSide.none),
                   filled: true,
-                  hintStyle: const TextStyle(color: ThemeColors.accentColor),
+                  hintStyle:
+                      TextStyle(color: Theme.of(context).colorScheme.primary),
                   prefixIcon: const Padding(
                       padding: EdgeInsets.only(left: 16, right: 8),
                       child: Text("twitch.tv/")),
@@ -70,7 +76,16 @@ class _ChannelSearchBottomSheetWidgetState
             query: _value,
             controller: widget.controller,
             onChannelSelect: (channel) {
-              widget.onChannelSelect(channel);
+              if (_raid) {
+                FirebaseAnalytics.instance.logEvent(
+                    name: "raid", parameters: {"channelId": channel.channelId});
+                widget.onRaid!(channel);
+              } else {
+                FirebaseAnalytics.instance.logEvent(
+                    name: "channel_select",
+                    parameters: {"channelId": channel.channelId});
+                widget.onChannelSelect(channel);
+              }
               Navigator.of(context).pop();
             },
           ))

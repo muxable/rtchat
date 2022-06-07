@@ -8,6 +8,7 @@ class TwitchBadgesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       body: Consumer<TwitchBadgeModel>(builder: (context, model, child) {
         final keys = model.badgeSets.keys.toList()
@@ -23,7 +24,10 @@ class TwitchBadgesScreen extends StatelessWidget {
               actions: [
                 Row(children: [
                   const Text("Select all"),
-                  Checkbox(
+                  Theme(
+                    data: theme.copyWith(
+                        unselectedWidgetColor: theme.colorScheme.onTertiary),
+                    child: Checkbox(
                       tristate: true,
                       value: model.enabledCount == 0
                           ? false
@@ -32,7 +36,9 @@ class TwitchBadgesScreen extends StatelessWidget {
                               : null),
                       onChanged: (value) {
                         model.setAllEnabled(value ?? false);
-                      })
+                      },
+                    ),
+                  )
                 ]),
               ]),
           SliverList(

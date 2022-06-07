@@ -29,7 +29,7 @@ class EventsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Event Configuration Selection'),
+        title: const Text('Event configuration selection'),
       ),
       body: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         final dateTime = DateTime.now();
@@ -47,16 +47,15 @@ class EventsScreen extends StatelessWidget {
                   messageId: '',
                   timestamp: DateTime.now(),
                 )))),
-            ListTile(
+            EventConfigListTile(
               title: const Text('Follow event config'),
               subtitle: const Text('Customize your follow event'),
-              trailing: Switch.adaptive(
-                  value: eventSubConfig.followEventConfig.showEvent,
-                  onChanged: (value) =>
-                      eventSubConfig.setFollowEventShowable(value)),
-              onTap: () {
-                Navigator.pushNamed(context, '/settings/events/follow');
-              },
+              routeName: '/settings/events/follow',
+              child: Switch.adaptive(
+                value: eventSubConfig.followEventConfig.showEvent,
+                onChanged: (value) =>
+                    eventSubConfig.setFollowEventShowable(value),
+              ),
             ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -69,16 +68,15 @@ class EventsScreen extends StatelessWidget {
                   subscriberUserName: 'muxfd',
                   tier: '1000',
                 )))),
-            ListTile(
+            EventConfigListTile(
               title: const Text('Subscribe event config'),
               subtitle: const Text('Customize your subscription event'),
-              trailing: Switch.adaptive(
-                  value: eventSubConfig.subscriptionEventConfig.showEvent,
-                  onChanged: (value) =>
-                      eventSubConfig.setSubscriptionEventShowable(value)),
-              onTap: () {
-                Navigator.pushNamed(context, '/settings/events/subscription');
-              },
+              routeName: '/settings/events/subscription',
+              child: Switch.adaptive(
+                value: eventSubConfig.subscriptionEventConfig.showEvent,
+                onChanged: (value) =>
+                    eventSubConfig.setSubscriptionEventShowable(value),
+              ),
             ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -91,44 +89,43 @@ class EventsScreen extends StatelessWidget {
                   giverName: 'muxfd',
                   isAnonymous: false,
                 )))),
-            ListTile(
+            EventConfigListTile(
               title: const Text('Cheer event config'),
               subtitle: const Text('Customize your cheer event'),
-              trailing: Switch.adaptive(
-                  value: eventSubConfig.cheerEventConfig.showEvent,
-                  onChanged: (value) =>
-                      eventSubConfig.setCheerEventShowable(value)),
-              onTap: () {
-                Navigator.pushNamed(context, '/settings/events/cheer');
-              },
+              routeName: '/settings/events/cheer',
+              child: Switch.adaptive(
+                value: eventSubConfig.cheerEventConfig.showEvent,
+                onChanged: (value) =>
+                    eventSubConfig.setCheerEventShowable(value),
+              ),
             ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 child: StyleModelTheme(
-                    child: TwitchRaidEventWidget(TwitchRaidEventModel(
-                  messageId: '',
-                  timestamp: DateTime.now(),
-                  from: const TwitchUserModel(
-                      userId: '158394109',
-                      login: 'muxfd',
-                      displayName: 'muxfd'),
-                  viewers: 4,
+                    child: TwitchRaidEventWidget(
+                        TwitchRaidEventModel(
+                          messageId: '',
+                          timestamp: DateTime.now(),
+                          from: const TwitchUserModel(
+                              userId: '158394109',
+                              login: 'muxfd',
+                              displayName: 'muxfd'),
+                          viewers: 4,
                         ),
                         channel: Channel(
                           "twitch",
                           "muxfd",
                           "muxfd",
-                )))),
-            ListTile(
+                        )))),
+            EventConfigListTile(
               title: const Text('Raid event config'),
               subtitle: const Text('Customize your raid event'),
-              trailing: Switch.adaptive(
-                  value: eventSubConfig.raidEventConfig.showEvent,
-                  onChanged: (value) =>
-                      eventSubConfig.setRaidEventShowable(value)),
-              onTap: () {
-                Navigator.pushNamed(context, '/settings/events/raid');
-              },
+              routeName: '/settings/events/raid',
+              child: Switch.adaptive(
+                value: eventSubConfig.raidEventConfig.showEvent,
+                onChanged: (value) =>
+                    eventSubConfig.setRaidEventShowable(value),
+              ),
             ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -142,16 +139,15 @@ class EventsScreen extends StatelessWidget {
                       displayName: 'muxfd'),
                   viewers: 5,
                 )))),
-            ListTile(
+            EventConfigListTile(
               title: const Text('Host event config'),
               subtitle: const Text('Customize your host event'),
-              trailing: Switch.adaptive(
-                  value: eventSubConfig.hostEventConfig.showEvent,
-                  onChanged: (value) =>
-                      eventSubConfig.setHostEventShowable(value)),
-              onTap: () {
-                Navigator.pushNamed(context, '/settings/events/host');
-              },
+              routeName: '/settings/events/host',
+              child: Switch.adaptive(
+                value: eventSubConfig.hostEventConfig.showEvent,
+                onChanged: (value) =>
+                    eventSubConfig.setHostEventShowable(value),
+              ),
             ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -166,16 +162,15 @@ class EventsScreen extends StatelessWidget {
                   startTimestamp: DateTime(2021),
                   endTimestamp: DateTime(2021),
                 )))),
-            ListTile(
+            EventConfigListTile(
               title: const Text('Hypetrain event config'),
               subtitle: const Text('Customize your hypetrain event'),
-              trailing: Switch.adaptive(
-                  value: eventSubConfig.hypetrainEventConfig.showEvent,
-                  onChanged: (value) =>
-                      eventSubConfig.setHypetrainEventShowable(value)),
-              onTap: () {
-                Navigator.pushNamed(context, '/settings/events/hypetrain');
-              },
+              routeName: '/settings/events/hypetrain',
+              child: Switch.adaptive(
+                value: eventSubConfig.hypetrainEventConfig.showEvent,
+                onChanged: (value) =>
+                    eventSubConfig.setHypetrainEventShowable(value),
+              ),
             ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -202,16 +197,15 @@ class EventsScreen extends StatelessWidget {
                         startTimestamp: DateTime(2021),
                         endTimestamp: DateTime(2021),
                         status: 'placeholder')))),
-            ListTile(
+            EventConfigListTile(
               title: const Text('Poll event config'),
               subtitle: const Text('Customize your poll event'),
-              trailing: Switch.adaptive(
-                  value: eventSubConfig.pollEventConfig.showEvent,
-                  onChanged: (value) =>
-                      eventSubConfig.setPollEventShowable(value)),
-              onTap: () {
-                Navigator.pushNamed(context, '/settings/events/poll');
-              },
+              routeName: '/settings/events/poll',
+              child: Switch.adaptive(
+                value: eventSubConfig.pollEventConfig.showEvent,
+                onChanged: (value) =>
+                    eventSubConfig.setPollEventShowable(value),
+              ),
             ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -229,16 +223,15 @@ class EventsScreen extends StatelessWidget {
                       TwitchPredictionOutcomeModel(
                           'outcome2', 100, 'blue', 'Tails')
                     ])))),
-            ListTile(
+            EventConfigListTile(
               title: const Text('Prediction event config'),
               subtitle: const Text('Customize your prediction event'),
-              trailing: Switch.adaptive(
-                  value: eventSubConfig.predictionEventConfig.showEvent,
-                  onChanged: (value) =>
-                      eventSubConfig.setPredictionEventShowable(value)),
-              onTap: () {
-                Navigator.pushNamed(context, '/settings/events/prediction');
-              },
+              routeName: '/settings/events/prediction',
+              child: Switch.adaptive(
+                value: eventSubConfig.predictionEventConfig.showEvent,
+                onChanged: (value) =>
+                    eventSubConfig.setPredictionEventShowable(value),
+              ),
             ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -253,19 +246,18 @@ class EventsScreen extends StatelessWidget {
                   rewardCost: 1000,
                   userInput: 'Infront of Topaz!',
                 )))),
-            ListTile(
-                title: const Text('Channel point redemption event config'),
-                subtitle:
-                    const Text('Customize your channel point redemption event'),
-                trailing: Switch.adaptive(
-                    value: eventSubConfig
-                        .channelPointRedemptionEventConfig.showEvent,
-                    onChanged: (value) => eventSubConfig
-                        .setChannelPointRedemptionEventShowable(value)),
-                onTap: () {
-                  Navigator.pushNamed(
-                      context, '/settings/events/channel-point');
-                }),
+            EventConfigListTile(
+              title: const Text('Channel point redemption event config'),
+              subtitle:
+                  const Text('Customize your channel point redemption event'),
+              routeName: '/settings/events/channel-point',
+              child: Switch.adaptive(
+                value:
+                    eventSubConfig.channelPointRedemptionEventConfig.showEvent,
+                onChanged: (value) => eventSubConfig
+                    .setChannelPointRedemptionEventShowable(value),
+              ),
+            ),
             Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 child: StyleModelTheme(
@@ -278,19 +270,57 @@ class EventsScreen extends StatelessWidget {
                       login: 'muxfd',
                       displayName: 'muxfd'),
                 )))),
-            ListTile(
-                title: const Text('Outgoing raid event config'),
-                subtitle: const Text('Customize your outgoing raid event'),
-                trailing: Switch.adaptive(
-                    value: eventSubConfig.raidingEventConfig.showEvent,
-                    onChanged: (value) =>
-                        eventSubConfig.setRaidingEventShowable(value)),
-                onTap: () {
-                  Navigator.pushNamed(context, '/settings/events/raiding');
-                }),
+            EventConfigListTile(
+              title: const Text('Outgoing raid event config'),
+              subtitle: const Text('Customize your outgoing raid event'),
+              routeName: '/settings/events/raiding',
+              child: Switch.adaptive(
+                value: eventSubConfig.raidingEventConfig.showEvent,
+                onChanged: (value) =>
+                    eventSubConfig.setRaidingEventShowable(value),
+              ),
+            ),
           ]);
         });
       }),
+    );
+  }
+}
+
+class EventConfigListTile extends StatelessWidget {
+  final Text title;
+  final Text subtitle;
+  final String routeName;
+  final Widget child;
+
+  const EventConfigListTile({
+    Key? key,
+    required this.title,
+    required this.subtitle,
+    required this.routeName,
+    required this.child,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: title,
+      subtitle: subtitle,
+      trailing: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const VerticalDivider(
+            thickness: 2.0,
+            indent: 8.0,
+            endIndent: 8.0,
+          ),
+          child,
+        ],
+      ),
+      onTap: () {
+        Navigator.pushNamed(context, routeName);
+      },
     );
   }
 }

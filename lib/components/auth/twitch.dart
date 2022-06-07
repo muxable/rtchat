@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/user.dart';
@@ -28,6 +28,10 @@ class SignInWithTwitch extends StatelessWidget {
       child: const Text("Sign in with Twitch"),
       onPressed: () async {
         final user = Provider.of<UserModel>(context, listen: false);
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
+        const retrySnackbar = SnackBar(
+            content:
+                Text("An error occurred when signing in. Please try again."));
         onStart?.call();
         try {
           await FirebaseAnalytics.instance.logLogin(loginMethod: "twitch");
@@ -43,12 +47,14 @@ class SignInWithTwitch extends StatelessWidget {
               onComplete?.call();
             });
           } else {
-            await FirebaseCrashlytics.instance.log("failed to sign in");
             onComplete?.call();
+            scaffoldMessenger.showSnackBar(retrySnackbar);
           }
-        } catch (e, st) {
-          await FirebaseCrashlytics.instance.recordError(e, st);
+        } catch (e) {
           onComplete?.call();
+          if (!(e is PlatformException && e.code == "CANCELLED")) {
+            scaffoldMessenger.showSnackBar(retrySnackbar);
+          }
         }
       },
     );
