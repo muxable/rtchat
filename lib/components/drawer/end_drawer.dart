@@ -140,10 +140,10 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 25,
-                            color: Theme.of(context).colorScheme.secondary),
+                            color: Theme.of(context).colorScheme.onSurface),
                       ),
                     ),
-                    backgroundColor: const Color.fromARGB(0, 96, 125, 139),
+                    backgroundColor: Colors.transparent,
                     automaticallyImplyLeading: false),
                 sliverSearchBarWidget,
                 SliverList(
@@ -177,7 +177,6 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                         child: Divider(
                       height: 1,
                       endIndent: 32,
-                      color: Color.fromARGB(95, 37, 34, 34),
                       indent: 32,
                     )),
                   ],
@@ -203,7 +202,6 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                         child: Divider(
                       height: 1,
                       endIndent: 32,
-                      color: Color.fromARGB(95, 37, 34, 34),
                       indent: 32,
                     )),
                   ],
@@ -222,7 +220,6 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                   if (filteredVipList.isNotEmpty ||
                       filteredModeratorList.isNotEmpty ||
                       filteredBroadcasterList.isNotEmpty) ...[
-                    // if viewer list exists,
                     const SliverPadding(
                         padding: EdgeInsets.symmetric(
                             vertical: 7.0, horizontal: 0.0)),
@@ -230,7 +227,6 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                         child: Divider(
                       height: 1,
                       endIndent: 32,
-                      color: Color.fromARGB(95, 37, 34, 34),
                       indent: 32,
                     )),
                   ],
