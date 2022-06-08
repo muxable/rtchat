@@ -12,41 +12,52 @@ class _DrawerHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Material(
+      color: Theme.of(context).colorScheme.tertiary,
+      child: SizedBox(
         height: 129,
-        color: Theme.of(context).colorScheme.tertiary,
-        child: Consumer<UserModel>(
-          builder: (context, model, child) {
-            final userChannel = model.userChannel;
-            return DrawerHeader(
-                margin: EdgeInsets.zero,
-                child: Row(children: [
-                  CircleAvatar(
-                    backgroundImage: userChannel != null
-                        ? ResilientNetworkImage(userChannel.profilePictureUrl)
-                        : null,
-                    backgroundColor: Colors.transparent,
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(userChannel?.displayName ?? "Not signed in",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyText1
-                                ?.copyWith(color: Colors.white)),
-                        const SizedBox(height: 8),
-                        Text("twitch.tv",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyText2
-                                ?.copyWith(color: Colors.white)),
-                      ]),
-                ]));
-          },
-        ));
+        child: Consumer<UserModel>(builder: (context, model, child) {
+          final userChannel = model.userChannel;
+          return DrawerHeader(
+            margin: EdgeInsets.zero,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10.0),
+              onTap: () {
+                if (model.activeChannel != userChannel) {
+                  model.activeChannel = userChannel;
+                }
+              },
+              child: Row(children: [
+                CircleAvatar(
+                  backgroundImage: userChannel != null
+                      ? ResilientNetworkImage(userChannel.profilePictureUrl)
+                      : null,
+                  backgroundColor: Colors.transparent,
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(userChannel?.displayName ?? "Not signed in",
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyText1
+                            ?.copyWith(color: Colors.white)),
+                    const SizedBox(height: 8),
+                    Text("twitch.tv",
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyText2
+                            ?.copyWith(color: Colors.white)),
+                  ],
+                ),
+              ]),
+            ),
+          );
+        }),
+      ),
+    );
   }
 }
 

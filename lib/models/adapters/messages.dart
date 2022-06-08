@@ -255,7 +255,7 @@ class MessagesAdapter {
 
   Stream<DeltaEvent> forChannel(Channel channel) async* {
     final subscribe = functions.httpsCallable('subscribe');
-    await subscribe({
+    subscribe({
       "provider": channel.provider,
       "channelId": channel.channelId,
     });
