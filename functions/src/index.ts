@@ -272,24 +272,6 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
 
   switch (provider) {
     case "twitch":
-      // check if it exists in firestore already.
-      const snapshot = await admin
-        .firestore()
-        .collection("profiles")
-        .where("twitch.id", "==", channelId)
-        .limit(1)
-        .get();
-      if (!snapshot.empty) {
-        // return the profile picture url from the database instead.
-        const url = snapshot.docs[0].get("twitch")[
-          "profilePictureUrl"
-        ] as string;
-        const image = await fetch(url);
-        res.setHeader("Content-Type", "image/png");
-        res.status(200).send(await image.buffer());
-        return;
-      }
-
       const token = await getAppAccessToken(provider);
       if (!token) {
         throw new functions.https.HttpsError("internal", "auth error");
