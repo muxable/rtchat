@@ -64,8 +64,8 @@ class _DrawerHeader extends StatelessWidget {
                 VerticalDivider(
                   width: 4,
                   thickness: 2,
-                  indent: 16,
-                  endIndent: 16,
+                  indent: 8,
+                  endIndent: 8,
                   color:
                       Theme.of(context).colorScheme.onTertiary.withOpacity(0.1),
                 ),
