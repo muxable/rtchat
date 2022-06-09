@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_image/flutter_image.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/drawer/quicklinks_listview.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
@@ -12,47 +12,66 @@ class _DrawerHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Material(
+      color: Theme.of(context).colorScheme.tertiary,
+      child: SizedBox(
         height: 129,
-        color: Theme.of(context).primaryColor,
-        child: Consumer<UserModel>(
-          builder: (context, model, child) {
-            final userChannel = model.userChannel;
-            return DrawerHeader(
-                margin: EdgeInsets.zero,
-                child: Row(children: [
-                  CircleAvatar(
-                      backgroundImage: userChannel != null
-                          ? NetworkImageWithRetry(userChannel.profilePictureUrl)
-                          : null),
-                  const SizedBox(width: 16),
-                  Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(userChannel?.displayName ?? "Not signed in",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyText1
-                                ?.copyWith(color: Colors.white)),
-                        const SizedBox(height: 8),
-                        Text("twitch.tv",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyText2
-                                ?.copyWith(color: Colors.white)),
-                      ]),
-                ]));
-          },
-        ));
+        child: Consumer<UserModel>(builder: (context, model, child) {
+          final userChannel = model.userChannel;
+          return DrawerHeader(
+            margin: EdgeInsets.zero,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10.0),
+              onTap: () {
+                if (model.activeChannel != userChannel) {
+                  model.activeChannel = userChannel;
+                }
+                Navigator.of(context).pop();
+              },
+              child: Row(children: [
+                CircleAvatar(
+                  backgroundImage: userChannel != null
+                      ? ResilientNetworkImage(userChannel.profilePictureUrl)
+                      : null,
+                  backgroundColor: Colors.transparent,
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(userChannel?.displayName ?? "Not signed in",
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyText1
+                            ?.copyWith(color: Colors.white)),
+                    const SizedBox(height: 8),
+                    Text("twitch.tv",
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyText2
+                            ?.copyWith(color: Colors.white)),
+                  ],
+                ),
+              ]),
+            ),
+          );
+        }),
+      ),
+    );
   }
 }
 
-class Sidebar extends StatelessWidget {
+class Sidebar extends StatefulWidget {
   final Channel channel;
 
   const Sidebar({required this.channel, Key? key}) : super(key: key);
 
+  @override
+  State<Sidebar> createState() => _SidebarState();
+}
+
+class _SidebarState extends State<Sidebar> {
   @override
   Widget build(BuildContext context) {
     final tiles = <Widget>[
@@ -94,6 +113,7 @@ class Sidebar extends StatelessWidget {
           title: const Text("Refresh audio sources"),
           onTap: () async {
             final count = await audioModel.refreshAllSources();
+            if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(count == 1
                     ? '1 audio source refreshed'
@@ -135,6 +155,7 @@ class Sidebar extends StatelessWidget {
                       onPressed: () async {
                         await Provider.of<UserModel>(context, listen: false)
                             .signOut();
+                        if (!mounted) return;
                         Navigator.of(context).pop();
                       },
                     ),

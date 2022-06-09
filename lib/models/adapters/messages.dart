@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -254,7 +255,7 @@ class MessagesAdapter {
 
   Stream<DeltaEvent> forChannel(Channel channel) async* {
     final subscribe = functions.httpsCallable('subscribe');
-    await subscribe({
+    subscribe({
       "provider": channel.provider,
       "channelId": channel.channelId,
     });
@@ -269,9 +270,14 @@ class MessagesAdapter {
         .expand((event) => event.docChanges)
         .where((change) => change.type == DocumentChangeType.added)
         .expand((change) sync* {
-      final event = _toDeltaEvent(emotes, change);
-      if (event != null) {
-        yield event;
+      try {
+        final event = _toDeltaEvent(emotes, change);
+        if (event != null) {
+          yield event;
+        }
+      } catch (e, st) {
+        // send this report immediately.
+        FirebaseCrashlytics.instance.recordError(e, st, fatal: true);
       }
     });
   }

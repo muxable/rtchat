@@ -4,6 +4,7 @@ import 'package:linkify/linkify.dart';
 import 'package:motion_sensors/motion_sensors.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/style.dart';
@@ -51,6 +52,7 @@ bool isTwitchClip(String url) {
 
 const contributors = [
   "158394109", // muxfd
+  "761248557", //ken0095
 ];
 
 class TwitchMessageWidget extends StatelessWidget {
@@ -95,10 +97,8 @@ class TwitchMessageWidget extends StatelessWidget {
     } else if (token is EmoteToken) {
       yield WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          // NetworkImageWithRetry doesn't support animated gifs.
-          // https://github.com/flutter/flutter/issues/81664
           child:
-              Image.network(token.url.toString(), height: styleModel.fontSize));
+              Image(image: ResilientNetworkImage(token.url)));
     } else if (token is LinkToken) {
       yield WidgetSpan(
         child: MouseRegion(
@@ -108,7 +108,7 @@ class TwitchMessageWidget extends StatelessWidget {
               text: token.text,
               style: linkStyle,
               recognizer: (TapGestureRecognizer()
-                ..onTap = () => launch(token.url.toString())),
+                ..onTap = () => launchUrl(token.url)),
             ),
           ),
         ),
@@ -152,13 +152,11 @@ class TwitchMessageWidget extends StatelessWidget {
       // add badges.
       children.addAll(model.badges.map((badge) => WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: Padding(
-              padding: const EdgeInsets.only(right: 5),
-              child: TwitchBadgeWidget(
-                  channelId: model.tags['room-id'],
-                  badge: badge.key,
-                  version: badge.version,
-                  height: styleModel.fontSize)))));
+          child: TwitchBadgeWidget(
+              channelId: model.tags['room-id'],
+              badge: badge.key,
+              version: badge.version,
+              height: styleModel.fontSize))));
 
       // add author.
       if (contributors.contains(model.author.userId)) {

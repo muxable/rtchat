@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
+import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/user.dart';
 
 class _DurationWidget extends StatelessWidget {
   final DateTime from;
@@ -71,7 +73,7 @@ class HeaderBarWidget extends StatefulWidget implements PreferredSizeWidget {
   final Size preferredSize; // default is 56.0
 
   @override
-  _HeaderBarWidgetState createState() => _HeaderBarWidgetState();
+  State<HeaderBarWidget> createState() => _HeaderBarWidgetState();
 }
 
 class _HeaderBarWidgetState extends State<HeaderBarWidget> {
@@ -150,14 +152,23 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                 ),
                 builder: (context) {
                   return DraggableScrollableSheet(
-                      initialChildSize: 0.7,
-                      minChildSize: 0.7,
+                      initialChildSize: 0.8,
                       maxChildSize: 0.9,
                       expand: false,
                       builder: (context, controller) {
-                        return ChannelSearchBottomSheetWidget(
-                            onChannelSelect: widget.onChannelSelect,
-                            controller: controller);
+                        return Consumer<UserModel>(
+                            builder: (context, value, child) {
+                          return ChannelSearchBottomSheetWidget(
+                              onChannelSelect: widget.onChannelSelect,
+                              onRaid: value.userChannel == widget.channel
+                                  ? (channel) {
+                                      ActionsAdapter.instance.send(
+                                          widget.channel,
+                                          "/raid ${channel.displayName}");
+                                    }
+                                  : null,
+                              controller: controller);
+                        });
                       });
                 },
               );
@@ -174,32 +185,12 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                     children: [
                       Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(children: [
-                            Expanded(
-                                child: Text("/${widget.channel.displayName}",
+                          child: Text("/${widget.channel.displayName}",
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleMedium!
                                         .copyWith(color: Colors.white),
-                                    overflow: TextOverflow.fade)),
-                            if (onlineAt != null)
-                              Container(
-                                margin: const EdgeInsets.only(left: 8),
-                                decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(8)),
-                                child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 4, vertical: 2),
-                                    child: Text("LIVE",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelMedium!
-                                            .copyWith(color: Colors.white))),
-                              )
-                            else
-                              Container()
-                          ])),
+                              overflow: TextOverflow.fade)),
                       Consumer<LayoutModel>(
                           builder: (context, layoutModel, child) {
                         final style = Theme.of(context)

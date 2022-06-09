@@ -30,16 +30,18 @@ dependencies:
   audioplayers: ^0.20.1
   metadata_fetch: ^0.4.1
   firebase_analytics: ^9.0.3
-  flutter_image: ^4.1.0
   firebase_remote_config: ^2.0.0
   flutter_keyboard_visibility: ^5.0.3
   characters: ^1.2.0
-  google_fonts: ^2.3.1
-  mobile_scanner: ^1.0.0
+  google_fonts: ^3.0.1
+  mobile_scanner: ^2.0.0
   motion_sensors: ^0.1.0
+  crypto: ^3.0.2
+  path_provider: ^2.0.10
+  in_app_purchase: ^3.0.4
 
 dev_dependencies:
-  flutter_lints: ^1.0.3
+  flutter_lints: ^2.0.1
   flutter_test:
     sdk: flutter
 

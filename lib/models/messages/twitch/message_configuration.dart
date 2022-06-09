@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class TwitchMessageConfig extends ChangeNotifier {
-  Duration modMessageDuration = const Duration(seconds: 6);
-  Duration vipMessageDuration = const Duration(seconds: 6);
+  Duration modMessageDuration = const Duration(seconds: 0);
+  Duration vipMessageDuration = const Duration(seconds: 0);
 
   setModMessageDuration(Duration duration) {
     modMessageDuration = duration;

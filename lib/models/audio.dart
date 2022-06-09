@@ -160,8 +160,8 @@ class AudioModel extends ChangeNotifier {
               TextButton(
                 child: const Text('Open Settings'),
                 onPressed: () async {
-                  await AudioChannel.requestPermission();
                   Navigator.of(context).pop();
+                  await AudioChannel.requestPermission();
                 },
               ),
             ],

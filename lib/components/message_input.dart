@@ -64,7 +64,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
         },
         onEmoteSelected: (emote) {
           _textEditingController.text =
-              _textEditingController.text + " " + emote.code;
+              "${_textEditingController.text} ${emote.code}";
         });
   }
 

@@ -3,13 +3,19 @@ import 'package:flutter/rendering.dart';
 import 'package:rtchat/components/chat_history/sliver.dart';
 import 'package:rtchat/components/pinnable/viewport.dart';
 
+enum PinState {
+  notPinnable,
+  pinned,
+  unpinned,
+}
+
 /// This is a total hack of a scrollview. Instead of the standard one-pass
 /// render that [ScrollView] provides, this class instead performs a second
 /// pass to detect [PinnableMessageSliver] slivers and renders them at the
 /// correct location if they're pinned.
 class PinnableMessageScrollView extends ScrollView {
   final TickerProvider vsync;
-  final bool? Function(int) isPinnedBuilder;
+  final PinState Function(int) isPinnedBuilder;
   final Widget Function(int) itemBuilder;
   final int count;
 
@@ -37,7 +43,7 @@ class PinnableMessageScrollView extends ScrollView {
     for (var start = 0; start < count;) {
       final nextPinnableIndex =
           Iterable.generate(count - start, (value) => value + start).firstWhere(
-              (index) => isPinnedBuilder(index) != null,
+              (index) => isPinnedBuilder(index) != PinState.notPinnable,
               orElse: () => count);
       final intermediateCount = nextPinnableIndex - start;
       if (intermediateCount > 0) {
@@ -45,20 +51,23 @@ class PinnableMessageScrollView extends ScrollView {
         final sliver = SliverList(
             delegate: SliverChildBuilderDelegate(
                 (context, index) => itemBuilder(index + offset),
-                childCount: intermediateCount));
+                childCount: intermediateCount,
+                semanticIndexOffset: offset));
         slivers.add(sliver);
       }
       if (nextPinnableIndex == count) {
         break;
       }
-      final pinned = isPinnedBuilder(nextPinnableIndex)!;
+      final pinned = isPinnedBuilder(nextPinnableIndex);
       final sliver = PinnableMessageSliver(
         vsync: vsync,
-        pinned: pinned,
+        pinned: pinned == PinState.pinned,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
-          color: pinned ? pinnedSliverColor : Colors.transparent,
+          color: pinned == PinState.pinned
+              ? pinnedSliverColor
+              : Colors.transparent,
           child: itemBuilder(nextPinnableIndex),
         ),
       );

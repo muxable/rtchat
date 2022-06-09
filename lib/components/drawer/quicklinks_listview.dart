@@ -17,7 +17,7 @@ class QuicklinksListView extends StatelessWidget {
     if (isWebUrl) {
       await browser.open(url: source.url);
     } else {
-      await launch(source.url.toString());
+      await launchUrl(source.url);
     }
   }
 
@@ -31,7 +31,7 @@ class QuicklinksListView extends StatelessWidget {
     return Consumer<QuickLinksModel>(
         builder: (context, quickLinksModel, child) {
       return Column(
-        children: quickLinksModel.sources.reversed.map((source) {
+        children: quickLinksModel.sources.map((source) {
           return ListTile(
             leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
             title: FutureBuilder<String>(

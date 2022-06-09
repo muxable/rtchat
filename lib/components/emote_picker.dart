@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_image/flutter_image.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 
 class EmotePickerWidget extends StatelessWidget {
@@ -20,11 +20,11 @@ class EmotePickerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _rowNumber =
+    final rowNumber =
         MediaQuery.of(context).orientation == Orientation.portrait ? 3 : 1.5;
 
     return SizedBox(
-      height: (MediaQuery.of(context).size.width / _emoteColumns) * _rowNumber +
+      height: (MediaQuery.of(context).size.width / _emoteColumns) * rowNumber +
           _footerHeight,
       child: Column(children: <Widget>[
         FutureBuilder<List<Emote>>(
@@ -43,8 +43,7 @@ class EmotePickerWidget extends StatelessWidget {
                         .map((emote) => IconButton(
                             onPressed: () => onEmoteSelected(emote),
                             icon: Image(
-                                image: NetworkImageWithRetry(
-                                    emote.source.toString()))))
+                                image: ResilientNetworkImage(emote.source))))
                         .toList()),
                   ),
                 ],

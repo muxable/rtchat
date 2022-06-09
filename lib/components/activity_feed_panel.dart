@@ -10,7 +10,7 @@ class ActivityFeedPanelWidget extends StatefulWidget {
   const ActivityFeedPanelWidget({Key? key}) : super(key: key);
 
   @override
-  _ActivityFeedPanelWidgetState createState() =>
+  State<ActivityFeedPanelWidget> createState() =>
       _ActivityFeedPanelWidgetState();
 }
 

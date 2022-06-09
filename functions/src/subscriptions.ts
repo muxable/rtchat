@@ -33,21 +33,30 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         .child(channel)
         .set(admin.database.ServerValue.TIMESTAMP);
 
-      // acquire an agent. this might cause a reconnection but it's ok because
-      // the user just opened the app.
+      // mark any existing agents for a soft disconnect. this cleans up any accidental zombie agents.
       await admin
         .database()
-        .ref("agents")
+        .ref("connections")
         .child(provider)
         .child(channel)
-        .set("");
-      
+        .transaction((agents: {[agentId: string]: boolean}|null) => {
+          if (!agents) {
+            return null;
+          }
+          for (const agent of Object.keys(agents)) {
+            agents[agent] = false;
+          }
+          return agents;
+        });
+
+      // acquire an agent. this might cause a reconnection but it's ok because
+      // the user just opened the app.
       await admin
         .database()
         .ref("requests")
         .child(provider)
         .child(channel)
-        .set("");
+        .set(admin.database.ServerValue.TIMESTAMP);
 
       if (context.auth != null) {
         await checkEventSubSubscriptions(context.auth.uid);
@@ -81,14 +90,7 @@ export const unsubscribe = functions.pubsub
             // release the agent.
             await admin
               .database()
-              .ref("agents")
-              .child(provider)
-              .child(channel)
-              .set(null);
-            
-            await admin
-              .database()
-              .ref("assignments")
+              .ref("connections")
               .child(provider)
               .child(channel)
               .set(null);

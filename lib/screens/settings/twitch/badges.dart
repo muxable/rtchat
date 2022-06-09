@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_image/flutter_image.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 
 class TwitchBadgesScreen extends StatelessWidget {
@@ -8,6 +8,7 @@ class TwitchBadgesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       body: Consumer<TwitchBadgeModel>(builder: (context, model, child) {
         final keys = model.badgeSets.keys.toList()
@@ -23,7 +24,10 @@ class TwitchBadgesScreen extends StatelessWidget {
               actions: [
                 Row(children: [
                   const Text("Select all"),
-                  Checkbox(
+                  Theme(
+                    data: theme.copyWith(
+                        unselectedWidgetColor: theme.colorScheme.onTertiary),
+                    child: Checkbox(
                       tristate: true,
                       value: model.enabledCount == 0
                           ? false
@@ -32,7 +36,9 @@ class TwitchBadgesScreen extends StatelessWidget {
                               : null),
                       onChanged: (value) {
                         model.setAllEnabled(value ?? false);
-                      })
+                      },
+                    ),
+                  )
                 ]),
               ]),
           SliverList(
@@ -42,7 +48,8 @@ class TwitchBadgesScreen extends StatelessWidget {
                 return CheckboxListTile(
                     secondary: Image(
                         alignment: Alignment.center,
-                        image: NetworkImageWithRetry(badgeSet["image_url_4x"]),
+                        image: ResilientNetworkImage(
+                            Uri.parse(badgeSet["image_url_4x"])),
                         height: 36),
                     title: Text(badgeSet["title"],
                         overflow: TextOverflow.ellipsis),

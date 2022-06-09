@@ -1,6 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_image/network.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
 
 final _search = FirebaseFunctions.instance.httpsCallable("search");
@@ -12,7 +12,7 @@ class SearchResult {
   final String provider;
   final String displayName;
   final bool isOnline;
-  final String imageUrl;
+  final Uri imageUrl;
   final String title;
 
   const SearchResult(
@@ -46,7 +46,7 @@ class ChannelSearchResultsWidget extends StatelessWidget {
                   provider: data['provider'],
                   displayName: data['displayName'],
                   isOnline: data['isOnline'],
-                  imageUrl: data['imageUrl'],
+                  imageUrl: Uri.parse(data['imageUrl']),
                   title: data['title']))
               .toList();
         }),
@@ -61,16 +61,19 @@ class ChannelSearchResultsWidget extends StatelessWidget {
               children: data
                   .map((result) => ListTile(
                       leading: Container(
-                        child: CircleAvatar(
-                          backgroundImage:
-                              NetworkImageWithRetry(result.imageUrl),
-                        ),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: result.isOnline ? Colors.green : Colors.red,
+                            color: result.isOnline
+                                ? Theme.of(context).colorScheme.secondary
+                                : Colors.transparent,
                             width: 2.0,
                           ),
+                        ),
+                        child: CircleAvatar(
+                          backgroundImage:
+                              ResilientNetworkImage(result.imageUrl),
+                          backgroundColor: Colors.transparent,
                         ),
                       ),
                       title: Text(result.displayName),

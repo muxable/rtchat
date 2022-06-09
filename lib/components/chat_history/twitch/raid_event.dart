@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_image/flutter_image.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
@@ -20,21 +20,22 @@ class TwitchRaidEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedEventWidget.avatar(
-      avatar: NetworkImageWithRetry(model.from.profilePictureUrl),
+      avatar: ResilientNetworkImage(model.from.profilePictureUrl),
       child: Row(children: [
-        Text.rich(TextSpan(
-          children: [
-            TextSpan(
-                text: model.from.displayName,
-                style: Theme.of(context).textTheme.subtitle2),
-            const TextSpan(text: " is raiding with a party of "),
-            TextSpan(
-                text: _formatter.format(model.viewers),
-                style: Theme.of(context).textTheme.subtitle2),
-            const TextSpan(text: "."),
-          ],
-        )),
-        const Spacer(),
+        Expanded(
+          child: Text.rich(TextSpan(
+            children: [
+              TextSpan(
+                  text: model.from.displayName,
+                  style: Theme.of(context).textTheme.subtitle2),
+              const TextSpan(text: " is raiding with a party of "),
+              TextSpan(
+                  text: _formatter.format(model.viewers),
+                  style: Theme.of(context).textTheme.subtitle2),
+              const TextSpan(text: "."),
+            ],
+          )),
+        ),
         Consumer<EventSubConfigurationModel>(
             builder: (context, eventSubConfigurationModel, child) {
           if (!eventSubConfigurationModel
@@ -49,7 +50,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
                           Theme.of(context).buttonTheme.colorScheme?.primary))),
               onTap: () {
                 ActionsAdapter.instance
-                    .send(channel, "https://twitch.tv/" + model.from.login);
+                    .send(channel, "https://twitch.tv/${model.from.login}");
               });
         }),
       ]),

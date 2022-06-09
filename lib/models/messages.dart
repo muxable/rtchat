@@ -24,6 +24,7 @@ class MessagesModel extends ChangeNotifier {
     }
     _channel = channel;
     _messages = [];
+    _tts?.enabled = false;
     notifyListeners();
 
     _subscription?.cancel();
@@ -57,6 +58,7 @@ class MessagesModel extends ChangeNotifier {
       return;
     }
     _tts = tts;
+    tts?.enabled = false;
     notifyListeners();
   }
 
