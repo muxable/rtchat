@@ -272,7 +272,6 @@ async function join(
     });
 
     // also listen to message send requests.
-    console.log(`twitch:${authProvider.providerId}`);
     const messageListener = admin
       .firestore()
       .collection("actions")
