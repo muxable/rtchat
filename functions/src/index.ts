@@ -8,9 +8,19 @@ import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
 import { cleanup, subscribe, unsubscribe } from "./subscriptions";
 import { synthesize } from "./tts";
-import { getTwitchClient, getTwitchLogin } from "./twitch";
+import { getTwitchLogin, getChannelId } from "./twitch";
 
 admin.initializeApp();
+
+function write(channelId: string, targetChannel: string, message: string) {
+  return admin.firestore().collection("actions").add({
+    channelId,
+    targetChannel,
+    message,
+    sentAt: null,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+}
 
 export const send = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -28,17 +38,15 @@ export const send = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
-      if (!channel) {
+      const targetChannel = await getTwitchLogin(channelId);
+      if (!targetChannel) {
         return;
       }
-      const client = await getTwitchClient(context.auth.uid, channelId);
-      await client.connect();
-      try {
-        await await client.say(channel, message);
-      } catch (err) {
-        console.error(err);
-      }
+      await write(
+        await getChannelId(context.auth.uid, "twitch"),
+        targetChannel,
+        message
+      );
       return;
   }
 
@@ -62,17 +70,15 @@ export const ban = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
-      if (!channel) {
+      const targetChannel = await getTwitchLogin(channelId);
+      if (!targetChannel) {
         return;
       }
-      const client = await getTwitchClient(context.auth.uid, channelId);
-      await client.connect();
-      try {
-        await client.ban(channel, username, reason);
-      } catch (err) {
-        console.error(err);
-      }
+      await write(
+        await getChannelId(context.auth.uid, "twitch"),
+        targetChannel,
+        `/ban ${username} ${reason}`
+      );
       return;
   }
 
@@ -95,17 +101,15 @@ export const unban = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
-      if (!channel) {
+      const targetChannel = await getTwitchLogin(channelId);
+      if (!targetChannel) {
         return;
       }
-      const client = await getTwitchClient(context.auth.uid, channelId);
-      await client.connect();
-      try {
-        await client.unban(channel, username);
-      } catch (err) {
-        console.error(err);
-      }
+      await write(
+        await getChannelId(context.auth.uid, "twitch"),
+        targetChannel,
+        `/unban ${username}`
+      );
       return;
   }
 
@@ -130,17 +134,15 @@ export const timeout = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
-      if (!channel) {
+      const targetChannel = await getTwitchLogin(channelId);
+      if (!targetChannel) {
         return;
       }
-      const client = await getTwitchClient(context.auth.uid, channelId);
-      await client.connect();
-      try {
-        await client.timeout(channel, username, length, reason);
-      } catch (err) {
-        console.error(err);
-      }
+      await write(
+        await getChannelId(context.auth.uid, "twitch"),
+        targetChannel,
+        `/timeout ${username} ${length} ${reason}`
+      );
       return;
   }
 
@@ -163,17 +165,15 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
-      if (!channel) {
+      const targetChannel = await getTwitchLogin(channelId);
+      if (!targetChannel) {
         return;
       }
-      const client = await getTwitchClient(context.auth.uid, channelId);
-      await client.connect();
-      try {
-        await client.deletemessage(channel, messageId);
-      } catch (err) {
-        console.error(err);
-      }
+      await write(
+        await getChannelId(context.auth.uid, "twitch"),
+        targetChannel,
+        `/delete ${messageId}`
+      );
       return;
   }
 
@@ -195,17 +195,15 @@ export const clear = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const channel = await getTwitchLogin(channelId);
-      if (!channel) {
+      const targetChannel = await getTwitchLogin(channelId);
+      if (!targetChannel) {
         return;
       }
-      const client = await getTwitchClient(context.auth.uid, channelId);
-      await client.connect();
-      try {
-        await client.clear(channel);
-      } catch (err) {
-        console.error(err);
-      }
+      await write(
+        await getChannelId(context.auth.uid, "twitch"),
+        targetChannel,
+        `/clear`
+      );
       return;
   }
 
