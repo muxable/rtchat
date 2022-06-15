@@ -168,18 +168,9 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                   ),
                 ),
                 if (filteredModeratorList.isNotEmpty) ...[
-                  if (filteredBroadcasterList.isNotEmpty) ...[
-                    //if broadcaster list exists, check if moderators list exists and render a divider
-                    const SliverPadding(
-                        padding: EdgeInsets.symmetric(
-                            vertical: 7.0, horizontal: 0.0)),
-                    const SliverToBoxAdapter(
-                        child: Divider(
-                      height: 1,
-                      endIndent: 32,
-                      indent: 32,
-                    )),
-                  ],
+                  const SliverPadding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 7.0, horizontal: 0.0)),
                   const SliverTitleWidget(title: "Moderators")
                 ],
                 SliverList(
@@ -192,19 +183,9 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                   ),
                 ),
                 if (filteredVipList.isNotEmpty) ...[
-                  if (filteredModeratorList.isNotEmpty ||
-                      filteredBroadcasterList.isNotEmpty) ...[
-                    //if vip list exists, then check if moderator OR broadcaster list exists to render a divider
-                    const SliverPadding(
-                        padding: EdgeInsets.symmetric(
-                            vertical: 7.0, horizontal: 0.0)),
-                    const SliverToBoxAdapter(
-                        child: Divider(
-                      height: 1,
-                      endIndent: 32,
-                      indent: 32,
-                    )),
-                  ],
+                  const SliverPadding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 7.0, horizontal: 0.0)),
                   const SliverTitleWidget(title: "Community VIPs")
                 ],
                 SliverList(
@@ -217,19 +198,9 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                   ),
                 ),
                 if (filteredViewerList.isNotEmpty) ...[
-                  if (filteredVipList.isNotEmpty ||
-                      filteredModeratorList.isNotEmpty ||
-                      filteredBroadcasterList.isNotEmpty) ...[
-                    const SliverPadding(
-                        padding: EdgeInsets.symmetric(
-                            vertical: 7.0, horizontal: 0.0)),
-                    const SliverToBoxAdapter(
-                        child: Divider(
-                      height: 1,
-                      endIndent: 32,
-                      indent: 32,
-                    )),
-                  ],
+                  const SliverPadding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 7.0, horizontal: 0.0)),
                   const SliverTitleWidget(title: "Viewers")
                 ],
                 SliverList(
