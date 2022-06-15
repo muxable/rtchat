@@ -20,7 +20,7 @@ class QuickLinkSource {
   QuickLinkSource.fromJson(Map<String, dynamic> json)
       : icon = json['icon'],
         url = Uri.parse(json['url']),
-        label = json['label'];
+        label = json['label'] ?? json['url']; // null coalescing for migration.
 
   Map<String, dynamic> toJson() => {
         "url": url.toString(),
