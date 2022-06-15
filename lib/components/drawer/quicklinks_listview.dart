@@ -34,14 +34,7 @@ class QuicklinksListView extends StatelessWidget {
         children: quickLinksModel.sources.map((source) {
           return ListTile(
             leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-            title: FutureBuilder<String>(
-                future: retrieveName(source),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return const Text("Loading title");
-                  }
-                  return Text(snapshot.data ?? "");
-                }),
+            title: Text(source.label),
             subtitle: Text(source.url.toString()),
             onTap: () => launchLink(source),
           );

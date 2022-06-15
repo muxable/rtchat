@@ -35,7 +35,26 @@ const quickLinksIconsMap = {
 class _QuickLinksScreenState extends State<QuickLinksScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textEditingController = TextEditingController();
+  final _labelEditingController = TextEditingController();
   String _activeIcon = "view_list";
+  String _url = "";
+
+  @override
+  void initState() {
+    super.initState();
+
+    _textEditingController.addListener(() {
+      setState(() => _url = _textEditingController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    _labelEditingController.dispose();
+
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,14 +72,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                 child: ListTile(
                   key: ValueKey(source),
                   leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-                  title: FutureBuilder<String>(
-                      future: retrieveName(source),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState != ConnectionState.done) {
-                          return const Text("Loading title");
-                        }
-                        return Text(snapshot.data ?? "");
-                      }),
+                  title: Text(source.label),
                   subtitle: Text(source.url.toString()),
                   trailing: const Icon(Icons.drag_handle),
                 ),
@@ -75,83 +87,115 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: Form(
-            key: _formKey,
-            child: Row(children: [
-              PopupMenuButton<String>(
-                icon: Icon(quickLinksIconsMap[_activeIcon] ?? Icons.link),
-                onSelected: (result) {
-                  setState(() {
-                    _activeIcon = result;
-                  });
-                },
-                itemBuilder: (context) {
-                  final entries = quickLinksIconsMap.entries.toList()
-                    ..sort((a, b) => a.key.compareTo(b.key));
-                  return entries
-                      .map((entry) => PopupMenuItem(
-                          value: entry.key, child: Icon(entry.value)))
-                      .toList();
-                },
-              ),
-              Expanded(
-                child: TextFormField(
-                    controller: _textEditingController,
-                    decoration: InputDecoration(
-                        hintText: "URL",
-                        suffixIcon: IconButton(
-                            icon: const Icon(Icons.qr_code_scanner),
-                            onPressed: () {
-                              showModalBottomSheet<void>(
-                                  context: context,
-                                  builder: (context) {
-                                    return MobileScanner(
-                                        allowDuplicates: false,
-                                        onDetect: (barcode, args) {
-                                          final code = barcode.rawValue;
-                                          if (code != null) {
-                                            _textEditingController.text = code;
-                                          }
-                                          Navigator.of(context).pop();
-                                        });
-                                  });
-                            })),
-                    validator: (value) {
-                      if (value == null ||
-                          value.isEmpty ||
-                          Uri.tryParse(value) == null) {
-                        return "This doesn't look like a valid URL.";
-                      }
-                      final quickLinksModel =
-                          Provider.of<QuickLinksModel>(context, listen: false);
-                      if (quickLinksModel.sources.any(
-                          (s) => s.url.toString() == Uri.encodeFull(value))) {
-                        return "This link already exists";
-                      }
-                      return null;
+              key: _formKey,
+              child: Column(children: [
+                Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  PopupMenuButton<String>(
+                    icon: Icon(quickLinksIconsMap[_activeIcon] ?? Icons.link),
+                    onSelected: (result) {
+                      setState(() {
+                        _activeIcon = result;
+                      });
                     },
-                    keyboardType: TextInputType.url,
-                    textInputAction: TextInputAction.done,
-                    onEditingComplete: addLink),
-              ),
-              IconButton(icon: const Icon(Icons.add), onPressed: addLink)
-            ]),
-          ),
+                    itemBuilder: (context) {
+                      final entries = quickLinksIconsMap.entries.toList()
+                        ..sort((a, b) => a.key.compareTo(b.key));
+                      return entries
+                          .map((entry) => PopupMenuItem(
+                              value: entry.key, child: Icon(entry.value)))
+                          .toList();
+                    },
+                  ),
+                  Expanded(
+                    child: Column(children: [
+                      _url.isNotEmpty
+                          ? FutureBuilder<String>(
+                              future: retrieveName(_url),
+                              builder: (context, snapshot) {
+                                return TextFormField(
+                                  controller: _labelEditingController,
+                                  decoration: InputDecoration(
+                                    hintText: snapshot.data ?? "Label",
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(),
+                      TextFormField(
+                          controller: _textEditingController,
+                          decoration: InputDecoration(
+                              hintText: "URL",
+                              suffixIcon: IconButton(
+                                  icon: const Icon(Icons.qr_code_scanner),
+                                  onPressed: () {
+                                    showModalBottomSheet<void>(
+                                        context: context,
+                                        builder: (context) {
+                                          return MobileScanner(
+                                              allowDuplicates: false,
+                                              onDetect: (barcode, args) {
+                                                final code = barcode.rawValue;
+                                                if (code != null) {
+                                                  _textEditingController.text =
+                                                      code;
+                                                }
+                                                Navigator.of(context).pop();
+                                              });
+                                        });
+                                  })),
+                          validator: (value) {
+                            if (value == null ||
+                                value.isEmpty ||
+                                Uri.tryParse(value) == null) {
+                              return "This doesn't look like a valid URL.";
+                            }
+                            final quickLinksModel =
+                                Provider.of<QuickLinksModel>(context,
+                                    listen: false);
+                            if (quickLinksModel.sources.any((s) =>
+                                s.url.toString() == Uri.encodeFull(value))) {
+                              return "This link already exists";
+                            }
+                            return null;
+                          },
+                          keyboardType: TextInputType.url,
+                          textInputAction: TextInputAction.done,
+                          onEditingComplete: addLink),
+                    ]),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: addLink,
+                  )
+                ]),
+              ])),
         ),
       ]),
     );
   }
 
-  Future<String> retrieveName(QuickLinkSource link) async {
-    final metadata = await MetadataFetch.extract(link.url.toString());
-    return metadata?.title ?? link.url.toString();
+  Future<String> retrieveName(String url) async {
+    try {
+      final metadata = await MetadataFetch.extract(url);
+      return metadata?.title ?? url;
+    } catch (e) {
+      return url;
+    }
   }
 
-  void addLink() {
-    if (_formKey.currentState!.validate()) {
-      Provider.of<QuickLinksModel>(context, listen: false).addSource(
-          QuickLinkSource(_activeIcon, Uri.parse(_textEditingController.text)));
-      _textEditingController.clear();
-      FocusScope.of(context).unfocus();
+  void addLink() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
     }
+    final model = Provider.of<QuickLinksModel>(context, listen: false);
+    final focus = FocusScope.of(context);
+    final label = _labelEditingController.text.isEmpty
+        ? await retrieveName(_url)
+        : _labelEditingController.text;
+    model.addSource(QuickLinkSource(
+        _activeIcon, Uri.parse(_textEditingController.text), label));
+    _textEditingController.clear();
+    _labelEditingController.clear();
+    focus.unfocus();
   }
 }
