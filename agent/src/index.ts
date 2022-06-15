@@ -36,7 +36,7 @@ async function main() {
     admin.database(),
     admin.firestore(),
     "twitch",
-    new Set([]) // add a username here to only join that channel.
+    new Set([]) // add a username here to only join that channel for development.
   );
 
   runTwitchAgent(firebase, AGENT_ID).then((close) => {
