@@ -48,7 +48,9 @@ function toAccessToken(token: Token): AccessToken {
 async function getAuthProvider(
   firebase: FirebaseAdapter,
   channel: string
-): Promise<AuthProvider & { username: string; userId: string }> {
+): Promise<
+  AuthProvider & { username: string; userId: string; providerId: string }
+> {
   const profile = await firebase.getProfile(channel);
   const credentials = profile
     ? await firebase.getCredentials(profile.id)
@@ -76,6 +78,7 @@ async function getAuthProvider(
   return {
     username: channel,
     userId: profile.id,
+    providerId: profile.get("twitch.id"),
     clientId: TWITCH_CLIENT_ID,
     tokenType: "user",
     currentScopes: credentials["scope"],
@@ -240,6 +243,7 @@ async function join(
   });
 
   if (authProvider.username === channel) {
+    // create a pubsub listener since the user joined their own channel.
     const basicpubsub = new BasicPubSubClient({
       logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
     });
@@ -267,7 +271,32 @@ async function join(
       }
     });
 
+    // also listen to message send requests.
+    const messageListener = admin
+      .firestore()
+      .collection("actions")
+      .where("channelId", "==", `twitch:${authProvider.providerId}`)
+      .where("sentAt", "==", null)
+      .orderBy("createdAt", "desc")
+      .onSnapshot(async (snapshot) => {
+        for (const change of snapshot.docChanges()) {
+          if (change.type == "added") {
+            const targetChannel = change.doc.get("targetChannel");
+            const message = change.doc.get("message");
+            if (!targetChannel || !message) {
+              continue;
+            }
+            await chat.say(targetChannel, message);
+            await change.doc.ref.update({
+              sentAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          }
+        }
+      });
+
     await firebase.claim(provider, channel, agentId);
+
+    messageListener();
 
     await raidListener.remove();
   } else {
@@ -313,13 +342,16 @@ export async function runTwitchAgent(
     // stop listening for claims.
     unsubscribe();
 
-    // release all matching this agent id.
+    // request someone to take over.
     await firebase.releaseAll(provider, channels, agentId);
 
     log.info({ agentId, provider }, "released all");
 
     // and wait for existing promises.
     await Promise.all(promises);
+
+    // then clean up after ourselves.
+    await firebase.closeAll(provider, channels, agentId);
 
     log.info({ agentId, provider }, "close complete");
   };
