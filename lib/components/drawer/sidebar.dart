@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/components/drawer/quicklinks_listview.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
@@ -12,41 +14,109 @@ class _DrawerHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Material(
+      color: Theme.of(context).colorScheme.tertiary,
+      child: SizedBox(
         height: 129,
-        color: Theme.of(context).colorScheme.tertiary,
-        child: Consumer<UserModel>(
-          builder: (context, model, child) {
-            final userChannel = model.userChannel;
-            return DrawerHeader(
-                margin: EdgeInsets.zero,
-                child: Row(children: [
-                  CircleAvatar(
-                    backgroundImage: userChannel != null
-                        ? ResilientNetworkImage(userChannel.profilePictureUrl)
-                        : null,
-                    backgroundColor: Colors.transparent,
+        child: Consumer<UserModel>(builder: (context, model, child) {
+          final userChannel = model.userChannel;
+          return DrawerHeader(
+            margin: EdgeInsets.zero,
+            child: Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(10.0),
+                    onTap: () {
+                      if (model.activeChannel != userChannel) {
+                        model.activeChannel = userChannel;
+                      }
+                      Navigator.of(context).pop();
+                    },
+                    child: Row(children: [
+                      CircleAvatar(
+                        backgroundImage: userChannel != null
+                            ? ResilientNetworkImage(
+                                userChannel.profilePictureUrl)
+                            : null,
+                        backgroundColor: Colors.transparent,
+                      ),
+                      const SizedBox(width: 16),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(userChannel?.displayName ?? "Not signed in",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyText1
+                                  ?.copyWith(color: Colors.white)),
+                          const SizedBox(height: 8),
+                          Text("twitch.tv",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyText2
+                                  ?.copyWith(color: Colors.white)),
+                        ],
+                      ),
+                    ]),
                   ),
-                  const SizedBox(width: 16),
-                  Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(userChannel?.displayName ?? "Not signed in",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyText1
-                                ?.copyWith(color: Colors.white)),
-                        const SizedBox(height: 8),
-                        Text("twitch.tv",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyText2
-                                ?.copyWith(color: Colors.white)),
-                      ]),
-                ]));
-          },
-        ));
+                ),
+                VerticalDivider(
+                  width: 4,
+                  thickness: 2,
+                  indent: 8,
+                  endIndent: 8,
+                  color:
+                      Theme.of(context).colorScheme.onTertiary.withOpacity(0.1),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  iconSize: 32,
+                  splashRadius: 24,
+                  tooltip: 'Search channels',
+                  color: Theme.of(context).colorScheme.onTertiary,
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      builder: (context) {
+                        return DraggableScrollableSheet(
+                          initialChildSize: 0.8,
+                          maxChildSize: 0.9,
+                          expand: false,
+                          builder: (context, controller) {
+                            return ChannelSearchBottomSheetWidget(
+                              onChannelSelect: (channel) {
+                                model.activeChannel = channel;
+                              },
+                              onRaid: userChannel == model.activeChannel &&
+                                      userChannel != null
+                                  ? (channel) {
+                                      ActionsAdapter.instance.send(
+                                        userChannel,
+                                        "/raid ${channel.displayName}",
+                                      );
+                                    }
+                                  : null,
+                              controller: controller,
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
   }
 }
 

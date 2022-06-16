@@ -79,7 +79,8 @@ export class FirebaseAdapter {
   constructor(
     private firebase: admin.database.Database,
     private firestore: admin.firestore.Firestore,
-    private provider: "twitch"
+    private provider: "twitch",
+    private debugKeepConnected: Set<String>
   ) {
     firestore.settings({ ignoreUndefinedProperties: true });
   }
@@ -104,7 +105,10 @@ export class FirebaseAdapter {
     const username = (
       await this.firestore.collection("profiles").doc(userId).get()
     ).get(this.provider)["login"] as string;
-    return { userId, username };
+    const providerId = (
+      await this.firestore.collection("profiles").doc(userId).get()
+    ).get(this.provider)["id"] as string;
+    return { userId, providerId, username };
   }
 
   async getProfile(channel: string) {
@@ -155,12 +159,21 @@ export class FirebaseAdapter {
       .get()
       .then((snapshot) => {
         for (const channel of Object.keys(snapshot.val() || {})) {
-          callback(channel);
+          if (
+            this.debugKeepConnected.size == 0 ||
+            this.debugKeepConnected.has(channel)
+          ) {
+            callback(channel);
+          }
         }
       });
     const listener = (snapshot: admin.database.DataSnapshot) => {
       const channel = snapshot.key;
-      if (channel) {
+      if (
+        channel &&
+        (this.debugKeepConnected.size == 0 ||
+          this.debugKeepConnected.has(channel))
+      ) {
         callback(channel);
       }
     };
@@ -214,9 +227,17 @@ export class FirebaseAdapter {
           candidateIds.length == 0 ||
           findCanonicalAgentId(`${provider}:${channel}`, candidateIds) ===
             agentId;
+        const isForced = this.debugKeepConnected.has(channel);
         if (!isCanonical) {
+          if (isForced && snapshot.val()[agentId]) {
+            log.warn(
+              { provider, channel, agentId, isForced },
+              "remaining connected to channel from manual override"
+            );
+            return;
+          }
           log.info(
-            { provider, channel, agentId },
+            { provider, channel, agentId, isForced },
             "released agent from canonical deferral"
           );
           connectionsRef.off("value", listener);
@@ -248,10 +269,22 @@ export class FirebaseAdapter {
 
   // Finds all the channels owned by this agent and issues new join requests for them.
   async releaseAll(provider: string, channels: Set<string>, agentId: string) {
-    const updates: { [location: string]: false } = {};
+    const connections: { [location: string]: false } = {};
+    const requests: { [location: string]: any } = {};
     for (const channel of channels) {
-      updates[`${channel}/${agentId}`] = false;
+      connections[`${channel}/${agentId}`] = false;
+      requests[channel] = admin.database.ServerValue.TIMESTAMP;
     }
-    await this.firebase.ref("connections").child(provider).update(updates);
+    await this.firebase.ref("connections").child(provider).update(connections);
+    await this.firebase.ref("requests").child(provider).update(requests);
+  }
+
+  // Finds all the channels owned by this agent and issues new join requests for them.
+  async closeAll(provider: string, channels: Set<string>, agentId: string) {
+    const connections: { [location: string]: null } = {};
+    for (const channel of channels) {
+      connections[`${channel}/${agentId}`] = null;
+    }
+    await this.firebase.ref("connections").child(provider).update(connections);
   }
 }

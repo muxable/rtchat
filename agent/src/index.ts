@@ -35,7 +35,8 @@ async function main() {
   const firebase = new FirebaseAdapter(
     admin.database(),
     admin.firestore(),
-    "twitch"
+    "twitch",
+    new Set([]) // add a username here to only join that channel for development.
   );
 
   runTwitchAgent(firebase, AGENT_ID).then((close) => {
