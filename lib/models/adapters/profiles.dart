@@ -13,10 +13,9 @@ class ProfilesAdapter {
   Stream<Channel?> getChannel(
       {required String userId, required String provider}) {
     return db.collection("profiles").doc(userId).snapshots().map((event) {
-      final data = event.data();
-      if (data != null && data.containsKey(provider)) {
-        return Channel(
-            provider, data['twitch']['id'], data['twitch']['displayName']);
+      final data = event.get("twitch");
+      if (data != null) {
+        return Channel(provider, data['id'], data['displayName']);
       }
       return null;
     });
