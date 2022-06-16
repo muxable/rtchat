@@ -17,6 +17,7 @@ class PinnableMessageScrollView extends ScrollView {
   final TickerProvider vsync;
   final PinState Function(int) isPinnedBuilder;
   final Widget Function(int) itemBuilder;
+  final ChildIndexGetter findChildIndexCallback;
   final int count;
 
   const PinnableMessageScrollView({
@@ -25,6 +26,7 @@ class PinnableMessageScrollView extends ScrollView {
     required this.vsync,
     required this.isPinnedBuilder,
     required this.itemBuilder,
+    required this.findChildIndexCallback,
     required this.count,
   }) : super(
           key: key,
@@ -49,10 +51,16 @@ class PinnableMessageScrollView extends ScrollView {
       if (intermediateCount > 0) {
         final offset = start;
         final sliver = SliverList(
-            delegate: SliverChildBuilderDelegate(
-                (context, index) => itemBuilder(index + offset),
-                childCount: intermediateCount,
-                semanticIndexOffset: offset));
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => itemBuilder(index + offset),
+            findChildIndexCallback: (key) {
+              final index = findChildIndexCallback(key);
+              return index == null ? null : index - offset;
+            },
+            childCount: intermediateCount,
+            semanticIndexOffset: offset,
+          ),
+        );
         slivers.add(sliver);
       }
       if (nextPinnableIndex == count) {
