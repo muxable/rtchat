@@ -128,13 +128,30 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
           } else {
             return CustomScrollView(
               slivers: [
+                SliverAppBar(
+                    actions: <Widget>[Container()],
+                    //disable the drawer icon that appears on the right of the app bar
+                    flexibleSpace: FlexibleSpaceBar(
+                      centerTitle: false,
+                      titlePadding:
+                          const EdgeInsets.only(left: 32.0, top: 10.0),
+                      title: Text(
+                        'Search Viewers',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 25,
+                            color: Theme.of(context).colorScheme.onSurface),
+                      ),
+                    ),
+                    backgroundColor: Colors.transparent,
+                    automaticallyImplyLeading: false),
                 sliverSearchBarWidget,
                 SliverList(
                   delegate: SliverChildListDelegate(
                     const [
                       SizedBox(
                         height: 8,
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -151,6 +168,9 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                   ),
                 ),
                 if (filteredModeratorList.isNotEmpty) ...[
+                  const SliverPadding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 7.0, horizontal: 0.0)),
                   const SliverTitleWidget(title: "Moderators")
                 ],
                 SliverList(
@@ -163,6 +183,9 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                   ),
                 ),
                 if (filteredVipList.isNotEmpty) ...[
+                  const SliverPadding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 7.0, horizontal: 0.0)),
                   const SliverTitleWidget(title: "Community VIPs")
                 ],
                 SliverList(
@@ -175,6 +198,9 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                   ),
                 ),
                 if (filteredViewerList.isNotEmpty) ...[
+                  const SliverPadding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 7.0, horizontal: 0.0)),
                   const SliverTitleWidget(title: "Viewers")
                 ],
                 SliverList(
