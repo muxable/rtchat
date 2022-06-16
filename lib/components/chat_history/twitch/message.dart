@@ -4,6 +4,7 @@ import 'package:linkify/linkify.dart';
 import 'package:motion_sensors/motion_sensors.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
+import 'package:rtchat/components/chat_history/twitch/message_link_preview.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
@@ -97,8 +98,7 @@ class TwitchMessageWidget extends StatelessWidget {
     } else if (token is EmoteToken) {
       yield WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child:
-              Image(image: ResilientNetworkImage(token.url)));
+          child: Image(image: ResilientNetworkImage(token.url)));
     } else if (token is LinkToken) {
       yield WidgetSpan(
         child: MouseRegion(
@@ -197,6 +197,39 @@ class TwitchMessageWidget extends StatelessWidget {
       final tokens = styleModel.compactMessages == CompactMessages.none
           ? model.tokenized
           : model.tokenized.compacted;
+
+      bool hasLink = false;
+      String linkUrl = "";
+      for (final token in tokens) {
+        if (token is LinkToken && isTwitchClip(token.text)) {
+          hasLink = true;
+          linkUrl = token.text;
+          break;
+        }
+      }
+      if (hasLink) {
+        return Opacity(
+            opacity: model.deleted ? 0.6 : 1.0,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        ...children,
+                        ...tokens
+                            .expand(
+                                (token) => _render(context, styleModel, token))
+                            .toList(),
+                      ],
+                    ),
+                  ),
+                ),
+                TwitchMessageLinkPreviewWidget(url: linkUrl),
+              ],
+            ));
+      }
 
       return Opacity(
         opacity: model.deleted ? 0.6 : 1.0,
