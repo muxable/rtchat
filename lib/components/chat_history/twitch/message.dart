@@ -4,6 +4,7 @@ import 'package:linkify/linkify.dart';
 import 'package:motion_sensors/motion_sensors.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
+import 'package:rtchat/components/chat_history/twitch/message_link_preview.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
@@ -97,8 +98,7 @@ class TwitchMessageWidget extends StatelessWidget {
     } else if (token is EmoteToken) {
       yield WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child:
-              Image(image: ResilientNetworkImage(token.url)));
+          child: Image(image: ResilientNetworkImage(token.url)));
     } else if (token is LinkToken) {
       yield WidgetSpan(
         child: MouseRegion(
@@ -198,20 +198,35 @@ class TwitchMessageWidget extends StatelessWidget {
           ? model.tokenized
           : model.tokenized.compacted;
 
+      final message = Text.rich(
+        TextSpan(
+          children: [
+            ...children,
+            ...tokens
+                .expand((token) => _render(context, styleModel, token))
+                .toList(),
+          ],
+        ),
+      );
+
+      var fetchUrl = getFirstClipLink(model.message);
+      if (fetchUrl != null) {
+        return Opacity(
+          opacity: model.deleted ? 0.6 : 1.0,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Column(children: [
+              message,
+              TwitchMessageLinkPreviewWidget(url: fetchUrl)
+            ]),
+          ),
+        );
+      }
       return Opacity(
         opacity: model.deleted ? 0.6 : 1.0,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Text.rich(
-            TextSpan(
-              children: [
-                ...children,
-                ...tokens
-                    .expand((token) => _render(context, styleModel, token))
-                    .toList(),
-              ],
-            ),
-          ),
+          child: message,
         ),
       );
     });

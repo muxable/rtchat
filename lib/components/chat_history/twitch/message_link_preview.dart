@@ -25,46 +25,31 @@ Future<TwitchClipData> fetchClipData(String url) async {
 }
 
 class TwitchMessageLinkPreviewWidget extends StatelessWidget {
-  final TextStyle messageStyle;
-  final List<InlineSpan> children;
   final String url;
 
-  const TwitchMessageLinkPreviewWidget(
-      {required this.messageStyle,
-      required this.children,
-      required this.url,
-      Key? key})
+  const TwitchMessageLinkPreviewWidget({required this.url, Key? key})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Text.rich(
-              TextSpan(style: messageStyle, children: children),
-            )),
-        Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: FutureBuilder(
-                future: fetchClipData(url),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return const Card(child: CircularProgressIndicator());
-                  }
-                  return Card(
-                    child: ListTile(
-                      leading: Image(
-                          image: ResilientNetworkImage(
-                              Uri.parse(snapshot.data.imageUrl))),
-                      title: Text(snapshot.data.title),
-                      subtitle: Text(snapshot.data.description),
-                      isThreeLine: true,
-                    ),
-                  );
-                }))
-      ],
-    );
+    return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: FutureBuilder(
+            future: fetchClipData(url),
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Card(child: CircularProgressIndicator());
+              }
+              return Card(
+                child: ListTile(
+                  leading: Image(
+                      image: ResilientNetworkImage(
+                          Uri.parse(snapshot.data.imageUrl))),
+                  title: Text(snapshot.data.title),
+                  subtitle: Text(snapshot.data.description),
+                  isThreeLine: true,
+                ),
+              );
+            }));
   }
 }
