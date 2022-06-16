@@ -71,9 +71,19 @@ class _TwitchMessageLinkPreviewWidgetState
                 ? null
                 : Image(
                     image: ResilientNetworkImage(Uri.parse(data.imageUrl!))),
-            title: data.title == null ? null : Text(data.title!),
-            subtitle: data.description == null ? null : Text(data.description!),
-            isThreeLine: true,
+            title: data.title == null
+                ? null
+                : Text(
+                    data.title!,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+            subtitle: data.description == null
+                ? null
+                : Text(
+                    data.description!,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
           ),
         ));
   }
