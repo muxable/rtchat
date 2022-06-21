@@ -43,13 +43,13 @@ export async function getAccessToken(userId: string, provider: string) {
           .firestore()
           .collection("tokens")
           .doc(userId)
-          .update({ [provider]: null });
+          .update({ [provider]: admin.firestore.FieldValue.delete() });
         // this will sign the user out.
         await admin
           .firestore()
           .collection("profiles")
           .doc(userId)
-          .update({ [provider]: null });
+          .update({ [provider]: admin.firestore.FieldValue.delete() });
         return null;
       }
       throw err;
