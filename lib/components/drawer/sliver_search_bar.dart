@@ -16,8 +16,9 @@ class SliverSearchBarWidget extends StatelessWidget {
             child: Container(
               height: 50,
               decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  color: Colors.blueGrey.withOpacity(0.30)),
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                color: Theme.of(context).inputDecorationTheme.fillColor,
+              ),
               child: Row(
                 children: [
                   const SizedBox(width: 24.0),
