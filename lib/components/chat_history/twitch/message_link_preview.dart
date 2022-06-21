@@ -24,47 +24,57 @@ Future<TwitchClipData> fetchClipData(String url) async {
       description: data.description);
 }
 
-class TwitchMessageLinkPreviewWidget extends StatelessWidget {
-  final TextStyle messageStyle;
-  final List<InlineSpan> children;
+class TwitchMessageLinkPreviewWidget extends StatefulWidget {
   final String url;
 
-  const TwitchMessageLinkPreviewWidget(
-      {required this.messageStyle,
-      required this.children,
-      required this.url,
-      Key? key})
+  const TwitchMessageLinkPreviewWidget({required this.url, Key? key})
       : super(key: key);
 
   @override
+  State<TwitchMessageLinkPreviewWidget> createState() =>
+      _TwitchMessageLinkPreviewWidgetState();
+}
+
+class _TwitchMessageLinkPreviewWidgetState
+    extends State<TwitchMessageLinkPreviewWidget> {
+  TwitchClipData? _data;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // this approach instead of FutureBuilder prevents a flash of a loading
+    // indicator on subsequent rerender.
+    fetchClipData(widget.url).then((data) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _data = data;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Text.rich(
-              TextSpan(style: messageStyle, children: children),
-            )),
-        Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: FutureBuilder(
-                future: fetchClipData(url),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return const Card(child: CircularProgressIndicator());
-                  }
-                  return Card(
-                    child: ListTile(
-                      leading: Image(
-                          image: ResilientNetworkImage(
-                              Uri.parse(snapshot.data.imageUrl))),
-                      title: Text(snapshot.data.title),
-                      subtitle: Text(snapshot.data.description),
-                      isThreeLine: true,
-                    ),
-                  );
-                }))
-      ],
-    );
+    final data = _data;
+    if (data == null) {
+      return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 4),
+          child: Card(child: CircularProgressIndicator()));
+    }
+    return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Card(
+          child: ListTile(
+            leading: data.imageUrl == null
+                ? null
+                : Image(
+                    image: ResilientNetworkImage(Uri.parse(data.imageUrl!))),
+            title: data.title == null ? null : Text(data.title!),
+            subtitle: data.description == null ? null : Text(data.description!),
+            isThreeLine: true,
+          ),
+        ));
   }
 }

@@ -40,7 +40,7 @@ class AudioSource {
 class AudioModel extends ChangeNotifier {
   final List<AudioSource> _sources = [];
   late final Timer _speakerDisconnectTimer;
-  final _audioCache = AudioCache();
+  final _audioCache = AudioCache(duckAudio: true);
 
   bool _isOnline = false;
   bool _isSettingsVisible = false;
