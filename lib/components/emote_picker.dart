@@ -28,7 +28,7 @@ class EmotePickerWidget extends StatelessWidget {
           _footerHeight,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
-        children: <Widget>[
+        children: [
           FutureBuilder<List<Emote>>(
             future: getTwitchEmotes(channelId),
             initialData: const [],
@@ -37,7 +37,7 @@ class EmotePickerWidget extends StatelessWidget {
                 child: Material(
                   child: CustomScrollView(
                     shrinkWrap: true,
-                    slivers: <Widget>[
+                    slivers: [
                       SliverGrid(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
