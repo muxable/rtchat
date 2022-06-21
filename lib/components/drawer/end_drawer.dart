@@ -215,6 +215,13 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                     addAutomaticKeepAlives: true,
                   ),
                 ),
+                const SliverToBoxAdapter(
+                  child: SafeArea(
+                    child: SizedBox(
+                      height: 16,
+                    ),
+                  ),
+                ),
               ],
             );
           }
