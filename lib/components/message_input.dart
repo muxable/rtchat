@@ -20,7 +20,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   final _chatInputFocusNode = FocusNode();
   var _isEmotePickerVisible = false;
 
-  sendMessage(String value) async {
+  void sendMessage(String value) async {
     value = value.trim();
     if (value.isEmpty) {
       return;
