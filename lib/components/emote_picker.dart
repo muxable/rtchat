@@ -26,47 +26,54 @@ class EmotePickerWidget extends StatelessWidget {
     return SizedBox(
       height: (MediaQuery.of(context).size.width / _emoteColumns) * rowNumber +
           _footerHeight,
-      child: Column(children: <Widget>[
-        FutureBuilder<List<Emote>>(
-          future: getTwitchEmotes(channelId),
-          initialData: const [],
-          builder: (context, snapshot) {
-            return Flexible(
-              child: CustomScrollView(
-                shrinkWrap: true,
-                slivers: <Widget>[
-                  SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: _emoteColumns),
-                    delegate: SliverChildListDelegate.fixed(snapshot.data!
-                        .map((emote) => IconButton(
-                            onPressed: () => onEmoteSelected(emote),
-                            icon: Image(
-                                image: ResilientNetworkImage(emote.source))))
-                        .toList()),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          FutureBuilder<List<Emote>>(
+            future: getTwitchEmotes(channelId),
+            initialData: const [],
+            builder: (context, snapshot) {
+              return Flexible(
+                child: Material(
+                  child: CustomScrollView(
+                    shrinkWrap: true,
+                    slivers: <Widget>[
+                      SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: _emoteColumns),
+                        delegate: SliverChildListDelegate.fixed(snapshot.data!
+                            .map((emote) => IconButton(
+                                onPressed: () => onEmoteSelected(emote),
+                                splashRadius: 24,
+                                icon: Image(
+                                    image:
+                                        ResilientNetworkImage(emote.source))))
+                            .toList()),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          },
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-                padding: const EdgeInsets.only(left: 16),
-                icon: const Icon(Icons.close),
-                tooltip: "Close",
-                onPressed: onDismiss),
-            IconButton(
-                padding: const EdgeInsets.only(right: 16),
-                icon: const Icon(Icons.backspace),
-                tooltip: "Delete",
-                onPressed: onDelete)
-          ],
-        )
-      ]),
+                ),
+              );
+            },
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  icon: const Icon(Icons.close),
+                  tooltip: "Close",
+                  onPressed: onDismiss),
+              IconButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  icon: const Icon(Icons.backspace),
+                  tooltip: "Delete",
+                  onPressed: onDelete)
+            ],
+          )
+        ],
+      ),
     );
   }
 }
