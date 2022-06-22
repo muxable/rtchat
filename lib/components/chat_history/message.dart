@@ -48,7 +48,7 @@ class ChatHistoryMessage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: TwitchMessageWidget(m),
         );
-        if (layoutModel.isInteractionLockable && layoutModel.locked) {
+        if (layoutModel.locked) {
           return child;
         }
         final userModel = Provider.of<UserModel>(context, listen: false);

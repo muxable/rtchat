@@ -232,11 +232,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Builder(builder: (context) {
                   final chatPanelFooter = Consumer<LayoutModel>(
                     builder: (context, layoutModel, child) {
-                      if (layoutModel.isInteractionLockable &&
-                          layoutModel.locked) {
-                        return Container();
-                      }
-                      return child!;
+                      return layoutModel.locked ? Container() : child!;
                     },
                     child: Consumer<UserModel>(
                       builder: (context, userModel, child) {
