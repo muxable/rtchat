@@ -37,7 +37,11 @@ jobs:
         with:
           tag_prefix: ""
 
-      - uses: subosito/flutter-action@v1
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          architecture: x64
+  
       - run: |
           keychain initialize
           app-store-connect fetch-signing-files $(xcode-project detect-bundle-id) --type IOS_APP_STORE --create
