@@ -293,6 +293,9 @@ class _AppState extends State<App> {
               background: Colors.white,
             ),
             toggleableActiveColor: ThemeColors.lightAccentColor,
+            inputDecorationTheme: const InputDecorationTheme(
+              fillColor: ThemeColors.lightTextFieldColor,
+            ),
             appBarTheme: const AppBarTheme(color: ThemeColors.detailColor),
           ),
           darkTheme: ThemeData(
