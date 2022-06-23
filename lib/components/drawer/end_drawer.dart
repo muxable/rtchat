@@ -181,7 +181,7 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                 if (filteredVipList.isNotEmpty) ...[
                   const SliverPadding(
                     padding: EdgeInsets.only(top: 8, left: 8),
-                    sliver: SliverTitleWidget(title: "Channel VIPs"),
+                    sliver: SliverTitleWidget(title: "Community VIPs"),
                   )
                 ],
                 SliverList(
