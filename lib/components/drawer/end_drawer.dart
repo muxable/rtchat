@@ -208,7 +208,6 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                       );
                     },
                     childCount: filteredViewerList.length,
-                    addAutomaticKeepAlives: true,
                   ),
                 ),
               ],
