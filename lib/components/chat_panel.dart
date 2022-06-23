@@ -246,7 +246,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
             return FutureBuilder(
               future: MessagesAdapter.instance.hasMessages(widget.channel),
               builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-                if (snapshot.hasData && snapshot.data == true) {
+                if (snapshot.hasData && snapshot.data == false) {
                   return Align(
                     alignment: Alignment.bottomCenter,
                     child: Padding(

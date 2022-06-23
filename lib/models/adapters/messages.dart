@@ -311,6 +311,6 @@ class MessagesAdapter {
         .where("channelId", isEqualTo: channel.toString())
         .limit(1)
         .get()
-        .then((snapshot) => snapshot.docs.isEmpty);
+        .then((snapshot) => snapshot.docs.isNotEmpty);
   }
 }
