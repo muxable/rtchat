@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/pinnable/scroll_view.dart';
 import 'package:rtchat/components/style_model_theme.dart';
+import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -241,6 +242,28 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                 twitchMessageConfig, child) {
           var messages = messagesModel.messages.reversed.toList();
           _lastMessage = messages.isEmpty ? null : messages.first;
+          if (messages.isEmpty) {
+            return FutureBuilder(
+              future: MessagesAdapter.instance.hasMessages(widget.channel),
+              builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                if (snapshot.hasData && snapshot.data == true) {
+                  return Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'It\'s quiet in here.',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox();
+              },
+            );
+          }
           if (_pauseAt != null) {
             final index = messages.indexOf(_pauseAt!);
             if (index != -1) {
@@ -261,8 +284,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                   itemBuilder: (index) => StyleModelTheme(
                       key: Key(messages[index].messageId),
                       child: ChatHistoryMessage(
-                          message: messages[index],
-                          channel: widget.channel)),
+                          message: messages[index], channel: widget.channel)),
                   findChildIndexCallback: (key) => messages
                       .indexWhere((element) => key == Key(element.messageId)),
                   isPinnedBuilder: (index) {

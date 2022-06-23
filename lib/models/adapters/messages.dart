@@ -304,4 +304,13 @@ class MessagesAdapter {
           return data['timestamp'].toDate();
         });
   }
+
+  Future<bool> hasMessages(Channel channel) async {
+    return await db
+        .collection("messages")
+        .where("channelId", isEqualTo: channel.toString())
+        .limit(1)
+        .get()
+        .then((snapshot) => snapshot.docs.isEmpty);
+  }
 }
