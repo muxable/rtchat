@@ -11,7 +11,7 @@ class SliverSearchBarWidget extends StatelessWidget {
     return SliverList(
       delegate: SliverChildListDelegate([
         Padding(
-          padding: const EdgeInsets.fromLTRB(32, 24, 32, 8),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
           child: Center(
             child: Container(
               height: 50,
