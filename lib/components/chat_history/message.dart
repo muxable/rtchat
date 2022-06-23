@@ -69,73 +69,80 @@ class ChatHistoryMessage extends StatelessWidget {
                     context: context,
                     builder: (context) {
                       return Dialog(
-                        child: ListView(shrinkWrap: true, children: [
-                          Consumer<TtsModel>(
-                              builder: (context, ttsModel, child) {
-                            if (ttsModel.isMuted(m.author)) {
-                              return ListTile(
-                                  leading: const Icon(Icons.volume_up_rounded,
-                                      color: Colors.deepPurpleAccent),
-                                  title: Text('Unmute ${m.author.displayName}'),
+                        child: ListView(
+                            shrinkWrap: true,
+                            primary: false,
+                            children: [
+                              Consumer<TtsModel>(
+                                  builder: (context, ttsModel, child) {
+                                if (ttsModel.isMuted(m.author)) {
+                                  return ListTile(
+                                      leading: const Icon(
+                                          Icons.volume_up_rounded,
+                                          color: Colors.deepPurpleAccent),
+                                      title: Text(
+                                          'Unmute ${m.author.displayName}'),
+                                      onTap: () {
+                                        ttsModel.unmute(m.author);
+                                        Navigator.pop(context);
+                                      });
+                                }
+                                return ListTile(
+                                    leading: const Icon(
+                                        Icons.volume_off_rounded,
+                                        color: Colors.redAccent),
+                                    title: Text('Mute ${m.author.displayName}'),
+                                    onTap: () {
+                                      ttsModel.mute(m.author);
+                                      Navigator.pop(context);
+                                    });
+                              }),
+                              ListTile(
+                                  leading: const Icon(Icons.delete,
+                                      color: Colors.redAccent),
+                                  title: const Text('Delete Message'),
                                   onTap: () {
-                                    ttsModel.unmute(m.author);
+                                    ActionsAdapter.instance
+                                        .delete(channel, m.messageId);
                                     Navigator.pop(context);
-                                  });
-                            }
-                            return ListTile(
-                                leading: const Icon(Icons.volume_off_rounded,
-                                    color: Colors.redAccent),
-                                title: Text('Mute ${m.author.displayName}'),
-                                onTap: () {
-                                  ttsModel.mute(m.author);
-                                  Navigator.pop(context);
-                                });
-                          }),
-                          ListTile(
-                              leading: const Icon(Icons.delete,
-                                  color: Colors.redAccent),
-                              title: const Text('Delete Message'),
-                              onTap: () {
-                                ActionsAdapter.instance
-                                    .delete(channel, m.messageId);
-                                Navigator.pop(context);
-                              }),
-                          ListTile(
-                              leading: const Icon(Icons.timer_outlined,
-                                  color: Colors.orangeAccent),
-                              title: Text('Timeout ${m.author.displayName}'),
-                              onTap: () {
-                                Navigator.pop(context, true);
-                              }),
-                          ListTile(
-                              leading: const Icon(
-                                  Icons.dnd_forwardslash_outlined,
-                                  color: Colors.redAccent),
-                              title: Text('Ban ${m.author.displayName}'),
-                              onTap: () {
-                                ActionsAdapter.instance.ban(channel,
-                                    m.author.login, "banned by streamer");
-                                Navigator.pop(context);
-                              }),
-                          ListTile(
-                              leading: const Icon(Icons.circle_outlined,
-                                  color: Colors.greenAccent),
-                              title: Text('Unban ${m.author.displayName}'),
-                              onTap: () {
-                                ActionsAdapter.instance
-                                    .unban(channel, m.author.login);
-                                Navigator.pop(context);
-                              }),
-                          ListTile(
-                              leading: const Icon(Icons.copy_outlined,
-                                  color: Colors.greenAccent),
-                              title: const Text('Copy message'),
-                              onTap: () {
-                                Clipboard.setData(
-                                    ClipboardData(text: m.message));
-                                Navigator.pop(context);
-                              }),
-                        ]),
+                                  }),
+                              ListTile(
+                                  leading: const Icon(Icons.timer_outlined,
+                                      color: Colors.orangeAccent),
+                                  title:
+                                      Text('Timeout ${m.author.displayName}'),
+                                  onTap: () {
+                                    Navigator.pop(context, true);
+                                  }),
+                              ListTile(
+                                  leading: const Icon(
+                                      Icons.dnd_forwardslash_outlined,
+                                      color: Colors.redAccent),
+                                  title: Text('Ban ${m.author.displayName}'),
+                                  onTap: () {
+                                    ActionsAdapter.instance.ban(channel,
+                                        m.author.login, "banned by streamer");
+                                    Navigator.pop(context);
+                                  }),
+                              ListTile(
+                                  leading: const Icon(Icons.circle_outlined,
+                                      color: Colors.greenAccent),
+                                  title: Text('Unban ${m.author.displayName}'),
+                                  onTap: () {
+                                    ActionsAdapter.instance
+                                        .unban(channel, m.author.login);
+                                    Navigator.pop(context);
+                                  }),
+                              ListTile(
+                                  leading: const Icon(Icons.copy_outlined,
+                                      color: Colors.greenAccent),
+                                  title: const Text('Copy message'),
+                                  onTap: () {
+                                    Clipboard.setData(
+                                        ClipboardData(text: m.message));
+                                    Navigator.pop(context);
+                                  }),
+                            ]),
                       );
                     });
                 if (showTimeoutDialog == true) {
