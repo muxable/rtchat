@@ -147,7 +147,7 @@ class ChatHistoryMessage extends StatelessWidget {
                                   leading: const Icon(Icons.link_outlined,
                                       color: Colors.blueAccent),
                                   title: Text(
-                                      'Link to ${m.author.displayName} profile'),
+                                      'Link to ${m.author.displayName}\'s profile'),
                                   onTap: () {
                                     launchUrlString(
                                         "https://www.twitch.tv/${m.author.displayName}");
