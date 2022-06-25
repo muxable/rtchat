@@ -41,7 +41,7 @@ class AudioSource {
 class AudioModel extends ChangeNotifier {
   final List<AudioSource> _sources = [];
   late final Timer _speakerDisconnectTimer;
-  final _audioCache = AudioCache(duckAudio: Platform.isIOS ? true : false);
+  final _audioCache = AudioCache(duckAudio: Platform.isIOS);
 
   bool _isOnline = false;
   bool _isSettingsVisible = false;
