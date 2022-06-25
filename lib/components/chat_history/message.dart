@@ -146,10 +146,11 @@ class ChatHistoryMessage extends StatelessWidget {
                               ListTile(
                                   leading: const Icon(Icons.link_outlined,
                                       color: Colors.blueAccent),
-                                  title: Text('Link to ${m.author} profile'),
+                                  title: Text(
+                                      'Link to ${m.author.displayName} profile'),
                                   onTap: () {
                                     launchUrlString(
-                                        "https://www.twitch.tv/${m.author}");
+                                        "https://www.twitch.tv/${m.author.displayName}");
                                     Navigator.pop(context);
                                   }),
                             ]),
