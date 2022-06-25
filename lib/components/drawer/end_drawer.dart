@@ -150,14 +150,14 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                 sliverSearchBarWidget,
                 if (filteredBroadcasterList.isNotEmpty) ...[
                   const SliverPadding(
-                    padding: EdgeInsets.only(top: 8),
+                    padding: EdgeInsets.only(top: 8, left: 8),
                     sliver: SliverTitleWidget(title: "Broadcaster"),
                   ),
                 ],
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) => Padding(
-                      padding: const EdgeInsets.only(left: 16),
+                      padding: const EdgeInsets.only(left: 24),
                       child: Text(filteredBroadcasterList[index]),
                     ),
                     childCount: filteredBroadcasterList.length,
