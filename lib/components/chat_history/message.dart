@@ -30,6 +30,7 @@ import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class ChatHistoryMessage extends StatelessWidget {
   final MessageModel message;
@@ -140,6 +141,15 @@ class ChatHistoryMessage extends StatelessWidget {
                                   onTap: () {
                                     Clipboard.setData(
                                         ClipboardData(text: m.message));
+                                    Navigator.pop(context);
+                                  }),
+                              ListTile(
+                                  leading: const Icon(Icons.link_outlined,
+                                      color: Colors.blueAccent),
+                                  title: Text('Link to ${m.author} profile'),
+                                  onTap: () {
+                                    launchUrlString(
+                                        "https://www.twitch.tv/${m.author}");
                                     Navigator.pop(context);
                                   }),
                             ]),
