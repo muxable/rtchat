@@ -218,10 +218,7 @@ class TwitchMessageWidget extends StatelessWidget {
                             child: Icon(
                               Icons.shortcut_rounded,
                               size: styleModel.fontSize,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withOpacity(0.6),
+                              color: Theme.of(context).hintColor,
                             ),
                           ),
                         ),
@@ -232,10 +229,7 @@ class TwitchMessageWidget extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.subtitle1?.apply(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.6),
+                            color: Theme.of(context).hintColor,
                             fontSizeFactor: 0.75,
                           ),
                     )
