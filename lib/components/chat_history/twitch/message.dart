@@ -207,33 +207,32 @@ class TwitchMessageWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              model.reply != null
-                  ? Text.rich(
-                      TextSpan(children: [
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                                right: 5, left: styleModel.fontSize / 3),
-                            child: Icon(
-                              Icons.shortcut_rounded,
-                              size: styleModel.fontSize,
-                              color: Theme.of(context).hintColor,
-                            ),
-                          ),
+              if (model.reply != null)
+                Text.rich(
+                  TextSpan(children: [
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                            right: 5, left: styleModel.fontSize / 3),
+                        child: Icon(
+                          Icons.shortcut_rounded,
+                          size: styleModel.fontSize,
+                          color: Theme.of(context).hintColor,
                         ),
-                        TextSpan(
-                            text:
-                                '${model.reply?['displayName']}: ${model.reply?['message']}'),
-                      ]),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.subtitle1?.apply(
-                            color: Theme.of(context).hintColor,
-                            fontSizeFactor: 0.75,
-                          ),
-                    )
-                  : const SizedBox(),
+                      ),
+                    ),
+                    TextSpan(
+                        text:
+                            '${model.reply?['displayName']}: ${model.reply?['message']}'),
+                  ]),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.subtitle1?.apply(
+                        color: Theme.of(context).hintColor,
+                        fontSizeFactor: 0.75,
+                      ),
+                ),
               Text.rich(
                 TextSpan(
                   children: [
