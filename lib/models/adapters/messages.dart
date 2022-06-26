@@ -44,6 +44,7 @@ DeltaEvent? _toDeltaEvent(
   switch (data['type']) {
     case "message":
       final message = data['message'];
+      final reply = data['reply'];
       final tags = data['tags'];
 
       final author = TwitchUserModel(
@@ -55,6 +56,7 @@ DeltaEvent? _toDeltaEvent(
           messageId: change.doc.id,
           author: author,
           message: message,
+          reply: reply,
           tags: tags,
           thirdPartyEmotes: emotes,
           timestamp: data['timestamp'].toDate(),
@@ -71,6 +73,7 @@ DeltaEvent? _toDeltaEvent(
             messageId: message.messageId,
             author: message.author,
             message: message.message,
+            reply: message.reply,
             tags: message.tags,
             thirdPartyEmotes: [],
             timestamp: message.timestamp,
