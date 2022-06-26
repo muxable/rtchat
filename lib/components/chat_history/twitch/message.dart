@@ -214,7 +214,9 @@ class TwitchMessageWidget extends StatelessWidget {
                       alignment: PlaceholderAlignment.middle,
                       child: Padding(
                         padding: EdgeInsets.only(
-                            right: 5, left: styleModel.fontSize / 3),
+                          left: styleModel.fontSize / 3,
+                          right: 5,
+                        ),
                         child: Icon(
                           Icons.shortcut_rounded,
                           size: styleModel.fontSize,
