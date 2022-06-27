@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/models/quick_links.dart';
-import 'package:rtchat/screens/sign_in.dart';
 
 void main() {
   test("QuickLinksModel json roundtrip", () {
