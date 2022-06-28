@@ -27,33 +27,33 @@ Color tintColor(Color color, double factor) => Color.fromRGBO(
     tintValue(color.blue, factor),
     1);
 
-final primarySwatch = generateMaterialColor(Themes.accentColor);
+const accentColor = Color(0xFF009FDF);
+const detailColor = Color(0xFF121312);
+const textFieldColor = Color(0xFF1D1D1F);
+
+const lightAccentColor = Color(0xFF006591);
+const lightTextFieldColor = Color(0xFFEDEDEF);
+
+final primarySwatch = generateMaterialColor(accentColor);
 
 class Themes {
-  static const accentColor = Color(0xFF009FDF);
-  static const detailColor = Color(0xFF121312);
-  static const textFieldColor = Color(0xFF1D1D1F);
-
-  static const lightAccentColor = Color(0xFF006591);
-  static const lightTextFieldColor = Color(0xFFEDEDEF);
-
   static final lightTheme = ThemeData(
     fontFamily: GoogleFonts.poppins().fontFamily,
     brightness: Brightness.light,
     colorScheme: ColorScheme.fromSwatch(
       primarySwatch: primarySwatch,
-      accentColor: Themes.lightAccentColor,
+      accentColor: lightAccentColor,
     ).copyWith(
-      primary: Themes.lightAccentColor,
-      secondary: Themes.lightAccentColor,
-      tertiary: Themes.detailColor,
+      primary: lightAccentColor,
+      secondary: lightAccentColor,
+      tertiary: detailColor,
       background: Colors.white,
     ),
-    toggleableActiveColor: Themes.lightAccentColor,
+    toggleableActiveColor: lightAccentColor,
     inputDecorationTheme: const InputDecorationTheme(
-      fillColor: Themes.lightTextFieldColor,
+      fillColor: lightTextFieldColor,
     ),
-    appBarTheme: const AppBarTheme(color: Themes.detailColor),
+    appBarTheme: const AppBarTheme(color: detailColor),
   );
 
   static final darkTheme = ThemeData(
@@ -61,21 +61,20 @@ class Themes {
     canvasColor: Colors.black,
     cardColor: Colors.black,
     appBarTheme: const AppBarTheme(
-      color: Themes.detailColor,
+      color: detailColor,
     ),
     colorScheme: ColorScheme.fromSwatch(
       primarySwatch: primarySwatch,
       brightness: Brightness.dark,
-      backgroundColor: Themes.detailColor,
-      accentColor: Themes.accentColor,
-    ).copyWith(primary: Themes.accentColor, tertiary: Themes.detailColor),
+      backgroundColor: detailColor,
+      accentColor: accentColor,
+    ).copyWith(primary: accentColor, tertiary: detailColor),
     dialogBackgroundColor: Colors.black,
-    toggleableActiveColor: Themes.accentColor,
-    bottomSheetTheme:
-        const BottomSheetThemeData(backgroundColor: Themes.detailColor),
-    drawerTheme: const DrawerThemeData(backgroundColor: Themes.detailColor),
+    toggleableActiveColor: accentColor,
+    bottomSheetTheme: const BottomSheetThemeData(backgroundColor: detailColor),
+    drawerTheme: const DrawerThemeData(backgroundColor: detailColor),
     inputDecorationTheme: const InputDecorationTheme(
-      fillColor: Themes.textFieldColor,
+      fillColor: textFieldColor,
     ),
     textTheme: const TextTheme(headlineMedium: TextStyle(color: Colors.white)),
   );
