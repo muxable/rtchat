@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 import 'dart:io' show Platform;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,7 +11,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
@@ -48,34 +46,8 @@ import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/tts.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
-import 'package:rtchat/theme_colors.dart';
+import 'package:rtchat/themes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-MaterialColor generateMaterialColor(Color color) {
-  return MaterialColor(color.value, {
-    50: tintColor(color, 0.5),
-    100: tintColor(color, 0.4),
-    200: tintColor(color, 0.3),
-    300: tintColor(color, 0.2),
-    400: tintColor(color, 0.1),
-    500: tintColor(color, 0),
-    600: tintColor(color, -0.1),
-    700: tintColor(color, -0.2),
-    800: tintColor(color, -0.3),
-    900: tintColor(color, -0.4),
-  });
-}
-
-int tintValue(int value, double factor) =>
-    max(0, min((value + ((255 - value) * factor)).round(), 255));
-
-Color tintColor(Color color, double factor) => Color.fromRGBO(
-    tintValue(color.red, factor),
-    tintValue(color.green, factor),
-    tintValue(color.blue, factor),
-    1);
-
-final primarySwatch = generateMaterialColor(const Color(0xFF009FDF));
 
 void main() async {
   if (Platform.isAndroid) {
@@ -280,48 +252,8 @@ class _AppState extends State<App> {
       child: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return MaterialApp(
           title: 'RealtimeChat',
-          theme: ThemeData(
-            fontFamily: GoogleFonts.poppins().fontFamily,
-            brightness: Brightness.light,
-            colorScheme: ColorScheme.fromSwatch(
-              primarySwatch: primarySwatch,
-              accentColor: ThemeColors.lightAccentColor,
-            ).copyWith(
-              primary: ThemeColors.lightAccentColor,
-              secondary: ThemeColors.lightAccentColor,
-              tertiary: ThemeColors.detailColor,
-              background: Colors.white,
-            ),
-            toggleableActiveColor: ThemeColors.lightAccentColor,
-            inputDecorationTheme: const InputDecorationTheme(
-              fillColor: ThemeColors.lightTextFieldColor,
-            ),
-            appBarTheme: const AppBarTheme(color: ThemeColors.detailColor),
-          ),
-          darkTheme: ThemeData(
-            fontFamily: GoogleFonts.poppins().fontFamily,
-            canvasColor: Colors.black,
-            cardColor: Colors.black,
-            appBarTheme: const AppBarTheme(
-              color: ThemeColors.detailColor,
-            ),
-            colorScheme: ColorScheme.fromSwatch(
-              brightness: Brightness.dark,
-              backgroundColor: ThemeColors.detailColor,
-              accentColor: ThemeColors.accentColor,
-            ).copyWith(tertiary: ThemeColors.detailColor),
-            dialogBackgroundColor: Colors.black,
-            toggleableActiveColor: ThemeColors.accentColor,
-            bottomSheetTheme: const BottomSheetThemeData(
-                backgroundColor: ThemeColors.detailColor),
-            drawerTheme:
-                const DrawerThemeData(backgroundColor: ThemeColors.detailColor),
-            inputDecorationTheme: const InputDecorationTheme(
-              fillColor: ThemeColors.textFieldColor,
-            ),
-            textTheme:
-                const TextTheme(headlineMedium: TextStyle(color: Colors.white)),
-          ),
+          theme: Themes.lightTheme,
+          darkTheme: Themes.darkTheme,
           themeMode: layoutModel.themeMode,
           navigatorObservers: [App.observer],
           initialRoute: '/',
