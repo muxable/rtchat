@@ -29,34 +29,34 @@ class EmotePickerWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FutureBuilder<List<Emote>>(
-            future: getTwitchEmotes(channelId),
-            initialData: const [],
-            builder: (context, snapshot) {
-              return Flexible(
-                child: Material(
-                  child: CustomScrollView(
-                    shrinkWrap: true,
-                    slivers: [
-                      SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: _emoteColumns),
-                        delegate: SliverChildListDelegate.fixed(snapshot.data!
-                            .map((emote) => IconButton(
-                                tooltip: emote.code,
-                                onPressed: () => onEmoteSelected(emote),
-                                splashRadius: 24,
-                                icon: Image(
-                                    image:
-                                        ResilientNetworkImage(emote.source))))
-                            .toList()),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+          Flexible(
+            child: FutureBuilder<List<Emote>>(
+              future: getTwitchEmotes(channelId),
+              initialData: const [],
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return CustomScrollView(
+                  shrinkWrap: true,
+                  slivers: [
+                    SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: _emoteColumns),
+                      delegate: SliverChildListDelegate.fixed(snapshot.data!
+                          .map((emote) => IconButton(
+                              tooltip: emote.code,
+                              onPressed: () => onEmoteSelected(emote),
+                              splashRadius: 24,
+                              icon: Image(
+                                  image: ResilientNetworkImage(emote.source))))
+                          .toList()),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
