@@ -19,7 +19,6 @@ class OnboardingScreen extends StatelessWidget {
       data: Themes.darkTheme,
       child: Scaffold(
           resizeToAvoidBottomInset: false,
-          backgroundColor: Colors.black,
           body: SafeArea(
             child: Center(
               child: Padding(
