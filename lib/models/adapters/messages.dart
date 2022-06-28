@@ -12,6 +12,7 @@ import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
+import 'package:rtchat/models/messages/twitch/reply.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -44,13 +45,24 @@ DeltaEvent? _toDeltaEvent(
   switch (data['type']) {
     case "message":
       final message = data['message'];
-      final reply = data['reply'];
       final tags = data['tags'];
 
       final author = TwitchUserModel(
           userId: tags['user-id'],
           displayName: tags['display-name'],
           login: tags['username']);
+
+      final reply = data['reply'] != null
+          ? TwitchMessageReplyModel(
+              messageId: data['reply']['messageId'],
+              message: data['reply']['message'],
+              author: TwitchUserModel(
+                userId: data['reply']['userId'],
+                displayName: data['reply']['displayName'],
+                login: data['reply']['userLogin'],
+              ),
+            )
+          : null;
 
       final model = TwitchMessageModel(
           messageId: change.doc.id,

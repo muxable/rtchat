@@ -226,7 +226,7 @@ class TwitchMessageWidget extends StatelessWidget {
                     ),
                     TextSpan(
                         text:
-                            '${model.reply?['displayName']}: ${model.reply?['message']}'),
+                            '${model.reply?.author.displayName}: ${model.reply?.message}'),
                   ]),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

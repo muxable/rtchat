@@ -3,6 +3,7 @@ import 'package:linkify/linkify.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
+import 'package:rtchat/models/messages/twitch/reply.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
 class EmoteData {
@@ -161,7 +162,7 @@ Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
 class TwitchMessageModel extends MessageModel {
   final TwitchUserModel author;
   final String message;
-  final Map<String, dynamic>? reply;
+  final TwitchMessageReplyModel? reply;
   final Map<String, dynamic> tags;
   final List<Emote> thirdPartyEmotes;
   final bool deleted;
