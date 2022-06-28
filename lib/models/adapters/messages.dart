@@ -12,6 +12,7 @@ import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
+import 'package:rtchat/models/messages/twitch/reply.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -51,10 +52,23 @@ DeltaEvent? _toDeltaEvent(
           displayName: tags['display-name'],
           login: tags['username']);
 
+      final reply = data['reply'] != null
+          ? TwitchMessageReplyModel(
+              messageId: data['reply']['messageId'],
+              message: data['reply']['message'],
+              author: TwitchUserModel(
+                userId: data['reply']['userId'],
+                displayName: data['reply']['displayName'],
+                login: data['reply']['userLogin'],
+              ),
+            )
+          : null;
+
       final model = TwitchMessageModel(
           messageId: change.doc.id,
           author: author,
           message: message,
+          reply: reply,
           tags: tags,
           thirdPartyEmotes: emotes,
           timestamp: data['timestamp'].toDate(),
@@ -71,6 +85,7 @@ DeltaEvent? _toDeltaEvent(
             messageId: message.messageId,
             author: message.author,
             message: message.message,
+            reply: message.reply,
             tags: message.tags,
             thirdPartyEmotes: [],
             timestamp: message.timestamp,
