@@ -64,10 +64,11 @@ class Themes {
       color: Themes.detailColor,
     ),
     colorScheme: ColorScheme.fromSwatch(
+      primarySwatch: primarySwatch,
       brightness: Brightness.dark,
       backgroundColor: Themes.detailColor,
       accentColor: Themes.accentColor,
-    ).copyWith(tertiary: Themes.detailColor),
+    ).copyWith(primary: Themes.accentColor, tertiary: Themes.detailColor),
     dialogBackgroundColor: Colors.black,
     toggleableActiveColor: Themes.accentColor,
     bottomSheetTheme:
