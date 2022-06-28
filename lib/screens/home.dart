@@ -226,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ]),
           body: Container(
-            color: Theme.of(context).primaryColor,
+            color: Theme.of(context).scaffoldBackgroundColor,
             child: SafeArea(
               child: Container(
                 color: Theme.of(context).scaffoldBackgroundColor,
