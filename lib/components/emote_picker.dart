@@ -44,6 +44,7 @@ class EmotePickerWidget extends StatelessWidget {
                                 crossAxisCount: _emoteColumns),
                         delegate: SliverChildListDelegate.fixed(snapshot.data!
                             .map((emote) => IconButton(
+                                tooltip: emote.code,
                                 onPressed: () => onEmoteSelected(emote),
                                 splashRadius: 24,
                                 icon: Image(
