@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/layout.dart';
@@ -99,7 +100,25 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
             RadioListTile(
               title: TextField(
                   controller: _textEditingController,
-                  decoration: const InputDecoration(hintText: "Custom URL"),
+                  decoration: InputDecoration(
+                      hintText: "Custom URL",
+                      suffixIcon: IconButton(
+                          icon: const Icon(Icons.qr_code_scanner),
+                          onPressed: () {
+                            showModalBottomSheet<void>(
+                                context: context,
+                                builder: (context) {
+                                  return MobileScanner(
+                                      allowDuplicates: false,
+                                      onDetect: (barcode, args) {
+                                        final code = barcode.rawValue;
+                                        if (code != null) {
+                                          _textEditingController.text = code;
+                                        }
+                                        Navigator.of(context).pop();
+                                      });
+                                });
+                          })),
                   onChanged: (value) {
                     activityFeedModel.isEnabled = true;
                     activityFeedModel.customUrl = value;
