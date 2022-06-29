@@ -31,22 +31,22 @@ PODS:
   - Firebase/RemoteConfig (8.15.0):
     - Firebase/CoreOnly
     - FirebaseRemoteConfig (~> 8.15.0)
-  - firebase_analytics (9.1.8):
+  - firebase_analytics (9.1.9):
     - Firebase/Analytics (= 8.15.0)
     - firebase_core
     - Flutter
-  - firebase_auth (3.3.18):
+  - firebase_auth (3.3.19):
     - Firebase/Auth (= 8.15.0)
     - firebase_core
     - Flutter
-  - firebase_core (1.17.0):
+  - firebase_core (1.17.1):
     - Firebase/CoreOnly (= 8.15.0)
     - Flutter
-  - firebase_crashlytics (2.8.0):
+  - firebase_crashlytics (2.8.1):
     - Firebase/Crashlytics (= 8.15.0)
     - firebase_core
     - Flutter
-  - firebase_remote_config (2.0.7):
+  - firebase_remote_config (2.0.8):
     - Firebase/RemoteConfig (= 8.15.0)
     - firebase_core
     - Flutter
