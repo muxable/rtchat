@@ -13,7 +13,7 @@ class ProfilesAdapter {
   Stream<Channel?> getChannel(
       {required String userId, required String provider}) {
     return db.collection("profiles").doc(userId).snapshots().map((event) {
-      if (event.exists) {
+      if (!event.exists) {
         return null;
       }
       final data = event.get("twitch");
