@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:audioplayers/audioplayers.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -55,6 +59,22 @@ class TextToSpeechScreen extends StatelessWidget {
                                 text:
                                     "muxfd said have you followed muxfd on twitch?"),
                             force: true);
+                      },
+                    ),
+                  ),
+                  Center(
+                    child: ElevatedButton(
+                      child: const Text("Play fancy message"),
+                      onPressed: () async {
+                        final response = await FirebaseFunctions.instance
+                            .httpsCallable("synthesize")({
+                          "text":
+                              "muxfd said have you followed muxfd on twitch?",
+                        });
+                        final bytes =
+                            const Base64Decoder().convert(response.data);
+
+                        AudioPlayer().playBytes(bytes);
                       },
                     ),
                   )
