@@ -130,6 +130,12 @@ async function join(
     logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
   });
 
+  const send = new ChatClient({
+    authProvider,
+    isAlwaysMod: authProvider.username === channel,
+    logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
+  });
+
   const registerPromise = new Promise<void>((resolve) =>
     chat.onRegister(() => resolve())
   );
@@ -231,6 +237,7 @@ async function join(
 
   log.info({ channel, agentId, provider }, "assigned to channel");
   await chat.connect();
+  await send.connect();
   await registerPromise; // this is a bit awkward but the join will race if we don't wait.
   await chat.join(channel);
   log.info({ channel, agentId, provider }, "joined channel");
@@ -286,7 +293,7 @@ async function join(
             if (!targetChannel || !message) {
               continue;
             }
-            await chat.say(targetChannel, message);
+            await send.say(targetChannel, message);
             await change.doc.ref.update({
               sentAt: admin.firestore.FieldValue.serverTimestamp(),
             });
@@ -303,6 +310,7 @@ async function join(
     await firebase.claim(provider, channel, agentId);
   }
 
+  await send.quit();
   await chat.quit();
 
   log.info({ channel, agentId, provider }, "disconnected");
