@@ -1,11 +1,11 @@
 PODS:
   - audioplayers (0.0.1):
     - Flutter
-  - cloud_firestore (3.1.15):
+  - cloud_firestore (3.1.17):
     - Firebase/Firestore (= 8.15.0)
     - firebase_core
     - Flutter
-  - cloud_functions (3.2.15):
+  - cloud_functions (3.2.16):
     - Firebase/Functions (= 8.15.0)
     - firebase_core
     - Flutter
