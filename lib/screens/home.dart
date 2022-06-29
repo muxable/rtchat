@@ -171,6 +171,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           key: _scaffoldKey,
           drawer: Sidebar(channel: widget.channel),
           endDrawer: LeftDrawerWidget(channel: widget.channel),
+          drawerEdgeDragWidth: MediaQuery.of(context).size.width * 0.6,
           onDrawerChanged: (isOpened) =>
               FocusManager.instance.primaryFocus?.unfocus(),
           onEndDrawerChanged: (isOpened) =>
@@ -225,88 +226,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ]),
           body: Container(
-            color: Theme.of(context).primaryColor,
+            color: Theme.of(context).scaffoldBackgroundColor,
             child: SafeArea(
-              child: Container(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                child: Builder(builder: (context) {
-                  final chatPanelFooter = Consumer<LayoutModel>(
-                    builder: (context, layoutModel, child) {
-                      if (layoutModel.isInteractionLockable &&
-                          layoutModel.locked) {
-                        return Container();
+              child: Builder(builder: (context) {
+                final chatPanelFooter = Consumer<LayoutModel>(
+                  builder: (context, layoutModel, child) {
+                    return layoutModel.locked ? Container() : child!;
+                  },
+                  child: Consumer<UserModel>(
+                    builder: (context, userModel, child) {
+                      if (!userModel.isSignedIn()) {
+                        return Column(children: [
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Flexible(child: Divider()),
+                                Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Text("Sign in to send messages",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge)),
+                                const Flexible(child: Divider()),
+                              ]),
+                          const SignInWithTwitch(),
+                        ]);
                       }
+
                       return child!;
                     },
-                    child: Consumer<UserModel>(
-                      builder: (context, userModel, child) {
-                        if (!userModel.isSignedIn()) {
-                          return Column(children: [
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Flexible(child: Divider()),
-                                  Padding(
-                                      padding: const EdgeInsets.all(8),
-                                      child: Text("Sign in to send messages",
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelLarge)),
-                                  const Flexible(child: Divider()),
-                                ]),
-                            const SignInWithTwitch(),
-                          ]);
-                        }
-
-                        return child!;
-                      },
-                      child: MessageInputWidget(
-                        channel: widget.channel,
-                      ),
+                    child: MessageInputWidget(
+                      channel: widget.channel,
                     ),
-                  );
-                  if (orientation == Orientation.portrait) {
-                    return Column(children: [
-                      Consumer<LayoutModel>(
-                          builder: (context, layoutModel, child) {
-                        if (layoutModel.isShowNotifications) {
-                          return ResizableWidget(
-                              resizable: !layoutModel.locked,
-                              height: layoutModel.panelHeight,
-                              width: layoutModel.panelWidth,
-                              onResizeHeight: (height) {
-                                layoutModel.panelHeight = height;
-                              },
-                              onResizeWidth: (width) {
-                                layoutModel.panelWidth = width;
-                              },
-                              child: const ActivityFeedPanelWidget());
-                        } else if (layoutModel.isShowPreview) {
-                          return SizedBox(
-                              height:
-                                  MediaQuery.of(context).size.width * 9 / 16,
-                              child: StreamPreview(
-                                  channelDisplayName:
-                                      widget.channel.displayName));
-                        } else {
-                          return Container();
-                        }
-                      }),
-                      Expanded(
-                          child: DiscoWidget(
-                              isEnabled: widget.isDiscoModeEnabled,
-                              child: ChatPanelWidget(channel: widget.channel))),
-                      chatPanelFooter,
-                    ]);
-                  } else {
-                    // landscape
-                    return Row(children: [
-                      Consumer<LayoutModel>(
-                          builder: (context, layoutModel, child) {
-                        if (!layoutModel.isShowNotifications &&
-                            !layoutModel.isShowPreview) {
-                          return Container();
-                        }
+                  ),
+                );
+                if (orientation == Orientation.portrait) {
+                  return Column(children: [
+                    Consumer<LayoutModel>(
+                        builder: (context, layoutModel, child) {
+                      if (layoutModel.isShowNotifications) {
                         return ResizableWidget(
                             resizable: !layoutModel.locked,
                             height: layoutModel.panelHeight,
@@ -317,32 +275,66 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             onResizeWidth: (width) {
                               layoutModel.panelWidth = width;
                             },
-                            child: Consumer<LayoutModel>(
-                                builder: (context, layoutModel, child) {
-                              if (layoutModel.isShowNotifications) {
-                                return const ActivityFeedPanelWidget();
-                              } else if (layoutModel.isShowPreview) {
-                                return StreamPreview(
-                                    channelDisplayName:
-                                        widget.channel.displayName);
-                              } else {
-                                return Container();
-                              }
-                            }));
-                      }),
+                            child: const ActivityFeedPanelWidget());
+                      } else if (layoutModel.isShowPreview) {
+                        return SizedBox(
+                            height: MediaQuery.of(context).size.width * 9 / 16,
+                            child: StreamPreview(
+                                channelDisplayName:
+                                    widget.channel.displayName));
+                      } else {
+                        return Container();
+                      }
+                    }),
+                    Expanded(
+                        child: DiscoWidget(
+                            isEnabled: widget.isDiscoModeEnabled,
+                            child: ChatPanelWidget(channel: widget.channel))),
+                    chatPanelFooter,
+                  ]);
+                } else {
+                  // landscape
+                  return Row(children: [
+                    Consumer<LayoutModel>(
+                        builder: (context, layoutModel, child) {
+                      if (!layoutModel.isShowNotifications &&
+                          !layoutModel.isShowPreview) {
+                        return Container();
+                      }
+                      return ResizableWidget(
+                          resizable: !layoutModel.locked,
+                          height: layoutModel.panelHeight,
+                          width: layoutModel.panelWidth,
+                          onResizeHeight: (height) {
+                            layoutModel.panelHeight = height;
+                          },
+                          onResizeWidth: (width) {
+                            layoutModel.panelWidth = width;
+                          },
+                          child: Consumer<LayoutModel>(
+                              builder: (context, layoutModel, child) {
+                            if (layoutModel.isShowNotifications) {
+                              return const ActivityFeedPanelWidget();
+                            } else if (layoutModel.isShowPreview) {
+                              return StreamPreview(
+                                  channelDisplayName:
+                                      widget.channel.displayName);
+                            } else {
+                              return Container();
+                            }
+                          }));
+                    }),
+                    Expanded(
+                        child: Column(children: [
                       Expanded(
-                          child: Column(children: [
-                        Expanded(
-                            child: DiscoWidget(
-                                isEnabled: widget.isDiscoModeEnabled,
-                                child:
-                                    ChatPanelWidget(channel: widget.channel))),
-                        chatPanelFooter,
-                      ]))
-                    ]);
-                  }
-                }),
-              ),
+                          child: DiscoWidget(
+                              isEnabled: widget.isDiscoModeEnabled,
+                              child: ChatPanelWidget(channel: widget.channel))),
+                      chatPanelFooter,
+                    ]))
+                  ]);
+                }
+              }),
             ),
           ),
         ));

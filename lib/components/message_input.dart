@@ -20,6 +20,19 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   final _chatInputFocusNode = FocusNode();
   var _isEmotePickerVisible = false;
 
+  void sendMessage(String value) async {
+    value = value.trim();
+    if (value.isEmpty) {
+      return;
+    }
+    if (value.startsWith('!')) {
+      final commandsModel = Provider.of<CommandsModel>(context, listen: false);
+      commandsModel.addCommand(Command(value, DateTime.now()));
+    }
+    ActionsAdapter.instance.send(widget.channel, value);
+    _textEditingController.clear();
+  }
+
   Widget _buildCommandBar(BuildContext context) {
     return KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
       return Consumer<CommandsModel>(builder: (context, commandsModel, child) {
@@ -70,81 +83,76 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Container(
-          decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(50)),
-              color: Colors.blueGrey.withOpacity(0.30)),
-          child: Row(children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: IconButton(
-                  onPressed: () {
-                    if (_isEmotePickerVisible) {
-                      setState(() => _isEmotePickerVisible = false);
-                      _chatInputFocusNode.requestFocus();
-                    } else {
-                      _chatInputFocusNode.unfocus();
-                      setState(() => _isEmotePickerVisible = true);
+    return Material(
+      child: Column(children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Container(
+            decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(24)),
+                color: Theme.of(context).inputDecorationTheme.fillColor),
+            child: Row(children: [
+              Expanded(
+                child: TextField(
+                  focusNode: _chatInputFocusNode,
+                  controller: _textEditingController,
+                  textInputAction: TextInputAction.send,
+                  maxLines: 6,
+                  minLines: 1,
+                  textAlignVertical: TextAlignVertical.center,
+                  decoration: InputDecoration(
+                      prefixIcon: Material(
+                        color: Theme.of(context).inputDecorationTheme.fillColor,
+                        borderRadius: BorderRadius.circular(24),
+                        child: IconButton(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            onPressed: () {
+                              if (_isEmotePickerVisible) {
+                                setState(() => _isEmotePickerVisible = false);
+                                _chatInputFocusNode.requestFocus();
+                              } else {
+                                _chatInputFocusNode.unfocus();
+                                setState(() => _isEmotePickerVisible = true);
+                              }
+                            },
+                            splashRadius: 24,
+                            icon: Icon(_isEmotePickerVisible
+                                ? Icons.keyboard_rounded
+                                : Icons.tag_faces_rounded)),
+                      ),
+                      suffixIcon: Material(
+                        color: Theme.of(context).inputDecorationTheme.fillColor,
+                        borderRadius: BorderRadius.circular(24),
+                        child: IconButton(
+                          icon: const Icon(Icons.send_rounded),
+                          color: Theme.of(context).colorScheme.primary,
+                          splashRadius: 24,
+                          onPressed: () =>
+                              sendMessage(_textEditingController.text),
+                        ),
+                      ),
+                      border: InputBorder.none,
+                      hintText: "Send a message..."),
+                  onChanged: (text) {
+                    final filtered = text.replaceAll('\n', ' ');
+                    if (filtered == text) {
+                      return;
                     }
+                    _textEditingController.value = TextEditingValue(
+                        text: filtered,
+                        selection: TextSelection.fromPosition(TextPosition(
+                            offset: _textEditingController.text.length)));
                   },
-                  icon: Icon(_isEmotePickerVisible
-                      ? Icons.keyboard_rounded
-                      : Icons.tag_faces_rounded)),
-            ),
-            Expanded(
-              child: TextField(
-                focusNode: _chatInputFocusNode,
-                controller: _textEditingController,
-                textInputAction: TextInputAction.send,
-                maxLines: null,
-                decoration: const InputDecoration(
-                    border: InputBorder.none, hintText: "Send a message..."),
-                onChanged: (text) {
-                  final filtered = text.replaceAll('\n', ' ');
-                  if (filtered == text) {
-                    return;
-                  }
-                  _textEditingController.value = TextEditingValue(
-                      text: filtered,
-                      selection: TextSelection.fromPosition(TextPosition(
-                          offset: _textEditingController.text.length)));
-                },
-                onSubmitted: (value) async {
-                  value = value.trim();
-                  if (value.isEmpty) {
-                    return;
-                  }
-                  if (value.startsWith('!')) {
-                    final commandsModel =
-                        Provider.of<CommandsModel>(context, listen: false);
-                    commandsModel.addCommand(Command(value, DateTime.now()));
-                  }
-                  ActionsAdapter.instance.send(widget.channel, value);
-                  _textEditingController.clear();
-                },
-                onTap: () => setState(() => _isEmotePickerVisible = false),
+                  onSubmitted: sendMessage,
+                  onTap: () => setState(() => _isEmotePickerVisible = false),
+                ),
               ),
-            ),
-            _isEmotePickerVisible
-                ? IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: () {
-                      var text = _textEditingController.text;
-                      if (text.isEmpty) {
-                        return;
-                      }
-                      ActionsAdapter.instance.send(widget.channel, text);
-                      _textEditingController.clear();
-                    })
-                : Container(),
-          ]),
+            ]),
+          ),
         ),
-      ),
-      _buildCommandBar(context),
-      _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
-    ]);
+        _buildCommandBar(context),
+        _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
+      ]),
+    );
   }
 }

@@ -63,7 +63,6 @@ class LayoutModel extends ChangeNotifier {
   double _panelHeight = 300.0;
   double _panelWidth = 300.0;
   bool _isStatsVisible = true;
-  bool _isInteractionLockable = false;
   bool _locked = false;
   double _onDragStartHeight = 300.0;
   PreferredOrientation _orientationPreference = PreferredOrientation.system;
@@ -113,13 +112,6 @@ class LayoutModel extends ChangeNotifier {
 
   set isStatsVisible(bool value) {
     _isStatsVisible = value;
-    notifyListeners();
-  }
-
-  bool get isInteractionLockable => _isInteractionLockable;
-
-  set isInteractionLockable(bool value) {
-    _isInteractionLockable = value;
     notifyListeners();
   }
 
@@ -187,9 +179,6 @@ class LayoutModel extends ChangeNotifier {
     if (json['isStatsVisible'] != null) {
       _isStatsVisible = json['isStatsVisible'];
     }
-    if (json['isInputLockable'] != null) {
-      _isInteractionLockable = json['isInputLockable'];
-    }
     if (json['orientationPreference'] != null) {
       _orientationPreference =
           _OrientationPreferenceJson.fromJson(json['orientationPreference']);
@@ -211,7 +200,6 @@ class LayoutModel extends ChangeNotifier {
         "panelWidth": _panelWidth,
         "locked": _locked,
         "isStatsVisible": _isStatsVisible,
-        "isInputLockable": _isInteractionLockable,
         "orientationPreference": _orientationPreference.toJson(),
         "isShowNotifications": _isShowNotifications,
         "isShowPreview": _isShowPreview,

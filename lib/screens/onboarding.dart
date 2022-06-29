@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rtchat/components/auth/twitch.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/themes.dart';
 
 final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
 
@@ -15,12 +16,9 @@ class OnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: ThemeData(
-        brightness: Brightness.dark,
-      ),
+      data: Themes.darkTheme,
       child: Scaffold(
           resizeToAvoidBottomInset: false,
-          backgroundColor: Colors.black,
           body: SafeArea(
             child: Center(
               child: Padding(
