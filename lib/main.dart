@@ -61,6 +61,10 @@ void main() async {
     await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
   }
 
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent));
+
   // Add remote config
   FirebaseRemoteConfig.instance.setConfigSettings(RemoteConfigSettings(
       minimumFetchInterval: const Duration(hours: 1),
