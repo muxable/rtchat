@@ -21,6 +21,63 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   final _chatInputFocusNode = FocusNode();
   var _isEmotePickerVisible = false;
 
+  OverlayEntry? entry;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance!.addPostFrameCallback((_) => showOverlay());
+  }
+
+  bool startsWithSlash(String text) {
+    return text.length == 1 && text.startsWith("/");
+  }
+
+  void hideOverlay() {
+    entry?.remove();
+    entry = null;
+  }
+
+  void showOverlay() {
+    final overlay = Overlay.of(context)!;
+
+    // the renderbox of this widget
+    final renderBox = context.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+
+    final offset = renderBox.localToGlobal(Offset.zero);
+
+    entry = OverlayEntry(builder: (context) {
+      return Positioned(
+        left: offset.dx,
+        top: offset.dy - 300,
+        width: size.width,
+        child: Material(
+          child: SizedBox(
+            height: 300,
+            child: ListView(
+              shrinkWrap: true,
+              primary: true,
+              children: ChatMode.chatModes.map((e) {
+                return ListTile(
+                  title: Text(e.title),
+                  subtitle: Text(e.subtitle),
+                  onTap: () {
+                    _textEditingController.text = e.title;
+                    hideOverlay();
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      );
+    });
+
+    overlay.insert(entry!);
+  }
+
   void sendMessage(String value) async {
     value = value.trim();
     if (value.isEmpty) {
@@ -84,6 +141,11 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // remove overlay if keyboard is not visible
+    if (MediaQuery.of(context).viewInsets.bottom == 0) {
+      hideOverlay();
+    }
+
     return Material(
       child: Column(children: [
         Padding(
@@ -93,46 +155,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                 borderRadius: const BorderRadius.all(Radius.circular(24)),
                 color: Theme.of(context).inputDecorationTheme.fillColor),
             child: Row(children: [
-              Container(
-                decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        bottomLeft: Radius.circular(24))),
-                child: IconButton(
-                    icon: const Icon(
-                      Icons.expand_less_outlined,
-                      color: Colors.black,
-                    ),
-                    onPressed: () async {
-                      var showFollwerDialog = await showDialog<bool>(
-                        context: context,
-                        builder: (context) {
-                          return (Dialog(
-                            child: ListView(
-                              shrinkWrap: true,
-                              primary: false,
-                              children: ChatMode.chatModes
-                                  .map(
-                                    (item) => ListTile(
-                                      title: Text(item.title),
-                                      subtitle: Text(item.subtitle),
-                                      onTap: () {
-                                        sendMessage(item.title);
-                                        Navigator.pop(context);
-                                      },
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          ));
-                        },
-                      );
-                    }),
-              ),
-              const VerticalDivider(
-                thickness: 3,
-                color: Colors.black,
-              ),
               Expanded(
                 child: TextField(
                   focusNode: _chatInputFocusNode,
@@ -175,6 +197,11 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       border: InputBorder.none,
                       hintText: "Send a message..."),
                   onChanged: (text) {
+                    if (text.length == 1 && text.startsWith("/")) {
+                      showOverlay();
+                    } else {
+                      hideOverlay();
+                    }
                     final filtered = text.replaceAll('\n', ' ');
                     if (filtered == text) {
                       return;
