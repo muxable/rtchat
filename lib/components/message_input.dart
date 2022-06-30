@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/chat_mode.dart';
 import 'package:rtchat/models/commands.dart';
 
 class MessageInputWidget extends StatefulWidget {
@@ -92,6 +93,46 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                 borderRadius: const BorderRadius.all(Radius.circular(24)),
                 color: Theme.of(context).inputDecorationTheme.fillColor),
             child: Row(children: [
+              Container(
+                decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(24),
+                        bottomLeft: Radius.circular(24))),
+                child: IconButton(
+                    icon: const Icon(
+                      Icons.expand_less_outlined,
+                      color: Colors.black,
+                    ),
+                    onPressed: () async {
+                      var showFollwerDialog = await showDialog<bool>(
+                        context: context,
+                        builder: (context) {
+                          return (Dialog(
+                            child: ListView(
+                              shrinkWrap: true,
+                              primary: false,
+                              children: ChatMode.chatModes
+                                  .map(
+                                    (item) => ListTile(
+                                      title: Text(item.title),
+                                      subtitle: Text(item.subtitle),
+                                      onTap: () {
+                                        sendMessage(item.title);
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ));
+                        },
+                      );
+                    }),
+              ),
+              const VerticalDivider(
+                thickness: 3,
+                color: Colors.black,
+              ),
               Expanded(
                 child: TextField(
                   focusNode: _chatInputFocusNode,
