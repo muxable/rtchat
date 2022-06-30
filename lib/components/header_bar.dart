@@ -147,8 +147,11 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
               showModalBottomSheet<void>(
                 context: context,
                 isScrollControlled: true,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.0),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
                 ),
                 builder: (context) {
                   return DraggableScrollableSheet(
@@ -186,10 +189,10 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                       Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Text("/${widget.channel.displayName}",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium!
-                                        .copyWith(color: Colors.white),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium!
+                                  .copyWith(color: Colors.white),
                               overflow: TextOverflow.fade)),
                       Consumer<LayoutModel>(
                           builder: (context, layoutModel, child) {
