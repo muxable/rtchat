@@ -103,8 +103,8 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
               showModalBottomSheet<void>(
                 context: context,
                 isScrollControlled: true,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.0),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                 ),
                 builder: (context) {
                   return DraggableScrollableSheet(
