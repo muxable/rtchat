@@ -27,7 +27,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance!.addPostFrameCallback((_) => showOverlay());
+    WidgetsBinding.instance.addPostFrameCallback((_) => showOverlay());
   }
 
   bool startsWithSlash(String text) {
