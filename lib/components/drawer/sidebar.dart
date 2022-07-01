@@ -84,8 +84,9 @@ class _DrawerHeader extends StatelessWidget {
                       showModalBottomSheet<void>(
                         context: context,
                         isScrollControlled: true,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16)),
                         ),
                         builder: (context) {
                           return DraggableScrollableSheet(
@@ -230,23 +231,26 @@ class _SidebarState extends State<Sidebar> {
       }),
     ];
     return Drawer(
-      child: Column(
-        children: [
-          const _DrawerHeader(),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            const _DrawerHeader(),
 
-          // quicklinks
-          Expanded(child: Builder(builder: (context) {
-            final orientation = MediaQuery.of(context).orientation;
-            if (orientation == Orientation.portrait) {
-              return Column(children: [
-                Expanded(child: ListView(children: [QuicklinksListView()])),
-                ...tiles
-              ]);
-            } else {
-              return ListView(children: [QuicklinksListView(), ...tiles]);
-            }
-          }))
-        ],
+            // quicklinks
+            Expanded(child: Builder(builder: (context) {
+              final orientation = MediaQuery.of(context).orientation;
+              if (orientation == Orientation.portrait) {
+                return Column(children: [
+                  Expanded(child: ListView(children: [QuicklinksListView()])),
+                  ...tiles
+                ]);
+              } else {
+                return ListView(children: [QuicklinksListView(), ...tiles]);
+              }
+            }))
+          ],
+        ),
       ),
     );
   }
