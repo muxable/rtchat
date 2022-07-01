@@ -42,10 +42,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     return false;
   }
 
-  bool startsWithSlash(String text) {
-    return text.length == 1 && text.startsWith("/");
-  }
-
   void hideOverlay() {
     entry?.remove();
     entry = null;
@@ -229,7 +225,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       border: InputBorder.none,
                       hintText: "Send a message..."),
                   onChanged: (text) {
-                    // if (text.startsWith("/")) {
                     if (startsWithPossibleCommands(text)) {
                       showOverlay(text);
                     } else {
