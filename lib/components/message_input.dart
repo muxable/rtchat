@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
@@ -26,8 +28,18 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   @override
   void initState() {
     super.initState();
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => showOverlay());
+  bool startsWithPossibleCommands(String text) {
+    if (text == "" || text.isEmpty) {
+      return false;
+    }
+    for (final mode in ChatMode.chatModes) {
+      if (mode.title.startsWith(text)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   bool startsWithSlash(String text) {
@@ -39,7 +51,10 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     entry = null;
   }
 
-  void showOverlay() {
+  void showOverlay(String text) {
+    // remove existing overlay, bc user can contiunously type a prefix string that matches a command
+    hideOverlay();
+
     final overlay = Overlay.of(context)!;
 
     // the renderbox of this widget
@@ -47,25 +62,42 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     final size = renderBox.size;
 
     final offset = renderBox.localToGlobal(Offset.zero);
+    final lst =
+        ChatMode.chatModes.where((element) => element.title.startsWith(text));
+
+    // None to show
+    if (lst.isEmpty) {
+      hideOverlay();
+      return;
+    }
+
+    final lstSize = lst.length;
+    const listTileSize = 75; // the roughly size of a listTile
+    final shiftUp = min(lstSize * listTileSize, 300);
 
     entry = OverlayEntry(builder: (context) {
       return Positioned(
         left: offset.dx,
-        top: offset.dy - 300,
+        top: offset.dy - shiftUp,
         width: size.width,
         child: Material(
           child: SizedBox(
-            height: 300,
+            height: shiftUp.toDouble(),
             child: ListView(
+              padding: EdgeInsets.zero,
               shrinkWrap: true,
-              primary: true,
-              children: ChatMode.chatModes.map((e) {
+              primary: false,
+              children: lst.map((e) {
                 return ListTile(
                   title: Text(e.title),
                   subtitle: Text(e.subtitle),
                   onTap: () {
                     _textEditingController.text = e.title;
                     hideOverlay();
+                    // move cursor position
+                    _textEditingController.selection =
+                        TextSelection.fromPosition(TextPosition(
+                            offset: _textEditingController.text.length));
                   },
                 );
               }).toList(),
@@ -197,8 +229,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       border: InputBorder.none,
                       hintText: "Send a message..."),
                   onChanged: (text) {
-                    if (text.length == 1 && text.startsWith("/")) {
-                      showOverlay();
+                    // if (text.startsWith("/")) {
+                    if (startsWithPossibleCommands(text)) {
+                      showOverlay(text);
                     } else {
                       hideOverlay();
                     }
