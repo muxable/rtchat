@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/layout.dart';
@@ -66,89 +67,109 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
     final uri = getUri();
     return Scaffold(
       appBar: AppBar(title: const Text("Activity feed")),
-      body: Consumer3<ActivityFeedModel, UserModel, LayoutModel>(
-          builder: (context, activityFeedModel, userModel, layoutModel, child) {
-        return Column(children: [
-          if (_showControls)
-            RadioListTile(
-              title: const Text('Disabled'),
-              value: true,
-              groupValue: !activityFeedModel.isEnabled,
-              onChanged: (value) {
-                activityFeedModel.isEnabled = false;
-                layoutModel.isShowNotifications = false;
-              },
-            ),
-          if (_showControls)
-            RadioListTile(
-              title: const Text('Twitch activity feed'),
-              subtitle: userModel.isSignedIn()
-                  ? null
-                  : const Text("Must be signed in"),
-              value: true,
-              groupValue:
-                  activityFeedModel.isEnabled && !activityFeedModel.isCustom,
-              onChanged: userModel.isSignedIn()
-                  ? (value) {
+      body: SafeArea(
+        child: Consumer3<ActivityFeedModel, UserModel, LayoutModel>(builder:
+            (context, activityFeedModel, userModel, layoutModel, child) {
+          return Column(children: [
+            if (_showControls)
+              RadioListTile(
+                title: const Text('Disabled'),
+                value: true,
+                groupValue: !activityFeedModel.isEnabled,
+                onChanged: (value) {
+                  activityFeedModel.isEnabled = false;
+                  layoutModel.isShowNotifications = false;
+                },
+              ),
+            if (_showControls)
+              RadioListTile(
+                title: const Text('Twitch activity feed'),
+                subtitle: userModel.isSignedIn()
+                    ? null
+                    : const Text("Must be signed in"),
+                value: true,
+                groupValue:
+                    activityFeedModel.isEnabled && !activityFeedModel.isCustom,
+                onChanged: userModel.isSignedIn()
+                    ? (value) {
+                        activityFeedModel.isEnabled = true;
+                        activityFeedModel.isCustom = false;
+                      }
+                    : null,
+              ),
+            if (_showControls)
+              RadioListTile(
+                title: TextField(
+                    controller: _textEditingController,
+                    decoration: InputDecoration(
+                        hintText: "Custom URL",
+                        suffixIcon: IconButton(
+                            icon: const Icon(Icons.qr_code_scanner),
+                            onPressed: () {
+                              showModalBottomSheet<void>(
+                                  context: context,
+                                  builder: (context) {
+                                    return MobileScanner(
+                                        allowDuplicates: false,
+                                        onDetect: (barcode, args) {
+                                          final code = barcode.rawValue;
+                                          if (code != null) {
+                                            _textEditingController.text = code;
+                                          }
+                                          Navigator.of(context).pop();
+                                        });
+                                  });
+                            })),
+                    onChanged: (value) {
                       activityFeedModel.isEnabled = true;
-                      activityFeedModel.isCustom = false;
-                    }
-                  : null,
-            ),
-          if (_showControls)
-            RadioListTile(
-              title: TextField(
-                  controller: _textEditingController,
-                  decoration: const InputDecoration(hintText: "Custom URL"),
-                  onChanged: (value) {
-                    activityFeedModel.isEnabled = true;
-                    activityFeedModel.customUrl = value;
-                    activityFeedModel.isCustom = true;
-                  }),
-              value: true,
-              groupValue:
-                  activityFeedModel.isEnabled && activityFeedModel.isCustom,
-              onChanged: (value) {
-                activityFeedModel.isEnabled = true;
-                activityFeedModel.isCustom = true;
-              },
-            ),
-          GestureDetector(
-              onTap: () {
-                setState(() {
-                  _showControls = !_showControls;
-                });
-              },
-              child: Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(_showControls
-                            ? Icons.unfold_more
-                            : Icons.unfold_less),
-                        const Text("Preview"),
-                      ]))),
-          activityFeedModel.isEnabled
-              ? Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: InAppWebView(
-                      initialUrlRequest:
-                          uri == null ? null : URLRequest(url: uri),
-                      onWebViewCreated: (controller) =>
-                          _inAppWebViewController = controller,
-                      initialOptions: InAppWebViewGroupOptions(
-                          crossPlatform: InAppWebViewOptions(
-                        javaScriptEnabled: true,
-                        transparentBackground: true,
-                      )),
+                      activityFeedModel.customUrl = value;
+                      activityFeedModel.isCustom = true;
+                    }),
+                value: true,
+                groupValue:
+                    activityFeedModel.isEnabled && activityFeedModel.isCustom,
+                onChanged: (value) {
+                  activityFeedModel.isEnabled = true;
+                  activityFeedModel.isCustom = true;
+                },
+              ),
+            GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _showControls = !_showControls;
+                  });
+                },
+                child: Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(_showControls
+                              ? Icons.unfold_more
+                              : Icons.unfold_less),
+                          const Text("Preview"),
+                        ]))),
+            activityFeedModel.isEnabled
+                ? Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: InAppWebView(
+                        initialUrlRequest:
+                            uri == null ? null : URLRequest(url: uri),
+                        onWebViewCreated: (controller) =>
+                            _inAppWebViewController = controller,
+                        initialOptions: InAppWebViewGroupOptions(
+                            crossPlatform: InAppWebViewOptions(
+                          javaScriptEnabled: true,
+                          transparentBackground: true,
+                        )),
+                      ),
                     ),
-                  ),
-                )
-              : Container(),
-        ]);
-      }),
+                  )
+                : Container(),
+          ]);
+        }),
+      ),
     );
   }
 }
