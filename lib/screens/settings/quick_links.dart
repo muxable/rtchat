@@ -60,117 +60,120 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Quick links")),
-      body: Column(children: [
-        Expanded(child:
-            Consumer<QuickLinksModel>(builder: (context, quickLinks, child) {
-          return ReorderableListView(
-            onReorder: quickLinks.swapSource,
-            children: quickLinks.sources.map((source) {
-              return Dismissible(
-                key: ValueKey(source),
-                background: const DismissibleDeleteBackground(),
-                child: ListTile(
+      body: SafeArea(
+        child: Column(children: [
+          Expanded(child:
+              Consumer<QuickLinksModel>(builder: (context, quickLinks, child) {
+            return ReorderableListView(
+              onReorder: quickLinks.swapSource,
+              children: quickLinks.sources.map((source) {
+                return Dismissible(
                   key: ValueKey(source),
-                  leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-                  title: Text(source.label),
-                  subtitle: Text(source.url.toString()),
-                  trailing: const Icon(Icons.drag_handle),
-                ),
-                onDismissed: (direction) {
-                  quickLinks.removeSource(source);
-                },
-              );
-            }).toList(),
-          );
-        })),
-        const Divider(),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Form(
-              key: _formKey,
-              child: Column(children: [
-                Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                  PopupMenuButton<String>(
-                    icon: Icon(quickLinksIconsMap[_activeIcon] ?? Icons.link),
-                    onSelected: (result) {
-                      setState(() {
-                        _activeIcon = result;
-                      });
-                    },
-                    itemBuilder: (context) {
-                      final entries = quickLinksIconsMap.entries.toList()
-                        ..sort((a, b) => a.key.compareTo(b.key));
-                      return entries
-                          .map((entry) => PopupMenuItem(
-                              value: entry.key, child: Icon(entry.value)))
-                          .toList();
-                    },
+                  background: const DismissibleDeleteBackground(),
+                  child: ListTile(
+                    key: ValueKey(source),
+                    leading:
+                        Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
+                    title: Text(source.label),
+                    subtitle: Text(source.url.toString()),
+                    trailing: const Icon(Icons.drag_handle),
                   ),
-                  Expanded(
-                    child: Column(children: [
-                      _url.isNotEmpty
-                          ? FutureBuilder<String>(
-                              future: retrieveName(_url),
-                              builder: (context, snapshot) {
-                                return TextFormField(
-                                  controller: _labelEditingController,
-                                  decoration: InputDecoration(
-                                    hintText: snapshot.data ?? "Label",
-                                  ),
-                                );
-                              },
-                            )
-                          : Container(),
-                      TextFormField(
-                          controller: _textEditingController,
-                          decoration: InputDecoration(
-                              hintText: "URL",
-                              suffixIcon: IconButton(
-                                  icon: const Icon(Icons.qr_code_scanner),
-                                  onPressed: () {
-                                    showModalBottomSheet<void>(
-                                        context: context,
-                                        builder: (context) {
-                                          return MobileScanner(
-                                              allowDuplicates: false,
-                                              onDetect: (barcode, args) {
-                                                final code = barcode.rawValue;
-                                                if (code != null) {
-                                                  _textEditingController.text =
-                                                      code;
-                                                }
-                                                Navigator.of(context).pop();
-                                              });
-                                        });
-                                  })),
-                          validator: (value) {
-                            if (value == null ||
-                                value.isEmpty ||
-                                Uri.tryParse(value) == null) {
-                              return "This doesn't look like a valid URL.";
-                            }
-                            final quickLinksModel =
-                                Provider.of<QuickLinksModel>(context,
-                                    listen: false);
-                            if (quickLinksModel.sources.any((s) =>
-                                s.url.toString() == Uri.encodeFull(value))) {
-                              return "This link already exists";
-                            }
-                            return null;
-                          },
-                          keyboardType: TextInputType.url,
-                          textInputAction: TextInputAction.done,
-                          onEditingComplete: addLink),
-                    ]),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: addLink,
-                  )
-                ]),
-              ])),
-        ),
-      ]),
+                  onDismissed: (direction) {
+                    quickLinks.removeSource(source);
+                  },
+                );
+              }).toList(),
+            );
+          })),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Form(
+                key: _formKey,
+                child: Column(children: [
+                  Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                    PopupMenuButton<String>(
+                      icon: Icon(quickLinksIconsMap[_activeIcon] ?? Icons.link),
+                      onSelected: (result) {
+                        setState(() {
+                          _activeIcon = result;
+                        });
+                      },
+                      itemBuilder: (context) {
+                        final entries = quickLinksIconsMap.entries.toList()
+                          ..sort((a, b) => a.key.compareTo(b.key));
+                        return entries
+                            .map((entry) => PopupMenuItem(
+                                value: entry.key, child: Icon(entry.value)))
+                            .toList();
+                      },
+                    ),
+                    Expanded(
+                      child: Column(children: [
+                        _url.isNotEmpty
+                            ? FutureBuilder<String>(
+                                future: retrieveName(_url),
+                                builder: (context, snapshot) {
+                                  return TextFormField(
+                                    controller: _labelEditingController,
+                                    decoration: InputDecoration(
+                                      hintText: snapshot.data ?? "Label",
+                                    ),
+                                  );
+                                },
+                              )
+                            : Container(),
+                        TextFormField(
+                            controller: _textEditingController,
+                            decoration: InputDecoration(
+                                hintText: "URL",
+                                suffixIcon: IconButton(
+                                    icon: const Icon(Icons.qr_code_scanner),
+                                    onPressed: () {
+                                      showModalBottomSheet<void>(
+                                          context: context,
+                                          builder: (context) {
+                                            return MobileScanner(
+                                                allowDuplicates: false,
+                                                onDetect: (barcode, args) {
+                                                  final code = barcode.rawValue;
+                                                  if (code != null) {
+                                                    _textEditingController
+                                                        .text = code;
+                                                  }
+                                                  Navigator.of(context).pop();
+                                                });
+                                          });
+                                    })),
+                            validator: (value) {
+                              if (value == null ||
+                                  value.isEmpty ||
+                                  Uri.tryParse(value) == null) {
+                                return "This doesn't look like a valid URL.";
+                              }
+                              final quickLinksModel =
+                                  Provider.of<QuickLinksModel>(context,
+                                      listen: false);
+                              if (quickLinksModel.sources.any((s) =>
+                                  s.url.toString() == Uri.encodeFull(value))) {
+                                return "This link already exists";
+                              }
+                              return null;
+                            },
+                            keyboardType: TextInputType.url,
+                            textInputAction: TextInputAction.done,
+                            onEditingComplete: addLink),
+                      ]),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: addLink,
+                    )
+                  ]),
+                ])),
+          ),
+        ]),
+      ),
     );
   }
 

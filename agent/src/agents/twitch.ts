@@ -217,6 +217,7 @@ async function join(
     await firebase.getMessage(`twitch:clear-${msg.date.toISOString()}`).set({
       channel,
       channelId: `twitch:${msg.channelId}`,
+      timestamp: admin.firestore.Timestamp.fromDate(msg.date),
       type: "clear",
     });
   });

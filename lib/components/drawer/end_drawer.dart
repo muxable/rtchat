@@ -126,91 +126,94 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
           } else {
-            return CustomScrollView(
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.only(top: 24),
-                  sliver: SliverAppBar(
-                      actions: const [SizedBox()],
-                      //disable the drawer icon that appears on the right of the app bar
-                      centerTitle: false,
-                      title: Padding(
-                        padding: const EdgeInsets.only(left: 16),
-                        child: Text(
-                          'Search Viewers',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
+            return SafeArea(
+              top: false,
+              child: CustomScrollView(
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.only(top: 24),
+                    sliver: SliverAppBar(
+                        actions: const [SizedBox()],
+                        //disable the drawer icon that appears on the right of the app bar
+                        centerTitle: false,
+                        title: Padding(
+                          padding: const EdgeInsets.only(left: 16),
+                          child: Text(
+                            'Search Viewers',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
                         ),
-                      ),
-                      backgroundColor: Colors.transparent,
-                      automaticallyImplyLeading: false),
-                ),
-                sliverSearchBarWidget,
-                if (filteredBroadcasterList.isNotEmpty) ...[
-                  const SliverPadding(
-                    padding: EdgeInsets.only(top: 8, left: 8),
-                    sliver: SliverTitleWidget(title: "Broadcaster"),
+                        backgroundColor: Colors.transparent,
+                        automaticallyImplyLeading: false),
                   ),
-                ],
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) => Padding(
-                      padding: const EdgeInsets.only(left: 24),
-                      child: Text(filteredBroadcasterList[index]),
+                  sliverSearchBarWidget,
+                  if (filteredBroadcasterList.isNotEmpty) ...[
+                    const SliverPadding(
+                      padding: EdgeInsets.only(top: 8, left: 8),
+                      sliver: SliverTitleWidget(title: "Broadcaster"),
                     ),
-                    childCount: filteredBroadcasterList.length,
-                  ),
-                ),
-                if (filteredModeratorList.isNotEmpty) ...[
-                  const SliverPadding(
-                    padding: EdgeInsets.only(top: 8, left: 8),
-                    sliver: SliverTitleWidget(title: "Moderators"),
-                  )
-                ],
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) => Padding(
-                      padding: const EdgeInsets.only(left: 24),
-                      child: Text(filteredModeratorList[index]),
-                    ),
-                    childCount: filteredModeratorList.length,
-                  ),
-                ),
-                if (filteredVipList.isNotEmpty) ...[
-                  const SliverPadding(
-                    padding: EdgeInsets.only(top: 8, left: 8),
-                    sliver: SliverTitleWidget(title: "Community VIPs"),
-                  )
-                ],
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) => Padding(
-                      padding: const EdgeInsets.only(left: 24),
-                      child: Text(filteredVipList[index]),
-                    ),
-                    childCount: filteredVipList.length,
-                  ),
-                ),
-                if (filteredViewerList.isNotEmpty) ...[
-                  const SliverPadding(
-                    padding: EdgeInsets.only(top: 8, left: 8),
-                    sliver: SliverTitleWidget(title: "Viewers"),
-                  )
-                ],
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) {
-                      return Padding(
+                  ],
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) => Padding(
                         padding: const EdgeInsets.only(left: 24),
-                        child: Text(filteredViewerList[index]),
-                      );
-                    },
-                    childCount: filteredViewerList.length,
+                        child: Text(filteredBroadcasterList[index]),
+                      ),
+                      childCount: filteredBroadcasterList.length,
+                    ),
                   ),
-                ),
-              ],
+                  if (filteredModeratorList.isNotEmpty) ...[
+                    const SliverPadding(
+                      padding: EdgeInsets.only(top: 8, left: 8),
+                      sliver: SliverTitleWidget(title: "Moderators"),
+                    )
+                  ],
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) => Padding(
+                        padding: const EdgeInsets.only(left: 24),
+                        child: Text(filteredModeratorList[index]),
+                      ),
+                      childCount: filteredModeratorList.length,
+                    ),
+                  ),
+                  if (filteredVipList.isNotEmpty) ...[
+                    const SliverPadding(
+                      padding: EdgeInsets.only(top: 8, left: 8),
+                      sliver: SliverTitleWidget(title: "Community VIPs"),
+                    )
+                  ],
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) => Padding(
+                        padding: const EdgeInsets.only(left: 24),
+                        child: Text(filteredVipList[index]),
+                      ),
+                      childCount: filteredVipList.length,
+                    ),
+                  ),
+                  if (filteredViewerList.isNotEmpty) ...[
+                    const SliverPadding(
+                      padding: EdgeInsets.only(top: 8, left: 8),
+                      sliver: SliverTitleWidget(title: "Viewers"),
+                    )
+                  ],
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 24),
+                          child: Text(filteredViewerList[index]),
+                        );
+                      },
+                      childCount: filteredViewerList.length,
+                    ),
+                  ),
+                ],
+              ),
             );
           }
         },

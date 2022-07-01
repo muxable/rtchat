@@ -95,7 +95,7 @@ class ChatHistoryScreen extends StatelessWidget {
                     value: model.fontSize,
                     min: 12,
                     max: 36,
-                    divisions: 6,
+                    divisions: 12,
                     label: "${model.fontSize}px",
                     onChanged: (value) {
                       model.fontSize = value;
