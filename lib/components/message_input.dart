@@ -34,7 +34,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     if (text == "" || text.isEmpty) {
       return false;
     }
-    for (final mode in ChatMode.chatModes) {
+    for (final mode in ChatMode.values) {
       if (mode.title.startsWith(text)) {
         return true;
       }
@@ -59,7 +59,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
     final offset = renderBox.localToGlobal(Offset.zero);
     final lst =
-        ChatMode.chatModes.where((element) => element.title.startsWith(text));
+        ChatMode.values.where((element) => element.title.startsWith(text));
 
     // None to show
     if (lst.isEmpty) {
