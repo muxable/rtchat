@@ -45,7 +45,12 @@ class MessagesModel extends ChangeNotifier {
             }
           }
         } else if (event is ClearDeltaEvent) {
-          _messages = [ChatClearedEventModel()];
+          _messages = [
+            ChatClearedEventModel(
+              messageId: event.messageId,
+              timestamp: event.timestamp,
+            )
+          ];
           _tts?.stop();
         }
         notifyListeners();

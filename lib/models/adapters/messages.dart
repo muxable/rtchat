@@ -36,7 +36,13 @@ class UpdateDeltaEvent extends DeltaEvent {
 }
 
 class ClearDeltaEvent extends DeltaEvent {
-  const ClearDeltaEvent();
+  final String messageId;
+  final DateTime timestamp;
+
+  const ClearDeltaEvent({
+    required this.messageId,
+    required this.timestamp,
+  });
 }
 
 DeltaEvent? _toDeltaEvent(
@@ -107,7 +113,10 @@ DeltaEvent? _toDeltaEvent(
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
     case "clear":
-      return const ClearDeltaEvent();
+      return ClearDeltaEvent(
+        messageId: change.doc.id,
+        timestamp: data['timestamp'].toDate(),
+      );
     case "host":
       if (data['hosterChannelId'] == null) {
         // Since we might have some events saved without this field.
