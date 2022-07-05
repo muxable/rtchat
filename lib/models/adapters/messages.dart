@@ -35,6 +35,10 @@ class UpdateDeltaEvent extends DeltaEvent {
   const UpdateDeltaEvent(this.messageId, this.update);
 }
 
+class ClearDeltaEvent extends DeltaEvent {
+  const ClearDeltaEvent();
+}
+
 DeltaEvent? _toDeltaEvent(
     List<Emote> emotes, DocumentChange<Map<String, dynamic>> change) {
   final data = change.doc.data();
@@ -102,6 +106,8 @@ DeltaEvent? _toDeltaEvent(
           viewers: data['event']['viewers'],
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
+    case "clear":
+      return const ClearDeltaEvent();
     case "host":
       if (data['hosterChannelId'] == null) {
         // Since we might have some events saved without this field.
