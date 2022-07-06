@@ -141,9 +141,10 @@ class TwitchMessageWidget extends StatelessWidget {
       if (!styleModel.isDeletedMessagesVisible && model.deleted) {
         return const SizedBox();
       }
-      final theme = Theme.of(context);
-      final authorStyle = theme.textTheme.subtitle2!.copyWith(
-          color: styleModel.applyLightnessBoost(theme.brightness, color));
+      var authorStyle = Theme.of(context)
+          .textTheme
+          .subtitle2!
+          .copyWith(color: styleModel.applyLightnessBoost(context, color));
 
       final List<InlineSpan> children = [];
 
@@ -169,8 +170,7 @@ class TwitchMessageWidget extends StatelessWidget {
                             text: model.author.display, style: authorStyle));
                   }
                   final hslColor = HSLColor.fromColor(
-                      styleModel.applyLightnessBoost(
-                          Theme.of(context).brightness, color));
+                      styleModel.applyLightnessBoost(context, color));
                   final deg =
                       (orientation.pitch + orientation.roll + orientation.yaw) *
                           180 /
