@@ -285,12 +285,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                       key: Key(messages[index].messageId),
                       child: ChatHistoryMessage(
                           message: messages[index], channel: widget.channel)),
-                  findChildIndexCallback: (key) {
-                    final index = messages.indexWhere((element) {
-                      return key == Key(element.messageId);
-                    });
-                    return index >= 0 ? index : null;
-                  },
+                  findChildIndexCallback: (key) => messages
+                      .indexWhere((element) => key == Key(element.messageId)),
                   isPinnedBuilder: (index) {
                     final expiration = expirations[index];
                     if (expiration == null) {
