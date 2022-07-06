@@ -21,7 +21,3 @@ class SystemMessageModel extends MessageModel {
   SystemMessageModel({required this.text})
       : super(messageId: "", timestamp: DateTime.now());
 }
-
-class ChatClearedEventModel extends MessageModel {
-  ChatClearedEventModel() : super(messageId: "", timestamp: DateTime.now());
-}

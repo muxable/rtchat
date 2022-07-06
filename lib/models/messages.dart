@@ -44,9 +44,6 @@ class MessagesModel extends ChangeNotifier {
               }
             }
           }
-        } else if (event is ClearDeltaEvent) {
-          _messages = [ChatClearedEventModel()];
-          _tts?.stop();
         }
         notifyListeners();
       });

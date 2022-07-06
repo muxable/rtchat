@@ -185,10 +185,6 @@ class TtsModel extends ChangeNotifier {
     _pending.remove(messageId);
   }
 
-  void stop() {
-    _pending.clear();
-  }
-
   TtsModel.fromJson(Map<String, dynamic> json) {
     if (json['isBotMuted'] != null) {
       _isBotMuted = json['isBotMuted'];
