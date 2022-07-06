@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/chat_history/chat_cleared_event.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
 import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
@@ -257,8 +258,10 @@ class ChatHistoryMessage extends StatelessWidget {
         builder: (_, config, __) =>
             config.showEvent ? TwitchRaidingEventWidget(m) : Container(),
       );
+    } else if (m is ChatClearedEventModel) {
+      return ChatClearedEventWidget(m);
     } else {
-      throw AssertionError("invalid message type");
+      throw AssertionError("invalid message type $m");
     }
   }
 }
