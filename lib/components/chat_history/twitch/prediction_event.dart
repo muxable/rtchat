@@ -12,24 +12,26 @@ class TwitchPredictionEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return model.status != "canceled"
-        ? DecoratedEventWidget(
-            child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(model.title,
-                      style: Theme.of(context).textTheme.subtitle2)),
-              ...model.outcomes.map((outcome) {
-                final isWinner = model.status == "resolved" &&
-                    model.winningOutcomeId == outcome.id;
-                return _TwitchOutcomeWidget(
-                    outcome: outcome,
-                    isWinner: isWinner,
-                    totalPoints: model.totalPoints);
-              }).toList(),
-            ],
-          ))
+        ? Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ListTileTheme(
+              contentPadding: const EdgeInsets.all(0),
+              dense: true,
+              child: DecoratedEventWidget(
+                  child: ExpansionTile(
+                title: Text("Prediction - ${model.title}",
+                    style: Theme.of(context).textTheme.subtitle2),
+                children: model.outcomes.map((outcome) {
+                  final isWinner = model.status == "resolved" &&
+                      model.winningOutcomeId == outcome.id;
+                  return _TwitchOutcomeWidget(
+                      outcome: outcome,
+                      isWinner: isWinner,
+                      totalPoints: model.totalPoints);
+                }).toList(),
+              )),
+            ),
+          )
         : Container();
   }
 }
