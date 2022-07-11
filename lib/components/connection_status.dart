@@ -33,7 +33,7 @@ class ConnectionStatusWidget extends StatelessWidget {
                   height: 48,
                   alignment: Alignment.center,
                   color: Colors.red,
-                  child: Text("Connecting..."),
+                  child: const Text("Reconnecting..."),
                 );
               });
         });
