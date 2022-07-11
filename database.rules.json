@@ -1,24 +1,20 @@
 {
   "rules": {
-    "pullables": {
-      "$pullKey": {
-        ".read": true,
-        ".write": false
+    ".read": false,
+    ".write": false,
+    "userIds": {
+      "$provider": {
+        ".indexOn": ".value"
       }
     },
-    "streamers": {
-      ".indexOn": ["activeSessionId"],
-      ".read": "query.orderByChild == 'activeSessionId' && query.startAt == '\u0000' && query.endAt == '\uFFFF'",
-      ".write": false,
-      "$userId": {
-        ".read": true,
-        ".write": false
+    "agents": {
+      "$provider": {
+        ".indexOn": ".value"
       }
     },
-    "sessions": {
-      "$userId": {
-        ".read": "$userId === auth.uid",
-        ".write": false
+    "assignments": {
+      "$provider": {
+        ".indexOn": ".value"
       }
     },
     "sentinel": {
