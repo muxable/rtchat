@@ -6,7 +6,7 @@ import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/style.dart';
 
 void main() {
-  testWidgets('started prediction should have title and 0 progress',
+  testWidgets('minimized prediction should include title',
       (WidgetTester tester) async {
     final model = TwitchPredictionEventModel(
         timestamp: DateTime.now(),
@@ -20,20 +20,45 @@ void main() {
         ]);
     await tester.pumpWidget(buildWidget(model));
 
-    final findTitle = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText && widget.text.toPlainText() == 'Begin prediction');
+    final titleFinder = find.text('Prediction - Begin prediction');
+    final iconFinder = find.byIcon(Icons.expand_more);
 
-    final findPinkOutcome = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText && widget.text.toPlainText() == 'Heads');
+    expect(titleFinder, findsOneWidget);
+    expect(iconFinder, findsOneWidget);
+  });
 
-    final findBlueOutcome = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText && widget.text.toPlainText() == 'Tails');
+  testWidgets('expanded started prediction should have title and 0 progress',
+      (WidgetTester tester) async {
+    final model = TwitchPredictionEventModel(
+        timestamp: DateTime.now(),
+        messageId: 'prediction1',
+        title: 'Begin prediction',
+        status: 'in_progress',
+        endTime: DateTime.now(),
+        outcomes: [
+          TwitchPredictionOutcomeModel('outcome1', 0, 'pink', 'Heads'),
+          TwitchPredictionOutcomeModel('outcome2', 0, 'blue', 'Tails')
+        ]);
+    await tester.pumpWidget(buildWidget(model));
+
+    // Expand the tile
+    await tester.tap(find.byType(ListTile));
+    await tester.pump();
+
+    final titleFinder = find.text('Prediction - Begin prediction');
+
+    final iconFinder = find.byIcon(Icons.expand_more);
+
+    final findPinkOutcome = find.text('Heads');
+
+    final findBlueOutcome = find.text('Tails');
 
     final findProgressIndicator = find.byType(LinearProgressIndicator);
 
     final findIcon = find.byIcon(Icons.emoji_events_outlined);
 
-    expect(findTitle, findsOneWidget);
+    expect(titleFinder, findsOneWidget);
+    expect(iconFinder, findsOneWidget);
     expect(findPinkOutcome, findsOneWidget);
     expect(findBlueOutcome, findsOneWidget);
     expect(findIcon, findsNothing);
@@ -54,18 +79,17 @@ void main() {
         ]);
     await tester.pumpWidget(buildWidget(model));
 
-    final findTitle = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText &&
-        widget.text.toPlainText() == 'In Progress prediction');
+    // Expand the tile
+    await tester.tap(find.byType(ListTile));
+    await tester.pump();
 
-    final findPinkOutcome = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText && widget.text.toPlainText() == 'Yay');
+    final findTitle = find.text('Prediction - In Progress prediction');
 
-    final findBlueOutcome = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText && widget.text.toPlainText() == 'Nay');
+    final findPinkOutcome = find.text('Yay');
 
-    final findPercentage = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText && widget.text.toPlainText() == '50%');
+    final findBlueOutcome = find.text('Nay');
+
+    final findPercentage = find.text('50%');
 
     final findProgressIndicator = find.byType(LinearProgressIndicator);
 
@@ -95,15 +119,15 @@ void main() {
         ]);
     await tester.pumpWidget(buildWidget(model));
 
-    final findTitle = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText &&
-        widget.text.toPlainText() == 'Resolved prediction');
+    // Expand the tile
+    await tester.tap(find.byType(ListTile));
+    await tester.pump();
 
-    final findPinkOutcome = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText && widget.text.toPlainText() == 'Yes');
+    final findTitle = find.text('Prediction - Resolved prediction');
 
-    final findBlueOutcome = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText && widget.text.toPlainText() == 'No');
+    final findPinkOutcome = find.text('Yes');
+
+    final findBlueOutcome = find.text('No');
 
     final findProgressIndicator = find.byType(LinearProgressIndicator);
 
@@ -150,6 +174,6 @@ ChangeNotifierProvider<StyleModel> buildWidget(
         textDirection: TextDirection.ltr,
         child: MediaQuery(
             data: const MediaQueryData(),
-            child: TwitchPredictionEventWidget(model))),
+            child: Scaffold(body: TwitchPredictionEventWidget(model)))),
   );
 }
