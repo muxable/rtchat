@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/chat_mode.dart';
 import 'package:rtchat/models/commands.dart';
 
 class MessageInputWidget extends StatefulWidget {
@@ -19,6 +22,89 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   final _textEditingController = TextEditingController();
   final _chatInputFocusNode = FocusNode();
   var _isEmotePickerVisible = false;
+
+  OverlayEntry? entry;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  bool startsWithPossibleCommands(String text) {
+    if (text == "" || text.isEmpty) {
+      return false;
+    }
+    for (final mode in ChatMode.values) {
+      if (mode.title.startsWith(text)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void hideOverlay() {
+    entry?.remove();
+    entry = null;
+  }
+
+  void showOverlay(String text) {
+    // remove existing overlay, bc user can contiunously type a prefix string that matches a command
+    hideOverlay();
+
+    final overlay = Overlay.of(context)!;
+
+    // the renderbox of this widget
+    final renderBox = context.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+
+    final offset = renderBox.localToGlobal(Offset.zero);
+    final lst =
+        ChatMode.values.where((element) => element.title.startsWith(text));
+
+    // None to show
+    if (lst.isEmpty) {
+      hideOverlay();
+      return;
+    }
+
+    final lstSize = lst.length;
+    const listTileSize = 75; // the roughly size of a listTile
+    final shiftUp = min(lstSize * listTileSize, 300);
+
+    entry = OverlayEntry(builder: (context) {
+      return Positioned(
+        left: offset.dx,
+        top: offset.dy - shiftUp,
+        width: size.width,
+        child: Material(
+          child: SizedBox(
+            height: shiftUp.toDouble(),
+            child: ListView(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              primary: false,
+              children: lst.map((e) {
+                return ListTile(
+                  title: Text(e.title),
+                  subtitle: Text(e.subtitle),
+                  onTap: () {
+                    _textEditingController.text = e.title;
+                    hideOverlay();
+                    // move cursor position
+                    _textEditingController.selection =
+                        TextSelection.fromPosition(TextPosition(
+                            offset: _textEditingController.text.length));
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      );
+    });
+
+    overlay.insert(entry!);
+  }
 
   void sendMessage(String value) async {
     value = value.trim();
@@ -83,6 +169,11 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // remove overlay if keyboard is not visible
+    if (MediaQuery.of(context).viewInsets.bottom == 0) {
+      hideOverlay();
+    }
+
     return Material(
       child: Column(children: [
         Padding(
@@ -134,6 +225,11 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       border: InputBorder.none,
                       hintText: "Send a message..."),
                   onChanged: (text) {
+                    if (startsWithPossibleCommands(text)) {
+                      showOverlay(text);
+                    } else {
+                      hideOverlay();
+                    }
                     final filtered = text.replaceAll('\n', ' ');
                     if (filtered == text) {
                       return;
