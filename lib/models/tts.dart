@@ -13,6 +13,7 @@ class TtsModel extends ChangeNotifier {
   final _tts = FlutterTts();
   Future<void> _previousUtterance = Future.value();
   final Set<String> _pending = {};
+  var _isRandomVoiceEnabled = false;
   var _isBotMuted = false;
   var _isEmoteMuted = false;
   var _speed = Platform.isAndroid ? 0.8 : 0.395;
@@ -70,6 +71,15 @@ class TtsModel extends ChangeNotifier {
         SystemMessageModel(
             text: "Text-to-speech ${value ? "enabled" : "disabled"}"),
         force: true);
+    notifyListeners();
+  }
+
+  bool get isRandomVoiceEnabled {
+    return _isRandomVoiceEnabled;
+  }
+
+  set isRandomVoiceEnabled(bool value) {
+    _isRandomVoiceEnabled = value;
     notifyListeners();
   }
 
@@ -202,6 +212,9 @@ class TtsModel extends ChangeNotifier {
     if (json['isEmoteMuted'] != null) {
       _isEmoteMuted = json['isEmoteMuted'];
     }
+    if (json['isRandomVoiceEnabled'] != null) {
+      _isRandomVoiceEnabled = json['isRandomVoiceEnabled'];
+    }
     final userJson = json['mutedUsers'];
     if (userJson != null) {
       for (var user in userJson) {
@@ -213,6 +226,7 @@ class TtsModel extends ChangeNotifier {
   Map<String, dynamic> toJson() => {
         "isBotMuted": isBotMuted,
         "isEmoteMuted": isEmoteMuted,
+        "isRandomVoiceEnabled": isRandomVoiceEnabled,
         "pitch": pitch,
         "speed": speed,
         'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
