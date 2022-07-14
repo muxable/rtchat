@@ -11,14 +11,18 @@ class CloudTTSScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: MarkdownBody(
                 data: '''# High-Quality Text-to-Speech Voices
                     \n* It will make your life better
                     \n* Access to billions of languages
                     \n* Trillions of languages
                     \n* No more robot speech!''',
+                styleSheet: MarkdownStyleSheet(
+                  listBullet: Theme.of(context).textTheme.titleLarge,
+                  p: Theme.of(context).textTheme.titleLarge,
+                ),
               ),
             ),
             Expanded(
