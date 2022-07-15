@@ -20,7 +20,7 @@ class ProfilesAdapter {
       if (data == null || !data.containsKey("twitch")) {
         return null;
       }
-      final twitch = data['twitch']
+      final twitch = data['twitch'];
       return Channel(provider, twitch['id'], twitch['displayName']);
     });
   }
