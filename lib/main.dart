@@ -30,6 +30,7 @@ import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
+import 'package:rtchat/screens/settings/tts/cloud_tts.dart';
 import 'package:rtchat/screens/settings/events.dart';
 import 'package:rtchat/screens/settings/events/channel_point.dart';
 import 'package:rtchat/screens/settings/events/cheer.dart';
@@ -41,10 +42,12 @@ import 'package:rtchat/screens/settings/events/prediction.dart';
 import 'package:rtchat/screens/settings/events/raid.dart';
 import 'package:rtchat/screens/settings/events/raiding.dart';
 import 'package:rtchat/screens/settings/events/subscription.dart';
+import 'package:rtchat/screens/settings/tts/languages.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/tts.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
+import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/themes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -280,6 +283,12 @@ class _AppState extends State<App> {
             '/settings/audio-sources': (context) => const AudioSourcesScreen(),
             '/settings/chat-history': (context) => const ChatHistoryScreen(),
             '/settings/text-to-speech': (context) => const TextToSpeechScreen(),
+            '/settings/text-to-speech/cloud-tts': (context) =>
+                const CloudTTSScreen(),
+            '/settings/text-to-speech/languages': (context) =>
+                const LanguagesScreen(),
+            '/settings/text-to-speech/voices': (context) =>
+                const VoicesScreen(),
             '/settings/quick-links': (context) => const QuickLinksScreen(),
             '/settings/backup': (context) => const BackupScreen(),
             '/settings/events': (context) => const EventsScreen(),

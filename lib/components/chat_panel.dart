@@ -310,7 +310,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                 curve: Curves.easeInOut);
           },
         ),
-        ConnectionStatusWidget(),
+        const ConnectionStatusWidget(),
       ],
     );
   }
