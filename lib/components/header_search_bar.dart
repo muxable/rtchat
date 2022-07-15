@@ -19,7 +19,7 @@ class HeaderSearchBar extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurface,
           ),
           decoration: InputDecoration(
-            hintText: 'Search languages',
+            hintText: 'Search',
             isDense: true,
             border: InputBorder.none,
             hintStyle: TextStyle(
