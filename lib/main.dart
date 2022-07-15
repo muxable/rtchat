@@ -6,7 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -64,15 +63,6 @@ void main() async {
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent));
-
-  // Add remote config
-  FirebaseRemoteConfig.instance.setConfigSettings(RemoteConfigSettings(
-      minimumFetchInterval: const Duration(hours: 1),
-      fetchTimeout: const Duration(seconds: 10)));
-
-  await FirebaseRemoteConfig.instance
-      .setDefaults({'inline_events_enabled': kDebugMode});
-  await FirebaseRemoteConfig.instance.fetchAndActivate();
 
   // persistence isn't useful to us since we're using Firestore as an event
   // stream and it uses memory/cache space.

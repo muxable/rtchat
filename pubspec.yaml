@@ -30,7 +30,6 @@ dependencies:
   audioplayers: ^0.20.1
   metadata_fetch: ^0.4.1
   firebase_analytics: ^9.0.3
-  firebase_remote_config: ^2.0.0
   flutter_keyboard_visibility: ^5.0.3
   characters: ^1.2.0
   google_fonts: ^3.0.1
