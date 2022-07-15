@@ -21,8 +21,10 @@ class TtsModel extends ChangeNotifier {
   final Set<TwitchUserModel> _mutedUsers = {};
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
+  MessageModel? _activeMessage;
 
-  String getVocalization(MessageModel model) {
+  String getVocalization(MessageModel model,
+      {bool includeAuthorPrelude = false}) {
     if (model is TwitchMessageModel) {
       final text = model.tokenized
           .where((token) =>
@@ -45,6 +47,9 @@ class TtsModel extends ChangeNotifier {
         return "";
       }
       final author = model.author.displayName ?? model.author.login;
+      if (!includeAuthorPrelude) {
+        return text;
+      }
       return model.isAction ? "$author $text" : "$author said $text";
     } else if (model is StreamStateEventModel) {
       return model.isOnline ? "Stream is online" : "Stream is offline";
@@ -143,14 +148,21 @@ class TtsModel extends ChangeNotifier {
     }
 
     // make sure the message is in the future.
-    if (model is! SystemMessageModel) {
+    if (model is SystemMessageModel) {
       if (model.timestamp.isBefore(_lastMessageTime)) {
         return;
       }
       _lastMessageTime = model.timestamp;
     }
 
-    final vocalization = getVocalization(model);
+    final activeMessage = _activeMessage;
+    var includeAuthorPrelude = true;
+    if (activeMessage is TwitchMessageModel && model is TwitchMessageModel) {
+      includeAuthorPrelude = !(activeMessage.author == model.author);
+    }
+
+    final vocalization =
+        getVocalization(model, includeAuthorPrelude: includeAuthorPrelude);
 
     // if the vocalization is empty, skip the message
     if (vocalization.isEmpty) {
@@ -165,6 +177,8 @@ class TtsModel extends ChangeNotifier {
 
     await previous;
 
+    _activeMessage = model;
+
     if ((_isEnabled || model is SystemMessageModel) &&
         _pending.contains(model.messageId)) {
       try {
@@ -176,6 +190,8 @@ class TtsModel extends ChangeNotifier {
         FirebaseCrashlytics.instance.recordError(e, st);
       }
     }
+
+    _activeMessage = null;
 
     completer.complete();
     _pending.remove(model.messageId);
