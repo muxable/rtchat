@@ -186,6 +186,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               FocusManager.instance.primaryFocus?.unfocus(),
           onEndDrawerChanged: (isOpened) =>
               FocusManager.instance.primaryFocus?.unfocus(),
+          // disable drawer open gesture when keyboard is open to allow for
+          // command bar scrolling
+          drawerEnableOpenDragGesture:
+              MediaQuery.of(context).viewInsets.bottom == 0,
+          endDrawerEnableOpenDragGesture:
+              MediaQuery.of(context).viewInsets.bottom == 0,
           appBar: HeaderBarWidget(
               onChannelSelect: widget.onChannelSelect,
               channel: widget.channel,
