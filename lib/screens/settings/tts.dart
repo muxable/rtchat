@@ -42,7 +42,7 @@ class TextToSpeechScreen extends StatelessWidget {
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'English (US)',
+                              model.language.displayName(context),
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                           ),

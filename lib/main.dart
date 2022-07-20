@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
@@ -252,6 +253,9 @@ class _AppState extends State<App> {
           theme: Themes.lightTheme,
           darkTheme: Themes.darkTheme,
           themeMode: layoutModel.themeMode,
+          localizationsDelegates: const [
+            LocaleNamesLocalizationsDelegate(),
+          ],
           navigatorObservers: [App.observer],
           initialRoute: '/',
           routes: {

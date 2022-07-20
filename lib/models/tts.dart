@@ -8,11 +8,13 @@ import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/tts/language.dart';
 
 class TtsModel extends ChangeNotifier {
   final _tts = FlutterTts();
   Future<void> _previousUtterance = Future.value();
   final Set<String> _pending = {};
+  var _language = Language();
   var _isRandomVoiceEnabled = false;
   var _isBotMuted = false;
   var _isEmoteMuted = false;
@@ -76,6 +78,15 @@ class TtsModel extends ChangeNotifier {
         SystemMessageModel(
             text: "Text-to-speech ${value ? "enabled" : "disabled"}"),
         force: true);
+    notifyListeners();
+  }
+
+  Language get language {
+    return _language;
+  }
+
+  set language(Language language) {
+    _language = language;
     notifyListeners();
   }
 
@@ -231,6 +242,9 @@ class TtsModel extends ChangeNotifier {
     if (json['isRandomVoiceEnabled'] != null) {
       _isRandomVoiceEnabled = json['isRandomVoiceEnabled'];
     }
+    if (json['language'] != null) {
+      _language = Language(json['language']);
+    }
     final userJson = json['mutedUsers'];
     if (userJson != null) {
       for (var user in userJson) {
@@ -243,6 +257,7 @@ class TtsModel extends ChangeNotifier {
         "isBotMuted": isBotMuted,
         "isEmoteMuted": isEmoteMuted,
         "isRandomVoiceEnabled": isRandomVoiceEnabled,
+        "language": language.languageCode,
         "pitch": pitch,
         "speed": speed,
         'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
