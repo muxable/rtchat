@@ -14,7 +14,6 @@ class LanguagesScreen extends StatefulWidget {
 class LanguagesScreenState extends State<LanguagesScreen> {
   var _isSearching = false;
   late final HeaderSearchBar searchBarWidget;
-  List<String> languages = [];
   List<String> filteredLanguages = [];
   Widget animatedHeader = const Align(
     alignment: Alignment.centerLeft,
@@ -34,11 +33,11 @@ class LanguagesScreenState extends State<LanguagesScreen> {
   void onFilteredByText(String searchBarText) {
     if (searchBarText.isEmpty) {
       setState(() {
-        filteredLanguages = languages;
+        filteredLanguages = supportedLanguages;
       });
     } else {
       Future.wait([
-        filterList(languages, searchBarText)
+        filterList(supportedLanguages, searchBarText)
             .then((value) => filteredLanguages = value),
       ]);
       setState(() {
@@ -49,7 +48,6 @@ class LanguagesScreenState extends State<LanguagesScreen> {
 
   @override
   void initState() {
-    languages.addAll(supportedLanguages);
     filteredLanguages.addAll(supportedLanguages);
     searchBarWidget = HeaderSearchBar(
       onFilterBySearchBarText: onFilteredByText,
@@ -74,7 +72,7 @@ class LanguagesScreenState extends State<LanguagesScreen> {
                 if (_isSearching) {
                   animatedHeader = searchBarWidget;
                 } else {
-                  filteredLanguages = languages;
+                  filteredLanguages = supportedLanguages;
                   animatedHeader = const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
