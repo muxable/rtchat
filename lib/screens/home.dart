@@ -10,6 +10,7 @@ import 'package:rtchat/components/drawer/sidebar.dart';
 import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/stream_preview.dart';
+import 'package:rtchat/eager_drag_recognizer.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -94,20 +95,29 @@ class _ResizableWidgetState extends State<ResizableWidget> {
           child: widget.child,
         ),
         if (widget.resizable)
-          GestureDetector(
-            onHorizontalDragStart: (details) {
-              setState(() {
-                _width = widget.width;
-              });
-            },
-            onHorizontalDragEnd: (details) {
-              widget.onResizeWidth(
-                  _width.clamp(57, MediaQuery.of(context).size.width - 400));
-            },
-            onHorizontalDragUpdate: (details) {
-              setState(() {
-                _width += details.delta.dx;
-              });
+          RawGestureDetector(
+            gestures: {
+              EagerHorizontalDragRecognizer:
+                  GestureRecognizerFactoryWithHandlers<
+                      EagerHorizontalDragRecognizer>(
+                () => EagerHorizontalDragRecognizer()
+                  ..onStart = (details) {
+                    setState(() {
+                      _width = widget.width;
+                    });
+                  }
+                  ..onEnd = (details) {
+                    widget.onResizeWidth(
+                      _width.clamp(57, MediaQuery.of(context).size.width - 400),
+                    );
+                  }
+                  ..onUpdate = (details) {
+                    setState(() {
+                      _width += details.delta.dx;
+                    });
+                  },
+                (instance) {},
+              )
             },
             child: const SizedBox(
               height: double.infinity,
