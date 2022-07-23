@@ -177,21 +177,6 @@ class _AppState extends State<App> {
               widget.prefs.setString('style', jsonEncode(model.toJson()));
             });
         }),
-        ChangeNotifierProxyProvider<UserModel, TwitchBadgeModel>(
-            create: (context) {
-          final model = TwitchBadgeModel.fromJson(
-              jsonDecode(widget.prefs.getString("twitch_badge") ?? "{}"));
-          model.channel =
-              Provider.of<UserModel>(context, listen: false).activeChannel;
-          return model
-            ..addListener(() {
-              widget.prefs
-                  .setString('twitch_badge', jsonEncode(model.toJson()));
-            });
-        }, update: (context, userModel, model) {
-          model!.channel = userModel.activeChannel;
-          return model;
-        }),
         ChangeNotifierProvider(create: (context) {
           final model = CommandsModel.fromJson(
               jsonDecode(widget.prefs.getString("commands") ?? "{}"));
