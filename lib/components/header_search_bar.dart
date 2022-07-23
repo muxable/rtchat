@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 class HeaderSearchBar extends StatelessWidget {
-  const HeaderSearchBar({Key? key}) : super(key: key);
+  final void Function(String) onFilterBySearchBarText;
+
+  const HeaderSearchBar({Key? key, required this.onFilterBySearchBarText})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +29,9 @@ class HeaderSearchBar extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
+          onChanged: (value) async {
+            onFilterBySearchBarText(value);
+          },
         ),
       ),
     );

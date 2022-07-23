@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
@@ -121,14 +122,17 @@ class _AppState extends State<App> {
               widget.prefs.setString('layout', jsonEncode(model.toJson()));
             });
         }),
-        ChangeNotifierProvider(create: (context) {
-          final model = TtsModel.fromJson(
-              jsonDecode(widget.prefs.getString("tts") ?? "{}"));
-          return model
-            ..addListener(() {
-              widget.prefs.setString('tts', jsonEncode(model.toJson()));
-            });
-        }),
+        ChangeNotifierProxyProvider<UserModel, TtsModel>(
+          create: (context) {
+            final model = TtsModel.fromJson(
+                jsonDecode(widget.prefs.getString("tts") ?? "{}"));
+            return model
+              ..addListener(() {
+                widget.prefs.setString('tts', jsonEncode(model.toJson()));
+              });
+          },
+          update: (context, userModel, model) => model!..update(userModel),
+        ),
         ChangeNotifierProxyProvider2<UserModel, TtsModel, MessagesModel>(
           create: (context) {
             final model = MessagesModel();
@@ -237,6 +241,9 @@ class _AppState extends State<App> {
           theme: Themes.lightTheme,
           darkTheme: Themes.darkTheme,
           themeMode: layoutModel.themeMode,
+          localizationsDelegates: const [
+            LocaleNamesLocalizationsDelegate(),
+          ],
           navigatorObservers: [App.observer],
           initialRoute: '/',
           routes: {
