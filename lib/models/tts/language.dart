@@ -8,7 +8,7 @@ const supportedLanguages = [
   'bg', //    Bulgarian
   'ca', //    Catalan
   'zh', //    Chinese
-  'zh-HK', // Chinese (Hong Kong)
+  'zh-hk', // Chinese (Hong Kong)
   'cs', //    Czech
   'da', //    Danish
   'nl', //    Dutch
@@ -54,6 +54,15 @@ class Language {
   Language([this.languageCode = 'en']);
 
   String displayName(BuildContext context) {
+    // LocaleNames requires country codes to be uppercase
+    if (languageCode.contains('-')) {
+      final index = languageCode.indexOf('-');
+      final countryCode = languageCode.substring(index).toUpperCase();
+      final code = languageCode
+          .replaceRange(index, null, countryCode)
+          .replaceAll('-', '_');
+      return LocaleNames.of(context)!.nameOf(code) ?? '';
+    }
     final code = languageCode.replaceAll('-', '_');
     return LocaleNames.of(context)!.nameOf(code) ?? '';
   }
