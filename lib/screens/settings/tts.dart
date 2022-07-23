@@ -22,36 +22,47 @@ class TextToSpeechScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Languages",
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
-                            fontWeight: FontWeight.bold,
+                        if (!model.isSupportedLanguage)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Languages",
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              OutlinedButton(
+                                onPressed: () => Navigator.pushNamed(
+                                  context,
+                                  '/settings/text-to-speech/languages',
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                      width: 2,
+                                      color: Theme.of(context).dividerColor),
+                                ),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    model.language.displayName(context),
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text("Voices",
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.secondary,
+                                fontWeight: FontWeight.bold,
+                              )),
                         ),
-                        OutlinedButton(
-                          onPressed: () => Navigator.pushNamed(
-                            context,
-                            '/settings/text-to-speech/languages',
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
-                                width: 2,
-                                color: Theme.of(context).dividerColor),
-                          ),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              model.language.displayName(context),
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                          ),
-                        ),
-                        Text("Voices",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary,
-                              fontWeight: FontWeight.bold,
-                            )),
                       ],
                     ),
                   ),

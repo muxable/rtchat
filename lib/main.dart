@@ -122,14 +122,17 @@ class _AppState extends State<App> {
               widget.prefs.setString('layout', jsonEncode(model.toJson()));
             });
         }),
-        ChangeNotifierProvider(create: (context) {
-          final model = TtsModel.fromJson(
-              jsonDecode(widget.prefs.getString("tts") ?? "{}"));
-          return model
-            ..addListener(() {
-              widget.prefs.setString('tts', jsonEncode(model.toJson()));
-            });
-        }),
+        ChangeNotifierProxyProvider<UserModel, TtsModel>(
+          create: (context) {
+            final model = TtsModel.fromJson(
+                jsonDecode(widget.prefs.getString("tts") ?? "{}"));
+            return model
+              ..addListener(() {
+                widget.prefs.setString('tts', jsonEncode(model.toJson()));
+              });
+          },
+          update: (context, userModel, model) => model!..update(userModel),
+        ),
         ChangeNotifierProxyProvider2<UserModel, TtsModel, MessagesModel>(
           create: (context) {
             final model = MessagesModel();
