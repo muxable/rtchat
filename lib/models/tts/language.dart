@@ -63,7 +63,6 @@ class Language {
           .replaceAll('-', '_');
       return LocaleNames.of(context)!.nameOf(code) ?? '';
     }
-    final code = languageCode.replaceAll('-', '_');
-    return LocaleNames.of(context)!.nameOf(code) ?? '';
+    return LocaleNames.of(context)!.nameOf(languageCode) ?? '';
   }
 }
