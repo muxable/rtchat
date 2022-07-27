@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/models/adapters/actions.dart';
@@ -52,6 +51,35 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     return hasSlash;
   }
 
+  Widget commandChips() {
+    final model = Provider.of<CommandsModel>(context, listen: false);
+    final commands = model.commandList;
+
+    return SizedBox(
+      height: 300.0,
+      child: Wrap(
+        direction: Axis.horizontal,
+        children: [
+          for (var command in commands)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: ActionChip(
+                backgroundColor: Color.fromARGB(255, 97, 101, 150),
+                label: Text(command.command),
+                onPressed: () {
+                  ActionsAdapter.instance.send(widget.channel, command.command);
+
+                  model.addCommand(Command(command.command, DateTime.now()));
+                  _chatInputFocusNode.unfocus();
+                  hideOverlay();
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   void hideOverlay() {
     entry?.remove();
     entry = null;
@@ -70,41 +98,20 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     final offset = renderBox.localToGlobal(Offset.zero);
     final lst =
         ChatMode.values.where((element) => element.title.startsWith(text));
-    final exclaimationList = Provider.of<CommandsModel>(context, listen: false)
-        .commandList
-        .where((command) => command.command.startsWith(text));
 
-    List<Widget> commands = [];
-    if (type == CommandType.slash) {
-      commands = lst.map((e) {
-        return ListTile(
-          title: Text(e.title),
-          subtitle: Text(e.subtitle),
-          onTap: () {
-            _textEditingController.text = e.title;
-            hideOverlay();
-            // move cursor position
-            _textEditingController.selection = TextSelection.fromPosition(
-                TextPosition(offset: _textEditingController.text.length));
-          },
-        );
-      }).toList();
-    } else {
-      commands = exclaimationList.map((e) {
-        final formatter = DateFormat("MM/dd hh:mm a");
-        return ListTile(
-          title: Text(e.command),
-          subtitle: Text("last used: ${formatter.format(e.timeLastUsed)}"),
-          onTap: () {
-            _textEditingController.text = e.command;
-            hideOverlay();
-            // move cursor position
-            _textEditingController.selection = TextSelection.fromPosition(
-                TextPosition(offset: _textEditingController.text.length));
-          },
-        );
-      }).toList();
-    }
+    final commands = lst.map((e) {
+      return ListTile(
+        title: Text(e.title),
+        subtitle: Text(e.subtitle),
+        onTap: () {
+          _textEditingController.text = e.title;
+          hideOverlay();
+          // move cursor position
+          _textEditingController.selection = TextSelection.fromPosition(
+              TextPosition(offset: _textEditingController.text.length));
+        },
+      );
+    }).toList();
 
     // None to show
     if (commands.isEmpty) {
@@ -122,15 +129,17 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
         top: offset.dy - shiftUp,
         width: size.width,
         child: Material(
-          child: SizedBox(
-            height: shiftUp.toDouble(),
-            child: ListView(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              primary: false,
-              children: commands,
-            ),
-          ),
+          child: type == CommandType.exclamation
+              ? commandChips()
+              : SizedBox(
+                  height: shiftUp.toDouble(),
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    primary: false,
+                    children: commands,
+                  ),
+                ),
         ),
       );
     });
@@ -151,36 +160,36 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     _textEditingController.clear();
   }
 
-  Widget _buildCommandBar(BuildContext context) {
-    return KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
-      return Consumer<CommandsModel>(builder: (context, commandsModel, child) {
-        if (!isKeyboardVisible || commandsModel.commandList.isEmpty) {
-          return Container();
-        }
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SizedBox(
-            height: 48,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: commandsModel.commandList.length,
-              itemBuilder: (context, index) => TextButton(
-                child: Text(commandsModel.commandList[index].command),
-                onPressed: () {
-                  ActionsAdapter.instance.send(
-                      widget.channel, commandsModel.commandList[index].command);
-                  commandsModel.addCommand(Command(
-                      commandsModel.commandList[index].command,
-                      DateTime.now()));
-                  _chatInputFocusNode.unfocus();
-                },
-              ),
-            ),
-          ),
-        );
-      });
-    });
-  }
+  // Widget _buildCommandBar(BuildContext context) {
+  //   return KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
+  //     return Consumer<CommandsModel>(builder: (context, commandsModel, child) {
+  //       if (!isKeyboardVisible || commandsModel.commandList.isEmpty) {
+  //         return Container();
+  //       }
+  //       return Padding(
+  //         padding: const EdgeInsets.symmetric(horizontal: 16),
+  //         child: SizedBox(
+  //           height: 48,
+  //           child: ListView.builder(
+  //             scrollDirection: Axis.horizontal,
+  //             itemCount: commandsModel.commandList.length,
+  //             itemBuilder: (context, index) => TextButton(
+  //               child: Text(commandsModel.commandList[index].command),
+  //               onPressed: () {
+  //                 ActionsAdapter.instance.send(
+  //                     widget.channel, commandsModel.commandList[index].command);
+  //                 commandsModel.addCommand(Command(
+  //                     commandsModel.commandList[index].command,
+  //                     DateTime.now()));
+  //                 _chatInputFocusNode.unfocus();
+  //               },
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //     });
+  //   });
+  // }
 
   Widget _buildEmotePicker(BuildContext context) {
     return EmotePickerWidget(
@@ -257,34 +266,14 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       border: InputBorder.none,
                       hintText: "Send a message..."),
                   onChanged: (text) {
-                    // exlaimation prefix
-                    // if (startsWithsExlamination(text)) {
-                    //   setState(() {
-                    //     _inputStartWithsExlamination = true;
-                    //   });
-                    //   showOverlay(text);
-                    // } else {
-                    //   if (_inputStartWithsExlamination) {
-                    //     setState(() {
-                    //       _inputStartWithsExlamination = false;
-                    //     });
-                    //   }
-                    // }
-                    // exlaimation prefix
-                    // if (startsWithsExlamination(text)) {
-                    //   showOverlay(text);
-                    // } else {
-                    //   hideOverlay();
-                    // }
-
                     // slash prefix
                     if (startsWithPossibleCommands(text)) {
                       showOverlay(text, CommandType.slash);
-                    } else if (startsWithsExlamination(text)) {
-                      showOverlay(text, CommandType.exclamation);
                     } else {
                       hideOverlay();
+                      showOverlay(text, CommandType.exclamation);
                     }
+
                     final filtered = text.replaceAll('\n', ' ');
                     if (filtered == text) {
                       return;
@@ -301,9 +290,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             ]),
           ),
         ),
-        if (_textEditingController.value.text.isEmpty) ...[
-          _buildCommandBar(context),
-        ],
+        // if (_textEditingController.value.text.isEmpty) ...[
+        //   _buildCommandBar(context),
+        // ],
         _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
       ]),
     );
