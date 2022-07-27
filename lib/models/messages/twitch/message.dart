@@ -3,6 +3,7 @@ import 'package:linkify/linkify.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
+import 'package:rtchat/models/messages/twitch/reply.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
 class EmoteData {
@@ -161,6 +162,7 @@ Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
 class TwitchMessageModel extends MessageModel {
   final TwitchUserModel author;
   final String message;
+  final TwitchMessageReplyModel? reply;
   final Map<String, dynamic> tags;
   final List<Emote> thirdPartyEmotes;
   final bool deleted;
@@ -170,6 +172,7 @@ class TwitchMessageModel extends MessageModel {
       {required String messageId,
       required this.author,
       required this.message,
+      this.reply,
       required this.tags,
       required this.thirdPartyEmotes,
       required DateTime timestamp,
@@ -208,6 +211,10 @@ class TwitchMessageModel extends MessageModel {
     tokens = tokenizeTags(tokens);
     tokens = tokenizeEmotes(tokens, thirdPartyEmotes);
 
+    // remove '@username' from a reply's message
+    if (reply != null) {
+      return tokens.toList()..removeAt(0);
+    }
     return tokens.toList();
   }
 }

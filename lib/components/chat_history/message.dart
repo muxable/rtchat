@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/chat_history/chat_cleared_event.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
 import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
@@ -30,6 +31,7 @@ import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class ChatHistoryMessage extends StatelessWidget {
   final MessageModel message;
@@ -48,7 +50,7 @@ class ChatHistoryMessage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: TwitchMessageWidget(m),
         );
-        if (layoutModel.isInteractionLockable && layoutModel.locked) {
+        if (layoutModel.locked) {
           return child;
         }
         final userModel = Provider.of<UserModel>(context, listen: false);
@@ -69,73 +71,90 @@ class ChatHistoryMessage extends StatelessWidget {
                     context: context,
                     builder: (context) {
                       return Dialog(
-                        child: ListView(shrinkWrap: true, children: [
-                          Consumer<TtsModel>(
-                              builder: (context, ttsModel, child) {
-                            if (ttsModel.isMuted(m.author)) {
-                              return ListTile(
-                                  leading: const Icon(Icons.volume_up_rounded,
-                                      color: Colors.deepPurpleAccent),
-                                  title: Text('Unmute ${m.author.displayName}'),
+                        child: ListView(
+                            shrinkWrap: true,
+                            primary: false,
+                            children: [
+                              Consumer<TtsModel>(
+                                  builder: (context, ttsModel, child) {
+                                if (ttsModel.isMuted(m.author)) {
+                                  return ListTile(
+                                      leading: const Icon(
+                                          Icons.volume_up_rounded,
+                                          color: Colors.deepPurpleAccent),
+                                      title: Text(
+                                          'Unmute ${m.author.displayName}'),
+                                      onTap: () {
+                                        ttsModel.unmute(m.author);
+                                        Navigator.pop(context);
+                                      });
+                                }
+                                return ListTile(
+                                    leading: const Icon(
+                                        Icons.volume_off_rounded,
+                                        color: Colors.redAccent),
+                                    title: Text('Mute ${m.author.displayName}'),
+                                    onTap: () {
+                                      ttsModel.mute(m.author);
+                                      Navigator.pop(context);
+                                    });
+                              }),
+                              ListTile(
+                                  leading: const Icon(Icons.delete,
+                                      color: Colors.redAccent),
+                                  title: const Text('Delete Message'),
                                   onTap: () {
-                                    ttsModel.unmute(m.author);
+                                    ActionsAdapter.instance
+                                        .delete(channel, m.messageId);
                                     Navigator.pop(context);
-                                  });
-                            }
-                            return ListTile(
-                                leading: const Icon(Icons.volume_off_rounded,
-                                    color: Colors.redAccent),
-                                title: Text('Mute ${m.author.displayName}'),
-                                onTap: () {
-                                  ttsModel.mute(m.author);
-                                  Navigator.pop(context);
-                                });
-                          }),
-                          ListTile(
-                              leading: const Icon(Icons.delete,
-                                  color: Colors.redAccent),
-                              title: const Text('Delete Message'),
-                              onTap: () {
-                                ActionsAdapter.instance
-                                    .delete(channel, m.messageId);
-                                Navigator.pop(context);
-                              }),
-                          ListTile(
-                              leading: const Icon(Icons.timer_outlined,
-                                  color: Colors.orangeAccent),
-                              title: Text('Timeout ${m.author.displayName}'),
-                              onTap: () {
-                                Navigator.pop(context, true);
-                              }),
-                          ListTile(
-                              leading: const Icon(
-                                  Icons.dnd_forwardslash_outlined,
-                                  color: Colors.redAccent),
-                              title: Text('Ban ${m.author.displayName}'),
-                              onTap: () {
-                                ActionsAdapter.instance.ban(channel,
-                                    m.author.login, "banned by streamer");
-                                Navigator.pop(context);
-                              }),
-                          ListTile(
-                              leading: const Icon(Icons.circle_outlined,
-                                  color: Colors.greenAccent),
-                              title: Text('Unban ${m.author.displayName}'),
-                              onTap: () {
-                                ActionsAdapter.instance
-                                    .unban(channel, m.author.login);
-                                Navigator.pop(context);
-                              }),
-                          ListTile(
-                              leading: const Icon(Icons.copy_outlined,
-                                  color: Colors.greenAccent),
-                              title: const Text('Copy message'),
-                              onTap: () {
-                                Clipboard.setData(
-                                    ClipboardData(text: m.message));
-                                Navigator.pop(context);
-                              }),
-                        ]),
+                                  }),
+                              ListTile(
+                                  leading: const Icon(Icons.timer_outlined,
+                                      color: Colors.orangeAccent),
+                                  title:
+                                      Text('Timeout ${m.author.displayName}'),
+                                  onTap: () {
+                                    Navigator.pop(context, true);
+                                  }),
+                              ListTile(
+                                  leading: const Icon(
+                                      Icons.dnd_forwardslash_outlined,
+                                      color: Colors.redAccent),
+                                  title: Text('Ban ${m.author.displayName}'),
+                                  onTap: () {
+                                    ActionsAdapter.instance.ban(channel,
+                                        m.author.login, "banned by streamer");
+                                    Navigator.pop(context);
+                                  }),
+                              ListTile(
+                                  leading: const Icon(Icons.circle_outlined,
+                                      color: Colors.greenAccent),
+                                  title: Text('Unban ${m.author.displayName}'),
+                                  onTap: () {
+                                    ActionsAdapter.instance
+                                        .unban(channel, m.author.login);
+                                    Navigator.pop(context);
+                                  }),
+                              ListTile(
+                                  leading: const Icon(Icons.copy_outlined,
+                                      color: Colors.greenAccent),
+                                  title: const Text('Copy message'),
+                                  onTap: () {
+                                    Clipboard.setData(
+                                        ClipboardData(text: m.message));
+                                    Navigator.pop(context);
+                                  }),
+                              ListTile(
+                                  leading: const Icon(Icons.link_outlined,
+                                      color: Colors.blueAccent),
+                                  title: Text(
+                                      'View ${m.author.displayName}\'s profile'),
+                                  onTap: () {
+                                    launchUrlString(
+                                        "https://www.twitch.tv/${m.author.displayName}");
+                                    Navigator.pop(context);
+                                  }),
+                            ]),
                       );
                     });
                 if (showTimeoutDialog == true) {
@@ -239,8 +258,10 @@ class ChatHistoryMessage extends StatelessWidget {
         builder: (_, config, __) =>
             config.showEvent ? TwitchRaidingEventWidget(m) : Container(),
       );
+    } else if (m is ChatClearedEventModel) {
+      return ChatClearedEventWidget(m);
     } else {
-      throw AssertionError("invalid message type");
+      throw AssertionError("invalid message type $m");
     }
   }
 }

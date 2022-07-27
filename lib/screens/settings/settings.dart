@@ -176,15 +176,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               layoutModel.isStatsVisible = value;
             },
           ),
-          SwitchListTile.adaptive(
-            title: const Text('Disable interaction when layout locked'),
-            subtitle: const Text(
-                'Useful for rain streams to avoid triggering the screen'),
-            value: layoutModel.isInteractionLockable,
-            onChanged: (value) {
-              layoutModel.isInteractionLockable = value;
-            },
-          ),
           const Divider(),
           FutureBuilder(
               future: canLaunchUrlString(discordUrl),

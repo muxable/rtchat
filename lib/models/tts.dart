@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -8,11 +9,16 @@ import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/tts/language.dart';
+import 'package:rtchat/models/user.dart';
 
 class TtsModel extends ChangeNotifier {
   final _tts = FlutterTts();
   Future<void> _previousUtterance = Future.value();
   final Set<String> _pending = {};
+  var _language = Language();
+  var _isSupportedLanguage = false;
+  var _isRandomVoiceEnabled = false;
   var _isBotMuted = false;
   var _isEmoteMuted = false;
   var _speed = Platform.isAndroid ? 0.8 : 0.395;
@@ -21,8 +27,41 @@ class TtsModel extends ChangeNotifier {
   final Set<TwitchUserModel> _mutedUsers = {};
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
+  MessageModel? _activeMessage;
 
-  String getVocalization(MessageModel model) {
+  void update(UserModel model) async {
+    if (model.activeChannel == null) {
+      _isSupportedLanguage = false;
+      _language = Language();
+      return;
+    }
+    String language = await _streamLanguage(
+      provider: model.activeChannel!.provider,
+      channelId: model.activeChannel!.channelId,
+    );
+    _isSupportedLanguage = !(language == 'other' || language == 'asl');
+    _language = _isSupportedLanguage ? Language(language) : Language();
+    notifyListeners();
+  }
+
+  final getStatistics =
+      FirebaseFunctions.instance.httpsCallable("getStatistics");
+
+  Future<String> _streamLanguage(
+      {required String provider, required String channelId}) async {
+    final statistics = await getStatistics({
+      "provider": provider,
+      "channelId": channelId,
+    });
+    switch (provider) {
+      case "twitch":
+        return statistics.data['language'];
+    }
+    throw "invalid provider";
+  }
+
+  String getVocalization(MessageModel model,
+      {bool includeAuthorPrelude = false}) {
     if (model is TwitchMessageModel) {
       final text = model.tokenized
           .where((token) =>
@@ -45,6 +84,9 @@ class TtsModel extends ChangeNotifier {
         return "";
       }
       final author = model.author.displayName ?? model.author.login;
+      if (!includeAuthorPrelude) {
+        return text;
+      }
       return model.isAction ? "$author $text" : "$author said $text";
     } else if (model is StreamStateEventModel) {
       return model.isOnline ? "Stream is online" : "Stream is offline";
@@ -68,8 +110,35 @@ class TtsModel extends ChangeNotifier {
     }
     say(
         SystemMessageModel(
-            text: "Text-to-speech ${value ? "enabled" : "disabled"}"),
+            text: "Text to speech ${value ? "enabled" : "disabled"}"),
         force: true);
+    notifyListeners();
+  }
+
+  Language get language {
+    return _language;
+  }
+
+  set language(Language language) {
+    _language = language;
+    notifyListeners();
+  }
+
+  bool get isSupportedLanguage {
+    return _isSupportedLanguage;
+  }
+
+  set isSupportedLanguage(bool isSupportedLanguage) {
+    _isSupportedLanguage = isSupportedLanguage;
+    notifyListeners();
+  }
+
+  bool get isRandomVoiceEnabled {
+    return _isRandomVoiceEnabled;
+  }
+
+  set isRandomVoiceEnabled(bool value) {
+    _isRandomVoiceEnabled = value;
     notifyListeners();
   }
 
@@ -143,14 +212,21 @@ class TtsModel extends ChangeNotifier {
     }
 
     // make sure the message is in the future.
-    if (model is! SystemMessageModel) {
+    if (model is SystemMessageModel) {
       if (model.timestamp.isBefore(_lastMessageTime)) {
         return;
       }
       _lastMessageTime = model.timestamp;
     }
 
-    final vocalization = getVocalization(model);
+    final activeMessage = _activeMessage;
+    var includeAuthorPrelude = true;
+    if (activeMessage is TwitchMessageModel && model is TwitchMessageModel) {
+      includeAuthorPrelude = !(activeMessage.author == model.author);
+    }
+
+    final vocalization =
+        getVocalization(model, includeAuthorPrelude: includeAuthorPrelude);
 
     // if the vocalization is empty, skip the message
     if (vocalization.isEmpty) {
@@ -165,6 +241,8 @@ class TtsModel extends ChangeNotifier {
 
     await previous;
 
+    _activeMessage = model;
+
     if ((_isEnabled || model is SystemMessageModel) &&
         _pending.contains(model.messageId)) {
       try {
@@ -177,12 +255,18 @@ class TtsModel extends ChangeNotifier {
       }
     }
 
+    _activeMessage = null;
+
     completer.complete();
     _pending.remove(model.messageId);
   }
 
   void unsay(String messageId) {
     _pending.remove(messageId);
+  }
+
+  void stop() {
+    _pending.clear();
   }
 
   TtsModel.fromJson(Map<String, dynamic> json) {
@@ -198,6 +282,12 @@ class TtsModel extends ChangeNotifier {
     if (json['isEmoteMuted'] != null) {
       _isEmoteMuted = json['isEmoteMuted'];
     }
+    if (json['isRandomVoiceEnabled'] != null) {
+      _isRandomVoiceEnabled = json['isRandomVoiceEnabled'];
+    }
+    if (json['language'] != null) {
+      _language = Language(json['language']);
+    }
     final userJson = json['mutedUsers'];
     if (userJson != null) {
       for (var user in userJson) {
@@ -209,6 +299,8 @@ class TtsModel extends ChangeNotifier {
   Map<String, dynamic> toJson() => {
         "isBotMuted": isBotMuted,
         "isEmoteMuted": isEmoteMuted,
+        "isRandomVoiceEnabled": isRandomVoiceEnabled,
+        "language": language.languageCode,
         "pitch": pitch,
         "speed": speed,
         'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),

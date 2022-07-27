@@ -12,6 +12,7 @@ import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
+import 'package:rtchat/models/messages/twitch/reply.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -34,6 +35,16 @@ class UpdateDeltaEvent extends DeltaEvent {
   const UpdateDeltaEvent(this.messageId, this.update);
 }
 
+class ClearDeltaEvent extends DeltaEvent {
+  final String messageId;
+  final DateTime timestamp;
+
+  const ClearDeltaEvent({
+    required this.messageId,
+    required this.timestamp,
+  });
+}
+
 DeltaEvent? _toDeltaEvent(
     List<Emote> emotes, DocumentChange<Map<String, dynamic>> change) {
   final data = change.doc.data();
@@ -51,10 +62,23 @@ DeltaEvent? _toDeltaEvent(
           displayName: tags['display-name'],
           login: tags['username']);
 
+      final reply = data['reply'] != null
+          ? TwitchMessageReplyModel(
+              messageId: data['reply']['messageId'],
+              message: data['reply']['message'],
+              author: TwitchUserModel(
+                userId: data['reply']['userId'],
+                displayName: data['reply']['displayName'],
+                login: data['reply']['userLogin'],
+              ),
+            )
+          : null;
+
       final model = TwitchMessageModel(
           messageId: change.doc.id,
           author: author,
           message: message,
+          reply: reply,
           tags: tags,
           thirdPartyEmotes: emotes,
           timestamp: data['timestamp'].toDate(),
@@ -71,6 +95,7 @@ DeltaEvent? _toDeltaEvent(
             messageId: message.messageId,
             author: message.author,
             message: message.message,
+            reply: message.reply,
             tags: message.tags,
             thirdPartyEmotes: [],
             timestamp: message.timestamp,
@@ -87,6 +112,11 @@ DeltaEvent? _toDeltaEvent(
           viewers: data['event']['viewers'],
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
+    case "clear":
+      return ClearDeltaEvent(
+        messageId: change.doc.id,
+        timestamp: data['timestamp'].toDate(),
+      );
     case "host":
       if (data['hosterChannelId'] == null) {
         // Since we might have some events saved without this field.
@@ -303,5 +333,14 @@ class MessagesAdapter {
           }
           return data['timestamp'].toDate();
         });
+  }
+
+  Future<bool> hasMessages(Channel channel) async {
+    return await db
+        .collection("messages")
+        .where("channelId", isEqualTo: channel.toString())
+        .limit(1)
+        .get()
+        .then((snapshot) => snapshot.docs.isNotEmpty);
   }
 }

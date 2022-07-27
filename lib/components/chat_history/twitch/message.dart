@@ -97,8 +97,7 @@ class TwitchMessageWidget extends StatelessWidget {
     } else if (token is EmoteToken) {
       yield WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child:
-              Image(image: ResilientNetworkImage(token.url)));
+          child: Image(image: ResilientNetworkImage(token.url)));
     } else if (token is LinkToken) {
       yield WidgetSpan(
         child: MouseRegion(
@@ -140,7 +139,7 @@ class TwitchMessageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<StyleModel>(builder: (context, styleModel, child) {
       if (!styleModel.isDeletedMessagesVisible && model.deleted) {
-        return Container();
+        return const SizedBox();
       }
       var authorStyle = Theme.of(context)
           .textTheme
@@ -190,6 +189,9 @@ class TwitchMessageWidget extends StatelessWidget {
       // add demarcator.
       if (model.isAction) {
         children.add(const TextSpan(text: " "));
+      } else if (model.reply != null) {
+        // when removing '@username' from a reply's message, a space is left at the beginning
+        children.add(const TextSpan(text: ":"));
       } else {
         children.add(const TextSpan(text: ": "));
       }
@@ -202,15 +204,48 @@ class TwitchMessageWidget extends StatelessWidget {
         opacity: model.deleted ? 0.6 : 1.0,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Text.rich(
-            TextSpan(
-              children: [
-                ...children,
-                ...tokens
-                    .expand((token) => _render(context, styleModel, token))
-                    .toList(),
-              ],
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (model.reply != null)
+                Text.rich(
+                  TextSpan(children: [
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: styleModel.fontSize / 3,
+                          right: 5,
+                        ),
+                        child: Icon(
+                          Icons.shortcut_rounded,
+                          size: styleModel.fontSize,
+                          color: Theme.of(context).hintColor,
+                        ),
+                      ),
+                    ),
+                    TextSpan(
+                        text:
+                            '${model.reply?.author.displayName}: ${model.reply?.message}'),
+                  ]),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.subtitle1?.apply(
+                        color: Theme.of(context).hintColor,
+                        fontSizeFactor: 0.75,
+                      ),
+                ),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    ...children,
+                    ...tokens.expand((token) {
+                      return _render(context, styleModel, token);
+                    }).toList(),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       );

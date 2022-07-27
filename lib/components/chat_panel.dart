@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/connection_status.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/pinnable/scroll_view.dart';
 import 'package:rtchat/components/style_model_theme.dart';
+import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -19,19 +21,19 @@ import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 
-class _RebuildableWidget extends StatefulWidget {
+class RebuildableWidget extends StatefulWidget {
   final Widget Function(BuildContext) builder;
   final Set<DateTime> rebuildAt;
 
-  const _RebuildableWidget(
+  const RebuildableWidget(
       {Key? key, required this.builder, required this.rebuildAt})
       : super(key: key);
 
   @override
-  _RebuildableWidgetState createState() => _RebuildableWidgetState();
+  State<RebuildableWidget> createState() => _RebuildableWidgetState();
 }
 
-class _RebuildableWidgetState extends State<_RebuildableWidget> {
+class _RebuildableWidgetState extends State<RebuildableWidget> {
   Set<Timer> timers = {};
 
   @override
@@ -42,7 +44,7 @@ class _RebuildableWidgetState extends State<_RebuildableWidget> {
   }
 
   @override
-  void didUpdateWidget(_RebuildableWidget oldWidget) {
+  void didUpdateWidget(RebuildableWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     _clearTimers();
@@ -241,6 +243,28 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                 twitchMessageConfig, child) {
           var messages = messagesModel.messages.reversed.toList();
           _lastMessage = messages.isEmpty ? null : messages.first;
+          if (messages.isEmpty) {
+            return FutureBuilder(
+              future: MessagesAdapter.instance.hasMessages(widget.channel),
+              builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                if (snapshot.hasData && snapshot.data == false) {
+                  return Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'It\'s quiet in here.',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox();
+              },
+            );
+          }
           if (_pauseAt != null) {
             final index = messages.indexOf(_pauseAt!);
             if (index != -1) {
@@ -251,7 +275,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
               .map((message) => _getExpiration(
                   message, eventSubConfigurationModel, twitchMessageConfig))
               .toList();
-          return _RebuildableWidget(
+          return RebuildableWidget(
               rebuildAt: expirations.whereType<DateTime>().toSet(),
               builder: (context) {
                 final now = DateTime.now();
@@ -261,8 +285,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                   itemBuilder: (index) => StyleModelTheme(
                       key: Key(messages[index].messageId),
                       child: ChatHistoryMessage(
-                          message: messages[index],
-                          channel: widget.channel)),
+                          message: messages[index], channel: widget.channel)),
                   findChildIndexCallback: (key) => messages
                       .indexWhere((element) => key == Key(element.messageId)),
                   isPinnedBuilder: (index) {
@@ -287,6 +310,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                 curve: Curves.easeInOut);
           },
         ),
+        const ConnectionStatusWidget(),
       ],
     );
   }

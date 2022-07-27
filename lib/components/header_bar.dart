@@ -147,8 +147,8 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
               showModalBottomSheet<void>(
                 context: context,
                 isScrollControlled: true,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.0),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                 ),
                 builder: (context) {
                   return DraggableScrollableSheet(
@@ -186,10 +186,10 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                       Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Text("/${widget.channel.displayName}",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium!
-                                        .copyWith(color: Colors.white),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium!
+                                  .copyWith(color: Colors.white),
                               overflow: TextOverflow.fade)),
                       Consumer<LayoutModel>(
                           builder: (context, layoutModel, child) {
@@ -197,21 +197,26 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                             .textTheme
                             .bodyMedium
                             ?.copyWith(color: Colors.white);
-                        if (!layoutModel.isStatsVisible) {
-                          return Container();
-                        } else if (_loading) {
+                        if (_loading) {
                           return Text("...", style: style);
                         }
-                        final texts = <Widget>[
-                          Text("${_formatter.format(_followers)} followers",
-                              style: style)
-                        ];
-                        if (onlineAt != null) {
+                        final texts = <Widget>[];
+                        if (layoutModel.isStatsVisible) {
                           texts.add(Text(
-                              "${_formatter.format(_viewers)} viewers",
+                              "${_formatter.format(_followers)} followers",
                               style: style));
+                        }
+                        if (onlineAt != null) {
+                          if (layoutModel.isStatsVisible) {
+                            texts.add(Text(
+                                "${_formatter.format(_viewers)} viewers",
+                                style: style));
+                          }
                           texts.add(
                               _DurationWidget(from: onlineAt, style: style));
+                        }
+                        if (texts.isEmpty) {
+                          return Container();
                         }
                         return texts[_iteration % texts.length];
                       }),

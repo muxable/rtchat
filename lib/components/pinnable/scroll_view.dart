@@ -55,7 +55,7 @@ class PinnableMessageScrollView extends ScrollView {
             (context, index) => itemBuilder(index + offset),
             findChildIndexCallback: (key) {
               final index = findChildIndexCallback(key);
-              return index == null ? null : index - offset;
+              return index == null || index == -1 ? null : index - offset;
             },
             childCount: intermediateCount,
             semanticIndexOffset: offset,

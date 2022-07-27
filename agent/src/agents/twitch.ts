@@ -45,6 +45,16 @@ function toAccessToken(token: Token): AccessToken {
   };
 }
 
+async function getChannelId(uid: string, provider: string) {
+  const usernameDoc = await admin
+    .firestore()
+    .collection("profiles")
+    .doc(uid)
+    .get();
+
+  return `${provider}:${usernameDoc.get(provider)["id"]}`;
+}
+
 async function getAuthProvider(
   firebase: FirebaseAdapter,
   channel: string
@@ -125,6 +135,12 @@ async function join(
   const authProvider = await getAuthProvider(firebase, channel);
 
   const chat = new ChatClient({
+    authProvider,
+    isAlwaysMod: authProvider.username === channel,
+    logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
+  });
+
+  const send = new ChatClient({
     authProvider,
     isAlwaysMod: authProvider.username === channel,
     logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
@@ -211,6 +227,7 @@ async function join(
     await firebase.getMessage(`twitch:clear-${msg.date.toISOString()}`).set({
       channel,
       channelId: `twitch:${msg.channelId}`,
+      timestamp: admin.firestore.Timestamp.fromDate(msg.date),
       type: "clear",
     });
   });
@@ -231,6 +248,7 @@ async function join(
 
   log.info({ channel, agentId, provider }, "assigned to channel");
   await chat.connect();
+  await send.connect();
   await registerPromise; // this is a bit awkward but the join will race if we don't wait.
   await chat.join(channel);
   log.info({ channel, agentId, provider }, "joined channel");
@@ -281,12 +299,20 @@ async function join(
       .onSnapshot(async (snapshot) => {
         for (const change of snapshot.docChanges()) {
           if (change.type == "added") {
+            // verify that the user id matches the channel id.
+            const userId = change.doc.get("userId");
+            if (userId) {
+              const channelId = await getChannelId(userId, "twitch");
+              if (channelId != `twitch:${authProvider.providerId}`) {
+                continue;
+              }
+            }
             const targetChannel = change.doc.get("targetChannel");
             const message = change.doc.get("message");
             if (!targetChannel || !message) {
               continue;
             }
-            await chat.say(targetChannel, message);
+            await send.say(targetChannel, message);
             await change.doc.ref.update({
               sentAt: admin.firestore.FieldValue.serverTimestamp(),
             });
@@ -303,6 +329,7 @@ async function join(
     await firebase.claim(provider, channel, agentId);
   }
 
+  await send.quit();
   await chat.quit();
 
   log.info({ channel, agentId, provider }, "disconnected");
