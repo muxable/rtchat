@@ -30,16 +30,54 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     super.initState();
   }
 
+  bool startsWithsExlamination(String text) {
+    if (text == "" || text.isEmpty) {
+      return false;
+    }
+    final exclaimationList =
+        Provider.of<CommandsModel>(context, listen: false).commandList;
+    final hasExclaimation = exclaimationList.any((command) =>
+        command.command.startsWith(text) ||
+        command.command.toLowerCase().startsWith(text));
+    return hasExclaimation;
+  }
+
   bool startsWithPossibleCommands(String text) {
     if (text == "" || text.isEmpty) {
       return false;
     }
-    for (final mode in ChatMode.values) {
-      if (mode.title.startsWith(text)) {
-        return true;
-      }
-    }
-    return false;
+    final hasSlash =
+        ChatMode.values.any((element) => element.title.startsWith(text));
+    return hasSlash;
+  }
+
+  Widget commandChips() {
+    final model = Provider.of<CommandsModel>(context, listen: false);
+    final commands = model.commandList;
+
+    return SizedBox(
+      height: 300.0,
+      child: Wrap(
+        direction: Axis.horizontal,
+        children: [
+          for (var command in commands)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: ActionChip(
+                backgroundColor: Color.fromARGB(255, 97, 101, 150),
+                label: Text(command.command),
+                onPressed: () {
+                  ActionsAdapter.instance.send(widget.channel, command.command);
+
+                  model.addCommand(Command(command.command, DateTime.now()));
+                  _chatInputFocusNode.unfocus();
+                  hideOverlay();
+                },
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   void hideOverlay() {
@@ -47,7 +85,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     entry = null;
   }
 
-  void showOverlay(String text) {
+  void showOverlay(String text, CommandType type) {
     // remove existing overlay, bc user can contiunously type a prefix string that matches a command
     hideOverlay();
 
@@ -61,13 +99,27 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     final lst =
         ChatMode.values.where((element) => element.title.startsWith(text));
 
+    final commands = lst.map((e) {
+      return ListTile(
+        title: Text(e.title),
+        subtitle: Text(e.subtitle),
+        onTap: () {
+          _textEditingController.text = e.title;
+          hideOverlay();
+          // move cursor position
+          _textEditingController.selection = TextSelection.fromPosition(
+              TextPosition(offset: _textEditingController.text.length));
+        },
+      );
+    }).toList();
+
     // None to show
-    if (lst.isEmpty) {
+    if (commands.isEmpty) {
       hideOverlay();
       return;
     }
 
-    final lstSize = lst.length;
+    final lstSize = commands.length;
     const listTileSize = 75; // the roughly size of a listTile
     final shiftUp = min(lstSize * listTileSize, 300);
 
@@ -77,28 +129,17 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
         top: offset.dy - shiftUp,
         width: size.width,
         child: Material(
-          child: SizedBox(
-            height: shiftUp.toDouble(),
-            child: ListView(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              primary: false,
-              children: lst.map((e) {
-                return ListTile(
-                  title: Text(e.title),
-                  subtitle: Text(e.subtitle),
-                  onTap: () {
-                    _textEditingController.text = e.title;
-                    hideOverlay();
-                    // move cursor position
-                    _textEditingController.selection =
-                        TextSelection.fromPosition(TextPosition(
-                            offset: _textEditingController.text.length));
-                  },
-                );
-              }).toList(),
-            ),
-          ),
+          child: type == CommandType.exclamation
+              ? commandChips()
+              : SizedBox(
+                  height: shiftUp.toDouble(),
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    primary: false,
+                    children: commands,
+                  ),
+                ),
         ),
       );
     });
@@ -119,36 +160,36 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     _textEditingController.clear();
   }
 
-  Widget _buildCommandBar(BuildContext context) {
-    return KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
-      return Consumer<CommandsModel>(builder: (context, commandsModel, child) {
-        if (!isKeyboardVisible || commandsModel.commandList.isEmpty) {
-          return Container();
-        }
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SizedBox(
-            height: 48,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: commandsModel.commandList.length,
-              itemBuilder: (context, index) => TextButton(
-                child: Text(commandsModel.commandList[index].command),
-                onPressed: () {
-                  ActionsAdapter.instance.send(
-                      widget.channel, commandsModel.commandList[index].command);
-                  commandsModel.addCommand(Command(
-                      commandsModel.commandList[index].command,
-                      DateTime.now()));
-                  _chatInputFocusNode.unfocus();
-                },
-              ),
-            ),
-          ),
-        );
-      });
-    });
-  }
+  // Widget _buildCommandBar(BuildContext context) {
+  //   return KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
+  //     return Consumer<CommandsModel>(builder: (context, commandsModel, child) {
+  //       if (!isKeyboardVisible || commandsModel.commandList.isEmpty) {
+  //         return Container();
+  //       }
+  //       return Padding(
+  //         padding: const EdgeInsets.symmetric(horizontal: 16),
+  //         child: SizedBox(
+  //           height: 48,
+  //           child: ListView.builder(
+  //             scrollDirection: Axis.horizontal,
+  //             itemCount: commandsModel.commandList.length,
+  //             itemBuilder: (context, index) => TextButton(
+  //               child: Text(commandsModel.commandList[index].command),
+  //               onPressed: () {
+  //                 ActionsAdapter.instance.send(
+  //                     widget.channel, commandsModel.commandList[index].command);
+  //                 commandsModel.addCommand(Command(
+  //                     commandsModel.commandList[index].command,
+  //                     DateTime.now()));
+  //                 _chatInputFocusNode.unfocus();
+  //               },
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //     });
+  //   });
+  // }
 
   Widget _buildEmotePicker(BuildContext context) {
     return EmotePickerWidget(
@@ -225,11 +266,14 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       border: InputBorder.none,
                       hintText: "Send a message..."),
                   onChanged: (text) {
+                    // slash prefix
                     if (startsWithPossibleCommands(text)) {
-                      showOverlay(text);
+                      showOverlay(text, CommandType.slash);
                     } else {
                       hideOverlay();
+                      showOverlay(text, CommandType.exclamation);
                     }
+
                     final filtered = text.replaceAll('\n', ' ');
                     if (filtered == text) {
                       return;
@@ -246,9 +290,16 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             ]),
           ),
         ),
-        _buildCommandBar(context),
+        // if (_textEditingController.value.text.isEmpty) ...[
+        //   _buildCommandBar(context),
+        // ],
         _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
       ]),
     );
   }
+}
+
+enum CommandType {
+  slash,
+  exclamation,
 }
