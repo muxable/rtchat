@@ -139,6 +139,8 @@ class _SidebarState extends State<Sidebar> {
           onTap: () =>
               Navigator.of(context).pushNamed("/settings/quick-links")),
 
+      const Divider(),
+
       // setting
       Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         if (!layoutModel.locked) {
@@ -184,47 +186,45 @@ class _SidebarState extends State<Sidebar> {
           await Navigator.pushNamed(context, "/settings");
         },
       ),
+      Consumer<UserModel>(builder: (context, model, child) {
+        if (!model.isSignedIn()) {
+          return Container();
+        }
+        return ListTile(
+          leading: const Icon(Icons.exit_to_app_outlined),
+          iconColor: Colors.redAccent,
+          title: const Text("Sign out"),
+          onTap: () async {
+            await showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text('Sign Out'),
+                  content: const Text('Are you sure you want to sign out?'),
+                  actions: [
+                    TextButton(
+                      child: const Text('Cancel'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                      child: const Text('Sign Out'),
+                      onPressed: () async {
+                        await Provider.of<UserModel>(context, listen: false)
+                            .signOut();
+                        if (!mounted) return;
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      }),
     ];
-
-    Widget signOut = Consumer<UserModel>(builder: (context, model, child) {
-      if (!model.isSignedIn()) {
-        return Container();
-      }
-      return ListTile(
-        leading: const Icon(Icons.exit_to_app_outlined),
-        iconColor: Colors.redAccent,
-        title: const Text("Sign out"),
-        onTap: () async {
-          await showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('Sign Out'),
-                content: const Text('Are you sure you want to sign out?'),
-                actions: [
-                  TextButton(
-                    child: const Text('Cancel'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                  TextButton(
-                    child: const Text('Sign Out'),
-                    onPressed: () async {
-                      await Provider.of<UserModel>(context, listen: false)
-                          .signOut();
-                      if (!mounted) return;
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      );
-    });
-
     return Drawer(
       child: Column(
         children: [
@@ -235,13 +235,11 @@ class _SidebarState extends State<Sidebar> {
             final orientation = MediaQuery.of(context).orientation;
             if (orientation == Orientation.portrait) {
               return Column(children: [
-                ...tiles,
                 Expanded(child: ListView(children: [QuicklinksListView()])),
-                signOut
+                ...tiles
               ]);
             } else {
-              return ListView(
-                  children: [...tiles, QuicklinksListView(), signOut]);
+              return ListView(children: [QuicklinksListView(), ...tiles]);
             }
           }))
         ],
