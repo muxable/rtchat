@@ -6,11 +6,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
@@ -31,6 +31,7 @@ import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
+import 'package:rtchat/screens/settings/tts/cloud_tts.dart';
 import 'package:rtchat/screens/settings/events.dart';
 import 'package:rtchat/screens/settings/events/channel_point.dart';
 import 'package:rtchat/screens/settings/events/cheer.dart';
@@ -42,10 +43,12 @@ import 'package:rtchat/screens/settings/events/prediction.dart';
 import 'package:rtchat/screens/settings/events/raid.dart';
 import 'package:rtchat/screens/settings/events/raiding.dart';
 import 'package:rtchat/screens/settings/events/subscription.dart';
+import 'package:rtchat/screens/settings/tts/languages.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/tts.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
+import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/themes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -64,15 +67,6 @@ void main() async {
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent));
-
-  // Add remote config
-  FirebaseRemoteConfig.instance.setConfigSettings(RemoteConfigSettings(
-      minimumFetchInterval: const Duration(hours: 1),
-      fetchTimeout: const Duration(seconds: 10)));
-
-  await FirebaseRemoteConfig.instance
-      .setDefaults({'inline_events_enabled': kDebugMode});
-  await FirebaseRemoteConfig.instance.fetchAndActivate();
 
   // persistence isn't useful to us since we're using Firestore as an event
   // stream and it uses memory/cache space.
@@ -128,14 +122,17 @@ class _AppState extends State<App> {
               widget.prefs.setString('layout', jsonEncode(model.toJson()));
             });
         }),
-        ChangeNotifierProvider(create: (context) {
-          final model = TtsModel.fromJson(
-              jsonDecode(widget.prefs.getString("tts") ?? "{}"));
-          return model
-            ..addListener(() {
-              widget.prefs.setString('tts', jsonEncode(model.toJson()));
-            });
-        }),
+        ChangeNotifierProxyProvider<UserModel, TtsModel>(
+          create: (context) {
+            final model = TtsModel.fromJson(
+                jsonDecode(widget.prefs.getString("tts") ?? "{}"));
+            return model
+              ..addListener(() {
+                widget.prefs.setString('tts', jsonEncode(model.toJson()));
+              });
+          },
+          update: (context, userModel, model) => model!..update(userModel),
+        ),
         ChangeNotifierProxyProvider2<UserModel, TtsModel, MessagesModel>(
           create: (context) {
             final model = MessagesModel();
@@ -179,21 +176,6 @@ class _AppState extends State<App> {
             ..addListener(() {
               widget.prefs.setString('style', jsonEncode(model.toJson()));
             });
-        }),
-        ChangeNotifierProxyProvider<UserModel, TwitchBadgeModel>(
-            create: (context) {
-          final model = TwitchBadgeModel.fromJson(
-              jsonDecode(widget.prefs.getString("twitch_badge") ?? "{}"));
-          model.channel =
-              Provider.of<UserModel>(context, listen: false).activeChannel;
-          return model
-            ..addListener(() {
-              widget.prefs
-                  .setString('twitch_badge', jsonEncode(model.toJson()));
-            });
-        }, update: (context, userModel, model) {
-          model!.channel = userModel.activeChannel;
-          return model;
         }),
         ChangeNotifierProvider(create: (context) {
           final model = CommandsModel.fromJson(
@@ -259,6 +241,9 @@ class _AppState extends State<App> {
           theme: Themes.lightTheme,
           darkTheme: Themes.darkTheme,
           themeMode: layoutModel.themeMode,
+          localizationsDelegates: const [
+            LocaleNamesLocalizationsDelegate(),
+          ],
           navigatorObservers: [App.observer],
           initialRoute: '/',
           routes: {
@@ -290,6 +275,12 @@ class _AppState extends State<App> {
             '/settings/audio-sources': (context) => const AudioSourcesScreen(),
             '/settings/chat-history': (context) => const ChatHistoryScreen(),
             '/settings/text-to-speech': (context) => const TextToSpeechScreen(),
+            '/settings/text-to-speech/cloud-tts': (context) =>
+                const CloudTTSScreen(),
+            '/settings/text-to-speech/languages': (context) =>
+                const LanguagesScreen(),
+            '/settings/text-to-speech/voices': (context) =>
+                const VoicesScreen(),
             '/settings/quick-links': (context) => const QuickLinksScreen(),
             '/settings/backup': (context) => const BackupScreen(),
             '/settings/events': (context) => const EventsScreen(),
