@@ -20,11 +20,11 @@ class MessageInputWidget extends StatefulWidget {
 }
 
 final _emotes = [
-  "https://static-cdn.jtvnw.net/emoticons/v2/425618/default/light/1.0",
-  "https://static-cdn.jtvnw.net/emoticons/v2/112291/default/light/1.0",
-  "https://static-cdn.jtvnw.net/emoticons/v2/81274/default/light/1.0",
-  "https://static-cdn.jtvnw.net/emoticons/v2/28087/default/light/1.0",
-  "https://static-cdn.jtvnw.net/emoticons/v2/305954156/default/light/1.0",
+  "https://static-cdn.jtvnw.net/emoticons/v2/425618/default/light/2.0",
+  "https://static-cdn.jtvnw.net/emoticons/v2/112291/default/light/2.0",
+  "https://static-cdn.jtvnw.net/emoticons/v2/81274/default/light/2.0",
+  "https://static-cdn.jtvnw.net/emoticons/v2/28087/default/light/2.0",
+  "https://static-cdn.jtvnw.net/emoticons/v2/305954156/default/light/2.0",
 ];
 
 const _greyscale = ColorFilter.matrix([
