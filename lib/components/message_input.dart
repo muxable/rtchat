@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/models/adapters/actions.dart';
@@ -30,16 +31,25 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     super.initState();
   }
 
+  bool startsWithsExlamination(String text) {
+    if (text == "" || text.isEmpty) {
+      return false;
+    }
+    final exclaimationList =
+        Provider.of<CommandsModel>(context, listen: false).commandList;
+    final hasExclaimation = exclaimationList.any((command) =>
+        command.command.startsWith(text) ||
+        command.command.toLowerCase().startsWith(text));
+    return hasExclaimation;
+  }
+
   bool startsWithPossibleCommands(String text) {
     if (text == "" || text.isEmpty) {
       return false;
     }
-    for (final mode in ChatMode.values) {
-      if (mode.title.startsWith(text)) {
-        return true;
-      }
-    }
-    return false;
+    final hasSlash =
+        ChatMode.values.any((element) => element.title.startsWith(text));
+    return hasSlash;
   }
 
   void hideOverlay() {
@@ -47,7 +57,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     entry = null;
   }
 
-  void showOverlay(String text) {
+  void showOverlay(String text, CommandType type) {
     // remove existing overlay, bc user can contiunously type a prefix string that matches a command
     hideOverlay();
 
@@ -60,14 +70,49 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     final offset = renderBox.localToGlobal(Offset.zero);
     final lst =
         ChatMode.values.where((element) => element.title.startsWith(text));
+    final exclaimationList = Provider.of<CommandsModel>(context, listen: false)
+        .commandList
+        .where((command) => command.command.startsWith(text));
+
+    List<Widget> commands = [];
+    if (type == CommandType.slash) {
+      commands = lst.map((e) {
+        return ListTile(
+          title: Text(e.title),
+          subtitle: Text(e.subtitle),
+          onTap: () {
+            _textEditingController.text = e.title;
+            hideOverlay();
+            // move cursor position
+            _textEditingController.selection = TextSelection.fromPosition(
+                TextPosition(offset: _textEditingController.text.length));
+          },
+        );
+      }).toList();
+    } else {
+      commands = exclaimationList.map((e) {
+        final formatter = DateFormat("MM/dd hh:mm a");
+        return ListTile(
+          title: Text(e.command),
+          subtitle: Text("last used: ${formatter.format(e.timeLastUsed)}"),
+          onTap: () {
+            _textEditingController.text = e.command;
+            hideOverlay();
+            // move cursor position
+            _textEditingController.selection = TextSelection.fromPosition(
+                TextPosition(offset: _textEditingController.text.length));
+          },
+        );
+      }).toList();
+    }
 
     // None to show
-    if (lst.isEmpty) {
+    if (commands.isEmpty) {
       hideOverlay();
       return;
     }
 
-    final lstSize = lst.length;
+    final lstSize = commands.length;
     const listTileSize = 75; // the roughly size of a listTile
     final shiftUp = min(lstSize * listTileSize, 300);
 
@@ -83,20 +128,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
               padding: EdgeInsets.zero,
               shrinkWrap: true,
               primary: false,
-              children: lst.map((e) {
-                return ListTile(
-                  title: Text(e.title),
-                  subtitle: Text(e.subtitle),
-                  onTap: () {
-                    _textEditingController.text = e.title;
-                    hideOverlay();
-                    // move cursor position
-                    _textEditingController.selection =
-                        TextSelection.fromPosition(TextPosition(
-                            offset: _textEditingController.text.length));
-                  },
-                );
-              }).toList(),
+              children: commands,
             ),
           ),
         ),
@@ -225,8 +257,31 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       border: InputBorder.none,
                       hintText: "Send a message..."),
                   onChanged: (text) {
+                    // exlaimation prefix
+                    // if (startsWithsExlamination(text)) {
+                    //   setState(() {
+                    //     _inputStartWithsExlamination = true;
+                    //   });
+                    //   showOverlay(text);
+                    // } else {
+                    //   if (_inputStartWithsExlamination) {
+                    //     setState(() {
+                    //       _inputStartWithsExlamination = false;
+                    //     });
+                    //   }
+                    // }
+                    // exlaimation prefix
+                    // if (startsWithsExlamination(text)) {
+                    //   showOverlay(text);
+                    // } else {
+                    //   hideOverlay();
+                    // }
+
+                    // slash prefix
                     if (startsWithPossibleCommands(text)) {
-                      showOverlay(text);
+                      showOverlay(text, CommandType.slash);
+                    } else if (startsWithsExlamination(text)) {
+                      showOverlay(text, CommandType.exclamation);
                     } else {
                       hideOverlay();
                     }
@@ -246,9 +301,16 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             ]),
           ),
         ),
-        _buildCommandBar(context),
+        if (_textEditingController.value.text.isEmpty) ...[
+          _buildCommandBar(context),
+        ],
         _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
       ]),
     );
   }
+}
+
+enum CommandType {
+  slash,
+  exclamation,
 }
