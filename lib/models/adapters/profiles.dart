@@ -16,10 +16,12 @@ class ProfilesAdapter {
       if (!event.exists) {
         return null;
       }
-      final data = event.get("twitch");
-      return data != null
-          ? Channel(provider, data['id'], data['displayName'])
-          : null;
+      final data = event.data();
+      if (data == null || !data.containsKey("twitch")) {
+        return null;
+      }
+      final twitch = data['twitch'];
+      return Channel(provider, twitch['id'], twitch['displayName']);
     });
   }
 
