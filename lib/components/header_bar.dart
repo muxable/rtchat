@@ -197,21 +197,26 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                             .textTheme
                             .bodyMedium
                             ?.copyWith(color: Colors.white);
-                        if (!layoutModel.isStatsVisible) {
-                          return Container();
-                        } else if (_loading) {
+                        if (_loading) {
                           return Text("...", style: style);
                         }
-                        final texts = <Widget>[
-                          Text("${_formatter.format(_followers)} followers",
-                              style: style)
-                        ];
-                        if (onlineAt != null) {
+                        final texts = <Widget>[];
+                        if (layoutModel.isStatsVisible) {
                           texts.add(Text(
-                              "${_formatter.format(_viewers)} viewers",
+                              "${_formatter.format(_followers)} followers",
                               style: style));
+                        }
+                        if (onlineAt != null) {
+                          if (layoutModel.isStatsVisible) {
+                            texts.add(Text(
+                                "${_formatter.format(_viewers)} viewers",
+                                style: style));
+                          }
                           texts.add(
                               _DurationWidget(from: onlineAt, style: style));
+                        }
+                        if (texts.isEmpty) {
+                          return Container();
                         }
                         return texts[_iteration % texts.length];
                       }),
