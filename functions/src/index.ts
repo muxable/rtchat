@@ -7,7 +7,7 @@ import { eventsub } from "./eventsub";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
 import { cleanup, subscribe, unsubscribe } from "./subscriptions";
-import { synthesize } from "./tts";
+import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
 
 admin.initializeApp();
@@ -318,5 +318,6 @@ export {
   getUserEmotes,
   cleanup,
   synthesize,
+  getVoices,
 };
 export const auth = functions.https.onRequest(authApp);
