@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
@@ -33,19 +33,21 @@ class TtsModel extends ChangeNotifier {
   MessageModel? _activeMessage;
 
   void update(UserModel model) async {
-    if (model.activeChannel == null) {
-      _isSupportedLanguage = false;
-      _language = Language();
-      return;
+    if (kDebugMode) {
+      if (model.activeChannel == null) {
+        _isSupportedLanguage = false;
+        _language = Language();
+        return;
+      }
+      String streamLanguage = await _streamLanguage(
+        provider: model.activeChannel!.provider,
+        channelId: model.activeChannel!.channelId,
+      );
+      _isSupportedLanguage =
+          !(streamLanguage == 'other' || streamLanguage == 'asl');
+      language = _isSupportedLanguage ? Language(streamLanguage) : Language();
+      notifyListeners();
     }
-    String streamLanguage = await _streamLanguage(
-      provider: model.activeChannel!.provider,
-      channelId: model.activeChannel!.channelId,
-    );
-    _isSupportedLanguage =
-        !(streamLanguage == 'other' || streamLanguage == 'asl');
-    language = _isSupportedLanguage ? Language(streamLanguage) : Language();
-    notifyListeners();
   }
 
   final getStatistics =
