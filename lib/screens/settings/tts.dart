@@ -108,7 +108,7 @@ class TextToSpeechScreen extends StatelessWidget {
                             child: Text(
                               model.isRandomVoiceEnabled
                                   ? 'Random'
-                                  : 'WaveNet-A',
+                                  : model.voice,
                             ),
                           ),
                         ),

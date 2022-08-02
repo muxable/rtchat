@@ -1,45 +1,46 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-// placeholder
-const voices = [
-  'Neural2-A',
-  'Standard-A',
-  'Standard-B',
-  'Standard-C',
-  'Standard-D',
-  'Standard-E',
-  'Standard-F',
-  'Standard-G',
-  'Standard-H',
-  'Standard-I',
-  'Standard-J',
-  'WaveNet-A',
-  'WaveNet-B',
-  'WaveNet-C',
-  'WaveNet-D',
-  'WaveNet-E',
-  'WaveNet-F',
-  'WaveNet-G'
-];
+import 'package:audioplayers/audioplayers.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:rtchat/models/tts.dart';
 
 class VoicesScreen extends StatelessWidget {
   const VoicesScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final audioPlayer = AudioPlayer();
     return Scaffold(
       appBar: AppBar(title: const Text('Voices')),
-      body: ListView.builder(
-        itemBuilder: (BuildContext context, int index) => ListTile(
-          title: Text(voices[index]),
-          trailing: IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.play_arrow),
-            tooltip: 'Play sample',
-          ),
-          onTap: () {},
-        ),
-        itemCount: voices.length,
+      body: Consumer<TtsModel>(
+        builder: (context, model, child) {
+          return ListView.builder(
+            itemBuilder: (BuildContext context, int index) => ListTile(
+              title: Text(model.voices[index]),
+              trailing: IconButton(
+                onPressed: () async {
+                  final response = await FirebaseFunctions.instance
+                      .httpsCallable("synthesize")({
+                    "voice": model.voices[index],
+                    "language": model.language.languageCode,
+                    "text": "kevin calmly and collectively consumes cheesecake",
+                  });
+                  final bytes = const Base64Decoder().convert(response.data);
+                  audioPlayer.playBytes(bytes);
+                },
+                icon: const Icon(Icons.play_arrow),
+                tooltip: 'Play sample',
+              ),
+              onTap: () {
+                model.voice = model.voices[index];
+                Navigator.pop(context);
+              },
+            ),
+            itemCount: model.voices.length,
+          );
+        },
       ),
     );
   }
