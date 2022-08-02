@@ -70,14 +70,16 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                 return Dismissible(
                   key: ValueKey(source),
                   background: const DismissibleDeleteBackground(),
-                  child: ListTile(
-                    key: ValueKey(source),
-                    leading:
-                        Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-                    title: Text(source.label),
-                    subtitle: Text(source.url.toString()),
-                    trailing: const Icon(Icons.drag_handle),
-                  ),
+                  child: Tooltip(
+                      message: "Swipe left or right to delete quick link",
+                      child: ListTile(
+                        key: ValueKey(source),
+                        leading:
+                            Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
+                        title: Text(source.label),
+                        subtitle: Text(source.url.toString()),
+                        trailing: const Icon(Icons.drag_handle),
+                      )),
                   onDismissed: (direction) {
                     quickLinks.removeSource(source);
                   },
