@@ -135,7 +135,7 @@ class TtsModel extends ChangeNotifier {
     }
     say(
         SystemMessageModel(
-            text: "Text-to-speech ${value ? "enabled" : "disabled"}"),
+            text: "Text to speech ${value ? "enabled" : "disabled"}"),
         force: true);
     notifyListeners();
   }
