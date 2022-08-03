@@ -68,3 +68,7 @@ node_modules/
 .yarn-integrity
 
 .idea/
+
+# Miscellaneous macOS
+.DS_Store
+**/.DS_Store
