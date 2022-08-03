@@ -71,25 +71,29 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedEventWidget.icon(
       icon: Icons.star,
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-                text: model.subscriberUserName,
-                style: Theme.of(context).textTheme.subtitle2),
-            TextSpan(
-                text:
-                    " subscribed at Tier ${model.tier.replaceAll("000", "")}. They've subscribed for "),
-            TextSpan(
-                text: "${model.cumulativeMonths} months",
-                style: Theme.of(context).textTheme.subtitle2),
-            TextSpan(
-                text: model.streakMonths > 1
-                    ? ", currently on a ${model.streakMonths} month streak!"
-                    : "!"),
-          ],
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                  text: model.subscriberUserName,
+                  style: Theme.of(context).textTheme.subtitle2),
+              TextSpan(
+                  text:
+                      " subscribed at Tier ${model.tier.replaceAll("000", "")}. They've subscribed for "),
+              TextSpan(
+                  text: "${model.cumulativeMonths} months",
+                  style: Theme.of(context).textTheme.subtitle2),
+              TextSpan(
+                  text: model.streakMonths > 1
+                      ? ", currently on a ${model.streakMonths} month streak!"
+                      : "!"),
+            ],
+          ),
         ),
-      ),
+        Text.rich(TextSpan(text: model.text),
+            style: const TextStyle(fontStyle: FontStyle.italic)),
+      ]),
     );
   }
 }

@@ -163,7 +163,8 @@ DeltaEvent? _toDeltaEvent(
           tier: data['event']['tier'],
           streakMonths: data['event']['streak_months'],
           cumulativeMonths: data['event']['cumulative_months'],
-          durationMonths: data['event']['duration_months']);
+          durationMonths: data['event']['duration_months'],
+          text: data['event']['message']['text']);
 
       return AppendDeltaEvent(model);
     case "channel.follow":
