@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_custom_tabs/flutter_custom_tabs.dart'
+    as flutter_custom_tabs;
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 class QuicklinksListView extends StatelessWidget {
-  final browser = ChromeSafariBrowser();
-
-  QuicklinksListView({Key? key}) : super(key: key);
+  const QuicklinksListView({Key? key}) : super(key: key);
 
   void launchLink(QuickLinkSource source) async {
     final isWebUrl =
         source.url.scheme == 'http' || source.url.scheme == 'https';
     if (isWebUrl) {
-      await browser.open(url: source.url);
+      await flutter_custom_tabs.launch(source.url.toString());
     } else {
-      await launchUrl(source.url);
+      await url_launcher.launchUrl(source.url);
     }
   }
 
@@ -33,11 +32,10 @@ class QuicklinksListView extends StatelessWidget {
       return Column(
         children: quickLinksModel.sources.map((source) {
           return ListTile(
-            leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-            title: Text(source.label),
-            subtitle: Text(source.url.toString()),
-            onTap: () => launchLink(source),
-          );
+              leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
+              title: Text(source.label),
+              subtitle: Text(source.url.toString()),
+              onTap: () => launchLink(source));
         }).toList(),
       );
     });
