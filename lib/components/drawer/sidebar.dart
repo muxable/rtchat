@@ -242,11 +242,16 @@ class _SidebarState extends State<Sidebar> {
               final orientation = MediaQuery.of(context).orientation;
               if (orientation == Orientation.portrait) {
                 return Column(children: [
-                  Expanded(child: ListView(children: [QuicklinksListView()])),
+                  Expanded(
+                      child: ListView(
+                          padding: EdgeInsets.zero,
+                          children: const [QuicklinksListView()])),
                   ...tiles
                 ]);
               } else {
-                return ListView(children: [QuicklinksListView(), ...tiles]);
+                return ListView(
+                    padding: EdgeInsets.zero,
+                    children: [const QuicklinksListView(), ...tiles]);
               }
             }))
           ],

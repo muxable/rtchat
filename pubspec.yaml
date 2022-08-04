@@ -42,6 +42,7 @@ dependencies:
   flutter_background: ^1.1.0
   flutter_markdown: ^0.6.10+2
   flutter_localized_locales: ^2.0.3
+  flutter_custom_tabs: ^1.0.4
 
 dev_dependencies:
   flutter_lints: ^2.0.1
