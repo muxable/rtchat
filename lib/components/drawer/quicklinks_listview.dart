@@ -36,7 +36,11 @@ class QuicklinksListView extends StatelessWidget {
           return ListTile(
             leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
             title: Text(source.label),
-            subtitle: Text(url),
+              subtitle: Text(
+                url,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             onTap: () => launchLink(source),
             onLongPress: () {
               Navigator.pop(context);
