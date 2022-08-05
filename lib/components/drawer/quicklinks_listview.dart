@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/quick_links.dart';
@@ -31,15 +32,25 @@ class QuicklinksListView extends StatelessWidget {
         builder: (context, quickLinksModel, child) {
       return Column(
         children: quickLinksModel.sources.map((source) {
+          final url = source.url.toString();
           return ListTile(
-              leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-              title: Text(source.label),
+            leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
+            title: Text(source.label),
               subtitle: Text(
-                source.url.toString(),
+                url,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              onTap: () => launchLink(source));
+            onTap: () => launchLink(source),
+            onLongPress: () {
+              Navigator.pop(context);
+              Clipboard.setData(ClipboardData(text: url)).then((_) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Copied to clipboard')),
+                );
+              });
+            },
+          );
         }).toList(),
       );
     });
