@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -22,12 +23,30 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   final _textEditingController = TextEditingController();
   final _chatInputFocusNode = FocusNode();
   var _isEmotePickerVisible = false;
+  late StreamSubscription<bool> keyboardSubscription;
 
   OverlayEntry? entry;
 
   @override
   void initState() {
     super.initState();
+    var keyboardVisibilityController = KeyboardVisibilityController();
+    // Subscribe to keyboard visibility changes.
+    keyboardSubscription =
+        keyboardVisibilityController.onChange.listen((bool visible) async {
+      print('Keyboard visibility update. Is visible: $visible');
+      if (visible && _textEditingController.text.isEmpty) {
+        /*
+            this is a hack to position the overlay.
+            the overlay uses the message textfield to determine the position
+            of the overlay, so we need to wait for the keyboard to show
+          */
+        await Future.delayed(const Duration(milliseconds: 650));
+        showOverlay("", CommandType.exclamation);
+      } else {
+        hideOverlay();
+      }
+    });
   }
 
   bool startsWithsExlamination(String text) {
@@ -278,15 +297,15 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                   },
                   onSubmitted: sendMessage,
                   onTap: () async {
-                    if (_textEditingController.text.isEmpty) {
-                      /* 
-                        this is a hack to position the overlay.
-                        the overlay uses the message textfield to determine the position
-                        of the overlay, so we need to wait for the keyboard to show
-                      */
-                      await Future.delayed(const Duration(milliseconds: 1000));
-                      showOverlay("", CommandType.exclamation);
-                    }
+                    // if (_textEditingController.text.isEmpty) {
+                    //   /*
+                    //     this is a hack to position the overlay.
+                    //     the overlay uses the message textfield to determine the position
+                    //     of the overlay, so we need to wait for the keyboard to show
+                    //   */
+                    //   await Future.delayed(const Duration(milliseconds: 1000));
+                    //   showOverlay("", CommandType.exclamation);
+                    // }
                     setState(() => _isEmotePickerVisible = false);
                     _chatInputFocusNode.requestFocus();
                   },
