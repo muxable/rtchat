@@ -62,9 +62,10 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
         children: [
           for (var command in commands)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
               child: ActionChip(
-                backgroundColor: Color.fromARGB(255, 97, 101, 150),
+                backgroundColor: Color.fromARGB(255, 65, 172, 79),
                 label: Text(command.command),
                 onPressed: () {
                   ActionsAdapter.instance.send(widget.channel, command.command);
@@ -162,32 +163,20 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   // Widget _buildCommandBar(BuildContext context) {
   //   return KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
-  //     return Consumer<CommandsModel>(builder: (context, commandsModel, child) {
-  //       if (!isKeyboardVisible || commandsModel.commandList.isEmpty) {
-  //         return Container();
-  //       }
-  //       return Padding(
-  //         padding: const EdgeInsets.symmetric(horizontal: 16),
-  //         child: SizedBox(
-  //           height: 48,
-  //           child: ListView.builder(
-  //             scrollDirection: Axis.horizontal,
-  //             itemCount: commandsModel.commandList.length,
-  //             itemBuilder: (context, index) => TextButton(
-  //               child: Text(commandsModel.commandList[index].command),
-  //               onPressed: () {
-  //                 ActionsAdapter.instance.send(
-  //                     widget.channel, commandsModel.commandList[index].command);
-  //                 commandsModel.addCommand(Command(
-  //                     commandsModel.commandList[index].command,
-  //                     DateTime.now()));
-  //                 _chatInputFocusNode.unfocus();
-  //               },
-  //             ),
-  //           ),
-  //         ),
-  //       );
-  //     });
+  //     final commandsModel = Provider.of<CommandsModel>(context, listen: false);
+  //     if (!isKeyboardVisible || commandsModel.commandList.isEmpty) {
+  //       return Container();
+  //     }
+
+  //     return Padding(
+  //       child: Container(
+  //         height: 222,
+  //         width: 222,
+  //         color: Colors.blue,
+  //         margin: EdgeInsets.only(bottom: 500),
+  //       ),
+  //       padding: EdgeInsets.only(bottom: isKeyboardVisible ? 50 : 0),
+  //     );
   //   });
   // }
 
@@ -211,12 +200,15 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   @override
   Widget build(BuildContext context) {
     // remove overlay if keyboard is not visible
-    if (MediaQuery.of(context).viewInsets.bottom == 0) {
-      hideOverlay();
-    }
+    // if (MediaQuery.of(context).viewInsets.bottom == 0) {
+    //   hideOverlay();
+    // }
 
     return Material(
       child: Column(children: [
+        // (_textEditingController.text.isEmpty
+        //     ? _buildCommandBar(context)
+        //     : const SizedBox(height: 0, width: 0)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Container(
@@ -239,6 +231,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                         child: IconButton(
                             color: Theme.of(context).colorScheme.onSurface,
                             onPressed: () {
+                              hideOverlay();
                               if (_isEmotePickerVisible) {
                                 setState(() => _isEmotePickerVisible = false);
                                 _chatInputFocusNode.requestFocus();
@@ -271,7 +264,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       showOverlay(text, CommandType.slash);
                     } else {
                       hideOverlay();
-                      showOverlay(text, CommandType.exclamation);
+                      // showOverlay("", CommandType.exclamation);
                     }
 
                     final filtered = text.replaceAll('\n', ' ');
@@ -284,15 +277,27 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                             offset: _textEditingController.text.length)));
                   },
                   onSubmitted: sendMessage,
-                  onTap: () => setState(() => _isEmotePickerVisible = false),
+                  onTap: () async {
+                    if (_textEditingController.text.isEmpty) {
+                      /* 
+                        this is a hack to position the overlay.
+                        the overlay uses the message textfield to determine the position
+                        of the overlay, so we need to wait for the keyboard to show
+                      */
+                      await Future.delayed(const Duration(milliseconds: 1000));
+                      showOverlay("", CommandType.exclamation);
+                    }
+                    setState(() => _isEmotePickerVisible = false);
+                    _chatInputFocusNode.requestFocus();
+                  },
                 ),
               ),
             ]),
           ),
         ),
-        // if (_textEditingController.value.text.isEmpty) ...[
-        //   _buildCommandBar(context),
-        // ],
+        // (_textEditingController.text.isEmpty
+        //     ? _buildCommandBar(context)
+        //     : const SizedBox(height: 0, width: 0)),
         _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
       ]),
     );
