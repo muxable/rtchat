@@ -212,7 +212,7 @@ async function join(
     if (!msg.channelId) {
       return;
     }
-    const message = msg.message;
+    const message = msg.message.value;
     log.info(
       {
         channelId: msg.channelId,
