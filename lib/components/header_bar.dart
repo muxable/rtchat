@@ -201,17 +201,17 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                           return Text("...", style: style);
                         }
                         final texts = <Widget>[];
-                        if (layoutModel.isStatsVisible) {
+                        if (layoutModel.isStatsVisible && onlineAt == null) {
                           texts.add(Text(
                               "${_formatter.format(_followers)} followers",
                               style: style));
                         }
-                        if (onlineAt != null) {
-                          if (layoutModel.isStatsVisible) {
+                        if (layoutModel.isStatsVisible && onlineAt != null) {
                             texts.add(Text(
                                 "${_formatter.format(_viewers)} viewers",
                                 style: style));
-                          }
+                        }
+                        if (onlineAt != null) {
                           texts.add(
                               _DurationWidget(from: onlineAt, style: style));
                         }

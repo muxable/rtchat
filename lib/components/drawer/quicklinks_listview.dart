@@ -34,7 +34,11 @@ class QuicklinksListView extends StatelessWidget {
           return ListTile(
               leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
               title: Text(source.label),
-              subtitle: Text(source.url.toString()),
+              subtitle: Text(
+                source.url.toString(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
               onTap: () => launchLink(source));
         }).toList(),
       );
