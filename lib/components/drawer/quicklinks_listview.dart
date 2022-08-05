@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/quick_links.dart';
@@ -39,7 +40,9 @@ class QuicklinksListView extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              onTap: () => launchLink(source));
+              onTap: () => launchLink(source),
+              onLongPress: () => Clipboard.setData(
+                  ClipboardData(text: source.url.toString())));
         }).toList(),
       );
     });
