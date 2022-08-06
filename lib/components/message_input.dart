@@ -34,14 +34,13 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     // Subscribe to keyboard visibility changes.
     keyboardSubscription =
         keyboardVisibilityController.onChange.listen((bool visible) async {
-      print('Keyboard visibility update. Is visible: $visible');
       if (visible && _textEditingController.text.isEmpty) {
         /*
             this is a hack to position the overlay.
             the overlay uses the message textfield to determine the position
             of the overlay, so we need to wait for the keyboard to show
-          */
-        await Future.delayed(const Duration(milliseconds: 650));
+        */
+        await Future.delayed(const Duration(milliseconds: 600));
         showOverlay("", CommandType.exclamation);
       } else {
         hideOverlay();
@@ -76,26 +75,35 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
     return SizedBox(
       height: 300.0,
-      child: Wrap(
-        direction: Axis.horizontal,
-        children: [
-          for (var command in commands)
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
-              child: ActionChip(
-                backgroundColor: Color.fromARGB(255, 65, 172, 79),
-                label: Text(command.command),
-                onPressed: () {
-                  ActionsAdapter.instance.send(widget.channel, command.command);
+      child: SingleChildScrollView(
+        reverse: true,
+        scrollDirection: Axis.vertical,
+        child: Wrap(
+          direction: Axis.horizontal,
+          children: [
+            for (var command in commands)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                child: ActionChip(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  label: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0, vertical: 8.0),
+                    child: Text(command.command),
+                  ),
+                  onPressed: () {
+                    ActionsAdapter.instance
+                        .send(widget.channel, command.command);
 
-                  model.addCommand(Command(command.command, DateTime.now()));
-                  _chatInputFocusNode.unfocus();
-                  hideOverlay();
-                },
+                    model.addCommand(Command(command.command, DateTime.now()));
+                    _chatInputFocusNode.unfocus();
+                    hideOverlay();
+                  },
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -119,6 +127,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     final lst =
         ChatMode.values.where((element) => element.title.startsWith(text));
 
+    // slash commands
     final commands = lst.map((e) {
       return ListTile(
         title: Text(e.title),
@@ -133,8 +142,16 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       );
     }).toList();
 
-    // None to show
+    // slash commands, None to show
     if (commands.isEmpty) {
+      hideOverlay();
+      return;
+    }
+
+    // exclamation commands, None to show
+    final exclaimationCommands =
+        Provider.of<CommandsModel>(context, listen: false).commandList;
+    if (exclaimationCommands.isEmpty) {
       hideOverlay();
       return;
     }
@@ -180,25 +197,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     _textEditingController.clear();
   }
 
-  // Widget _buildCommandBar(BuildContext context) {
-  //   return KeyboardVisibilityBuilder(builder: (context, isKeyboardVisible) {
-  //     final commandsModel = Provider.of<CommandsModel>(context, listen: false);
-  //     if (!isKeyboardVisible || commandsModel.commandList.isEmpty) {
-  //       return Container();
-  //     }
-
-  //     return Padding(
-  //       child: Container(
-  //         height: 222,
-  //         width: 222,
-  //         color: Colors.blue,
-  //         margin: EdgeInsets.only(bottom: 500),
-  //       ),
-  //       padding: EdgeInsets.only(bottom: isKeyboardVisible ? 50 : 0),
-  //     );
-  //   });
-  // }
-
   Widget _buildEmotePicker(BuildContext context) {
     return EmotePickerWidget(
         channelId: widget.channel.channelId,
@@ -218,16 +216,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // remove overlay if keyboard is not visible
-    // if (MediaQuery.of(context).viewInsets.bottom == 0) {
-    //   hideOverlay();
-    // }
-
     return Material(
       child: Column(children: [
-        // (_textEditingController.text.isEmpty
-        //     ? _buildCommandBar(context)
-        //     : const SizedBox(height: 0, width: 0)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Container(
@@ -250,7 +240,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                         child: IconButton(
                             color: Theme.of(context).colorScheme.onSurface,
                             onPressed: () {
-                              hideOverlay();
                               if (_isEmotePickerVisible) {
                                 setState(() => _isEmotePickerVisible = false);
                                 _chatInputFocusNode.requestFocus();
@@ -296,16 +285,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                             offset: _textEditingController.text.length)));
                   },
                   onSubmitted: sendMessage,
-                  onTap: () async {
-                    // if (_textEditingController.text.isEmpty) {
-                    //   /*
-                    //     this is a hack to position the overlay.
-                    //     the overlay uses the message textfield to determine the position
-                    //     of the overlay, so we need to wait for the keyboard to show
-                    //   */
-                    //   await Future.delayed(const Duration(milliseconds: 1000));
-                    //   showOverlay("", CommandType.exclamation);
-                    // }
+                  onTap: () {
                     setState(() => _isEmotePickerVisible = false);
                     _chatInputFocusNode.requestFocus();
                   },
@@ -314,9 +294,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             ]),
           ),
         ),
-        // (_textEditingController.text.isEmpty
-        //     ? _buildCommandBar(context)
-        //     : const SizedBox(height: 0, width: 0)),
         _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
       ]),
     );
