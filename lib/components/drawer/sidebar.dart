@@ -139,7 +139,7 @@ class _SidebarState extends State<Sidebar> {
   Widget build(BuildContext context) {
     final tiles = <Widget>[
       ListTile(
-          leading: const Icon(Icons.add),
+          leading: const Icon(Icons.add_link_sharp),
           title: const Text("Configure quick links"),
           onTap: () =>
               Navigator.of(context).pushNamed("/settings/quick-links")),
@@ -172,7 +172,7 @@ class _SidebarState extends State<Sidebar> {
           return Container();
         }
         return ListTile(
-          leading: const Icon(Icons.refresh_outlined),
+          leading: const Icon(Icons.cached_outlined),
           title: const Text("Refresh audio sources"),
           onTap: () async {
             final count = await audioModel.refreshAllSources();
@@ -185,7 +185,7 @@ class _SidebarState extends State<Sidebar> {
         );
       }),
       ListTile(
-        leading: const Icon(Icons.settings_outlined),
+        leading: const Icon(Icons.build_outlined),
         title: const Text("Settings"),
         onTap: () async {
           await Navigator.pushNamed(context, "/settings");
@@ -196,7 +196,7 @@ class _SidebarState extends State<Sidebar> {
           return Container();
         }
         return ListTile(
-          leading: const Icon(Icons.exit_to_app_outlined),
+          leading: const Icon(Icons.logout_outlined),
           iconColor: Colors.redAccent,
           title: const Text("Sign out"),
           onTap: () async {
@@ -242,11 +242,16 @@ class _SidebarState extends State<Sidebar> {
               final orientation = MediaQuery.of(context).orientation;
               if (orientation == Orientation.portrait) {
                 return Column(children: [
-                  Expanded(child: ListView(children: [QuicklinksListView()])),
+                  Expanded(
+                      child: ListView(
+                          padding: EdgeInsets.zero,
+                          children: const [QuicklinksListView()])),
                   ...tiles
                 ]);
               } else {
-                return ListView(children: [QuicklinksListView(), ...tiles]);
+                return ListView(
+                    padding: EdgeInsets.zero,
+                    children: [const QuicklinksListView(), ...tiles]);
               }
             }))
           ],

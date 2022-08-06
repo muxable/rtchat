@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:io';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
@@ -17,8 +19,10 @@ class TtsModel extends ChangeNotifier {
   Future<void> _previousUtterance = Future.value();
   final Set<String> _pending = {};
   var _language = Language();
+  List<String> voices = [];
+  final Map<String, dynamic> _voice = {};
   var _isSupportedLanguage = false;
-  var _isRandomVoiceEnabled = false;
+  var _isRandomVoiceEnabled = true;
   var _isBotMuted = false;
   var _isEmoteMuted = false;
   var _speed = Platform.isAndroid ? 0.8 : 0.395;
@@ -30,18 +34,21 @@ class TtsModel extends ChangeNotifier {
   MessageModel? _activeMessage;
 
   void update(UserModel model) async {
-    if (model.activeChannel == null) {
-      _isSupportedLanguage = false;
-      _language = Language();
-      return;
+    if (kDebugMode) {
+      if (model.activeChannel == null) {
+        _isSupportedLanguage = false;
+        _language = Language();
+        return;
+      }
+      String streamLanguage = await _streamLanguage(
+        provider: model.activeChannel!.provider,
+        channelId: model.activeChannel!.channelId,
+      );
+      _isSupportedLanguage =
+          !(streamLanguage == 'other' || streamLanguage == 'asl');
+      language = _isSupportedLanguage ? Language(streamLanguage) : Language();
+      notifyListeners();
     }
-    String language = await _streamLanguage(
-      provider: model.activeChannel!.provider,
-      channelId: model.activeChannel!.channelId,
-    );
-    _isSupportedLanguage = !(language == 'other' || language == 'asl');
-    _language = _isSupportedLanguage ? Language(language) : Language();
-    notifyListeners();
   }
 
   final getStatistics =
@@ -58,6 +65,25 @@ class TtsModel extends ChangeNotifier {
         return statistics.data['language'];
     }
     throw "invalid provider";
+  }
+
+  void getVoices() async {
+    final voicesJson = await FirebaseFunctions.instance
+        .httpsCallable("getVoices")
+        .call(<String, dynamic>{
+      "language": _language.languageCode,
+    });
+    final data = voicesJson.data;
+
+    final List<String> voicesList = [];
+    for (LinkedHashMap voice in data) {
+      voicesList.add(voice['name']);
+    }
+    voices = voicesList;
+    if (_voice[language.languageCode] == null) {
+      voice = voicesList[0];
+    }
+    notifyListeners();
   }
 
   String getVocalization(MessageModel model,
@@ -110,9 +136,11 @@ class TtsModel extends ChangeNotifier {
     }
     say(
         SystemMessageModel(
-            text: "Text-to-speech ${value ? "enabled" : "disabled"}"),
+            text: "Text to speech ${value ? "enabled" : "disabled"}"),
         force: true);
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   Language get language {
@@ -121,6 +149,7 @@ class TtsModel extends ChangeNotifier {
 
   set language(Language language) {
     _language = language;
+    getVoices();
     notifyListeners();
   }
 
@@ -130,6 +159,15 @@ class TtsModel extends ChangeNotifier {
 
   set isSupportedLanguage(bool isSupportedLanguage) {
     _isSupportedLanguage = isSupportedLanguage;
+    notifyListeners();
+  }
+
+  String get voice {
+    return _voice[_language.languageCode] ?? voices[0];
+  }
+
+  set voice(String voice) {
+    _voice[_language.languageCode] = voice;
     notifyListeners();
   }
 
@@ -288,6 +326,9 @@ class TtsModel extends ChangeNotifier {
     if (json['language'] != null) {
       _language = Language(json['language']);
     }
+    if (json['voice'] != null) {
+      _voice.addAll(json['voice']);
+    }
     final userJson = json['mutedUsers'];
     if (userJson != null) {
       for (var user in userJson) {
@@ -303,6 +344,7 @@ class TtsModel extends ChangeNotifier {
         "language": language.languageCode,
         "pitch": pitch,
         "speed": speed,
+        "voice": _voice,
         'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
       };
 }

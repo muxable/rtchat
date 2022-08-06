@@ -6,6 +6,7 @@ class TwitchSubscriptionMessageEventModel extends MessageModel {
   final int cumulativeMonths;
   final int durationMonths;
   final int streakMonths;
+  final String text;
 
   const TwitchSubscriptionMessageEventModel(
       {required DateTime timestamp,
@@ -14,6 +15,7 @@ class TwitchSubscriptionMessageEventModel extends MessageModel {
       required this.tier,
       required this.cumulativeMonths,
       required this.durationMonths,
-      required this.streakMonths})
+      required this.streakMonths,
+      required this.text})
       : super(messageId: messageId, timestamp: timestamp);
 }

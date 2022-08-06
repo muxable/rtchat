@@ -41,11 +41,12 @@ export const synthesize = functions.https.onCall(async (data, context) => {
           text: data.text,
         },
         voice: {
-          languageCode: "en-US",
-          name: "en-US-Standard-A",
-          ssmlGender: "MALE",
+          languageCode: data.language,
+          name: data.voice,
         },
         audioConfig: {
+          speakingRate: data.rate,
+          pitch: data.pitch,
           audioEncoding: "MP3",
         },
       }),
@@ -57,4 +58,29 @@ export const synthesize = functions.https.onCall(async (data, context) => {
   console.log(json);
 
   return json["audioContent"];
+});
+
+export const getVoices = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("permission-denied", "invalid auth");
+  }
+
+  const token = await auth.getAccessToken();
+
+  const response = await fetch(
+    `https://texttospeech.googleapis.com/v1/voices?languageCode=${data.language}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    }
+  );
+
+  const json = await response.json();
+
+  console.log(json);
+
+  return json["voices"];
 });

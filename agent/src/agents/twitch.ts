@@ -208,6 +208,64 @@ async function join(
     });
   });
 
+  chat.onAnnouncement(async (channel, user, announcement, msg) => {
+    if (!msg.channelId) {
+      return;
+    }
+    const message = msg.message.value;
+    log.info(
+      {
+        channelId: msg.channelId,
+        channel,
+        messageId: msg.id,
+        message,
+      },
+      "adding message"
+    );
+    const tags = Object.fromEntries(msg.tags);
+    const badges = tags["badges"]
+      .split(",")
+      .map((badge) => badge.split("/") as [string, string]);
+    await firebase.getMessage(`twitch:${msg.id}`).set({
+      channelId: `twitch:${msg.channelId}`,
+      channel,
+      type: "message",
+      timestamp: admin.firestore.Timestamp.fromDate(msg.date),
+      reply: tags["reply-parent-msg-id"]
+        ? {
+            messageId: `twitch:${tags["reply-parent-msg-id"]}`,
+            displayName: tags["reply-parent-display-name"],
+            userLogin: tags["reply-parent-user-login"],
+            userId: tags["reply-parent-user-id"],
+            message: tags["reply-parent-msg-body"],
+          }
+        : null,
+      author: {
+        userId: tags["user-id"],
+        displayName: tags["display-name"],
+        login: tags["username"],
+      },
+      // we have to shim some tags because the frontend still needs some of these.
+      tags: {
+        "user-id": tags["user-id"],
+        "display-name": tags["display-name"],
+        username: user,
+        "room-id": tags["room-id"],
+        color: tags["color"],
+        "message-type": "chat",
+        "badges-raw": tags["badges"],
+        "first-msg": tags["first-msg"],
+        badges: {
+          vip: badges.find((badge) => badge[0] === "vip") !== null,
+          moderator: badges.find((badge) => badge[0] === "moderator") !== null,
+        },
+        "emotes-raw": tags["emotes"],
+      },
+      message,
+      announcementColor: announcement.color,
+    });
+  });
+
   chat.onMessageRemove(async (channel, messageId, msg) => {
     const original = await firebase.getMessage(`twitch:${messageId}`).get();
     if (!original.exists) {
