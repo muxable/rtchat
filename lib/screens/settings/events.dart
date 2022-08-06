@@ -29,7 +29,7 @@ class EventsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Event configuration selection'),
+        title: const Text('Events'),
       ),
       body: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         final dateTime = DateTime.now();

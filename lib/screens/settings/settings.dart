@@ -69,7 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           ListTile(
-            title: const Text('Event configuration'),
+            title: const Text('Events'),
             subtitle: const Text("Configure Twitch events"),
             onTap: () {
               Navigator.pushNamed(context, "/settings/events");
