@@ -48,16 +48,10 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     });
   }
 
-  bool startsWithsExlamination(String text) {
-    if (text == "" || text.isEmpty) {
-      return false;
-    }
-    final exclaimationList =
-        Provider.of<CommandsModel>(context, listen: false).commandList;
-    final hasExclaimation = exclaimationList.any((command) =>
-        command.command.startsWith(text) ||
-        command.command.toLowerCase().startsWith(text));
-    return hasExclaimation;
+  @override
+  void dispose() {
+    keyboardSubscription.cancel();
+    super.dispose();
   }
 
   bool startsWithPossibleCommands(String text) {
@@ -149,9 +143,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     }
 
     // exclamation commands, None to show
-    final exclaimationCommands =
+    final exclamationCommands =
         Provider.of<CommandsModel>(context, listen: false).commandList;
-    if (exclaimationCommands.isEmpty) {
+    if (exclamationCommands.isEmpty) {
       hideOverlay();
       return;
     }
