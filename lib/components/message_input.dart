@@ -50,7 +50,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     // Subscribe to keyboard visibility changes.
     keyboardSubscription =
         keyboardVisibilityController.onChange.listen((bool visible) async {
-      if (visible && _textEditingController.text.isEmpty) {
+      if (visible &&
+          _textEditingController.text.isEmpty &&
+          _chatInputFocusNode.hasFocus) {
         /*
             this is a hack to position the overlay.
             the overlay uses the message textfield to determine the position
