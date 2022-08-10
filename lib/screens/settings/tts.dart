@@ -25,12 +25,12 @@ class TextToSpeechScreen extends StatelessWidget {
                 children: [
                   SwitchListTile.adaptive(
                     title: const Text('Cloud TTS'),
-                    value: model.cloudTtsEnabled,
+                    value: model.isCloudTtsEnabled,
                     onChanged: (value) {
-                      model.cloudTtsEnabled = value;
+                      model.isCloudTtsEnabled = value;
                     },
                   ),
-                  if (model.cloudTtsEnabled)
+                  if (model.isCloudTtsEnabled)
                     Column(
                       children: [
                         Padding(
@@ -148,7 +148,7 @@ class TextToSpeechScreen extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () async {
-                  if (model.cloudTtsEnabled) {
+                  if (model.isCloudTtsEnabled) {
                     final response = await FirebaseFunctions.instance
                         .httpsCallable("synthesize")({
                       "voice": model.voice,
@@ -203,13 +203,13 @@ class TextToSpeechScreen extends StatelessWidget {
                     max: 2,
                     label: "${model.pitch}",
                     onChanged:
-                        model.isRandomVoiceEnabled && model.cloudTtsEnabled
+                        model.isRandomVoiceEnabled && model.isCloudTtsEnabled
                             ? null
                             : (value) {
                                 model.pitch = value;
                               },
                   ),
-                  if (kDebugMode && !model.cloudTtsEnabled)
+                  if (kDebugMode && !model.isCloudTtsEnabled)
                     Column(
                       children: [
                         const SizedBox(height: 8),

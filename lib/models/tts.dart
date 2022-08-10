@@ -19,7 +19,7 @@ import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/user.dart';
 
 class TtsModel extends ChangeNotifier {
-  var _cloudTtsEnabled = false;
+  var _isCloudTtsEnabled = false;
   final _tts = FlutterTts();
   Future<void> _previousUtterance = Future.value();
   final Set<String> _pending = {};
@@ -73,7 +73,7 @@ class TtsModel extends ChangeNotifier {
   }
 
   void getVoices() async {
-    if (!cloudTtsEnabled) {
+    if (!isCloudTtsEnabled) {
       return;
     }
     final voicesJson = await FirebaseFunctions.instance
@@ -206,12 +206,12 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool get cloudTtsEnabled {
-    return _cloudTtsEnabled;
+  bool get isCloudTtsEnabled {
+    return _isCloudTtsEnabled;
   }
 
-  set cloudTtsEnabled(bool value) {
-    _cloudTtsEnabled = value;
+  set isCloudTtsEnabled(bool value) {
+    _isCloudTtsEnabled = value;
     if (value) {
       getVoices();
     }
@@ -304,7 +304,7 @@ class TtsModel extends ChangeNotifier {
     if ((_isEnabled || model is SystemMessageModel) &&
         _pending.contains(model.messageId)) {
       // TODO: replace with subscription logic
-      if (!_cloudTtsEnabled) {
+      if (!_isCloudTtsEnabled) {
         try {
           await _tts.setSpeechRate(_speed);
           await _tts.setPitch(_pitch);
