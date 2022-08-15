@@ -257,6 +257,13 @@ class TextToSpeechScreen extends StatelessWidget {
                 model.isEmoteMuted = value;
               },
             ),
+            SwitchListTile.adaptive(
+              title: const Text('Mute username prelude'),
+              value: model.isPreludeMuted,
+              onChanged: (value) {
+                model.isPreludeMuted = value;
+              },
+            ),
           ],
         );
       }),
