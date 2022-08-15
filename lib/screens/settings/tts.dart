@@ -258,7 +258,10 @@ class TextToSpeechScreen extends StatelessWidget {
               },
             ),
             SwitchListTile.adaptive(
-              title: const Text('Mute username prelude'),
+              title: const Text('Mute viewer\'s name'),
+              subtitle: model.isPreludeMuted
+                  ? const Text('"muxfd said" won\'t be spoken')
+                  : const Text('"muxfd said" will be spoken'),
               value: model.isPreludeMuted,
               onChanged: (value) {
                 model.isPreludeMuted = value;
