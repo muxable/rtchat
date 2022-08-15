@@ -21,6 +21,7 @@ import 'package:rtchat/models/user.dart';
 class TtsModel extends ChangeNotifier {
   var _isCloudTtsEnabled = false;
   final _tts = FlutterTts();
+  final audioPlayer = AudioPlayer();
   Future<void> _previousUtterance = Future.value();
   final Set<String> _pending = {};
   var _language = Language();
@@ -37,6 +38,12 @@ class TtsModel extends ChangeNotifier {
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
+
+  @override
+  void dispose() {
+    audioPlayer.dispose();
+    super.dispose();
+  }
 
   void update(UserModel model) async {
     if (kDebugMode) {
@@ -338,10 +345,9 @@ class TtsModel extends ChangeNotifier {
           "pitch": pitch ?? 0,
         });
         final bytes = const Base64Decoder().convert(response.data);
-        final audioPlayer = AudioPlayer();
         await audioPlayer.setAudioSource(BytesAudioSource(bytes));
         await audioPlayer.play();
-        await audioPlayer.dispose();
+        await Future.delayed(audioPlayer.duration ?? const Duration());
       }
     }
 
