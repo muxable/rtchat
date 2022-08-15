@@ -1,21 +1,27 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:crypto/crypto.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/user.dart';
 
 class TtsModel extends ChangeNotifier {
+  var _isCloudTtsEnabled = false;
   final _tts = FlutterTts();
+  final audioPlayer = AudioPlayer();
   Future<void> _previousUtterance = Future.value();
   final Set<String> _pending = {};
   var _language = Language();
@@ -32,6 +38,12 @@ class TtsModel extends ChangeNotifier {
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
+
+  @override
+  void dispose() {
+    audioPlayer.dispose();
+    super.dispose();
+  }
 
   void update(UserModel model) async {
     if (kDebugMode) {
@@ -68,6 +80,9 @@ class TtsModel extends ChangeNotifier {
   }
 
   void getVoices() async {
+    if (!isCloudTtsEnabled) {
+      return;
+    }
     final voicesJson = await FirebaseFunctions.instance
         .httpsCallable("getVoices")
         .call(<String, dynamic>{
@@ -198,6 +213,18 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get isCloudTtsEnabled {
+    return _isCloudTtsEnabled;
+  }
+
+  set isCloudTtsEnabled(bool value) {
+    _isCloudTtsEnabled = value;
+    if (value) {
+      getVoices();
+    }
+    notifyListeners();
+  }
+
   double get speed {
     return _speed;
   }
@@ -283,13 +310,44 @@ class TtsModel extends ChangeNotifier {
 
     if ((_isEnabled || model is SystemMessageModel) &&
         _pending.contains(model.messageId)) {
-      try {
-        await _tts.setSpeechRate(_speed);
-        await _tts.setPitch(_pitch);
-        await _tts.awaitSpeakCompletion(true);
-        await _tts.speak(vocalization);
-      } catch (e, st) {
-        FirebaseCrashlytics.instance.recordError(e, st);
+      // TODO: replace with subscription logic
+      if (!_isCloudTtsEnabled) {
+        try {
+          await _tts.setSpeechRate(_speed);
+          await _tts.setPitch(_pitch);
+          await _tts.awaitSpeakCompletion(true);
+          await _tts.speak(vocalization);
+        } catch (e, st) {
+          FirebaseCrashlytics.instance.recordError(e, st);
+        }
+      } else {
+        String? voice;
+        double? pitch;
+        if (model is TwitchMessageModel) {
+          if (isRandomVoiceEnabled) {
+            final name = model.author.displayName;
+            final hash = BigInt.parse(
+                sha1.convert(utf8.encode(name!)).toString(),
+                radix: 16);
+            voice = voices[hash.remainder(BigInt.from(voices.length)).toInt()];
+            pitch = hash.remainder(BigInt.from(21)).toInt() / 5 - 2;
+          } else {
+            voice = _voice[_language.languageCode];
+            pitch = _pitch * 4 - 2;
+          }
+        }
+        final response =
+            await FirebaseFunctions.instance.httpsCallable("synthesize")({
+          "voice": voice ?? "en-US-WaveNet-F",
+          "language": _language.languageCode,
+          "text": vocalization,
+          "rate": _speed * 1.5 + 0.5,
+          "pitch": pitch ?? 0,
+        });
+        final bytes = const Base64Decoder().convert(response.data);
+        await audioPlayer.setAudioSource(BytesAudioSource(bytes));
+        await audioPlayer.play();
+        await Future.delayed(audioPlayer.duration ?? const Duration());
       }
     }
 
