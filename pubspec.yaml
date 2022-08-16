@@ -43,6 +43,7 @@ dependencies:
   flutter_markdown: ^0.6.10+2
   flutter_localized_locales: ^2.0.3
   flutter_custom_tabs: ^1.0.4
+  webview_flutter: ^3.0.4
   just_audio: ^0.9.28
 
 dev_dependencies:

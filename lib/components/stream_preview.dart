@@ -1,10 +1,12 @@
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'dart:async';
 
-class StreamPreview extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:rtchat/models/stream_preview.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+
+class StreamPreview extends StatefulWidget {
   const StreamPreview({
     Key? key,
     required this.channelDisplayName,
@@ -13,36 +15,121 @@ class StreamPreview extends StatelessWidget {
   final String channelDisplayName;
 
   @override
-  Widget build(BuildContext context) {
-    final urlString = (Platform.isAndroid)
-        ? "http://localhost:8080/assets/twitch-player.html?channel=$channelDisplayName"
-        : "https://player.twitch.tv/?channel=$channelDisplayName&parent=chat.rtirl.com&muted=true&quality=160p30";
+  State<StreamPreview> createState() => _StreamPreviewState();
+}
 
-    return InAppWebView(
-      initialOptions: InAppWebViewGroupOptions(
-          crossPlatform: InAppWebViewOptions(
-              useShouldOverrideUrlLoading: true,
-              javaScriptEnabled: true,
-              mediaPlaybackRequiresUserGesture: false,
-              transparentBackground: true),
-          android: AndroidInAppWebViewOptions(
-            useHybridComposition: true,
+class _StreamPreviewState extends State<StreamPreview> {
+  WebViewController? _controller;
+
+  var _isOverlayActive = false;
+  Timer? _overlayTimer;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(children: [
+      WebView(
+        debuggingEnabled: true,
+        initialUrl:
+            "https://player.twitch.tv/?channel=${widget.channelDisplayName}&controls=false&parent=chat.rtirl.com&muted=false",
+        onWebViewCreated: (controller) {
+          setState(() {
+            _controller = controller;
+          });
+        },
+        onPageFinished: (url) async {
+          final controller = _controller;
+          if (controller == null) {
+            return;
+          }
+          final model = Provider.of<StreamPreviewModel>(context, listen: false);
+          controller.runJavascript(
+              await rootBundle.loadString('assets/twitch-tunnel.js'));
+          await _controller?.runJavascript("action(Actions.SetMuted, false)");
+          await _controller?.runJavascript(
+              "action(Actions.SetVolume, ${model.volume / 100})");
+          if (model.isHighDefinition) {
+            await _controller
+                ?.runJavascript("action(Actions.SetQuality, 'auto')");
+          } else {
+            await _controller
+                ?.runJavascript("action(Actions.SetQuality, '160p')");
+          }
+        },
+        backgroundColor: Colors.transparent,
+        javascriptMode: JavascriptMode.unrestricted,
+        allowsInlineMediaPlayback: true,
+        initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
+      ),
+      Positioned.fill(
+        child: GestureDetector(
+          onTap: () {
+            _overlayTimer?.cancel();
+            _overlayTimer = Timer(const Duration(seconds: 3), () {
+              _overlayTimer = null;
+              setState(() {
+                _isOverlayActive = false;
+              });
+            });
+            setState(() {
+              _isOverlayActive = true;
+            });
+          },
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 100),
+            opacity: _isOverlayActive ? 1.0 : 0.0,
+            child: Container(
+              color: Colors.black.withOpacity(0.4),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Consumer<StreamPreviewModel>(
+                  builder: (context, model, child) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                            onPressed: () async {
+                              if (model.volume == 0) {
+                                model.volume = 100;
+                              } else if (model.volume == 100) {
+                                model.volume = 33;
+                              } else {
+                                model.volume = 0;
+                              }
+                              await _controller?.runJavascript(
+                                  "action(Actions.SetMuted, false)");
+                              await _controller?.runJavascript(
+                                  "action(Actions.SetVolume, ${model.volume / 100})");
+                            },
+                            icon: Icon(
+                              model.volume == 0
+                                  ? Icons.volume_mute
+                                  : model.volume == 100
+                                      ? Icons.volume_up
+                                      : Icons.volume_down,
+                            )),
+                        IconButton(
+                            onPressed: () async {
+                              model.isHighDefinition = !model.isHighDefinition;
+                              if (model.isHighDefinition) {
+                                await _controller?.runJavascript(
+                                    "action(Actions.SetQuality, 'auto')");
+                              } else {
+                                await _controller?.runJavascript(
+                                    "action(Actions.SetQuality, '160p')");
+                              }
+                            },
+                            icon: Icon(
+                                model.isHighDefinition ? Icons.hd : Icons.sd)),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
           ),
-          ios: IOSInAppWebViewOptions(
-            allowsInlineMediaPlayback: true,
-          )),
-      initialUrlRequest: URLRequest(url: Uri.parse(urlString)),
-      gestureRecognizers: {
-        Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
-      },
-      shouldOverrideUrlLoading: (controller, action) async {
-        // Prevent navigation outside the player
-        final url = action.request.url;
-        if (url.toString().startsWith("https://player.twitch.tv")) {
-          return NavigationActionPolicy.ALLOW;
-        }
-        return NavigationActionPolicy.CANCEL;
-      },
-    );
+        ),
+      ),
+    ]);
   }
 }
