@@ -1,10 +1,12 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 enum ActivityFeedType { disabled, standard, custom }
 
@@ -17,7 +19,7 @@ class ActivityFeedScreen extends StatefulWidget {
 
 class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   final _textEditingController = TextEditingController();
-  InAppWebViewController? _inAppWebViewController;
+  WebViewController? _webViewController;
   ActivityFeedModel? _activityFeedModel;
   var _showControls = true;
 
@@ -39,25 +41,24 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
 
   void synchronizeUrl() async {
     final url = getUri();
-    if (url != null && url.toString().isNotEmpty) {
-      await _inAppWebViewController?.loadUrl(urlRequest: URLRequest(url: url));
+    if (url != null && url.isNotEmpty) {
+      await _webViewController?.loadUrl(url);
     }
   }
 
-  Uri? getUri() {
+  String? getUri() {
     final activityFeedModel =
         Provider.of<ActivityFeedModel>(context, listen: false);
     final userModel = Provider.of<UserModel>(context, listen: false);
     final channel = userModel.userChannel;
     if (activityFeedModel.isCustom) {
-      return Uri.tryParse(activityFeedModel.customUrl);
+      return activityFeedModel.customUrl;
     } else if (channel == null) {
       return null;
     }
     switch (channel.provider) {
       case "twitch":
-        return Uri.tryParse(
-            "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
+        return "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed";
     }
     return null;
   }
@@ -153,17 +154,20 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                 ? Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: InAppWebView(
-                        initialUrlRequest:
-                            uri == null ? null : URLRequest(url: uri),
-                        onWebViewCreated: (controller) =>
-                            _inAppWebViewController = controller,
-                        initialOptions: InAppWebViewGroupOptions(
-                            crossPlatform: InAppWebViewOptions(
-                          javaScriptEnabled: true,
-                          transparentBackground: true,
-                        )),
-                      ),
+                        child: WebView(
+                          initialUrl: uri,
+                          javascriptMode: JavascriptMode.unrestricted,
+                          initialMediaPlaybackPolicy:
+                              AutoMediaPlaybackPolicy.always_allow,
+                          allowsInlineMediaPlayback: true,
+                          zoomEnabled: false,
+                          onWebViewCreated: (controller) =>
+                              setState(() => _webViewController = controller),
+                          gestureRecognizers: {
+                            Factory<OneSequenceGestureRecognizer>(
+                                () => EagerGestureRecognizer()),
+                          },
+                        )
                     ),
                   )
                 : Container(),
