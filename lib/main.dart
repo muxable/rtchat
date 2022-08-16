@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show Platform;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -9,7 +8,6 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
@@ -22,6 +20,7 @@ import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/message_configuration.dart';
 import 'package:rtchat/models/quick_links.dart';
+import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
@@ -53,10 +52,6 @@ import 'package:rtchat/themes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
-  if (Platform.isAndroid) {
-    final InAppLocalhostServer localhostServer = InAppLocalhostServer();
-    await localhostServer.start();
-  }
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   final prefs = await SharedPreferences.getInstance();
@@ -234,6 +229,15 @@ class _AppState extends State<App> {
               return model;
             },
             lazy: false),
+        ChangeNotifierProvider<StreamPreviewModel>(create: (context) {
+          final model = StreamPreviewModel.fromJson(
+              jsonDecode(widget.prefs.getString("stream_preview") ?? "{}"));
+          return model
+            ..addListener(() {
+              widget.prefs
+                  .setString('stream_preview', jsonEncode(model.toJson()));
+            });
+        }),
       ],
       child: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return MaterialApp(
