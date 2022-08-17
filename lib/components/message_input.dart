@@ -39,36 +39,35 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   final _textEditingController = TextEditingController();
   final _chatInputFocusNode = FocusNode();
   var _isEmotePickerVisible = false;
-  late StreamSubscription<bool> keyboardSubscription;
+  var _isTextCommand = false;
+  var _isKeyboardVisible = false;
+  late StreamSubscription keyboardSubscription;
   var _emoteIndex = Random().nextInt(_emotes.length);
-  OverlayEntry? entry;
 
   @override
   void initState() {
     super.initState();
-    var keyboardVisibilityController = KeyboardVisibilityController();
+    final keyboardVisibilityController = KeyboardVisibilityController();
     // Subscribe to keyboard visibility changes.
     keyboardSubscription =
-        keyboardVisibilityController.onChange.listen((bool visible) async {
-      if (visible &&
-          _textEditingController.text.isEmpty &&
-          _chatInputFocusNode.hasFocus) {
-        /*
-            this is a hack to position the overlay.
-            the overlay uses the message textfield to determine the position
-            of the overlay, so we need to wait for the keyboard to show
-        */
-        await Future.delayed(const Duration(milliseconds: 600));
-        showOverlay("", CommandType.exclamation);
-      } else {
-        hideOverlay();
-      }
+        keyboardVisibilityController.onChange.listen((visible) {
+      setState(() {
+        _isKeyboardVisible = visible;
+      });
+    });
+    // Subscribe to text editing changes.
+    _textEditingController.addListener(() {
+      setState(() {
+        _isTextCommand =
+            startsWithPossibleCommands(_textEditingController.text);
+      });
     });
   }
 
   @override
   void dispose() {
     keyboardSubscription.cancel();
+    _textEditingController.dispose();
     super.dispose();
   }
 
@@ -81,121 +80,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     return hasSlash;
   }
 
-  Widget commandChips() {
-    final model = Provider.of<CommandsModel>(context, listen: false);
-    final commands = model.commandList;
-
-    return SizedBox(
-      height: 300.0,
-      child: SingleChildScrollView(
-        reverse: true,
-        scrollDirection: Axis.vertical,
-        child: Wrap(
-          direction: Axis.horizontal,
-          children: [
-            for (var command in commands)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                child: ActionChip(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  label: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0, vertical: 8.0),
-                    child: Text(command.command),
-                  ),
-                  onPressed: () {
-                    ActionsAdapter.instance
-                        .send(widget.channel, command.command);
-
-                    model.addCommand(Command(command.command, DateTime.now()));
-                    _chatInputFocusNode.unfocus();
-                    hideOverlay();
-                  },
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void hideOverlay() {
-    entry?.remove();
-    entry = null;
-  }
-
-  void showOverlay(String text, CommandType type) {
-    // remove existing overlay, bc user can contiunously type a prefix string that matches a command
-    hideOverlay();
-
-    final overlay = Overlay.of(context)!;
-
-    // the renderbox of this widget
-    final renderBox = context.findRenderObject() as RenderBox;
-    final size = renderBox.size;
-
-    final offset = renderBox.localToGlobal(Offset.zero);
-    final lst =
-        ChatMode.values.where((element) => element.title.startsWith(text));
-
-    // slash commands
-    final commands = lst.map((e) {
-      return ListTile(
-        title: Text(e.title),
-        subtitle: Text(e.subtitle),
-        onTap: () {
-          _textEditingController.text = e.title;
-          hideOverlay();
-          // move cursor position
-          _textEditingController.selection = TextSelection.fromPosition(
-              TextPosition(offset: _textEditingController.text.length));
-        },
-      );
-    }).toList();
-
-    // slash commands, None to show
-    if (commands.isEmpty) {
-      hideOverlay();
-      return;
-    }
-
-    // exclamation commands, None to show
-    final exclamationCommands =
-        Provider.of<CommandsModel>(context, listen: false).commandList;
-    if (exclamationCommands.isEmpty) {
-      hideOverlay();
-      return;
-    }
-
-    final lstSize = commands.length;
-    const listTileSize = 75; // the roughly size of a listTile
-    final shiftUp = min(lstSize * listTileSize, 300);
-
-    entry = OverlayEntry(builder: (context) {
-      return Positioned(
-        left: offset.dx,
-        top: offset.dy - shiftUp,
-        width: size.width,
-        child: Material(
-          child: type == CommandType.exclamation
-              ? commandChips()
-              : SizedBox(
-                  height: shiftUp.toDouble(),
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    primary: false,
-                    children: commands,
-                  ),
-                ),
-        ),
-      );
-    });
-
-    overlay.insert(entry!);
-  }
-
   void sendMessage(String value) async {
     value = value.trim();
     if (value.isEmpty) {
@@ -206,23 +90,17 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       commandsModel.addCommand(Command(value, DateTime.now()));
     }
     ActionsAdapter.instance.send(widget.channel, value);
-    _textEditingController.clear();
+    setState(() => _textEditingController.clear());
   }
 
   Widget _buildEmotePicker(BuildContext context) {
     return EmotePickerWidget(
         channelId: widget.channel.channelId,
-        onDismiss: () => setState(() => _isEmotePickerVisible = false),
-        onDelete: () {
-          var initialText = _textEditingController.text;
-          if (initialText.isNotEmpty) {
-            _textEditingController.text =
-                initialText.substring(0, initialText.length - 1);
-          }
-        },
         onEmoteSelected: (emote) {
-          _textEditingController.text =
-              "${_textEditingController.text} ${emote.code}";
+          setState(() {
+            _textEditingController.text =
+                "${_textEditingController.text} ${emote.code}";
+          });
         });
   }
 
@@ -230,6 +108,57 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   Widget build(BuildContext context) {
     return Material(
       child: Column(children: [
+        if (_isKeyboardVisible)
+          if (_isTextCommand)
+            SizedBox(
+              height: 200,
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                children: ChatMode.values
+                    .where((element) =>
+                        element.title.startsWith(_textEditingController.text))
+                    .map((e) {
+                  return ListTile(
+                    title: Text(e.title),
+                    subtitle: Text(e.subtitle),
+                    onTap: () {
+                      _textEditingController.text = e.title;
+                      // move cursor position
+                      _textEditingController.selection =
+                          TextSelection.fromPosition(TextPosition(
+                              offset: _textEditingController.text.length));
+                    },
+                  );
+                }).toList(),
+              ),
+            )
+          else
+            Container(
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  children: [
+                    Consumer<CommandsModel>(builder: (context, model, child) {
+                      return Wrap(
+                        children: model.commandList.map((command) {
+                          return TextButton(
+                            child: Text(command.command),
+                            onPressed: () {
+                              ActionsAdapter.instance
+                                  .send(widget.channel, command.command);
+
+                              model.addCommand(
+                                  Command(command.command, DateTime.now()));
+                              _chatInputFocusNode.unfocus();
+                            },
+                          );
+                        }).toList(),
+                      );
+                    }),
+                  ]),
+            ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Container(
@@ -288,22 +217,16 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       border: InputBorder.none,
                       hintText: "Send a message..."),
                   onChanged: (text) {
-                    // slash prefix
-                    if (startsWithPossibleCommands(text)) {
-                      showOverlay(text, CommandType.slash);
-                    } else {
-                      hideOverlay();
-                      // showOverlay("", CommandType.exclamation);
-                    }
-
                     final filtered = text.replaceAll('\n', ' ');
                     if (filtered == text) {
                       return;
                     }
-                    _textEditingController.value = TextEditingValue(
-                        text: filtered,
-                        selection: TextSelection.fromPosition(TextPosition(
-                            offset: _textEditingController.text.length)));
+                    setState(() {
+                      _textEditingController.value = TextEditingValue(
+                          text: text,
+                          selection: TextSelection.fromPosition(TextPosition(
+                              offset: _textEditingController.text.length)));
+                    });
                   },
                   onSubmitted: sendMessage,
                   onTap: () {

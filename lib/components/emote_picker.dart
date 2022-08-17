@@ -4,8 +4,6 @@ import 'package:rtchat/models/messages/twitch/emote.dart';
 
 class EmotePickerWidget extends StatelessWidget {
   final void Function(Emote) onEmoteSelected;
-  final void Function() onDelete;
-  final void Function() onDismiss;
   final String channelId;
   static const _emoteColumns = 8;
   static const _footerHeight = 30;
@@ -13,8 +11,6 @@ class EmotePickerWidget extends StatelessWidget {
   const EmotePickerWidget(
       {Key? key,
       required this.onEmoteSelected,
-      required this.onDelete,
-      required this.onDismiss,
       required this.channelId})
       : super(key: key);
 
@@ -58,21 +54,6 @@ class EmotePickerWidget extends StatelessWidget {
               },
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  icon: const Icon(Icons.close),
-                  tooltip: "Close",
-                  onPressed: onDismiss),
-              IconButton(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  icon: const Icon(Icons.backspace),
-                  tooltip: "Delete",
-                  onPressed: onDelete)
-            ],
-          )
         ],
       ),
     );
