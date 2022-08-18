@@ -91,8 +91,9 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
             ],
           ),
         ),
-        Text.rich(TextSpan(text: model.text),
-            style: const TextStyle(fontStyle: FontStyle.italic)),
+        if (model.text.isNotEmpty)
+          Text.rich(TextSpan(text: model.text),
+              style: const TextStyle(fontStyle: FontStyle.italic)),
       ]),
     );
   }
