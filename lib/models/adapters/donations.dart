@@ -28,10 +28,7 @@ class DonationsAdapter {
 
   Future<void> setRealtimeChatAddress(
       {required String userId, required String address}) {
-    return functions.httpsCallable("setRealtimeChatAddress")({
-      "userId": userId,
-      "address": address,
-    });
+    return functions.httpsCallable("setRealtimeChatAddress")(address);
   }
 
   Stream<StreamlabsConfig?> forStreamlabsConfig({required String userId}) {
