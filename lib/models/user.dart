@@ -24,8 +24,6 @@ class UserModel extends ChangeNotifier {
       _profileSubscription?.cancel();
       await FirebaseCrashlytics.instance.setUserIdentifier(user?.uid ?? "");
       await FirebaseAnalytics.instance.setUserId(id: user?.uid);
-      await FirebaseAnalytics.instance
-          .setUserProperty(name: "provider", value: "twitch");
       if (user == null) {
         _userChannel = null;
         _isLoading = false;
@@ -38,6 +36,14 @@ class UserModel extends ChangeNotifier {
         _userChannel = channel;
         _isLoading = false;
         notifyListeners();
+        if (channel != null) {
+          FirebaseAnalytics.instance
+              .setUserProperty(name: "user_provider", value: channel.provider);
+          FirebaseAnalytics.instance.setUserProperty(
+              name: "user_channel_id", value: channel.channelId);
+          FirebaseAnalytics.instance.setUserProperty(
+              name: "user_display_name", value: channel.displayName);
+        }
       });
     });
   }
