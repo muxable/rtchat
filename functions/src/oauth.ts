@@ -25,6 +25,25 @@ export const TWITCH_OAUTH_CONFIG = {
   },
 } as ModuleOptions<"client_id">;
 
+export const STREAMLABS_CLIENT_ID = functions.config().streamlabs.id;
+export const STREAMLABS_CLIENT_SECRET = functions.config().streamlabs.secret;
+
+export const STREAMLABS_OAUTH_CONFIG = {
+  client: {
+    id: STREAMLABS_CLIENT_ID,
+    secret: STREAMLABS_CLIENT_SECRET,
+  },
+  auth: {
+    tokenHost: "https://www.streamlabs.com/api/v1.0",
+    tokenPath: "/token",
+    authorizePath: "/authorize",
+  },
+  options: {
+    bodyFormat: "json",
+    authorizationMethod: "body",
+  },
+} as ModuleOptions<"client_id">;
+
 export async function getAccessToken(userId: string, provider: string) {
   // fetch the token from the database.
   const ref = admin.firestore().collection("tokens").doc(userId);
