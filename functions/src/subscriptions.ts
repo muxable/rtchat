@@ -70,7 +70,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
 export const unsubscribe = functions.pubsub
   .schedule("0 4 * * *") // daily at 4a
   .onRun(async (context) => {
-    const limit = Date.now() - 3 * 86400 * 1000;
+    const limit = Date.now() - 7 * 86400 * 1000;
     const subscriptionsRef = admin.database().ref("subscriptions");
     const subscriptions = await subscriptionsRef.get();
     const providers = subscriptions.val() as {

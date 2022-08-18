@@ -30,6 +30,7 @@ import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
+import 'package:rtchat/screens/settings/donations.dart';
 import 'package:rtchat/screens/settings/tts/cloud_tts.dart';
 import 'package:rtchat/screens/settings/events.dart';
 import 'package:rtchat/screens/settings/events/channel_point.dart';
@@ -287,6 +288,7 @@ class _AppState extends State<App> {
                 const VoicesScreen(),
             '/settings/quick-links': (context) => const QuickLinksScreen(),
             '/settings/backup': (context) => const BackupScreen(),
+            '/settings/donations': (context) => const DonationsScreen(),
             '/settings/events': (context) => const EventsScreen(),
             '/settings/events/follow': (context) => const FollowEventScreen(),
             '/settings/events/cheer': (context) => const CheerEventScreen(),

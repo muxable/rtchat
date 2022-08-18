@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -75,6 +76,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pushNamed(context, "/settings/events");
             },
           ),
+          if (kDebugMode)
+            ListTile(
+              title: const Text('Third-party donations'),
+              subtitle: const Text("Connect to a third-party donation service"),
+              onTap: () {
+                Navigator.pushNamed(context, "/settings/donations");
+              },
+            ),
           const Divider(),
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
