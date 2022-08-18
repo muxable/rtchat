@@ -9,6 +9,10 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow write: if false;
     }
+    match /streamlabs/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+    }
     match /actions/{document=**} {
       allow read: if false;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
