@@ -26,9 +26,9 @@ class DonationsAdapter {
         .map((doc) => doc.exists ? doc.get("address") : null);
   }
 
-  Future<void> setRealtimeChatAddress(
+  Future<void> setRealtimeCashAddress(
       {required String userId, required String address}) {
-    return functions.httpsCallable("setRealtimeChatAddress")(address);
+    return functions.httpsCallable("setRealtimeCashAddress")(address);
   }
 
   Stream<StreamlabsConfig?> forStreamlabsConfig({required String userId}) {
