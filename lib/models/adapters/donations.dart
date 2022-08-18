@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 class StreamlabsConfig {
   final String? currency;
@@ -8,11 +9,13 @@ class StreamlabsConfig {
 
 class DonationsAdapter {
   final FirebaseFirestore db;
+  final FirebaseFunctions functions;
 
-  DonationsAdapter._({required this.db});
+  DonationsAdapter._({required this.db, required this.functions});
 
   static DonationsAdapter get instance =>
-      _instance ??= DonationsAdapter._(db: FirebaseFirestore.instance);
+      _instance ??= DonationsAdapter._(
+      db: FirebaseFirestore.instance, functions: FirebaseFunctions.instance);
   static DonationsAdapter? _instance;
 
   Stream<String?> forRealtimeChatAddress({required String userId}) {
@@ -21,6 +24,14 @@ class DonationsAdapter {
         .doc(userId)
         .snapshots()
         .map((doc) => doc.exists ? doc.get("address") : null);
+  }
+
+  Future<void> setRealtimeChatAddress(
+      {required String userId, required String address}) {
+    return functions.httpsCallable("setRealtimeChatAddress")({
+      "userId": userId,
+      "address": address,
+    });
   }
 
   Stream<StreamlabsConfig?> forStreamlabsConfig({required String userId}) {
