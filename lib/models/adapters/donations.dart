@@ -20,7 +20,7 @@ class DonationsAdapter {
 
   Stream<String?> forRealtimeChatAddress({required String userId}) {
     return db
-        .collection("realtimechat")
+        .collection("realtimecash")
         .doc(userId)
         .snapshots()
         .map((doc) => doc.exists ? doc.get("address") : null);
