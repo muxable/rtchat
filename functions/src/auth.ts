@@ -7,7 +7,11 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
 import { AuthorizationCode } from "simple-oauth2";
-import { TWITCH_CLIENT_ID, TWITCH_OAUTH_CONFIG } from "./oauth";
+import {
+  STREAMLABS_OAUTH_CONFIG,
+  TWITCH_CLIENT_ID,
+  TWITCH_OAUTH_CONFIG,
+} from "./oauth";
 
 const app = express();
 
@@ -29,6 +33,7 @@ app.use(
 declare module "express-session" {
   interface Session {
     state?: string;
+    token?: string;
   }
 }
 
@@ -108,7 +113,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
     .set({ twitch: JSON.stringify(results.token) }, { merge: true });
 
   // save the profile information too.
-  const twitchProfile : any = {
+  const twitchProfile: any = {
     id: users["data"][0]["id"],
     displayName: users["data"][0]["display_name"],
     login: users["data"][0]["login"],
@@ -129,6 +134,51 @@ app.get("/auth/twitch/callback", async (req, res) => {
   const token = await admin.auth().createCustomToken(firebaseUserId);
 
   res.redirect("com.rtirl.chat://success?token=" + encodeURIComponent(token));
+});
+
+app.get("/auth/streamlabs/redirect", (req, res) => {
+  req.session.token = req.query.token?.toString();
+  const redirectUri = new AuthorizationCode(
+    STREAMLABS_OAUTH_CONFIG
+  ).authorizeURL({
+    redirect_uri: `${HOST}/auth/streamlabs/callback`,
+    scope: ["donations.read"],
+  });
+  res.redirect(redirectUri);
+});
+
+async function toUserId(token?: string) {
+  if (!token) {
+    return null;
+  }
+  try {
+    const decoded = await admin.auth().verifyIdToken(token);
+    return decoded.uid;
+  } catch (e) {
+    return null;
+  }
+}
+
+app.get("/auth/streamlabs/callback", async (req, res) => {
+  const uid = await toUserId(req.session.token);
+  if (!uid) {
+    res.redirect("com.rtirl.chat://error?message=invalid_token");
+    return;
+  }
+  const results = await new AuthorizationCode(STREAMLABS_OAUTH_CONFIG).getToken(
+    {
+      code: String(req.query.code),
+      redirect_uri: `${HOST}/auth/streamlabs/callback`,
+    }
+  );
+
+  admin
+    .firestore()
+    .collection("streamlabs")
+    .doc(uid)
+    .set({ token: JSON.stringify(results.token) }, { merge: true });
+
+  res.redirect("com.rtirl.chat://success?token=1");
 });
 
 export { app };
