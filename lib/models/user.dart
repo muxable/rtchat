@@ -57,6 +57,8 @@ class UserModel extends ChangeNotifier {
 
   bool isSignedIn() => _user != null;
 
+  User? get user => _user;
+
   Channel? get userChannel => _userChannel;
 
   Channel? get activeChannel => _activeChannel ?? _userChannel;
