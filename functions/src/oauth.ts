@@ -35,8 +35,8 @@ export const STREAMLABS_OAUTH_CONFIG = {
   },
   auth: {
     tokenHost: "https://www.streamlabs.com/api/v1.0",
-    tokenPath: "/token",
-    authorizePath: "/authorize",
+    tokenPath: "/api/v1.0/token",
+    authorizePath: "/api/v1.0/authorize",
   },
   options: {
     bodyFormat: "json",
