@@ -26,13 +26,18 @@ class _StreamPreviewState extends State<StreamPreview> {
   Timer? _overlayTimer;
 
   @override
-  Widget build(BuildContext context) {
+  void didUpdateWidget(StreamPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
     final newUrl =
         'https://player.twitch.tv/?channel=${widget.channelDisplayName}&controls=false&parent=chat.rtirl.com&muted=false';
     if (url != newUrl && _controller != null) {
       _controller!.loadUrl(newUrl);
       url = newUrl;
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Stack(children: [
       WebView(
         debuggingEnabled: true,
