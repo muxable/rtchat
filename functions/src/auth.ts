@@ -34,6 +34,7 @@ declare module "express-session" {
   interface Session {
     state?: string;
     token?: string;
+    provider?: string;
   }
 }
 
@@ -138,6 +139,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
 
 app.get("/auth/streamlabs/redirect", (req, res) => {
   req.session.token = req.query.token?.toString();
+  req.session.provider = req.query.provider?.toString();
   const redirectUri = new AuthorizationCode(
     STREAMLABS_OAUTH_CONFIG
   ).authorizeURL({
@@ -160,8 +162,9 @@ async function toUserId(token?: string) {
 }
 
 app.get("/auth/streamlabs/callback", async (req, res) => {
+  const provider = req.session.provider;
   const uid = await toUserId(req.session.token);
-  if (!uid) {
+  if (!uid || !provider) {
     res.redirect("com.rtirl.chat://error?message=invalid_token");
     return;
   }
@@ -171,12 +174,19 @@ app.get("/auth/streamlabs/callback", async (req, res) => {
       redirect_uri: `${HOST}/auth/streamlabs/callback`,
     }
   );
+  const usernameDoc = await admin
+    .firestore()
+    .collection("profiles")
+    .doc(uid)
+    .get();
+
+  const channelId = `${provider}:${usernameDoc.get(provider)["id"]}`;
 
   admin
     .firestore()
     .collection("streamlabs")
     .doc(uid)
-    .set({ token: JSON.stringify(results.token) }, { merge: true });
+    .set({ token: JSON.stringify(results.token), channelId }, { merge: true });
 
   res.redirect("com.rtirl.chat://success?token=1");
 });
