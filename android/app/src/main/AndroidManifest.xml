@@ -67,5 +67,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <service
+            android:name=".AudioService"
+            android:enabled="true"
+            android:foregroundServiceType="mediaPlayback" />
     </application>
 </manifest>

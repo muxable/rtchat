@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_background/flutter_background.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
@@ -68,7 +67,6 @@ class AudioModel extends ChangeNotifier {
       _hostChannelStateSubscription = null;
       _isOnline = false;
       _syncWebViews();
-      _toggleBackground(false);
       notifyListeners();
       return;
     }
@@ -77,25 +75,8 @@ class AudioModel extends ChangeNotifier {
         .listen((isOnline) {
       _isOnline = isOnline;
       _syncWebViews();
-      _toggleBackground(isOnline);
       notifyListeners();
     });
-  }
-
-  // this isn't really the best place to put this function since it applies
-  // outside audio, but it's a convenient place since we already have the listener.
-  void _toggleBackground(bool enable) async {
-    const androidConfig = FlutterBackgroundAndroidConfig(
-      notificationTitle: "RealtimeChat",
-      notificationText: "RealtimeChat is running in the background",
-    );
-    if (enable) {
-      if (await FlutterBackground.initialize(androidConfig: androidConfig)) {
-        await FlutterBackground.enableBackgroundExecution();
-      }
-    } else if (FlutterBackground.isBackgroundExecutionEnabled) {
-      await FlutterBackground.disableBackgroundExecution();
-    }
   }
 
   bool get isSettingsVisible => _isSettingsVisible;
