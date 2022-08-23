@@ -76,7 +76,7 @@ class _StreamPreviewState extends State<StreamPreview> {
               name: "Flutter",
               onMessageReceived: (message) {
                 final params = jsonDecode(message.message)["params"];
-                if (params is Map) {
+                if (params is Map && mounted) {
                   setState(() => _playerState = params["playback"]);
                 }
               })
@@ -103,6 +103,7 @@ class _StreamPreviewState extends State<StreamPreview> {
               _overlayTimer?.cancel();
               _overlayTimer = Timer(const Duration(seconds: 3), () {
                 _overlayTimer = null;
+                if (!mounted) return;
                 setState(() {
                   _isOverlayActive = false;
                 });
