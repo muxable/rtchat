@@ -67,7 +67,6 @@ class _StreamPreviewState extends State<StreamPreview> {
                 ?.runJavascript("action(Actions.SetQuality, '160p')");
           }
         },
-        backgroundColor: Colors.transparent,
         javascriptMode: JavascriptMode.unrestricted,
         allowsInlineMediaPlayback: true,
         initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
