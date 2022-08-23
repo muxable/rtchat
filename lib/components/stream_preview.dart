@@ -20,9 +20,21 @@ class StreamPreview extends StatefulWidget {
 
 class _StreamPreviewState extends State<StreamPreview> {
   WebViewController? _controller;
+  String? url;
 
   var _isOverlayActive = false;
   Timer? _overlayTimer;
+
+  @override
+  void didUpdateWidget(StreamPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newUrl =
+        'https://player.twitch.tv/?channel=${widget.channelDisplayName}&controls=false&parent=chat.rtirl.com&muted=false';
+    if (url != newUrl && _controller != null) {
+      _controller!.loadUrl(newUrl);
+      url = newUrl;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +42,7 @@ class _StreamPreviewState extends State<StreamPreview> {
       WebView(
         debuggingEnabled: true,
         initialUrl:
-            "https://player.twitch.tv/?channel=${widget.channelDisplayName}&controls=false&parent=chat.rtirl.com&muted=false",
+            'https://player.twitch.tv/?channel=${widget.channelDisplayName}&controls=false&parent=chat.rtirl.com&muted=false',
         onWebViewCreated: (controller) {
           setState(() {
             _controller = controller;
