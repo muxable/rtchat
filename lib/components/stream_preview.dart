@@ -76,17 +76,17 @@ class _StreamPreviewState extends State<StreamPreview> {
               name: "Flutter",
               onMessageReceived: (message) {
                 final params = jsonDecode(message.message)["params"];
-                if (params != null) {
+                if (params is Map) {
                   setState(() => _playerState = params["playback"]);
                 }
               })
         },
       ),
       if (_playerState == null || _playerState == "Idle")
-        IgnorePointer(
-          child: Positioned.fill(
+        Positioned.fill(
+          child: IgnorePointer(
             child: Container(
-              color: Colors.black,
+              color: Colors.black.withOpacity(0.8),
               child: const Center(
                 child: Text(
                   "Loading (or stream is offline)...",
