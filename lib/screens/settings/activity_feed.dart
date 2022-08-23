@@ -52,7 +52,11 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
     final userModel = Provider.of<UserModel>(context, listen: false);
     final channel = userModel.userChannel;
     if (activityFeedModel.isCustom) {
-      return activityFeedModel.customUrl;
+      final uri = Uri.tryParse(activityFeedModel.customUrl);
+      if (uri == null) {
+        return null;
+      }
+      return uri.scheme.isEmpty ? 'https://$uri' : uri.toString();
     } else if (channel == null) {
       return null;
     }
@@ -67,7 +71,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   Widget build(BuildContext context) {
     final uri = getUri();
     return Scaffold(
-      appBar: AppBar(title: const Text("Activity feed")),
+      appBar: _showControls ? AppBar(title: const Text("Activity feed")) : null,
       body: SafeArea(
         child: Consumer3<ActivityFeedModel, UserModel, LayoutModel>(builder:
             (context, activityFeedModel, userModel, layoutModel, child) {
@@ -100,7 +104,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
               ),
             if (_showControls)
               RadioListTile(
-                title: TextField(
+                title: TextFormField(
                     controller: _textEditingController,
                     decoration: InputDecoration(
                         hintText: "Custom URL",
@@ -121,9 +125,16 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                                         });
                                   });
                             })),
+                    validator: (value) {
+                      if (value == null || Uri.tryParse(value) != null) {
+                        return "That's not a valid URL";
+                      }
+                    },
                     onChanged: (value) {
                       activityFeedModel.isEnabled = true;
-                      activityFeedModel.customUrl = value;
+                      if (Uri.tryParse(value) != null) {
+                        activityFeedModel.customUrl = value;
+                      }
                       activityFeedModel.isCustom = true;
                     }),
                 value: true,
@@ -153,7 +164,9 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
             activityFeedModel.isEnabled
                 ? Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                        padding: _showControls
+                            ? const EdgeInsets.all(16)
+                            : const EdgeInsets.only(top: 16),
                         child: WebView(
                           initialUrl: uri,
                           javascriptMode: JavascriptMode.unrestricted,
@@ -167,8 +180,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                             Factory<OneSequenceGestureRecognizer>(
                                 () => EagerGestureRecognizer()),
                           },
-                        )
-                    ),
+                        )),
                   )
                 : Container(),
           ]);
