@@ -22,6 +22,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   WebViewController? _webViewController;
   ActivityFeedModel? _activityFeedModel;
   var _showControls = true;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -52,7 +53,11 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
     final userModel = Provider.of<UserModel>(context, listen: false);
     final channel = userModel.userChannel;
     if (activityFeedModel.isCustom) {
-      return activityFeedModel.customUrl;
+      final uri = Uri.tryParse(activityFeedModel.customUrl);
+      if (uri == null) {
+        return null;
+      }
+      return uri.scheme.isEmpty ? 'https://$uri' : uri.toString();
     } else if (channel == null) {
       return null;
     }
@@ -67,7 +72,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   Widget build(BuildContext context) {
     final uri = getUri();
     return Scaffold(
-      appBar: AppBar(title: const Text("Activity feed")),
+      appBar: _showControls ? AppBar(title: const Text("Activity feed")) : null,
       body: SafeArea(
         child: Consumer3<ActivityFeedModel, UserModel, LayoutModel>(builder:
             (context, activityFeedModel, userModel, layoutModel, child) {
@@ -100,32 +105,45 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
               ),
             if (_showControls)
               RadioListTile(
-                title: TextField(
-                    controller: _textEditingController,
-                    decoration: InputDecoration(
-                        hintText: "Custom URL",
-                        suffixIcon: IconButton(
-                            icon: const Icon(Icons.qr_code_scanner),
-                            onPressed: () {
-                              showModalBottomSheet<void>(
-                                  context: context,
-                                  builder: (context) {
-                                    return MobileScanner(
-                                        allowDuplicates: false,
-                                        onDetect: (barcode, args) {
-                                          final code = barcode.rawValue;
-                                          if (code != null) {
-                                            _textEditingController.text = code;
-                                          }
-                                          Navigator.of(context).pop();
-                                        });
-                                  });
-                            })),
-                    onChanged: (value) {
-                      activityFeedModel.isEnabled = true;
-                      activityFeedModel.customUrl = value;
-                      activityFeedModel.isCustom = true;
-                    }),
+                title: Form(
+                  key: _formKey,
+                  child: TextFormField(
+                      controller: _textEditingController,
+                      decoration: InputDecoration(
+                          hintText: "Custom URL",
+                          suffixIcon: IconButton(
+                              icon: const Icon(Icons.qr_code_scanner),
+                              onPressed: () {
+                                showModalBottomSheet<void>(
+                                    context: context,
+                                    builder: (context) {
+                                      return MobileScanner(
+                                          allowDuplicates: false,
+                                          onDetect: (barcode, args) {
+                                            final code = barcode.rawValue;
+                                            if (code != null) {
+                                              _textEditingController.text =
+                                                  code;
+                                            }
+                                            Navigator.of(context).pop();
+                                          });
+                                    });
+                              })),
+                      validator: (value) {
+                        if (value != null && Uri.tryParse(value) == null) {
+                          return "That's not a valid URL";
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        activityFeedModel.isEnabled = true;
+                        if (Uri.tryParse(value) != null) {
+                          activityFeedModel.customUrl = value;
+                        }
+                        activityFeedModel.isCustom = true;
+                        _formKey.currentState?.validate();
+                      }),
+                ),
                 value: true,
                 groupValue:
                     activityFeedModel.isEnabled && activityFeedModel.isCustom,
@@ -153,7 +171,9 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
             activityFeedModel.isEnabled
                 ? Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                        padding: _showControls
+                            ? const EdgeInsets.all(16)
+                            : const EdgeInsets.only(top: 16),
                         child: WebView(
                           initialUrl: uri,
                           javascriptMode: JavascriptMode.unrestricted,
@@ -167,8 +187,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                             Factory<OneSequenceGestureRecognizer>(
                                 () => EagerGestureRecognizer()),
                           },
-                        )
-                    ),
+                        )),
                   )
                 : Container(),
           ]);
