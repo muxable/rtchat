@@ -139,6 +139,7 @@ class _StreamPreviewState extends State<StreamPreview> {
                                 await _controller?.runJavascript(
                                     "action(Actions.SetVolume, ${model.volume / 100})");
                               },
+                              color: Colors.white,
                               icon: Icon(
                                 model.volume == 0
                                     ? Icons.volume_mute
@@ -158,6 +159,7 @@ class _StreamPreviewState extends State<StreamPreview> {
                                       "action(Actions.SetQuality, '160p')");
                                 }
                               },
+                              color: Colors.white,
                               icon: Icon(model.isHighDefinition
                                   ? Icons.hd
                                   : Icons.sd)),
