@@ -25,7 +25,7 @@ class _StreamPreviewState extends State<StreamPreview> {
 
   var _isOverlayActive = false;
   Timer? _overlayTimer;
-  var _playerState = null;
+  String? _playerState;
 
   @override
   void didUpdateWidget(StreamPreview oldWidget) {
@@ -55,7 +55,7 @@ class _StreamPreviewState extends State<StreamPreview> {
             return;
           }
           final model = Provider.of<StreamPreviewModel>(context, listen: false);
-          controller.runJavascript(
+          await controller.runJavascript(
               await rootBundle.loadString('assets/twitch-tunnel.js'));
           await _controller?.runJavascript("action(Actions.SetMuted, false)");
           await _controller?.runJavascript(
