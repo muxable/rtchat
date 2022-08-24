@@ -126,19 +126,21 @@ class _StreamPreviewState extends State<StreamPreview> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           IconButton(
-                              onPressed: () async {
-                                if (model.volume == 0) {
-                                  model.volume = 100;
-                                } else if (model.volume == 100) {
-                                  model.volume = 33;
-                                } else {
-                                  model.volume = 0;
-                                }
-                                await _controller?.runJavascript(
-                                    "action(Actions.SetMuted, false)");
-                                await _controller?.runJavascript(
-                                    "action(Actions.SetVolume, ${model.volume / 100})");
-                              },
+                              onPressed: !_isOverlayActive
+                                  ? null
+                                  : () async {
+                                      if (model.volume == 0) {
+                                        model.volume = 100;
+                                      } else if (model.volume == 100) {
+                                        model.volume = 33;
+                                      } else {
+                                        model.volume = 0;
+                                      }
+                                      await _controller?.runJavascript(
+                                          "action(Actions.SetMuted, false)");
+                                      await _controller?.runJavascript(
+                                          "action(Actions.SetVolume, ${model.volume / 100})");
+                                    },
                               color: Colors.white,
                               icon: Icon(
                                 model.volume == 0
@@ -148,17 +150,19 @@ class _StreamPreviewState extends State<StreamPreview> {
                                         : Icons.volume_down,
                               )),
                           IconButton(
-                              onPressed: () async {
-                                model.isHighDefinition =
-                                    !model.isHighDefinition;
-                                if (model.isHighDefinition) {
-                                  await _controller?.runJavascript(
-                                      "action(Actions.SetQuality, 'auto')");
-                                } else {
-                                  await _controller?.runJavascript(
-                                      "action(Actions.SetQuality, '160p')");
-                                }
-                              },
+                              onPressed: !_isOverlayActive
+                                  ? null
+                                  : () async {
+                                      model.isHighDefinition =
+                                          !model.isHighDefinition;
+                                      if (model.isHighDefinition) {
+                                        await _controller?.runJavascript(
+                                            "action(Actions.SetQuality, 'auto')");
+                                      } else {
+                                        await _controller?.runJavascript(
+                                            "action(Actions.SetQuality, '160p')");
+                                      }
+                                    },
                               color: Colors.white,
                               icon: Icon(model.isHighDefinition
                                   ? Icons.hd
