@@ -76,13 +76,16 @@ class _StreamPreviewState extends State<StreamPreview> {
         initialUrl:
             'https://player.twitch.tv/?channel=${widget.channelDisplayName}&controls=false&parent=chat.rtirl.com&muted=false',
         onWebViewCreated: (controller) {
+          if (!mounted) {
+            return;
+          }
           setState(() {
             _controller = controller;
           });
         },
         onPageFinished: (url) async {
           final controller = _controller;
-          if (controller == null) {
+          if (controller == null || !mounted) {
             return;
           }
           final model = Provider.of<StreamPreviewModel>(context, listen: false);
