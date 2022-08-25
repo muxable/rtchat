@@ -159,11 +159,44 @@ Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
   }
 }
 
+class TwitchMessageAnnouncementModel {
+  final String color;
+
+  const TwitchMessageAnnouncementModel(this.color);
+}
+
+class TwitchMessageAnnotationsModel {
+  final bool isAction;
+  final bool isFirstTimeChatter;
+  final TwitchMessageAnnouncementModel? announcement;
+
+  const TwitchMessageAnnotationsModel(
+      {required this.isAction,
+      required this.isFirstTimeChatter,
+      required this.announcement});
+
+  static TwitchMessageAnnotationsModel fromMap(Map<String, dynamic>? map) {
+    if (map == null) {
+      return const TwitchMessageAnnotationsModel(
+          isAction: false, isFirstTimeChatter: false, announcement: null);
+    }
+    return TwitchMessageAnnotationsModel(
+      isAction: map['isAction'] ?? false,
+      isFirstTimeChatter: map['isFirstTimeChatter'] as bool,
+      announcement: map['announcement'] == null
+          ? null
+          : TwitchMessageAnnouncementModel(
+              map['announcement']['color'] as String),
+    );
+  }
+}
+
 class TwitchMessageModel extends MessageModel {
   final TwitchUserModel author;
   final String message;
   final TwitchMessageReplyModel? reply;
   final Map<String, dynamic> tags;
+  final TwitchMessageAnnotationsModel annotations;
   final List<Emote> thirdPartyEmotes;
   final bool deleted;
   final String channelId;
@@ -174,6 +207,7 @@ class TwitchMessageModel extends MessageModel {
       required this.message,
       this.reply,
       required this.tags,
+      required this.annotations,
       required this.thirdPartyEmotes,
       required DateTime timestamp,
       required this.deleted,
@@ -184,7 +218,7 @@ class TwitchMessageModel extends MessageModel {
       _badges ??= parseBadges(tags['badges-raw'] ?? "");
   List<BadgeData>? _badges;
 
-  bool get isAction => tags['message-type'] == "action";
+  bool get isAction => annotations.isAction;
 
   bool get isCommand => !isAction && message.startsWith("!");
 
