@@ -26,6 +26,37 @@ class _StreamPreviewState extends State<StreamPreview> {
   var _isOverlayActive = false;
   Timer? _overlayTimer;
   String? _playerState;
+  Timer? _promptTimer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final model = Provider.of<StreamPreviewModel>(context, listen: false);
+    if (model.showBatteryPrompt) {
+      _promptTimer = Timer(const Duration(seconds: 1), () {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          duration: const Duration(minutes: 1),
+          content: const Text(
+              "Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life."),
+          action: SnackBarAction(
+            label: 'Okay',
+            onPressed: () {
+              model.showBatteryPrompt = false;
+              _promptTimer = null;
+            },
+          ),
+        ));
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _promptTimer?.cancel();
+  }
 
   @override
   void didUpdateWidget(StreamPreview oldWidget) {
@@ -54,10 +85,12 @@ class _StreamPreviewState extends State<StreamPreview> {
           if (controller == null) {
             return;
           }
+          print("PAGE FINISHED");
           final model = Provider.of<StreamPreviewModel>(context, listen: false);
           await controller.runJavascript(
               await rootBundle.loadString('assets/twitch-tunnel.js'));
           await _controller?.runJavascript("action(Actions.SetMuted, false)");
+          print("setting volume to ${model.volume}");
           await _controller?.runJavascript(
               "action(Actions.SetVolume, ${model.volume / 100})");
           if (model.isHighDefinition) {
