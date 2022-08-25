@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/connection_status.dart';
@@ -47,8 +48,10 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
   void didUpdateWidget(RebuildableWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    _clearTimers();
-    _setTimers();
+    if (!setEquals(oldWidget.rebuildAt, widget.rebuildAt)) {
+      _clearTimers();
+      _setTimers();
+    }
   }
 
   @override
@@ -279,6 +282,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
               rebuildAt: expirations.whereType<DateTime>().toSet(),
               builder: (context) {
                 final now = DateTime.now();
+                final oneSecondAgo = now.subtract(const Duration(seconds: 1));
                 return PinnableMessageScrollView(
                   vsync: this,
                   controller: _controller,
@@ -290,7 +294,10 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                       .indexWhere((element) => key == Key(element.messageId)),
                   isPinnedBuilder: (index) {
                     final expiration = expirations[index];
-                    if (expiration == null) {
+                    if (expiration == null ||
+                        // if the message is too expired, it can't be pinned again.
+                        // note: we track unpinned separately to permit animations.
+                        expiration.isBefore(oneSecondAgo)) {
                       return PinState.notPinnable;
                     }
                     return expiration.isAfter(now)

@@ -51,6 +51,8 @@ class PinnableMessageScrollView extends ScrollView {
       if (intermediateCount > 0) {
         final offset = start;
         final sliver = SliverList(
+          // key by first and last message id.
+          key: ValueKey("$start-$nextPinnableIndex"),
           delegate: SliverChildBuilderDelegate(
             (context, index) => itemBuilder(index + offset),
             findChildIndexCallback: (key) {
@@ -68,6 +70,8 @@ class PinnableMessageScrollView extends ScrollView {
       }
       final pinned = isPinnedBuilder(nextPinnableIndex);
       final sliver = PinnableMessageSliver(
+        // key by first and last message id.
+        key: ValueKey("$start-$nextPinnableIndex"),
         vsync: vsync,
         pinned: pinned == PinState.pinned,
         child: AnimatedContainer(
