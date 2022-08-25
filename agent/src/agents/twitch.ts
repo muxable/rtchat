@@ -206,6 +206,7 @@ async function join(
       message,
       annotations: {
         isFirstTimeChatter: tags["first-msg"] === "1",
+        isAction,
       },
     });
   });
