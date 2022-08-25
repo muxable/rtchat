@@ -80,6 +80,8 @@ DeltaEvent? _toDeltaEvent(
           message: message,
           reply: reply,
           tags: tags,
+          annotations:
+              TwitchMessageAnnotationsModel.fromMap(data['annotations']),
           thirdPartyEmotes: emotes,
           timestamp: data['timestamp'].toDate(),
           deleted: false,
@@ -97,6 +99,7 @@ DeltaEvent? _toDeltaEvent(
             message: message.message,
             reply: message.reply,
             tags: message.tags,
+            annotations: message.annotations,
             thirdPartyEmotes: [],
             timestamp: message.timestamp,
             deleted: true,

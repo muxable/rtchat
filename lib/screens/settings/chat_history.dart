@@ -12,12 +12,13 @@ final message1 = TwitchMessageModel(
     messageId: "placeholder1",
     author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
     tags: {
-      "message-type": "chat",
       "color": "#800000",
       "badges-raw": "premium/1",
       "emotes-raw": "25:36-40",
       "room-id": "158394109",
     },
+    annotations: const TwitchMessageAnnotationsModel(
+        isAction: false, isFirstTimeChatter: false, announcement: null),
     thirdPartyEmotes: [],
     timestamp: DateTime.now(),
     message: "have you followed @muxfd on twitch? Kappa",
@@ -27,11 +28,12 @@ final message2 = TwitchMessageModel(
     messageId: "placeholder2",
     author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
     tags: {
-      "message-type": "action",
       "color": "#DAA520",
       "badges-raw": "moderator/1",
       "room-id": "158394109",
     },
+    annotations: const TwitchMessageAnnotationsModel(
+        isAction: true, isFirstTimeChatter: false, announcement: null),
     thirdPartyEmotes: [],
     timestamp: DateTime.now(),
     message: "likes cows and stuff",
@@ -41,11 +43,12 @@ final message3 = TwitchMessageModel(
     messageId: "placeholder3",
     author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
     tags: {
-      "message-type": "chat",
       "color": "#00FF7F",
       "badges-raw": "broadcaster/1,moderator/1",
       "room-id": "158394109",
     },
+    annotations: const TwitchMessageAnnotationsModel(
+        isAction: false, isFirstTimeChatter: false, announcement: null),
     thirdPartyEmotes: [
       Emote(
           id: 'catJAM',

@@ -10,12 +10,13 @@ TwitchMessageModel createMessageModel(String? badgesRaw, String? emotesRaw,
       messageId: "placeholder",
       author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
       tags: {
-        "message-type": "chat",
         "color": "#800000",
         "badges-raw": badgesRaw,
         "emotes-raw": emotesRaw,
         "room-id": "158394109",
       },
+      annotations: const TwitchMessageAnnotationsModel(
+          isAction: false, isFirstTimeChatter: false, announcement: null),
       thirdPartyEmotes: thirdPartyEmotes,
       timestamp: DateTime.now(),
       message: message,
@@ -222,10 +223,11 @@ void main() {
         messageId: "placeholder",
         author: author,
         tags: {
-          "message-type": "chat",
           "color": "#800000",
           "room-id": "158394109",
         },
+        annotations: const TwitchMessageAnnotationsModel(
+            isAction: false, isFirstTimeChatter: false, announcement: null),
         thirdPartyEmotes: [],
         timestamp: DateTime.now(),
         message: "moooo",
@@ -236,10 +238,11 @@ void main() {
         messageId: "placeholder",
         author: author,
         tags: {
-          "message-type": "chat",
           "color": "#800000",
           "room-id": "158394109",
         },
+        annotations: const TwitchMessageAnnotationsModel(
+            isAction: false, isFirstTimeChatter: false, announcement: null),
         thirdPartyEmotes: [],
         timestamp: DateTime.now(),
         message: "!moooo",
@@ -250,10 +253,11 @@ void main() {
         messageId: "placeholder",
         author: author,
         tags: {
-          "message-type": "action",
           "color": "#800000",
           "room-id": "158394109",
         },
+        annotations: const TwitchMessageAnnotationsModel(
+            isAction: true, isFirstTimeChatter: false, announcement: null),
         thirdPartyEmotes: [],
         timestamp: DateTime.now(),
         message: "mooooo",
@@ -264,10 +268,11 @@ void main() {
         messageId: "placeholder",
         author: author,
         tags: {
-          "message-type": "action",
           "color": "#800000",
           "room-id": "158394109",
         },
+        annotations: const TwitchMessageAnnotationsModel(
+            isAction: true, isFirstTimeChatter: false, announcement: null),
         thirdPartyEmotes: [],
         timestamp: DateTime.now(),
         message: "!mooooo",
