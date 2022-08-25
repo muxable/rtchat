@@ -197,7 +197,6 @@ async function join(
         color: tags["color"],
         "message-type": isAction ? "action" : "chat",
         "badges-raw": tags["badges"],
-        "first-msg": tags["first-msg"],
         badges: {
           vip: badges.find((badge) => badge[0] === "vip") !== null,
           moderator: badges.find((badge) => badge[0] === "moderator") !== null,
@@ -205,6 +204,9 @@ async function join(
         "emotes-raw": tags["emotes"],
       },
       message,
+      annotations: {
+        isFirstTimeChatter: tags["first-msg"] === "1",
+      },
     });
   });
 
@@ -254,7 +256,6 @@ async function join(
         color: tags["color"],
         "message-type": "chat",
         "badges-raw": tags["badges"],
-        "first-msg": tags["first-msg"],
         badges: {
           vip: badges.find((badge) => badge[0] === "vip") !== null,
           moderator: badges.find((badge) => badge[0] === "moderator") !== null,
@@ -262,7 +263,10 @@ async function join(
         "emotes-raw": tags["emotes"],
       },
       message,
-      announcementColor: announcement.color,
+      annotations: {
+        announcement: { color: announcement.color },
+        isFirstTimeChatter: tags["first-msg"] === "1",
+      },
     });
   });
 
