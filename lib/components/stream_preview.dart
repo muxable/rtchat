@@ -85,12 +85,10 @@ class _StreamPreviewState extends State<StreamPreview> {
           if (controller == null) {
             return;
           }
-          print("PAGE FINISHED");
           final model = Provider.of<StreamPreviewModel>(context, listen: false);
           await controller.runJavascript(
               await rootBundle.loadString('assets/twitch-tunnel.js'));
           await _controller?.runJavascript("action(Actions.SetMuted, false)");
-          print("setting volume to ${model.volume}");
           await _controller?.runJavascript(
               "action(Actions.SetVolume, ${model.volume / 100})");
           if (model.isHighDefinition) {
