@@ -70,8 +70,8 @@ class PinnableMessageScrollView extends ScrollView {
       }
       final pinned = isPinnedBuilder(nextPinnableIndex);
       final sliver = PinnableMessageSliver(
-        // key by first and last message id.
-        key: ValueKey("$start-$nextPinnableIndex"),
+        // key by index.
+        key: ValueKey("$start"),
         vsync: vsync,
         pinned: pinned == PinState.pinned,
         child: AnimatedContainer(
