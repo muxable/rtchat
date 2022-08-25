@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -109,9 +110,13 @@ class _StreamPreviewState extends State<StreamPreview> {
           JavascriptChannel(
               name: "Flutter",
               onMessageReceived: (message) {
-                final params = jsonDecode(message.message)["params"];
-                if (params is Map && mounted) {
-                  setState(() => _playerState = params["playback"]);
+                try {
+                  final params = jsonDecode(message.message)["params"];
+                  if (params is Map && mounted) {
+                    setState(() => _playerState = params["playback"]);
+                  }
+                } catch (e, st) {
+                  FirebaseCrashlytics.instance.recordError(e, st);
                 }
               })
         },
