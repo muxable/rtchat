@@ -48,11 +48,12 @@ class PinnableMessageScrollView extends ScrollView {
               (index) => isPinnedBuilder(index) != PinState.notPinnable,
               orElse: () => count);
       final intermediateCount = nextPinnableIndex - start;
+      // key from the distance to the end of the list, which is the most stable identifier.
+      final key = ValueKey(count - nextPinnableIndex);
       if (intermediateCount > 0) {
         final offset = start;
         final sliver = SliverList(
-          // key by first and last message id.
-          key: ValueKey("$start-$nextPinnableIndex"),
+          key: key,
           delegate: SliverChildBuilderDelegate(
             (context, index) => itemBuilder(index + offset),
             findChildIndexCallback: (key) {
@@ -70,8 +71,7 @@ class PinnableMessageScrollView extends ScrollView {
       }
       final pinned = isPinnedBuilder(nextPinnableIndex);
       final sliver = PinnableMessageSliver(
-        // key by index.
-        key: ValueKey(start),
+        key: key,
         vsync: vsync,
         pinned: pinned == PinState.pinned,
         child: AnimatedContainer(
