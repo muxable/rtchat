@@ -1,9 +1,10 @@
-import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
 import fetch from "node-fetch";
+import { getTwitchUserId } from "./twitch";
 
 export const updateChatStatus = functions.pubsub
-  .schedule("* * * * *")  // every 1 minute
+  .schedule("* * * * *") // every 1 minute
   .onRun(async () => {
     const promises: Promise<any>[] = [];
     // fetch the active connections from realtime database
@@ -17,13 +18,14 @@ export const updateChatStatus = functions.pubsub
               `https://tmi.twitch.tv/group/user/${channel}/chatters`
             )
               .then((res) => res.json())
-              .then((json) => {
+              .then(async (json) => {
                 return admin
                   .firestore()
                   .collection("chat-status")
                   .add({
                     provider,
                     channel,
+                    channelId: `twitch:${await getTwitchUserId(channel)}`,
                     ...json["chatters"],
                     createdAt: admin.firestore.FieldValue.serverTimestamp(),
                   });
