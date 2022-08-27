@@ -9,6 +9,7 @@ import { search } from "./search";
 import { cleanup, subscribe, unsubscribe } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
+import { updateChatStatus } from "./chat-status";
 
 admin.initializeApp();
 
@@ -242,7 +243,7 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
       const followerJson = await followerResponse.json();
       const stream = viewerJson["data"][0];
       const languageResponse = await fetch(
-        `https://api.twitch.tv/helix/channels?broadcaster_id=${channelId}`, 
+        `https://api.twitch.tv/helix/channels?broadcaster_id=${channelId}`,
         { headers }
       );
       const languageJson = await languageResponse.json();
@@ -319,5 +320,6 @@ export {
   cleanup,
   synthesize,
   getVoices,
+  updateChatStatus,
 };
 export const auth = functions.https.onRequest(authApp);
