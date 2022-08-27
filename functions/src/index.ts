@@ -2,7 +2,7 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
 import { app as authApp } from "./auth";
-import { getUserEmotes } from "./emotes";
+import { getUserEmotes, getEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
@@ -242,7 +242,7 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
       const followerJson = await followerResponse.json();
       const stream = viewerJson["data"][0];
       const languageResponse = await fetch(
-        `https://api.twitch.tv/helix/channels?broadcaster_id=${channelId}`, 
+        `https://api.twitch.tv/helix/channels?broadcaster_id=${channelId}`,
         { headers }
       );
       const languageJson = await languageResponse.json();
@@ -316,6 +316,7 @@ export {
   eventsub,
   search,
   getUserEmotes,
+  getEmotes,
   cleanup,
   synthesize,
   getVoices,
