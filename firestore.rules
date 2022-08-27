@@ -27,11 +27,13 @@ service cloud.firestore {
       allow write: if false;
     }
     match /chat-status/{document=**} {
-      allow read: if request.query.limit == 1;
+      allow list: if request.query.limit == 1;
+      allow get: if true;
       allow write: if false;
     }
     match /metadata/{document=**} {
-      allow read: if request.query.limit <= 20;
+      allow list: if request.query.limit <= 20;
+      allow get: if true;
       allow write: if false;
     }
   }
