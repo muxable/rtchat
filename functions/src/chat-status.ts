@@ -1,7 +1,7 @@
-import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import * as functions from "firebase-functions";
 import fetch from "node-fetch";
-import { getChannelId, getTwitchUserId } from "./twitch";
+import { getTwitchUserId } from "./twitch";
 
 export const updateChatStatus = functions.pubsub
   .schedule("* * * * *") // every 1 minute
