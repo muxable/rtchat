@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 import fetch from "node-fetch";
 
 export const updateChatStatus = functions.pubsub
-  .schedule("every 1 minute")
+  .schedule("* * * * *")  // every 1 minute
   .onRun(async () => {
     const promises: Promise<any>[] = [];
     // fetch the active connections from realtime database
