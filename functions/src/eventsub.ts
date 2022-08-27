@@ -31,6 +31,7 @@ enum EventsubType {
   ChannelHypeTrainBegin = "channel.hype_train.begin",
   ChannelHypeTrainProgress = "channel.hype_train.progress",
   ChannelHypeTrainEnd = "channel.hype_train.end",
+  ChannelUpdate = "channel.update",
   StreamOnline = "stream.online",
   StreamOffline = "stream.offline",
 }
@@ -131,11 +132,41 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
     await messageRef.set({
       channelId,
       type,
-      timestamp: admin.firestore.Timestamp.fromMillis(
-        Date.parse(timestamp)
-      ),
+      timestamp: admin.firestore.Timestamp.fromMillis(Date.parse(timestamp)),
       event: req.body.event,
     });
+
+    switch (type) {
+      case EventsubType.StreamOnline:
+        await admin
+          .firestore()
+          .collection("metadata")
+          .doc(channelId)
+          .set(
+            { onlineAt: admin.firestore.FieldValue.serverTimestamp() },
+            { merge: true }
+          );
+        break;
+      case EventsubType.StreamOffline:
+        await admin
+          .firestore()
+          .collection("metadata")
+          .doc(channelId)
+          .set({ onlineAt: null }, { merge: true });
+        break;
+      case EventsubType.ChannelUpdate:
+        await admin.firestore().collection("metadata").doc(channelId).set(
+          {
+            login: req.body.event.broadcaster_user_login,
+            displayName: req.body.event.broadcaster_user_name,
+            title: req.body.event.title,
+            language: req.body.event.language,
+            categoryId: req.body.event.category_id,
+            categoryName: req.body.event.category_name,
+          },
+          { merge: true }
+        );
+    }
   }
   res.status(200).send();
 });
