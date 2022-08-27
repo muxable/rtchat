@@ -48,8 +48,8 @@ class ChatStateModel extends ChangeNotifier {
     _subscription?.cancel();
     if (channel != null) {
       _subscription = FirebaseFirestore.instance
-          .collection('chat-state')
-          .where("channelId", isEqualTo: channel.channelId)
+          .collection('chat-status')
+          .where("channelId", isEqualTo: channel.toString())
           .orderBy("createdAt", descending: true)
           .limit(1)
           .snapshots()
