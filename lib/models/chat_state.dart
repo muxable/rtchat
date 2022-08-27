@@ -59,10 +59,10 @@ class ChatStateModel extends ChangeNotifier {
         }
         final doc = snapshot.docs.first.data();
         _viewers = Viewers(
-          broadcaster: doc['broadcaster'] as List<String>,
-          moderators: doc['moderators'] as List<String>,
-          vips: doc['vips'] as List<String>,
-          viewers: doc['viewers'] as List<String>,
+          broadcaster: <String>[...(doc['broadcaster'] ?? [])],
+          moderators: <String>[...(doc['moderators'] ?? [])],
+          vips: <String>[...(doc['vips'] ?? [])],
+          viewers: <String>[...(doc['viewers'] ?? [])],
         );
         notifyListeners();
       });
