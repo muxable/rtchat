@@ -12,6 +12,7 @@ import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
+import 'package:rtchat/models/chat_state.dart';
 import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages.dart';
@@ -210,6 +211,16 @@ class _AppState extends State<App> {
               widget.prefs
                   .setString('twitch_badge', jsonEncode(model.toJson()));
             });
+        }, update: (context, userModel, model) {
+          model!.channel = userModel.activeChannel;
+          return model;
+        }),
+        ChangeNotifierProxyProvider<UserModel, ChatStateModel>(
+            create: (context) {
+          final model = ChatStateModel();
+          model.channel =
+              Provider.of<UserModel>(context, listen: false).activeChannel;
+          return model;
         }, update: (context, userModel, model) {
           model!.channel = userModel.activeChannel;
           return model;
