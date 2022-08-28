@@ -4,11 +4,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/autocomplete.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
-import 'package:rtchat/models/chat_mode.dart';
 import 'package:rtchat/models/commands.dart';
 
 class MessageInputWidget extends StatefulWidget {
@@ -39,7 +39,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   final _textEditingController = TextEditingController();
   final _chatInputFocusNode = FocusNode();
   var _isEmotePickerVisible = false;
-  var _isTextCommand = false;
   var _isKeyboardVisible = false;
   late StreamSubscription keyboardSubscription;
   var _emoteIndex = Random().nextInt(_emotes.length);
@@ -55,13 +54,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
         _isKeyboardVisible = visible;
       });
     });
-    // Subscribe to text editing changes.
-    _textEditingController.addListener(() {
-      setState(() {
-        _isTextCommand =
-            startsWithPossibleCommands(_textEditingController.text);
-      });
-    });
   }
 
   @override
@@ -69,15 +61,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     keyboardSubscription.cancel();
     _textEditingController.dispose();
     super.dispose();
-  }
-
-  bool startsWithPossibleCommands(String text) {
-    if (text == "" || text.isEmpty) {
-      return false;
-    }
-    final hasSlash =
-        ChatMode.values.any((element) => element.title.startsWith(text));
-    return hasSlash;
   }
 
   void sendMessage(String value) async {
@@ -109,56 +92,10 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     return Material(
       child: Column(children: [
         if (_isKeyboardVisible)
-          if (_isTextCommand)
-            SizedBox(
-              height: 200,
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                children: ChatMode.values
-                    .where((element) =>
-                        element.title.startsWith(_textEditingController.text))
-                    .map((e) {
-                  return ListTile(
-                    title: Text(e.title),
-                    subtitle: Text(e.subtitle),
-                    onTap: () {
-                      _textEditingController.text = e.title;
-                      // move cursor position
-                      _textEditingController.selection =
-                          TextSelection.fromPosition(TextPosition(
-                              offset: _textEditingController.text.length));
-                    },
-                  );
-                }).toList(),
-              ),
-            )
-          else
-            Container(
-              constraints: const BoxConstraints(maxHeight: 200),
-              child: ListView(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  children: [
-                    Consumer<CommandsModel>(builder: (context, model, child) {
-                      return Wrap(
-                        children: model.commandList.map((command) {
-                          return TextButton(
-                            child: Text(command.command),
-                            onPressed: () {
-                              ActionsAdapter.instance
-                                  .send(widget.channel, command.command);
-
-                              model.addCommand(
-                                  Command(command.command, DateTime.now()));
-                              _chatInputFocusNode.unfocus();
-                            },
-                          );
-                        }).toList(),
-                      );
-                    }),
-                  ]),
-            ),
+          AutocompleteWidget(
+            controller: _textEditingController,
+            onSend: sendMessage,
+          ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Container(
@@ -242,9 +179,4 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       ]),
     );
   }
-}
-
-enum CommandType {
-  slash,
-  exclamation,
 }
