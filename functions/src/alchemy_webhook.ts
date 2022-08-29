@@ -16,9 +16,9 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
 
 
 export const setRealTimeCashAddress = functions.https.onCall(async (data, context) => {
-  // if (!context.auth) {
-  //   throw new functions.https.HttpsError("permission-denied", "missing auth");
-  // }
+  if (!context.auth) {
+    throw new functions.https.HttpsError("permission-denied", "missing auth");
+  }
 	// console.log("data", data);
 	const userId = data?.userId;
 	const address = data?.address;
