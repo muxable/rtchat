@@ -163,7 +163,10 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                                   .copyWith(color: Colors.white),
                               overflow: TextOverflow.fade)),
                       Row(children: [
-                        if (_locked) const Icon(Icons.lock_outline),
+                        if (_locked)
+                          const Padding(
+                              padding: EdgeInsets.only(right: 4),
+                              child: Icon(Icons.lock_outline, size: 12)),
                       Consumer<LayoutModel>(
                           builder: (context, layoutModel, child) {
                         final style = Theme.of(context)
