@@ -26,5 +26,15 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
+    match /chat-status/{document=**} {
+      allow list: if request.query.limit == 1;
+      allow get: if true;
+      allow write: if false;
+    }
+    match /metadata/{document=**} {
+      allow list: if request.query.limit <= 20;
+      allow get: if true;
+      allow write: if false;
+    }
   }
 }

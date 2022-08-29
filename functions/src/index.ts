@@ -9,6 +9,7 @@ import { search } from "./search";
 import { cleanup, subscribe, unsubscribe } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
+import { updateChatStatus } from "./chat-status";
 
 admin.initializeApp();
 
@@ -320,5 +321,6 @@ export {
   cleanup,
   synthesize,
   getVoices,
+  updateChatStatus,
 };
 export const auth = functions.https.onRequest(authApp);
