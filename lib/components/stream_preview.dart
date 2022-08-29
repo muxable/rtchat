@@ -35,7 +35,7 @@ class _StreamPreviewState extends State<StreamPreview> {
 
     final model = Provider.of<StreamPreviewModel>(context, listen: false);
     if (model.showBatteryPrompt) {
-      _promptTimer = Timer(const Duration(seconds: 1), () {
+      _promptTimer = Timer(const Duration(minutes: 5), () {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           duration: const Duration(minutes: 1),
           content: const Text(
