@@ -309,6 +309,39 @@ async function join(
     });
   });
 
+  chat.onR9k(async (channel, enabled) => {
+    const userId = await getTwitchUserId(channel);
+    await firebase.getMetadata(`twitch:${userId}`).update({ isR9k: enabled });
+  });
+
+  chat.onEmoteOnly(async (channel, enabled) => {
+    const userId = await getTwitchUserId(channel);
+    await firebase
+      .getMetadata(`twitch:${userId}`)
+      .update({ isEmoteOnly: enabled });
+  });
+
+  chat.onFollowersOnly(async (channel, enabled) => {
+    const userId = await getTwitchUserId(channel);
+    await firebase
+      .getMetadata(`twitch:${userId}`)
+      .update({ isFollowersOnly: enabled });
+  });
+
+  chat.onSubsOnly(async (channel, enabled) => {
+    const userId = await getTwitchUserId(channel);
+    await firebase
+      .getMetadata(`twitch:${userId}`)
+      .update({ isSubsOnly: enabled });
+  });
+
+  chat.onSlow(async (channel, enabled, seconds) => {
+    const userId = await getTwitchUserId(channel);
+    await firebase
+      .getMetadata(`twitch:${userId}`)
+      .update({ isSlowMode: enabled, slowModeSeconds: seconds });
+  });
+
   log.info({ channel, agentId, provider }, "assigned to channel");
   await chat.connect();
   await send.connect();

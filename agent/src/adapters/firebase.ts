@@ -89,6 +89,10 @@ export class FirebaseAdapter {
     return this.firestore.collection("messages").doc(key);
   }
 
+  getMetadata(key: string) {
+    return this.firestore.collection("metadata").doc(key);
+  }
+
   setIfNotExists(key: string, value: any) {
     return this.firestore.runTransaction(async (transaction) => {
       const ref = this.firestore.collection("messages").doc(key);
