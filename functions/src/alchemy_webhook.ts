@@ -16,9 +16,9 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
 
 
 export const setRealTimeCashAddress = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("permission-denied", "missing auth");
-  }
+  // if (!context.auth) {
+  //   throw new functions.https.HttpsError("permission-denied", "missing auth");
+  // }
 	// console.log("data", data);
 	const userId = data?.userId;
 	const address = data?.address;
@@ -31,15 +31,14 @@ export const setRealTimeCashAddress = functions.https.onCall(async (data, contex
 	// console.log('userId,', userId)
 	// console.log('address', address)
 
+	// hard-coded values for now
 	const webhookId = "wh_octjglnywaupz6th";
 
-	try {
-		await admin.firestore().collection("realtimecash").doc(userId).set({
-			address,
-			webhookId,
-		});
-	} catch (error) {
-  	throw new functions.https.HttpsError("invalid-argument", "invalid provider");
-	}
+	await admin.firestore().collection("realtimecash").doc(userId).set({
+		address,
+		webhookId,
+	}).catch(error => {
+		throw new functions.https.HttpsError(error, error.message);
+	});
   return;
 });
