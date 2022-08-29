@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
@@ -81,6 +82,8 @@ class _DrawerHeader extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onTertiary,
                     onPressed: () {
                       Navigator.of(context).pop();
+                      FirebaseAnalytics.instance
+                          .logEvent(name: 'search_channels', parameters: null);
                       showModalBottomSheet<void>(
                         context: context,
                         isScrollControlled: true,
