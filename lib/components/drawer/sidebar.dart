@@ -154,7 +154,7 @@ class _SidebarState extends State<Sidebar> {
         if (!layoutModel.locked) {
           return ListTile(
             leading: const Icon(Icons.lock_open_outlined),
-            title: const Text("Lock layout"),
+            title: const Text("Lock interaction"),
             onTap: () async {
               layoutModel.locked = !layoutModel.locked;
               Navigator.pop(context);
@@ -163,7 +163,7 @@ class _SidebarState extends State<Sidebar> {
         }
         return ListTile(
           leading: const Icon(Icons.lock_outline),
-          title: const Text("Unlock layout"),
+          title: const Text("Unlock interaction"),
           onTap: () async {
             layoutModel.locked = !layoutModel.locked;
             Navigator.pop(context);
