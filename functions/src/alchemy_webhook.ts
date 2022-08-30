@@ -20,7 +20,7 @@ export const setRealTimeCashAddress = functions.https.onCall(async (data, contex
     throw new functions.https.HttpsError("permission-denied", "missing auth");
   }
 	// console.log("data", data);
-	const userId = data?.userId;
+	const userId = context.auth.uid;
 	const address = data?.address;
   if (!address) {
     throw new functions.https.HttpsError(
