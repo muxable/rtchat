@@ -2,16 +2,83 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import fetch from "node-fetch";
 
+type Log = {
+  removed: boolean;
+  address: string;
+  data: string;
+  topics: string[];
+};
+
+type RawContract = {
+  rawvalue?: string;
+  address?: string;
+  decimal?: number;
+};
+
+type Activity = {
+  category: string;
+  fromAddress: string;
+  toAddress: string;
+  blockNum: string;
+  value?: number;
+  erc721TokenId?: string;
+  asset?: string;
+  hash: string;
+  typeTraceAddress: string;
+  rawContract?: RawContract;
+  log?: Log;
+};
+
+type AddressEvent = {
+  network: string;
+  activity: Activity[];
+};
+
+type AddressNotification = {
+  webhookId: string;
+  id: string;
+  createdAt: string;
+  type: string;
+  event: AddressEvent;
+};
+
 // TODO: webhook receiver from alchemy
 export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
-  // const body = req.body;
-  // const event = body.event;
-  // const alchemyWebhookId = body.webhookId;
-  // const network = event.network;
-
-  // // list of activities
-  // const activitities = event.activity;
-  res.status(200).send();
+  const body = req.body;
+  const notification: AddressNotification = body as AddressNotification;
+  for (const activity of notification.event.activity) {
+    // look for userId that associated with this address
+    await admin
+      .firestore()
+      .collection("realtimecash")
+      .where("address", "==", activity.toAddress)
+      .get()
+      .then(async (snapshot) => {
+        // storing donation respoonses in realtimecash collection
+        await admin
+          .firestore()
+          .collection("realtimecash-donations")
+          .add({
+            userId: snapshot.docs[0].data().userId,
+            network: notification.event.network,
+            activity: activity,
+          })
+          .then(() => {
+            // fall through
+          })
+          .catch((error) => {
+            // fail to write to firestore
+            console.log(error);
+          });
+      })
+      .catch((error) => {
+        // no userId found
+        console.log(error);
+        res.status(400).send("No userId found");
+        return;
+      });
+  }
+  res.status(200).send("OK");
 });
 
 type webhookIdResponse = {
