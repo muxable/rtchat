@@ -42,6 +42,20 @@ type AddressNotification = {
   event: AddressEvent;
 };
 
+// async getProfile(channel: string) {
+//   const results = await this.firestore
+//     .collection("profiles")
+//     .where(`${this.provider}.login`, "==", channel)
+//     .get();
+//   if (results.size > 1) {
+//     log.error(
+//       { provider: this.provider, channel },
+//       "duplicate profiles found"
+//     );
+//   }
+//   return results.empty ? null : results.docs[0];
+// }
+
 // TODO: webhook receiver from alchemy
 export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
   const body = req.body;
@@ -54,15 +68,23 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
       .where("address", "==", activity.toAddress)
       .get()
       .then(async (snapshot) => {
+        // get channelId for each userId
+        const profile = await admin
+          .firestore()
+          .collection("profiles")
+          .where("userId", "==", snapshot.docs[0].data().userId)
+          .get();
+        
+        const channelId = profile.docs[0].data().id;
+        const login = profile.docs[0].data().login;
+        const displayName = profile.docs[0].data().displayName;
+
         // storing donation respoonses in realtimecash collection
         await admin.firestore().collection("messages").add({
-          // need channelId here, since the MessagesAdapter is querying based on channelId
-          channelId: "",
-          broadcaster_user_id: "",
-          broadcaster_user_login: "",
-          broadcaster_user_name: "",
-          //
-
+          channelId: channelId,
+          broadcaster_user_id: channelId,
+          broadcaster_user_login: login,
+          broadcaster_user_name: displayName,
           userId: snapshot.docs[0].data().userId,
           webhookId: notification.webhookId,
           id: notification.id,
