@@ -55,21 +55,22 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
       .get()
       .then(async (snapshot) => {
         // storing donation respoonses in realtimecash collection
-        await admin
-          .firestore()
-          .collection("realtimecash-donations")
-          .add({
-            userId: snapshot.docs[0].data().userId,
-            network: notification.event.network,
-            activity: activity,
-          })
-          .then(() => {
-            // fall through
-          })
-          .catch((error) => {
-            // fail to write to firestore
-            console.log(error);
-          });
+        await admin.firestore().collection("messages").add({
+          // need channelId here, since the MessagesAdapter is querying based on channelId
+          channelId: "",
+          broadcaster_user_id: "",
+          broadcaster_user_login: "",
+          broadcaster_user_name: "",
+          //
+
+          userId: snapshot.docs[0].data().userId,
+          webhookId: notification.webhookId,
+          id: notification.id,
+          createdAt: notification.createdAt,
+          type: "realtimecash.donation",
+          notificationType: notification.type,
+          activity: activity,
+        });
       })
       .catch((error) => {
         // no userId found
