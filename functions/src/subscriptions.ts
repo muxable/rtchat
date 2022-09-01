@@ -33,21 +33,13 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         .child(channel)
         .set(admin.database.ServerValue.TIMESTAMP);
 
-      // mark any existing agents for a soft disconnect. this cleans up any accidental zombie agents.
+      // mark any existing agents for a disconnect. this cleans up any accidental zombie agents.
       await admin
         .database()
         .ref("connections")
         .child(provider)
         .child(channel)
-        .transaction((agents: {[agentId: string]: boolean}|null) => {
-          if (!agents) {
-            return null;
-          }
-          for (const agent of Object.keys(agents)) {
-            agents[agent] = false;
-          }
-          return agents;
-        });
+        .remove();
 
       // acquire an agent. this might cause a reconnection but it's ok because
       // the user just opened the app.
