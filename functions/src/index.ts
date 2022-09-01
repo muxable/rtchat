@@ -10,6 +10,7 @@ import { cleanup, subscribe, unsubscribe } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
 import { updateChatStatus } from "./chat-status";
+import { setRealTimeCashAddress } from "./alchemy_webhook";
 
 admin.initializeApp();
 
@@ -322,5 +323,6 @@ export {
   synthesize,
   getVoices,
   updateChatStatus,
+  setRealTimeCashAddress,
 };
 export const auth = functions.https.onRequest(authApp);
