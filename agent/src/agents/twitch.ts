@@ -140,12 +140,6 @@ async function join(
     logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
   });
 
-  const send = new ChatClient({
-    authProvider,
-    isAlwaysMod: authProvider.username === channel,
-    logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
-  });
-
   const registerPromise = new Promise<void>((resolve) =>
     chat.onRegister(() => resolve())
   );
@@ -344,7 +338,6 @@ async function join(
 
   log.info({ channel, agentId, provider }, "assigned to channel");
   await chat.connect();
-  await send.connect();
   await registerPromise; // this is a bit awkward but the join will race if we don't wait.
   await chat.join(channel);
   log.info({ channel, agentId, provider }, "joined channel");
@@ -357,6 +350,12 @@ async function join(
   });
 
   if (authProvider.username === channel) {
+    const send = new ChatClient({
+      authProvider,
+      isAlwaysMod: authProvider.username === channel,
+      logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
+    });
+    await send.connect();
     // create a pubsub listener since the user joined their own channel.
     const basicpubsub = new BasicPubSubClient({
       logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
@@ -421,11 +420,12 @@ async function join(
     messageListener();
 
     await raidListener.remove();
+
+    await send.quit();
   } else {
     await firebase.claim(provider, channel, agentId);
   }
 
-  await send.quit();
   await chat.quit();
 
   log.info({ channel, agentId, provider }, "disconnected");
@@ -437,26 +437,31 @@ export async function runTwitchAgent(
 ) {
   const provider = "twitch";
 
-  const promises: Promise<void>[] = [];
+  const channels = new Map<string, Promise<void>>();
 
-  const channels = new Set<string>();
+  let next = 0;
 
-  const unsubscribe = firebase.onRequest(provider, (channel) => {
+  const unsubscribe = firebase.onRequest(agentId, provider, async (channel) => {
     if (channels.has(channel)) {
-      // ignore duplicate request.
-      log.info({ channel, agentId, provider }, "duplicate request");
       return;
     }
-    channels.add(channel);
-    promises.push(
-      join(firebase, agentId, channel)
-        .catch((e) => {
-          log.error({ channel, agentId, provider }, e);
-        })
-        .finally(() => {
-          channels.delete(channel);
-        })
-    );
+
+    const rateLimiter = new Promise<void>((resolve) => {
+      const now = Date.now();
+      if (next <= now) {
+        next = now + 1000;
+        resolve();
+      } else {
+        next += 1000;
+        setTimeout(() => resolve(), next - now);
+      }
+    });
+
+    const promise = rateLimiter
+      .then(() => join(firebase, agentId, channel))
+      .catch((e) => log.error({ channel, agentId, provider }, e))
+      .finally(() => channels.delete(channel));
+    channels.set(channel, promise);
   });
 
   return async () => {
@@ -466,15 +471,12 @@ export async function runTwitchAgent(
     unsubscribe();
 
     // request someone to take over.
-    await firebase.releaseAll(provider, channels, agentId);
+    await firebase.releaseAll(provider, new Set(channels.keys()), agentId);
 
     log.info({ agentId, provider }, "released all");
 
     // and wait for existing promises.
-    await Promise.all(promises);
-
-    // then clean up after ourselves.
-    await firebase.closeAll(provider, channels, agentId);
+    await Promise.all(channels.values());
 
     log.info({ agentId, provider }, "close complete");
   };
