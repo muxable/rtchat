@@ -47,38 +47,34 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
   const notification: AddressNotification = body as AddressNotification;
   for (const activity of notification.event.activity) {
     // look for userId that associated with this address
-    await admin
+    const addressDoc = await admin
       .firestore()
       .collection("realtimecash")
       .where("address", "==", activity.toAddress)
-      .get()
-      .then(async (snapshot) => {
-        // get channelId for each userId
-        const profile = await admin
-          .firestore()
-          .collection("profiles")
-          .where("userId", "==", snapshot.docs[0].id)
-          .get();
-        
-        const channelId = profile.docs[0].data().id;
-        const login = profile.docs[0].data().login;
-        const displayName = profile.docs[0].data().displayName;
+      .limit(1)
+      .get();
 
-        // storing donation respoonses in realtimecash collection
-        await admin.firestore().collection("messages").add({
-          channelId: channelId,
-          broadcaster_user_id: channelId,
-          broadcaster_user_login: login,
-          broadcaster_user_name: displayName,
-          userId: snapshot.docs[0].id,
-          webhookId: notification.webhookId,
-          id: notification.id,
-          createdAt: notification.createdAt,
-          type: "realtimecash.donation",
-          notificationType: notification.type,
-          activity: activity,
-        });
-      })
+    const userId = addressDoc.docs[0].id;
+
+    // get channelId for this user
+    const profileDoc = await admin
+      .firestore()
+      .collection("profiles")
+      .doc(userId)
+      .get();
+
+    const channelId = profileDoc.get("twitch").channelId;
+
+    // storing donation respoonses in realtimecash collection
+    await admin.firestore().collection("messages").add({
+      channelId: channelId,
+      webhookId: notification.webhookId,
+      id: notification.id,
+      createdAt: notification.createdAt,
+      type: "realtimecash.donation",
+      notificationType: notification.type,
+      activity: activity,
+    });
   }
   res.status(200).send("OK");
 });
