@@ -63,7 +63,7 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
       .doc(userId)
       .get();
 
-    const channelId = profileDoc.get("twitch").channelId;
+    const channelId = `twitch:${profileDoc.get("twitch").id}`;
 
     // storing donation respoonses in realtimecash collection
     await admin.firestore().collection("messages").add({
