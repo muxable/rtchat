@@ -2,16 +2,81 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import fetch from "node-fetch";
 
-// TODO: webhook receiver from alchemy
-export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
-  // const body = req.body;
-  // const event = body.event;
-  // const alchemyWebhookId = body.webhookId;
-  // const network = event.network;
+type Log = {
+  removed: boolean;
+  address: string;
+  data: string;
+  topics: string[];
+};
 
-  // // list of activities
-  // const activitities = event.activity;
-  res.status(200).send();
+type RawContract = {
+  rawvalue?: string;
+  address?: string;
+  decimal?: number;
+};
+
+type Activity = {
+  category: string;
+  fromAddress: string;
+  toAddress: string;
+  blockNum: string;
+  value?: number;
+  erc721TokenId?: string;
+  asset?: string;
+  hash: string;
+  typeTraceAddress: string;
+  rawContract?: RawContract;
+  log?: Log;
+};
+
+type AddressEvent = {
+  network: string;
+  activity: Activity[];
+};
+
+type AddressNotification = {
+  webhookId: string;
+  id: string;
+  createdAt: string;
+  type: string;
+  event: AddressEvent;
+};
+
+export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
+  const body = req.body;
+  const notification: AddressNotification = body as AddressNotification;
+  for (const activity of notification.event.activity) {
+    // look for userId that associated with this address
+    const addressDoc = await admin
+      .firestore()
+      .collection("realtimecash")
+      .where("address", "==", activity.toAddress)
+      .limit(1)
+      .get();
+
+    const userId = addressDoc.docs[0].id;
+
+    // get channelId for this user
+    const profileDoc = await admin
+      .firestore()
+      .collection("profiles")
+      .doc(userId)
+      .get();
+
+    const channelId = `twitch:${profileDoc.get("twitch").id}`;
+
+    // storing donation respoonses in realtimecash collection
+    await admin.firestore().collection("messages").add({
+      channelId: channelId,
+      webhookId: notification.webhookId,
+      id: notification.id,
+      createdAt: notification.createdAt,
+      type: "realtimecash.donation",
+      notificationType: notification.type,
+      activity: activity,
+    });
+  }
+  res.status(200).send("OK");
 });
 
 type webhookIdResponse = {
