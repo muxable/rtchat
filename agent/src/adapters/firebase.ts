@@ -80,7 +80,7 @@ export class FirebaseAdapter {
     private firebase: admin.database.Database,
     private firestore: admin.firestore.Firestore,
     private provider: "twitch",
-    private debugKeepConnected: Set<String>
+    public debugKeepConnected: Set<String>
   ) {
     firestore.settings({ ignoreUndefinedProperties: true });
   }
@@ -153,33 +153,37 @@ export class FirebaseAdapter {
   }
 
   // Notifies for open join requests.
-  onRequest(provider: string, callback: (channel: string) => void) {
+  onRequest(agentId: string, provider: string, cb: (channel: string) => void) {
     // attempt to join any existing channels. this will help load shed
     // existing agents because the canonical operator is uniformly distributed.
     // if we don't do this, older agents will slowly accrue channels.
+    const debug = this.debugKeepConnected;
     this.firebase
       .ref("connections")
       .child(provider)
       .get()
       .then((snapshot) => {
         for (const channel of Object.keys(snapshot.val() || {})) {
-          if (
-            this.debugKeepConnected.size == 0 ||
-            this.debugKeepConnected.has(channel)
-          ) {
-            callback(channel);
+          if (debug.size > 0 && !debug.has(channel)) {
+            continue;
           }
+          // check if the agent would win election.
+          const canonicalAgentId = findCanonicalAgentId(channel, [
+            ...Object.keys(snapshot.val() || {}),
+            agentId,
+          ]);
+          if (canonicalAgentId !== agentId) {
+            continue;
+          }
+          cb(channel);
         }
       });
     const listener = (snapshot: admin.database.DataSnapshot) => {
       const channel = snapshot.key;
-      if (
-        channel &&
-        (this.debugKeepConnected.size == 0 ||
-          this.debugKeepConnected.has(channel))
-      ) {
-        callback(channel);
+      if (!channel || (debug.size > 0 && !debug.has(channel))) {
+        return;
       }
+      cb(channel);
     };
     const ref = this.firebase.ref("requests").child(provider);
     ref.on("child_added", listener);
@@ -202,48 +206,23 @@ export class FirebaseAdapter {
     await connectionsRef.child(agentId).set(true);
     // clear the request
     await requestRef.remove();
-    // add a disconnect handler, clear our connection
-    const connectionDc = connectionsRef.child(agentId).onDisconnect();
-    await connectionDc.remove();
-    // and issue a new request (we don't know if we are canonical)
-    const requestDc = requestRef.onDisconnect();
-    await requestDc.set(admin.database.ServerValue.TIMESTAMP);
     // wait for assignment change
     await new Promise<void>((resolve) => {
       const listener = (snapshot: admin.database.DataSnapshot) => {
-        const agentIds = Object.keys(snapshot.val() || {});
-        const isIncluded = agentIds.includes(agentId);
-        if (!isIncluded) {
-          log.info(
-            { provider, channel, agentId },
-            "released agent from external source"
+        const isForced = this.debugKeepConnected.has(channel);
+        if (isForced) {
+          log.warn(
+            { provider, channel, agentId, isForced },
+            "remaining connected to channel from manual override"
           );
-          connectionsRef.off("value", listener);
-          resolve();
           return;
         }
-        // only consider agent ids that volunteer as candidates.
-        // this allows for soft disconnects to pass the canonical agent.
-        const candidateIds = agentIds.filter(
-          (agentId) => snapshot.val()[agentId]
-        );
+        const agentIds = Object.keys(snapshot.val() || {});
         const isCanonical =
-          candidateIds.length == 0 ||
-          findCanonicalAgentId(`${provider}:${channel}`, candidateIds) ===
-            agentId;
-        const isForced = this.debugKeepConnected.has(channel);
+          agentIds.length == 0 ||
+          findCanonicalAgentId(`${provider}:${channel}`, agentIds) === agentId;
         if (!isCanonical) {
-          if (isForced && snapshot.val()[agentId]) {
-            log.warn(
-              { provider, channel, agentId, isForced },
-              "remaining connected to channel from manual override"
-            );
-            return;
-          }
-          log.info(
-            { provider, channel, agentId, isForced },
-            "released agent from canonical deferral"
-          );
+          log.info({ provider, channel, agentId, isForced }, "released agent");
           connectionsRef.off("value", listener);
           resolve();
           return;
@@ -252,8 +231,6 @@ export class FirebaseAdapter {
       connectionsRef.on("value", listener);
     });
     await connectionsRef.child(agentId).remove();
-    await connectionDc.cancel();
-    await requestDc.cancel();
     log.info({ provider, channel, agentId }, "claim released");
   }
 
@@ -273,22 +250,13 @@ export class FirebaseAdapter {
 
   // Finds all the channels owned by this agent and issues new join requests for them.
   async releaseAll(provider: string, channels: Set<string>, agentId: string) {
-    const connections: { [location: string]: false } = {};
+    const connections: { [location: string]: null } = {};
     const requests: { [location: string]: any } = {};
     for (const channel of channels) {
-      connections[`${channel}/${agentId}`] = false;
+      connections[`${channel}/${agentId}`] = null;
       requests[channel] = admin.database.ServerValue.TIMESTAMP;
     }
     await this.firebase.ref("connections").child(provider).update(connections);
     await this.firebase.ref("requests").child(provider).update(requests);
-  }
-
-  // Finds all the channels owned by this agent and issues new join requests for them.
-  async closeAll(provider: string, channels: Set<string>, agentId: string) {
-    const connections: { [location: string]: null } = {};
-    for (const channel of channels) {
-      connections[`${channel}/${agentId}`] = null;
-    }
-    await this.firebase.ref("connections").child(provider).update(connections);
   }
 }

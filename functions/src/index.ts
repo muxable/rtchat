@@ -2,7 +2,7 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
 import { app as authApp } from "./auth";
-import { getUserEmotes, getEmotes } from "./emotes";
+import { getUserEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
@@ -318,7 +318,6 @@ export {
   eventsub,
   search,
   getUserEmotes,
-  getEmotes,
   cleanup,
   synthesize,
   getVoices,
