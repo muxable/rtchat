@@ -42,21 +42,6 @@ type AddressNotification = {
   event: AddressEvent;
 };
 
-// async getProfile(channel: string) {
-//   const results = await this.firestore
-//     .collection("profiles")
-//     .where(`${this.provider}.login`, "==", channel)
-//     .get();
-//   if (results.size > 1) {
-//     log.error(
-//       { provider: this.provider, channel },
-//       "duplicate profiles found"
-//     );
-//   }
-//   return results.empty ? null : results.docs[0];
-// }
-
-// TODO: webhook receiver from alchemy
 export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
   const body = req.body;
   const notification: AddressNotification = body as AddressNotification;
@@ -72,7 +57,7 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
         const profile = await admin
           .firestore()
           .collection("profiles")
-          .where("userId", "==", snapshot.docs[0].data().userId)
+          .where("userId", "==", snapshot.docs[0].id)
           .get();
         
         const channelId = profile.docs[0].data().id;
@@ -85,7 +70,7 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
           broadcaster_user_id: channelId,
           broadcaster_user_login: login,
           broadcaster_user_name: displayName,
-          userId: snapshot.docs[0].data().userId,
+          userId: snapshot.docs[0].id,
           webhookId: notification.webhookId,
           id: notification.id,
           createdAt: notification.createdAt,
@@ -94,12 +79,6 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
           activity: activity,
         });
       })
-      .catch((error) => {
-        // no userId found
-        console.log(error);
-        res.status(400).send("No userId found");
-        return;
-      });
   }
   res.status(200).send("OK");
 });
