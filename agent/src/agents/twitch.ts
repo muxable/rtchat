@@ -132,7 +132,7 @@ async function join(
   agentId: string,
   channel: string,
   anonymous = false
-) {
+): Promise<void> {
   const authProvider = anonymous
     ? undefined
     : await getAuthProvider(firebase, channel);
