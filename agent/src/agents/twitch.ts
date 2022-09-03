@@ -417,6 +417,11 @@ async function join(
 
     await firebase.claim(provider, channel, agentId);
 
+    // wait a small amount of time before releasing the channel,
+    // it seems that twitch does not immediately send messages
+    // after joining a channel.
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     messageListener();
 
     await raidListener.remove();
@@ -424,6 +429,11 @@ async function join(
     await send.quit();
   } else {
     await firebase.claim(provider, channel, agentId);
+
+    // wait a small amount of time before releasing the channel,
+    // it seems that twitch does not immediately send messages
+    // after joining a channel.
+    await new Promise((resolve) => setTimeout(resolve, 3000));
   }
 
   await chat.quit();
