@@ -169,12 +169,13 @@ export class FirebaseAdapter {
           }
           // check if the agent would win election.
           const canonicalAgentId = findCanonicalAgentId(channel, [
-            ...Object.keys(snapshot.val() || {}),
+            ...Object.keys(snapshot.val()[channel] || {}),
             agentId,
           ]);
           if (canonicalAgentId !== agentId) {
             continue;
           }
+          log.info({ agentId, channel }, "taking over channel");
           cb(channel);
         }
       });

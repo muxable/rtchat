@@ -473,7 +473,10 @@ export async function runTwitchAgent(
     // request someone to take over.
     await firebase.releaseAll(provider, new Set(channels.keys()), agentId);
 
-    log.info({ agentId, provider }, "released all");
+    log.info(
+      { agentId, provider, waitingForChannels: [...channels.keys()] },
+      "released all"
+    );
 
     // and wait for existing promises.
     await Promise.all(channels.values());
