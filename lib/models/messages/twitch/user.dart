@@ -71,7 +71,7 @@ class TwitchUserModel {
 
   Uri get profilePictureUrl {
     return Uri.parse(
-        "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$userId");
+        "https://rtirl.com/pfp.png?provider=twitch&channelId=$userId");
   }
 
   Channel get asChannel => Channel("twitch", userId, displayName ?? login);

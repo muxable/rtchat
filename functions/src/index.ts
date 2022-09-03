@@ -2,7 +2,7 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
 import { app as authApp } from "./auth";
-import { getUserEmotes, getEmotes } from "./emotes";
+import { getUserEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
@@ -10,7 +10,7 @@ import { cleanup, subscribe, unsubscribe } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
 import { updateChatStatus } from "./chat-status";
-import { setRealTimeCashAddress } from "./alchemy_webhook";
+import { setRealTimeCashAddress, alchemyWebhook } from "./alchemy_webhook";
 
 admin.initializeApp();
 
@@ -331,11 +331,11 @@ export {
   eventsub,
   search,
   getUserEmotes,
-  getEmotes,
   cleanup,
   synthesize,
   getVoices,
   updateChatStatus,
   setRealTimeCashAddress,
+  alchemyWebhook,
 };
 export const auth = functions.https.onRequest(authApp);
