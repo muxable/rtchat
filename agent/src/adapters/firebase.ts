@@ -168,10 +168,10 @@ export class FirebaseAdapter {
             continue;
           }
           // check if the agent would win election.
-          const canonicalAgentId = findCanonicalAgentId(channel, [
-            ...Object.keys(snapshot.val()[channel] || {}),
-            agentId,
-          ]);
+          const canonicalAgentId = findCanonicalAgentId(
+            `${provider}:${channel}`,
+            [...Object.keys(snapshot.val()[channel] || {}), agentId]
+          );
           if (canonicalAgentId !== agentId) {
             continue;
           }
