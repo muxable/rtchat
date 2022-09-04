@@ -127,6 +127,29 @@ function bunyanLogger(level: LogLevel, message: string) {
   }
 }
 
+const pubSubClients: [BasicPubSubClient, number][] = [];
+
+function incrBasicPubSub() {
+  const matchingClient = pubSubClients.find((ps) => ps[1] < 50);
+  if (matchingClient) {
+    matchingClient[1]++;
+    return matchingClient[0];
+  }
+  const ps = new BasicPubSubClient({
+    logger: { custom: bunyanLogger, minLevel: LogLevel.CRITICAL },
+  });
+  pubSubClients.push([ps, 1]);
+  return ps;
+}
+
+function decrBasicPubSub(ps: BasicPubSubClient) {
+  const matchingClient = pubSubClients.find(([p]) => p === ps);
+  if (!matchingClient) {
+    throw new Error("unexpected pubsub client");
+  }
+  matchingClient[1]--;
+}
+
 async function join(
   firebase: FirebaseAdapter,
   agentId: string,
@@ -376,15 +399,9 @@ async function join(
     });
     await send.connect();
 
-    // create a pubsub listener since the user joined their own channel.
-    const basicpubsub = new BasicPubSubClient({
-      logger: { custom: bunyanLogger, minLevel: LogLevel.CRITICAL },
-    });
+    const pubSubClient = incrBasicPubSub();
 
-    const pubsub = new SingleUserPubSubClient({
-      authProvider,
-      pubSubClient: basicpubsub,
-    });
+    const pubsub = new SingleUserPubSubClient({ authProvider, pubSubClient });
 
     const raidListener = await pubsub.onCustomTopic("raid", async (message) => {
       const data = message.data as any;
@@ -451,6 +468,8 @@ async function join(
     messageListener();
 
     await raidListener.remove();
+
+    decrBasicPubSub(pubSubClient);
 
     await send.quit();
   } else {
