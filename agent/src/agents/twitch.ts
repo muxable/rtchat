@@ -17,7 +17,7 @@ async function getTwitchUserId(username: string): Promise<string> {
   const client = new ClientCredentials(await getTwitchOAuthConfig());
   const token = await client.getToken({});
   const res = await fetch(
-    "https://api.twitch.tv/helix/users?login=" + username,
+    "https://api.twitch.tv/helix/users?login=" + username.replace("#", ""),
     {
       headers: {
         "Content-Type": "application/json",
