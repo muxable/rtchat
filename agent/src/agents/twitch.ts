@@ -344,15 +344,18 @@ async function join(
     await chat.connect();
     await registerPromise; // this is a bit awkward but the join will race if we don't wait.
     await chat.join(channel);
-  } catch (e) {
+  } catch (error) {
     if (!anonymous) {
       log.warn(
-        { channel, agentId, provider },
+        { channel, agentId, provider, error },
         "failed to join, trying to join anonymously"
       );
       return join(firebase, agentId, channel, true);
     } else {
-      log.error({ channel, agentId, provider }, "permanently failed to join");
+      log.error(
+        { channel, agentId, provider, error },
+        "permanently failed to join"
+      );
     }
   }
 
