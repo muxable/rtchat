@@ -375,14 +375,17 @@ async function join(
       logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
     });
     await send.connect();
+
     // create a pubsub listener since the user joined their own channel.
     const basicpubsub = new BasicPubSubClient({
-      logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
+      logger: { custom: bunyanLogger, minLevel: LogLevel.CRITICAL },
     });
+
     const pubsub = new SingleUserPubSubClient({
       authProvider,
       pubSubClient: basicpubsub,
     });
+
     const raidListener = await pubsub.onCustomTopic("raid", async (message) => {
       const data = message.data as any;
       await firebase.setIfNotExists(
@@ -394,13 +397,6 @@ async function join(
           timestamp: admin.firestore.FieldValue.serverTimestamp(),
         }
       );
-    });
-
-    basicpubsub.onDisconnect(async (manually) => {
-      if (!manually) {
-        log.info({ agentId, provider, channel }, "force disconnected");
-        await firebase.forceRelease(provider, channel, agentId);
-      }
     });
 
     // also listen to message send requests.
