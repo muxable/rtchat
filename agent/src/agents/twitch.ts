@@ -346,7 +346,7 @@ async function join(
     await chat.join(channel);
   } catch (e) {
     if (!anonymous) {
-      log.error(
+      log.warn(
         { channel, agentId, provider },
         "failed to join, trying to join anonymously"
       );
