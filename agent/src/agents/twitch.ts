@@ -130,13 +130,16 @@ function bunyanLogger(level: LogLevel, message: string) {
 async function join(
   firebase: FirebaseAdapter,
   agentId: string,
-  channel: string
-) {
-  const authProvider = await getAuthProvider(firebase, channel);
+  channel: string,
+  anonymous = false
+): Promise<void> {
+  const authProvider = anonymous
+    ? undefined
+    : await getAuthProvider(firebase, channel);
 
   const chat = new ChatClient({
     authProvider,
-    isAlwaysMod: authProvider.username === channel,
+    isAlwaysMod: authProvider?.username === channel,
     logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
   });
 
@@ -337,9 +340,22 @@ async function join(
   });
 
   log.info({ channel, agentId, provider }, "assigned to channel");
-  await chat.connect();
-  await registerPromise; // this is a bit awkward but the join will race if we don't wait.
-  await chat.join(channel);
+  try {
+    await chat.connect();
+    await registerPromise; // this is a bit awkward but the join will race if we don't wait.
+    await chat.join(channel);
+  } catch (e) {
+    if (!anonymous) {
+      log.error(
+        { channel, agentId, provider },
+        "failed to join, trying to join anonymously"
+      );
+      return join(firebase, agentId, channel, anonymous);
+    } else {
+      log.error({ channel, agentId, provider }, "permanently failed to join");
+    }
+  }
+
   log.info({ channel, agentId, provider }, "joined channel");
 
   chat.onDisconnect(async (manually) => {
@@ -349,7 +365,7 @@ async function join(
     }
   });
 
-  if (authProvider.username === channel) {
+  if (authProvider?.username === channel) {
     const send = new ChatClient({
       authProvider,
       isAlwaysMod: authProvider.username === channel,
@@ -407,10 +423,21 @@ async function join(
             if (!targetChannel || !message) {
               continue;
             }
-            await send.say(targetChannel, message);
-            await change.doc.ref.update({
-              sentAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
+            try {
+              await send.say(targetChannel, message);
+              await change.doc.ref.update({
+                sentAt: admin.firestore.FieldValue.serverTimestamp(),
+              });
+            } catch (e: any) {
+              log.error(
+                { error: e, targetChannel, message },
+                "error sending message"
+              );
+              await change.doc.ref.update({
+                error: e.message,
+                sentAt: admin.firestore.FieldValue.serverTimestamp(),
+              });
+            }
           }
         }
       });
