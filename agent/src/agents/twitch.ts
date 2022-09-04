@@ -350,7 +350,7 @@ async function join(
         { channel, agentId, provider },
         "failed to join, trying to join anonymously"
       );
-      return join(firebase, agentId, channel, anonymous);
+      return join(firebase, agentId, channel, true);
     } else {
       log.error({ channel, agentId, provider }, "permanently failed to join");
     }
