@@ -187,7 +187,7 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
       const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
-        `/delete ${messageId}`
+        `/delete ${messageId.substring("twitch:".length)}`
       );
       return response;
   }
