@@ -136,7 +136,7 @@ function incrBasicPubSub() {
     return matchingClient[0];
   }
   const ps = new BasicPubSubClient({
-    logger: { custom: bunyanLogger, minLevel: LogLevel.CRITICAL },
+    logger: { custom: bunyanLogger, minLevel: LogLevel.ERROR },
   });
   pubSubClients.push([ps, 1]);
   return ps;
