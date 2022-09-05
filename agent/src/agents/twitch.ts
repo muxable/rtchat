@@ -17,7 +17,7 @@ async function getTwitchUserId(username: string): Promise<string> {
   const client = new ClientCredentials(await getTwitchOAuthConfig());
   const token = await client.getToken({});
   const res = await fetch(
-    "https://api.twitch.tv/helix/users?login=" + username,
+    "https://api.twitch.tv/helix/users?login=" + username.replace("#", ""),
     {
       headers: {
         "Content-Type": "application/json",
@@ -127,16 +127,42 @@ function bunyanLogger(level: LogLevel, message: string) {
   }
 }
 
+const pubSubClients: [BasicPubSubClient, number][] = [];
+
+function incrBasicPubSub() {
+  const matchingClient = pubSubClients.find((ps) => ps[1] < 50);
+  if (matchingClient) {
+    matchingClient[1]++;
+    return matchingClient[0];
+  }
+  const ps = new BasicPubSubClient({
+    logger: { custom: bunyanLogger, minLevel: LogLevel.ERROR },
+  });
+  pubSubClients.push([ps, 1]);
+  return ps;
+}
+
+function decrBasicPubSub(ps: BasicPubSubClient) {
+  const matchingClient = pubSubClients.find(([p]) => p === ps);
+  if (!matchingClient) {
+    throw new Error("unexpected pubsub client");
+  }
+  matchingClient[1]--;
+}
+
 async function join(
   firebase: FirebaseAdapter,
   agentId: string,
-  channel: string
-) {
-  const authProvider = await getAuthProvider(firebase, channel);
+  channel: string,
+  anonymous = false
+): Promise<void> {
+  const authProvider = anonymous
+    ? undefined
+    : await getAuthProvider(firebase, channel);
 
   const chat = new ChatClient({
     authProvider,
-    isAlwaysMod: authProvider.username === channel,
+    isAlwaysMod: authProvider?.username === channel,
     logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
   });
 
@@ -337,9 +363,25 @@ async function join(
   });
 
   log.info({ channel, agentId, provider }, "assigned to channel");
-  await chat.connect();
-  await registerPromise; // this is a bit awkward but the join will race if we don't wait.
-  await chat.join(channel);
+  try {
+    await chat.connect();
+    await registerPromise; // this is a bit awkward but the join will race if we don't wait.
+    await chat.join(channel);
+  } catch (error) {
+    if (!anonymous) {
+      log.warn(
+        { channel, agentId, provider, error },
+        "failed to join, trying to join anonymously"
+      );
+      return join(firebase, agentId, channel, true);
+    } else {
+      log.error(
+        { channel, agentId, provider, error },
+        "permanently failed to join"
+      );
+    }
+  }
+
   log.info({ channel, agentId, provider }, "joined channel");
 
   chat.onDisconnect(async (manually) => {
@@ -349,21 +391,18 @@ async function join(
     }
   });
 
-  if (authProvider.username === channel) {
+  if (authProvider?.username === channel) {
     const send = new ChatClient({
       authProvider,
       isAlwaysMod: authProvider.username === channel,
       logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
     });
     await send.connect();
-    // create a pubsub listener since the user joined their own channel.
-    const basicpubsub = new BasicPubSubClient({
-      logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
-    });
-    const pubsub = new SingleUserPubSubClient({
-      authProvider,
-      pubSubClient: basicpubsub,
-    });
+
+    const pubSubClient = incrBasicPubSub();
+
+    const pubsub = new SingleUserPubSubClient({ authProvider, pubSubClient });
+
     const raidListener = await pubsub.onCustomTopic("raid", async (message) => {
       const data = message.data as any;
       await firebase.setIfNotExists(
@@ -375,13 +414,6 @@ async function join(
           timestamp: admin.firestore.FieldValue.serverTimestamp(),
         }
       );
-    });
-
-    basicpubsub.onDisconnect(async (manually) => {
-      if (!manually) {
-        log.info({ agentId, provider, channel }, "force disconnected");
-        await firebase.forceRelease(provider, channel, agentId);
-      }
     });
 
     // also listen to message send requests.
@@ -407,23 +439,46 @@ async function join(
             if (!targetChannel || !message) {
               continue;
             }
-            await send.say(targetChannel, message);
-            await change.doc.ref.update({
-              sentAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
+            try {
+              await send.say(targetChannel, message);
+              await change.doc.ref.update({
+                sentAt: admin.firestore.FieldValue.serverTimestamp(),
+              });
+            } catch (e: any) {
+              log.error(
+                { error: e, targetChannel, message },
+                "error sending message"
+              );
+              await change.doc.ref.update({
+                error: e.message,
+                sentAt: admin.firestore.FieldValue.serverTimestamp(),
+              });
+            }
           }
         }
       });
 
     await firebase.claim(provider, channel, agentId);
 
+    // wait a small amount of time before releasing the channel,
+    // it seems that twitch does not immediately send messages
+    // after joining a channel.
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     messageListener();
 
     await raidListener.remove();
 
+    decrBasicPubSub(pubSubClient);
+
     await send.quit();
   } else {
     await firebase.claim(provider, channel, agentId);
+
+    // wait a small amount of time before releasing the channel,
+    // it seems that twitch does not immediately send messages
+    // after joining a channel.
+    await new Promise((resolve) => setTimeout(resolve, 3000));
   }
 
   await chat.quit();
@@ -473,7 +528,10 @@ export async function runTwitchAgent(
     // request someone to take over.
     await firebase.releaseAll(provider, new Set(channels.keys()), agentId);
 
-    log.info({ agentId, provider }, "released all");
+    log.info(
+      { agentId, provider, waitingForChannels: [...channels.keys()] },
+      "released all"
+    );
 
     // and wait for existing promises.
     await Promise.all(channels.values());

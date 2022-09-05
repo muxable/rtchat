@@ -10,18 +10,31 @@ import { cleanup, subscribe, unsubscribe } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
 import { updateChatStatus } from "./chat-status";
-import { setRealTimeCashAddress } from "./alchemy_webhook";
+import { setRealTimeCashAddress, alchemyWebhook } from "./alchemy_webhook";
 
 admin.initializeApp();
 
-function write(channelId: string, targetChannel: string, message: string) {
-  return admin.firestore().collection("actions").add({
+async function write(
+  channelId: string,
+  targetChannel: string,
+  message: string
+) {
+  const ref = await admin.firestore().collection("actions").add({
     channelId,
     targetChannel,
     message,
     sentAt: null,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+  // wait for the message to be sent.
+  const error = await new Promise<string | null>((resolve) =>
+    ref.onSnapshot((snapshot) => {
+      if (snapshot.get("sentAt") != null) {
+        resolve(snapshot.get("error") || null);
+      }
+    })
+  );
+  return error;
 }
 
 export const send = functions.https.onCall(async (data, context) => {
@@ -44,12 +57,12 @@ export const send = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      await write(
+      const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
         message
       );
-      return;
+      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -76,12 +89,12 @@ export const ban = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      await write(
+      const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
         `/ban ${username} ${reason}`
       );
-      return;
+      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -107,12 +120,12 @@ export const unban = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      await write(
+      const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
         `/unban ${username}`
       );
-      return;
+      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -140,12 +153,12 @@ export const timeout = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      await write(
+      const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
         `/timeout ${username} ${length} ${reason}`
       );
-      return;
+      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -171,12 +184,12 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      await write(
+      const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
-        `/delete ${messageId}`
+        `/delete ${messageId.substring("twitch:".length)}`
       );
-      return;
+      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -201,12 +214,12 @@ export const clear = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      await write(
+      const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
         `/clear`
       );
-      return;
+      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -324,5 +337,6 @@ export {
   getVoices,
   updateChatStatus,
   setRealTimeCashAddress,
+  alchemyWebhook,
 };
 export const auth = functions.https.onRequest(authApp);

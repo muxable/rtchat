@@ -23,7 +23,7 @@ class Channel {
 
   Uri get profilePictureUrl {
     return Uri.parse(
-        "https://us-central1-rtchat-47692.cloudfunctions.net/getProfilePicture?provider=twitch&channelId=$channelId");
+        "https://rtirl.com/pfp.png?provider=twitch&channelId=$channelId");
   }
 }
 
