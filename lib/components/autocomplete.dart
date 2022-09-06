@@ -64,7 +64,6 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
     setState(() {
       _autocompleteMode =
           _AutocompleteModeExtension.forText(widget.controller.text);
-      print("setting autocomplete mode to ${_autocompleteMode.toString()}");
     });
   }
 
