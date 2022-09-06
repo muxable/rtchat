@@ -114,7 +114,7 @@ void main() {
     });
 
     test('third party emotes should tokenize', () {
-      final source = "https://3pemote";
+      const source = "https://3pemote";
       const code = "mooooo";
 
       final model = createMessageModel(
