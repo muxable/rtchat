@@ -12,8 +12,6 @@ import { getTwitchLogin, getChannelId } from "./twitch";
 import { updateChatStatus } from "./chat-status";
 import { setRealTimeCashAddress, alchemyWebhook } from "./alchemy_webhook";
 
-admin.initializeApp();
-
 async function write(
   channelId: string,
   targetChannel: string,

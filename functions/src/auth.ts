@@ -12,6 +12,8 @@ import {
 } from "./oauth";
 import { Store, SessionData } from "express-session";
 
+admin.initializeApp();
+
 export interface StoreOptions {
   dataset: admin.firestore.Firestore;
   kind?: string;
