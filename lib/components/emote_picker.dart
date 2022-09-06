@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 
 class EmotePickerWidget extends StatelessWidget {
   final void Function(Emote) onEmoteSelected;
-  final String channelId;
+  final Channel channel;
   static const _emoteColumns = 8;
   static const _footerHeight = 30;
 
   const EmotePickerWidget(
       {Key? key,
       required this.onEmoteSelected,
-      required this.channelId})
+      required this.channel})
       : super(key: key);
 
   @override
@@ -27,7 +28,7 @@ class EmotePickerWidget extends StatelessWidget {
         children: [
           Flexible(
             child: FutureBuilder<List<Emote>>(
-              future: getTwitchEmotes(channelId),
+              future: getEmotes(channel),
               initialData: const [],
               builder: (context, snapshot) {
                 if (snapshot.connectionState != ConnectionState.done) {
@@ -46,7 +47,7 @@ class EmotePickerWidget extends StatelessWidget {
                               onPressed: () => onEmoteSelected(emote),
                               splashRadius: 24,
                               icon: Image(
-                                  image: ResilientNetworkImage(emote.source))))
+                                  image: ResilientNetworkImage(emote.uri))))
                           .toList()),
                     ),
                   ],
