@@ -29,7 +29,8 @@ class Emote {
     required this.imageUrl,
   });
 
-  get uri => Uri.tryParse(imageUrl);
+  get uri =>
+      Uri.tryParse(imageUrl.startsWith("//") ? "https:$imageUrl" : imageUrl);
 
   static Emote fromJson(dynamic json) {
     return Emote(
