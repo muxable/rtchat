@@ -126,5 +126,5 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.rtirl.chat
           releaseFiles: app-release.aab
-          track: ${{ github.event_name == 'release' && 'production' || 'beta' }}
+          track: ${{ github.event_name == 'release' && 'production' || 'alpha' }}
           mappingFile: mapping.txt

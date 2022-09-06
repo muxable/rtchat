@@ -81,6 +81,12 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     return EmotePickerWidget(
         channel: widget.channel,
         onEmoteSelected: (emote) {
+          if (emote == null) {
+            setState(() {
+              _isEmotePickerVisible = false;
+            });
+            return;
+          }
           setState(() {
             _textEditingController.text =
                 "${_textEditingController.text} ${emote.code}";
