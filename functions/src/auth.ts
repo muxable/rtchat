@@ -1,24 +1,95 @@
-import { FirestoreStore } from "@google-cloud/connect-firestore";
-import { Firestore } from "@google-cloud/firestore";
 import * as crypto from "crypto";
 import * as express from "express";
 import * as expressSession from "express-session";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
-import fetch from "node-fetch";
+import fetch from "cross-fetch";
 import { AuthorizationCode } from "simple-oauth2";
 import {
   STREAMLABS_OAUTH_CONFIG,
   TWITCH_CLIENT_ID,
   TWITCH_OAUTH_CONFIG,
 } from "./oauth";
+import { Store, SessionData } from "express-session";
+
+export interface StoreOptions {
+  dataset: admin.firestore.Firestore;
+  kind?: string;
+}
+
+export class FirestoreStore extends Store {
+  db: admin.firestore.Firestore;
+  kind: string;
+  constructor(options: StoreOptions) {
+    super();
+    this.db = options.dataset;
+    if (!this.db) {
+      throw new Error("No dataset provided to Firestore Session.");
+    }
+    this.kind = options.kind || "Session";
+  }
+
+  get = (
+    sid: string,
+    callback: (err?: Error | null, session?: SessionData) => void
+  ) => {
+    this.db
+      .collection(this.kind)
+      .doc(sid)
+      .get()
+      .then((doc) => {
+        if (!doc.exists) {
+          return callback();
+        }
+
+        try {
+          const result = JSON.parse(doc.data()!.data);
+          return callback(null, result);
+        } catch (err) {
+          return callback(err as Error);
+        }
+      }, callback);
+  };
+
+  set = (
+    sid: string,
+    session: SessionData,
+    callback?: (err?: Error) => void
+  ) => {
+    callback = callback || (() => {});
+    let sessJson;
+
+    try {
+      sessJson = JSON.stringify(session);
+    } catch (err) {
+      return callback(err as Error);
+    }
+
+    this.db
+      .collection(this.kind)
+      .doc(sid)
+      .set({ data: sessJson })
+      .then(() => {
+        callback!();
+      });
+  };
+
+  destroy = (sid: string, callback?: (err?: Error) => void) => {
+    callback = callback || (() => {});
+    this.db
+      .collection(this.kind)
+      .doc(sid)
+      .delete()
+      .then(() => callback!(), callback);
+  };
+}
 
 const app = express();
 
 app.use(
   expressSession({
     store: new FirestoreStore({
-      dataset: new Firestore(),
+      dataset: admin.firestore(),
       kind: "express-sessions",
     }),
     name: "__session",
@@ -85,7 +156,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
       Authorization: `Bearer ${results.token.access_token}`,
       "Client-Id": TWITCH_CLIENT_ID,
     },
-  }).then((response) => response.json());
+  }).then((response) => response.json() as any);
 
   req.session.state = undefined;
 
@@ -114,17 +185,13 @@ app.get("/auth/twitch/callback", async (req, res) => {
     .set({ twitch: JSON.stringify(results.token) }, { merge: true });
 
   // save the profile information too.
-  const twitchProfile: any = {
+  const twitchProfile = {
     id: users["data"][0]["id"],
     displayName: users["data"][0]["display_name"],
     login: users["data"][0]["login"],
     profilePictureUrl: users["data"][0]["profile_image_url"],
+    email: email,
   };
-
-  if (email) {
-    // Twitch accounts can be verified by phone and have no email
-    twitchProfile.email = email;
-  }
 
   await admin
     .firestore()

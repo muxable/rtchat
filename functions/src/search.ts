@@ -1,6 +1,6 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
-import fetch from "node-fetch";
+import fetch from "cross-fetch";
 import { ClientCredentials } from "simple-oauth2";
 import { getAccessToken, TWITCH_CLIENT_ID, TWITCH_OAUTH_CONFIG } from "./oauth";
 
@@ -26,7 +26,7 @@ export const search = functions.https.onCall(async (data, context) => {
           },
         }
       );
-      const twitchJson = await twitchResponse.json();
+      const twitchJson = (await twitchResponse.json()) as any;
       return [
         ...(twitchJson.data || []).map((channel: any) => {
           return {
@@ -60,7 +60,7 @@ export const search = functions.https.onCall(async (data, context) => {
       },
     }
   );
-  const twitchJson = await twitchResponse.json();
+  const twitchJson = (await twitchResponse.json()) as any;
   return [
     ...(twitchJson.data || []).map((channel: any) => {
       return {

@@ -1,7 +1,7 @@
 import * as crypto from "crypto";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
-import fetch from "node-fetch";
+import fetch from "cross-fetch";
 import { ClientCredentials } from "simple-oauth2";
 import {
   TWITCH_CLIENT_ID,

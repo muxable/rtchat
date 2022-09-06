@@ -1,5 +1,5 @@
 import * as functions from "firebase-functions";
-import fetch from "node-fetch";
+import fetch from "cross-fetch";
 import { ClientCredentials } from "simple-oauth2";
 import { getAccessToken, TWITCH_CLIENT_ID, TWITCH_OAUTH_CONFIG } from "./oauth";
 import { StaticAuthProvider } from "@twurple/auth";
@@ -49,7 +49,7 @@ export async function getTwitchEmotes(accessToken: string): Promise<Emote[]> {
         },
       }
     )
-      .then((res) => res.json())
+      .then((res) => res.json() as any)
       .then((json) => {
         return json["data"].map((emote: any) => {
           let channelId = emote["owner_id"];
@@ -91,7 +91,7 @@ export async function getTwitchEmotes(accessToken: string): Promise<Emote[]> {
         "Client-Id": TWITCH_CLIENT_ID,
       },
     })
-      .then((res) => res.json())
+      .then((res) => res.json() as any)
       .then((json) => {
         console.log(json);
         return json["data"].map((user: any) => [user.id, user.display_name]);
@@ -114,7 +114,7 @@ export async function getTwitchEmotes(accessToken: string): Promise<Emote[]> {
 
 export async function getBTTVEmotes(channelId: string): Promise<Emote[]> {
   const global = fetch(`https://api.betterttv.net/3/cached/emotes/global`)
-    .then((res) => res.json())
+    .then((res) => res.json() as any)
     .then((json) =>
       json.map((emote: any) => ({
         provider: "bttv",
@@ -128,7 +128,7 @@ export async function getBTTVEmotes(channelId: string): Promise<Emote[]> {
   const local = fetch(
     `https://api.betterttv.net/3/cached/users/twitch/${channelId}`
   )
-    .then((res) => res.json())
+    .then((res) => res.json() as any)
     .then((json) => [
       ...json.channelEmotes.map((emote: any) => ({
         provider: "bttv",
@@ -154,7 +154,7 @@ export async function getBTTVEmotes(channelId: string): Promise<Emote[]> {
 
 export async function getFFZEmotes(channelId: string): Promise<Emote[]> {
   const global = fetch("https://api.frankerfacez.com/v1/set/global")
-    .then((res) => res.json())
+    .then((res) => res.json() as any) 
     .then((json) =>
       json["default_sets"].flatMap((set: number) => {
         return json["sets"][set]["emoticons"].map((emote: any) => {
@@ -171,7 +171,7 @@ export async function getFFZEmotes(channelId: string): Promise<Emote[]> {
     )
     .catch(() => []);
   const local = fetch(`https://api.frankerfacez.com/v1/room/id/${channelId}`)
-    .then((res) => res.json())
+    .then((res) => res.json() as any)
     .then((json) =>
       json["sets"][json["room"]["set"]]["emoticons"].map((emote: any) => {
         return {
@@ -193,7 +193,7 @@ export async function getFFZEmotes(channelId: string): Promise<Emote[]> {
 
 export async function get7TVEmotes(channelId: string): Promise<Emote[]> {
   const global = fetch("https://api.7tv.app/v2/emotes/global")
-    .then((res) => res.json())
+    .then((res) => res.json() as any)
     .then((json) =>
       json.map((emote: any) => ({
         provider: "7tv",
@@ -205,7 +205,7 @@ export async function get7TVEmotes(channelId: string): Promise<Emote[]> {
     )
     .catch(() => []);
   const local = fetch(`https://api.7tv.app/v2/users/${channelId}/emotes`)
-    .then((res) => res.json())
+    .then((res) => res.json() as any)
     .then((json) =>
       json.map((emote: any) => ({
         provider: "7tv",
@@ -231,13 +231,13 @@ export const getEmotes = functions.https.onCall(async (data, context) => {
       "missing provider, channelId"
     );
   }
-  if (!context.auth) {
+  const uid = context.auth?.uid;
+  if (!uid) {
     throw new functions.https.HttpsError(
       "permission-denied",
       "Must be authenticated"
     );
   }
-  const uid = context.auth.uid;
   const token = await getAccessToken(uid, provider);
   if (!token) {
     throw new functions.https.HttpsError(
@@ -270,12 +270,17 @@ export const getUserEmotes = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const credentials = await new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken(
-        { scopes: [] }
-      );
+      const credentials = await new ClientCredentials(
+        TWITCH_OAUTH_CONFIG
+      ).getToken({ scopes: [] });
 
-      const channelJson = await getChannelEmotes(channelId, credentials.token.access_token);
-      const globalEmotes = await getGlobalEmotes(credentials.token.access_token);
+      const channelJson = await getChannelEmotes(
+        channelId,
+        credentials.token.access_token
+      );
+      const globalEmotes = await getGlobalEmotes(
+        credentials.token.access_token
+      );
       const mappedChannelEmotes = mapEmotes(channelJson.data);
       const mappedGlobalEmotes = mapEmotes(globalEmotes.data);
       return { emotes: mappedGlobalEmotes.concat(mappedChannelEmotes) };
@@ -289,16 +294,15 @@ function mapEmotes(emoteArray: any) {
     return {
       id: emote["id"],
       code: emote["name"],
-      source: `https://static-cdn.jtvnw.net/emoticons/v2/${emote["id"]}/default/dark/1.0`
-    }
+      source: `https://static-cdn.jtvnw.net/emoticons/v2/${emote["id"]}/default/dark/1.0`,
+    };
   });
-
 }
 
 async function getChannelEmotes(channelId: string, accessToken: string) {
   const twitchResponse = await fetch(
     "https://api.twitch.tv/helix/chat/emotes?broadcaster_id=" +
-    encodeURIComponent(channelId),
+      encodeURIComponent(channelId),
     {
       headers: {
         "Client-ID": TWITCH_CLIENT_ID,
@@ -307,7 +311,7 @@ async function getChannelEmotes(channelId: string, accessToken: string) {
       },
     }
   );
-  return await twitchResponse.json();
+  return (await twitchResponse.json()) as any;
 }
 
 async function getGlobalEmotes(accessToken: string) {
@@ -321,5 +325,5 @@ async function getGlobalEmotes(accessToken: string) {
       },
     }
   );
-  return await twitchResponse.json();
+  return (await twitchResponse.json()) as any;
 }

@@ -1,6 +1,6 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
-import fetch from "node-fetch";
+import fetch from "cross-fetch";
 import { app as authApp } from "./auth";
 import { getUserEmotes, getEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
@@ -249,18 +249,18 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
         `https://api.twitch.tv/helix/streams?user_id=${channelId}&first=1`,
         { headers }
       );
-      const viewerJson = await viewerResponse.json();
+      const viewerJson = (await viewerResponse.json()) as any;
       const followerResponse = await fetch(
         `https://api.twitch.tv/helix/users/follows?to_id=${channelId}&first=1`,
         { headers }
       );
-      const followerJson = await followerResponse.json();
+      const followerJson = (await followerResponse.json()) as any;
       const stream = viewerJson["data"][0];
       const languageResponse = await fetch(
         `https://api.twitch.tv/helix/channels?broadcaster_id=${channelId}`,
         { headers }
       );
-      const languageJson = await languageResponse.json();
+      const languageJson = (await languageResponse.json()) as any;
       if (!stream) {
         return {
           isOnline: false,
@@ -305,14 +305,14 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
           `https://api.twitch.tv/helix/users?id=${channelId}`,
           { headers: headers }
         );
-        const json = await response.json();
+        const json = (await response.json()) as any;
         const imageUrl =
           json["data"]?.[0]?.["profile_image_url"] ??
           "https://static-cdn.jtvnw.net/user-default-pictures-uv/ebb84563-db81-4b9c-8940-64ed33ccfc7b-profile_image-300x300.png";
         const image = await fetch(imageUrl);
         res.setHeader("Content-Type", "image/png");
         res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=86400");
-        res.status(200).send(await image.buffer());
+        res.status(200).send(Buffer.from(await image.arrayBuffer()));
       } catch (err) {
         console.error(err);
         throw new functions.https.HttpsError("not-found", "image not found");

@@ -13,23 +13,21 @@
   },
   "main": "lib/index.js",
   "dependencies": {
-    "@google-cloud/connect-firestore": "^2.0.1",
-    "@twurple/auth": "^5.2.2",
-    "@twurple/chat": "^5.2.2",
-    "express-session": "^1.17.2",
-    "firebase-admin": "^9.11.0",
-    "firebase-functions": "^3.20.0",
-    "node-fetch": "^2.6.7",
-    "simple-oauth2": "^4.2.0"
+    "@twurple/auth": "^5.2.3",
+    "@twurple/chat": "^5.2.3",
+    "cross-fetch": "^3.1.5",
+    "express-session": "^1.17.3",
+    "firebase-admin": "^11.0.1",
+    "firebase-functions": "^3.23.0",
+    "simple-oauth2": "^4.3.0"
   },
   "devDependencies": {
-    "@types/express-session": "^1.17.4",
-    "@types/node-fetch": "^2.5.12",
+    "@types/express-session": "^1.17.5",
     "@types/simple-oauth2": "^4.1.1",
-    "firebase-functions-test": "^0.3.1",
-    "firebase-tools": "^10.6.0",
-    "prettier": "^2.3.2",
-    "typescript": "^4.3.5"
+    "firebase-functions-test": "^2.3.0",
+    "firebase-tools": "^11.8.0",
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.2"
   },
   "private": true
 }
