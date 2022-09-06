@@ -1,5 +1,5 @@
 import * as admin from "firebase-admin";
-import fetch from "node-fetch";
+import fetch from "cross-fetch";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 
 export async function getChannelId(uid: string, provider: string) {
@@ -26,7 +26,7 @@ export async function getTwitchLogin(id: string) {
     },
   });
 
-  const json = await response.json();
+  const json = (await response.json()) as any;
 
   if (!json || !json["data"] || json["data"].length == 0) {
     return null;

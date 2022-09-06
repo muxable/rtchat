@@ -1,6 +1,6 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import fetch from "node-fetch";
+import fetch from "cross-fetch";
 
 type Log = {
   removed: boolean;

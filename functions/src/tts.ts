@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { GoogleAuth } from "google-auth-library";
-import fetch from "node-fetch";
+import fetch from "cross-fetch";
 
 const auth = new GoogleAuth();
 
@@ -53,7 +53,7 @@ export const synthesize = functions.https.onCall(async (data, context) => {
     }
   );
 
-  const json = await response.json();
+  const json = (await response.json()) as any;
 
   console.log(json);
 
@@ -78,7 +78,7 @@ export const getVoices = functions.https.onCall(async (data, context) => {
     }
   );
 
-  const json = await response.json();
+  const json = (await response.json()) as any;
 
   console.log(json);
 
