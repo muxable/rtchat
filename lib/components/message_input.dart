@@ -42,6 +42,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   var _isKeyboardVisible = false;
   late StreamSubscription keyboardSubscription;
   var _emoteIndex = Random().nextInt(_emotes.length);
+  final _textSeed = Random().nextDouble();
 
   @override
   void initState() {
@@ -152,7 +153,18 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                         ),
                       ),
                       border: InputBorder.none,
-                      hintText: "Send a message..."),
+                      hintText: () {
+                        if (_textSeed < 0.5) {
+                          return "Send a message...";
+                        } else if (_textSeed < 0.9) {
+                          return "Write something...";
+                        } else if (_textSeed < 0.99) {
+                          return "Speak to the crowds...";
+                        } else if (_textSeed < 0.999) {
+                          return "Share your thoughts...";
+                        }
+                        return "Say something, you little bitch.";
+                      }()),
                   onChanged: (text) {
                     final filtered = text.replaceAll('\n', ' ');
                     if (filtered == text) {

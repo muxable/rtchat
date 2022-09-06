@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
@@ -81,6 +82,8 @@ class _DrawerHeader extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onTertiary,
                     onPressed: () {
                       Navigator.of(context).pop();
+                      FirebaseAnalytics.instance
+                          .logEvent(name: 'search_channels', parameters: null);
                       showModalBottomSheet<void>(
                         context: context,
                         isScrollControlled: true,
@@ -151,7 +154,7 @@ class _SidebarState extends State<Sidebar> {
         if (!layoutModel.locked) {
           return ListTile(
             leading: const Icon(Icons.lock_open_outlined),
-            title: const Text("Lock layout"),
+            title: const Text("Lock interaction"),
             onTap: () async {
               layoutModel.locked = !layoutModel.locked;
               Navigator.pop(context);
@@ -160,7 +163,7 @@ class _SidebarState extends State<Sidebar> {
         }
         return ListTile(
           leading: const Icon(Icons.lock_outline),
-          title: const Text("Unlock layout"),
+          title: const Text("Unlock interaction"),
           onTap: () async {
             layoutModel.locked = !layoutModel.locked;
             Navigator.pop(context);

@@ -1,8 +1,8 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
-import fetch from "node-fetch";
+import fetch from "cross-fetch";
 import { app as authApp } from "./auth";
-import { getUserEmotes } from "./emotes";
+import { getUserEmotes, getEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
@@ -10,17 +10,31 @@ import { cleanup, subscribe, unsubscribe } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
 import { updateChatStatus } from "./chat-status";
+import { setRealTimeCashAddress, alchemyWebhook } from "./alchemy_webhook";
 
 admin.initializeApp();
 
-function write(channelId: string, targetChannel: string, message: string) {
-  return admin.firestore().collection("actions").add({
+async function write(
+  channelId: string,
+  targetChannel: string,
+  message: string
+) {
+  const ref = await admin.firestore().collection("actions").add({
     channelId,
     targetChannel,
     message,
     sentAt: null,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+  // wait for the message to be sent.
+  const error = await new Promise<string | null>((resolve) =>
+    ref.onSnapshot((snapshot) => {
+      if (snapshot.get("sentAt") != null) {
+        resolve(snapshot.get("error") || null);
+      }
+    })
+  );
+  return error;
 }
 
 export const send = functions.https.onCall(async (data, context) => {
@@ -43,12 +57,12 @@ export const send = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      await write(
+      const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
         message
       );
-      return;
+      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -75,12 +89,12 @@ export const ban = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      await write(
+      const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
         `/ban ${username} ${reason}`
       );
-      return;
+      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -106,12 +120,12 @@ export const unban = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      await write(
+      const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
         `/unban ${username}`
       );
-      return;
+      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -139,12 +153,12 @@ export const timeout = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      await write(
+      const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
         `/timeout ${username} ${length} ${reason}`
       );
-      return;
+      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -170,12 +184,12 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      await write(
+      const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
-        `/delete ${messageId}`
+        `/delete ${messageId.substring("twitch:".length)}`
       );
-      return;
+      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -200,12 +214,12 @@ export const clear = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      await write(
+      const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
         `/clear`
       );
-      return;
+      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -235,18 +249,18 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
         `https://api.twitch.tv/helix/streams?user_id=${channelId}&first=1`,
         { headers }
       );
-      const viewerJson = await viewerResponse.json();
+      const viewerJson = (await viewerResponse.json()) as any;
       const followerResponse = await fetch(
         `https://api.twitch.tv/helix/users/follows?to_id=${channelId}&first=1`,
         { headers }
       );
-      const followerJson = await followerResponse.json();
+      const followerJson = (await followerResponse.json()) as any;
       const stream = viewerJson["data"][0];
       const languageResponse = await fetch(
         `https://api.twitch.tv/helix/channels?broadcaster_id=${channelId}`,
         { headers }
       );
-      const languageJson = await languageResponse.json();
+      const languageJson = (await languageResponse.json()) as any;
       if (!stream) {
         return {
           isOnline: false,
@@ -291,14 +305,14 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
           `https://api.twitch.tv/helix/users?id=${channelId}`,
           { headers: headers }
         );
-        const json = await response.json();
+        const json = (await response.json()) as any;
         const imageUrl =
           json["data"]?.[0]?.["profile_image_url"] ??
           "https://static-cdn.jtvnw.net/user-default-pictures-uv/ebb84563-db81-4b9c-8940-64ed33ccfc7b-profile_image-300x300.png";
         const image = await fetch(imageUrl);
         res.setHeader("Content-Type", "image/png");
         res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=86400");
-        res.status(200).send(await image.buffer());
+        res.status(200).send(Buffer.from(await image.arrayBuffer()));
       } catch (err) {
         console.error(err);
         throw new functions.https.HttpsError("not-found", "image not found");
@@ -317,9 +331,12 @@ export {
   eventsub,
   search,
   getUserEmotes,
+  getEmotes,
   cleanup,
   synthesize,
   getVoices,
   updateChatStatus,
+  setRealTimeCashAddress,
+  alchemyWebhook,
 };
 export const auth = functions.https.onRequest(authApp);

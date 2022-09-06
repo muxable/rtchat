@@ -8,7 +8,7 @@ import { log } from "./log";
 const PROJECT_ID = process.env["PROJECT_ID"] || "rtchat-47692";
 
 async function main() {
-  if (!process.env["GOOGLE_APPLICATION_CREDENTIALS"]) {
+  try {
     const client = new SecretManagerServiceClient();
     // credentials are not set, initialize the app from secret manager.
     // TODO: why don't gcp default credentials work?
@@ -23,7 +23,10 @@ async function main() {
       credential: admin.credential.cert(JSON.parse(secret)),
       databaseURL: `https://${PROJECT_ID}-default-rtdb.firebaseio.com`,
     });
-  } else {
+  } catch (e) {
+    if (!process.env["GOOGLE_APPLICATION_CREDENTIALS"]) {
+      throw e;
+    }
     admin.initializeApp({
       databaseURL: `https://${PROJECT_ID}-default-rtdb.firebaseio.com`,
     });
@@ -42,6 +45,7 @@ async function main() {
   runTwitchAgent(firebase, AGENT_ID).then((close) => {
     for (const signal of ["SIGINT", "SIGTERM"]) {
       process.on(signal, async (err) => {
+        firebase.debugKeepConnected = new Set();
         log.error(err, "received %s", signal);
         await close();
         log.info({ agentId: AGENT_ID }, "agent closed");
