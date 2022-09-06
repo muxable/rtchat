@@ -92,7 +92,7 @@ Iterable<MessageToken> tokenizeEmotes(
           if (lastParsedStart != start) {
             yield TextToken(message.substring(lastParsedStart, start));
           }
-          yield EmoteToken(url: emote.source, code: emote.code);
+          yield EmoteToken(url: emote.uri, code: emote.code);
           lastParsedStart = end == -1 ? message.length : end;
         }
         start = end == -1 ? message.length : end + 1;

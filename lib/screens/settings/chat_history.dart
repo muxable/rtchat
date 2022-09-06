@@ -51,10 +51,12 @@ final message3 = TwitchMessageModel(
         isAction: false, isFirstTimeChatter: false, announcement: null),
     thirdPartyEmotes: [
       Emote(
+        provider: "twitch",
+        category: null,
           id: 'catJAM',
           code: 'catJAM',
-          source: Uri.parse(
-              'https://cdn.betterttv.net/emote/5f1abd75fe85fb4472d132b4/1x')),
+        imageUrl: 'https://cdn.betterttv.net/emote/5f1abd75fe85fb4472d132b4/1x',
+      ),
     ],
     timestamp: DateTime.now(),
     message: "catJAM catJAM catJAM catJAM catJAM catJAM",

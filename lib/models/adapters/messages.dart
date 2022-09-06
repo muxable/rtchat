@@ -293,8 +293,7 @@ class MessagesAdapter {
       "provider": channel.provider,
       "channelId": channel.channelId,
     });
-    final emotes =
-        await getThirdPartyEmotes(channel.provider, channel.channelId);
+    final emotes = await getEmotes(channel);
     yield* db
         .collection("messages")
         .where("channelId", isEqualTo: channel.toString())

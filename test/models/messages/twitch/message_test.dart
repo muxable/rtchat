@@ -114,21 +114,28 @@ void main() {
     });
 
     test('third party emotes should tokenize', () {
-      final source = Uri.parse("https://3pemote");
+      const source = "https://3pemote";
       const code = "mooooo";
 
       final model = createMessageModel(
           null,
           null,
-          [Emote(id: "", code: code, source: source)],
+          [
+            Emote(
+                provider: "twitch",
+                category: null,
+                id: "",
+                code: code,
+                imageUrl: source)
+          ],
           "mooooo asdf mooooo cows mooooocows cowsmooooo mooooomooooo");
 
       expect(
           model.tokenized,
           orderedEquals([
-            EmoteToken(url: source, code: code),
+            EmoteToken(url: Uri.parse(source), code: code),
             const TextToken(" asdf "),
-            EmoteToken(url: source, code: code),
+            EmoteToken(url: Uri.parse(source), code: code),
             const TextToken(" cows mooooocows cowsmooooo mooooomooooo"),
           ]));
     });
@@ -199,18 +206,25 @@ void main() {
     });
 
     test('third party emotes and emojis tokenize', () {
-      final source = Uri.parse("https://3pemote");
+      const source = "https://3pemote";
       const code = "monkaS";
       final model = createMessageModel(
           null,
           null,
-          [Emote(id: "", code: code, source: source)],
+          [
+            Emote(
+                provider: "twitch",
+                category: null,
+                id: "",
+                code: code,
+                imageUrl: source)
+          ],
           "monkaS \u{1F351} \u{1F965}");
 
       expect(
           model.tokenized,
           orderedEquals([
-            EmoteToken(url: source, code: code),
+            EmoteToken(url: Uri.parse(source), code: code),
             const TextToken(" \u{1F351} \u{1F965}")
           ]));
     });

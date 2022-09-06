@@ -79,7 +79,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   Widget _buildEmotePicker(BuildContext context) {
     return EmotePickerWidget(
-        channelId: widget.channel.channelId,
+        channel: widget.channel,
         onEmoteSelected: (emote) {
           setState(() {
             _textEditingController.text =
