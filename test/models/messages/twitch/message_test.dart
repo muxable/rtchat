@@ -206,7 +206,7 @@ void main() {
     });
 
     test('third party emotes and emojis tokenize', () {
-      final source = "https://3pemote";
+      const source = "https://3pemote";
       const code = "monkaS";
       final model = createMessageModel(
           null,
