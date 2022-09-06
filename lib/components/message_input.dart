@@ -102,6 +102,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
           AutocompleteWidget(
             controller: _textEditingController,
             onSend: sendMessage,
+            channel: widget.channel,
           ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
