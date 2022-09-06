@@ -93,7 +93,6 @@ export async function getTwitchEmotes(accessToken: string): Promise<Emote[]> {
     })
       .then((res) => res.json() as any)
       .then((json) => {
-        console.log(json);
         return json["data"].map((user: any) => [user.id, user.display_name]);
       });
     channelPromises.push(response);
