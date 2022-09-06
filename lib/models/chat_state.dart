@@ -29,6 +29,11 @@ class Viewers {
       viewers: viewers.where((name) => name.contains(text)).toList(),
     );
   }
+
+  // flatten the viewers to a list
+  List<String> flatten() {
+    return broadcaster + moderators + vips + viewers;
+  }
 }
 
 class ChatStateModel extends ChangeNotifier {
