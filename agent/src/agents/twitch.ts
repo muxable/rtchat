@@ -1,4 +1,8 @@
-import { AccessToken, AuthProvider } from "@twurple/auth";
+import {
+  AccessToken,
+  AuthProvider,
+  RefreshingAuthProvider,
+} from "@twurple/auth";
 import { ChatClient, LogLevel } from "@twurple/chat";
 import { BasicPubSubClient, SingleUserPubSubClient } from "@twurple/pubsub";
 import * as admin from "firebase-admin";
@@ -45,6 +49,19 @@ function toAccessToken(token: Token): AccessToken {
   };
 }
 
+function fromAccessToken(token: AccessToken): Token {
+  return {
+    access_token: token.accessToken,
+    refresh_token: token.refreshToken,
+    scope: token.scope,
+    expires_in: token.expiresIn,
+    expires_at:
+      token.expiresIn == null
+        ? null
+        : new Date(token.obtainmentTimestamp + token.expiresIn * 1000),
+  };
+}
+
 async function getChannelId(uid: string, provider: string) {
   const usernameDoc = await admin
     .firestore()
@@ -58,9 +75,13 @@ async function getChannelId(uid: string, provider: string) {
 async function getAuthProvider(
   firebase: FirebaseAdapter,
   channel: string
-): Promise<
-  AuthProvider & { username: string; userId: string; providerId: string }
-> {
+): Promise<{
+  username: string;
+  userId: string;
+  providerId: string;
+  provider: AuthProvider;
+}> {
+  const config = await getTwitchOAuthConfig();
   const profile = await firebase.getProfile(channel);
   const credentials = profile
     ? await firebase.getCredentials(profile.id)
@@ -73,32 +94,30 @@ async function getAuthProvider(
     }
     return {
       ...bot,
-      clientId: TWITCH_CLIENT_ID,
-      tokenType: "user",
-      currentScopes: credentials["scope"],
-      async getAccessToken(scopes?: string[]): Promise<AccessToken> {
-        return toAccessToken(credentials);
-      },
-      async refresh(): Promise<AccessToken | null> {
-        const credentials = await firebase.getCredentials(bot.userId);
-        return credentials ? toAccessToken(credentials) : null;
-      },
+      provider: new RefreshingAuthProvider(
+        {
+          clientId: config.client.id,
+          clientSecret: config.client.secret,
+          onRefresh: (token) =>
+            firebase.setToken(bot.userId, fromAccessToken(token)),
+        },
+        toAccessToken(credentials)
+      ),
     };
   }
   return {
     username: channel,
     userId: profile.id,
     providerId: profile.get("twitch.id"),
-    clientId: TWITCH_CLIENT_ID,
-    tokenType: "user",
-    currentScopes: credentials["scope"],
-    async getAccessToken(scopes?: string[]): Promise<AccessToken> {
-      return toAccessToken(credentials);
-    },
-    async refresh(): Promise<AccessToken | null> {
-      const credentials = await firebase.getCredentials(profile.id);
-      return credentials ? toAccessToken(credentials) : null;
-    },
+    provider: new RefreshingAuthProvider(
+      {
+        clientId: config.client.id,
+        clientSecret: config.client.secret,
+        onRefresh: (token) =>
+          firebase.setToken(profile.id, fromAccessToken(token)),
+      },
+      toAccessToken(credentials)
+    ),
   };
 }
 
@@ -161,7 +180,7 @@ async function join(
     : await getAuthProvider(firebase, channel);
 
   const chat = new ChatClient({
-    authProvider,
+    authProvider: authProvider?.provider,
     isAlwaysMod: authProvider?.username === channel,
     logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
   });
@@ -176,8 +195,9 @@ async function join(
     if (!msg.channelId) {
       return;
     }
-    log.info(
+    log.debug(
       {
+        agentId,
         channelId: msg.channelId,
         channel,
         messageId: msg.id,
@@ -393,7 +413,7 @@ async function join(
 
   if (authProvider?.username === channel) {
     const send = new ChatClient({
-      authProvider,
+      authProvider: authProvider?.provider,
       isAlwaysMod: authProvider.username === channel,
       logger: { custom: bunyanLogger, minLevel: LogLevel.WARNING },
     });
@@ -401,7 +421,10 @@ async function join(
 
     const pubSubClient = incrBasicPubSub();
 
-    const pubsub = new SingleUserPubSubClient({ authProvider, pubSubClient });
+    const pubsub = new SingleUserPubSubClient({
+      authProvider: authProvider?.provider,
+      pubSubClient,
+    });
 
     const raidListener = await pubsub.onCustomTopic("raid", async (message) => {
       const data = message.data as any;

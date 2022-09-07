@@ -150,17 +150,11 @@ DateTime? _getExpiration(
     }
 
     return model.endTime.add(predictionEventConfig.eventDuration);
-  } else if (model is TwitchMessageModel) {
-    if (model.isModerator) {
-      return twitchMessageConfig.modMessageDuration > Duration.zero
-          ? model.timestamp.add(twitchMessageConfig.modMessageDuration)
-          : null;
-    } else if (model.isVip) {
-      return twitchMessageConfig.vipMessageDuration > Duration.zero
-          ? model.timestamp.add(twitchMessageConfig.vipMessageDuration)
-          : null;
-    }
-    return null;
+  } else if (model is TwitchMessageModel &&
+      model.annotations.announcement != null) {
+    return twitchMessageConfig.announcementPinDuration > Duration.zero
+        ? model.timestamp.add(twitchMessageConfig.announcementPinDuration)
+        : null;
   }
   return null;
 }

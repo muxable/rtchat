@@ -176,37 +176,20 @@ class ChatHistoryScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Moderator message pin duration",
+                    Text("Announcement pin duration",
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                         )),
                     Slider.adaptive(
-                      value: model.modMessageDuration.inSeconds.toDouble(),
+                      value: model.announcementPinDuration.inSeconds.toDouble(),
                       min: 0,
                       max: 30,
                       divisions: 15,
                       label:
-                          "${model.modMessageDuration.inSeconds.toDouble()} seconds",
+                          "${model.announcementPinDuration.inSeconds.toDouble()} seconds",
                       onChanged: (value) {
-                        model.setModMessageDuration(
-                            Duration(seconds: value.toInt()));
-                      },
-                    ),
-                    Text("VIP message pin duration",
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontWeight: FontWeight.bold,
-                        )),
-                    Slider.adaptive(
-                      value: model.vipMessageDuration.inSeconds.toDouble(),
-                      min: 0,
-                      max: 30,
-                      divisions: 15,
-                      label:
-                          "${model.vipMessageDuration.inSeconds.toDouble()} seconds",
-                      onChanged: (value) {
-                        model.setVipMessageDuration(
+                        model.setAnnouncementPinDuration(
                             Duration(seconds: value.toInt()));
                       },
                     ),

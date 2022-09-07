@@ -104,6 +104,13 @@ export class FirebaseAdapter {
     });
   }
 
+  setToken(userId: string, token: any) {
+    return this.firestore
+      .collection("tokens")
+      .doc(userId)
+      .set({ [this.provider]: JSON.stringify(token) }, { merge: true });
+  }
+
   async getBot() {
     const userId = getBotUserId(this.provider);
     const username = (
