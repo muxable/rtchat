@@ -176,8 +176,9 @@ async function join(
     if (!msg.channelId) {
       return;
     }
-    log.info(
+    log.debug(
       {
+        agentId,
         channelId: msg.channelId,
         channel,
         messageId: msg.id,
