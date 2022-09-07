@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/chat_cleared_event.dart';
+import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
 import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
@@ -46,7 +48,13 @@ class ChatHistoryMessage extends StatelessWidget {
     final m = message;
     if (m is TwitchMessageModel) {
       return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-        final child = Padding(
+        final announcement = m.annotations.announcement;
+        final child = announcement != null
+            ? DecoratedEventWidget(
+                accentColor: announcement.color,
+                child: TwitchMessageWidget(m),
+              )
+            : Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: TwitchMessageWidget(m),
         );
@@ -75,6 +83,7 @@ class ChatHistoryMessage extends StatelessWidget {
                             shrinkWrap: true,
                             primary: false,
                             children: [
+                              if (kDebugMode) Text("DEBUG: id=${m.messageId}"),
                               Consumer<TtsModel>(
                                   builder: (context, ttsModel, child) {
                                 if (ttsModel.isMuted(m.author)) {

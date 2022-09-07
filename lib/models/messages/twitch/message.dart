@@ -1,4 +1,5 @@
 import 'package:characters/characters.dart';
+import 'package:flutter/material.dart';
 import 'package:linkify/linkify.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
@@ -160,9 +161,18 @@ Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
 }
 
 class TwitchMessageAnnouncementModel {
-  final String color;
+  final Color color;
 
   const TwitchMessageAnnouncementModel(this.color);
+}
+
+Color toColor(String str) {
+  str = str.replaceAll("#", "");
+  if (str.length == 6) {
+    str = "FF$str";
+  }
+  final hex = int.parse(str, radix: 16);
+  return Color(hex);
 }
 
 class TwitchMessageAnnotationsModel {
@@ -186,7 +196,7 @@ class TwitchMessageAnnotationsModel {
       announcement: map['announcement'] == null
           ? null
           : TwitchMessageAnnouncementModel(
-              map['announcement']['color'] as String),
+              toColor(map['announcement']['color'] as String)),
     );
   }
 }

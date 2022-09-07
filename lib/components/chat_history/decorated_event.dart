@@ -6,6 +6,7 @@ class DecoratedEventWidget extends StatelessWidget {
   final Widget child;
   final ImageProvider? avatar;
   final IconData? icon;
+  final Color? accentColor;
   final BoxDecoration decoration;
 
   const DecoratedEventWidget._(
@@ -13,6 +14,7 @@ class DecoratedEventWidget extends StatelessWidget {
       required this.child,
       this.avatar,
       this.icon,
+      this.accentColor,
       this.decoration = const BoxDecoration()})
       : super(key: key);
 
@@ -24,7 +26,7 @@ class DecoratedEventWidget extends StatelessWidget {
         border: Border(
           left: BorderSide(
             width: 4,
-            color: Theme.of(context).colorScheme.secondary,
+            color: accentColor ?? Theme.of(context).colorScheme.secondary,
           ),
         ),
       ),
@@ -80,6 +82,7 @@ class DecoratedEventWidget extends StatelessWidget {
       {Key? key, required Widget child, required IconData icon})
       : this._(key: key, child: child, icon: icon);
 
-  const DecoratedEventWidget({Key? key, required Widget child})
-      : this._(key: key, child: child);
+  const DecoratedEventWidget(
+      {Key? key, required Widget child, Color? accentColor})
+      : this._(key: key, child: child, accentColor: accentColor);
 }

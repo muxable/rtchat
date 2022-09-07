@@ -160,32 +160,51 @@ class TwitchMessageWidget extends StatelessWidget {
               height: styleModel.fontSize))));
 
       // add author.
+      Widget author;
       if (contributors.contains(model.author.userId)) {
-        children.add(WidgetSpan(
-            child: StreamBuilder<AbsoluteOrientationEvent>(
-                stream: motionSensors.absoluteOrientation,
-                builder: (context, snapshot) {
-                  final orientation = snapshot.data;
-                  if (orientation == null) {
-                    return RichText(
-                        text: TextSpan(
-                            text: model.author.display, style: authorStyle));
-                  }
-                  final hslColor = HSLColor.fromColor(
-                      styleModel.applyLightnessBoost(context, color));
-                  final deg =
-                      (orientation.pitch + orientation.roll + orientation.yaw) *
-                          180 /
-                          3.1415;
-                  final shimmer =
-                      hslColor.withHue((hslColor.hue - deg) % 360).toColor();
-                  return RichText(
-                      text: TextSpan(
-                          text: model.author.display,
-                          style: authorStyle.copyWith(color: shimmer)));
-                })));
+        author = StreamBuilder<AbsoluteOrientationEvent>(
+            stream: motionSensors.absoluteOrientation,
+            builder: (context, snapshot) {
+              final orientation = snapshot.data;
+              if (orientation == null) {
+                return RichText(
+                    text: TextSpan(
+                        text: model.author.display, style: authorStyle));
+              }
+              final hslColor = HSLColor.fromColor(
+                  styleModel.applyLightnessBoost(context, color));
+              final deg =
+                  (orientation.pitch + orientation.roll + orientation.yaw) *
+                      180 /
+                      3.1415;
+              final shimmer =
+                  hslColor.withHue((hslColor.hue - deg) % 360).toColor();
+              return RichText(
+                  text: TextSpan(
+                      text: model.author.display,
+                      style: authorStyle.copyWith(color: shimmer)));
+            });
       } else {
-        children.add(TextSpan(text: model.author.display, style: authorStyle));
+        author = Text(model.author.display, style: authorStyle);
+      }
+
+      // add a party hat if first time chatter.
+      if (model.annotations.isFirstTimeChatter) {
+        children.add(WidgetSpan(
+            child: Stack(
+          children: [
+            author,
+            SizedBox(
+                width: styleModel.fontSize,
+                height: styleModel.fontSize,
+                child: Transform.translate(
+                    offset: Offset(
+                        -styleModel.fontSize / 2, -styleModel.fontSize / 4),
+                    child: const Image(image: AssetImage("assets/hat.png")))),
+          ],
+        )));
+      } else {
+        children.add(WidgetSpan(child: author));
       }
 
       // add demarcator.
