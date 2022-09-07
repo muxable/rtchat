@@ -23,10 +23,18 @@ class Viewers {
       return this;
     }
     return Viewers(
-      broadcaster: broadcaster.where((name) => name.contains(text)).toList(),
-      moderators: moderators.where((name) => name.contains(text)).toList(),
-      vips: vips.where((name) => name.contains(text)).toList(),
-      viewers: viewers.where((name) => name.contains(text)).toList(),
+      broadcaster: broadcaster
+          .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+          .toList(),
+      moderators: moderators
+          .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+          .toList(),
+      vips: vips
+          .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+          .toList(),
+      viewers: viewers
+          .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+          .toList(),
     );
   }
 

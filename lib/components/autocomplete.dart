@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/chat_mode.dart';
 import 'package:rtchat/models/chat_state.dart';
 import 'package:rtchat/models/commands.dart';
+import 'package:rtchat/models/messages/twitch/emote.dart';
 
 enum _AutocompleteMode {
   none,
@@ -32,9 +35,13 @@ extension _AutocompleteModeExtension on _AutocompleteMode {
 class AutocompleteWidget extends StatefulWidget {
   final TextEditingController controller;
   final Function(String) onSend;
+  final Channel channel;
 
   const AutocompleteWidget(
-      {Key? key, required this.controller, required this.onSend})
+      {Key? key,
+      required this.controller,
+      required this.onSend,
+      required this.channel})
       : super(key: key);
 
   @override
@@ -43,10 +50,13 @@ class AutocompleteWidget extends StatefulWidget {
 
 class _AutocompleteWidgetState extends State<AutocompleteWidget> {
   var _autocompleteMode = _AutocompleteMode.none;
+  late Future<List<Emote>> _emotes;
 
   @override
   void initState() {
     super.initState();
+
+    _emotes = getEmotes(widget.channel);
 
     setState(() => _autocompleteMode =
         _AutocompleteModeExtension.forText(widget.controller.text));
@@ -74,8 +84,37 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
       case _AutocompleteMode.none:
         return Container();
       case _AutocompleteMode.emote:
-        // TODO: implement emote
-        return Container();
+        return FutureBuilder(
+          future: _emotes,
+          builder: (context, snapshot) {
+            final lastToken = text.split(" ").last;
+            if (!snapshot.hasData || lastToken.isEmpty) {
+              return Container();
+            }
+            return Row(
+              children: (snapshot.data as List<Emote>)
+                  .where((emote) => emote.code
+                      .toLowerCase()
+                      .startsWith(lastToken.toLowerCase()))
+                  .take(MediaQuery.of(context).size.width ~/ 48)
+                  .map((emote) {
+                return IconButton(
+                    tooltip: emote.code,
+                    onPressed: () {
+                      widget.controller.text = "${text.substring(
+                        0,
+                        text.length - lastToken.length,
+                      )}${emote.code} ";
+                      // move cursor position
+                      widget.controller.selection = TextSelection.fromPosition(
+                          TextPosition(offset: widget.controller.text.length));
+                    },
+                    splashRadius: 24,
+                    icon: Image(image: ResilientNetworkImage(emote.uri)));
+              }).toList(),
+            );
+          },
+        );
       case _AutocompleteMode.slashCommand:
         return Container(
           constraints: const BoxConstraints(maxHeight: 200),
@@ -83,7 +122,8 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
             shrinkWrap: true,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             children: ChatMode.values
-                .where((element) => element.title.startsWith(text))
+                .where((element) =>
+                    element.title.toLowerCase().startsWith(text.toLowerCase()))
                 .map((e) {
               return ListTile(
                 title: Text(e.title),
