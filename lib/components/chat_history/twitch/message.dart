@@ -185,7 +185,8 @@ class TwitchMessageWidget extends StatelessWidget {
                       style: authorStyle.copyWith(color: shimmer)));
             });
       } else {
-        author = Text(model.author.display, style: authorStyle);
+        author = RichText(
+            text: TextSpan(text: model.author.display, style: authorStyle));
       }
 
       // add a party hat if first time chatter.
