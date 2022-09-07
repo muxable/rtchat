@@ -38,23 +38,23 @@ final primarySwatch = generateMaterialColor(accentColor);
 
 class Themes {
   static final lightTheme = ThemeData(
-    fontFamily: GoogleFonts.poppins().fontFamily,
-    brightness: Brightness.light,
-    colorScheme: ColorScheme.fromSwatch(
-      primarySwatch: primarySwatch,
-      accentColor: lightAccentColor,
-    ).copyWith(
-      primary: lightAccentColor,
-      secondary: lightAccentColor,
-      tertiary: detailColor,
-      background: Colors.white,
-    ),
-    toggleableActiveColor: lightAccentColor,
-    inputDecorationTheme: const InputDecorationTheme(
-      fillColor: lightTextFieldColor,
-    ),
-    appBarTheme: const AppBarTheme(color: detailColor),
-  );
+      fontFamily: GoogleFonts.poppins().fontFamily,
+      brightness: Brightness.light,
+      colorScheme: ColorScheme.fromSwatch(
+        primarySwatch: primarySwatch,
+        accentColor: lightAccentColor,
+      ).copyWith(
+        primary: lightAccentColor,
+        secondary: lightAccentColor,
+        tertiary: detailColor,
+        background: Colors.white,
+      ),
+      toggleableActiveColor: lightAccentColor,
+      inputDecorationTheme: const InputDecorationTheme(
+        fillColor: lightTextFieldColor,
+      ),
+      appBarTheme: const AppBarTheme(color: detailColor),
+      tabBarTheme: const TabBarTheme(labelColor: lightAccentColor));
 
   static final darkTheme = ThemeData(
     fontFamily: GoogleFonts.poppins().fontFamily,
