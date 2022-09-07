@@ -7,6 +7,7 @@ import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -137,13 +138,50 @@ class TwitchMessageWidget extends StatelessWidget {
     }
   }
 
+  Widget authorWidget(
+      TwitchUserModel author, StyleModel styleModel, TextStyle authorStyle) {
+    if (contributors.contains(model.author.userId)) {
+      return StreamBuilder<AbsoluteOrientationEvent>(
+          stream: motionSensors.absoluteOrientation,
+          builder: (context, snapshot) {
+            final orientation = snapshot.data;
+            if (orientation == null) {
+              return RichText(
+                  text:
+                      TextSpan(text: model.author.display, style: authorStyle));
+            }
+            final hslColor = HSLColor.fromColor(
+                styleModel.applyLightnessBoost(context, color));
+            final deg =
+                (orientation.pitch + orientation.roll + orientation.yaw) *
+                    180 /
+                    3.1415;
+            final shimmer =
+                hslColor.withHue((hslColor.hue - deg) % 360).toColor();
+            return RichText(
+                text: TextSpan(
+                    text: model.author.display,
+                    style: authorStyle.copyWith(color: shimmer)));
+          });
+    }
+    return RichText(text: authorSpan(author, styleModel, authorStyle));
+  }
+
+  InlineSpan authorSpan(
+      TwitchUserModel author, StyleModel styleModel, TextStyle authorStyle) {
+    if (contributors.contains(model.author.userId)) {
+      return WidgetSpan(child: authorWidget(author, styleModel, authorStyle));
+    }
+    return TextSpan(text: model.author.display, style: authorStyle);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<StyleModel>(builder: (context, styleModel, child) {
       if (!styleModel.isDeletedMessagesVisible && model.deleted) {
         return const SizedBox();
       }
-      var authorStyle = Theme.of(context)
+      final authorStyle = Theme.of(context)
           .textTheme
           .subtitle2!
           .copyWith(color: styleModel.applyLightnessBoost(context, color));
@@ -160,41 +198,12 @@ class TwitchMessageWidget extends StatelessWidget {
               height: styleModel.fontSize))));
 
       // add author.
-      Widget author;
-      if (contributors.contains(model.author.userId)) {
-        author = StreamBuilder<AbsoluteOrientationEvent>(
-            stream: motionSensors.absoluteOrientation,
-            builder: (context, snapshot) {
-              final orientation = snapshot.data;
-              if (orientation == null) {
-                return RichText(
-                    text: TextSpan(
-                        text: model.author.display, style: authorStyle));
-              }
-              final hslColor = HSLColor.fromColor(
-                  styleModel.applyLightnessBoost(context, color));
-              final deg =
-                  (orientation.pitch + orientation.roll + orientation.yaw) *
-                      180 /
-                      3.1415;
-              final shimmer =
-                  hslColor.withHue((hslColor.hue - deg) % 360).toColor();
-              return RichText(
-                  text: TextSpan(
-                      text: model.author.display,
-                      style: authorStyle.copyWith(color: shimmer)));
-            });
-      } else {
-        author = RichText(
-            text: TextSpan(text: model.author.display, style: authorStyle));
-      }
-
       // add a party hat if first time chatter.
       if (model.annotations.isFirstTimeChatter) {
         children.add(WidgetSpan(
             child: Stack(
           children: [
-            author,
+            authorWidget(model.author, styleModel, authorStyle),
             SizedBox(
                 width: styleModel.fontSize,
                 height: styleModel.fontSize,
@@ -205,7 +214,7 @@ class TwitchMessageWidget extends StatelessWidget {
           ],
         )));
       } else {
-        children.add(WidgetSpan(child: author));
+        children.add(authorSpan(model.author, styleModel, authorStyle));
       }
 
       // add demarcator.
