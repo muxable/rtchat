@@ -44,6 +44,7 @@ dependencies:
   webview_flutter: ^3.0.4
   just_audio: ^0.9.28
   sticky_headers: ^0.3.0+2
+  google_mobile_ads: ^2.0.1
 
 dev_dependencies:
   flutter_lints: ^2.0.1

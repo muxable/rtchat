@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -294,6 +295,8 @@ class MessagesAdapter {
       "channelId": channel.channelId,
     });
     final emotes = await getEmotes(channel);
+    var lastAdTimestamp = DateTime.now();
+    var lastAdMessageCount = 0;
     yield* db
         .collection("messages")
         .where("channelId", isEqualTo: channel.toString())
@@ -307,10 +310,22 @@ class MessagesAdapter {
         final event = _toDeltaEvent(emotes, change);
         if (event != null) {
           yield event;
+          lastAdMessageCount++;
         }
       } catch (e, st) {
         // send this report immediately.
         FirebaseCrashlytics.instance.recordError(e, st, fatal: true);
+      }
+      // if there have been at least five minutes since the last ad, show one.
+      if (DateTime.now().difference(lastAdTimestamp) >
+              (kDebugMode
+                  ? const Duration(seconds: 1)
+                  : const Duration(minutes: 5)) &&
+          // ensure that there are also at least 50 messages in between ads.
+          lastAdMessageCount > 50) {
+        lastAdTimestamp = DateTime.now();
+        lastAdMessageCount = 0;
+        yield AppendDeltaEvent(AdMessageModel(adId: AdHelper.chatHistoryAdId));
       }
     });
   }

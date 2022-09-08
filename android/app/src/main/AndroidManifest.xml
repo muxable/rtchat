@@ -67,6 +67,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-2604378007164700~3747034398"/>
 
         <service
             android:name=".AudioService"
