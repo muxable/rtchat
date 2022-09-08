@@ -1,4 +1,3 @@
-import 'package:characters/characters.dart';
 import 'package:flutter/material.dart';
 import 'package:linkify/linkify.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -167,12 +166,19 @@ class TwitchMessageAnnouncementModel {
 }
 
 Color toColor(String str) {
-  str = str.replaceAll("#", "");
-  if (str.length == 6) {
-    str = "FF$str";
+  switch (str) {
+    case "BLUE":
+      return Colors.blue;
+    case "PURPLE":
+      return Colors.purple;
+    case "GREEN":
+      return Colors.green;
+    case "ORANGE":
+      return Colors.orange;
+    default:
+      // This would be "PRIMARY", which I believe can't be retrieved from the API
+      return Colors.blue;
   }
-  final hex = int.parse(str, radix: 16);
-  return Color(hex);
 }
 
 class TwitchMessageAnnotationsModel {
