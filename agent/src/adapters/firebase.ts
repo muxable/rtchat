@@ -77,9 +77,9 @@ function findCanonicalAgentId(key: string, agentIds: string[]) {
 
 export class FirebaseAdapter {
   constructor(
-    private firebase: admin.database.Database,
-    private firestore: admin.firestore.Firestore,
-    private provider: "twitch",
+    public firebase: admin.database.Database,
+    public firestore: admin.firestore.Firestore,
+    public provider: "twitch",
     public debugKeepConnected: Set<String>
   ) {
     firestore.settings({ ignoreUndefinedProperties: true });
