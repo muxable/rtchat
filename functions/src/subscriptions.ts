@@ -61,13 +61,12 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         if (profile.exists) {
           const channelId = `twitch:${profile.get("twitch")["id"]}`;
           // update the metadata for this channel to indicate the last active time.
-          await admin
-            .firestore()
-            .collection("metadata")
-            .doc(channelId)
-            .update({
-              lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
+          await admin.firestore().collection("metadata").doc(channelId).update({
+            lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          await profile.ref.update({
+            lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
         }
       }
 
