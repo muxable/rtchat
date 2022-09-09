@@ -33,10 +33,16 @@ export const streamlabs = functions.pubsub
       if (!accessToken) {
         return;
       }
-      const after = streamlabsDoc.get("after") || 0;
-      const response = await fetch(
-        `https://streamlabs.com/api/v1.0/donations?access_token=${accessToken}&limit=10&after=${after}`
-      );
+      let url = `https://streamlabs.com/api/v1.0/donations?access_token=${accessToken}&limit=10`;
+      const after = streamlabsDoc.get("after");
+      if (after) {
+        url += `&after=${after}`;
+      }
+      const currency = streamlabsDoc.get("currency");
+      if (currency) {
+        url += `&currency=${currency}`;
+      }
+      const response = await fetch(url);
       const json = await response.json();
 
       // update the after signal.
