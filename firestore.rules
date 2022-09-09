@@ -32,8 +32,7 @@ service cloud.firestore {
       allow write: if false;
     }
     match /metadata/{document=**} {
-      allow list: if request.query.limit <= 20;
-      allow get: if true;
+      allow read: if resource.data.lastActiveAt.toMillis() >= request.time.toMillis() - 7 * 86400 * 1000;
       allow write: if false;
     }
   }
