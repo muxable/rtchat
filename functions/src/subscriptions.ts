@@ -52,6 +52,23 @@ export const subscribe = functions.https.onCall(async (data, context) => {
 
       if (context.auth != null) {
         await checkEventSubSubscriptions(context.auth.uid);
+        // get the channel id associated with the profile
+        const profile = await admin
+          .firestore()
+          .collection("profiles")
+          .doc(context.auth.uid)
+          .get();
+        if (profile.exists) {
+          const channelId = `twitch:${profile.get("twitch")["id"]}`;
+          // update the metadata for this channel to indicate the last active time.
+          await admin
+            .firestore()
+            .collection("metadata")
+            .doc(channelId)
+            .update({
+              lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+        }
       }
 
       return channel;
