@@ -37,4 +37,10 @@ class ProfilesAdapter {
             event.docs.isNotEmpty &&
             event.docs.single.get("type") == "stream.online");
   }
+
+  Stream<bool> getIsAdsEnabled({required String userId}) {
+    return db.collection("profiles").doc(userId).snapshots().map((doc) {
+      return doc.exists && (doc.get("claims")['ads'] ?? false);
+    });
+  }
 }

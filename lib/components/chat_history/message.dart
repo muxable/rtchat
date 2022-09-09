@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/chat_history/ad.dart';
 import 'package:rtchat/components/chat_history/chat_cleared_event.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
@@ -269,6 +270,8 @@ class ChatHistoryMessage extends StatelessWidget {
       );
     } else if (m is ChatClearedEventModel) {
       return ChatClearedEventWidget(m);
+    } else if (m is AdMessageModel) {
+      return AdMessageWidget(m);
     } else {
       throw AssertionError("invalid message type $m");
     }
