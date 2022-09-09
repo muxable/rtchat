@@ -14,7 +14,7 @@ Future<List<SearchResult>> fastSearch() async {
       .where("lastActiveAt",
           isGreaterThan: DateTime.now().subtract(const Duration(days: 3)))
       .orderBy("lastActiveAt", descending: true)
-      .limit(5)
+      .limit(50)
       .get();
   return snapshot.docs.map((doc) {
     final data = doc.data();
@@ -59,18 +59,22 @@ class ChannelSearchResultsWidget extends StatelessWidget {
   final Function(Channel) onChannelSelect;
   final ScrollController? controller;
   final Future<List<SearchResult>> _fastSearch = fastSearch();
+  final bool isShowOnlyOnline;
 
   ChannelSearchResultsWidget(
       {Key? key,
       required this.query,
       required this.onChannelSelect,
+      required this.isShowOnlyOnline,
       this.controller})
       : super(key: key);
 
   Stream<List<SearchResult>> search() async* {
     final fast = await _fastSearch;
     final fastFiltered = fast.where((result) =>
-        result.displayName.toLowerCase().contains(query.toLowerCase()));
+            result.displayName.toLowerCase().contains(query.toLowerCase()) &&
+            (!isShowOnlyOnline || result.isOnline))
+        .take(5);
     yield fastFiltered.toList();
     final slow = await _search(query).then((result) {
       return (result.data as List<dynamic>)
@@ -85,7 +89,8 @@ class ChannelSearchResultsWidget extends StatelessWidget {
           .toList();
     });
     final slowFiltered = slow.where((result) =>
-        !fastFiltered.any((element) => element.channelId == result.channelId));
+        !fastFiltered.any((element) => element.channelId == result.channelId) &&
+        (!isShowOnlyOnline || result.isOnline));
     yield [...fastFiltered, ...slowFiltered];
   }
 
