@@ -88,6 +88,7 @@ class _ChannelSearchBottomSheetWidgetState
               }
               Navigator.of(context).pop();
             },
+            isShowOnlyOnline: _raid,
           ))
         ],
       ),
