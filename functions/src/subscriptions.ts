@@ -71,7 +71,6 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         }
       }
 
-
       return channel;
   }
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
