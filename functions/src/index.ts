@@ -11,6 +11,7 @@ import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
 import { updateChatStatus } from "./chat-status";
 import { setRealTimeCashAddress, alchemyWebhook } from "./alchemy_webhook";
+import { streamlabs } from "./streamlabs";
 
 async function write(
   channelId: string,
@@ -336,5 +337,6 @@ export {
   updateChatStatus,
   setRealTimeCashAddress,
   alchemyWebhook,
+  streamlabs,
 };
 export const auth = functions.https.onRequest(authApp);
