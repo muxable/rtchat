@@ -38,7 +38,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/muxable/rtchat-auxiliary
           tags: |
             type=ref,event=branch
             type=ref,event=pr
