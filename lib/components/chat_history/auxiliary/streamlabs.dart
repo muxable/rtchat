@@ -12,12 +12,12 @@ class StreamlabsDonationEventWidget extends StatelessWidget {
     final boldStyle = Theme.of(context).textTheme.subtitle2;
     return DecoratedEventWidget.avatar(
       avatar: const AssetImage("assets/streamlabs.png"),
-      child: Column(children: [
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text.rich(
           TextSpan(
             children: [
               TextSpan(text: model.name, style: boldStyle),
-              const TextSpan(text: " donated "),
+              const TextSpan(text: " tipped "),
               TextSpan(text: model.formattedAmount, style: boldStyle),
               const TextSpan(text: " on Streamlabs."),
             ],
