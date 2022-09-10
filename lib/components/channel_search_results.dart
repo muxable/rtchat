@@ -73,12 +73,13 @@ class ChannelSearchResultsWidget extends StatelessWidget {
 
   Stream<List<SearchResult>> search() async* {
     final fast = await _fastSearch;
-    final fastFiltered = fast
-        .where((result) =>
-            result.displayName.toLowerCase().contains(query.toLowerCase()) &&
-            (!isShowOnlyOnline || result.isOnline))
-        .take(5);
-    yield fastFiltered.toList();
+    final fastFiltered = fast.where((result) =>
+        result.displayName.toLowerCase().contains(query.toLowerCase()));
+    final fastRanked = [
+      ...fastFiltered.where((element) => element.isOnline),
+      ...fastFiltered.where((element) => !element.isOnline)
+    ].take(5);
+    yield fastRanked.toList();
     final slow = await _search(query).then((result) {
       return (result.data as List<dynamic>)
           .map((data) => SearchResult(
@@ -94,7 +95,7 @@ class ChannelSearchResultsWidget extends StatelessWidget {
     final slowFiltered = slow.where((result) =>
         !fastFiltered.any((element) => element.channelId == result.channelId) &&
         (!isShowOnlyOnline || result.isOnline));
-    yield [...fastFiltered, ...slowFiltered];
+    yield [...fastRanked, ...slowFiltered];
   }
 
   @override
