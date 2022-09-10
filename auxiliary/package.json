@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node -r dotenv/config .",
+    "start": "node .",
     "dev": "ts-node ./src/index.ts"
   },
   "author": "",
