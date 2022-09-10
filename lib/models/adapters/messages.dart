@@ -5,6 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
@@ -274,6 +275,10 @@ DeltaEvent? _toDeltaEvent(
         }
         return message.withSuccessful();
       });
+    case "streamlabs.donation":
+      final model =
+          StreamlabsDonationEventModel.fromDocumentData(change.doc.id, data);
+      return AppendDeltaEvent(model);
   }
   return null;
 }
