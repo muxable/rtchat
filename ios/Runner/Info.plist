@@ -46,6 +46,8 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>RealtimeChat uses your camera to read QR codes</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>RealtimeChat uses your microphone to record messages</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
