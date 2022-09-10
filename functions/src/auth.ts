@@ -213,7 +213,7 @@ app.get("/auth/streamlabs/redirect", (req, res) => {
     STREAMLABS_OAUTH_CONFIG
   ).authorizeURL({
     redirect_uri: `${HOST}/auth/streamlabs/callback`,
-    scope: ["donations.read"],
+    scope: ["donations.read", "socket.token"],
   });
   res.redirect(redirectUri);
 });
