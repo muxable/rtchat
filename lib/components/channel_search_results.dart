@@ -16,7 +16,9 @@ Future<List<SearchResult>> fastSearch() async {
       .orderBy("lastActiveAt", descending: true)
       .limit(50)
       .get();
-  return snapshot.docs.map((doc) {
+  return snapshot.docs
+      .where((doc) => doc.data().containsKey("displayName"))
+      .map((doc) {
     final data = doc.data();
     final tokens = doc.id.split(":");
     final provider = tokens[0];
@@ -71,7 +73,8 @@ class ChannelSearchResultsWidget extends StatelessWidget {
 
   Stream<List<SearchResult>> search() async* {
     final fast = await _fastSearch;
-    final fastFiltered = fast.where((result) =>
+    final fastFiltered = fast
+        .where((result) =>
             result.displayName.toLowerCase().contains(query.toLowerCase()) &&
             (!isShowOnlyOnline || result.isOnline))
         .take(5);
