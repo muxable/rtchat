@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/ad.dart';
+import 'package:rtchat/components/chat_history/auxiliary/streamlabs.dart';
 import 'package:rtchat/components/chat_history/chat_cleared_event.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
@@ -21,6 +22,7 @@ import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
@@ -56,9 +58,9 @@ class ChatHistoryMessage extends StatelessWidget {
                 child: TwitchMessageWidget(m),
               )
             : Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: TwitchMessageWidget(m),
-        );
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TwitchMessageWidget(m),
+              );
         if (layoutModel.locked) {
           return child;
         }
@@ -272,6 +274,8 @@ class ChatHistoryMessage extends StatelessWidget {
       return ChatClearedEventWidget(m);
     } else if (m is AdMessageModel) {
       return AdMessageWidget(m);
+    } else if (m is StreamlabsDonationEventModel) {
+      return StreamlabsDonationEventWidget(m);
     } else {
       throw AssertionError("invalid message type $m");
     }
