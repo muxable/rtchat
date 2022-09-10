@@ -1,10 +1,37 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/adapters/donations.dart';
 import 'package:rtchat/models/user.dart';
+
+const streamlabsCurrencies = [
+  [null, "Donation's currency"],
+  ['AUD', 'Australian Dollar'],
+  ['BRL', 'Brazilian Real'],
+  ['CAD', 'Canadian Dollar'],
+  ['CZK', 'Czech Koruna'],
+  ['DKK', 'Danish Krone'],
+  ['EUR', 'Euro'],
+  ['HKD', 'Hong Kong Dollar'],
+  ['ILS', 'Israeli New Sheqel'],
+  ['MYR', 'Malaysian Ringgit'],
+  ['MXN', 'Mexican Peso'],
+  ['NOK', 'Norwegian Krone'],
+  ['NZD', 'New Zealand Dollar'],
+  ['PHP', 'Philippine Peso'],
+  ['PLN', 'Polish Zloty'],
+  ['GBP', 'Pound Sterling'],
+  ['RUB', 'Russian Ruble'],
+  ['SGD', 'Singapore Dollar'],
+  ['SEK', 'Swedish Krona'],
+  ['CHF', 'Swiss Franc'],
+  ['THB', 'Thai Baht'],
+  ['TRY', 'Turkish Lira'],
+  ['USD', 'US Dollar']
+];
 
 class DonationsScreen extends StatelessWidget {
   const DonationsScreen({Key? key}) : super(key: key);
@@ -16,14 +43,22 @@ class DonationsScreen extends StatelessWidget {
         body: Consumer<UserModel>(
           builder: (context, userModel, child) {
             final userId = userModel.user?.uid;
+            if (userId == null) {
+              // the user should be signed in at this point.
+              return Container();
+            }
+            final streamlabsConfig =
+                DonationsAdapter.instance.forStreamlabsConfig(userId: userId);
             return ListView(
               children: [
-                const ListTile(
-                  leading: Image(image: AssetImage('assets/realtimecash.png')),
-                  title: Text("RealtimeCash"),
-                  subtitle: Text("Connect an ETH or MATIC wallet"),
-                ),
-                if (userId != null)
+                if (kDebugMode)
+                  const ListTile(
+                    leading:
+                        Image(image: AssetImage('assets/realtimecash.png')),
+                    title: Text("RealtimeCash"),
+                    subtitle: Text("Connect an ETH or MATIC wallet"),
+                  ),
+                if (kDebugMode)
                   Padding(
                       padding: const EdgeInsets.only(left: 88, right: 16),
                       child: StreamBuilder<String?>(
@@ -52,10 +87,25 @@ class DonationsScreen extends StatelessWidget {
                               keyboardType: TextInputType.url);
                         },
                       )),
-                const Divider(),
+                if (kDebugMode) const Divider(),
                 ListTile(
                   leading:
                       const Image(image: AssetImage('assets/streamlabs.png')),
+                  trailing: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: StreamBuilder(
+                      stream: streamlabsConfig,
+                      builder: (context, snapshot) {
+                        return snapshot.data != null
+                            ? const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                              )
+                            : Container();
+                      },
+                    ),
+                  ),
                   title: const Text("Streamlabs"),
                   subtitle: const Text("See your Streamlabs donations"),
                   onTap: () async {
@@ -83,7 +133,7 @@ class DonationsScreen extends StatelessWidget {
                       ));
                     }
                   },
-                )
+                ),
               ],
             );
           },
