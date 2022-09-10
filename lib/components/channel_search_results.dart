@@ -35,6 +35,33 @@ Future<List<SearchResult>> fastSearch() async {
   }).toList();
 }
 
+Stream<List<SearchResult>> search(String query, bool isShowOnlyOnline) async* {
+  final fast = await fastSearch();
+  final fastFiltered = fast.where((result) =>
+      result.displayName.toLowerCase().contains(query.toLowerCase()));
+  final fastRanked = [
+    ...fastFiltered.where((element) => element.isOnline),
+    ...fastFiltered.where((element) => !element.isOnline)
+  ].take(5);
+  yield fastRanked.toList();
+  final slow = await _search(query).then((result) {
+    return (result.data as List<dynamic>)
+        .map((data) => SearchResult(
+            channelId: data['channelId'],
+            provider: data['provider'],
+            displayName: data['displayName'],
+            isOnline: data['isOnline'],
+            imageUrl: Uri.parse(data['imageUrl']),
+            title: data['title'],
+            isPromoted: false))
+        .toList();
+  });
+  final slowFiltered = slow.where((result) =>
+      !fastFiltered.any((element) => element.channelId == result.channelId) &&
+      (!isShowOnlyOnline || result.isOnline));
+  yield [...fastRanked, ...slowFiltered];
+}
+
 final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
 
 class SearchResult {
@@ -56,14 +83,13 @@ class SearchResult {
       required this.isPromoted});
 }
 
-class ChannelSearchResultsWidget extends StatelessWidget {
+class ChannelSearchResultsWidget extends StatefulWidget {
   final String query;
+  final bool isShowOnlyOnline;
   final Function(Channel) onChannelSelect;
   final ScrollController? controller;
-  final Future<List<SearchResult>> _fastSearch = fastSearch();
-  final bool isShowOnlyOnline;
 
-  ChannelSearchResultsWidget(
+  const ChannelSearchResultsWidget(
       {Key? key,
       required this.query,
       required this.onChannelSelect,
@@ -71,39 +97,37 @@ class ChannelSearchResultsWidget extends StatelessWidget {
       this.controller})
       : super(key: key);
 
-  Stream<List<SearchResult>> search() async* {
-    final fast = await _fastSearch;
-    final fastFiltered = fast
-        .where((result) =>
-            result.displayName.toLowerCase().contains(query.toLowerCase()) &&
-            (!isShowOnlyOnline || result.isOnline))
-        .take(5);
-    yield fastFiltered.toList();
-    final slow = await _search(query).then((result) {
-      return (result.data as List<dynamic>)
-          .map((data) => SearchResult(
-              channelId: data['channelId'],
-              provider: data['provider'],
-              displayName: data['displayName'],
-              isOnline: data['isOnline'],
-              imageUrl: Uri.parse(data['imageUrl']),
-              title: data['title'],
-              isPromoted: false))
-          .toList();
-    });
-    final slowFiltered = slow.where((result) =>
-        !fastFiltered.any((element) => element.channelId == result.channelId) &&
-        (!isShowOnlyOnline || result.isOnline));
-    yield [...fastFiltered, ...slowFiltered];
+  @override
+  State<ChannelSearchResultsWidget> createState() =>
+      _ChannelSearchResultsWidgetState();
+}
+
+class _ChannelSearchResultsWidgetState
+    extends State<ChannelSearchResultsWidget> {
+  late Stream<List<SearchResult>> _results;
+
+  @override
+  void initState() {
+    super.initState();
+    _results = search(widget.query, widget.isShowOnlyOnline);
+  }
+
+  @override
+  void didUpdateWidget(covariant ChannelSearchResultsWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.query != widget.query ||
+        oldWidget.isShowOnlyOnline != widget.isShowOnlyOnline) {
+      _results = search(widget.query, widget.isShowOnlyOnline);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      controller: controller,
+      controller: widget.controller,
       children: [
         StreamBuilder<List<SearchResult>>(
-          stream: search(),
+          stream: _results,
           builder: (context, snapshot) {
             return Column(
               children: (snapshot.data ?? [])
@@ -145,7 +169,7 @@ class ChannelSearchResultsWidget extends StatelessWidget {
                       title: Text(result.displayName),
                       subtitle: Text(result.title),
                       onTap: () {
-                        onChannelSelect(Channel(
+                        widget.onChannelSelect(Channel(
                           "twitch",
                           result.channelId,
                           result.displayName,
