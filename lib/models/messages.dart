@@ -32,8 +32,17 @@ class MessagesModel extends ChangeNotifier {
       _subscription =
           MessagesAdapter.instance.forChannel(channel).listen((event) {
         if (event is AppendDeltaEvent) {
-          _messages.add(event.model);
-          _tts?.say(event.model);
+          // check if this event comes after the last message
+          if (_messages.isNotEmpty &&
+              _messages.last.timestamp.isAfter(event.model.timestamp)) {
+            // this message is out of order, so we need to insert it in the right place
+            final index = _messages.indexWhere(
+                (element) => element.timestamp.isAfter(event.model.timestamp));
+            _messages.insert(index, event.model);
+          } else {
+            _messages.add(event.model);
+            _tts?.say(event.model);
+          }
         } else if (event is UpdateDeltaEvent) {
           for (var i = 0; i < _messages.length; i++) {
             final message = _messages[i];
