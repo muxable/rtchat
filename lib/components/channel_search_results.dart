@@ -57,22 +57,22 @@ class SearchResult {
 }
 
 class ChannelSearchResultsWidget extends StatelessWidget {
-  final String query;
   final Function(Channel) onChannelSelect;
   final ScrollController? controller;
-  final Future<List<SearchResult>> _fastSearch = fastSearch();
-  final bool isShowOnlyOnline;
+  final Stream<List<SearchResult>> _results;
 
   ChannelSearchResultsWidget(
       {Key? key,
-      required this.query,
+      required String query,
       required this.onChannelSelect,
-      required this.isShowOnlyOnline,
+      required bool isShowOnlyOnline,
       this.controller})
-      : super(key: key);
+      : _results = search(query, isShowOnlyOnline),
+        super(key: key);
 
-  Stream<List<SearchResult>> search() async* {
-    final fast = await _fastSearch;
+  static Stream<List<SearchResult>> search(
+      String query, bool isShowOnlyOnline) async* {
+    final fast = await fastSearch();
     final fastFiltered = fast.where((result) =>
         result.displayName.toLowerCase().contains(query.toLowerCase()));
     final fastRanked = [
@@ -104,7 +104,7 @@ class ChannelSearchResultsWidget extends StatelessWidget {
       controller: controller,
       children: [
         StreamBuilder<List<SearchResult>>(
-          stream: search(),
+          stream: _results,
           builder: (context, snapshot) {
             return Column(
               children: (snapshot.data ?? [])
