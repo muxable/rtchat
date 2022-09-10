@@ -1,0 +1,27 @@
+{
+  "name": "auxiliary",
+  "version": "1.0.0",
+  "description": "This service is similar to the agent but for non-critical notifications such as Streamlabs donations that require a persistent connection.",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node -r dotenv/config .",
+    "dev": "ts-node ./src/index.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/logging-bunyan": "^4.1.2",
+    "@google-cloud/secret-manager": "^4.1.2",
+    "bunyan": "^1.8.15",
+    "cross-fetch": "^3.1.5",
+    "firebase-admin": "^11.0.1",
+    "prettier": "^2.7.1",
+    "rxjs": "^7.5.6",
+    "socket.io-client": "2.3.1",
+    "ts-node": "^10.9.1"
+  },
+  "devDependencies": {
+    "@types/bunyan": "^1.8.8"
+  }
+}
