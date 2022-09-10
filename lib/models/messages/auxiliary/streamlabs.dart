@@ -20,11 +20,11 @@ class StreamlabsDonationEventModel extends MessageModel {
   static StreamlabsDonationEventModel fromDocumentData(
       String messageId, Map<String, dynamic> data) {
     return StreamlabsDonationEventModel(
-        name: data['event']['name'],
-        amount: data['event']['amount'],
-        formattedAmount: data['event']['formatted_amount'],
-        message: data['event']['message'],
-        currency: data['event']['currency'],
+        name: data['name'],
+        amount: data['amount'],
+        formattedAmount: data['formattedAmount'],
+        message: data['message'],
+        currency: data['currency'],
         messageId: messageId,
         timestamp: data['timestamp'].toDate());
   }
