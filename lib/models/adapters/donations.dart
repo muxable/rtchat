@@ -13,8 +13,7 @@ class DonationsAdapter {
 
   DonationsAdapter._({required this.db, required this.functions});
 
-  static DonationsAdapter get instance =>
-      _instance ??= DonationsAdapter._(
+  static DonationsAdapter get instance => _instance ??= DonationsAdapter._(
       db: FirebaseFirestore.instance, functions: FirebaseFunctions.instance);
   static DonationsAdapter? _instance;
 
@@ -32,7 +31,12 @@ class DonationsAdapter {
   }
 
   Stream<StreamlabsConfig?> forStreamlabsConfig({required String userId}) {
-    return db.collection("streamlabs").doc(userId).snapshots().map((doc) =>
-        doc.exists ? StreamlabsConfig(currency: doc.get("currency")) : null);
+    return db.collection("streamlabs").doc(userId).snapshots().map((doc) {
+      final data = doc.data();
+      if (data == null || data["token"] == null) {
+        return null;
+      }
+      return StreamlabsConfig(currency: data["currency"]);
+    });
   }
 }
