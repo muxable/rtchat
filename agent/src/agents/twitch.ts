@@ -151,7 +151,7 @@ function bunyanLogger(context: any) {
 const pubSubClients: [BasicPubSubClient, number][] = [];
 
 function incrBasicPubSub(context: any) {
-  const matchingClient = pubSubClients.find((ps) => ps[1] < 50);
+  const matchingClient = pubSubClients.find((ps) => ps[1] < 40);
   if (matchingClient) {
     matchingClient[1]++;
     return matchingClient[0];
