@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
@@ -105,6 +107,7 @@ class ChannelSearchResultsWidget extends StatefulWidget {
 class _ChannelSearchResultsWidgetState
     extends State<ChannelSearchResultsWidget> {
   late Stream<List<SearchResult>> _results;
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -117,8 +120,19 @@ class _ChannelSearchResultsWidgetState
     super.didUpdateWidget(oldWidget);
     if (oldWidget.query != widget.query ||
         oldWidget.isShowOnlyOnline != widget.isShowOnlyOnline) {
-      _results = search(widget.query, widget.isShowOnlyOnline);
+      _debounce?.cancel();
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        setState(() {
+          _results = search(widget.query, widget.isShowOnlyOnline);
+        });
+      });
     }
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
   }
 
   @override
