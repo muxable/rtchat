@@ -43,6 +43,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   late StreamSubscription keyboardSubscription;
   var _emoteIndex = Random().nextInt(_emotes.length);
   final _textSeed = Random().nextDouble();
+  final List<String> _pendingSend = [];
 
   @override
   void initState() {
@@ -69,12 +70,37 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     if (value.isEmpty) {
       return;
     }
+    final messenger = ScaffoldMessenger.of(context);
     if (value.startsWith('!')) {
       final commandsModel = Provider.of<CommandsModel>(context, listen: false);
       commandsModel.addCommand(Command(value, DateTime.now()));
     }
-    ActionsAdapter.instance.send(widget.channel, value);
-    setState(() => _textEditingController.clear());
+    setState(() {
+      _textEditingController.clear();
+    });
+    var done = false;
+    await Future.wait([
+      () async {
+        final error = await ActionsAdapter.instance.send(widget.channel, value);
+        done = true;
+        if (error != null) {
+          messenger.showSnackBar(SnackBar(
+            content: Text(error),
+          ));
+        }
+        setState(() {
+          _pendingSend.remove(value);
+        });
+      }(),
+      () async {
+        await Future.delayed(const Duration(seconds: 1));
+        if (!done) {
+          setState(() {
+            _pendingSend.add(value);
+          });
+        }
+      }(),
+    ]);
   }
 
   Widget _buildEmotePicker(BuildContext context) {
@@ -97,7 +123,13 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      child: Column(children: [
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // render pending sends
+        ..._pendingSend.map((e) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+              child:
+                  Text(e, style: const TextStyle(fontStyle: FontStyle.italic)),
+            )),
         if (_isKeyboardVisible)
           AutocompleteWidget(
             controller: _textEditingController,
