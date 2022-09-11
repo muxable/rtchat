@@ -371,35 +371,38 @@ async function join(
 
   chat.onR9k(async (channel, enabled) => {
     const userId = await getTwitchUserId(channel);
-    await firebase.getMetadata(`twitch:${userId}`).update({ isR9k: enabled });
+    await firebase.getMetadata(`twitch:${userId}`).set({ isR9k: enabled }, {merge: true});
   });
 
   chat.onEmoteOnly(async (channel, enabled) => {
     const userId = await getTwitchUserId(channel);
     await firebase
       .getMetadata(`twitch:${userId}`)
-      .update({ isEmoteOnly: enabled });
+      .set({ isEmoteOnly: enabled }, { merge: true });
   });
 
   chat.onFollowersOnly(async (channel, enabled) => {
     const userId = await getTwitchUserId(channel);
     await firebase
       .getMetadata(`twitch:${userId}`)
-      .update({ isFollowersOnly: enabled });
+      .set({ isFollowersOnly: enabled }, { merge: true });
   });
 
   chat.onSubsOnly(async (channel, enabled) => {
     const userId = await getTwitchUserId(channel);
     await firebase
       .getMetadata(`twitch:${userId}`)
-      .update({ isSubsOnly: enabled });
+      .set({ isSubsOnly: enabled }, { merge: true });
   });
 
   chat.onSlow(async (channel, enabled, seconds) => {
     const userId = await getTwitchUserId(channel);
     await firebase
       .getMetadata(`twitch:${userId}`)
-      .update({ isSlowMode: enabled, slowModeSeconds: seconds });
+      .set(
+        { isSlowMode: enabled, slowModeSeconds: seconds },
+        { merge: true }
+      );
   });
 
   log.info({ channel, agentId, provider }, "assigned to channel");
