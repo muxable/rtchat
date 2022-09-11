@@ -177,7 +177,7 @@ class _ScrollToBottomWidget extends StatelessWidget {
         child: ElevatedButton(
             onPressed: onPressed,
             style: ElevatedButton.styleFrom(
-              primary: Theme.of(context).colorScheme.primary,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(16),
             ),
