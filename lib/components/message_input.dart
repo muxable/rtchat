@@ -84,7 +84,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
         try {
           final error =
               await ActionsAdapter.instance.send(widget.channel, value);
-          done = true;
           if (error != null) {
             messenger.showSnackBar(SnackBar(
               content: Text(error),
@@ -95,6 +94,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             content: Text(e.toString()),
           ));
         }
+        done = true;
         setState(() {
           _pendingSend.remove(value);
         });
