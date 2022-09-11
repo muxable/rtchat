@@ -81,11 +81,18 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     var done = false;
     await Future.wait([
       () async {
-        final error = await ActionsAdapter.instance.send(widget.channel, value);
-        done = true;
-        if (error != null) {
+        try {
+          final error =
+              await ActionsAdapter.instance.send(widget.channel, value);
+          done = true;
+          if (error != null) {
+            messenger.showSnackBar(SnackBar(
+              content: Text(error),
+            ));
+          }
+        } catch (e) {
           messenger.showSnackBar(SnackBar(
-            content: Text(error),
+            content: Text(e.toString()),
           ));
         }
         setState(() {
