@@ -25,15 +25,19 @@ class Viewers {
     return Viewers(
       broadcaster: broadcaster
           .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+          .take(10)
           .toList(),
       moderators: moderators
           .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+          .take(10)
           .toList(),
       vips: vips
           .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+          .take(10)
           .toList(),
       viewers: viewers
           .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+          .take(10)
           .toList(),
     );
   }

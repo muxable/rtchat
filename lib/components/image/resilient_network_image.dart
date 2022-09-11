@@ -34,7 +34,8 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
   const ResilientNetworkImage(this.uri, {this.scale = 1.0});
 
   @override
-  ImageStreamCompleter load(ResilientNetworkImage key, DecoderCallback decode) {
+  ImageStreamCompleter loadBuffer(
+      ResilientNetworkImage key, DecoderBufferCallback decode) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiFrameImageStreamCompleter(
       chunkEvents: chunkEvents.stream,
@@ -64,7 +65,7 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
   static Future<Codec> _loadAsync(
       ResilientNetworkImage key,
       StreamController<ImageChunkEvent> chunkEvents,
-      DecoderCallback decode) async {
+      DecoderBufferCallback decode) async {
     final temp = await getTemporaryDirectory();
     final cacheFile = File('${temp.path}/${key.hash}');
     final etagFile = File('${temp.path}/${key.hash}.etag');
@@ -99,7 +100,7 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
               expectedTotalBytes: bytes.lengthInBytes,
             ));
             chunkEvents.close();
-            return decode(bytes);
+            return decode(await ImmutableBuffer.fromUint8List(bytes));
           }
           if (response.statusCode >= 400 && response.statusCode < 500) {
             throw NetworkImageLoadException(
@@ -131,7 +132,7 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
         }
 
         chunkEvents.close();
-        return decode(bytes);
+        return decode(await ImmutableBuffer.fromUint8List(bytes));
       } on NetworkImageLoadException {
         chunkEvents.close();
         scheduleMicrotask(() {
