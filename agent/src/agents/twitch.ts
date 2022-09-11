@@ -507,7 +507,7 @@ async function join(
           }
           try {
             await send.say(targetChannel, message);
-            await change.doc.ref.update({isComplete: true,});
+            await change.doc.ref.update({ isComplete: true });
           } catch (e: any) {
             log.error(
               { error: e, targetChannel, message },
