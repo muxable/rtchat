@@ -16,7 +16,7 @@ Future<List<SearchResult>> fastSearch() async {
       .where("lastActiveAt",
           isGreaterThan: DateTime.now().subtract(const Duration(days: 3)))
       .orderBy("lastActiveAt", descending: true)
-      .limit(50)
+      .limit(250)
       .get();
   return snapshot.docs
       .where((doc) => doc.data().containsKey("displayName"))

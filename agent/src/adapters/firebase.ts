@@ -214,6 +214,12 @@ export class FirebaseAdapter {
     await connectionsRef.child(agentId).set(true);
     // clear the request
     await requestRef.remove();
+    // add a disconnect handler, clear our connection
+    const connectionDc = connectionsRef.child(agentId).onDisconnect();
+    await connectionDc.remove();
+    // and issue a new request (we don't know if we are canonical)
+    const requestDc = requestRef.onDisconnect();
+    await requestDc.set(admin.database.ServerValue.TIMESTAMP);
     // wait for assignment change
     await new Promise<void>((resolve) => {
       const listener = (snapshot: admin.database.DataSnapshot) => {
@@ -239,6 +245,8 @@ export class FirebaseAdapter {
       connectionsRef.on("value", listener);
     });
     await connectionsRef.child(agentId).remove();
+    await connectionDc.cancel();
+    await requestDc.cancel();
     log.info({ provider, channel, agentId }, "claim released");
   }
 
