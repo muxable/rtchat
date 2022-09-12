@@ -293,12 +293,16 @@ class MessagesAdapter {
       db: FirebaseFirestore.instance, functions: FirebaseFunctions.instance);
   static MessagesAdapter? _instance;
 
-  Stream<DeltaEvent> forChannel(Channel channel) async* {
+  Future<void> subscribe(Channel channel) async {
     final subscribe = functions.httpsCallable('subscribe');
-    subscribe({
+    await subscribe({
       "provider": channel.provider,
       "channelId": channel.channelId,
     });
+  }
+
+  Stream<DeltaEvent> forChannel(Channel channel) async* {
+    await subscribe(channel);
     final emotes = await getEmotes(channel);
     var lastAdTimestamp = DateTime.now();
     var lastAdMessageCount = 0;
