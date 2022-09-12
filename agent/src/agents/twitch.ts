@@ -175,7 +175,7 @@ function decrBasicPubSub(ps: BasicPubSubClient) {
 }
 
 const abortPromise = new Promise((_, reject) => {
-  for (const signal of ["SIGINT", "SIGTERM"]) {
+  for (const signal of ["SIGINT", "SIGTERM", "uncaughtException"]) {
     process.once(signal, reject);
   }
 });
@@ -506,11 +506,16 @@ async function join(
             });
           } catch (error) {
             // transaction failed, probably because it was already sent.
+            log.warn(
+              { userId, targetChannel, message, error },
+              "message send failed"
+            );
             continue;
           }
           try {
             await send.say(targetChannel, message);
             await change.doc.ref.update({ isComplete: true });
+            log.info({ userId, targetChannel, message }, `(sent) ${message}`);
           } catch (e: any) {
             log.error(
               { error: e, targetChannel, message },
