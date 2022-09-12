@@ -13,8 +13,6 @@ export const subscribe = functions.https.onCall(async (data, context) => {
     );
   }
 
-  console.log(context.auth?.uid, "requested subscribe to", provider, channelId);
-
   switch (provider) {
     case "twitch":
       const channel = await getTwitchLogin(channelId);
@@ -24,6 +22,14 @@ export const subscribe = functions.https.onCall(async (data, context) => {
           "invalid channel"
         );
       }
+
+      functions.logger.info(
+        context.auth?.uid,
+        "subscribing to",
+        provider,
+        channel,
+        channelId
+      );
 
       // log the subscription.
       await admin
