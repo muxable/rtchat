@@ -175,7 +175,7 @@ function decrBasicPubSub(ps: BasicPubSubClient) {
 }
 
 const abortPromise = new Promise((_, reject) => {
-  for (const signal of ["SIGINT", "SIGTERM"]) {
+  for (const signal of ["SIGINT", "SIGTERM", "uncaughtException"]) {
     process.once(signal, reject);
   }
 });

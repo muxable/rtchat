@@ -43,10 +43,10 @@ async function main() {
   );
 
   runTwitchAgent(firebase, AGENT_ID).then((close) => {
-    for (const signal of ["SIGINT", "SIGTERM"]) {
+    for (const signal of ["SIGINT", "SIGTERM", "uncaughtException"]) {
       process.on(signal, async (err) => {
         firebase.debugKeepConnected = new Set();
-        log.error(err, "received %s", signal);
+        log.error({ agentId: AGENT_ID, error: err, signal }, "received signal");
         await close();
         log.info({ agentId: AGENT_ID }, "agent closed");
         process.exit(0);
