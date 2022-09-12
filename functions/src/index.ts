@@ -27,7 +27,7 @@ async function write(
   // wait for the message to be sent.
   const error = await new Promise<string | null>((resolve) =>
     ref.onSnapshot((snapshot) => {
-      if (snapshot.get("sentAt") != null) {
+      if (snapshot.get("isComplete")) {
         resolve(snapshot.get("error") || null);
       }
     })

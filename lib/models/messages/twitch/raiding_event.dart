@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
@@ -79,5 +78,5 @@ class TwitchRaidingEventModel extends MessageModel {
 
   @override
   int get hashCode =>
-      hashValues(duration, targetUser, isComplete, isSuccessful);
+      Object.hash(duration, targetUser, isComplete, isSuccessful);
 }
