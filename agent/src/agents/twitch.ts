@@ -174,12 +174,6 @@ function decrBasicPubSub(ps: BasicPubSubClient) {
   matchingClient[1]--;
 }
 
-const abortPromise = new Promise((_, reject) => {
-  for (const signal of ["SIGINT", "SIGTERM", "uncaughtException"]) {
-    process.once(signal, reject);
-  }
-});
-
 async function join(
   firebase: FirebaseAdapter,
   agentId: string,
@@ -203,69 +197,65 @@ async function join(
     chat.onRegister(() => resolve())
   );
 
-  const messagePromise = new Promise<void>((resolve) => {
-    chat.onMessage(async (channel, user, message, msg) => {
-      const actionMessage = message.match(ACTION_MESSAGE_REGEX);
-      const isAction = Boolean(actionMessage);
-      if (!msg.channelId) {
-        return;
-      }
-      resolve();
-      log.info(
-        {
-          agentId,
-          channelId: msg.channelId,
-          channel,
-          messageId: msg.id,
-          message,
-        },
-        "adding message"
-      );
-      const tags = Object.fromEntries(msg.tags);
-      const badges = tags["badges"]
-        .split(",")
-        .map((badge) => badge.split("/") as [string, string]);
-      await firebase.getMessage(`twitch:${msg.id}`).set({
-        channelId: `twitch:${msg.channelId}`,
+  chat.onMessage(async (channel, user, message, msg) => {
+    const actionMessage = message.match(ACTION_MESSAGE_REGEX);
+    const isAction = Boolean(actionMessage);
+    if (!msg.channelId) {
+      return;
+    }
+    log.info(
+      {
+        agentId,
+        channelId: msg.channelId,
         channel,
-        type: "message",
-        timestamp: admin.firestore.Timestamp.fromDate(msg.date),
-        reply: tags["reply-parent-msg-id"]
-          ? {
-              messageId: `twitch:${tags["reply-parent-msg-id"]}`,
-              displayName: tags["reply-parent-display-name"],
-              userLogin: tags["reply-parent-user-login"],
-              userId: tags["reply-parent-user-id"],
-              message: tags["reply-parent-msg-body"],
-            }
-          : null,
-        author: {
-          userId: tags["user-id"],
-          displayName: tags["display-name"],
-          login: tags["username"],
-        },
-        // we have to shim some tags because the frontend still needs some of these.
-        tags: {
-          "user-id": tags["user-id"],
-          "display-name": tags["display-name"],
-          username: user,
-          "room-id": tags["room-id"],
-          color: tags["color"],
-          "message-type": isAction ? "action" : "chat",
-          "badges-raw": tags["badges"],
-          badges: {
-            vip: badges.find((badge) => badge[0] === "vip") !== null,
-            moderator:
-              badges.find((badge) => badge[0] === "moderator") !== null,
-          },
-          "emotes-raw": tags["emotes"],
-        },
+        messageId: msg.id,
         message,
-        annotations: {
-          isFirstTimeChatter: tags["first-msg"] === "1",
-          isAction,
+      },
+      "adding message"
+    );
+    const tags = Object.fromEntries(msg.tags);
+    const badges = tags["badges"]
+      .split(",")
+      .map((badge) => badge.split("/") as [string, string]);
+    await firebase.getMessage(`twitch:${msg.id}`).set({
+      channelId: `twitch:${msg.channelId}`,
+      channel,
+      type: "message",
+      timestamp: admin.firestore.Timestamp.fromDate(msg.date),
+      reply: tags["reply-parent-msg-id"]
+        ? {
+            messageId: `twitch:${tags["reply-parent-msg-id"]}`,
+            displayName: tags["reply-parent-display-name"],
+            userLogin: tags["reply-parent-user-login"],
+            userId: tags["reply-parent-user-id"],
+            message: tags["reply-parent-msg-body"],
+          }
+        : null,
+      author: {
+        userId: tags["user-id"],
+        displayName: tags["display-name"],
+        login: tags["username"],
+      },
+      // we have to shim some tags because the frontend still needs some of these.
+      tags: {
+        "user-id": tags["user-id"],
+        "display-name": tags["display-name"],
+        username: user,
+        "room-id": tags["room-id"],
+        color: tags["color"],
+        "message-type": isAction ? "action" : "chat",
+        "badges-raw": tags["badges"],
+        badges: {
+          vip: badges.find((badge) => badge[0] === "vip") !== null,
+          moderator: badges.find((badge) => badge[0] === "moderator") !== null,
         },
-      });
+        "emotes-raw": tags["emotes"],
+      },
+      message,
+      annotations: {
+        isFirstTimeChatter: tags["first-msg"] === "1",
+        isAction,
+      },
     });
   });
 
@@ -371,7 +361,9 @@ async function join(
 
   chat.onR9k(async (channel, enabled) => {
     const userId = await getTwitchUserId(channel);
-    await firebase.getMetadata(`twitch:${userId}`).set({ isR9k: enabled }, {merge: true});
+    await firebase
+      .getMetadata(`twitch:${userId}`)
+      .set({ isR9k: enabled }, { merge: true });
   });
 
   chat.onEmoteOnly(async (channel, enabled) => {
@@ -399,10 +391,7 @@ async function join(
     const userId = await getTwitchUserId(channel);
     await firebase
       .getMetadata(`twitch:${userId}`)
-      .set(
-        { isSlowMode: enabled, slowModeSeconds: seconds },
-        { merge: true }
-      );
+      .set({ isSlowMode: enabled, slowModeSeconds: seconds }, { merge: true });
   });
 
   log.info({ channel, agentId, provider }, "assigned to channel");
@@ -530,18 +519,7 @@ async function join(
       });
 
     // wait for at least one message before asserting a connection.
-    try {
-      log.info({ channel, agentId, provider }, "waiting for first message");
-      await Promise.race([messagePromise, abortPromise]);
-      log.info({ channel, agentId, provider }, "got first message");
-
-      await firebase.claim(provider, channel, agentId);
-    } catch (error) {
-      log.error(
-        { channel, agentId, provider, error },
-        "failed to claim channel"
-      );
-    }
+    await firebase.claim(provider, channel, agentId);
 
     messageListener();
 
@@ -552,18 +530,7 @@ async function join(
     await raidListener.remove();
   } else {
     // wait for at least one message before asserting a connection.
-    try {
-      log.info({ channel, agentId, provider }, "waiting for first message");
-      await Promise.race([messagePromise, abortPromise]);
-      log.info({ channel, agentId, provider }, "got first message");
-
-      await firebase.claim(provider, channel, agentId);
-    } catch (error) {
-      log.error(
-        { channel, agentId, provider, error },
-        "failed to claim channel"
-      );
-    }
+    await firebase.claim(provider, channel, agentId);
   }
 
   await chat.quit();
@@ -589,10 +556,10 @@ export async function runTwitchAgent(
     const rateLimiter = new Promise<void>((resolve) => {
       const now = Date.now();
       if (next <= now) {
-        next = now + 1000;
+        next = now + 200;
         resolve();
       } else {
-        next += 1000;
+        next += 200;
         setTimeout(() => resolve(), next - now);
       }
     });
