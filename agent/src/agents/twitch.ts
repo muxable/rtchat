@@ -498,7 +498,7 @@ async function join(
             await admin.firestore().runTransaction(async (transaction) => {
               const doc = await transaction.get(change.doc.ref);
               if (doc.get("sentAt")) {
-                return;
+                throw "already sent";
               }
               transaction.update(change.doc.ref, {
                 sentAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -545,11 +545,11 @@ async function join(
 
     messageListener();
 
-    await raidListener.remove();
-
     decrBasicPubSub(pubSubClient);
 
     await send.quit();
+
+    await raidListener.remove();
   } else {
     // wait for at least one message before asserting a connection.
     try {
