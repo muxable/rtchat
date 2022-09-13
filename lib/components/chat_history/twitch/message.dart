@@ -98,9 +98,12 @@ class TwitchMessageWidget extends StatelessWidget {
     } else if (token is EmoteToken) {
       yield WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: Image(
+          child: Tooltip(
+              message: token.code,
+              preferBelow: false,
+              child: Image(
               height: styleModel.fontSize,
-              image: ResilientNetworkImage(token.url)));
+                  image: ResilientNetworkImage(token.url))));
     } else if (token is LinkToken) {
       yield WidgetSpan(
         child: MouseRegion(
