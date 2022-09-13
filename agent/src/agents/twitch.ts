@@ -424,7 +424,10 @@ async function join(
   });
 
   if (authProvider?.username !== channel) {
-    return () => chat.quit();
+    return () => {
+      chat.part(channel);
+      return chat.quit();
+    };
   }
 
   const send = new ChatClient({
@@ -522,6 +525,8 @@ async function join(
     });
 
   return async () => {
+    log.info({ channel, agentId, provider }, "quitting");
+
     messageListener();
 
     decrBasicPubSub(pubSubClient);
@@ -530,6 +535,7 @@ async function join(
 
     await raidListener.remove();
 
+    chat.part(channel);
     await chat.quit();
   };
 }
@@ -542,6 +548,8 @@ export async function runTwitchAgent(
 
   const channels = new Map<string, Promise<void>>();
 
+  let next = 0;
+
   const unsubscribe = firebase.onRequest(agentId, provider, (channel) => {
     if (channels.has(channel)) {
       // a second request comes in for the same channel, ignore it. because we want to handoff to someone else.
@@ -549,6 +557,16 @@ export async function runTwitchAgent(
     }
 
     const promise = (async () => {
+      await new Promise<void>((resolve) => {
+        const now = Date.now();
+        if (next <= now) {
+          next = now + 100;
+          resolve();
+        } else {
+          next += 100;
+          setTimeout(() => resolve(), next - now);
+        }
+      });
       const leave = await join(firebase, agentId, channel);
       await firebase.claim(provider, channel, agentId);
       await leave();
