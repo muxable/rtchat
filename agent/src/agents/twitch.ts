@@ -151,10 +151,10 @@ function bunyanLogger(context: any) {
 const pubSubClients: [BasicPubSubClient, number][] = [];
 
 function incrBasicPubSub(context: any) {
-  const matchingClient = pubSubClients.find((ps) => ps[1] < 40);
-  if (matchingClient) {
-    matchingClient[1]++;
-    return matchingClient[0];
+  const index = pubSubClients.findIndex((ps) => ps[1] < 40);
+  if (index !== -1) {
+    pubSubClients[index][1]++;
+    return pubSubClients[index][0];
   }
   const ps = new BasicPubSubClient({
     logger: {
@@ -560,10 +560,10 @@ export async function runTwitchAgent(
       await new Promise<void>((resolve) => {
         const now = Date.now();
         if (next <= now) {
-          next = now + 100;
+          next = now + 200;
           resolve();
         } else {
-          next += 100;
+          next += 200;
           setTimeout(() => resolve(), next - now);
         }
       });
