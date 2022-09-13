@@ -4,7 +4,11 @@ import {
   RefreshingAuthProvider,
 } from "@twurple/auth";
 import { ChatClient, LogLevel } from "@twurple/chat";
-import { BasicPubSubClient, SingleUserPubSubClient } from "@twurple/pubsub";
+import {
+  BasicPubSubClient,
+  PubSubListener,
+  SingleUserPubSubClient,
+} from "@twurple/pubsub";
 import * as admin from "firebase-admin";
 import fetch from "node-fetch";
 import { ClientCredentials, Token } from "simple-oauth2";
@@ -438,7 +442,11 @@ async function join(
       minLevel: LogLevel.WARNING,
     },
   });
-  await send.connect();
+  try {
+    await send.connect();
+  } catch (error) {
+    log.error({ error }, "failed to connect to send");
+  }
 
   const pubSubClient = incrBasicPubSub({ agentId });
 
@@ -451,18 +459,23 @@ async function join(
     },
   });
 
-  const raidListener = await pubsub.onCustomTopic("raid", async (message) => {
-    const data = message.data as any;
-    await firebase.setIfNotExists(
-      `twitch:${data["type"]}-${data["raid"]["id"]}`,
-      {
-        channel,
-        channelId: `twitch:${data["raid"]["source_id"]}`,
-        ...data,
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      }
-    );
-  });
+  let raidListener: PubSubListener<never> | null = null;
+  try {
+    raidListener = await pubsub.onCustomTopic("raid", async (message) => {
+      const data = message.data as any;
+      await firebase.setIfNotExists(
+        `twitch:${data["type"]}-${data["raid"]["id"]}`,
+        {
+          channel,
+          channelId: `twitch:${data["raid"]["source_id"]}`,
+          ...data,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        }
+      );
+    });
+  } catch (error) {
+    log.error({ error }, "failed to listen to raid events");
+  }
 
   // also listen to message send requests.
   const messageListener = admin
@@ -533,7 +546,7 @@ async function join(
 
     await send.quit();
 
-    await raidListener.remove();
+    await raidListener?.remove();
 
     chat.part(channel);
     await chat.quit();
