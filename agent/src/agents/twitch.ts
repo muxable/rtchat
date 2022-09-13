@@ -179,7 +179,7 @@ async function join(
   agentId: string,
   channel: string,
   anonymous = false
-): Promise<void> {
+): Promise<() => Promise<void>> {
   const authProvider = anonymous
     ? undefined
     : await getAuthProvider(firebase, channel);
@@ -423,104 +423,105 @@ async function join(
     }
   });
 
-  if (authProvider?.username === channel) {
-    const send = new ChatClient({
-      authProvider: authProvider?.provider,
-      isAlwaysMod: authProvider.username === channel,
-      logger: {
-        custom: bunyanLogger({ agentId, channel, provider }),
-        minLevel: LogLevel.WARNING,
-      },
-    });
-    await send.connect();
+  if (authProvider?.username !== channel) {
+    return () => chat.quit();
+  }
 
-    const pubSubClient = incrBasicPubSub({ agentId });
+  const send = new ChatClient({
+    authProvider: authProvider?.provider,
+    isAlwaysMod: authProvider.username === channel,
+    logger: {
+      custom: bunyanLogger({ agentId, channel, provider }),
+      minLevel: LogLevel.WARNING,
+    },
+  });
+  await send.connect();
 
-    const pubsub = new SingleUserPubSubClient({
-      authProvider: authProvider?.provider,
-      pubSubClient,
-      logger: {
-        custom: bunyanLogger({ agentId, channel, provider }),
-        minLevel: LogLevel.WARNING,
-      },
-    });
+  const pubSubClient = incrBasicPubSub({ agentId });
 
-    const raidListener = await pubsub.onCustomTopic("raid", async (message) => {
-      const data = message.data as any;
-      await firebase.setIfNotExists(
-        `twitch:${data["type"]}-${data["raid"]["id"]}`,
-        {
-          channel,
-          channelId: `twitch:${data["raid"]["source_id"]}`,
-          ...data,
-          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+  const pubsub = new SingleUserPubSubClient({
+    authProvider: authProvider?.provider,
+    pubSubClient,
+    logger: {
+      custom: bunyanLogger({ agentId, channel, provider }),
+      minLevel: LogLevel.WARNING,
+    },
+  });
+
+  const raidListener = await pubsub.onCustomTopic("raid", async (message) => {
+    const data = message.data as any;
+    await firebase.setIfNotExists(
+      `twitch:${data["type"]}-${data["raid"]["id"]}`,
+      {
+        channel,
+        channelId: `twitch:${data["raid"]["source_id"]}`,
+        ...data,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      }
+    );
+  });
+
+  // also listen to message send requests.
+  const messageListener = admin
+    .firestore()
+    .collection("actions")
+    .where("channelId", "==", `twitch:${authProvider.providerId}`)
+    .where("sentAt", "==", null)
+    .orderBy("createdAt", "desc")
+    .onSnapshot(async (snapshot) => {
+      for (const change of snapshot.docChanges()) {
+        if (change.type != "added") {
+          continue;
         }
-      );
-    });
-
-    // also listen to message send requests.
-    const messageListener = admin
-      .firestore()
-      .collection("actions")
-      .where("channelId", "==", `twitch:${authProvider.providerId}`)
-      .where("sentAt", "==", null)
-      .orderBy("createdAt", "desc")
-      .onSnapshot(async (snapshot) => {
-        for (const change of snapshot.docChanges()) {
-          if (change.type != "added") {
+        // verify that the user id matches the channel id.
+        const userId = change.doc.get("userId");
+        if (userId) {
+          const channelId = await getChannelId(userId, "twitch");
+          if (channelId != `twitch:${authProvider.providerId}`) {
             continue;
           }
-          // verify that the user id matches the channel id.
-          const userId = change.doc.get("userId");
-          if (userId) {
-            const channelId = await getChannelId(userId, "twitch");
-            if (channelId != `twitch:${authProvider.providerId}`) {
-              continue;
+        }
+        const targetChannel = change.doc.get("targetChannel");
+        const message = change.doc.get("message");
+        if (!targetChannel || !message) {
+          continue;
+        }
+        try {
+          await admin.firestore().runTransaction(async (transaction) => {
+            const doc = await transaction.get(change.doc.ref);
+            if (doc.get("sentAt")) {
+              throw "already sent";
             }
-          }
-          const targetChannel = change.doc.get("targetChannel");
-          const message = change.doc.get("message");
-          if (!targetChannel || !message) {
-            continue;
-          }
-          try {
-            await admin.firestore().runTransaction(async (transaction) => {
-              const doc = await transaction.get(change.doc.ref);
-              if (doc.get("sentAt")) {
-                throw "already sent";
-              }
-              transaction.update(change.doc.ref, {
-                sentAt: admin.firestore.FieldValue.serverTimestamp(),
-              });
+            transaction.update(change.doc.ref, {
+              sentAt: admin.firestore.FieldValue.serverTimestamp(),
             });
-          } catch (error) {
-            // transaction failed, probably because it was already sent.
-            log.warn(
-              { userId, targetChannel, message, error },
-              "message send failed"
-            );
-            continue;
-          }
-          try {
-            await send.say(targetChannel, message);
-            await change.doc.ref.update({ isComplete: true });
-            log.info({ userId, targetChannel, message }, `(sent) ${message}`);
-          } catch (e: any) {
-            log.error(
-              { error: e, targetChannel, message },
-              "error sending message"
-            );
-            await change.doc.ref.update({
-              isComplete: true,
-              error: e.message,
-            });
-          }
+          });
+        } catch (error) {
+          // transaction failed, probably because it was already sent.
+          log.warn(
+            { userId, targetChannel, message, error },
+            "message send failed"
+          );
+          continue;
         }
-      });
+        try {
+          await send.say(targetChannel, message);
+          await change.doc.ref.update({ isComplete: true });
+          log.info({ userId, targetChannel, message }, `(sent) ${message}`);
+        } catch (e: any) {
+          log.error(
+            { error: e, targetChannel, message },
+            "error sending message"
+          );
+          await change.doc.ref.update({
+            isComplete: true,
+            error: e.message,
+          });
+        }
+      }
+    });
 
-    // wait for at least one message before asserting a connection.
-    await firebase.claim(provider, channel, agentId);
-
+  return async () => {
     messageListener();
 
     decrBasicPubSub(pubSubClient);
@@ -528,14 +529,9 @@ async function join(
     await send.quit();
 
     await raidListener.remove();
-  } else {
-    // wait for at least one message before asserting a connection.
-    await firebase.claim(provider, channel, agentId);
-  }
 
-  await chat.quit();
-
-  log.info({ channel, agentId, provider }, "disconnected");
+    await chat.quit();
+  };
 }
 
 export async function runTwitchAgent(
@@ -546,26 +542,18 @@ export async function runTwitchAgent(
 
   const channels = new Map<string, Promise<void>>();
 
-  let next = 0;
-
-  const unsubscribe = firebase.onRequest(agentId, provider, async (channel) => {
+  const unsubscribe = firebase.onRequest(agentId, provider, (channel) => {
     if (channels.has(channel)) {
+      // a second request comes in for the same channel, ignore it. because we want to handoff to someone else.
       return;
     }
 
-    const rateLimiter = new Promise<void>((resolve) => {
-      const now = Date.now();
-      if (next <= now) {
-        next = now + 200;
-        resolve();
-      } else {
-        next += 200;
-        setTimeout(() => resolve(), next - now);
-      }
-    });
-
-    const promise = rateLimiter
-      .then(() => join(firebase, agentId, channel))
+    const promise = (async () => {
+      const leave = await join(firebase, agentId, channel);
+      await firebase.claim(provider, channel, agentId);
+      await leave();
+      log.info({ channel, agentId, provider }, "disconnected");
+    })()
       .catch((e) => log.error({ channel, agentId, provider }, e))
       .finally(() => channels.delete(channel));
     channels.set(channel, promise);
