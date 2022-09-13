@@ -77,4 +77,4 @@ jobs:
       - name: Deploy to GCE
         id: deploy
         run: |
-          gcloud compute instance-groups managed rolling-action start-update agent-us-central1 --version=template=agent-e2-medium --zone=us-central1-a
+          gcloud compute instance-groups managed rolling-action start-update agent-us-central1 --version=template=agent-e2-medium-with-startup-script --zone=us-central1-a
