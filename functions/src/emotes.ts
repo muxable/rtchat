@@ -21,10 +21,14 @@ type UnresolvedTwitchEmote = {
   imageUrl: string;
 };
 
-export async function getTwitchEmotes(accessToken: string): Promise<Emote[]> {
+export async function getTwitchEmotes(
+  accessToken: string | null
+): Promise<Emote[]> {
   // the only way to reliably get twitch emotes is to connect via irc and pull the emote sets from the global state.
   const chatClient = new ChatClient({
-    authProvider: new StaticAuthProvider(TWITCH_CLIENT_ID, accessToken),
+    authProvider: accessToken
+      ? new StaticAuthProvider(TWITCH_CLIENT_ID, accessToken)
+      : undefined,
   });
   const promise = new Promise<string[]>((resolve) =>
     chatClient.onAnyMessage((message) => {
@@ -153,7 +157,7 @@ export async function getBTTVEmotes(channelId: string): Promise<Emote[]> {
 
 export async function getFFZEmotes(channelId: string): Promise<Emote[]> {
   const global = fetch("https://api.frankerfacez.com/v1/set/global")
-    .then((res) => res.json() as any) 
+    .then((res) => res.json() as any)
     .then((json) =>
       json["default_sets"].flatMap((set: number) => {
         return json["sets"][set]["emoticons"].map((emote: any) => {
@@ -221,6 +225,17 @@ export async function get7TVEmotes(channelId: string): Promise<Emote[]> {
   ]);
 }
 
+async function getToken(
+  context: functions.https.CallableContext,
+  provider: string
+) {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    return null;
+  }
+  return await getAccessToken(uid, provider);
+}
+
 export const getEmotes = functions.https.onCall(async (data, context) => {
   const provider = data?.provider;
   const channelId = data?.channelId;
@@ -230,20 +245,7 @@ export const getEmotes = functions.https.onCall(async (data, context) => {
       "missing provider, channelId"
     );
   }
-  const uid = context.auth?.uid;
-  if (!uid) {
-    throw new functions.https.HttpsError(
-      "permission-denied",
-      "Must be authenticated"
-    );
-  }
-  const token = await getAccessToken(uid, provider);
-  if (!token) {
-    throw new functions.https.HttpsError(
-      "permission-denied",
-      "Must be authenticated"
-    );
-  }
+  const token = await getToken(context, provider);
   switch (provider) {
     case "twitch":
       const emotes = await Promise.all([
