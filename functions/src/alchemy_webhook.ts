@@ -124,7 +124,7 @@ export const setRealTimeCashAddress = functions.https.onCall(
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        addresses_to_add: ["0x9131F047B512fD9cc42afc7025e2e9Cb7E62eedF"],
+        addresses_to_add: [address],
         webhook_id: WEBHOOKID,
       }),
     };
