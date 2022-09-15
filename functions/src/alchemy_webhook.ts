@@ -57,7 +57,7 @@ function isValidSignatureForStringBody(
 export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
   const body = req.body;
   const headerKey = req.headers["x-alchemy-signature"] as string;
-  const signingKey = "FROM ALCHEMY DASHBOARD"; // TDOD: replace with your signing key from dashboard
+  const signingKey = functions.config().alchemy.signingkey;
 
   if (!isValidSignatureForStringBody(body, headerKey, signingKey)) {
     res.status(403).send("Fail to validate signature");
@@ -115,17 +115,17 @@ export const setRealTimeCashAddress = functions.https.onCall(
       );
     }
 
-    // TODO: get webhoookId and X-Alchemy-Token from dashboard
+    const WEBHOOKID = functions.config().alchemy.webhookid;
     const options = {
       method: "PATCH",
       headers: {
         accept: "application/json",
-        "X-Alchemy-Token": "qewrewqrewqr",
+        "X-Alchemy-Token": functions.config().alchemy.authtoken,
         "content-type": "application/json",
       },
       body: JSON.stringify({
         addresses_to_add: ["0x9131F047B512fD9cc42afc7025e2e9Cb7E62eedF"],
-        webhook_id: "qwereqwrqewreqw",
+        webhook_id: WEBHOOKID,
       }),
     };
 
@@ -141,7 +141,7 @@ export const setRealTimeCashAddress = functions.https.onCall(
           .doc(userId)
           .set({
             address,
-            webhookId: "wh_e09as2idoqlg818i",
+            WEBHOOKID,
           })
           .catch((error) => {
             // fail to write to firestore
