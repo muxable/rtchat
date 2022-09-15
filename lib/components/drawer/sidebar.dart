@@ -36,13 +36,12 @@ class _DrawerHeader extends StatelessWidget {
                         Navigator.of(context).pop();
                       },
                       child: Row(children: [
-                        CircleAvatar(
-                          backgroundImage: userChannel != null
-                              ? ResilientNetworkImage(
-                                  userChannel.profilePictureUrl)
-                              : null,
-                          backgroundColor: Colors.transparent,
-                        ),
+                        if (userChannel != null)
+                          CircleAvatar(
+                            backgroundImage: ResilientNetworkImage(
+                                userChannel.profilePictureUrl),
+                            backgroundColor: Colors.transparent,
+                          ),
                         const SizedBox(width: 16),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
