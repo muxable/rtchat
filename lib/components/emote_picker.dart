@@ -48,11 +48,13 @@ class EmotesList extends StatelessWidget {
             content: Center(
                 child: Wrap(
               children: byCategory[categories[index]]!.map((emote) {
-                return IconButton(
-                    tooltip: emote.code,
+                return Tooltip(
+                    message: emote.code,
+                    preferBelow: false,
+                    child: IconButton(
                     onPressed: () => onEmoteSelected(emote),
                     splashRadius: 24,
-                    icon: Image(image: ResilientNetworkImage(emote.uri)));
+                        icon: Image(image: ResilientNetworkImage(emote.uri))));
               }).toList(),
             )),
           );

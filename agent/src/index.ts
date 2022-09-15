@@ -49,7 +49,7 @@ async function main() {
         log.error({ agentId: AGENT_ID, error: err, signal }, "received signal");
         await close();
         log.info({ agentId: AGENT_ID }, "agent closed");
-        process.exit(0);
+        process.exit(signal == "uncaughtException" ? 1 : 0);
       });
     }
   });
