@@ -1,6 +1,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import fetch from "cross-fetch";
+import * as crypto from "crypto";
 
 type Log = {
   removed: boolean;
@@ -42,9 +43,29 @@ type AddressNotification = {
   event: AddressEvent;
 };
 
+function isValidSignatureForStringBody(
+  body: string, // must be raw string body, not json transformed version of the body
+  signature: string, // your "X-Alchemy-Signature" from header
+  signingKey: string // taken from dashboard for specific webhook
+): boolean {
+  const hmac = crypto.createHmac("sha256", signingKey); // Create a HMAC SHA256 hash using the signing key
+  hmac.update(body, "utf8"); // Update the token hash with the request body using utf8
+  const digest = hmac.digest("hex");
+  return signature === digest;
+}
+
 export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
   const body = req.body;
+  const headerKey = req.headers["x-alchemy-signature"] as string;
+  const signingKey = functions.config().alchemy.signingkey;
+
+  if (!isValidSignatureForStringBody(body, headerKey, signingKey)) {
+    res.status(403).send("Fail to validate signature");
+    return;
+  }
+
   const notification: AddressNotification = body as AddressNotification;
+
   for (const activity of notification.event.activity) {
     // look for userId that associated with this address
     const addressDoc = await admin
@@ -79,17 +100,6 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
   res.status(200).send("OK");
 });
 
-type webhookIdResponse = {
-  id: string;
-  appId: string;
-  network: string;
-  webhookType: string;
-  webHookUrl: string;
-  isActive: boolean;
-  timeCreated: string;
-  addresses: string[];
-};
-
 export const setRealTimeCashAddress = functions.https.onCall(
   async (data, context) => {
     if (!context.auth) {
@@ -105,34 +115,33 @@ export const setRealTimeCashAddress = functions.https.onCall(
       );
     }
 
-    // https://docs.alchemy.com/reference/create-webhook
-    // create webhook for user with userId
+    const WEBHOOKID = functions.config().alchemy.webhookid;
     const options = {
-      method: "POST",
+      method: "PATCH",
       headers: {
-        Accept: "application/json",
-        "X-Alchemy-Token": "this-is-a-token", // TODO: get token from alchemy
-        "Content-Type": "application/json",
+        accept: "application/json",
+        "X-Alchemy-Token": functions.config().alchemy.authtoken,
+        "content-type": "application/json",
       },
       body: JSON.stringify({
-        network: "ETH_MAINNET",
-        webhook_type: "ADDRESS_ACTIVITY",
-        webhook_url: "localhost/{userId}", // TODO: replace with real webhook url
+        addresses_to_add: [address],
+        webhook_id: WEBHOOKID,
       }),
     };
 
-    fetch("https://dashboard.alchemyapi.io/api/create-webhook", options)
-      .then((response) => response.json())
+    // https://docs.alchemy.com/reference/update-webhook-addresses
+    fetch(
+      "https://dashboard.alchemyapi.io/api/update-webhook-addresses",
+      options
+    )
       .then(async (response) => {
-        const res = response as webhookIdResponse;
-        const webhookId = res.id;
         await admin
           .firestore()
           .collection("realtimecash")
           .doc(userId)
           .set({
             address,
-            webhookId,
+            webhookId: WEBHOOKID
           })
           .catch((error) => {
             // fail to write to firestore
@@ -140,10 +149,8 @@ export const setRealTimeCashAddress = functions.https.onCall(
           });
       })
       .catch((err) => {
-        // fail to create webhook from alchemy
         throw new functions.https.HttpsError(err, err.message);
       });
-
     return;
   }
 );
