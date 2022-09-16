@@ -141,7 +141,7 @@ export const setRealTimeCashAddress = functions.https.onCall(
           .doc(userId)
           .set({
             address,
-            WEBHOOKID,
+            webhookId: WEBHOOKID
           })
           .catch((error) => {
             // fail to write to firestore
