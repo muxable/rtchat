@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:core';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/channels.dart';
@@ -12,6 +13,7 @@ class MessagesModel extends ChangeNotifier {
   StreamSubscription<void>? _subscription;
   List<MessageModel> _messages = [];
   Channel? _channel;
+  final _player = AudioPlayer();
 
   // it's a bit odd to have this here, but tts only cares about the delta events
   // so it's easier to wire this way.
@@ -33,12 +35,24 @@ class MessagesModel extends ChangeNotifier {
           MessagesAdapter.instance.forChannel(channel).listen((event) {
         if (event is AppendDeltaEvent) {
           // check if this event comes after the last message
-          if (_messages.isNotEmpty &&
-              _messages.last.timestamp.isAfter(event.model.timestamp)) {
-            // this message is out of order, so we need to insert it in the right place
-            final index = _messages.indexWhere(
-                (element) => element.timestamp.isAfter(event.model.timestamp));
-            _messages.insert(index, event.model);
+
+          if (_messages.isNotEmpty) {
+            final delta =
+                event.model.timestamp.difference(_messages.last.timestamp);
+            if (delta.isNegative) {
+              // this message is out of order, so we need to insert it in the right place
+              final index = _messages.indexWhere((element) =>
+                  element.timestamp.isAfter(event.model.timestamp));
+              _messages.insert(index, event.model);
+            } else if (_messages.last is TwitchMessageModel &&
+                delta.compareTo(const Duration(minutes: 1)) > 0) {
+              // this message is more than one minute after the last message
+              // if the previous message is also a chat message, then we need to insert a separator with a timestamp
+              // and play an alert sound.
+              _messages.add(SeparatorModel(event.model.timestamp));
+              _player.play('assets/message-sound.wav');
+              _messages.add(event.model);
+            }
           } else {
             _messages.add(event.model);
             _tts?.say(event.model);

@@ -29,6 +29,13 @@ abstract class MessageModel {
   const MessageModel({required this.timestamp, required this.messageId});
 }
 
+class SeparatorModel extends MessageModel {
+  SeparatorModel(DateTime timestamp)
+      : super(
+            timestamp: timestamp,
+            messageId: 'separator-${timestamp.millisecondsSinceEpoch}');
+}
+
 var nativeMessageIdCounter = 0;
 
 class AdMessageModel extends MessageModel {
