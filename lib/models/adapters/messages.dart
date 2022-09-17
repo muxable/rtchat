@@ -370,4 +370,14 @@ class MessagesAdapter {
         .get()
         .then((snapshot) => snapshot.docs.isNotEmpty);
   }
+
+  Stream<String?> forMessageTranslation(String messageId, String language) {
+    return db
+        .collection("messages")
+        .doc(messageId)
+        .collection("translations")
+        .doc(language)
+        .snapshots()
+        .map((doc) => doc.exists ? doc.get("translation") : null);
+  }
 }

@@ -5,6 +5,7 @@ import 'package:motion_sensors/motion_sensors.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
@@ -102,7 +103,7 @@ class TwitchMessageWidget extends StatelessWidget {
               message: token.code,
               preferBelow: false,
               child: Image(
-              height: styleModel.fontSize,
+                  height: styleModel.fontSize,
                   image: ResilientNetworkImage(token.url))));
     } else if (token is LinkToken) {
       yield WidgetSpan(
@@ -279,6 +280,28 @@ class TwitchMessageWidget extends StatelessWidget {
                   ],
                 ),
               ),
+              if (styleModel.translateMessages ==
+                  TranslateMessages.translateAndShowOriginal)
+                StreamBuilder<String?>(
+                    stream: MessagesAdapter.instance.forMessageTranslation(
+                        model.messageId, styleModel.translateLanguage),
+                    builder: (context, snapshot) {
+                      final translation = snapshot.data;
+                      if (translation == null) {
+                        return Container();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 8, top: 4),
+                        child: Row(children: [
+                          Icon(Icons.translate, size: styleModel.fontSize),
+                          const SizedBox(width: 8),
+                          Text(
+                            translation,
+                            style: Theme.of(context).textTheme.subtitle1,
+                          )
+                        ]),
+                      );
+                    }),
             ],
           ),
         ),

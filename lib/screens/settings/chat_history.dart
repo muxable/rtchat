@@ -53,13 +53,28 @@ final message3 = TwitchMessageModel(
       Emote(
         provider: "twitch",
         category: null,
-          id: 'catJAM',
-          code: 'catJAM',
+        id: 'catJAM',
+        code: 'catJAM',
         imageUrl: 'https://cdn.betterttv.net/emote/5f1abd75fe85fb4472d132b4/1x',
       ),
     ],
     timestamp: DateTime.now(),
     message: "catJAM catJAM catJAM catJAM catJAM catJAM",
+    deleted: false,
+    channelId: 'placeholder');
+final message4 = TwitchMessageModel(
+    messageId: "placeholder4",
+    author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
+    tags: {
+      "color": "#00FF7F",
+      "badges-raw": "broadcaster/1,moderator/1",
+      "room-id": "158394109",
+    },
+    annotations: const TwitchMessageAnnotationsModel(
+        isAction: false, isFirstTimeChatter: false, announcement: null),
+    thirdPartyEmotes: [],
+    timestamp: DateTime.now(),
+    message: "hoy es dia de lavanderia",
     deleted: false,
     channelId: 'placeholder');
 
@@ -71,21 +86,8 @@ class ChatHistoryScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Chat history")),
       body: Consumer<StyleModel>(builder: (context, model, child) {
-        return ListView(
+        final settings = ListView(
           children: [
-            SizedBox(
-              height: 180,
-              child: StyleModelTheme(
-                  child: ListView(
-                      shrinkWrap: true,
-                      physics: const ClampingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      children: [
-                    TwitchMessageWidget(message1),
-                    TwitchMessageWidget(message2),
-                    TwitchMessageWidget(message3),
-                  ])),
-            ),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -170,6 +172,53 @@ class ChatHistoryScreen extends StatelessWidget {
                 }
               },
             ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text("Automatic translation",
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontWeight: FontWeight.bold,
+                  )),
+            ),
+            ListTile(
+              title: const Text('Language'),
+              subtitle: const Text("Translate messages to this language"),
+              trailing: DropdownButton<String>(
+                value: model.translateLanguage,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    model.translateLanguage = value;
+                  }
+                },
+                items: ["EN", "ES", "DE", "JA", "ZH"]
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+            ),
+            RadioListTile(
+              title: const Text('Don\'t translate messages'),
+              value: TranslateMessages.none,
+              groupValue: model.translateMessages,
+              onChanged: (TranslateMessages? value) {
+                if (value != null) {
+                  model.translateMessages = value;
+                }
+              },
+            ),
+            RadioListTile(
+              title: const Text('Show translation under messages'),
+              value: TranslateMessages.translateAndShowOriginal,
+              groupValue: model.translateMessages,
+              onChanged: (TranslateMessages? value) {
+                if (value != null) {
+                  model.translateMessages = value;
+                }
+              },
+            ),
             Consumer<TwitchMessageConfig>(builder: (context, model, child) {
               return Padding(
                 padding: const EdgeInsets.all(16),
@@ -197,6 +246,25 @@ class ChatHistoryScreen extends StatelessWidget {
                 ),
               );
             }),
+          ],
+        );
+        return Column(
+          children: [
+            SizedBox(
+              height: 180,
+              child: StyleModelTheme(
+                  child: ListView(
+                      shrinkWrap: true,
+                      physics: const ClampingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                    TwitchMessageWidget(message1),
+                    TwitchMessageWidget(message2),
+                    TwitchMessageWidget(message3),
+                    TwitchMessageWidget(message4),
+                  ])),
+            ),
+            Expanded(child: settings)
           ],
         );
       }),

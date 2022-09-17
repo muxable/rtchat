@@ -6,11 +6,22 @@ import { getTwitchLogin } from "./twitch";
 export const subscribe = functions.https.onCall(async (data, context) => {
   const provider = data?.provider;
   const channelId = data?.channelId;
+  const translate = data?.translate;
   if (!provider || !channelId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
       "missing provider, channelId"
     );
+  }
+
+  if (translate) {
+    await admin
+      .database()
+      .ref("translations")
+      .child(provider)
+      .child(channelId)
+      .child(translate)
+      .set(admin.database.ServerValue.TIMESTAMP);
   }
 
   switch (provider) {
@@ -89,16 +100,16 @@ export const subscribe = functions.https.onCall(async (data, context) => {
 export const unsubscribe = functions.pubsub
   .schedule("0 4 * * *") // daily at 4a
   .onRun(async (context) => {
-    const limit = Date.now() - 7 * 86400 * 1000;
+    const subscriptionLimit = Date.now() - 7 * 86400 * 1000;
     const subscriptionsRef = admin.database().ref("subscriptions");
     const subscriptions = await subscriptionsRef.get();
-    const providers = subscriptions.val() as {
+    const providers = (subscriptions.val() || {}) as {
       [provider: string]: { [channel: string]: number };
     };
 
     for (const [provider, channels] of Object.entries(providers)) {
       for (const [channel, timestamp] of Object.entries(channels)) {
-        if (timestamp > limit) {
+        if (timestamp > subscriptionLimit) {
           continue;
         }
 
@@ -115,6 +126,31 @@ export const unsubscribe = functions.pubsub
               .set(null);
 
             await subscriptionsRef.child(provider).child(channel).set(null);
+        }
+      }
+    }
+
+    const translationLimit = Date.now() - 86400 * 1000;
+    const translationsRef = admin.database().ref("translations");
+    const translations = await translationsRef.get();
+    const translationsProviders = (translations.val() || {}) as {
+      [provider: string]: { [channel: string]: { [language: string]: number } };
+    };
+
+    for (const [provider, channels] of Object.entries(translationsProviders)) {
+      for (const [channel, languages] of Object.entries(channels)) {
+        for (const [language, timestamp] of Object.entries(languages)) {
+          if (timestamp > translationLimit) {
+            continue;
+          }
+
+          await admin
+            .database()
+            .ref("translations")
+            .child(provider)
+            .child(channel)
+            .child(language)
+            .remove();
         }
       }
     }

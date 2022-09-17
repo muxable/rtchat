@@ -22,6 +22,8 @@ Color lighten(Color color, [double amount = .1]) {
 
 enum CompactMessages { none, withinMessage, acrossMessages }
 
+enum TranslateMessages { none, translate, translateAndShowOriginal }
+
 extension CompactMessagesJson on CompactMessages {
   static fromJson(dynamic value) {
     switch (value) {
@@ -48,11 +50,39 @@ extension CompactMessagesJson on CompactMessages {
   }
 }
 
+extension TranslateMessagesJson on TranslateMessages {
+  static fromJson(dynamic value) {
+    switch (value) {
+      case 0:
+        return TranslateMessages.none;
+      case 1:
+        return TranslateMessages.translate;
+      case 2:
+        return TranslateMessages.translateAndShowOriginal;
+      default:
+        return TranslateMessages.none;
+    }
+  }
+
+  toJson() {
+    switch (this) {
+      case TranslateMessages.none:
+        return 0;
+      case TranslateMessages.translate:
+        return 1;
+      case TranslateMessages.translateAndShowOriginal:
+        return 2;
+    }
+  }
+}
+
 class StyleModel extends ChangeNotifier {
   double _fontSize = 20;
   double _lightnessBoost = 0.179;
   bool _isDeletedMessagesVisible = true;
   CompactMessages _compactMessages = CompactMessages.none;
+  TranslateMessages _translateMessages = TranslateMessages.none;
+  String _translateLanguage = "EN";
   bool _isDiscoModeAvailable = false;
 
   double get fontSize {
@@ -94,6 +124,20 @@ class StyleModel extends ChangeNotifier {
 
   CompactMessages get compactMessages => _compactMessages;
 
+  set translateMessages(TranslateMessages translateMessages) {
+    _translateMessages = translateMessages;
+    notifyListeners();
+  }
+
+  TranslateMessages get translateMessages => _translateMessages;
+
+  set translateLanguage(String translateLanguage) {
+    _translateLanguage = translateLanguage;
+    notifyListeners();
+  }
+
+  String get translateLanguage => _translateLanguage;
+
   set isDiscoModeAvailable(bool isDiscoModeAvailable) {
     _isDiscoModeAvailable = isDiscoModeAvailable;
     notifyListeners();
@@ -114,6 +158,13 @@ class StyleModel extends ChangeNotifier {
     if (json['compactMessages'] != null) {
       _compactMessages = CompactMessagesJson.fromJson(json['compactMessages']);
     }
+    if (json['translateMessages'] != null) {
+      _translateMessages =
+          TranslateMessagesJson.fromJson(json['translateMessages']);
+    }
+    if (json['translateLanguage'] != null) {
+      _translateLanguage = json['translateLanguage'];
+    }
     if (json['isDiscoModeEnabled'] != null) {
       _isDiscoModeAvailable = json['isDiscoModeEnabled'];
     }
@@ -124,6 +175,8 @@ class StyleModel extends ChangeNotifier {
         "fontSize": _fontSize,
         "isDeletedMessagesVisible": _isDeletedMessagesVisible,
         "compactMessages": _compactMessages.toJson(),
+        "translateMessages": _translateMessages.toJson(),
+        "translateLanguage": _translateLanguage,
         "isDiscoModeEnabled": _isDiscoModeAvailable,
       };
 }

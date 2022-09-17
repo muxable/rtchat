@@ -1,13 +1,14 @@
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import * as admin from "firebase-admin";
 import { merge } from "rxjs";
+import { translations$ } from "./autotranslate";
 import { streamlabs$ } from "./streamlabs";
 
 const PROJECT_ID = process.env["PROJECT_ID"] || "rtchat-47692";
 
 async function main() {
+  const client = new SecretManagerServiceClient();
   try {
-    const client = new SecretManagerServiceClient();
     // credentials are not set, initialize the app from secret manager.
     // TODO: why don't gcp default credentials work?
     const [version] = await client.accessSecretVersion({
@@ -30,7 +31,15 @@ async function main() {
     });
   }
 
-  const subscriber = merge(streamlabs$).subscribe();
+  const [deeplVersion] = await client.accessSecretVersion({
+    name: "projects/rtchat-47692/secrets/deepl-authentication-key/versions/latest",
+  });
+  const deeplKey = deeplVersion.payload?.data?.toString();
+  if (!deeplKey) {
+    throw new Error("unable to retrieve credentials from secret manager");
+  }
+
+  const subscriber = merge(streamlabs$, translations$(deeplKey)).subscribe();
   for (const signal in ["SIGINT", "SIGTERM"]) {
     process.on(signal, () => {
       subscriber.unsubscribe();
