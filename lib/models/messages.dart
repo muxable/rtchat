@@ -13,7 +13,7 @@ class MessagesModel extends ChangeNotifier {
   StreamSubscription<void>? _subscription;
   List<MessageModel> _messages = [];
   Channel? _channel;
-  final _player = AudioPlayer();
+  final _player = AudioCache();
 
   // it's a bit odd to have this here, but tts only cares about the delta events
   // so it's easier to wire this way.
@@ -31,11 +31,11 @@ class MessagesModel extends ChangeNotifier {
 
     _subscription?.cancel();
     if (channel != null) {
+      final subscriptionStart = DateTime.now();
       _subscription =
           MessagesAdapter.instance.forChannel(channel).listen((event) {
         if (event is AppendDeltaEvent) {
           // check if this event comes after the last message
-
           if (_messages.isNotEmpty) {
             final delta =
                 event.model.timestamp.difference(_messages.last.timestamp);
@@ -50,7 +50,15 @@ class MessagesModel extends ChangeNotifier {
               // if the previous message is also a chat message, then we need to insert a separator with a timestamp
               // and play an alert sound.
               _messages.add(SeparatorModel(event.model.timestamp));
-              _player.play('assets/message-sound.wav');
+              // don't play alert sounds within the first 15 seconds of binding.
+              final timeSinceStart =
+                  DateTime.now().difference(subscriptionStart);
+              if (timeSinceStart.compareTo(const Duration(seconds: 15)) > 0) {
+                _player.play('message-sound.wav');
+              }
+              _messages.add(event.model);
+            } else {
+              // this message is in order, so we can just append it
               _messages.add(event.model);
             }
           } else {
