@@ -129,6 +129,12 @@ export const setRealTimeCashAddress = functions.https.onCall(
       }),
     };
 
+    functions.logger.info("payload", {
+      userId: userId,
+      addresses_to_add: address,
+      webhook_id: WEBHOOKID,
+    });
+
     // https://docs.alchemy.com/reference/update-webhook-addresses
     fetch(
       "https://dashboard.alchemyapi.io/api/update-webhook-addresses",
@@ -144,11 +150,13 @@ export const setRealTimeCashAddress = functions.https.onCall(
             webhookId: WEBHOOKID
           })
           .catch((error) => {
+            functions.logger.error("Error writing document: ", error);
             // fail to write to firestore
             throw new functions.https.HttpsError(error, error.message);
           });
       })
       .catch((err) => {
+        functions.logger.error("Error patching webhook with address: ", err);
         throw new functions.https.HttpsError(err, err.message);
       });
     return;
