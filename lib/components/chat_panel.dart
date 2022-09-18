@@ -17,7 +17,6 @@ import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/messages/twitch/message_configuration.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
@@ -87,7 +86,7 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
 DateTime? _getExpiration(
     MessageModel model,
     EventSubConfigurationModel eventSubConfigurationModel,
-    TwitchMessageConfig twitchMessageConfig) {
+    MessagesModel messagesModel) {
   if (model is TwitchRaidEventModel) {
     final raidEventConfig = eventSubConfigurationModel.raidEventConfig;
     return raidEventConfig.eventDuration > Duration.zero
@@ -153,8 +152,8 @@ DateTime? _getExpiration(
     return model.endTime.add(predictionEventConfig.eventDuration);
   } else if (model is TwitchMessageModel &&
       model.annotations.announcement != null) {
-    return twitchMessageConfig.announcementPinDuration > Duration.zero
-        ? model.timestamp.add(twitchMessageConfig.announcementPinDuration)
+    return messagesModel.announcementPinDuration > Duration.zero
+        ? model.timestamp.add(messagesModel.announcementPinDuration)
         : null;
   }
   return null;
@@ -238,10 +237,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     return Stack(
       alignment: AlignmentDirectional.topCenter,
       children: [
-        Consumer3<MessagesModel, EventSubConfigurationModel,
-                TwitchMessageConfig>(
-            builder: (context, messagesModel, eventSubConfigurationModel,
-                twitchMessageConfig, child) {
+        Consumer2<MessagesModel, EventSubConfigurationModel>(builder:
+            (context, messagesModel, eventSubConfigurationModel, child) {
           var messages = messagesModel.messages.reversed.toList();
           _lastMessage = messages.isEmpty ? null : messages.first;
           if (messages.isEmpty) {
@@ -274,7 +271,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
           }
           final expirations = messages
               .map((message) => _getExpiration(
-                  message, eventSubConfigurationModel, twitchMessageConfig))
+                  message, eventSubConfigurationModel, messagesModel))
               .toList();
           return RebuildableWidget(
               rebuildAt: expirations.whereType<DateTime>().toSet(),

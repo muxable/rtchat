@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/style_model_theme.dart';
+import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/messages/twitch/message_configuration.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
 
@@ -53,8 +53,8 @@ final message3 = TwitchMessageModel(
       Emote(
         provider: "twitch",
         category: null,
-          id: 'catJAM',
-          code: 'catJAM',
+        id: 'catJAM',
+        code: 'catJAM',
         imageUrl: 'https://cdn.betterttv.net/emote/5f1abd75fe85fb4472d132b4/1x',
       ),
     ],
@@ -70,7 +70,8 @@ class ChatHistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Chat history")),
-      body: Consumer<StyleModel>(builder: (context, model, child) {
+      body: Consumer2<StyleModel, MessagesModel>(
+          builder: (context, styleModel, messagesModel, child) {
         return ListView(
           children: [
             SizedBox(
@@ -97,13 +98,13 @@ class ChatHistoryScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       )),
                   Slider.adaptive(
-                    value: model.fontSize,
+                    value: styleModel.fontSize,
                     min: 12,
                     max: 36,
                     divisions: 12,
-                    label: "${model.fontSize}px",
+                    label: "${styleModel.fontSize}px",
                     onChanged: (value) {
-                      model.fontSize = value;
+                      styleModel.fontSize = value;
                     },
                   ),
                   Text("Username contrast boost",
@@ -112,12 +113,12 @@ class ChatHistoryScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       )),
                   Slider.adaptive(
-                    value: model.lightnessBoost,
+                    value: styleModel.lightnessBoost,
                     min: 0.179,
                     max: 1.0,
-                    label: "${model.lightnessBoost}",
+                    label: "${styleModel.lightnessBoost}",
                     onChanged: (value) {
-                      model.lightnessBoost = value;
+                      styleModel.lightnessBoost = value;
                     },
                   ),
                 ],
@@ -132,12 +133,12 @@ class ChatHistoryScreen extends StatelessWidget {
             ),
             SwitchListTile.adaptive(
               title: const Text('Show deleted messages'),
-              subtitle: model.isDeletedMessagesVisible
+              subtitle: styleModel.isDeletedMessagesVisible
                   ? const Text("Deleted messages will be greyed out")
                   : const Text("Deleted messages will be removed"),
-              value: model.isDeletedMessagesVisible,
+              value: styleModel.isDeletedMessagesVisible,
               onChanged: (value) {
-                model.isDeletedMessagesVisible = value;
+                styleModel.isDeletedMessagesVisible = value;
               },
             ),
             Padding(
@@ -152,10 +153,10 @@ class ChatHistoryScreen extends StatelessWidget {
               title: const Text('Don\'t compact messages'),
               subtitle: const Text("Messages are shown unchanged"),
               value: CompactMessages.none,
-              groupValue: model.compactMessages,
+              groupValue: styleModel.compactMessages,
               onChanged: (CompactMessages? value) {
                 if (value != null) {
-                  model.compactMessages = value;
+                  styleModel.compactMessages = value;
                 }
               },
             ),
@@ -163,40 +164,107 @@ class ChatHistoryScreen extends StatelessWidget {
               title: const Text('Compact individual messages'),
               subtitle: const Text("Repetitive text in messages is shortened"),
               value: CompactMessages.withinMessage,
-              groupValue: model.compactMessages,
+              groupValue: styleModel.compactMessages,
               onChanged: (CompactMessages? value) {
                 if (value != null) {
-                  model.compactMessages = value;
+                  styleModel.compactMessages = value;
                 }
               },
             ),
-            Consumer<TwitchMessageConfig>(builder: (context, model, child) {
-              return Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Announcement pin duration",
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontWeight: FontWeight.bold,
-                        )),
-                    Slider.adaptive(
-                      value: model.announcementPinDuration.inSeconds.toDouble(),
-                      min: 0,
-                      max: 30,
-                      divisions: 15,
-                      label:
-                          "${model.announcementPinDuration.inSeconds.toDouble()} seconds",
-                      onChanged: (value) {
-                        model.setAnnouncementPinDuration(
-                            Duration(seconds: value.toInt()));
-                      },
-                    ),
-                  ],
-                ),
-              );
-            }),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Announcement pin duration",
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.bold,
+                      )),
+                  Slider.adaptive(
+                    value: messagesModel.announcementPinDuration.inSeconds
+                        .toDouble(),
+                    min: 0,
+                    max: 30,
+                    divisions: 15,
+                    label:
+                        "${messagesModel.announcementPinDuration.inSeconds.toDouble()} seconds",
+                    onChanged: (value) {
+                      messagesModel.announcementPinDuration =
+                          Duration(seconds: value.toInt());
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Idle message alert duration",
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.bold,
+                      )),
+                  Text(
+                      "If there aren't any messages for this amount of time and a new one comes in, an alert sound will play.",
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.caption?.color,
+                      )),
+                ],
+              ),
+            ),
+            RadioListTile(
+              title: const Text('Disabled'),
+              value: const Duration(days: 10000),
+              groupValue: messagesModel.pingMinGapDuration,
+              onChanged: (Duration? value) {
+                if (value != null) {
+                  messagesModel.pingMinGapDuration = value;
+                }
+              },
+            ),
+            RadioListTile(
+              title: const Text('30 seconds'),
+              value: const Duration(seconds: 30),
+              groupValue: messagesModel.pingMinGapDuration,
+              onChanged: (Duration? value) {
+                if (value != null) {
+                  messagesModel.pingMinGapDuration = value;
+                }
+              },
+            ),
+            RadioListTile(
+              title: const Text('1 minute'),
+              value: const Duration(minutes: 1),
+              groupValue: messagesModel.pingMinGapDuration,
+              onChanged: (Duration? value) {
+                if (value != null) {
+                  messagesModel.pingMinGapDuration = value;
+                }
+              },
+            ),
+            RadioListTile(
+              title: const Text('5 minutes'),
+              value: const Duration(minutes: 5),
+              groupValue: messagesModel.pingMinGapDuration,
+              onChanged: (Duration? value) {
+                if (value != null) {
+                  messagesModel.pingMinGapDuration = value;
+                }
+              },
+            ),
+            RadioListTile(
+              title: const Text('10 minutes'),
+              value: const Duration(minutes: 10),
+              groupValue: messagesModel.pingMinGapDuration,
+              onChanged: (Duration? value) {
+                if (value != null) {
+                  messagesModel.pingMinGapDuration = value;
+                }
+              },
+            ),
           ],
         );
       }),
