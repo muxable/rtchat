@@ -30,6 +30,7 @@ class MessagesModel extends ChangeNotifier {
 
     _subscription?.cancel();
     if (channel != null) {
+      _initialMessageCount = null;
       _subscription =
           MessagesAdapter.instance.forChannel(channel).listen((event) {
         if (event is AppendDeltaEvent) {
@@ -45,7 +46,8 @@ class MessagesModel extends ChangeNotifier {
             } else if (delta.compareTo(const Duration(minutes: 5)) > 0) {
               // this message is more than five minutes after the last message so
               // insert a timestamp.
-              _messages.add(SeparatorModel(event.model.timestamp));
+              // TODO: reenable this with better separator placement.
+              // _messages.add(SeparatorModel(event.model.timestamp));
               _messages.add(event.model);
               _tts?.say(event.model);
             } else {
