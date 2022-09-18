@@ -11,7 +11,7 @@ import 'package:rtchat/models/tts.dart';
 class MessagesModel extends ChangeNotifier {
   StreamSubscription<void>? _subscription;
   List<MessageModel> _messages = [];
-  int _initialMessageCount = 0;
+  int? _initialMessageCount;
   Channel? _channel;
 
   // it's a bit odd to have this here, but tts only cares about the delta events
@@ -85,7 +85,8 @@ class MessagesModel extends ChangeNotifier {
 
   List<MessageModel> get messages => _messages;
 
-  bool get hasLiveMessages => _messages.length > _initialMessageCount;
+  bool get hasLiveMessages =>
+      _initialMessageCount != null && _messages.length > _initialMessageCount!;
 
   set tts(TtsModel? tts) {
     // ignore if no update
