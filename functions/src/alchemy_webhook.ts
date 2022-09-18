@@ -103,17 +103,25 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
 export const setRealTimeCashAddress = functions.https.onCall(
   async (data, context) => {
     if (!context.auth) {
+      functions.logger.error("User is not authenticated");
       throw new functions.https.HttpsError("permission-denied", "missing auth");
     }
 
     const userId = context.auth.uid;
     const address = data?.address;
+    functions.logger.info("caller payload", {
+      userId: userId,
+      address: address, 
+    });
     if (!address) {
+      functions.logger.error("missing address");
       throw new functions.https.HttpsError(
         "invalid-argument",
         "missing userId, address params"
       );
     }
+
+    functions.logger.info("address valid, calling alchemy api");
 
     const WEBHOOKID = functions.config().alchemy.webhookid;
     const options = {
