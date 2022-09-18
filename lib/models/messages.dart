@@ -42,8 +42,8 @@ class MessagesModel extends ChangeNotifier {
               final index = _messages.indexWhere((element) =>
                   element.timestamp.isAfter(event.model.timestamp));
               _messages.insert(index, event.model);
-            } else if (delta.compareTo(const Duration(minutes: 1)) > 0) {
-              // this message is more than one minute after the last message so
+            } else if (delta.compareTo(const Duration(minutes: 5)) > 0) {
+              // this message is more than five minutes after the last message so
               // insert a timestamp.
               _messages.add(SeparatorModel(event.model.timestamp));
               _messages.add(event.model);
