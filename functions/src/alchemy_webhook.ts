@@ -56,14 +56,24 @@ function isValidSignatureForStringBody(
 
 export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
   const body = req.body;
+  const rawBody = req.rawBody.toString();
   const headerKey = req.headers["x-alchemy-signature"] as string;
   const signingKey = functions.config().alchemy.signingkey;
 
-  if (!isValidSignatureForStringBody(body, headerKey, signingKey)) {
+  functions.logger.info("body", {
+    req: req,
+    rawBody: rawBody,
+    headerKey: headerKey,
+    signingKey: signingKey,
+    body: body,
+  });
+
+  if (!isValidSignatureForStringBody(rawBody, headerKey, signingKey)) {
     res.status(403).send("Fail to validate signature");
     return;
   }
 
+  functions.logger.info("Signature validated");
   const notification: AddressNotification = body as AddressNotification;
 
   for (const activity of notification.event.activity) {
@@ -76,6 +86,7 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
       .get();
 
     const userId = addressDoc.docs[0].id;
+    functions.logger.info("UserId obtained", { userId: userId });
 
     // get channelId for this user
     const profileDoc = await admin
@@ -85,6 +96,7 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
       .get();
 
     const channelId = `twitch:${profileDoc.get("twitch").id}`;
+    functions.logger.info("ChannelId obtained", { channelId: channelId });
 
     // storing donation respoonses in realtimecash collection
     await admin.firestore().collection("messages").add({
@@ -96,6 +108,7 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
       notificationType: notification.type,
       activity: activity,
     });
+    functions.logger.info("Payload is stored in messages collection");
   }
   res.status(200).send("OK");
 });
@@ -111,7 +124,7 @@ export const setRealTimeCashAddress = functions.https.onCall(
     const address = data?.address;
     functions.logger.info("caller payload", {
       userId: userId,
-      address: address, 
+      address: address,
     });
     if (!address) {
       functions.logger.error("missing address");
@@ -155,7 +168,7 @@ export const setRealTimeCashAddress = functions.https.onCall(
           .doc(userId)
           .set({
             address,
-            webhookId: WEBHOOKID
+            webhookId: WEBHOOKID,
           })
           .catch((error) => {
             functions.logger.error("Error writing document: ", error);
