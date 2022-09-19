@@ -35,26 +35,12 @@ class MessagesModel extends ChangeNotifier {
           MessagesAdapter.instance.forChannel(channel).listen((event) {
         if (event is AppendDeltaEvent) {
           // check if this event comes after the last message
-          if (_messages.isNotEmpty) {
-            final delta =
-                event.model.timestamp.difference(_messages.last.timestamp);
-            if (delta.isNegative) {
+          if (_messages.isNotEmpty &&
+              event.model.timestamp.isBefore(_messages.last.timestamp)) {
               // this message is out of order, so we need to insert it in the right place
               final index = _messages.indexWhere((element) =>
                   element.timestamp.isAfter(event.model.timestamp));
-              _messages.insert(index, event.model);
-            } else if (delta.compareTo(const Duration(minutes: 5)) > 0) {
-              // this message is more than five minutes after the last message so
-              // insert a timestamp.
-              // TODO: reenable this with better separator placement.
-              // _messages.add(SeparatorModel(event.model.timestamp));
-              _messages.add(event.model);
-              _tts?.say(event.model);
-            } else {
-              // this message is in order, so we can just append it
-              _messages.add(event.model);
-              _tts?.say(event.model);
-            }
+            _messages.insert(index, event.model);
           } else {
             _messages.add(event.model);
             _tts?.say(event.model);
