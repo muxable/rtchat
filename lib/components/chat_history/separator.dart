@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:rtchat/models/messages/message.dart';
 
 class SeparatorWidget extends StatelessWidget {
-  final SeparatorModel model;
+  final DateTime timestamp;
   final format = DateFormat();
 
-  SeparatorWidget(this.model, {super.key});
+  SeparatorWidget(this.timestamp, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +13,7 @@ class SeparatorWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Center(
         child: Text(
-          format.format(model.timestamp),
+          format.format(timestamp),
           style: Theme.of(context).textTheme.caption,
         ),
       ),
