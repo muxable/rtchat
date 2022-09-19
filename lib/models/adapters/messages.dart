@@ -47,6 +47,12 @@ class ClearDeltaEvent extends DeltaEvent {
   });
 }
 
+// this is a sentinel event to indicate that the messages that follow are
+// live messages.
+class LiveStateDeltaEvent extends DeltaEvent {
+  const LiveStateDeltaEvent();
+}
+
 DeltaEvent? _toDeltaEvent(
     List<Emote> emotes, DocumentChange<Map<String, dynamic>> change) {
   final data = change.doc.data();
@@ -301,40 +307,49 @@ class MessagesAdapter {
     });
   }
 
-  Stream<DeltaEvent> forChannel(Channel channel) async* {
-    await subscribe(channel);
-    final emotes = await getEmotes(channel);
+  Stream<DeltaEvent> forChannel(Channel channel) {
+    subscribe(channel);
+    final emotes = getEmotes(channel);
     var lastAdTimestamp = DateTime.now();
     var lastAdMessageCount = 0;
-    yield* db
+    var isInitialSnapshot = true;
+    return db
         .collection("messages")
         .where("channelId", isEqualTo: channel.toString())
         .orderBy("timestamp")
         .limitToLast(250)
         .snapshots()
-        .expand((event) => event.docChanges)
-        .where((change) => change.type == DocumentChangeType.added)
-        .expand((change) sync* {
-      try {
-        final event = _toDeltaEvent(emotes, change);
-        if (event != null) {
-          yield event;
-          lastAdMessageCount++;
+        .asyncExpand((snapshot) async* {
+      final changes = snapshot.docChanges
+          .where((change) => change.type == DocumentChangeType.added);
+      for (final change in changes) {
+        try {
+          final event = _toDeltaEvent(await emotes, change);
+          if (event != null) {
+            yield event;
+            lastAdMessageCount++;
+          }
+        } catch (e, st) {
+          // send this report immediately.
+          FirebaseCrashlytics.instance.recordError(e, st, fatal: true);
         }
-      } catch (e, st) {
-        // send this report immediately.
-        FirebaseCrashlytics.instance.recordError(e, st, fatal: true);
+        // if there have been at least five minutes since the last ad, show one.
+        if (DateTime.now().difference(lastAdTimestamp) >
+                (kDebugMode
+                    ? const Duration(seconds: 1)
+                    : const Duration(minutes: 5)) &&
+            // ensure that there are also at least 50 messages in between ads.
+            lastAdMessageCount > 50 &&
+            !isInitialSnapshot) {
+          lastAdTimestamp = DateTime.now();
+          lastAdMessageCount = 0;
+          yield AppendDeltaEvent(
+              AdMessageModel(adId: AdHelper.chatHistoryAdId));
+        }
       }
-      // if there have been at least five minutes since the last ad, show one.
-      if (DateTime.now().difference(lastAdTimestamp) >
-              (kDebugMode
-                  ? const Duration(seconds: 1)
-                  : const Duration(minutes: 5)) &&
-          // ensure that there are also at least 50 messages in between ads.
-          lastAdMessageCount > 50) {
-        lastAdTimestamp = DateTime.now();
-        lastAdMessageCount = 0;
-        yield AppendDeltaEvent(AdMessageModel(adId: AdHelper.chatHistoryAdId));
+      if (isInitialSnapshot) {
+        isInitialSnapshot = false;
+        yield const LiveStateDeltaEvent();
       }
     });
   }
