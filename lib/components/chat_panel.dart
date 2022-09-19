@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/chat_history/separator.dart';
 import 'package:rtchat/components/connection_status.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/pinnable/reverse_refresh_indicator.dart';
@@ -288,8 +289,24 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                     controller: _controller,
                     itemBuilder: (index) => StyleModelTheme(
                         key: Key(messages[index].messageId),
-                        child: ChatHistoryMessage(
-                            message: messages[index], channel: widget.channel)),
+                        child: Builder(builder: (context) {
+                          final message = messages[index];
+                          final messageWidget = ChatHistoryMessage(
+                              message: message, channel: widget.channel);
+                          final showSeparator = messagesModel.separators
+                              .contains(messages.length - index - 1);
+                          // only show separators after the first 50.
+                          if (showSeparator && index > 50) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SeparatorWidget(message.timestamp),
+                                messageWidget
+                              ],
+                            );
+                          }
+                          return messageWidget;
+                        })),
                     findChildIndexCallback: (key) => messages
                         .indexWhere((element) => key == Key(element.messageId)),
                     isPinnedBuilder: (index) {
