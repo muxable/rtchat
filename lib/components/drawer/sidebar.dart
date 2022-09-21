@@ -37,11 +37,14 @@ class _DrawerHeader extends StatelessWidget {
                       },
                       child: Row(children: [
                         if (userChannel != null)
-                          CircleAvatar(
-                            backgroundImage: ResilientNetworkImage(
+                          ClipRRect(
+                              borderRadius: BorderRadius.circular(24),
+                              child: FadeInImage(
+                                  placeholder: MemoryImage(kTransparentImage),
+                                  image: ResilientNetworkImage(
                                 userChannel.profilePictureUrl),
-                            backgroundColor: Colors.transparent,
-                          ),
+                                  height: 36,
+                                  width: 36)),
                         const SizedBox(width: 16),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
