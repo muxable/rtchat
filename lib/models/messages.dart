@@ -10,6 +10,7 @@ import 'package:rtchat/models/tts.dart';
 
 class MessagesModel extends ChangeNotifier {
   StreamSubscription<void>? _subscription;
+  List<DeltaEvent> _events = [];
   List<MessageModel> _messages = [];
   int? _initialMessageCount;
   Channel? _channel;
@@ -25,6 +26,7 @@ class MessagesModel extends ChangeNotifier {
     }
     _channel = channel;
     _messages = [];
+    _events = [];
     _tts?.enabled = false;
     notifyListeners();
 
@@ -33,13 +35,14 @@ class MessagesModel extends ChangeNotifier {
       _initialMessageCount = null;
       _subscription =
           MessagesAdapter.instance.forChannel(channel).listen((event) {
+        _events.add(event);
         if (event is AppendDeltaEvent) {
           // check if this event comes after the last message
           if (_messages.isNotEmpty &&
               event.model.timestamp.isBefore(_messages.last.timestamp)) {
-              // this message is out of order, so we need to insert it in the right place
-              final index = _messages.indexWhere((element) =>
-                  element.timestamp.isAfter(event.model.timestamp));
+            // this message is out of order, so we need to insert it in the right place
+            final index = _messages.indexWhere(
+                (element) => element.timestamp.isAfter(event.model.timestamp));
             _messages.insert(index, event.model);
           } else {
             _messages.add(event.model);
@@ -75,6 +78,60 @@ class MessagesModel extends ChangeNotifier {
 
   bool get hasLiveMessages =>
       _initialMessageCount != null && _messages.length > _initialMessageCount!;
+
+  Future<void> pullMoreMessages() async {
+    final channel = _channel;
+    if (channel == null) {
+      return;
+    }
+    final futureEvents = _events; // this prevents a race.
+    final events = await MessagesAdapter.instance
+        .forChannelHistory(channel, _events.first.timestamp);
+    List<MessageModel> messages = []; // rebuild a new message set.
+    _events = [...events, ...futureEvents];
+    for (final event in _events) {
+      // reproduce the message set
+      if (event is AppendDeltaEvent) {
+        // check if this event comes after the last message
+        if (messages.isNotEmpty &&
+            event.model.timestamp.isBefore(messages.last.timestamp)) {
+          // this message is out of order, so we need to insert it in the right place
+          final index = messages.indexWhere(
+              (element) => element.timestamp.isAfter(event.model.timestamp));
+          messages.insert(index, event.model);
+        } else {
+          messages.add(event.model);
+        }
+      } else if (event is UpdateDeltaEvent) {
+        for (var i = 0; i < messages.length; i++) {
+          final message = messages[i];
+          if (message.messageId == event.messageId) {
+            messages[i] = event.update(message);
+          }
+        }
+      } else if (event is ClearDeltaEvent) {
+        messages = [
+          ChatClearedEventModel(
+            messageId: event.messageId,
+            timestamp: event.timestamp,
+          )
+        ];
+      } else if (event is LiveStateDeltaEvent) {
+        _initialMessageCount = messages.length;
+      }
+    }
+    _messages = messages;
+    notifyListeners();
+  }
+
+  void pruneMessages() {
+    // this doesn't need to notify because it has no impact on the UI
+    if (_messages.length > 1000) {
+      _messages.removeRange(0, _messages.length - 1000);
+      _events.removeWhere(
+          (element) => element.timestamp.isBefore(_messages.first.timestamp));
+    }
+  }
 
   set tts(TtsModel? tts) {
     // ignore if no update

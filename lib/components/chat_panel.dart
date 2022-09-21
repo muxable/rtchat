@@ -207,6 +207,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
   MessageModel? _pauseAt;
   MessageModel? _lastMessage;
   var _atBottom = true;
+  var _refreshPending = false;
+  var _showScrollNotification = true;
 
   @override
   void initState() {
@@ -222,7 +224,28 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     super.dispose();
   }
 
-  void updateScrollPosition() {
+  void updateScrollPosition() async {
+    if (_controller.position.maxScrollExtent - _controller.offset < 100) {
+      if (_refreshPending) {
+        return;
+      }
+      _refreshPending = true;
+      final model = Provider.of<MessagesModel>(context, listen: false);
+      final messenger = ScaffoldMessenger.of(context);
+      await model.pullMoreMessages();
+      _refreshPending = false;
+      if (_showScrollNotification && model.messages.length > 5000) {
+        messenger.showSnackBar(SnackBar(
+          content: const Text('You\'re scrolling kinda far, don\'t you think?'),
+          action: SnackBarAction(
+            label: 'stfu',
+            onPressed: () {
+              _showScrollNotification = false;
+            },
+          ),
+        ));
+      }
+    }
     final value = _controller.position.atEdge && _controller.offset == 0;
     if (_atBottom != value) {
       setState(() {
@@ -268,6 +291,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
             if (index != -1) {
               messages = messages.sublist(index);
             }
+          } else {
+            messagesModel.pruneMessages();
           }
           final expirations = messages
               .map((message) => _getExpiration(
@@ -311,11 +336,16 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
         }),
         _ScrollToBottomWidget(
           show: !_atBottom,
-          onPressed: () {
+          onPressed: () async {
             updateScrollPosition();
-            _controller.animateTo(0,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut);
+            if (_controller.offset < 2500) {
+              await _controller.animateTo(0,
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut);
+            } else {
+              // jump instead, it's a better user experience.
+              _controller.jumpTo(0);
+            }
           },
         ),
         const ConnectionStatusWidget(),
