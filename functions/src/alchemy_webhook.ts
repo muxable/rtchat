@@ -107,6 +107,7 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
       type: "realtimecash.donation",
       notificationType: notification.type,
       activity: activity,
+      timestamp: new Date(),
     });
     functions.logger.info("Payload is stored in messages collection");
   }
