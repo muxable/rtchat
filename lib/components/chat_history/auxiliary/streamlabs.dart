@@ -10,6 +10,7 @@ class StreamlabsDonationEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final boldStyle = Theme.of(context).textTheme.subtitle2;
+    final message = model.message;
     return DecoratedEventWidget.avatar(
       avatar: const AssetImage("assets/streamlabs.png"),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -23,8 +24,8 @@ class StreamlabsDonationEventWidget extends StatelessWidget {
             ],
           ),
         ),
-        if (model.message != null)
-          Text.rich(TextSpan(text: model.message),
+        if (message != null && message.isNotEmpty)
+          Text.rich(TextSpan(text: message),
               style: const TextStyle(fontStyle: FontStyle.italic)),
       ]),
     );

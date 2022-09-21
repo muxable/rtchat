@@ -226,6 +226,18 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
   }
 
   @override
+  void didUpdateWidget(ChatPanelWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.channel != widget.channel) {
+      _controller.jumpTo(0);
+      setState(() {
+        _atBottom = true;
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
 
