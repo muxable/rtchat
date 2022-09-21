@@ -66,6 +66,9 @@ async function storeDonation(
     .limit(1)
     .get();
 
+  if (addressDoc.empty) {
+    functions.logger.error(`No userId found for address ${activity.toAddress}`);
+  }
   const userId = addressDoc.docs[0].id;
   functions.logger.info("UserId obtained", { userId: userId });
 
