@@ -63,7 +63,7 @@ class _StreamPreviewState extends State<StreamPreview> {
   void didUpdateWidget(StreamPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
     final newUrl =
-        'https://player.twitch.tv/?channel=${widget.channelDisplayName}&controls=false&parent=chat.rtirl.com&muted=false';
+        'https://player.twitch.tv/?channel=${widget.channelDisplayName}&controls=false&parent=chat.rtirl.com&muted=true';
     if (url != newUrl && _controller != null) {
       _controller!.loadUrl(newUrl);
       url = newUrl;
@@ -75,7 +75,7 @@ class _StreamPreviewState extends State<StreamPreview> {
     return Stack(children: [
       WebView(
         initialUrl:
-            'https://player.twitch.tv/?channel=${widget.channelDisplayName}&controls=false&parent=chat.rtirl.com&muted=false',
+            'https://player.twitch.tv/?channel=${widget.channelDisplayName}&controls=false&parent=chat.rtirl.com&muted=true',
         onWebViewCreated: (controller) {
           if (!mounted) {
             return;
@@ -92,6 +92,8 @@ class _StreamPreviewState extends State<StreamPreview> {
           final model = Provider.of<StreamPreviewModel>(context, listen: false);
           await controller.runJavascript(
               await rootBundle.loadString('assets/twitch-tunnel.js'));
+          // wait a second for twitch to catch up.
+          await Future.delayed(const Duration(seconds: 1));
           await _controller?.runJavascript("action(Actions.SetMuted, false)");
           await _controller?.runJavascript(
               "action(Actions.SetVolume, ${model.volume / 100})");
@@ -111,9 +113,12 @@ class _StreamPreviewState extends State<StreamPreview> {
               name: "Flutter",
               onMessageReceived: (message) {
                 try {
-                  final params = jsonDecode(message.message)["params"];
-                  if (params is Map && mounted) {
-                    setState(() => _playerState = params["playback"]);
+                  final data = jsonDecode(message.message);
+                  if (data is Map && data.containsKey('params')) {
+                    final params = data['params'];
+                    if (params is Map && mounted) {
+                      setState(() => _playerState = params["playback"]);
+                    }
                   }
                 } catch (e, st) {
                   FirebaseCrashlytics.instance.recordError(e, st);

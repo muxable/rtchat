@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -20,7 +21,6 @@ import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/messages/twitch/message_configuration.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
@@ -98,6 +98,7 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   bool _isDiscoModeRunning = false;
   Timer? _discoModeTimer;
+  final _player = AudioCache();
 
   @override
   Widget build(BuildContext context) {
@@ -134,13 +135,16 @@ class _AppState extends State<App> {
         ),
         ChangeNotifierProxyProvider2<UserModel, TtsModel, MessagesModel>(
           create: (context) {
-            final model = MessagesModel();
+            final model = MessagesModel.fromJson(
+              jsonDecode(widget.prefs.getString("message_config") ?? "{}"),
+            );
+            model.onMessagePing = () => _player.play('message-sound.wav');
             model.channel =
                 Provider.of<UserModel>(context, listen: false).activeChannel;
             model.tts = Provider.of<TtsModel>(context, listen: false);
             return model
               ..addListener(() {
-                if (model.messages.isNotEmpty) {
+                if (model.isLive && model.messages.isNotEmpty) {
                   final message = model.messages.last;
                   if (message is TwitchMessageModel &&
                       message.message == "!disco") {
@@ -151,6 +155,8 @@ class _AppState extends State<App> {
                     });
                   }
                 }
+                widget.prefs
+                    .setString("message_config", jsonEncode(model.toJson()));
               });
           },
           update: (context, userModel, ttsModel, model) {
@@ -182,15 +188,6 @@ class _AppState extends State<App> {
           return model
             ..addListener(() {
               widget.prefs.setString("commands", jsonEncode(model.toJson()));
-            });
-        }),
-        ChangeNotifierProvider(create: (context) {
-          final model = TwitchMessageConfig.fromJson(
-              jsonDecode(widget.prefs.getString("message_config") ?? "{}"));
-          return model
-            ..addListener(() {
-              widget.prefs
-                  .setString("message_config", jsonEncode(model.toJson()));
             });
         }),
         ChangeNotifierProvider(create: (context) {

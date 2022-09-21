@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/chat_history/separator.dart';
 import 'package:rtchat/components/connection_status.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/pinnable/reverse_refresh_indicator.dart';
@@ -17,7 +18,6 @@ import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/messages/twitch/message_configuration.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
@@ -87,7 +87,7 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
 DateTime? _getExpiration(
     MessageModel model,
     EventSubConfigurationModel eventSubConfigurationModel,
-    TwitchMessageConfig twitchMessageConfig) {
+    MessagesModel messagesModel) {
   if (model is TwitchRaidEventModel) {
     final raidEventConfig = eventSubConfigurationModel.raidEventConfig;
     return raidEventConfig.eventDuration > Duration.zero
@@ -153,8 +153,8 @@ DateTime? _getExpiration(
     return model.endTime.add(predictionEventConfig.eventDuration);
   } else if (model is TwitchMessageModel &&
       model.annotations.announcement != null) {
-    return twitchMessageConfig.announcementPinDuration > Duration.zero
-        ? model.timestamp.add(twitchMessageConfig.announcementPinDuration)
+    return messagesModel.announcementPinDuration > Duration.zero
+        ? model.timestamp.add(messagesModel.announcementPinDuration)
         : null;
   }
   return null;
@@ -163,9 +163,13 @@ DateTime? _getExpiration(
 class _ScrollToBottomWidget extends StatelessWidget {
   final bool show;
   final void Function() onPressed;
+  final Widget? child;
 
   const _ScrollToBottomWidget(
-      {Key? key, required this.show, required this.onPressed})
+      {Key? key,
+      required this.show,
+      required this.onPressed,
+      required this.child})
       : super(key: key);
 
   @override
@@ -179,10 +183,16 @@ class _ScrollToBottomWidget extends StatelessWidget {
             onPressed: onPressed,
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: const CircleBorder(),
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(32))),
               padding: const EdgeInsets.all(16),
             ),
-            child: const Icon(Icons.arrow_downward, color: Colors.white)),
+            child: Row(
+              children: [
+                const Icon(Icons.arrow_downward, color: Colors.white),
+                child ?? Container(),
+              ],
+            )),
       ),
     );
   }
@@ -208,6 +218,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
   MessageModel? _pauseAt;
   MessageModel? _lastMessage;
   var _atBottom = true;
+  var _refreshPending = false;
+  var _showScrollNotification = true;
 
   @override
   void initState() {
@@ -217,13 +229,46 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
   }
 
   @override
+  void didUpdateWidget(ChatPanelWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.channel != widget.channel) {
+      _controller.jumpTo(0);
+      setState(() {
+        _atBottom = true;
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
 
     super.dispose();
   }
 
-  void updateScrollPosition() {
+  void updateScrollPosition() async {
+    if (_controller.position.maxScrollExtent - _controller.offset < 100) {
+      if (_refreshPending) {
+        return;
+      }
+      _refreshPending = true;
+      final model = Provider.of<MessagesModel>(context, listen: false);
+      final messenger = ScaffoldMessenger.of(context);
+      await model.pullMoreMessages();
+      _refreshPending = false;
+      if (_showScrollNotification && model.messages.length > 5000) {
+        messenger.showSnackBar(SnackBar(
+          content: const Text('You\'re scrolling kinda far, don\'t you think?'),
+          action: SnackBarAction(
+            label: 'stfu',
+            onPressed: () {
+              _showScrollNotification = false;
+            },
+          ),
+        ));
+      }
+    }
     final value = _controller.position.atEdge && _controller.offset == 0;
     if (_atBottom != value) {
       setState(() {
@@ -238,10 +283,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     return Stack(
       alignment: AlignmentDirectional.topCenter,
       children: [
-        Consumer3<MessagesModel, EventSubConfigurationModel,
-                TwitchMessageConfig>(
-            builder: (context, messagesModel, eventSubConfigurationModel,
-                twitchMessageConfig, child) {
+        Consumer2<MessagesModel, EventSubConfigurationModel>(builder:
+            (context, messagesModel, eventSubConfigurationModel, child) {
           var messages = messagesModel.messages.reversed.toList();
           _lastMessage = messages.isEmpty ? null : messages.first;
           if (messages.isEmpty) {
@@ -266,61 +309,98 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
               },
             );
           }
+          var dropped = 0;
           if (_pauseAt != null) {
             final index = messages.indexOf(_pauseAt!);
             if (index != -1) {
+              dropped = index;
               messages = messages.sublist(index);
             }
+          } else {
+            messagesModel.pruneMessages();
           }
           final expirations = messages
               .map((message) => _getExpiration(
-                  message, eventSubConfigurationModel, twitchMessageConfig))
+                  message, eventSubConfigurationModel, messagesModel))
               .toList();
-          return RebuildableWidget(
-              rebuildAt: expirations.whereType<DateTime>().toSet(),
-              builder: (context) {
-                final now = DateTime.now();
-                final oneSecondAgo = now.subtract(const Duration(seconds: 1));
-                return ReverseRefreshIndicator(
-                  key: _refreshIndicatorKey,
-                  onRefresh: () =>
-                      MessagesAdapter.instance.subscribe(widget.channel),
-                  // Pull from top to show refresh indicator.
-                  child: PinnableMessageScrollView(
-                    vsync: this,
-                    controller: _controller,
-                    itemBuilder: (index) => StyleModelTheme(
-                        key: Key(messages[index].messageId),
-                        child: ChatHistoryMessage(
-                            message: messages[index], channel: widget.channel)),
-                    findChildIndexCallback: (key) => messages
-                        .indexWhere((element) => key == Key(element.messageId)),
-                    isPinnedBuilder: (index) {
-                      final expiration = expirations[index];
-                      if (expiration == null ||
-                          // if the message is too expired, it can't be pinned again.
-                          // note: we track unpinned separately to permit animations.
-                          expiration.isBefore(oneSecondAgo)) {
-                        return PinState.notPinnable;
-                      }
-                      return expiration.isAfter(now)
-                          ? PinState.pinned
-                          : PinState.unpinned;
-                    },
-                    count: messages.length,
-                  ),
-                );
-              });
+          return Stack(alignment: Alignment.topCenter, children: [
+            RebuildableWidget(
+                rebuildAt: expirations.whereType<DateTime>().toSet(),
+                builder: (context) {
+                  final now = DateTime.now();
+                  final oneSecondAgo = now.subtract(const Duration(seconds: 1));
+                  return ReverseRefreshIndicator(
+                    key: _refreshIndicatorKey,
+                    onRefresh: () =>
+                        MessagesAdapter.instance.subscribe(widget.channel),
+                    // Pull from top to show refresh indicator.
+                    child: PinnableMessageScrollView(
+                      vsync: this,
+                      controller: _controller,
+                      itemBuilder: (index) => StyleModelTheme(
+                          key: Key(messages[index].messageId),
+                          child: Builder(builder: (context) {
+                            final message = messages[index];
+                            final messageWidget = ChatHistoryMessage(
+                                message: message, channel: widget.channel);
+                            final showSeparator = messagesModel.separators
+                                .contains(messages.length - index - 1);
+                            // only show separators after the first 50.
+                            if (showSeparator && index > 50) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SeparatorWidget(message.timestamp),
+                                  messageWidget
+                                ],
+                              );
+                            }
+                            return messageWidget;
+                          })),
+                      findChildIndexCallback: (key) => messages.indexWhere(
+                          (element) => key == Key(element.messageId)),
+                      isPinnedBuilder: (index) {
+                        final expiration = expirations[index];
+                        if (expiration == null ||
+                            // if the message is too expired, it can't be pinned again.
+                            // note: we track unpinned separately to permit animations.
+                            expiration.isBefore(oneSecondAgo)) {
+                          return PinState.notPinnable;
+                        }
+                        return expiration.isAfter(now)
+                            ? PinState.pinned
+                            : PinState.unpinned;
+                      },
+                      count: messages.length,
+                    ),
+                  );
+                }),
+            _ScrollToBottomWidget(
+              show: !_atBottom,
+              onPressed: () async {
+                updateScrollPosition();
+                if (_controller.offset < 2500) {
+                  await _controller.animateTo(0,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut);
+                } else {
+                  // jump instead, it's a better user experience.
+                  _controller.jumpTo(0);
+                }
+              },
+              child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: dropped == 0 ? 0 : 150,
+                  child: dropped == 0
+                      ? null
+                      : Text(
+                          "$dropped new message${dropped == 1 ? '' : 's'}",
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                        )),
+            ),
+          ]);
         }),
-        _ScrollToBottomWidget(
-          show: !_atBottom,
-          onPressed: () {
-            updateScrollPosition();
-            _controller.animateTo(0,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut);
-          },
-        ),
         const ConnectionStatusWidget(),
       ],
     );

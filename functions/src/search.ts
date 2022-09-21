@@ -29,14 +29,15 @@ export const search = functions.https.onCall(async (data, context) => {
       const twitchJson = (await twitchResponse.json()) as any;
       return [
         ...(twitchJson.data || []).map((channel: any) => {
+          const imageUrl =
+            "https://rtirl.com/pfp.png?provider=twitch&channelId=" +
+            channel.user_id;
           return {
             provider: "twitch",
             channelId: channel.user_id,
             displayName: channel.user_name,
             isOnline: channel.type == "live",
-            imageUrl: channel.thumbnail_url
-              .replace("{width}", "300")
-              .replace("{height}", "300"),
+            imageUrl: imageUrl,
             title: `${channel.game_name} - ${channel.title}`,
             viewerCount: channel.viewer_count,
             language: channel.language,
@@ -68,9 +69,7 @@ export const search = functions.https.onCall(async (data, context) => {
         channelId: channel.id,
         displayName: channel.display_name,
         isOnline: channel.is_live,
-        imageUrl: channel.thumbnail_url
-          .replace("{width}", "300")
-          .replace("{height}", "300"),
+        imageUrl: channel.thumbnail_url,
         title: `${channel.game_name} - ${channel.title}`,
         viewerCount: channel.viewer_count,
         language: channel.language,
