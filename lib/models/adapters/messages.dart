@@ -307,6 +307,8 @@ class MessagesAdapter {
     });
   }
 
+  // List<DeltaEvent> forChannelHistory(Channel channel, )
+
   Stream<DeltaEvent> forChannel(Channel channel) {
     subscribe(channel);
     final emotes = getEmotes(channel);
