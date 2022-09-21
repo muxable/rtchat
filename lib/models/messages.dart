@@ -12,7 +12,8 @@ class MessagesModel extends ChangeNotifier {
   StreamSubscription<void>? _subscription;
   List<DeltaEvent> _events = [];
   List<MessageModel> _messages = [];
-  int? _initialMessageCount;
+  Function()? onMessagePing;
+  bool _isLive = false;
   Channel? _channel;
 
   // it's a bit odd to have this here, but tts only cares about the delta events
@@ -27,12 +28,12 @@ class MessagesModel extends ChangeNotifier {
     _channel = channel;
     _messages = [];
     _events = [];
+    _isLive = false;
     _tts?.enabled = false;
     notifyListeners();
 
     _subscription?.cancel();
     if (channel != null) {
-      _initialMessageCount = null;
       _subscription =
           MessagesAdapter.instance.forChannel(channel).listen((event) {
         _events.add(event);
@@ -47,6 +48,9 @@ class MessagesModel extends ChangeNotifier {
           } else {
             _messages.add(event.model);
             _tts?.say(event.model);
+            if (_isLive && shouldPing()) {
+              onMessagePing?.call();
+            }
           }
         } else if (event is UpdateDeltaEvent) {
           for (var i = 0; i < _messages.length; i++) {
@@ -67,7 +71,7 @@ class MessagesModel extends ChangeNotifier {
           ];
           _tts?.stop();
         } else if (event is LiveStateDeltaEvent) {
-          _initialMessageCount = _messages.length;
+          _isLive = true;
         }
         notifyListeners();
       });
@@ -76,8 +80,7 @@ class MessagesModel extends ChangeNotifier {
 
   List<MessageModel> get messages => _messages;
 
-  bool get hasLiveMessages =>
-      _initialMessageCount != null && _messages.length > _initialMessageCount!;
+  bool get isLive => _isLive;
 
   Future<void> pullMoreMessages() async {
     final channel = _channel;
@@ -116,8 +119,6 @@ class MessagesModel extends ChangeNotifier {
             timestamp: event.timestamp,
           )
         ];
-      } else if (event is LiveStateDeltaEvent) {
-        _initialMessageCount = messages.length;
       }
     }
     _messages = messages;

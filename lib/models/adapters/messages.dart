@@ -378,7 +378,9 @@ class MessagesAdapter {
               AdMessageModel(adId: AdHelper.chatHistoryAdId));
         }
       }
-      if (isInitialSnapshot) {
+      if (isInitialSnapshot &&
+          changes.isNotEmpty &&
+          !snapshot.metadata.isFromCache) {
         isInitialSnapshot = false;
         yield LiveStateDeltaEvent(DateTime.now());
       }
