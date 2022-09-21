@@ -218,6 +218,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
   MessageModel? _pauseAt;
   MessageModel? _lastMessage;
   var _atBottom = true;
+  var _refreshPending = false;
+  var _showScrollNotification = true;
 
   @override
   void initState() {
@@ -245,7 +247,28 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     super.dispose();
   }
 
-  void updateScrollPosition() {
+  void updateScrollPosition() async {
+    if (_controller.position.maxScrollExtent - _controller.offset < 100) {
+      if (_refreshPending) {
+        return;
+      }
+      _refreshPending = true;
+      final model = Provider.of<MessagesModel>(context, listen: false);
+      final messenger = ScaffoldMessenger.of(context);
+      await model.pullMoreMessages();
+      _refreshPending = false;
+      if (_showScrollNotification && model.messages.length > 5000) {
+        messenger.showSnackBar(SnackBar(
+          content: const Text('You\'re scrolling kinda far, don\'t you think?'),
+          action: SnackBarAction(
+            label: 'stfu',
+            onPressed: () {
+              _showScrollNotification = false;
+            },
+          ),
+        ));
+      }
+    }
     final value = _controller.position.atEdge && _controller.offset == 0;
     if (_atBottom != value) {
       setState(() {
@@ -293,6 +316,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
               dropped = index;
               messages = messages.sublist(index);
             }
+          } else {
+            messagesModel.pruneMessages();
           }
           final expirations = messages
               .map((message) => _getExpiration(
@@ -300,63 +325,68 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
               .toList();
           return Stack(alignment: Alignment.topCenter, children: [
             RebuildableWidget(
-              rebuildAt: expirations.whereType<DateTime>().toSet(),
-              builder: (context) {
-                final now = DateTime.now();
-                final oneSecondAgo = now.subtract(const Duration(seconds: 1));
-                return ReverseRefreshIndicator(
-                  key: _refreshIndicatorKey,
-                  onRefresh: () =>
-                      MessagesAdapter.instance.subscribe(widget.channel),
-                  // Pull from top to show refresh indicator.
-                  child: PinnableMessageScrollView(
-                    vsync: this,
-                    controller: _controller,
-                    itemBuilder: (index) => StyleModelTheme(
-                        key: Key(messages[index].messageId),
-                        child: Builder(builder: (context) {
-                          final message = messages[index];
-                          final messageWidget = ChatHistoryMessage(
-                              message: message, channel: widget.channel);
-                          final showSeparator = messagesModel.separators
-                              .contains(messages.length - index - 1);
-                          // only show separators after the first 50.
-                          if (showSeparator && index > 50) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SeparatorWidget(message.timestamp),
-                                messageWidget
-                              ],
-                            );
-                          }
-                          return messageWidget;
-                        })),
-                    findChildIndexCallback: (key) => messages
-                        .indexWhere((element) => key == Key(element.messageId)),
-                    isPinnedBuilder: (index) {
-                      final expiration = expirations[index];
-                      if (expiration == null ||
-                          // if the message is too expired, it can't be pinned again.
-                          // note: we track unpinned separately to permit animations.
-                          expiration.isBefore(oneSecondAgo)) {
-                        return PinState.notPinnable;
-                      }
-                      return expiration.isAfter(now)
-                          ? PinState.pinned
-                          : PinState.unpinned;
-                    },
-                    count: messages.length,
-                  ),
+                rebuildAt: expirations.whereType<DateTime>().toSet(),
+                builder: (context) {
+                  final now = DateTime.now();
+                  final oneSecondAgo = now.subtract(const Duration(seconds: 1));
+                  return ReverseRefreshIndicator(
+                    key: _refreshIndicatorKey,
+                    onRefresh: () =>
+                        MessagesAdapter.instance.subscribe(widget.channel),
+                    // Pull from top to show refresh indicator.
+                    child: PinnableMessageScrollView(
+                      vsync: this,
+                      controller: _controller,
+                      itemBuilder: (index) => StyleModelTheme(
+                          key: Key(messages[index].messageId),
+                          child: Builder(builder: (context) {
+                            final message = messages[index];
+                            final messageWidget = ChatHistoryMessage(
+                                message: message, channel: widget.channel);
+                            final showSeparator = messagesModel.separators
+                                .contains(messages.length - index - 1);
+                            // only show separators after the first 50.
+                            if (showSeparator && index > 50) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SeparatorWidget(message.timestamp),
+                                  messageWidget
+                                ],
+                              );
+                            }
+                            return messageWidget;
+                          })),
+                      findChildIndexCallback: (key) => messages.indexWhere(
+                          (element) => key == Key(element.messageId)),
+                      isPinnedBuilder: (index) {
+                        final expiration = expirations[index];
+                        if (expiration == null ||
+                            // if the message is too expired, it can't be pinned again.
+                            // note: we track unpinned separately to permit animations.
+                            expiration.isBefore(oneSecondAgo)) {
+                          return PinState.notPinnable;
+                        }
+                        return expiration.isAfter(now)
+                            ? PinState.pinned
+                            : PinState.unpinned;
+                      },
+                      count: messages.length,
+                    ),
                   );
                 }),
-        _ScrollToBottomWidget(
+            _ScrollToBottomWidget(
               show: !_atBottom,
-              onPressed: () {
+              onPressed: () async {
                 updateScrollPosition();
-                _controller.animateTo(0,
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeInOut);
+                if (_controller.offset < 2500) {
+                  await _controller.animateTo(0,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut);
+                } else {
+                  // jump instead, it's a better user experience.
+                  _controller.jumpTo(0);
+                }
               },
               child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
