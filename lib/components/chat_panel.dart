@@ -324,41 +324,42 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
               .toList();
           return Stack(alignment: Alignment.topCenter, children: [
             RebuildableWidget(
-              rebuildAt: expirations.whereType<DateTime>().toSet(),
-              builder: (context) {
-                final now = DateTime.now();
-                final oneSecondAgo = now.subtract(const Duration(seconds: 1));
-                return ReverseRefreshIndicator(
-                  key: _refreshIndicatorKey,
-                  onRefresh: () =>
-                      MessagesAdapter.instance.subscribe(widget.channel),
-                  // Pull from top to show refresh indicator.
-                  child: PinnableMessageScrollView(
-                    vsync: this,
-                    controller: _controller,
-                    itemBuilder: (index) => StyleModelTheme(
-                        key: Key(messages[index].messageId),
-                        child: ChatHistoryMessage(
-                            message: messages[index], channel: widget.channel)),
-                    findChildIndexCallback: (key) => messages
-                        .indexWhere((element) => key == Key(element.messageId)),
-                    isPinnedBuilder: (index) {
-                      final expiration = expirations[index];
-                      if (expiration == null ||
-                          // if the message is too expired, it can't be pinned again.
-                          // note: we track unpinned separately to permit animations.
-                          expiration.isBefore(oneSecondAgo)) {
-                        return PinState.notPinnable;
-                      }
-                      return expiration.isAfter(now)
-                          ? PinState.pinned
-                          : PinState.unpinned;
-                    },
-                    count: messages.length,
-                  ),
+                rebuildAt: expirations.whereType<DateTime>().toSet(),
+                builder: (context) {
+                  final now = DateTime.now();
+                  final oneSecondAgo = now.subtract(const Duration(seconds: 1));
+                  return ReverseRefreshIndicator(
+                    key: _refreshIndicatorKey,
+                    onRefresh: () =>
+                        MessagesAdapter.instance.subscribe(widget.channel),
+                    // Pull from top to show refresh indicator.
+                    child: PinnableMessageScrollView(
+                      vsync: this,
+                      controller: _controller,
+                      itemBuilder: (index) => StyleModelTheme(
+                          key: Key(messages[index].messageId),
+                          child: ChatHistoryMessage(
+                              message: messages[index],
+                              channel: widget.channel)),
+                      findChildIndexCallback: (key) => messages.indexWhere(
+                          (element) => key == Key(element.messageId)),
+                      isPinnedBuilder: (index) {
+                        final expiration = expirations[index];
+                        if (expiration == null ||
+                            // if the message is too expired, it can't be pinned again.
+                            // note: we track unpinned separately to permit animations.
+                            expiration.isBefore(oneSecondAgo)) {
+                          return PinState.notPinnable;
+                        }
+                        return expiration.isAfter(now)
+                            ? PinState.pinned
+                            : PinState.unpinned;
+                      },
+                      count: messages.length,
+                    ),
                   );
                 }),
-        _ScrollToBottomWidget(
+            _ScrollToBottomWidget(
               show: !_atBottom,
               onPressed: () async {
                 updateScrollPosition();
