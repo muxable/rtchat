@@ -163,9 +163,13 @@ DateTime? _getExpiration(
 class _ScrollToBottomWidget extends StatelessWidget {
   final bool show;
   final void Function() onPressed;
+  final Widget? child;
 
   const _ScrollToBottomWidget(
-      {Key? key, required this.show, required this.onPressed})
+      {Key? key,
+      required this.show,
+      required this.onPressed,
+      required this.child})
       : super(key: key);
 
   @override
@@ -179,10 +183,16 @@ class _ScrollToBottomWidget extends StatelessWidget {
             onPressed: onPressed,
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: const CircleBorder(),
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(32))),
               padding: const EdgeInsets.all(16),
             ),
-            child: const Icon(Icons.arrow_downward, color: Colors.white)),
+            child: Row(
+              children: [
+                const Icon(Icons.arrow_downward, color: Colors.white),
+                child ?? Container(),
+              ],
+            )),
       ),
     );
   }
@@ -214,6 +224,18 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     super.initState();
 
     _controller.addListener(updateScrollPosition);
+  }
+
+  @override
+  void didUpdateWidget(ChatPanelWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.channel != widget.channel) {
+      _controller.jumpTo(0);
+      setState(() {
+        _atBottom = true;
+      });
+    }
   }
 
   @override
@@ -264,9 +286,11 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
               },
             );
           }
+          var dropped = 0;
           if (_pauseAt != null) {
             final index = messages.indexOf(_pauseAt!);
             if (index != -1) {
+              dropped = index;
               messages = messages.sublist(index);
             }
           }
@@ -274,7 +298,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
               .map((message) => _getExpiration(
                   message, eventSubConfigurationModel, messagesModel))
               .toList();
-          return RebuildableWidget(
+          return Stack(alignment: Alignment.topCenter, children: [
+            RebuildableWidget(
               rebuildAt: expirations.whereType<DateTime>().toSet(),
               builder: (context) {
                 final now = DateTime.now();
@@ -323,18 +348,29 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                     },
                     count: messages.length,
                   ),
-                );
-              });
-        }),
+                  );
+                }),
         _ScrollToBottomWidget(
-          show: !_atBottom,
-          onPressed: () {
-            updateScrollPosition();
-            _controller.animateTo(0,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut);
-          },
-        ),
+              show: !_atBottom,
+              onPressed: () {
+                updateScrollPosition();
+                _controller.animateTo(0,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut);
+              },
+              child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: dropped == 0 ? 0 : 150,
+                  child: dropped == 0
+                      ? null
+                      : Text(
+                          "$dropped new message${dropped == 1 ? '' : 's'}",
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                        )),
+            ),
+          ]);
+        }),
         const ConnectionStatusWidget(),
       ],
     );
