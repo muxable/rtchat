@@ -90,6 +90,9 @@ class MessagesModel extends ChangeNotifier {
     final futureEvents = _events; // this prevents a race.
     final events = await MessagesAdapter.instance
         .forChannelHistory(channel, _events.first.timestamp);
+    if (events.isEmpty) {
+      return;
+    }
     List<MessageModel> messages = []; // rebuild a new message set.
     _events = [...events, ...futureEvents];
     for (final event in _events) {
