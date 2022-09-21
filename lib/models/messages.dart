@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:core';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/adapters/messages.dart';
@@ -12,6 +13,7 @@ class MessagesModel extends ChangeNotifier {
   StreamSubscription<void>? _subscription;
   List<DeltaEvent> _events = [];
   List<MessageModel> _messages = [];
+  Set<int> _separators = {};
   Function()? onMessagePing;
   bool _isLive = false;
   Channel? _channel;
@@ -27,6 +29,7 @@ class MessagesModel extends ChangeNotifier {
     }
     _channel = channel;
     _messages = [];
+    _separators = {};
     _events = [];
     _isLive = false;
     _tts?.enabled = false;
@@ -52,6 +55,26 @@ class MessagesModel extends ChangeNotifier {
               onMessagePing?.call();
             }
           }
+          // check to see if we should add a separator
+          // always add if it's the first message.
+          if (_messages.length == 1) {
+            _separators.add(0);
+          } else {
+            final lastSeparator =
+                _separators.isEmpty ? 0 : _separators.reduce(max);
+            // add if the last separator was at least 50 away and this was a
+            // chat message.
+            if (_messages.length - lastSeparator >= 50 &&
+                event.model is TwitchMessageModel) {
+              _separators.add(_messages.length - 1);
+            }
+            // add if the difference between this message and the last message
+            // is more than 5 minutes.
+            final cmp = _messages[_messages.length - 2];
+            if (event.model.timestamp.difference(cmp.timestamp).inMinutes > 5) {
+              _separators.add(_messages.length - 1);
+            }
+          }
         } else if (event is UpdateDeltaEvent) {
           for (var i = 0; i < _messages.length; i++) {
             final message = _messages[i];
@@ -69,6 +92,7 @@ class MessagesModel extends ChangeNotifier {
               timestamp: event.timestamp,
             )
           ];
+          _separators = {};
           _tts?.stop();
         } else if (event is LiveStateDeltaEvent) {
           _isLive = true;
@@ -79,6 +103,8 @@ class MessagesModel extends ChangeNotifier {
   }
 
   List<MessageModel> get messages => _messages;
+
+  Set<int> get separators => _separators;
 
   bool get isLive => _isLive;
 
