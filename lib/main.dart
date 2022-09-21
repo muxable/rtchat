@@ -138,12 +138,13 @@ class _AppState extends State<App> {
             final model = MessagesModel.fromJson(
               jsonDecode(widget.prefs.getString("message_config") ?? "{}"),
             );
+            model.onMessagePing = () => _player.play('message-sound.wav');
             model.channel =
                 Provider.of<UserModel>(context, listen: false).activeChannel;
             model.tts = Provider.of<TtsModel>(context, listen: false);
             return model
               ..addListener(() {
-                if (model.hasLiveMessages) {
+                if (model.isLive && model.messages.isNotEmpty) {
                   final message = model.messages.last;
                   if (message is TwitchMessageModel &&
                       message.message == "!disco") {
@@ -152,9 +153,6 @@ class _AppState extends State<App> {
                     _discoModeTimer = Timer(const Duration(seconds: 5), () {
                       setState(() => _isDiscoModeRunning = false);
                     });
-                  }
-                  if (model.shouldPing()) {
-                    _player.play('message-sound.wav');
                   }
                 }
                 widget.prefs

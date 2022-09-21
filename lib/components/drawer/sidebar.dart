@@ -37,11 +37,14 @@ class _DrawerHeader extends StatelessWidget {
                       },
                       child: Row(children: [
                         if (userChannel != null)
-                          CircleAvatar(
-                            backgroundImage: ResilientNetworkImage(
+                          ClipRRect(
+                              borderRadius: BorderRadius.circular(24),
+                              child: FadeInImage(
+                                  placeholder: MemoryImage(kTransparentImage),
+                                  image: ResilientNetworkImage(
                                 userChannel.profilePictureUrl),
-                            backgroundColor: Colors.transparent,
-                          ),
+                                  height: 36,
+                                  width: 36)),
                         const SizedBox(width: 16),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -152,8 +155,9 @@ class _SidebarState extends State<Sidebar> {
       Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         if (!layoutModel.locked) {
           return ListTile(
-            leading: const Icon(Icons.lock_open_outlined),
-            title: const Text("Lock interaction"),
+            leading: const Icon(Icons.thunderstorm),
+            title: const Text("Enable rain mode"),
+            subtitle: const Text("Interaction will be disabled"),
             onTap: () async {
               layoutModel.locked = !layoutModel.locked;
               Navigator.pop(context);
@@ -161,8 +165,9 @@ class _SidebarState extends State<Sidebar> {
           );
         }
         return ListTile(
-          leading: const Icon(Icons.lock_outline),
-          title: const Text("Unlock interaction"),
+          leading: const Icon(Icons.thunderstorm),
+          title: const Text("Disable rain mode"),
+          subtitle: const Text("Interaction will be enabled"),
           onTap: () async {
             layoutModel.locked = !layoutModel.locked;
             Navigator.pop(context);

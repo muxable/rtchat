@@ -21,41 +21,43 @@ import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
 abstract class DeltaEvent {
-  const DeltaEvent();
+  final DateTime timestamp;
+
+  const DeltaEvent(this.timestamp);
 }
 
 class AppendDeltaEvent extends DeltaEvent {
   final MessageModel model;
 
-  const AppendDeltaEvent(this.model);
+  AppendDeltaEvent(this.model) : super(model.timestamp);
 }
 
 class UpdateDeltaEvent extends DeltaEvent {
   final String messageId;
   final MessageModel Function(MessageModel) update;
 
-  const UpdateDeltaEvent(this.messageId, this.update);
+  const UpdateDeltaEvent(this.messageId, DateTime timestamp, this.update)
+      : super(timestamp);
 }
 
 class ClearDeltaEvent extends DeltaEvent {
   final String messageId;
-  final DateTime timestamp;
 
   const ClearDeltaEvent({
     required this.messageId,
-    required this.timestamp,
-  });
+    required DateTime timestamp,
+  }) : super(timestamp);
 }
 
 // this is a sentinel event to indicate that the messages that follow are
 // live messages.
 class LiveStateDeltaEvent extends DeltaEvent {
-  const LiveStateDeltaEvent();
+  const LiveStateDeltaEvent(DateTime timestamp) : super(timestamp);
 }
 
 DeltaEvent? _toDeltaEvent(
-    List<Emote> emotes, DocumentChange<Map<String, dynamic>> change) {
-  final data = change.doc.data();
+    List<Emote> emotes, DocumentSnapshot<Map<String, dynamic>> doc) {
+  final data = doc.data();
   if (data == null) {
     return null;
   }
@@ -83,7 +85,7 @@ DeltaEvent? _toDeltaEvent(
           : null;
 
       final model = TwitchMessageModel(
-          messageId: change.doc.id,
+          messageId: doc.id,
           author: author,
           message: message,
           reply: reply,
@@ -97,7 +99,8 @@ DeltaEvent? _toDeltaEvent(
 
       return AppendDeltaEvent(model);
     case "messagedeleted":
-      return UpdateDeltaEvent(data['messageId'], (message) {
+      return UpdateDeltaEvent(data['messageId'], data['timestamp'].toDate(),
+          (message) {
         if (message is! TwitchMessageModel) {
           return message;
         }
@@ -115,7 +118,7 @@ DeltaEvent? _toDeltaEvent(
       });
     case "channel.raid":
       final model = TwitchRaidEventModel(
-          messageId: change.doc.id,
+          messageId: doc.id,
           from: TwitchUserModel(
               userId: data['event']['from_broadcaster_user_id'],
               login: data['event']['from_broadcaster_user_login'],
@@ -125,7 +128,7 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "clear":
       return ClearDeltaEvent(
-        messageId: change.doc.id,
+        messageId: doc.id,
         timestamp: data['timestamp'].toDate(),
       );
     case "host":
@@ -135,7 +138,7 @@ DeltaEvent? _toDeltaEvent(
       }
       final hosterInfo = data['hosterChannelId'].split(':');
       final model = TwitchHostEventModel(
-          messageId: change.doc.id,
+          messageId: doc.id,
           from: TwitchUserModel(
               userId: hosterInfo[1],
               login: data['displayName'],
@@ -146,7 +149,7 @@ DeltaEvent? _toDeltaEvent(
     case "channel.subscribe":
       final model = TwitchSubscriptionEventModel(
           timestamp: data['timestamp'].toDate(),
-          messageId: change.doc.id,
+          messageId: doc.id,
           subscriberUserName: data['event']['user_name'],
           isGift: data['event']['is_gift'],
           tier: data['event']['tier']);
@@ -159,7 +162,7 @@ DeltaEvent? _toDeltaEvent(
 
       final model = TwitchSubscriptionGiftEventModel(
           timestamp: data['timestamp'].toDate(),
-          messageId: change.doc.id,
+          messageId: doc.id,
           gifterUserName: gifterName,
           tier: data['event']['tier'],
           total: data['event']['total'],
@@ -169,7 +172,7 @@ DeltaEvent? _toDeltaEvent(
     case "channel.subscription.message":
       final model = TwitchSubscriptionMessageEventModel(
           timestamp: data['timestamp'].toDate(),
-          messageId: change.doc.id,
+          messageId: doc.id,
           subscriberUserName: data['event']['user_name'],
           tier: data['event']['tier'],
           streakMonths: data['event']['streak_months'],
@@ -180,28 +183,30 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "channel.follow":
       return AppendDeltaEvent(
-          TwitchFollowEventModel.fromDocumentData(change.doc.id, data));
+          TwitchFollowEventModel.fromDocumentData(doc.id, data));
     case "channel.cheer":
       final model = TwitchCheerEventModel(
           bits: data['event']['bits'],
           isAnonymous: data['event']['is_anonymous'],
           cheerMessage: data['event']['message'],
           giverName: data['event']['user_name'],
-          messageId: change.doc.id,
+          messageId: doc.id,
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
     case "channel.poll.begin":
       final model = TwitchPollEventModel.fromDocumentData(data);
       return AppendDeltaEvent(model);
     case "channel.poll.progress":
-      return UpdateDeltaEvent("poll${data['event']['id']}", (message) {
+      return UpdateDeltaEvent(
+          "poll${data['event']['id']}", data['timestamp'].toDate(), (message) {
         if (message is! TwitchPollEventModel) {
           return message;
         }
         return message.withProgress(data);
       });
     case "channel.poll.end":
-      return UpdateDeltaEvent("poll${data['event']['id']}", (message) {
+      return UpdateDeltaEvent(
+          "poll${data['event']['id']}", data['timestamp'].toDate(), (message) {
         if (message is! TwitchPollEventModel) {
           return message;
         }
@@ -213,6 +218,7 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "channel.channel_points_custom_reward_redemption.update":
       return UpdateDeltaEvent("channel.point-redemption-${data['event']['id']}",
+          data['timestamp'].toDate(),
           (message) {
         if (message is! TwitchChannelPointRedemptionEventModel) {
           return message;
@@ -224,6 +230,7 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "channel.hype_train.progress":
       return UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
+          data['timestamp'].toDate(),
           (message) {
         if (message is! TwitchHypeTrainEventModel) {
           return message;
@@ -233,6 +240,7 @@ DeltaEvent? _toDeltaEvent(
       });
     case "channel.hype_train.end":
       return UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
+          data['timestamp'].toDate(),
           (message) {
         if (message is! TwitchHypeTrainEventModel) {
           return message;
@@ -244,6 +252,7 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "channel.prediction.progress":
       return UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
+          data['timestamp'].toDate(),
           (message) {
         if (message is! TwitchPredictionEventModel) {
           return message;
@@ -252,6 +261,7 @@ DeltaEvent? _toDeltaEvent(
       });
     case "channel.prediction.end":
       return UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
+          data['timestamp'].toDate(),
           (message) {
         if (message is! TwitchPredictionEventModel) {
           return message;
@@ -261,29 +271,32 @@ DeltaEvent? _toDeltaEvent(
     case "stream.online":
     case "stream.offline":
       final model = StreamStateEventModel(
-          messageId: change.doc.id,
+          messageId: doc.id,
           isOnline: data['type'] == "stream.online",
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
     case "raid_update_v2":
       return AppendDeltaEvent(TwitchRaidingEventModel.fromDocumentData(data));
     case "raid_cancel_v2":
-      return UpdateDeltaEvent("raiding.${data['raid']['id']}", (message) {
+      return UpdateDeltaEvent(
+          "raiding.${data['raid']['id']}", data['timestamp'].toDate(),
+          (message) {
         if (message is! TwitchRaidingEventModel) {
           return message;
         }
         return message.withCancel();
       });
     case "raid_go_v2":
-      return UpdateDeltaEvent("raiding.${data['raid']['id']}", (message) {
+      return UpdateDeltaEvent(
+          "raiding.${data['raid']['id']}", data['timestamp'].toDate(),
+          (message) {
         if (message is! TwitchRaidingEventModel) {
           return message;
         }
         return message.withSuccessful();
       });
     case "streamlabs.donation":
-      final model =
-          StreamlabsDonationEventModel.fromDocumentData(change.doc.id, data);
+      final model = StreamlabsDonationEventModel.fromDocumentData(doc.id, data);
       return AppendDeltaEvent(model);
   }
   return null;
@@ -307,6 +320,24 @@ class MessagesAdapter {
     });
   }
 
+  Future<List<DeltaEvent>> forChannelHistory(
+      Channel channel, DateTime from) async {
+    final emotes = await getEmotes(channel);
+
+    final results = await db
+        .collection("messages")
+        .where("channelId", isEqualTo: channel.toString())
+        .where("timestamp", isLessThan: from)
+        .orderBy("timestamp")
+        .limitToLast(250)
+        .get();
+
+    return results.docs
+        .map((doc) => _toDeltaEvent(emotes, doc))
+        .whereType<DeltaEvent>()
+        .toList();
+  }
+
   Stream<DeltaEvent> forChannel(Channel channel) {
     subscribe(channel);
     final emotes = getEmotes(channel);
@@ -324,7 +355,7 @@ class MessagesAdapter {
           .where((change) => change.type == DocumentChangeType.added);
       for (final change in changes) {
         try {
-          final event = _toDeltaEvent(await emotes, change);
+          final event = _toDeltaEvent(await emotes, change.doc);
           if (event != null) {
             yield event;
             lastAdMessageCount++;
@@ -347,9 +378,11 @@ class MessagesAdapter {
               AdMessageModel(adId: AdHelper.chatHistoryAdId));
         }
       }
-      if (isInitialSnapshot) {
+      if (isInitialSnapshot &&
+          changes.isNotEmpty &&
+          !snapshot.metadata.isFromCache) {
         isInitialSnapshot = false;
-        yield const LiveStateDeltaEvent();
+        yield LiveStateDeltaEvent(DateTime.now());
       }
     });
   }
