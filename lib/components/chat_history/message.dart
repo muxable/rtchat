@@ -279,8 +279,8 @@ class ChatHistoryMessage extends StatelessWidget {
       return AdMessageWidget(m);
     } else if (m is StreamlabsDonationEventModel) {
       return StreamlabsDonationEventWidget(m);
-    } else if (m is SimpleRealTimeCashDonationEventModel) {
-      return RealTimeCashDonationEventWidget(m);
+    } else if (m is SimpleRealtimeCashDonationEventModel) {
+      return RealtimeCashDonationEventWidget(m);
     } else {
       throw AssertionError("invalid message type $m");
     }

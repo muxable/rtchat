@@ -287,7 +287,7 @@ DeltaEvent? _toDeltaEvent(
           StreamlabsDonationEventModel.fromDocumentData(change.doc.id, data);
       return AppendDeltaEvent(model);
     case "realtimecash.donation":
-      final model = SimpleRealTimeCashDonationEventModel.fromDocumentData(
+      final model = SimpleRealtimeCashDonationEventModel.fromDocumentData(
           change.doc.id, data);
       return AppendDeltaEvent(model);
   }

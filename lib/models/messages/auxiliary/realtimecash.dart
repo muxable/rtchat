@@ -1,25 +1,30 @@
+import 'package:flutter/material.dart';
 import 'package:rtchat/models/messages/message.dart';
 
-class SimpleRealTimeCashDonationEventModel extends MessageModel {
+class SimpleRealtimeCashDonationEventModel extends MessageModel {
+  final AssetImage image;
   final String assetName;
   final double value;
   final String hash;
 
-  const SimpleRealTimeCashDonationEventModel(
+  const SimpleRealtimeCashDonationEventModel(
       {required this.assetName,
+      required this.image,
       required this.value,
       required this.hash,
       required String messageId,
       required DateTime timestamp})
       : super(messageId: messageId, timestamp: timestamp);
 
-  static SimpleRealTimeCashDonationEventModel fromDocumentData(
+  static SimpleRealtimeCashDonationEventModel fromDocumentData(
       String messageId, Map<String, dynamic> data) {
-    return SimpleRealTimeCashDonationEventModel(
-        assetName: data['activity']['asset'] ?? "Unknown",
+    return SimpleRealtimeCashDonationEventModel(
+        assetName: data['activity']['asset'] ?? "UNKNOWN",
         value: data['activity']['value'],
         hash: data['activity']['hash'],
         messageId: messageId,
-        timestamp: data['timestamp'].toDate());
+        timestamp: data['timestamp'].toDate(),
+        image:
+            AssetImage("assets/${data['activity']['asset'] ?? "UNKNOWN"}.png"));
   }
 }
