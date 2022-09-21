@@ -7,7 +7,6 @@ import 'package:rtchat/components/chat_history/auxiliary/realtimecash_donation.d
 import 'package:rtchat/components/chat_history/auxiliary/streamlabs.dart';
 import 'package:rtchat/components/chat_history/chat_cleared_event.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
-import 'package:rtchat/components/chat_history/separator.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
 import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';

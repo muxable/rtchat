@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/style.dart';
 
 class DecoratedEventWidget extends StatelessWidget {
@@ -39,7 +40,8 @@ class DecoratedEventWidget extends StatelessWidget {
                   Consumer<StyleModel>(builder: (context, styleModel, child) {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(styleModel.fontSize),
-                      child: Image(
+                      child: FadeInImage(
+                          placeholder: MemoryImage(kTransparentImage),
                           image: avatar!,
                           height: styleModel.fontSize * 1.5,
                           width: styleModel.fontSize * 1.5),
