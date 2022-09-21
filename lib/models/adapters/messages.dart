@@ -5,6 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -284,6 +285,10 @@ DeltaEvent? _toDeltaEvent(
     case "streamlabs.donation":
       final model =
           StreamlabsDonationEventModel.fromDocumentData(change.doc.id, data);
+      return AppendDeltaEvent(model);
+    case "realtimecash.donation":
+      final model = SimpleRealTimeCashDonationEventModel.fromDocumentData(
+          change.doc.id, data);
       return AppendDeltaEvent(model);
   }
   return null;
