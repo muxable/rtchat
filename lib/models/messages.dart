@@ -9,6 +9,34 @@ import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/tts.dart';
 
+enum TranslateMessages { none, translate, translateAndShowOriginal }
+
+extension TranslateMessagesJson on TranslateMessages {
+  static fromJson(dynamic value) {
+    switch (value) {
+      case 0:
+        return TranslateMessages.none;
+      case 1:
+        return TranslateMessages.translate;
+      case 2:
+        return TranslateMessages.translateAndShowOriginal;
+      default:
+        return TranslateMessages.none;
+    }
+  }
+
+  toJson() {
+    switch (this) {
+      case TranslateMessages.none:
+        return 0;
+      case TranslateMessages.translate:
+        return 1;
+      case TranslateMessages.translateAndShowOriginal:
+        return 2;
+    }
+  }
+}
+
 class MessagesModel extends ChangeNotifier {
   StreamSubscription<void>? _subscription;
   List<DeltaEvent> _events = [];
@@ -17,6 +45,8 @@ class MessagesModel extends ChangeNotifier {
   Function()? onMessagePing;
   bool _isLive = false;
   Channel? _channel;
+  TranslateMessages _translateMessages = TranslateMessages.none;
+  String _translateLanguage = "EN";
 
   // it's a bit odd to have this here, but tts only cares about the delta events
   // so it's easier to wire this way.
@@ -175,6 +205,20 @@ class MessagesModel extends ChangeNotifier {
 
   TtsModel? get tts => _tts;
 
+  TranslateMessages get translateMessages => _translateMessages;
+
+  set translateMessages(TranslateMessages translateMessages) {
+    _translateMessages = translateMessages;
+    notifyListeners();
+  }
+
+  String get translateLanguage => _translateLanguage;
+
+  set translateLanguage(String translateLanguage) {
+    _translateLanguage = translateLanguage;
+    notifyListeners();
+  }
+
   Duration _announcementPinDuration = const Duration(seconds: 10);
 
   set announcementPinDuration(Duration duration) {
@@ -216,10 +260,19 @@ class MessagesModel extends ChangeNotifier {
       _pingMinGapDuration =
           Duration(seconds: json['pingMinGapDuration'].toInt());
     }
+    if (json['translateMessages'] != null) {
+      _translateMessages =
+          TranslateMessagesJson.fromJson(json['translateMessages']);
+    }
+    if (json['translateLanguage'] != null) {
+      _translateLanguage = json['translateLanguage'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
         "announcementPinDuration": _announcementPinDuration.inSeconds.toInt(),
         "pingMinGapDuration": _pingMinGapDuration.inSeconds.toInt(),
+        "translateMessages": _translateMessages.toJson(),
+        "translateLanguage": _translateLanguage,
       };
 }

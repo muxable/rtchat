@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
@@ -267,6 +268,57 @@ class ChatHistoryScreen extends StatelessWidget {
                 }
               },
             ),
+            if (kDebugMode)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text("Automatic translation",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontWeight: FontWeight.bold,
+                    )),
+              ),
+            if (kDebugMode)
+              ListTile(
+                title: const Text('Language'),
+                subtitle: const Text("Translate messages to this language"),
+                trailing: DropdownButton<String>(
+                  value: messagesModel.translateLanguage,
+                  onChanged: (String? value) {
+                    if (value != null) {
+                      messagesModel.translateLanguage = value;
+                    }
+                  },
+                  items: ["EN", "ES", "DE", "JA", "ZH"]
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+              ),
+            if (kDebugMode)
+              RadioListTile(
+                title: const Text('Don\'t translate messages'),
+                value: TranslateMessages.none,
+                groupValue: messagesModel.translateMessages,
+                onChanged: (TranslateMessages? value) {
+                  if (value != null) {
+                    messagesModel.translateMessages = value;
+                  }
+                },
+              ),
+            if (kDebugMode)
+              RadioListTile(
+                title: const Text('Show translation under messages'),
+                value: TranslateMessages.translateAndShowOriginal,
+                groupValue: messagesModel.translateMessages,
+                onChanged: (TranslateMessages? value) {
+                  if (value != null) {
+                    messagesModel.translateMessages = value;
+                  }
+                },
+              ),
           ],
         );
       }),
