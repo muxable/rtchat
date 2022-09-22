@@ -5,6 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -218,8 +219,7 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "channel.channel_points_custom_reward_redemption.update":
       return UpdateDeltaEvent("channel.point-redemption-${data['event']['id']}",
-          data['timestamp'].toDate(),
-          (message) {
+          data['timestamp'].toDate(), (message) {
         if (message is! TwitchChannelPointRedemptionEventModel) {
           return message;
         }
@@ -230,8 +230,7 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "channel.hype_train.progress":
       return UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
-          data['timestamp'].toDate(),
-          (message) {
+          data['timestamp'].toDate(), (message) {
         if (message is! TwitchHypeTrainEventModel) {
           return message;
         }
@@ -240,8 +239,7 @@ DeltaEvent? _toDeltaEvent(
       });
     case "channel.hype_train.end":
       return UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
-          data['timestamp'].toDate(),
-          (message) {
+          data['timestamp'].toDate(), (message) {
         if (message is! TwitchHypeTrainEventModel) {
           return message;
         }
@@ -252,8 +250,7 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "channel.prediction.progress":
       return UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
-          data['timestamp'].toDate(),
-          (message) {
+          data['timestamp'].toDate(), (message) {
         if (message is! TwitchPredictionEventModel) {
           return message;
         }
@@ -261,8 +258,7 @@ DeltaEvent? _toDeltaEvent(
       });
     case "channel.prediction.end":
       return UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
-          data['timestamp'].toDate(),
-          (message) {
+          data['timestamp'].toDate(), (message) {
         if (message is! TwitchPredictionEventModel) {
           return message;
         }
@@ -297,6 +293,10 @@ DeltaEvent? _toDeltaEvent(
       });
     case "streamlabs.donation":
       final model = StreamlabsDonationEventModel.fromDocumentData(doc.id, data);
+      return AppendDeltaEvent(model);
+    case "realtimecash.donation":
+      final model =
+          SimpleRealtimeCashDonationEventModel.fromDocumentData(doc.id, data);
       return AppendDeltaEvent(model);
   }
   return null;
