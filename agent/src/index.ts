@@ -46,9 +46,23 @@ async function main() {
     for (const signal of ["SIGINT", "SIGTERM", "uncaughtException"]) {
       process.on(signal, async (err) => {
         firebase.debugKeepConnected = new Set();
-        log.error({ agentId: AGENT_ID, error: err, signal }, "received signal");
-        await close();
-        log.info({ agentId: AGENT_ID }, "agent closed");
+        log.error(
+          {
+            agentId: AGENT_ID,
+            error: err,
+            signal,
+            stack: err instanceof Error ? err.stack : null,
+          },
+          "received signal"
+        );
+        await Promise.race([
+          close().then(() => {
+            log.info({ agentId: AGENT_ID }, "agent closed");
+          }),
+          new Promise((resolve) => setTimeout(resolve, 60 * 1000)).then(() => {
+            log.error({ agentId: AGENT_ID }, "agent close timed out after 60s");
+          }),
+        ]);
         process.exit(signal == "uncaughtException" ? 1 : 0);
       });
     }
