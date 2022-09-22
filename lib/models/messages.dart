@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/adapters/messages.dart';
+import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
@@ -52,7 +53,14 @@ class MessagesModel extends ChangeNotifier {
             _messages.add(event.model);
             _tts?.say(event.model);
             if (_isLive && shouldPing()) {
-              onMessagePing?.call();
+              ProfilesAdapter.instance
+                  .getIsOnline(channelId: channel.toString())
+                  .first
+                  .then((value) {
+                if (value) {
+                  onMessagePing?.call();
+                }
+              });
             }
           }
           // check to see if we should add a separator
