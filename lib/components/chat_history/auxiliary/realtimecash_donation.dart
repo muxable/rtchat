@@ -19,7 +19,7 @@ class RealtimeCashDonationEventWidget extends StatelessWidget {
             children: [
               const TextSpan(text: "You received "),
               TextSpan(
-                  text: "${model.value.toString()} ${model.assetName}.",
+                  text: "${model.value.toString()} ${model.currency}.",
                   style: boldStyle),
               const TextSpan(text: " Your transaction hash: "),
               TextSpan(text: model.hash, style: boldStyle),

@@ -3,12 +3,12 @@ import 'package:rtchat/models/messages/message.dart';
 
 class SimpleRealtimeCashDonationEventModel extends MessageModel {
   final AssetImage image;
-  final String assetName;
+  final String currency;
   final double value;
   final String hash;
 
   const SimpleRealtimeCashDonationEventModel(
-      {required this.assetName,
+      {required this.currency,
       required this.image,
       required this.value,
       required this.hash,
@@ -19,7 +19,7 @@ class SimpleRealtimeCashDonationEventModel extends MessageModel {
   static SimpleRealtimeCashDonationEventModel fromDocumentData(
       String messageId, Map<String, dynamic> data) {
     return SimpleRealtimeCashDonationEventModel(
-        assetName: data['activity']['asset'] ?? "UNKNOWN",
+        currency: data['activity']['asset'] ?? "UNKNOWN",
         value: data['activity']['value'],
         hash: data['activity']['hash'],
         messageId: messageId,
