@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/ad.dart';
+import 'package:rtchat/components/chat_history/auxiliary/realtimecash_donation.dart';
 import 'package:rtchat/components/chat_history/auxiliary/streamlabs.dart';
 import 'package:rtchat/components/chat_history/chat_cleared_event.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
@@ -22,6 +23,7 @@ import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
@@ -276,6 +278,8 @@ class ChatHistoryMessage extends StatelessWidget {
       return AdMessageWidget(m);
     } else if (m is StreamlabsDonationEventModel) {
       return StreamlabsDonationEventWidget(m);
+    } else if (m is SimpleRealtimeCashDonationEventModel) {
+      return RealtimeCashDonationEventWidget(m);
     } else {
       throw AssertionError("invalid message type $m");
     }
