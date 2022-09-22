@@ -54,6 +54,69 @@ function isValidSignatureForStringBody(
   return signature === digest;
 }
 
+async function storeDonation(
+  notification: AddressNotification,
+  activity: Activity
+) {
+  // look for userId that associated with this address
+  const addressDoc = await admin
+    .firestore()
+    .collection("realtimecash")
+    .where("address", "==", activity.toAddress)
+    .limit(1)
+    .get();
+
+  if (addressDoc.empty) {
+    functions.logger.error(`No userId found for address ${activity.toAddress}`);
+  }
+  const userId = addressDoc.docs[0].id;
+  functions.logger.info("UserId obtained", { userId: userId });
+
+  // get channelId for this user
+  const profileDoc = await admin
+    .firestore()
+    .collection("profiles")
+    .doc(userId)
+    .get();
+
+  const channelId = `twitch:${profileDoc.get("twitch").id}`;
+  functions.logger.info("ChannelId obtained", { channelId: channelId });
+
+  // storing donation respoonses in realtimecash collection
+  await admin.firestore().collection("messages").add({
+    channelId: channelId,
+    webhookId: notification.webhookId,
+    id: notification.id,
+    createdAt: notification.createdAt,
+    type: "realtimecash.donation",
+    notificationType: notification.type,
+    activity: activity,
+    timestamp: new Date(),
+  });
+  functions.logger.info("Payload is stored in messages collection");
+}
+
+// listen for eth mainnet
+export const ethAlchemyWebhook = functions.https.onRequest(async (req, res) => {
+  const body = req.body;
+  const rawBody = req.rawBody.toString();
+  const headerKey = req.headers["x-alchemy-signature"] as string;
+  const signingKey = functions.config().alchemy.ethsigningkey;
+
+  if (!isValidSignatureForStringBody(rawBody, headerKey, signingKey)) {
+    res.status(403).send("Fail to validate signature");
+    return;
+  }
+
+  const notification: AddressNotification = body as AddressNotification;
+
+  for (const activity of notification.event.activity) {
+    storeDonation(notification, activity);
+  }
+  res.status(200).send("OK");
+});
+
+// MATIC, listen for matic mainnet
 export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
   const body = req.body;
   const rawBody = req.rawBody.toString();
@@ -77,39 +140,7 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
   const notification: AddressNotification = body as AddressNotification;
 
   for (const activity of notification.event.activity) {
-    // look for userId that associated with this address
-    const addressDoc = await admin
-      .firestore()
-      .collection("realtimecash")
-      .where("address", "==", activity.toAddress)
-      .limit(1)
-      .get();
-
-    const userId = addressDoc.docs[0].id;
-    functions.logger.info("UserId obtained", { userId: userId });
-
-    // get channelId for this user
-    const profileDoc = await admin
-      .firestore()
-      .collection("profiles")
-      .doc(userId)
-      .get();
-
-    const channelId = `twitch:${profileDoc.get("twitch").id}`;
-    functions.logger.info("ChannelId obtained", { channelId: channelId });
-
-    // storing donation respoonses in realtimecash collection
-    await admin.firestore().collection("messages").add({
-      channelId: channelId,
-      webhookId: notification.webhookId,
-      id: notification.id,
-      createdAt: notification.createdAt,
-      type: "realtimecash.donation",
-      notificationType: notification.type,
-      activity: activity,
-      timestamp: new Date(),
-    });
-    functions.logger.info("Payload is stored in messages collection");
+    storeDonation(notification, activity);
   }
   res.status(200).send("OK");
 });
@@ -137,8 +168,17 @@ export const setRealTimeCashAddress = functions.https.onCall(
 
     functions.logger.info("address valid, calling alchemy api");
 
-    const WEBHOOKID = functions.config().alchemy.webhookid;
-    const options = {
+    const MATICWEBHOOKID = functions.config().alchemy.maticwebhookid;
+    const ETHWEBHOOKID = functions.config().alchemy.ethwebhookid;
+
+    functions.logger.info("payload", {
+      userId: userId,
+      addresses_to_add: address,
+      ethwebhook_id: ETHWEBHOOKID,
+      maticwebhook_id: MATICWEBHOOKID,
+    });
+
+    const maticOptions = {
       method: "PATCH",
       headers: {
         accept: "application/json",
@@ -147,30 +187,67 @@ export const setRealTimeCashAddress = functions.https.onCall(
       },
       body: JSON.stringify({
         addresses_to_add: [address],
-        webhook_id: WEBHOOKID,
+        webhook_id: MATICWEBHOOKID,
       }),
     };
-
-    functions.logger.info("payload", {
-      userId: userId,
-      addresses_to_add: address,
-      webhook_id: WEBHOOKID,
-    });
 
     // https://docs.alchemy.com/reference/update-webhook-addresses
     fetch(
       "https://dashboard.alchemyapi.io/api/update-webhook-addresses",
-      options
+      maticOptions
     )
       .then(async (response) => {
         await admin
           .firestore()
           .collection("realtimecash")
           .doc(userId)
-          .set({
-            address,
-            webhookId: WEBHOOKID,
-          })
+          .set(
+            {
+              address,
+              maticWebhookId: MATICWEBHOOKID,
+            },
+            { merge: true }
+          )
+          .catch((error) => {
+            functions.logger.error("Error writing document: ", error);
+            // fail to write to firestore
+            throw new functions.https.HttpsError(error, error.message);
+          });
+      })
+      .catch((err) => {
+        functions.logger.error("Error patching webhook with address: ", err);
+        throw new functions.https.HttpsError(err, err.message);
+      });
+
+    const ethOptions = {
+      method: "PATCH",
+      headers: {
+        accept: "application/json",
+        "X-Alchemy-Token": functions.config().alchemy.authtoken,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        addresses_to_add: [address],
+        webhook_id: ETHWEBHOOKID,
+      }),
+    };
+
+    fetch(
+      "https://dashboard.alchemyapi.io/api/update-webhook-addresses",
+      ethOptions
+    )
+      .then(async (response) => {
+        await admin
+          .firestore()
+          .collection("realtimecash")
+          .doc(userId)
+          .set(
+            {
+              address,
+              ethWebhookId: ETHWEBHOOKID,
+            },
+            { merge: true }
+          )
           .catch((error) => {
             functions.logger.error("Error writing document: ", error);
             // fail to write to firestore
