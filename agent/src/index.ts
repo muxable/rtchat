@@ -47,11 +47,22 @@ async function main() {
       process.on(signal, async (err) => {
         firebase.debugKeepConnected = new Set();
         log.error(
-          { agentId: AGENT_ID, error: err, signal, stack: err?.stack },
+          {
+            agentId: AGENT_ID,
+            error: err,
+            signal,
+            stack: err instanceof Error ? err.stack : null,
+          },
           "received signal"
         );
-        await close();
-        log.info({ agentId: AGENT_ID }, "agent closed");
+        await Promise.race([
+          close().then(() => {
+            log.info({ agentId: AGENT_ID }, "agent closed");
+          }),
+          new Promise((resolve) => setTimeout(resolve, 60 * 1000)).then(() => {
+            log.error({ agentId: AGENT_ID }, "agent close timed out after 60s");
+          }),
+        ]);
         process.exit(signal == "uncaughtException" ? 1 : 0);
       });
     }
