@@ -10,7 +10,11 @@ import { cleanup, subscribe, unsubscribe } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
 import { updateChatStatus } from "./chat-status";
-import { setRealTimeCashAddress, alchemyWebhook } from "./alchemy_webhook";
+import {
+  setRealTimeCashAddress,
+  alchemyWebhook,
+  ethAlchemyWebhook,
+} from "./alchemy_webhook";
 
 async function write(
   channelId: string,
@@ -336,5 +340,6 @@ export {
   updateChatStatus,
   setRealTimeCashAddress,
   alchemyWebhook,
+  ethAlchemyWebhook,
 };
 export const auth = functions.https.onRequest(authApp);
