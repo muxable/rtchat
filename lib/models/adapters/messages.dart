@@ -219,8 +219,7 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "channel.channel_points_custom_reward_redemption.update":
       return UpdateDeltaEvent("channel.point-redemption-${data['event']['id']}",
-          data['timestamp'].toDate(),
-          (message) {
+          data['timestamp'].toDate(), (message) {
         if (message is! TwitchChannelPointRedemptionEventModel) {
           return message;
         }
@@ -231,8 +230,7 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "channel.hype_train.progress":
       return UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
-          data['timestamp'].toDate(),
-          (message) {
+          data['timestamp'].toDate(), (message) {
         if (message is! TwitchHypeTrainEventModel) {
           return message;
         }
@@ -241,8 +239,7 @@ DeltaEvent? _toDeltaEvent(
       });
     case "channel.hype_train.end":
       return UpdateDeltaEvent("channel.hype_train-${data['event']['id']}",
-          data['timestamp'].toDate(),
-          (message) {
+          data['timestamp'].toDate(), (message) {
         if (message is! TwitchHypeTrainEventModel) {
           return message;
         }
@@ -253,8 +250,7 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "channel.prediction.progress":
       return UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
-          data['timestamp'].toDate(),
-          (message) {
+          data['timestamp'].toDate(), (message) {
         if (message is! TwitchPredictionEventModel) {
           return message;
         }
@@ -262,8 +258,7 @@ DeltaEvent? _toDeltaEvent(
       });
     case "channel.prediction.end":
       return UpdateDeltaEvent("channel.prediction-${data['event']['id']}",
-          data['timestamp'].toDate(),
-          (message) {
+          data['timestamp'].toDate(), (message) {
         if (message is! TwitchPredictionEventModel) {
           return message;
         }
@@ -300,8 +295,8 @@ DeltaEvent? _toDeltaEvent(
       final model = StreamlabsDonationEventModel.fromDocumentData(doc.id, data);
       return AppendDeltaEvent(model);
     case "realtimecash.donation":
-      final model = SimpleRealtimeCashDonationEventModel.fromDocumentData(
-          change.doc.id, data);
+      final model =
+          SimpleRealtimeCashDonationEventModel.fromDocumentData(doc.id, data);
       return AppendDeltaEvent(model);
   }
   return null;
