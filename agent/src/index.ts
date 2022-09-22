@@ -46,7 +46,10 @@ async function main() {
     for (const signal of ["SIGINT", "SIGTERM", "uncaughtException"]) {
       process.on(signal, async (err) => {
         firebase.debugKeepConnected = new Set();
-        log.error({ agentId: AGENT_ID, error: err, signal }, "received signal");
+        log.error(
+          { agentId: AGENT_ID, error: err, signal, stack: err?.stack },
+          "received signal"
+        );
         await close();
         log.info({ agentId: AGENT_ID }, "agent closed");
         process.exit(signal == "uncaughtException" ? 1 : 0);
