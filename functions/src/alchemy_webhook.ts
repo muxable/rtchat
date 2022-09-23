@@ -187,6 +187,7 @@ export const setRealTimeCashAddress = functions.https.onCall(
       },
       body: JSON.stringify({
         addresses_to_add: [address],
+        addresses_to_remove: [],
         webhook_id: MATICWEBHOOKID,
       }),
     };
@@ -228,6 +229,7 @@ export const setRealTimeCashAddress = functions.https.onCall(
       },
       body: JSON.stringify({
         addresses_to_add: [address],
+        addresses_to_remove: [],
         webhook_id: ETHWEBHOOKID,
       }),
     };
