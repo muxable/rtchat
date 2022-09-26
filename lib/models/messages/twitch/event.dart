@@ -134,8 +134,8 @@ class TwitchPollEventModel extends MessageModel {
       final String id = entry['id'];
       final String title = entry['title'] ?? "Untitled";
       final int votes = entry['votes'] ?? 0;
-      final int bitVotes = entry['bit_votes'] ?? 0;
-      final int channelPointVotes = entry['channel_point_votes'] ?? 0;
+      final int bitVotes = entry['bits_votes'] ?? 0;
+      final int channelPointVotes = entry['channel_points_votes'] ?? 0;
 
       var poll = PollChoiceModel(
           id: id,
