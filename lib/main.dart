@@ -9,6 +9,8 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +35,6 @@ import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
 import 'package:rtchat/screens/settings/donations.dart';
-import 'package:rtchat/screens/settings/tts/cloud_tts.dart';
 import 'package:rtchat/screens/settings/events.dart';
 import 'package:rtchat/screens/settings/events/channel_point.dart';
 import 'package:rtchat/screens/settings/events/cheer.dart';
@@ -45,12 +46,13 @@ import 'package:rtchat/screens/settings/events/prediction.dart';
 import 'package:rtchat/screens/settings/events/raid.dart';
 import 'package:rtchat/screens/settings/events/raiding.dart';
 import 'package:rtchat/screens/settings/events/subscription.dart';
-import 'package:rtchat/screens/settings/tts/languages.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/tts.dart';
-import 'package:rtchat/screens/settings/twitch/badges.dart';
+import 'package:rtchat/screens/settings/tts/cloud_tts.dart';
+import 'package:rtchat/screens/settings/tts/languages.dart';
 import 'package:rtchat/screens/settings/tts/voices.dart';
+import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -257,8 +259,10 @@ class _AppState extends State<App> {
           darkTheme: Themes.darkTheme,
           themeMode: layoutModel.themeMode,
           localizationsDelegates: const [
+            ...AppLocalizations.localizationsDelegates,
             LocaleNamesLocalizationsDelegate(),
           ],
+          supportedLocales: AppLocalizations.supportedLocales,
           navigatorObservers: [App.observer],
           initialRoute: '/',
           routes: {

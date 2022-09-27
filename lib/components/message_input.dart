@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/autocomplete.dart';
@@ -201,7 +202,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       border: InputBorder.none,
                       hintText: () {
                         if (_textSeed < 0.5) {
-                          return "Send a message...";
+                          return AppLocalizations.of(context)!.sendAMessage;
                         } else if (_textSeed < 0.9) {
                           return "Write something...";
                         } else if (_textSeed < 0.99) {
