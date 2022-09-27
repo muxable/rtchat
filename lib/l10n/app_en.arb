@@ -1,0 +1,6 @@
+{
+    "sendAMessage": "Send a message...",
+    "@sendAMessage": {
+      "description": "Message input field placeholder text"
+    }
+}
