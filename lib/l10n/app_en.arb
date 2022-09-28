@@ -2,5 +2,25 @@
     "sendAMessage": "Send a message...",
     "@sendAMessage": {
       "description": "Message input field placeholder text"
+    },
+    "writeSomething": "Write something...",
+    "@writeSomething": {
+      "description": "Message input field placeholder text"
+    },
+    "speakToTheCrowds": "Speak to the crowds...",
+    "@speakToTheCrowds": {
+      "description": "Message input field placeholder text"
+    },
+    "shareYourThoughts": "Share your thoughts...",
+    "@shareYourThoughts": {
+      "description": "Message input field placeholder text"
+    },
+    "saySomethingYouLittleBitch": "Say something, you little bitch...",
+    "@saySomethingYouLittleBitch": {
+      "description": "Message input field placeholder text"
+    },
+    "search": "Search",
+    "@search": {
+      "description": "Placeholder text for search bar"
     }
 }

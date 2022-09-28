@@ -201,16 +201,17 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       ),
                       border: InputBorder.none,
                       hintText: () {
+                        final l10n = AppLocalizations.of(context)!;
                         if (_textSeed < 0.5) {
-                          return AppLocalizations.of(context)!.sendAMessage;
+                          return l10n.sendAMessage;
                         } else if (_textSeed < 0.9) {
-                          return "Write something...";
+                          return l10n.writeSomething;
                         } else if (_textSeed < 0.99) {
-                          return "Speak to the crowds...";
+                          return l10n.speakToTheCrowds;
                         } else if (_textSeed < 0.999) {
-                          return "Share your thoughts...";
+                          return l10n.shareYourThoughts;
                         }
-                        return "Say something, you little bitch.";
+                        return l10n.saySomethingYouLittleBitch;
                       }()),
                   onChanged: (text) {
                     final filtered = text.replaceAll('\n', ' ');
