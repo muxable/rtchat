@@ -2,6 +2,7 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import fetch from "cross-fetch";
 import * as crypto from "crypto";
+import { ethers } from "ethers";
 
 type Log = {
   removed: boolean;
@@ -53,6 +54,104 @@ function isValidSignatureForStringBody(
   const digest = hmac.digest("hex");
   return signature === digest;
 }
+
+const ABI = [
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "donationAmount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "address payable",
+        name: "receiverAddress",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "donor",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "message",
+        type: "string",
+      },
+    ],
+    name: "donation",
+    type: "event",
+  },
+  {
+    stateMutability: "payable",
+    type: "fallback",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address payable",
+        name: "_to",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "donor",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "message",
+        type: "string",
+      },
+    ],
+    name: "donate",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getBalance",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "myAddress",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    stateMutability: "payable",
+    type: "receive",
+  },
+];
+
+const contractInterface = new ethers.utils.Interface(ABI);
 
 async function storeDonation(
   notification: AddressNotification,
@@ -111,10 +210,14 @@ export const ethAlchemyWebhook = functions.https.onRequest(async (req, res) => {
   const notification: AddressNotification = body as AddressNotification;
 
   for (const activity of notification.event.activity) {
-    storeDonation(notification, activity);
+    await storeDonation(notification, activity);
   }
   res.status(200).send("OK");
 });
+
+const infuraPolyURL =
+  "https://polygon-mainnet.infura.io/v3/44f12a91c4c146ae83472b2656b4fff6";
+const polyProvider = new ethers.providers.JsonRpcProvider(infuraPolyURL);
 
 // MATIC, listen for matic mainnet
 export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
@@ -140,7 +243,20 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
   const notification: AddressNotification = body as AddressNotification;
 
   for (const activity of notification.event.activity) {
-    storeDonation(notification, activity);
+    const transaction = contractInterface.parseTransaction(
+      await polyProvider.getTransaction(activity.hash)
+    );
+    if (transaction.name === "donate") {
+      const [to, amount, donor, message] = transaction.args;
+      functions.logger.info("donation", {
+        to,
+        amount,
+        donor,
+        message,
+        activity,
+      });
+      await storeDonation(notification, activity);
+    }
   }
   res.status(200).send("OK");
 });
