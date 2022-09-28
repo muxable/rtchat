@@ -21,13 +21,12 @@ class RealtimeCashDonationEventWidget extends StatelessWidget {
               TextSpan(
                   text: "${model.value.toString()} ${model.currency}. ",
                   style: boldStyle),
-              if (model.message.isNotEmpty)
-                TextSpan(text: "message: ${model.message}"),
-              const TextSpan(text: " Hash: "),
-              TextSpan(text: model.hash, style: boldStyle),
             ],
           ),
         ),
+        if (model.message != null && model.message!.isNotEmpty)
+          Text.rich(TextSpan(text: model.message),
+              style: const TextStyle(fontStyle: FontStyle.italic)),
       ]),
     );
   }

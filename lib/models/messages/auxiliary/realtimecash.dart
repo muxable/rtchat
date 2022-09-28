@@ -6,8 +6,8 @@ class SimpleRealtimeCashDonationEventModel extends MessageModel {
   final String currency;
   final double value;
   final String hash;
-  final String donor;
-  final String message;
+  final String? donor;
+  final String? message;
 
   const SimpleRealtimeCashDonationEventModel(
       {required this.currency,
@@ -27,7 +27,7 @@ class SimpleRealtimeCashDonationEventModel extends MessageModel {
         value: data['activity']['value'],
         hash: data['activity']['hash'],
         donor: data['donor'] ?? "Anonymous",
-        message: data['message'] ?? "",
+        message: data['message'],
         messageId: messageId,
         timestamp: data['timestamp'].toDate(),
         image:
