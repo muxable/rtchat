@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HeaderSearchBar extends StatelessWidget {
   final void Function(String) onFilterBySearchBarText;
@@ -22,7 +23,7 @@ class HeaderSearchBar extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurface,
           ),
           decoration: InputDecoration(
-            hintText: 'Search',
+            hintText: AppLocalizations.of(context)!.search,
             isDense: true,
             border: InputBorder.none,
             hintStyle: TextStyle(
