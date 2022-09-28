@@ -199,23 +199,45 @@ async function storeDonation(
   functions.logger.info("Payload is stored in messages collection");
 }
 
+const infuraEthURL =
+  "https://mainnet.infura.io/v3/44f12a91c4c146ae83472b2656b4fff6";
+const ethProdProvider = new ethers.providers.JsonRpcProvider(infuraEthURL);
+
 // listen for eth mainnet
 export const ethAlchemyWebhook = functions.https.onRequest(async (req, res) => {
-  // const body = req.body;
-  // const rawBody = req.rawBody.toString();
-  // const headerKey = req.headers["x-alchemy-signature"] as string;
-  // const signingKey = functions.config().alchemy.ethsigningkey;
+  const body = req.body;
+  const rawBody = req.rawBody.toString();
+  const headerKey = req.headers["x-alchemy-signature"] as string;
+  const signingKey = functions.config().alchemy.ethsigningkey;
 
-  // if (!isValidSignatureForStringBody(rawBody, headerKey, signingKey)) {
-  //   res.status(403).send("Fail to validate signature");
-  //   return;
-  // }
+  if (!isValidSignatureForStringBody(rawBody, headerKey, signingKey)) {
+    res.status(403).send("Fail to validate signature");
+    return;
+  }
 
-  // const notification: AddressNotification = body as AddressNotification;
+  const notification: AddressNotification = body as AddressNotification;
 
-  // for (const activity of notification.event.activity) {
-  //   await storeDonation(notification, activity);
-  // }
+  for (const activity of notification.event.activity) {
+    const transaction = contractInterface.parseTransaction(
+      await ethProdProvider.getTransaction(activity.hash)
+    );
+    if (transaction.name === "donate") {
+      functions.logger.info("transaction args", {
+        transaction_args: transaction.args,
+      });
+      const [to, amount, donor, message] = transaction.args;
+      functions.logger.info("donation", {
+        to,
+        amount,
+        donor,
+        message,
+        activity,
+        msg: transaction.args[3],
+      });
+      const toAddr = to.toLowerCase();
+      await storeDonation(notification, activity, toAddr, donor, message);
+    }
+  }
   res.status(200).send("OK");
 });
 
