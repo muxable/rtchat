@@ -247,7 +247,9 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
       await polyProvider.getTransaction(activity.hash)
     );
     if (transaction.name === "donate") {
-      functions.logger.info("transaction args", { transaction_args: transaction.args })
+      functions.logger.info("transaction args", {
+        transaction_args: transaction.args,
+      });
       const [to, amount, donor, message] = transaction.args;
       functions.logger.info("donation", {
         to,
@@ -294,7 +296,7 @@ export const setRealTimeCashAddress = functions.https.onCall(
       ethwebhook_id: ETHWEBHOOKID,
       maticwebhook_id: MATICWEBHOOKID,
     });
-    
+
     await admin
       .firestore()
       .collection("realtimecash")
