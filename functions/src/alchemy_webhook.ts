@@ -157,7 +157,7 @@ async function storeDonation(
   activity: Activity,
   toAddr: string,
   donor: string,
-  message: string,
+  message: string
 ) {
   // look for userId that associated with this address
   const addressDoc = await admin
