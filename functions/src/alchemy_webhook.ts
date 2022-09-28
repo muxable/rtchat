@@ -155,7 +155,9 @@ const contractInterface = new ethers.utils.Interface(ABI);
 async function storeDonation(
   notification: AddressNotification,
   activity: Activity,
-  toAddr: string
+  toAddr: string,
+  donor: string,
+  message: string,
 ) {
   // look for userId that associated with this address
   const addressDoc = await admin
@@ -190,6 +192,8 @@ async function storeDonation(
     type: "realtimecash.donation",
     notificationType: notification.type,
     activity: activity,
+    donor: donor,
+    message: message,
     timestamp: new Date(),
   });
   functions.logger.info("Payload is stored in messages collection");
@@ -255,10 +259,12 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
         to,
         amount,
         donor,
-        message,
+        message, // not showing the actual message in log
         activity,
+        msg: transaction.args[3],
       });
-      await storeDonation(notification, activity, to);
+      const toAddr = to.toLowerCase();
+      await storeDonation(notification, activity, toAddr, donor, message);
     }
   }
   res.status(200).send("OK");
