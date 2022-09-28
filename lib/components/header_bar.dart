@@ -46,7 +46,7 @@ class _DurationWidget extends StatelessWidget {
         final now = DateTime.now();
         final diff = now.difference(from);
 
-        return Text('${formatDuration(diff)} uptime', style: style);
+        return Text('${formatDuration(diff)} up', style: style);
       },
     );
   }
