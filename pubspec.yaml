@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   firebase_core: ^1.1.0
   firebase_crashlytics: ^2.0.3
   firebase_auth: ^3.0.1
@@ -53,6 +55,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/
     - assets/providers/
