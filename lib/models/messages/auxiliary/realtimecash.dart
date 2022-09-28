@@ -26,7 +26,7 @@ class SimpleRealtimeCashDonationEventModel extends MessageModel {
         currency: data['activity']['asset'] ?? "UNKNOWN",
         value: data['activity']['value'],
         hash: data['activity']['hash'],
-        donor: data['donor'] ?? "Anonymous",
+        donor: data['donor'],
         message: data['message'],
         messageId: messageId,
         timestamp: data['timestamp'].toDate(),
