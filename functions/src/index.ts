@@ -354,6 +354,12 @@ export const embedRedirect = functions.https.onRequest(async (req, res) => {
   }
 });
 
+export const agentPreemption = functions.https.onRequest(async (req, res) => {
+  // for now, just log the preemption request.
+  functions.logger.info("preemption", req.body);
+  res.status(200).send("ok");
+});
+
 export {
   subscribe,
   unsubscribe,
