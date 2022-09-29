@@ -5,16 +5,14 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/stream_preview.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class StreamPreview extends StatefulWidget {
-  const StreamPreview({
-    Key? key,
-    required this.channelDisplayName,
-  }) : super(key: key);
+  const StreamPreview({Key? key, required this.channel}) : super(key: key);
 
-  final String channelDisplayName;
+  final Channel channel;
 
   @override
   State<StreamPreview> createState() => _StreamPreviewState();
@@ -63,7 +61,7 @@ class _StreamPreviewState extends State<StreamPreview> {
   void didUpdateWidget(StreamPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
     final newUrl =
-        'https://player.twitch.tv/?channel=${widget.channelDisplayName}&controls=false&parent=chat.rtirl.com&muted=true';
+        'https://chat.rtirl.com/embed?provider=${widget.channel.provider}&channelId=${widget.channel.channelId}';
     if (url != newUrl && _controller != null) {
       _controller!.loadUrl(newUrl);
       url = newUrl;
@@ -75,7 +73,7 @@ class _StreamPreviewState extends State<StreamPreview> {
     return Stack(children: [
       WebView(
         initialUrl:
-            'https://player.twitch.tv/?channel=${widget.channelDisplayName}&controls=false&parent=chat.rtirl.com&muted=true',
+            'https://chat.rtirl.com/embed?provider=${widget.channel.provider}&channelId=${widget.channel.channelId}',
         onWebViewCreated: (controller) {
           if (!mounted) {
             return;

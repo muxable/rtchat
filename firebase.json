@@ -23,6 +23,10 @@
       {
         "source": "/api/subscribe",
         "function": "subscribe"
+      },
+      {
+        "source": "/embed",
+        "function": "embedRedirect"
       }
     ]
   }
