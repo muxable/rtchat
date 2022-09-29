@@ -327,6 +327,33 @@ export const getProfilePicture = functions.https.onRequest(async (req, res) => {
   }
 });
 
+export const embedRedirect = functions.https.onRequest(async (req, res) => {
+  const provider = req.query?.provider as string | null;
+  const channelId = req.query?.channelId as string | null;
+  if (!provider || !channelId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channelId"
+    );
+  }
+  switch (provider) {
+    case "twitch":
+      const login = await getTwitchLogin(channelId);
+      if (!login) {
+        throw new functions.https.HttpsError("not-found", "channel not found");
+      }
+      res.redirect(
+        `https://player.twitch.tv/?channel=${login}&controls=false&parent=chat.rtirl.com&muted=true`
+      );
+      break;
+    default:
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "invalid provider"
+      );
+  }
+});
+
 export {
   subscribe,
   unsubscribe,
