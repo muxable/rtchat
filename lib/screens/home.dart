@@ -289,9 +289,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       } else if (layoutModel.isShowPreview) {
                         return SizedBox(
                             height: MediaQuery.of(context).size.width * 9 / 16,
-                            child: StreamPreview(
-                                channelDisplayName:
-                                    widget.channel.displayName));
+                            child: StreamPreview(channel: widget.channel));
                       } else {
                         return Container();
                       }
@@ -326,9 +324,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             if (layoutModel.isShowNotifications) {
                               return const ActivityFeedPanelWidget();
                             } else if (layoutModel.isShowPreview) {
-                              return StreamPreview(
-                                  channelDisplayName:
-                                      widget.channel.displayName);
+                              return StreamPreview(channel: widget.channel);
                             } else {
                               return Container();
                             }
