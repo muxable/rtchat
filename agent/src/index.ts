@@ -23,7 +23,7 @@ async function getAgentId() {
   try {
     const hostname = await getGCPHostname();
     if (hostname) {
-      return hostname;
+      return hostname.replace(".", ":");
     }
   } finally {
     return uuidv4();
