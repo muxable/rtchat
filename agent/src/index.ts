@@ -7,6 +7,29 @@ import { log } from "./log";
 
 const PROJECT_ID = process.env["PROJECT_ID"] || "rtchat-47692";
 
+async function getGCPHostname() {
+  const response = await fetch(
+    "http://metadata.google.internal/computeMetadata/v1/instance/hostname",
+    {
+      headers: {
+        "Metadata-Flavor": "Google",
+      },
+    }
+  );
+  return await response.text();
+}
+
+async function getAgentId() {
+  try {
+    const hostname = await getGCPHostname();
+    if (hostname) {
+      return hostname;
+    }
+  } finally {
+    return uuidv4();
+  }
+}
+
 async function main() {
   try {
     const client = new SecretManagerServiceClient();
@@ -32,7 +55,7 @@ async function main() {
     });
   }
 
-  const AGENT_ID = uuidv4();
+  const AGENT_ID = await getAgentId();
 
   log.info({ agentId: AGENT_ID }, "running agent");
   const firebase = new FirebaseAdapter(
