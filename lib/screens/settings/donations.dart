@@ -80,11 +80,12 @@ class DonationsScreen extends StatelessWidget {
                                               return MobileScanner(
                                                   allowDuplicates: false,
                                                   onDetect: (barcode, args) {
-                                                    DonationsAdapter.instance
-                                                        .setRealtimeCashAddress(
-                                                            address: barcode
-                                                                .rawValue!
-                                                                .toLowerCase());
+                                                    final value = barcode.rawValue;
+                                                    if (value != null) {
+                                                      DonationsAdapter.instance
+                                                          .setRealtimeCashAddress(
+                                                              address: value.toLowerCase());
+                                                    }
                                                     Navigator.of(context).pop();
                                                   });
                                             });
