@@ -23,9 +23,12 @@ async function getAgentId() {
   try {
     const hostname = await getGCPHostname();
     if (hostname) {
-      return hostname.replace(".", ":");
+      return hostname.replaceAll(".", ":");
     }
-  } finally {
+    log.warn("metadata server returned empty hostname");
+    return uuidv4();
+  } catch (e) {
+    log.warn({ error: e }, "unable to get hostname");
     return uuidv4();
   }
 }

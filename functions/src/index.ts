@@ -356,7 +356,7 @@ export const embedRedirect = functions.https.onRequest(async (req, res) => {
 
 export const agentPreemption = functions.https.onRequest(async (req, res) => {
   // for now, just log the preemption request.
-  const agentId = String(req.query["q"]).replace(".", ":");
+  const agentId = String(req.query["q"]).replace(/\./g, ":");
   if (!agentId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
