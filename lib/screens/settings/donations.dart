@@ -51,14 +51,12 @@ class DonationsScreen extends StatelessWidget {
                 DonationsAdapter.instance.forStreamlabsConfig(userId: userId);
             return ListView(
               children: [
-                if (kDebugMode)
                   const ListTile(
                     leading:
                         Image(image: AssetImage('assets/realtimecash.png')),
                     title: Text("RealtimeCash"),
                     subtitle: Text("Connect an ETH or MATIC wallet"),
                   ),
-                if (kDebugMode)
                   Padding(
                       padding: const EdgeInsets.only(left: 88, right: 16),
                       child: StreamBuilder<String?>(
@@ -93,7 +91,7 @@ class DonationsScreen extends StatelessWidget {
                               keyboardType: TextInputType.url);
                         },
                       )),
-                if (kDebugMode) const Divider(),
+                const Divider(),
                 ListTile(
                   leading:
                       const Image(image: AssetImage('assets/streamlabs.png')),
