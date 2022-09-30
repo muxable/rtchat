@@ -58,6 +58,16 @@ async function main() {
     });
   }
 
+  const muxfdProfile = await admin
+    .firestore()
+    .collection("profiles")
+    .doc("q0QAKzURNgdMlyOS2bVgWCYG3pZ2")
+    .get();
+
+  if (!muxfdProfile.exists) {
+    throw new Error("unable to find muxfd profile");
+  }
+
   const AGENT_ID = await getAgentId();
 
   log.info({ agentId: AGENT_ID }, "running agent");
