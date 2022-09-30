@@ -22,5 +22,13 @@
     "search": "Search",
     "@search": {
       "description": "Placeholder text for search bar"
+    },
+    "searchChannels": "Search Channels",
+    "@searchChannels": {
+      "description": "Header for a page that lets the user search channels"
+    },
+    "raidAChannel": "Raid a Channel",
+    "@raidAChannel": {
+      "description": "Header for a page that lets the raid channels"
     }
 }
