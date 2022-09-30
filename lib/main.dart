@@ -47,6 +47,7 @@ import 'package:rtchat/screens/settings/events/raiding.dart';
 import 'package:rtchat/screens/settings/events/subscription.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
+import 'package:rtchat/screens/settings/third_party.dart';
 import 'package:rtchat/screens/settings/tts.dart';
 import 'package:rtchat/screens/settings/tts/cloud_tts.dart';
 import 'package:rtchat/screens/settings/tts/languages.dart';
@@ -297,7 +298,7 @@ class _AppState extends State<App> {
                 const VoicesScreen(),
             '/settings/quick-links': (context) => const QuickLinksScreen(),
             '/settings/backup': (context) => const BackupScreen(),
-            '/settings/donations': (context) => const DonationsScreen(),
+            '/settings/third-party': (context) => const ThirdPartyScreen(),
             '/settings/events': (context) => const EventsScreen(),
             '/settings/events/follow': (context) => const FollowEventScreen(),
             '/settings/events/cheer': (context) => const CheerEventScreen(),
