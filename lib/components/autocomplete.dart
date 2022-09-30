@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/chat_mode.dart';
-import 'package:rtchat/models/chat_state.dart';
 import 'package:rtchat/models/commands.dart';
+import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 
 enum _AutocompleteMode {
@@ -154,9 +154,13 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
         );
       case _AutocompleteMode.mention:
         final username = text.split(" ").last.substring(1);
-        return Consumer<ChatStateModel>(builder: (context, model, child) {
+        return Consumer<MessagesModel>(builder: (context, model, child) {
           return Row(
-            children: model.viewers?.query(username).flatten().map((viewer) {
+            children: model.authors
+                .where((element) => element.login
+                    .toLowerCase()
+                    .contains(username.toLowerCase()))
+                .map((viewer) {
                   return TextButton(
                     child: Text("@$viewer"),
                     onPressed: () {
@@ -169,8 +173,7 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
                           TextPosition(offset: widget.controller.text.length));
                     },
                   );
-                }).toList() ??
-                [],
+            }).toList(),
           );
         });
     }

@@ -33,7 +33,7 @@ import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
-import 'package:rtchat/screens/settings/donations.dart';
+import 'package:rtchat/screens/settings/third_party.dart';
 import 'package:rtchat/screens/settings/events.dart';
 import 'package:rtchat/screens/settings/events/channel_point.dart';
 import 'package:rtchat/screens/settings/events/cheer.dart';
@@ -207,16 +207,6 @@ class _AppState extends State<App> {
               widget.prefs
                   .setString('twitch_badge', jsonEncode(model.toJson()));
             });
-        }, update: (context, userModel, model) {
-          model!.channel = userModel.activeChannel;
-          return model;
-        }),
-        ChangeNotifierProxyProvider<UserModel, ChatStateModel>(
-            create: (context) {
-          final model = ChatStateModel();
-          model.channel =
-              Provider.of<UserModel>(context, listen: false).activeChannel;
-          return model;
         }, update: (context, userModel, model) {
           model!.channel = userModel.activeChannel;
           return model;

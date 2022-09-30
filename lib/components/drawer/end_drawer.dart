@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/drawer/sliver_search_bar.dart';
 import 'package:rtchat/components/drawer/sliver_title.dart';
+import 'package:rtchat/models/adapters/chat_state.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/chat_state.dart';
 
@@ -21,9 +22,11 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
   Widget build(BuildContext context) {
     return Container(
       color: Theme.of(context).canvasColor,
-      child: Consumer<ChatStateModel>(
-        builder: (context, chatStateModel, snapshot) {
-          final viewers = chatStateModel.viewers;
+      child: StreamBuilder<Viewers>(
+        stream: ChatStateAdapter.instance
+            .getViewers(channelId: widget.channel.toString()),
+        builder: (context, snapshot) {
+          final viewers = snapshot.data;
           if (viewers == null) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -64,7 +67,7 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
                     delegate: SliverChildListDelegate(
                       filtered.broadcaster.map((name) {
                         return Padding(
-                        padding: const EdgeInsets.only(left: 24),
+                          padding: const EdgeInsets.only(left: 24),
                           child: Text(name),
                         );
                       }).toList(),
