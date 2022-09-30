@@ -25,6 +25,10 @@
         "function": "subscribe"
       },
       {
+        "source": "/api/metadata",
+        "function": "metadata"
+      },
+      {
         "source": "/embed",
         "function": "embedRedirect"
       }
