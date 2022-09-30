@@ -54,7 +54,9 @@ class EmotesList extends StatelessWidget {
                     child: IconButton(
                     onPressed: () => onEmoteSelected(emote),
                     splashRadius: 24,
-                        icon: Image(image: ResilientNetworkImage(emote.uri))));
+                        icon: FadeInImage(
+                            placeholder: MemoryImage(kTransparentImage),
+                            image: ResilientNetworkImage(emote.uri))));
               }).toList(),
             )),
           );

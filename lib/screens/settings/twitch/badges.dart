@@ -48,14 +48,16 @@ class TwitchBadgesScreen extends StatelessWidget {
                 (context, index) {
                   final badgeSet = model.badgeSets[keys[index]];
                   return CheckboxListTile(
-                      secondary: Image(
+                      secondary: FadeInImage(
                           alignment: Alignment.center,
+                          placeholder: MemoryImage(kTransparentImage),
                           image: ResilientNetworkImage(
                               Uri.parse(badgeSet["image_url_4x"])),
                           height: 36),
                       title: Text(badgeSet["title"],
                           overflow: TextOverflow.ellipsis),
-                      subtitle: badgeSet["description"] == badgeSet["title"]
+                      subtitle: badgeSet["description"] == badgeSet["title"] ||
+                              badgeSet["description"].trim().isEmpty
                           ? null
                           : Text(badgeSet["description"],
                               overflow: TextOverflow.ellipsis),
