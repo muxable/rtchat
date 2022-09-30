@@ -147,6 +147,8 @@ class _ChannelSearchResultsWidgetState
               children: (snapshot.data ?? [])
                   .map((result) => ListTile(
                       leading: Container(
+                          height: 48,
+                          width: 48,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
@@ -157,10 +159,13 @@ class _ChannelSearchResultsWidgetState
                             ),
                           ),
                           child: Stack(alignment: Alignment.center, children: [
-                            CircleAvatar(
-                              backgroundImage:
-                                  ResilientNetworkImage(result.imageUrl),
-                              backgroundColor: Colors.transparent,
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(24),
+                              child: FadeInImage(
+                                  placeholder: MemoryImage(kTransparentImage),
+                                  image: ResilientNetworkImage(result.imageUrl),
+                                  height: 48,
+                                  width: 48),
                             ),
                             Positioned(
                                 right: -4,
