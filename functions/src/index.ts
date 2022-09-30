@@ -400,6 +400,71 @@ export const agentPreemption = functions.https.onRequest(async (req, res) => {
   res.status(200).send("ok");
 });
 
+async function validate(
+  provider: string,
+  token: string
+): Promise<{ clientId: string; docId: string } | null> {
+  switch (provider) {
+    case "twitch":
+      // make sure the token is valid
+      const response = await fetch("https://id.twitch.tv/oauth2/validate", {
+        headers: {
+          Authorization: `OAuth ${token}`,
+        },
+      });
+      const json = await response.json();
+      if (!json["client_id"]) {
+        return null;
+      }
+      return {
+        clientId: json["client_id"],
+        docId: `twitch:${json["user_id"]}`,
+      };
+  }
+  return null;
+}
+
+const CLIENT_IDS: { [id: string]: string } = {};
+
+export const metadata = functions.https.onRequest(async (req, res) => {
+  // make sure this is a post request.
+  if (req.method !== "POST") {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "only POST requests are allowed"
+    );
+  }
+  const { key, value, token, provider } = req.body;
+  if (!key || !value || !token || !provider) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing key, value, token, or provider"
+    );
+  }
+  const data = await validate(provider, token);
+  if (!data) {
+    throw new functions.https.HttpsError("unauthenticated", "invalid token");
+  }
+  if (!CLIENT_IDS[data.clientId]) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "client id not registered, contact kevin@muxable.com"
+    );
+  }
+  await admin
+    .firestore()
+    .collection("metadata")
+    .doc(data.docId)
+    .collection("third-party")
+    .add({
+      key,
+      value,
+      clientId: data.clientId,
+      name: CLIENT_IDS[data.clientId],
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+});
+
 export {
   subscribe,
   unsubscribe,
