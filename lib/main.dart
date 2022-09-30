@@ -64,10 +64,6 @@ void main() async {
     await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
   }
 
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent));
-
   // persistence isn't useful to us since we're using Firestore as an event
   // stream and it uses memory/cache space.
   FirebaseFirestore.instance.settings =
