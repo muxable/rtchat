@@ -57,6 +57,8 @@ async function main() {
       databaseURL: `https://${PROJECT_ID}-default-rtdb.firebaseio.com`,
     });
   }
+  
+  admin.firestore().settings({ ignoreUndefinedProperties: true });
 
   const muxfdProfile = await admin
     .firestore()

@@ -82,7 +82,6 @@ export class FirebaseAdapter {
     private provider: "twitch",
     public debugKeepConnected: Set<String>
   ) {
-    firestore.settings({ ignoreUndefinedProperties: true });
   }
 
   getMessage(key: string) {
