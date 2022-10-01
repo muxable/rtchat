@@ -233,7 +233,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.channel != widget.channel) {
-      _controller.jumpTo(0);
+      if (_controller.hasClients) {
+        _controller.jumpTo(0);
+      }
       setState(() {
         _atBottom = true;
       });
