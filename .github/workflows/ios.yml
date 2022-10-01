@@ -82,7 +82,7 @@ jobs:
       - run: pip install codemagic-cli-tools
 
       - if: github.event_name != 'release'
-        run: app-store-connect publish --verbose --testflight --max-build-processing-wait 360
+        run: app-store-connect publish --verbose --testflight --max-build-processing-wait 360 --whats-new "New features and minor bug fixes."
 
       - if: github.event_name == 'release'
-        run: app-store-connect publish --verbose --app-store --max-build-processing-wait 360
+        run: app-store-connect publish --verbose --app-store --max-build-processing-wait 360 --whats-new "New features and minor bug fixes."
