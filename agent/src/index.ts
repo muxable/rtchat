@@ -57,19 +57,15 @@ async function main() {
       databaseURL: `https://${PROJECT_ID}-default-rtdb.firebaseio.com`,
     });
   }
-  
+
   admin.firestore().settings({ ignoreUndefinedProperties: true });
 
-  const muxfdProfile = await admin
+  await admin
     .firestore()
     .collection("profiles")
     .doc("q0QAKzURNgdMlyOS2bVgWCYG3pZ2")
-    .get();
-
-  if (!muxfdProfile.exists) {
-    throw new Error("unable to find muxfd profile");
-  }
-
+    .update({ debug: Math.random() });
+  
   const AGENT_ID = await getAgentId();
 
   log.info({ agentId: AGENT_ID }, "running agent");
