@@ -148,6 +148,8 @@ function listenForSingleUserId(userId: string) {
     mergeMap((donation) => {
       return admin
         .firestore()
+        .collection("channels")
+        .doc(donation.channelId)
         .collection("messages")
         .doc(`streamlabs-${donation.channelId}-${donation.id}`)
         .set({

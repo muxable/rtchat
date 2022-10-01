@@ -27,8 +27,9 @@ class ProfilesAdapter {
 
   Stream<bool> getIsOnline({required String channelId}) {
     return db
+        .collection("channels")
+        .doc(channelId)
         .collection("messages")
-        .where("channelId", isEqualTo: channelId)
         .where("type", whereIn: ["stream.online", "stream.offline"])
         .orderBy("timestamp")
         .limitToLast(1)

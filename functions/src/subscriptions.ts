@@ -120,29 +120,15 @@ export const unsubscribe = functions.pubsub
     }
   });
 
-export const cleanup = functions.pubsub
-  .schedule("*/6 * * * *") // every ten minutes
-  .onRun(async (context) => {
-    // delete up to 19200 records a day.
-    const batch = admin.firestore().batch();
-    const snapshot = await admin
+export const migrate = functions.firestore
+  .document("channels/{channelId}/messages/{messageId}")
+  .onWrite((change, context) => {
+    return admin
       .firestore()
       .collection("messages")
-      .where("timestamp", "<", new Date(Date.now() - 7 * 86400 * 1000))
-      .orderBy("timestamp", "asc")
-      .limit(80)
-      .get();
-    snapshot.forEach((doc) => batch.delete(doc.ref));
-    await batch.commit();
-    functions.logger.info("deleted", snapshot.size, "messages");
-
-    const claimRef = admin.database().ref("agents").child("twitch");
-
-    const unclaimed = await claimRef.orderByValue().equalTo("").get();
-    // log an error for any unclaimed agents. we don't want to delete them
-    // because this might be a race condition/false positive but logging an
-    // error will get reported.
-    for (const channel of Object.keys(unclaimed.val() || {})) {
-      functions.logger.error("unclaimed channel detected", channel);
-    }
+      .doc(context.params.messageId)
+      .set({
+        channelId: context.params.channelId,
+        ...change.after.data(),
+      });
   });

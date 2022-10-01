@@ -119,15 +119,17 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
   } else if (status === "enabled") {
     const type = req.body?.subscription?.type as EventsubType;
 
-    const messageRef = admin
-      .firestore()
-      .collection("messages")
-      .doc(`twitch:${messageId}`);
-
     const channelId = `twitch:${
       req.body.event["broadcaster_user_id"] ??
       req.body.event["to_broadcaster_user_id"]
     }`;
+
+    const messageRef = admin
+      .firestore()
+      .collection("channels")
+      .doc(channelId)
+      .collection("messages")
+      .doc(`twitch:${messageId}`);
 
     await messageRef.set({
       channelId,

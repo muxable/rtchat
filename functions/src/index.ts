@@ -6,7 +6,7 @@ import { getUserEmotes, getEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
-import { cleanup, subscribe, unsubscribe } from "./subscriptions";
+import { migrate, subscribe, unsubscribe } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
 import { updateChatStatus } from "./chat-status";
@@ -472,7 +472,7 @@ export {
   search,
   getUserEmotes,
   getEmotes,
-  cleanup,
+  migrate,
   synthesize,
   getVoices,
   updateChatStatus,

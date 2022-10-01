@@ -221,46 +221,49 @@ async function join(
     const badges = tags["badges"]
       .split(",")
       .map((badge) => badge.split("/") as [string, string]);
-    await firebase.getMessage(`twitch:${msg.id}`).set({
-      channelId: `twitch:${msg.channelId}`,
-      channel,
-      type: "message",
-      timestamp: admin.firestore.Timestamp.fromDate(msg.date),
-      reply: tags["reply-parent-msg-id"]
-        ? {
-            messageId: `twitch:${tags["reply-parent-msg-id"]}`,
-            displayName: tags["reply-parent-display-name"],
-            userLogin: tags["reply-parent-user-login"],
-            userId: tags["reply-parent-user-id"],
-            message: tags["reply-parent-msg-body"],
-          }
-        : null,
-      author: {
-        userId: tags["user-id"],
-        displayName: tags["display-name"],
-        login: tags["username"],
-      },
-      // we have to shim some tags because the frontend still needs some of these.
-      tags: {
-        "user-id": tags["user-id"],
-        "display-name": tags["display-name"],
-        username: user,
-        "room-id": tags["room-id"],
-        color: tags["color"],
-        "message-type": isAction ? "action" : "chat",
-        "badges-raw": tags["badges"],
-        badges: {
-          vip: badges.find((badge) => badge[0] === "vip") !== null,
-          moderator: badges.find((badge) => badge[0] === "moderator") !== null,
+    await firebase
+      .getMessage(`twitch:${msg.channelId}`, `twitch:${msg.id}`)
+      .set({
+        channelId: `twitch:${msg.channelId}`,
+        channel,
+        type: "message",
+        timestamp: admin.firestore.Timestamp.fromDate(msg.date),
+        reply: tags["reply-parent-msg-id"]
+          ? {
+              messageId: `twitch:${tags["reply-parent-msg-id"]}`,
+              displayName: tags["reply-parent-display-name"],
+              userLogin: tags["reply-parent-user-login"],
+              userId: tags["reply-parent-user-id"],
+              message: tags["reply-parent-msg-body"],
+            }
+          : null,
+        author: {
+          userId: tags["user-id"],
+          displayName: tags["display-name"],
+          login: tags["username"],
         },
-        "emotes-raw": tags["emotes"],
-      },
-      message,
-      annotations: {
-        isFirstTimeChatter: tags["first-msg"] === "1",
-        isAction,
-      },
-    });
+        // we have to shim some tags because the frontend still needs some of these.
+        tags: {
+          "user-id": tags["user-id"],
+          "display-name": tags["display-name"],
+          username: user,
+          "room-id": tags["room-id"],
+          color: tags["color"],
+          "message-type": isAction ? "action" : "chat",
+          "badges-raw": tags["badges"],
+          badges: {
+            vip: badges.find((badge) => badge[0] === "vip") !== null,
+            moderator:
+              badges.find((badge) => badge[0] === "moderator") !== null,
+          },
+          "emotes-raw": tags["emotes"],
+        },
+        message,
+        annotations: {
+          isFirstTimeChatter: tags["first-msg"] === "1",
+          isAction,
+        },
+      });
   });
 
   chat.onAnnouncement(async (channel, user, announcement, msg) => {
@@ -283,57 +286,56 @@ async function join(
     const badges = tags["badges"]
       .split(",")
       .map((badge) => badge.split("/") as [string, string]);
-    await firebase.getMessage(`twitch:${msg.id}`).set({
-      channelId: `twitch:${msg.channelId}`,
-      channel,
-      type: "message",
-      timestamp: admin.firestore.Timestamp.fromDate(msg.date),
-      reply: tags["reply-parent-msg-id"]
-        ? {
-            messageId: `twitch:${tags["reply-parent-msg-id"]}`,
-            displayName: tags["reply-parent-display-name"],
-            userLogin: tags["reply-parent-user-login"],
-            userId: tags["reply-parent-user-id"],
-            message: tags["reply-parent-msg-body"],
-          }
-        : null,
-      author: {
-        userId: tags["user-id"],
-        displayName: tags["display-name"],
-        login: tags["username"],
-      },
-      // we have to shim some tags because the frontend still needs some of these.
-      tags: {
-        "user-id": tags["user-id"],
-        "display-name": tags["display-name"],
-        username: user,
-        "room-id": tags["room-id"],
-        color: tags["color"],
-        "message-type": "chat",
-        "badges-raw": tags["badges"],
-        badges: {
-          vip: badges.find((badge) => badge[0] === "vip") !== null,
-          moderator: badges.find((badge) => badge[0] === "moderator") !== null,
+    await firebase
+      .getMessage(`twitch:${msg.channelId}`, `twitch:${msg.id}`)
+      .set({
+        channelId: `twitch:${msg.channelId}`,
+        channel,
+        type: "message",
+        timestamp: admin.firestore.Timestamp.fromDate(msg.date),
+        reply: tags["reply-parent-msg-id"]
+          ? {
+              messageId: `twitch:${tags["reply-parent-msg-id"]}`,
+              displayName: tags["reply-parent-display-name"],
+              userLogin: tags["reply-parent-user-login"],
+              userId: tags["reply-parent-user-id"],
+              message: tags["reply-parent-msg-body"],
+            }
+          : null,
+        author: {
+          userId: tags["user-id"],
+          displayName: tags["display-name"],
+          login: tags["username"],
         },
-        "emotes-raw": tags["emotes"],
-      },
-      message,
-      annotations: {
-        announcement: { color: announcement.color },
-        isFirstTimeChatter: tags["first-msg"] === "1",
-      },
-    });
+        // we have to shim some tags because the frontend still needs some of these.
+        tags: {
+          "user-id": tags["user-id"],
+          "display-name": tags["display-name"],
+          username: user,
+          "room-id": tags["room-id"],
+          color: tags["color"],
+          "message-type": "chat",
+          "badges-raw": tags["badges"],
+          badges: {
+            vip: badges.find((badge) => badge[0] === "vip") !== null,
+            moderator:
+              badges.find((badge) => badge[0] === "moderator") !== null,
+          },
+          "emotes-raw": tags["emotes"],
+        },
+        message,
+        annotations: {
+          announcement: { color: announcement.color },
+          isFirstTimeChatter: tags["first-msg"] === "1",
+        },
+      });
   });
 
   chat.onMessageRemove(async (channel, messageId, msg) => {
-    const original = await firebase.getMessage(`twitch:${messageId}`).get();
-    if (!original.exists) {
-      log.error({ messageId, timestamp: msg.date }, "no message to delete");
-      return;
-    }
-    await firebase.getMessage(`twitch:x-${messageId}`).set({
+    const channelId = `twitch:${await getTwitchUserId(channel)}`;
+    await firebase.getMessage(channelId, `twitch:x-${messageId}`).set({
       channel,
-      channelId: original.get("channelId"),
+      channelId,
       type: "messagedeleted",
       timestamp: admin.firestore.Timestamp.fromDate(msg.date),
       messageId: `twitch:${messageId}`,
@@ -341,26 +343,34 @@ async function join(
   });
 
   chat.onChatClear(async (channel, msg) => {
-    await firebase.getMessage(`twitch:clear-${msg.date.toISOString()}`).set({
-      channel,
-      channelId: `twitch:${msg.channelId}`,
-      timestamp: admin.firestore.Timestamp.fromDate(msg.date),
-      type: "clear",
-    });
+    await firebase
+      .getMessage(
+        `twitch:${msg.channelId}`,
+        `twitch:clear-${msg.date.toISOString()}`
+      )
+      .set({
+        channel,
+        channelId: `twitch:${msg.channelId}`,
+        timestamp: admin.firestore.Timestamp.fromDate(msg.date),
+        type: "clear",
+      });
   });
 
   chat.onHosted(async (channel, hosterChannel, auto, viewers) => {
     // host messages don't have an associated timestamp so the best we can do is use the current date stamp.
     const timestamp = new Date();
-    await firebase.getMessage(`twitch:host-${timestamp.toISOString()}`).set({
-      channel: `#${channel}`,
-      channelId: `twitch:${await getTwitchUserId(channel)}`,
-      type: "host",
-      displayName: hosterChannel,
-      hosterChannelId: `twitch:${await getTwitchUserId(hosterChannel)}`,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      viewers: viewers || 0, // includes the original I guess.
-    });
+    const channelId = `twitch:${await getTwitchUserId(channel)}`;
+    await firebase
+      .getMessage(channelId, `twitch:host-${timestamp.toISOString()}`)
+      .set({
+        channel: `#${channel}`,
+        channelId,
+        type: "host",
+        displayName: hosterChannel,
+        hosterChannelId: `twitch:${await getTwitchUserId(hosterChannel)}`,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        viewers: viewers || 0, // includes the original I guess.
+      });
   });
 
   chat.onR9k(async (channel, enabled) => {
@@ -464,6 +474,7 @@ async function join(
     raidListener = await pubsub.onCustomTopic("raid", async (message) => {
       const data = message.data as any;
       await firebase.setIfNotExists(
+        `twitch:${data["raid"]["source_id"]}`,
         `twitch:${data["type"]}-${data["raid"]["id"]}`,
         {
           channel,

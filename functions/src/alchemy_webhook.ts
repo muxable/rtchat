@@ -184,18 +184,23 @@ async function storeDonation(
   functions.logger.info("ChannelId obtained", { channelId: channelId });
 
   // storing donation respoonses in realtimecash collection
-  await admin.firestore().collection("messages").add({
-    channelId: channelId,
-    webhookId: notification.webhookId,
-    id: notification.id,
-    createdAt: notification.createdAt,
-    type: "realtimecash.donation",
-    notificationType: notification.type,
-    activity: activity,
-    donor: donor,
-    message: message,
-    timestamp: new Date(),
-  });
+  await admin
+    .firestore()
+    .collection("channels")
+    .doc(channelId)
+    .collection("messages")
+    .add({
+      channelId: channelId,
+      webhookId: notification.webhookId,
+      id: notification.id,
+      createdAt: notification.createdAt,
+      type: "realtimecash.donation",
+      notificationType: notification.type,
+      activity: activity,
+      donor: donor,
+      message: message,
+      timestamp: new Date(),
+    });
   functions.logger.info("Payload is stored in messages collection");
 }
 

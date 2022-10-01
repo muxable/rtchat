@@ -325,8 +325,9 @@ class MessagesAdapter {
     final emotes = await getEmotes(channel);
 
     final results = await db
+        .collection("channels")
+        .doc(channel.toString())
         .collection("messages")
-        .where("channelId", isEqualTo: channel.toString())
         .where("timestamp", isLessThan: from)
         .orderBy("timestamp")
         .limitToLast(250)
@@ -345,8 +346,9 @@ class MessagesAdapter {
     var lastAdMessageCount = 0;
     var isInitialSnapshot = true;
     return db
+        .collection("channels")
+        .doc(channel.toString())
         .collection("messages")
-        .where("channelId", isEqualTo: channel.toString())
         .orderBy("timestamp")
         .limitToLast(250)
         .snapshots()
@@ -391,8 +393,9 @@ class MessagesAdapter {
   /// null indicates that the stream is offline.
   Stream<DateTime?> forChannelUptime(Channel channel) {
     return db
+        .collection("channels")
+        .doc(channel.toString())
         .collection("messages")
-        .where("channelId", isEqualTo: channel.toString())
         .where("type", whereIn: ["stream.online", "stream.offline"])
         .orderBy("timestamp")
         .limitToLast(1)
@@ -412,6 +415,8 @@ class MessagesAdapter {
 
   Future<bool> hasMessages(Channel channel) async {
     return await db
+        .collection("channels")
+        .doc(channel.toString())
         .collection("messages")
         .where("channelId", isEqualTo: channel.toString())
         .limit(1)

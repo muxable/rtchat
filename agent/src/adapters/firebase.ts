@@ -81,20 +81,27 @@ export class FirebaseAdapter {
     private firestore: admin.firestore.Firestore,
     private provider: "twitch",
     public debugKeepConnected: Set<String>
-  ) {
-  }
+  ) {}
 
-  getMessage(key: string) {
-    return this.firestore.collection("messages").doc(key);
+  getMessage(channelId: string, key: string) {
+    return this.firestore
+      .collection("channels")
+      .doc(channelId)
+      .collection("messages")
+      .doc(key);
   }
 
   getMetadata(key: string) {
     return this.firestore.collection("metadata").doc(key);
   }
 
-  setIfNotExists(key: string, value: any) {
+  setIfNotExists(channelId: string, key: string, value: any) {
     return this.firestore.runTransaction(async (transaction) => {
-      const ref = this.firestore.collection("messages").doc(key);
+      const ref = this.firestore
+        .collection("channels")
+        .doc(channelId)
+        .collection("messages")
+        .doc(key);
       const doc = await transaction.get(ref);
       if (doc.exists) {
         return;
