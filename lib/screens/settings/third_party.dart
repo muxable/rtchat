@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -33,13 +32,13 @@ const streamlabsCurrencies = [
   ['USD', 'US Dollar']
 ];
 
-class DonationsScreen extends StatelessWidget {
-  const DonationsScreen({Key? key}) : super(key: key);
+class ThirdPartyScreen extends StatelessWidget {
+  const ThirdPartyScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text("Third-party donations")),
+        appBar: AppBar(title: const Text("Third-party services")),
         body: Consumer<UserModel>(
           builder: (context, userModel, child) {
             final userId = userModel.user?.uid;
@@ -51,46 +50,47 @@ class DonationsScreen extends StatelessWidget {
                 DonationsAdapter.instance.forStreamlabsConfig(userId: userId);
             return ListView(
               children: [
-                  const ListTile(
-                    leading:
-                        Image(image: AssetImage('assets/realtimecash.png')),
-                    title: Text("RealtimeCash"),
-                    subtitle: Text("Connect an ETH or MATIC wallet"),
-                  ),
-                  Padding(
-                      padding: const EdgeInsets.only(left: 88, right: 16),
-                      child: StreamBuilder<String?>(
-                        stream: DonationsAdapter.instance
-                            .forRealtimeChatAddress(userId: userId),
-                        builder: (context, snapshot) {
-                          return TextField(
-                              controller: TextEditingController()
-                                ..text = snapshot.data ?? "",
-                              readOnly: true,
-                              decoration: InputDecoration(
-                                  hintText: "Wallet address",
-                                  suffixIcon: IconButton(
-                                      icon: const Icon(Icons.qr_code_scanner),
-                                      onPressed: () {
-                                        showModalBottomSheet<void>(
-                                            context: context,
-                                            builder: (context) {
-                                              return MobileScanner(
-                                                  allowDuplicates: false,
-                                                  onDetect: (barcode, args) {
-                                                    final value = barcode.rawValue;
-                                                    if (value != null) {
-                                                      DonationsAdapter.instance
-                                                          .setRealtimeCashAddress(
-                                                              address: value.toLowerCase());
-                                                    }
-                                                    Navigator.of(context).pop();
-                                                  });
-                                            });
-                                      })),
-                              keyboardType: TextInputType.url);
-                        },
-                      )),
+                const ListTile(
+                  leading: Image(image: AssetImage('assets/realtimecash.png')),
+                  title: Text("RealtimeCash"),
+                  subtitle: Text("Connect an ETH or MATIC wallet"),
+                ),
+                Padding(
+                    padding: const EdgeInsets.only(left: 88, right: 16),
+                    child: StreamBuilder<String?>(
+                      stream: DonationsAdapter.instance
+                          .forRealtimeChatAddress(userId: userId),
+                      builder: (context, snapshot) {
+                        return TextField(
+                            controller: TextEditingController()
+                              ..text = snapshot.data ?? "",
+                            readOnly: true,
+                            decoration: InputDecoration(
+                                hintText: "Wallet address",
+                                suffixIcon: IconButton(
+                                    icon: const Icon(Icons.qr_code_scanner),
+                                    onPressed: () {
+                                      showModalBottomSheet<void>(
+                                          context: context,
+                                          builder: (context) {
+                                            return MobileScanner(
+                                                allowDuplicates: false,
+                                                onDetect: (barcode, args) {
+                                                  final value =
+                                                      barcode.rawValue;
+                                                  if (value != null) {
+                                                    DonationsAdapter.instance
+                                                        .setRealtimeCashAddress(
+                                                            address: value
+                                                                .toLowerCase());
+                                                  }
+                                                  Navigator.of(context).pop();
+                                                });
+                                          });
+                                    })),
+                            keyboardType: TextInputType.url);
+                      },
+                    )),
                 const Divider(),
                 ListTile(
                   leading:

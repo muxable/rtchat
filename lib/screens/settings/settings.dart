@@ -76,10 +76,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           ListTile(
-            title: const Text('Third-party donations'),
-            subtitle: const Text("Connect to a third-party donation service"),
+            title: const Text('Third-party services'),
+            subtitle: const Text("Connect to a third-party service"),
             onTap: () {
-              Navigator.pushNamed(context, "/settings/donations");
+              Navigator.pushNamed(context, "/settings/third-party");
             },
           ),
           const Divider(),
