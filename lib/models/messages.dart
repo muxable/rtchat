@@ -8,6 +8,7 @@ import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts.dart';
 
 class MessagesModel extends ChangeNotifier {
@@ -115,6 +116,13 @@ class MessagesModel extends ChangeNotifier {
   Set<int> get separators => _separators;
 
   bool get isLive => _isLive;
+
+  Set<TwitchUserModel> get authors {
+    return _messages
+        .whereType<TwitchMessageModel>()
+        .map((model) => model.author)
+        .toSet();
+  }
 
   Future<void> pullMoreMessages() async {
     final channel = _channel;
