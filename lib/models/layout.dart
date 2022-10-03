@@ -127,15 +127,6 @@ class LayoutModel extends ChangeNotifier {
 
   set themeMode(ThemeMode value) {
     _themeMode = value;
-    if (_themeMode == ThemeMode.dark) {
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        systemNavigationBarColor: Colors.black,
-      ));
-    } else if (_themeMode == ThemeMode.light) {
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        systemNavigationBarColor: Colors.white,
-      ));
-    }
     notifyListeners();
   }
 
@@ -201,16 +192,6 @@ class LayoutModel extends ChangeNotifier {
     }
     if (json['themeMode'] != null) {
       _themeMode = _ThemeModeJson.fromJson(json['themeMode']);
-
-      if (_themeMode == ThemeMode.dark) {
-        SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-          systemNavigationBarColor: Colors.black,
-        ));
-      } else if (_themeMode == ThemeMode.light) {
-        SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-          systemNavigationBarColor: Colors.white,
-        ));
-      }
     }
   }
 
