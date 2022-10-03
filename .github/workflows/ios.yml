@@ -71,6 +71,9 @@ jobs:
       APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
     concurrency: 
       group: ios-${{ github.ref }}
+    environment:
+      name: ios-${{ github.event_name == 'release' && 'app-store' || 'testflight' }}
+      url: https://apps.apple.com/us/app/realtimechat-for-twitch/id1567720948
     steps:
       - uses: actions/download-artifact@v3
         with:
@@ -82,7 +85,7 @@ jobs:
       - run: pip install codemagic-cli-tools
 
       - if: github.event_name != 'release'
-        run: app-store-connect publish --verbose --testflight --max-build-processing-wait 360
+        run: app-store-connect publish --verbose --testflight --max-build-processing-wait 360 --whats-new "New features and minor bug fixes."
 
       - if: github.event_name == 'release'
-        run: app-store-connect publish --verbose --app-store --max-build-processing-wait 360
+        run: app-store-connect publish --verbose --app-store --max-build-processing-wait 360 --whats-new "New features and minor bug fixes."
