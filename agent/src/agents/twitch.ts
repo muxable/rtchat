@@ -221,49 +221,53 @@ async function join(
     const badges = tags["badges"]
       .split(",")
       .map((badge) => badge.split("/") as [string, string]);
-    await firebase
-      .getMessage(`twitch:${msg.channelId}`, `twitch:${msg.id}`)
-      .set({
-        channelId: `twitch:${msg.channelId}`,
-        channel,
-        type: "message",
-        timestamp: admin.firestore.Timestamp.fromDate(msg.date),
-        reply: tags["reply-parent-msg-id"]
-          ? {
-              messageId: `twitch:${tags["reply-parent-msg-id"]}`,
-              displayName: tags["reply-parent-display-name"],
-              userLogin: tags["reply-parent-user-login"],
-              userId: tags["reply-parent-user-id"],
-              message: tags["reply-parent-msg-body"],
-            }
-          : null,
-        author: {
-          userId: tags["user-id"],
-          displayName: tags["display-name"],
-          login: tags["username"],
-        },
-        // we have to shim some tags because the frontend still needs some of these.
-        tags: {
-          "user-id": tags["user-id"],
-          "display-name": tags["display-name"],
-          username: user,
-          "room-id": tags["room-id"],
-          color: tags["color"],
-          "message-type": isAction ? "action" : "chat",
-          "badges-raw": tags["badges"],
-          badges: {
-            vip: badges.find((badge) => badge[0] === "vip") !== null,
-            moderator:
-              badges.find((badge) => badge[0] === "moderator") !== null,
+    try {
+      await firebase
+        .getMessage(`twitch:${msg.channelId}`, `twitch:${msg.id}`)
+        .set({
+          channelId: `twitch:${msg.channelId}`,
+          channel,
+          type: "message",
+          timestamp: admin.firestore.Timestamp.fromDate(msg.date),
+          reply: tags["reply-parent-msg-id"]
+            ? {
+                messageId: `twitch:${tags["reply-parent-msg-id"]}`,
+                displayName: tags["reply-parent-display-name"],
+                userLogin: tags["reply-parent-user-login"],
+                userId: tags["reply-parent-user-id"],
+                message: tags["reply-parent-msg-body"],
+              }
+            : null,
+          author: {
+            userId: tags["user-id"],
+            displayName: tags["display-name"],
+            login: tags["username"],
           },
-          "emotes-raw": tags["emotes"],
-        },
-        message,
-        annotations: {
-          isFirstTimeChatter: tags["first-msg"] === "1",
-          isAction,
-        },
-      });
+          // we have to shim some tags because the frontend still needs some of these.
+          tags: {
+            "user-id": tags["user-id"],
+            "display-name": tags["display-name"],
+            username: user,
+            "room-id": tags["room-id"],
+            color: tags["color"],
+            "message-type": isAction ? "action" : "chat",
+            "badges-raw": tags["badges"],
+            badges: {
+              vip: badges.find((badge) => badge[0] === "vip") !== null,
+              moderator:
+                badges.find((badge) => badge[0] === "moderator") !== null,
+            },
+            "emotes-raw": tags["emotes"],
+          },
+          message,
+          annotations: {
+            isFirstTimeChatter: tags["first-msg"] === "1",
+            isAction,
+          },
+        });
+    } catch (e) {
+      log.error({ agentId, channel, error: e }, "failed to add message");
+    }
   });
 
   chat.onAnnouncement(async (channel, user, announcement, msg) => {
