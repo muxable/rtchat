@@ -24,7 +24,7 @@ class SimpleRealtimeCashDonationEventModel extends MessageModel {
       String messageId, Map<String, dynamic> data) {
     return SimpleRealtimeCashDonationEventModel(
         currency: data['activity']['asset'] ?? "UNKNOWN",
-        value: data['activity']['value'],
+        value: data['activity']['value'].toDouble(),
         hash: data['activity']['hash'],
         donor: data['donor'],
         message: data['message'],
