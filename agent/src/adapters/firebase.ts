@@ -23,6 +23,7 @@ export async function getTwitchOAuthConfig(): Promise<
   if (!secret) {
     throw new Error("twitch client secret missing");
   }
+  process.env["TWITCH_CLIENT_SECRET"] = secret;
   return {
     client: { id, secret },
     auth: {
