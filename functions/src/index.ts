@@ -77,11 +77,10 @@ export const ban = functions.https.onCall(async (data, context) => {
   const provider = data?.provider;
   const channelId = data?.channelId;
   const username = data?.username;
-  const reason = data?.reason;
-  if (!provider || !channelId || !username || !reason) {
+  if (!provider || !channelId || !username) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId, username, reason"
+      "missing provider, channelId, username"
     );
   }
 
@@ -94,7 +93,7 @@ export const ban = functions.https.onCall(async (data, context) => {
       const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
-        `/ban ${username} ${reason}`
+        `/ban ${username}`
       );
       return response;
   }
