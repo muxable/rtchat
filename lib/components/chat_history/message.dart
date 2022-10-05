@@ -136,8 +136,8 @@ class ChatHistoryMessage extends StatelessWidget {
                                       color: Colors.redAccent),
                                   title: Text('Ban ${m.author.displayName}'),
                                   onTap: () {
-                                    ActionsAdapter.instance.ban(channel,
-                                        m.author.login, "banned by streamer");
+                                    ActionsAdapter.instance
+                                        .ban(channel, m.author.login);
                                     Navigator.pop(context);
                                   }),
                               ListTile(
