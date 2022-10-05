@@ -20,13 +20,12 @@ class ActionsAdapter {
     return result.data;
   }
 
-  Future<void> ban(Channel channel, String username, String reason) async {
+  Future<void> ban(Channel channel, String username) async {
     final call = functions.httpsCallable('ban');
     await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
       "username": username,
-      "reason": reason,
     });
   }
 
