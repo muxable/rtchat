@@ -452,7 +452,7 @@ export const metadata = functions.https.onRequest(async (req, res) => {
   }
   await admin
     .firestore()
-    .collection("metadata")
+    .collection("channels")
     .doc(data.docId)
     .collection("third-party")
     .add({
