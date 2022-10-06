@@ -391,12 +391,16 @@ class MessagesAdapter {
 
   /// Returns a stream of the "stream online" time.
   /// null indicates that the stream is offline.
-  Stream<DateTime?> forChannelUptime(Channel channel) {
-    return db
+  Stream<DateTime?> forChannelUptime(Channel channel, {DateTime? timestamp}) {
+    var query = db
         .collection("channels")
         .doc(channel.toString())
         .collection("messages")
-        .where("type", whereIn: ["stream.online", "stream.offline"])
+        .where("type", whereIn: ["stream.online", "stream.offline"]);
+    if (timestamp != null) {
+      query = query.where("timestamp", isLessThan: timestamp);
+    }
+    return query
         .orderBy("timestamp")
         .limitToLast(1)
         .snapshots()
