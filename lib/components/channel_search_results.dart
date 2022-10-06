@@ -12,7 +12,7 @@ Future<List<SearchResult>> fastSearch() async {
   // fast query firestore and slow query the functions. tag firestore results
   // with isPromoted = true.
   final snapshot = await FirebaseFirestore.instance
-      .collection("metadata")
+      .collection("channels")
       .where("lastActiveAt",
           isGreaterThan: DateTime.now().subtract(const Duration(days: 3)))
       .orderBy("lastActiveAt", descending: true)

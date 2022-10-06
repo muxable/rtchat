@@ -26,6 +26,10 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
+    match /channels/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
     match /channels/{channelId}/messages/{document=**} {
       allow read: if true;
       allow write: if false;

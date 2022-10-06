@@ -12,7 +12,7 @@ class MetadataAdapter {
   Stream<String?> getThirdPartyMetadataValue(
       {required String channelId, required String name, required String key}) {
     return db
-        .collection("metadata")
+        .collection("channels")
         .doc(channelId)
         .collection("third-party")
         .where("name", isEqualTo: name)
@@ -31,7 +31,7 @@ class MetadataAdapter {
   Stream<List<String>> getAvailableThirdPartyProviders(
       {required String channelId}) {
     return db
-        .collection("metadata")
+        .collection("channels")
         .doc(channelId)
         .snapshots()
         .map((doc) => (doc.get("thirdParty") ?? {}).keys.toList());
