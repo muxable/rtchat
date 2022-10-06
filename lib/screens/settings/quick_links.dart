@@ -71,6 +71,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                   key: ValueKey(source),
                   background: const DismissibleDeleteBackground(),
                   child: Tooltip(
+                      triggerMode: TooltipTriggerMode.tap,
                       message: "Swipe left or right to delete quick link",
                       child: ListTile(
                         key: ValueKey(source),
