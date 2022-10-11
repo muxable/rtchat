@@ -93,7 +93,7 @@ export class FirebaseAdapter {
   }
 
   getMetadata(key: string) {
-    return this.firestore.collection("metadata").doc(key);
+    return this.firestore.collection("channels").doc(key);
   }
 
   setIfNotExists(channelId: string, key: string, value: any) {

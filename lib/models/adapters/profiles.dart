@@ -21,6 +21,9 @@ class ProfilesAdapter {
         return null;
       }
       final twitch = data['twitch'];
+      if (twitch == null) {
+        return null;
+      }
       return Channel(provider, twitch['id'], twitch['displayName']);
     });
   }
