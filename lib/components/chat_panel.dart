@@ -352,7 +352,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  SeparatorWidget(message.timestamp),
+                                  SeparatorWidget(
+                                      widget.channel, message.timestamp),
                                   messageWidget
                                 ],
                               );
