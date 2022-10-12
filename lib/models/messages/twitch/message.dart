@@ -147,7 +147,7 @@ Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
       final url = Uri.parse(
           "https://static-cdn.jtvnw.net/emoticons/v2/${child.key}/default/dark/1.0");
       yield EmoteToken(
-          url: url, code: message.substring(child.start, child.end));
+          url: url, code: message.substring(child.start, child.end + 1));
       index = child.end + 1;
     }
 
