@@ -72,7 +72,23 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   Widget build(BuildContext context) {
     final uri = getUri();
     return Scaffold(
-      appBar: _showControls ? AppBar(title: const Text("Activity feed")) : null,
+      appBar: _showControls
+          ? AppBar(
+              title: const Text("Activity feed"),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.cookie_outlined),
+                  tooltip: "Clear cookies",
+                  onPressed: () async {
+                    final cookieManager = CookieManager();
+                    if (await cookieManager.clearCookies()) {
+                      await _webViewController?.reload();
+                    }
+                  },
+                ),
+              ],
+            )
+          : null,
       body: SafeArea(
         child: Consumer3<ActivityFeedModel, UserModel, LayoutModel>(builder:
             (context, activityFeedModel, userModel, layoutModel, child) {
