@@ -23,6 +23,7 @@ export async function getTwitchOAuthConfig(): Promise<
   if (!secret) {
     throw new Error("twitch client secret missing");
   }
+  process.env["TWITCH_CLIENT_SECRET"] = secret;
   return {
     client: { id, secret },
     auth: {
@@ -92,7 +93,7 @@ export class FirebaseAdapter {
   }
 
   getMetadata(key: string) {
-    return this.firestore.collection("metadata").doc(key);
+    return this.firestore.collection("channels").doc(key);
   }
 
   setIfNotExists(channelId: string, key: string, value: any) {

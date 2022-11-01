@@ -6,7 +6,12 @@ import { getUserEmotes, getEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
-import { migrate, subscribe, unsubscribe } from "./subscriptions";
+import {
+  migrate,
+  migrateChannels,
+  subscribe,
+  unsubscribe,
+} from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
 import { updateChatStatus } from "./chat-status";
@@ -82,11 +87,10 @@ export const ban = functions.https.onCall(async (data, context) => {
   const provider = data?.provider;
   const channelId = data?.channelId;
   const username = data?.username;
-  const reason = data?.reason;
-  if (!provider || !channelId || !username || !reason) {
+  if (!provider || !channelId || !username) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId, username, reason"
+      "missing provider, channelId, username"
     );
   }
 
@@ -99,7 +103,7 @@ export const ban = functions.https.onCall(async (data, context) => {
       const response = await write(
         await getChannelId(context.auth.uid, "twitch"),
         targetChannel,
-        `/ban ${username} ${reason}`
+        `/ban ${username}`
       );
       return response;
   }
@@ -458,7 +462,7 @@ export const metadata = functions.https.onRequest(async (req, res) => {
   }
   await admin
     .firestore()
-    .collection("metadata")
+    .collection("channels")
     .doc(data.docId)
     .collection("third-party")
     .add({
@@ -478,6 +482,7 @@ export {
   getUserEmotes,
   getEmotes,
   migrate,
+  migrateChannels,
   synthesize,
   getVoices,
   updateChatStatus,
