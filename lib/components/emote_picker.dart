@@ -5,12 +5,16 @@ import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:sticky_headers/sticky_headers/widget.dart';
 
 class EmotesList extends StatelessWidget {
-  const EmotesList(
-      {Key? key, required this.emotes, required this.onEmoteSelected})
-      : super(key: key);
+  const EmotesList({
+    Key? key,
+    required this.emotes,
+    required this.onEmoteSelected,
+    required this.channel,
+  }) : super(key: key);
 
   final List<Emote> emotes;
   final Function(Emote) onEmoteSelected;
+  final Channel channel;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +34,12 @@ class EmotesList extends StatelessWidget {
       categories.removeAt(globalEmotesIndex);
       categories.insert(0, "Global Emotes");
     }
+    // ensure channel emotes is second.
+    final channelEmotesIndex = categories.indexOf(channel.displayName);
+    if (channelEmotesIndex != -1) {
+      categories.removeAt(channelEmotesIndex);
+      categories.insert(1, channel.displayName);
+    }
     return ListView.builder(
         itemCount: byCategory.length,
         itemBuilder: (context, index) {
@@ -42,7 +52,8 @@ class EmotesList extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     categories[index],
-                    style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.primary),
                   )),
             ),
             content: Center(
@@ -52,8 +63,8 @@ class EmotesList extends StatelessWidget {
                     message: emote.code,
                     preferBelow: false,
                     child: IconButton(
-                    onPressed: () => onEmoteSelected(emote),
-                    splashRadius: 24,
+                        onPressed: () => onEmoteSelected(emote),
+                        splashRadius: 24,
                         icon: FadeInImage(
                             placeholder: MemoryImage(kTransparentImage),
                             image: ResilientNetworkImage(emote.uri))));
@@ -144,19 +155,23 @@ class _EmotePickerWidgetState extends State<EmotePickerWidget>
                         if (byProvider.containsKey("twitch"))
                           EmotesList(
                               emotes: byProvider["twitch"]!,
-                              onEmoteSelected: widget.onEmoteSelected),
+                              onEmoteSelected: widget.onEmoteSelected,
+                              channel: widget.channel),
                         if (byProvider.containsKey("bttv"))
                           EmotesList(
                               emotes: byProvider["bttv"]!,
-                              onEmoteSelected: widget.onEmoteSelected),
+                              onEmoteSelected: widget.onEmoteSelected,
+                              channel: widget.channel),
                         if (byProvider.containsKey("ffz"))
                           EmotesList(
                               emotes: byProvider["ffz"]!,
-                              onEmoteSelected: widget.onEmoteSelected),
+                              onEmoteSelected: widget.onEmoteSelected,
+                              channel: widget.channel),
                         if (byProvider.containsKey("7tv"))
                           EmotesList(
                               emotes: byProvider["7tv"]!,
-                              onEmoteSelected: widget.onEmoteSelected),
+                              onEmoteSelected: widget.onEmoteSelected,
+                              channel: widget.channel),
                       ],
                     )),
                   ]);
