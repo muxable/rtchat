@@ -176,7 +176,9 @@ class _ScrollToBottomWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 300),
-      bottom: show ? 16 : -72,
+      bottom: show
+          ? 72 // 72 consideration for the InputField, since InputField is on top of the Stack.
+          : -72,
       curve: Curves.easeOut,
       child: Center(
         child: ElevatedButton(
