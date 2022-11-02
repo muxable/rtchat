@@ -30,5 +30,13 @@
     "raidAChannel": "Raid a Channel",
     "@raidAChannel": {
       "description": "Header for a page that lets the raid channels"
+    },
+    "globalEmotes": "Global Emotes",
+    "@globalEmotes": {
+      "description": "Header for a category showing emotes available to every channel"
+    },
+    "streamPreviewLoading": "Loading (or stream is offline)...",
+    "@streamPreviewLoading": {
+      "description": "Text shown when the stream preview pane is loading"
     }
 }

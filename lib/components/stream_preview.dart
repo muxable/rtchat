@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/stream_preview.dart';
@@ -131,7 +132,7 @@ class _StreamPreviewState extends State<StreamPreview> {
               color: Colors.black.withOpacity(0.8),
               child: const Center(
                 child: Text(
-                  "Loading (or stream is offline)...",
+                  AppLocalizations.of(context).streamPreviewLoading,
                   style: TextStyle(color: Colors.white),
                 ),
               ),
