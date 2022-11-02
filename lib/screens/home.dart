@@ -271,35 +271,49 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 );
                 if (orientation == Orientation.portrait) {
-                  return Column(children: [
-                    Consumer<LayoutModel>(
-                        builder: (context, layoutModel, child) {
-                      if (layoutModel.isShowNotifications) {
-                        return ResizableWidget(
-                            resizable: !layoutModel.locked,
-                            height: layoutModel.panelHeight,
-                            width: layoutModel.panelWidth,
-                            onResizeHeight: (height) {
-                              layoutModel.panelHeight = height;
-                            },
-                            onResizeWidth: (width) {
-                              layoutModel.panelWidth = width;
-                            },
-                            child: const ActivityFeedPanelWidget());
-                      } else if (layoutModel.isShowPreview) {
-                        return SizedBox(
-                            height: MediaQuery.of(context).size.width * 9 / 16,
-                            child: StreamPreview(channel: widget.channel));
-                      } else {
-                        return Container();
-                      }
-                    }),
-                    Expanded(
-                        child: DiscoWidget(
-                            isEnabled: widget.isDiscoModeEnabled,
-                            child: ChatPanelWidget(channel: widget.channel))),
-                    chatPanelFooter,
-                  ]);
+                  return Stack(
+                    children: [
+                      Column(
+                        children: [
+                          Consumer<LayoutModel>(
+                              builder: (context, layoutModel, child) {
+                            if (layoutModel.isShowNotifications) {
+                              return ResizableWidget(
+                                  resizable: !layoutModel.locked,
+                                  height: layoutModel.panelHeight,
+                                  width: layoutModel.panelWidth,
+                                  onResizeHeight: (height) {
+                                    layoutModel.panelHeight = height;
+                                  },
+                                  onResizeWidth: (width) {
+                                    layoutModel.panelWidth = width;
+                                  },
+                                  child: const ActivityFeedPanelWidget());
+                            } else if (layoutModel.isShowPreview) {
+                              return SizedBox(
+                                  height: MediaQuery.of(context).size.width *
+                                      9 /
+                                      16,
+                                  child:
+                                      StreamPreview(channel: widget.channel));
+                            } else {
+                              return Container();
+                            }
+                          }),
+                          Expanded(
+                              child: DiscoWidget(
+                                  isEnabled: widget.isDiscoModeEnabled,
+                                  child: ChatPanelWidget(
+                                      channel: widget.channel))),
+                        ],
+                      ),
+                      Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: MediaQuery.of(context).viewInsets.bottom,
+                          child: chatPanelFooter)
+                    ],
+                  );
                 } else {
                   // landscape
                   return Row(children: [
