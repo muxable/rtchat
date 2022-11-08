@@ -119,28 +119,3 @@ export const unsubscribe = functions.pubsub
       }
     }
   });
-
-export const migrate = functions.firestore
-  .document("channels/{channelId}/messages/{messageId}")
-  .onWrite((change, context) => {
-    return admin
-      .firestore()
-      .collection("messages")
-      .doc(context.params.messageId)
-      .set({
-        channelId: context.params.channelId,
-        ...change.after.data(),
-      });
-  });
-
-export const migrateChannels = functions.firestore
-  .document("channels/{channelId}")
-  .onWrite((change, context) => {
-    return admin
-      .firestore()
-      .collection("metadata")
-      .doc(context.params.channelId)
-      .set({
-        ...change.after.data(),
-      });
-  });
