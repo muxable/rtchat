@@ -14,7 +14,7 @@ import {
 } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
-import { updateChatStatus } from "./chat-status";
+import { updateChatStatus, getViewerList } from "./chat-status";
 import {
   setRealTimeCashAddress,
   alchemyWebhook,
@@ -481,6 +481,7 @@ export {
   synthesize,
   getVoices,
   updateChatStatus,
+  getViewerList,
   setRealTimeCashAddress,
   alchemyWebhook,
   ethAlchemyWebhook,
