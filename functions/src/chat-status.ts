@@ -50,3 +50,41 @@ export const updateChatStatus = functions.pubsub
 
     await Promise.all(promises);
   });
+
+export const getViewerList = functions.https.onCall(
+  async (channelId: string, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "must be authenticated"
+      );
+    }
+    const [provider, channel] = channelId.split(":");
+    switch (provider) {
+      case "twitch":
+        // fetch the twitch login from the helix api
+        const profile = await fetch(
+          `https://api.twitch.tv/helix/users?id=${channel}`
+        );
+        const profileJson = await profile.json();
+        if (profileJson["data"].length === 0) {
+          throw new functions.https.HttpsError(
+            "not-found",
+            "channel not found"
+          );
+        }
+        const login = profileJson["data"][0]["login"];
+        if (!login) {
+          throw new functions.https.HttpsError(
+            "not-found",
+            "channel not found"
+          );
+        }
+        const chatters = await fetch(
+          `https://tmi.twitch.tv/group/user/${channel}/chatters`
+        );
+        const chattersJson = await chatters.json();
+        return chattersJson["chatters"];
+    }
+  }
+);

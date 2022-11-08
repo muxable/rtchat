@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 class Viewers {
   final List<String> broadcaster;
@@ -45,31 +45,24 @@ class Viewers {
 }
 
 class ChatStateAdapter {
-  final FirebaseFirestore db;
+  final FirebaseFunctions functions;
 
-  ChatStateAdapter._({required this.db});
+  ChatStateAdapter._({required this.functions});
 
   static ChatStateAdapter get instance =>
-      _instance ??= ChatStateAdapter._(db: FirebaseFirestore.instance);
+      _instance ??= ChatStateAdapter._(functions: FirebaseFunctions.instance);
   static ChatStateAdapter? _instance;
 
-  Stream<Viewers> getViewers({required String channelId}) {
-    return db
-        .collection('chat-status')
-        .where("channelId", isEqualTo: channelId)
-        .orderBy("createdAt", descending: true)
-        .limit(1)
-        .snapshots()
-        .expand((snapshot) sync* {
-      if (snapshot.docs.isEmpty) {
-        return;
-      }
-      final doc = snapshot.docs.first.data();
-      yield Viewers(
-        broadcaster: <String>[...(doc['broadcaster'] ?? [])],
-        moderators: <String>[...(doc['moderators'] ?? [])],
-        vips: <String>[...(doc['vips'] ?? [])],
-        viewers: <String>[...(doc['viewers'] ?? [])],
+  Future<Viewers> getViewers({required String channelId}) {
+    return functions
+        .httpsCallable("getViewerList")
+        .call(channelId)
+        .then((result) {
+      return Viewers(
+        broadcaster: [...(result.data['broadcaster'] ?? [])],
+        moderators: [...(result.data['moderators'] ?? [])],
+        vips: [...(result.data['vips'] ?? [])],
+        viewers: [...(result.data['viewers'] ?? [])],
       );
     });
   }
