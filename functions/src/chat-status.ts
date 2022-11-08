@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
-import { getAppAccessToken } from "./oauth";
+import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 
 async function getTwitchUserId(channel: string) {
   // fetch the twitch user id from the database based on login.
@@ -70,7 +70,12 @@ export const getViewerList = functions.https.onCall(
         // fetch the twitch login from the helix api
         const profile = await fetch(
           `https://api.twitch.tv/helix/users?id=${channel}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: {
+              "Client-ID": TWITCH_CLIENT_ID,
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         const profileJson = await profile.json();
         if (profileJson["data"].length === 0) {
