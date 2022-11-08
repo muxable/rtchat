@@ -14,7 +14,7 @@ import {
 } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
-import { updateChatStatus } from "./chat-status";
+import { updateChatStatus, updateFollowerAndViewerCount } from "./chat-status";
 import {
   setRealTimeCashAddress,
   alchemyWebhook,
@@ -484,5 +484,6 @@ export {
   setRealTimeCashAddress,
   alchemyWebhook,
   ethAlchemyWebhook,
+  updateFollowerAndViewerCount,
 };
 export const auth = functions.https.onRequest(authApp);
