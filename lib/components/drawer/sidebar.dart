@@ -20,14 +20,14 @@ class _DrawerHeader extends StatelessWidget {
       child: SafeArea(
         child: SizedBox(
           height: 96,
-          child: Consumer<UserModel>(builder: (context, model, child) {
-            final userChannel = model.userChannel;
-            return DrawerHeader(
-              margin: EdgeInsets.zero,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
+          child: DrawerHeader(
+            padding: EdgeInsets.zero,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Consumer<UserModel>(builder: (context, model, child) {
+                    final userChannel = model.userChannel;
+                    return InkWell(
                       borderRadius: BorderRadius.circular(10.0),
                       onTap: () {
                         if (model.activeChannel != userChannel) {
@@ -36,13 +36,14 @@ class _DrawerHeader extends StatelessWidget {
                         Navigator.of(context).pop();
                       },
                       child: Row(children: [
+                        if (userChannel != null) const SizedBox(width: 16),
                         if (userChannel != null)
                           ClipRRect(
                               borderRadius: BorderRadius.circular(24),
                               child: FadeInImage(
                                   placeholder: MemoryImage(kTransparentImage),
                                   image: ResilientNetworkImage(
-                                userChannel.profilePictureUrl),
+                                      userChannel.profilePictureUrl),
                                   height: 36,
                                   width: 36)),
                         const SizedBox(width: 16),
@@ -64,19 +65,20 @@ class _DrawerHeader extends StatelessWidget {
                           ],
                         ),
                       ]),
-                    ),
-                  ),
-                  VerticalDivider(
-                    width: 4,
-                    thickness: 2,
-                    indent: 8,
-                    endIndent: 8,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onTertiary
-                        .withOpacity(0.1),
-                  ),
-                  IconButton(
+                    );
+                  }),
+                ),
+                VerticalDivider(
+                  width: 4,
+                  thickness: 2,
+                  indent: 8,
+                  endIndent: 8,
+                  color:
+                      Theme.of(context).colorScheme.onTertiary.withOpacity(0.1),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: IconButton(
                     icon: const Icon(Icons.search),
                     iconSize: 32,
                     splashRadius: 24,
@@ -99,6 +101,9 @@ class _DrawerHeader extends StatelessWidget {
                             maxChildSize: 0.9,
                             expand: false,
                             builder: (context, controller) {
+                              final model = Provider.of<UserModel>(context,
+                                  listen: false);
+                              final userChannel = model.userChannel;
                               return ChannelSearchBottomSheetWidget(
                                 onChannelSelect: (channel) {
                                   model.activeChannel = channel;
@@ -120,10 +125,10 @@ class _DrawerHeader extends StatelessWidget {
                       );
                     },
                   ),
-                ],
-              ),
-            );
-          }),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
