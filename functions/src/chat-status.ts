@@ -52,6 +52,110 @@ export const updateChatStatus = functions.pubsub
     await Promise.all(promises);
   });
 
+export const updateFollowerAndViewerCount = functions.pubsub
+  .schedule("*/5 * * * *") // every 5 minutes
+  .onRun(async () => {
+    // fetch the channels that have been active in the last 3 days.
+    const snapshot = await admin
+      .firestore()
+      .collection("channels")
+      .where("lastActiveAt", ">", new Date(Date.now() - 3 * 86400 * 1000))
+      .get();
+    const channelIds = snapshot.docs.map((doc) => doc.id);
+
+    // process twitch channel ids.
+    const token = await getAppAccessToken("twitch");
+    if (!token) {
+      throw new functions.https.HttpsError("internal", "auth error");
+    }
+
+    const twitchChannelIds = channelIds.filter((id) =>
+      id.startsWith("twitch:")
+    );
+
+    // batch into groups of 100.
+    const twitchChannelIdBatches = [];
+    for (let i = 0; i < twitchChannelIds.length; i += 100) {
+      twitchChannelIdBatches.push(
+        twitchChannelIds.slice(i, i + 100).map((id) => id.slice(7))
+      );
+    }
+
+    const updateBatch = admin.firestore().batch();
+
+    // for each batch, fetch the viewer count
+    for (const batch of twitchChannelIdBatches) {
+      const query = batch
+        .map((channelId) => "user_id=" + encodeURIComponent(channelId))
+        .join("&");
+      const response = await fetch(
+        `https://api.twitch.tv/helix/streams?${query}`,
+        {
+          headers: {
+            "Client-ID": TWITCH_CLIENT_ID,
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const json = await response.json();
+      for (const stream of json["data"]) {
+        const channelId = `twitch:${stream["user_id"]}`;
+        const viewerCount = stream["viewer_count"];
+        const language = stream["language"];
+        const doc = admin.firestore().collection("channels").doc(channelId);
+        updateBatch.set(doc, { viewerCount, language }, { merge: true });
+      }
+      // find any channels that are not in the response and reissue a request to helix/channels
+      const missingChannelIds = batch.filter(
+        (channelId) =>
+          !json["data"].some((stream: any) => stream["user_id"] === channelId)
+      );
+      if (missingChannelIds.length > 0) {
+        const query = missingChannelIds
+          .map((channelId) => "broadcaster_id=" + encodeURIComponent(channelId))
+          .join("&");
+        const response = await fetch(
+          `https://api.twitch.tv/helix/channels?${query}`,
+          {
+            headers: {
+              "Client-ID": TWITCH_CLIENT_ID,
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const json = await response.json();
+        for (const channel of json["data"]) {
+          const channelId = `twitch:${channel["broadcaster_id"]}`;
+          const viewerCount = 0;
+          const language = channel["broadcaster_language"];
+          const doc = admin.firestore().collection("channels").doc(channelId);
+          updateBatch.set(doc, { viewerCount, language }, { merge: true });
+        }
+      }
+    }
+
+    // lastly, fetch the follower count for each channel individually.
+    for (const channelId of twitchChannelIds) {
+      const response = await fetch(
+        `https://api.twitch.tv/helix/users/follows?to_id=${channelId.slice(
+          7
+        )}&first=1`,
+        {
+          headers: {
+            "Client-ID": TWITCH_CLIENT_ID,
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const json = await response.json();
+      const doc = admin.firestore().collection("channels").doc(channelId);
+      updateBatch.set(doc, { followerCount: json["total"] }, { merge: true });
+    }
+
+    // commit the update batch
+    await updateBatch.commit();
+  });
+
 export const getViewerList = functions.https.onCall(
   async (channelId: string, context) => {
     if (!context.auth) {
