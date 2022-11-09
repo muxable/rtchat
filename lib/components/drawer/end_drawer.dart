@@ -20,8 +20,8 @@ class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
   Widget build(BuildContext context) {
     return Container(
       color: Theme.of(context).canvasColor,
-      child: StreamBuilder<Viewers>(
-        stream: ChatStateAdapter.instance
+      child: FutureBuilder<Viewers>(
+        future: ChatStateAdapter.instance
             .getViewers(channelId: widget.channel.toString()),
         builder: (context, snapshot) {
           final viewers = snapshot.data;
