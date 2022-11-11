@@ -6,15 +6,14 @@ import { getUserEmotes, getEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
-import {
-  migrate,
-  migrateChannels,
-  subscribe,
-  unsubscribe,
-} from "./subscriptions";
+import { subscribe, unsubscribe } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
-import { updateChatStatus } from "./chat-status";
+import {
+  updateChatStatus,
+  getViewerList,
+  updateFollowerAndViewerCount,
+} from "./chat-status";
 import {
   setRealTimeCashAddress,
   alchemyWebhook,
@@ -481,13 +480,13 @@ export {
   search,
   getUserEmotes,
   getEmotes,
-  migrate,
-  migrateChannels,
   synthesize,
   getVoices,
   updateChatStatus,
+  getViewerList,
   setRealTimeCashAddress,
   alchemyWebhook,
   ethAlchemyWebhook,
+  updateFollowerAndViewerCount,
 };
 export const auth = functions.https.onRequest(authApp);
