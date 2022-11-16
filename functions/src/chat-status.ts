@@ -52,9 +52,8 @@ export const updateChatStatus = functions.pubsub
     await Promise.all(promises);
   });
 
-export const updateFollowerAndViewerCount = functions.pubsub
-  .schedule("*/5 * * * *") // every 5 minutes
-  .onRun(async () => {
+export const updateFollowerAndViewerCount = functions.https.onRequest(
+  async function (req, res) {
     // fetch the channels that have been active in the last 3 days.
     const snapshot = await admin
       .firestore()
@@ -93,7 +92,7 @@ export const updateFollowerAndViewerCount = functions.pubsub
         {
           headers: {
             "Client-ID": TWITCH_CLIENT_ID,
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.token.access_token}`,
           },
         }
       );
@@ -119,7 +118,7 @@ export const updateFollowerAndViewerCount = functions.pubsub
           {
             headers: {
               "Client-ID": TWITCH_CLIENT_ID,
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token.token.access_token}`,
             },
           }
         );
@@ -143,7 +142,7 @@ export const updateFollowerAndViewerCount = functions.pubsub
         {
           headers: {
             "Client-ID": TWITCH_CLIENT_ID,
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.token.access_token}`,
           },
         }
       );
@@ -154,7 +153,8 @@ export const updateFollowerAndViewerCount = functions.pubsub
 
     // commit the update batch
     await updateBatch.commit();
-  });
+  }
+);
 
 export const getViewerList = functions.https.onCall(
   async (channelId: string, context) => {
