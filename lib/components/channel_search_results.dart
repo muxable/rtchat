@@ -12,7 +12,7 @@ Future<List<SearchResult>> fastSearch() async {
   // fast query firestore and slow query the functions. tag firestore results
   // with isPromoted = true.
   final snapshot = await FirebaseFirestore.instance
-      .collection("metadata")
+      .collection("channels")
       .where("lastActiveAt",
           isGreaterThan: DateTime.now().subtract(const Duration(days: 3)))
       .orderBy("lastActiveAt", descending: true)
@@ -158,33 +158,39 @@ class _ChannelSearchResultsWidgetState
                               width: 2.0,
                             ),
                           ),
-                          child: Stack(alignment: Alignment.center, children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(24),
-                              child: FadeInImage(
-                                  placeholder: MemoryImage(kTransparentImage),
-                                  image: ResilientNetworkImage(result.imageUrl),
-                                  height: 48,
-                                  width: 48),
-                            ),
-                            Positioned(
-                                right: -4,
-                                bottom: -4,
-                                child: result.isPromoted
-                                    ? Container(
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context).primaryColor,
-                                          borderRadius:
-                                              BorderRadius.circular(18.0),
-                                        ),
-                                        child: const Icon(
-                                          Icons.keyboard_double_arrow_up,
-                                          color: Colors.green,
-                                          size: 18.0,
-                                        ),
-                                      )
-                                    : Container())
-                          ])),
+                          child: Stack(
+                              alignment: Alignment.center,
+                              clipBehavior: Clip.none,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: FadeInImage(
+                                      placeholder:
+                                          MemoryImage(kTransparentImage),
+                                      image: ResilientNetworkImage(
+                                          result.imageUrl),
+                                      height: 48,
+                                      width: 48),
+                                ),
+                                Positioned(
+                                    right: -4,
+                                    bottom: -4,
+                                    child: result.isPromoted
+                                        ? Container(
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(18.0),
+                                            ),
+                                            child: const Icon(
+                                              Icons.keyboard_double_arrow_up,
+                                              color: Colors.green,
+                                              size: 18.0,
+                                            ),
+                                          )
+                                        : Container())
+                              ])),
                       title: Text(result.displayName),
                       subtitle: Text(result.title),
                       onTap: () {

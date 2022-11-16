@@ -134,6 +134,7 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
           ),
         );
       case _AutocompleteMode.bangCommand:
+        final commandPrefix = text.split(" ").last.toLowerCase();
         return Container(
           constraints: const BoxConstraints(maxHeight: 200),
           child: ListView(
@@ -142,7 +143,10 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
               children: [
                 Consumer<CommandsModel>(builder: (context, model, child) {
                   return Wrap(
-                    children: model.commandList.map((command) {
+                    children: model.commandList
+                        .where((element) =>
+                            element.command.startsWith(commandPrefix))
+                        .map((command) {
                       return TextButton(
                         child: Text(command.command),
                         onPressed: () => widget.onSend(command.command),
@@ -161,18 +165,18 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
                     .toLowerCase()
                     .contains(username.toLowerCase()))
                 .map((viewer) {
-                  return TextButton(
-                    child: Text("@$viewer"),
-                    onPressed: () {
-                      widget.controller.text = "${text.substring(
-                        0,
-                        text.length - username.length - 1,
-                      )}@$viewer ";
-                      // move cursor position
-                      widget.controller.selection = TextSelection.fromPosition(
-                          TextPosition(offset: widget.controller.text.length));
-                    },
-                  );
+              return TextButton(
+                child: Text("@$viewer"),
+                onPressed: () {
+                  widget.controller.text = "${text.substring(
+                    0,
+                    text.length - username.length - 1,
+                  )}@$viewer ";
+                  // move cursor position
+                  widget.controller.selection = TextSelection.fromPosition(
+                      TextPosition(offset: widget.controller.text.length));
+                },
+              );
             }).toList(),
           );
         });

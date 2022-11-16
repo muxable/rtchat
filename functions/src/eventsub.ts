@@ -105,8 +105,9 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
     String(req.headers["twitch-eventsub-message-signature"]) !==
     `sha256=${signature}`
   ) {
-    res.status(403).send();
-    return;
+    console.error(new Error("failed to match signature"));
+    // res.status(403).send();
+    // return;
   }
   console.log("/eventsub", JSON.stringify(req.body));
 
@@ -141,7 +142,7 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
       case EventsubType.StreamOnline:
         await admin
           .firestore()
-          .collection("metadata")
+          .collection("channels")
           .doc(channelId)
           .set(
             { onlineAt: admin.firestore.FieldValue.serverTimestamp() },
@@ -151,12 +152,12 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
       case EventsubType.StreamOffline:
         await admin
           .firestore()
-          .collection("metadata")
+          .collection("channels")
           .doc(channelId)
           .set({ onlineAt: null }, { merge: true });
         break;
       case EventsubType.ChannelUpdate:
-        await admin.firestore().collection("metadata").doc(channelId).set(
+        await admin.firestore().collection("channels").doc(channelId).set(
           {
             login: req.body.event.broadcaster_user_login,
             displayName: req.body.event.broadcaster_user_name,

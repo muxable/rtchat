@@ -69,7 +69,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
           // update the metadata for this channel to indicate the last active time.
           await admin
             .firestore()
-            .collection("metadata")
+            .collection("channels")
             .doc(channelId)
             .set(
               { lastActiveAt: admin.firestore.FieldValue.serverTimestamp() },
@@ -118,17 +118,4 @@ export const unsubscribe = functions.pubsub
         }
       }
     }
-  });
-
-export const migrate = functions.firestore
-  .document("channels/{channelId}/messages/{messageId}")
-  .onWrite((change, context) => {
-    return admin
-      .firestore()
-      .collection("messages")
-      .doc(context.params.messageId)
-      .set({
-        channelId: context.params.channelId,
-        ...change.after.data(),
-      });
   });
