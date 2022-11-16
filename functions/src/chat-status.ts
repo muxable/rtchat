@@ -52,8 +52,9 @@ export const updateChatStatus = functions.pubsub
     await Promise.all(promises);
   });
 
-export const updateFollowerAndViewerCount = functions.https.onRequest(
-  async function (req, res) {
+export const updateFollowerAndViewerCount = functions.pubsub
+  .schedule("*/5 * * * *") // every 5 minutes
+  .onRun(async () => {
     // fetch the channels that have been active in the last 3 days.
     const snapshot = await admin
       .firestore()
@@ -153,8 +154,7 @@ export const updateFollowerAndViewerCount = functions.https.onRequest(
 
     // commit the update batch
     await updateBatch.commit();
-  }
-);
+  });
 
 export const getViewerList = functions.https.onCall(
   async (channelId: string, context) => {
