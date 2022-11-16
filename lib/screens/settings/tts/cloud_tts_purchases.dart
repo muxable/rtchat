@@ -12,7 +12,7 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var purchases = context.watch<Purchases>();
-    var user = context.watch<UserModel>();
+    var userModel = context.watch<UserModel>();
     String price = '';
     String buttonText = 'Unavailable';
     Product? product;
@@ -32,7 +32,7 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
           buttonText = 'Subscribed';
           break;
       }
-      if (!user.isSignedIn()) {
+      if (!userModel.isSignedIn()) {
         buttonText = 'Please Sign In';
       }
     }
@@ -79,7 +79,7 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: ElevatedButton(
-                    onPressed: user.isSignedIn() &&
+                    onPressed: userModel.isSignedIn() &&
                             purchases.storeState == StoreState.available &&
                             product!.status == ProductStatus.purchasable
                         ? () => purchases.buy(product!)
