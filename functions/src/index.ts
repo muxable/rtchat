@@ -9,7 +9,11 @@ import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
-import { updateChatStatus, updateFollowerAndViewerCount } from "./chat-status";
+import {
+  updateChatStatus,
+  getViewerList,
+  updateFollowerAndViewerCount,
+} from "./chat-status";
 import {
   setRealTimeCashAddress,
   alchemyWebhook,
@@ -21,13 +25,18 @@ async function write(
   targetChannel: string,
   message: string
 ) {
-  const ref = await admin.firestore().collection("actions").add({
-    channelId,
-    targetChannel,
-    message,
-    sentAt: null,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  const ref = await admin
+    .firestore()
+    .collection("channels")
+    .doc(channelId)
+    .collection("actions")
+    .add({
+      channelId,
+      targetChannel,
+      message,
+      sentAt: null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
   // wait for the message to be sent.
   const error = await new Promise<string | null>((resolve) =>
     ref.onSnapshot((snapshot) => {
@@ -474,6 +483,7 @@ export {
   synthesize,
   getVoices,
   updateChatStatus,
+  getViewerList,
   setRealTimeCashAddress,
   alchemyWebhook,
   ethAlchemyWebhook,
