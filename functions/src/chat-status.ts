@@ -93,7 +93,7 @@ export const updateFollowerAndViewerCount = functions.pubsub
         {
           headers: {
             "Client-ID": TWITCH_CLIENT_ID,
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.token.access_token}`,
           },
         }
       );
@@ -119,7 +119,7 @@ export const updateFollowerAndViewerCount = functions.pubsub
           {
             headers: {
               "Client-ID": TWITCH_CLIENT_ID,
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token.token.access_token}`,
             },
           }
         );
@@ -143,7 +143,7 @@ export const updateFollowerAndViewerCount = functions.pubsub
         {
           headers: {
             "Client-ID": TWITCH_CLIENT_ID,
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.token.access_token}`,
           },
         }
       );
