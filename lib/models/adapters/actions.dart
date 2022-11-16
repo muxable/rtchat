@@ -1,23 +1,42 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rtchat/models/channels.dart';
 
 class ActionsAdapter {
   final FirebaseFunctions functions;
+  final FirebaseFirestore firestore;
+  final FirebaseAuth auth;
 
-  ActionsAdapter._({required this.functions});
+  ActionsAdapter._(
+      {required this.functions, required this.firestore, required this.auth});
 
-  static ActionsAdapter get instance =>
-      _instance ??= ActionsAdapter._(functions: FirebaseFunctions.instance);
+  static ActionsAdapter get instance => _instance ??= ActionsAdapter._(
+        functions: FirebaseFunctions.instance,
+        firestore: FirebaseFirestore.instance,
+        auth: FirebaseAuth.instance,
+      );
   static ActionsAdapter? _instance;
 
   Future<String?> send(Channel channel, String message) async {
-    final call = functions.httpsCallable('send');
-    final result = await call({
-      "provider": channel.provider,
-      "channelId": channel.channelId,
+    final userId = auth.currentUser?.uid;
+    if (userId == null) {
+      return null;
+    }
+    final ref = await firestore
+        .collection("channels")
+        .doc(channel.toString())
+        .collection("actions")
+        .add({
+      "userId": userId,
       "message": message,
+      "createdAt": FieldValue.serverTimestamp(),
     });
-    return result.data;
+    // listen on the document for isComplete.
+    final snapshot = await ref
+        .snapshots()
+        .firstWhere((snapshot) => snapshot.get("isComplete") == true);
+    return snapshot.get("error");
   }
 
   Future<void> ban(Channel channel, String username) async {
