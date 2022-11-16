@@ -495,8 +495,9 @@ async function join(
   // also listen to message send requests.
   const messageListener = admin
     .firestore()
+    .collection("channels")
+    .doc(`twitch:${authProvider.providerId}`)
     .collection("actions")
-    .where("channelId", "==", `twitch:${authProvider.providerId}`)
     .where("sentAt", "==", null)
     .orderBy("createdAt", "desc")
     .onSnapshot(async (snapshot) => {
