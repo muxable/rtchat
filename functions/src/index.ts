@@ -25,18 +25,13 @@ async function write(
   targetChannel: string,
   message: string
 ) {
-  const ref = await admin
-    .firestore()
-    .collection("channels")
-    .doc(channelId)
-    .collection("actions")
-    .add({
-      channelId,
-      targetChannel,
-      message,
-      sentAt: null,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+  const ref = await admin.firestore().collection("actions").add({
+    channelId,
+    targetChannel,
+    message,
+    sentAt: null,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
   // wait for the message to be sent.
   const error = await new Promise<string | null>((resolve) =>
     ref.onSnapshot((snapshot) => {
