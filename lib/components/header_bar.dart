@@ -152,7 +152,8 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                             }
                           }
                           if (data.onlineAt != null) {
-                            texts.add(_DurationWidget(
+                            texts.add(
+                                _DurationWidget(
                                 from: data.onlineAt!, style: style));
                           }
                           if (texts.isEmpty) {
