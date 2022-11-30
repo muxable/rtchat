@@ -18,7 +18,7 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
           children: [
             TextSpan(
                 text: model.subscriberUserName,
-                style: Theme.of(context).textTheme.subtitle2),
+                style: Theme.of(context).textTheme.titleSmall),
             TextSpan(
                 text:
                     " subscribed at Tier ${model.tier.replaceAll("000", "")}."),
@@ -44,7 +44,7 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
           children: [
             TextSpan(
                 text: model.gifterUserName,
-                style: Theme.of(context).textTheme.subtitle2),
+                style: Theme.of(context).textTheme.titleSmall),
             TextSpan(
                 text:
                     " gifted ${model.total} Tier ${model.tier.replaceAll("000", "")} "),
@@ -77,13 +77,13 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
             children: [
               TextSpan(
                   text: model.subscriberUserName,
-                  style: Theme.of(context).textTheme.subtitle2),
+                  style: Theme.of(context).textTheme.titleSmall),
               TextSpan(
                   text:
                       " subscribed at Tier ${model.tier.replaceAll("000", "")}. They've subscribed for "),
               TextSpan(
                   text: "${model.cumulativeMonths} months",
-                  style: Theme.of(context).textTheme.subtitle2),
+                  style: Theme.of(context).textTheme.titleSmall),
               TextSpan(
                   text: model.streakMonths > 1
                       ? ", currently on a ${model.streakMonths} month streak!"

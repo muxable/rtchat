@@ -33,7 +33,7 @@ class OnboardingScreen extends StatelessWidget {
                         child: Text("RealtimeChat",
                             style: Theme.of(context)
                                 .textTheme
-                                .headline6
+                                .titleLarge
                                 ?.copyWith(color: Colors.white))),
                     LoginOptionsWidget(onChannelSelect: onChannelSelect),
                   ],

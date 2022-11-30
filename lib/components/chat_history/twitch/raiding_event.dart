@@ -39,7 +39,7 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                           const TextSpan(text: "Raiding "),
                           TextSpan(
                               text: model.targetUser.displayName,
-                              style: Theme.of(context).textTheme.subtitle2),
+                              style: Theme.of(context).textTheme.titleSmall),
                           const TextSpan(text: "."),
                         ],
                       )),
@@ -48,7 +48,7 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                         text: remaining.isNegative
                             ? "0s"
                             : "${remaining.inSeconds}s",
-                        style: Theme.of(context).textTheme.subtitle2))
+                        style: Theme.of(context).textTheme.titleSmall))
                   ])),
             ]);
           });
@@ -63,14 +63,14 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                       const TextSpan(text: "Raided "),
                       TextSpan(
                           text: model.targetUser.displayName,
-                          style: Theme.of(context).textTheme.subtitle2),
+                          style: Theme.of(context).textTheme.titleSmall),
                       const TextSpan(text: "."),
                     ],
                   )),
                 ),
                 Text.rich(TextSpan(
                     text: "Join",
-                    style: Theme.of(context).textTheme.subtitle2?.copyWith(
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: Theme.of(context)
                             .buttonTheme
                             .colorScheme
@@ -88,7 +88,7 @@ class TwitchRaidingEventWidget extends StatelessWidget {
               const TextSpan(text: "Raid to "),
               TextSpan(
                   text: model.targetUser.displayName,
-                  style: Theme.of(context).textTheme.subtitle2),
+                  style: Theme.of(context).textTheme.titleSmall),
               const TextSpan(text: " canceled."),
             ],
           )));

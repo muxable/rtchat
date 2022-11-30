@@ -17,7 +17,7 @@ class TwitchFollowEventWidget extends StatelessWidget {
           children: [
             TextSpan(
                 text: model.follower.display,
-                style: Theme.of(context).textTheme.subtitle2),
+                style: Theme.of(context).textTheme.titleSmall),
             const TextSpan(text: " is following you."),
           ],
         ),

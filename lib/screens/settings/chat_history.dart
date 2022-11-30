@@ -210,7 +210,7 @@ class ChatHistoryScreen extends StatelessWidget {
                   Text(
                       "If there aren't any messages for this amount of time and a new one comes in, an alert sound will play.",
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.caption?.color,
+                        color: Theme.of(context).textTheme.bodySmall?.color,
                       )),
                 ],
               ),

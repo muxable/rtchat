@@ -15,15 +15,15 @@ class StyleModelTheme extends StatelessWidget {
         builder: (context, model, child) {
           final theme = Theme.of(context);
           final fontFamily = Platform.isIOS
-              ? Typography.whiteCupertino.bodyText2!.fontFamily
-              : Typography.whiteMountainView.bodyText2!.fontFamily;
+              ? Typography.whiteCupertino.bodyMedium!.fontFamily
+              : Typography.whiteMountainView.bodyMedium!.fontFamily;
           final themeData = theme.copyWith(
               textTheme: theme.textTheme.apply(
                   fontSizeDelta: model.fontSize - 14, fontFamily: fontFamily));
           return Theme(
               data: themeData,
               child: DefaultTextStyle(
-                  style: themeData.textTheme.bodyText2!, child: child!));
+                  style: themeData.textTheme.bodyMedium!, child: child!));
         },
         child: child);
   }
