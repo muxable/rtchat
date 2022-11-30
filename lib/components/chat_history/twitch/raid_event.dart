@@ -27,11 +27,11 @@ class TwitchRaidEventWidget extends StatelessWidget {
             children: [
               TextSpan(
                   text: model.from.displayName,
-                  style: Theme.of(context).textTheme.subtitle2),
+                  style: Theme.of(context).textTheme.titleSmall),
               const TextSpan(text: " is raiding with a party of "),
               TextSpan(
                   text: _formatter.format(model.viewers),
-                  style: Theme.of(context).textTheme.subtitle2),
+                  style: Theme.of(context).textTheme.titleSmall),
               const TextSpan(text: "."),
             ],
           )),
@@ -45,7 +45,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
           return GestureDetector(
               child: Text.rich(TextSpan(
                   text: "Shoutout",
-                  style: Theme.of(context).textTheme.subtitle2?.copyWith(
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color:
                           Theme.of(context).buttonTheme.colorScheme?.primary))),
               onTap: () {

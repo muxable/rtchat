@@ -72,8 +72,7 @@ class DecoratedEventWidget extends StatelessWidget {
                         child: Align(
                             alignment: Alignment.centerLeft, child: child)),
                   ],
-                )
-                );
+                ));
               },
               child: child)),
     );

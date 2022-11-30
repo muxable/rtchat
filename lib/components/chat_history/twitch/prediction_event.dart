@@ -19,7 +19,7 @@ class TwitchPredictionEventWidget extends StatelessWidget {
               Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Text(model.title,
-                      style: Theme.of(context).textTheme.subtitle2)),
+                      style: Theme.of(context).textTheme.titleSmall)),
               ...model.outcomes.map((outcome) {
                 final isWinner = model.status == "resolved" &&
                     model.winningOutcomeId == outcome.id;

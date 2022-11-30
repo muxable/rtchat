@@ -48,14 +48,14 @@ class SeparatorWidget extends StatelessWidget {
             return Text(
               DateFormat().format(timestamp),
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.caption,
+              style: Theme.of(context).textTheme.bodySmall,
             );
           }
           final delta = timestamp.difference(uptime);
           return Text(
             "${format.format(timestamp)} [${formatDuration(delta)}]",
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.caption,
+            style: Theme.of(context).textTheme.bodySmall,
           );
         },
       ),

@@ -78,7 +78,6 @@ class TwitchHypeTrainEventModel extends MessageModel {
       other.hasEnded == hasEnded;
 
   @override
-  int get hashCode =>
-      Object.hash(
+  int get hashCode => Object.hash(
       level, progress, goal.hashCode, total, isSuccessful, hasEnded);
 }
