@@ -25,7 +25,7 @@ class PollChoiceWidget extends StatelessWidget {
     return Consumer<StyleModel>(builder: (context, styleModel, child) {
       var baseStyle = Theme.of(context)
           .textTheme
-          .bodyText2!
+          .bodyMedium!
           .copyWith(fontSize: styleModel.fontSize);
       // winner poll gets a trophy icon
       return Padding(

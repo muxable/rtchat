@@ -23,7 +23,7 @@ class StreamStateEventWidget extends StatelessWidget {
                     ? "Stream online at $date, $time"
                     : "Stream offline at $date, $time",
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.caption,
+                style: Theme.of(context).textTheme.bodySmall,
               )),
         ));
   }

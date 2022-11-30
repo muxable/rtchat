@@ -10,7 +10,7 @@ class RealtimeCashDonationEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final boldStyle = Theme.of(context).textTheme.subtitle2;
+    final boldStyle = Theme.of(context).textTheme.titleSmall;
     return DecoratedEventWidget.avatar(
       avatar: model.image,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

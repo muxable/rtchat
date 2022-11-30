@@ -304,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             return Container();
                           }
                         }),
-                  ]);
+                      ]);
                 } else {
                   // landscape
                   return Row(children: [
