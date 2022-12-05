@@ -21,7 +21,7 @@ class ChatClearedEventWidget extends StatelessWidget {
               child: Text(
                 "Chat cleared at $date, $time",
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.caption,
+                style: Theme.of(context).textTheme.bodySmall,
               )),
         ));
   }

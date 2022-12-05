@@ -49,12 +49,57 @@ class Themes {
         tertiary: detailColor,
         background: Colors.white,
       ),
-      toggleableActiveColor: lightAccentColor,
       inputDecorationTheme: const InputDecorationTheme(
         fillColor: lightTextFieldColor,
       ),
       appBarTheme: const AppBarTheme(color: detailColor),
-      tabBarTheme: const TabBarTheme(labelColor: lightAccentColor));
+      tabBarTheme: const TabBarTheme(labelColor: lightAccentColor),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: MaterialStateProperty.resolveWith<Color?>(
+            (Set<MaterialState> states) {
+          if (states.contains(MaterialState.disabled)) {
+            return null;
+          }
+          if (states.contains(MaterialState.selected)) {
+            return lightAccentColor;
+          }
+          return null;
+        }),
+      ),
+      radioTheme: RadioThemeData(
+        fillColor: MaterialStateProperty.resolveWith<Color?>(
+            (Set<MaterialState> states) {
+          if (states.contains(MaterialState.disabled)) {
+            return null;
+          }
+          if (states.contains(MaterialState.selected)) {
+            return lightAccentColor;
+          }
+          return null;
+        }),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.resolveWith<Color?>(
+            (Set<MaterialState> states) {
+          if (states.contains(MaterialState.disabled)) {
+            return null;
+          }
+          if (states.contains(MaterialState.selected)) {
+            return lightAccentColor;
+          }
+          return null;
+        }),
+        trackColor: MaterialStateProperty.resolveWith<Color?>(
+            (Set<MaterialState> states) {
+          if (states.contains(MaterialState.disabled)) {
+            return null;
+          }
+          if (states.contains(MaterialState.selected)) {
+            return lightAccentColor;
+          }
+          return null;
+        }),
+      ));
 
   static final darkTheme = ThemeData(
     fontFamily: GoogleFonts.poppins().fontFamily,
@@ -70,12 +115,57 @@ class Themes {
       accentColor: accentColor,
     ).copyWith(primary: accentColor, tertiary: detailColor),
     dialogBackgroundColor: Colors.black,
-    toggleableActiveColor: accentColor,
     bottomSheetTheme: const BottomSheetThemeData(backgroundColor: detailColor),
     drawerTheme: const DrawerThemeData(backgroundColor: detailColor),
     inputDecorationTheme: const InputDecorationTheme(
       fillColor: textFieldColor,
     ),
     textTheme: const TextTheme(headlineMedium: TextStyle(color: Colors.white)),
+    checkboxTheme: CheckboxThemeData(
+      fillColor: MaterialStateProperty.resolveWith<Color?>(
+          (Set<MaterialState> states) {
+        if (states.contains(MaterialState.disabled)) {
+          return null;
+        }
+        if (states.contains(MaterialState.selected)) {
+          return accentColor;
+        }
+        return null;
+      }),
+    ),
+    radioTheme: RadioThemeData(
+      fillColor: MaterialStateProperty.resolveWith<Color?>(
+          (Set<MaterialState> states) {
+        if (states.contains(MaterialState.disabled)) {
+          return null;
+        }
+        if (states.contains(MaterialState.selected)) {
+          return accentColor;
+        }
+        return null;
+      }),
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor: MaterialStateProperty.resolveWith<Color?>(
+          (Set<MaterialState> states) {
+        if (states.contains(MaterialState.disabled)) {
+          return null;
+        }
+        if (states.contains(MaterialState.selected)) {
+          return accentColor;
+        }
+        return null;
+      }),
+      trackColor: MaterialStateProperty.resolveWith<Color?>(
+          (Set<MaterialState> states) {
+        if (states.contains(MaterialState.disabled)) {
+          return null;
+        }
+        if (states.contains(MaterialState.selected)) {
+          return accentColor;
+        }
+        return null;
+      }),
+    ),
   );
 }

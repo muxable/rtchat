@@ -19,11 +19,11 @@ class TwitchHostEventWidget extends StatelessWidget {
         children: [
           TextSpan(
               text: model.from.displayName,
-              style: Theme.of(context).textTheme.subtitle2),
+              style: Theme.of(context).textTheme.titleSmall),
           const TextSpan(text: " is hosting with a party of "),
           TextSpan(
               text: _formatter.format(model.viewers),
-              style: Theme.of(context).textTheme.subtitle2),
+              style: Theme.of(context).textTheme.titleSmall),
           const TextSpan(text: "."),
         ],
       )),

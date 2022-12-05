@@ -54,13 +54,13 @@ class _DrawerHeader extends StatelessWidget {
                             Text(userChannel?.displayName ?? "Not signed in",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .bodyText1
+                                    .bodyLarge
                                     ?.copyWith(color: Colors.white)),
                             const SizedBox(height: 8),
                             Text("twitch.tv",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .bodyText2
+                                    .bodyMedium
                                     ?.copyWith(color: Colors.white)),
                           ],
                         ),
