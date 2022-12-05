@@ -75,106 +75,98 @@ class EmotesList extends StatelessWidget {
   }
 }
 
-class EmotePickerWidget extends StatefulWidget {
+class _TabbedEmotePickerWidget extends StatelessWidget {
+  const _TabbedEmotePickerWidget({
+    Key? key,
+    required this.emotes,
+    required this.onEmoteSelected,
+    required this.channel,
+  }) : super(key: key);
+
+  final List<Emote> emotes;
+  final Function(Emote) onEmoteSelected;
+  final Channel channel;
+
+  @override
+  Widget build(BuildContext context) {
+    final byProvider = emotes.fold<Map<String, List<Emote>>>({}, (map, emote) {
+      final provider = emote.provider;
+      if (!map.containsKey(provider)) {
+        map[provider] = [];
+      }
+      map[provider]!.add(emote);
+      return map;
+    });
+    final tabs = [
+      if (byProvider.containsKey("twitch")) const Tab(text: "Twitch"),
+      if (byProvider.containsKey("bttv")) const Tab(text: "BTTV"),
+      if (byProvider.containsKey("ffz")) const Tab(text: "FFZ"),
+      if (byProvider.containsKey("7tv")) const Tab(text: "7TV"),
+    ];
+    return DefaultTabController(
+        length: tabs.length,
+        child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+          TabBar(tabs: tabs),
+          Expanded(
+              child: TabBarView(
+            children: [
+              if (byProvider.containsKey("twitch"))
+                EmotesList(
+                    emotes: byProvider["twitch"]!,
+                    onEmoteSelected: onEmoteSelected,
+                    channel: channel),
+              if (byProvider.containsKey("bttv"))
+                EmotesList(
+                    emotes: byProvider["bttv"]!,
+                    onEmoteSelected: onEmoteSelected,
+                    channel: channel),
+              if (byProvider.containsKey("ffz"))
+                EmotesList(
+                    emotes: byProvider["ffz"]!,
+                    onEmoteSelected: onEmoteSelected,
+                    channel: channel),
+              if (byProvider.containsKey("7tv"))
+                EmotesList(
+                    emotes: byProvider["7tv"]!,
+                    onEmoteSelected: onEmoteSelected,
+                    channel: channel),
+            ],
+          )),
+        ]));
+  }
+}
+
+class EmotePickerWidget extends StatelessWidget {
   final void Function(Emote?) onEmoteSelected;
   final Channel channel;
-  static const _footerHeight = 30;
 
   const EmotePickerWidget(
       {Key? key, required this.onEmoteSelected, required this.channel})
       : super(key: key);
 
   @override
-  State<EmotePickerWidget> createState() => _EmotePickerWidgetState();
-}
-
-class _EmotePickerWidgetState extends State<EmotePickerWidget>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
-  late Future<List<Emote>> _emotesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _emotesFuture = getEmotes(widget.channel);
-    _emotesFuture.then((e) {
-      _tabController = TabController(
-          length: e.map((e) => e.provider).toSet().length, vsync: this);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final rowNumber =
-        MediaQuery.of(context).orientation == Orientation.portrait ? 5 : 3;
+        MediaQuery.of(context).orientation == Orientation.portrait ? 6 : 4;
 
     return WillPopScope(
       onWillPop: () async {
-        widget.onEmoteSelected(null);
+        onEmoteSelected(null);
         return false;
       },
       child: SizedBox(
-        height: 48 * rowNumber.toDouble() + EmotePickerWidget._footerHeight,
+        height: 48 * rowNumber.toDouble(),
         child: FutureBuilder<List<Emote>>(
-            future: _emotesFuture,
+            future: getEmotes(channel),
             initialData: const [],
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
                 return const Center(child: CircularProgressIndicator());
               }
-              final byProvider = snapshot.data
-                      ?.fold<Map<String, List<Emote>>>({}, (map, emote) {
-                    final provider = emote.provider;
-                    if (!map.containsKey(provider)) {
-                      map[provider] = [];
-                    }
-                    map[provider]!.add(emote);
-                    return map;
-                  }) ??
-                  {};
-              return Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TabBar(
-                      controller: _tabController,
-                      tabs: [
-                        if (byProvider.containsKey("twitch"))
-                          const Tab(text: "Twitch"),
-                        if (byProvider.containsKey("bttv"))
-                          const Tab(text: "BTTV"),
-                        if (byProvider.containsKey("ffz"))
-                          const Tab(text: "FFZ"),
-                        if (byProvider.containsKey("7tv"))
-                          const Tab(text: "7TV"),
-                      ],
-                    ),
-                    Expanded(
-                        child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        if (byProvider.containsKey("twitch"))
-                          EmotesList(
-                              emotes: byProvider["twitch"]!,
-                              onEmoteSelected: widget.onEmoteSelected,
-                              channel: widget.channel),
-                        if (byProvider.containsKey("bttv"))
-                          EmotesList(
-                              emotes: byProvider["bttv"]!,
-                              onEmoteSelected: widget.onEmoteSelected,
-                              channel: widget.channel),
-                        if (byProvider.containsKey("ffz"))
-                          EmotesList(
-                              emotes: byProvider["ffz"]!,
-                              onEmoteSelected: widget.onEmoteSelected,
-                              channel: widget.channel),
-                        if (byProvider.containsKey("7tv"))
-                          EmotesList(
-                              emotes: byProvider["7tv"]!,
-                              onEmoteSelected: widget.onEmoteSelected,
-                              channel: widget.channel),
-                      ],
-                    )),
-                  ]);
+              return _TabbedEmotePickerWidget(
+                  emotes: snapshot.data!,
+                  onEmoteSelected: onEmoteSelected,
+                  channel: channel);
             }),
       ),
     );
