@@ -56,6 +56,16 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         .child(channel)
         .set(admin.database.ServerValue.TIMESTAMP);
 
+      // acquire a new assignment.
+      await admin
+        .firestore()
+        .collection("assignments")
+        .doc(`${provider}:${channel}`)
+        .set({
+          agentCount: 0,
+          subscribedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
       if (context.auth != null) {
         await checkEventSubSubscriptions(context.auth.uid);
         // get the channel id associated with the profile
@@ -115,6 +125,13 @@ export const unsubscribe = functions.pubsub
               .set(null);
 
             await subscriptionsRef.child(provider).child(channel).set(null);
+
+            // release the agent assigments.
+            await admin
+              .firestore()
+              .collection("assignments")
+              .doc(`${provider}:${channel}`)
+              .delete();
         }
       }
     }
