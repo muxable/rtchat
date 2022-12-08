@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -33,7 +34,7 @@ type Action struct {
 func (h *TwitchHandler) bindOutboundClient(ctx context.Context, client *twitch.Client, channelID string) error {
 	// listen on firestore for new messages
 	zap.L().Info("listening for new messages", zap.String("channelID", channelID))
-	snapshots := h.firestore.Collection("chnanels").Doc(channelID).Collection("actions").Where("sentAt", "==", nil).Snapshots(ctx)
+	snapshots := h.firestore.Collection("actions").Where("channelId", "==", channelID).Where("sentAt", "==", nil).OrderBy("createdAt", firestore.Desc).Snapshots(ctx)
 	for {
 		snapshot, err := snapshots.Next()
 		if err == iterator.Done {
@@ -472,10 +473,10 @@ func (h *TwitchHandler) HandleRequest(r *agent.Request, asUserID string) error {
 		go func() {
 			for {
 				if err := h.bindRaidClient(raidCtx, profileData["id"].(string), asUserID); err != nil {
-					if !cancel.IsCanceled(err) {
+					if !cancel.IsCanceled(err) && !errors.Is(err, net.ErrClosed) {
 						zap.L().Error("failed to bind raid client", zap.Error(err))
 					}
-					if err == errReconnect {
+					if errors.Is(err, errReconnect) {
 						continue
 					}
 					return
@@ -498,6 +499,8 @@ func (h *TwitchHandler) HandleRequest(r *agent.Request, asUserID string) error {
 			zap.L().Error("failed to claim request", zap.Error(err))
 		}
 	}
+
+	zap.L().Info("unassigned from channel", zap.String("channel", r.Channel()))
 
 	if err := client.Disconnect(); err != nil {
 		return err

@@ -88,7 +88,10 @@ func (r *RequestLock) LockClaim(req *Request, abort context.Context) error {
 		if err != nil {
 			return err
 		}
-		zap.L().Debug("assignment changed", zap.String("id", snapshot.Ref.ID), zap.Any("data", snapshot.Data()))
+		zap.L().Info("assignment changed", zap.String("id", snapshot.Ref.ID), zap.Any("data", snapshot.Data()))
+		if !snapshot.Exists() {
+			return nil
+		}
 		agentIDs := AgentIDsForDocument(snapshot.Data())
 		if len(agentIDs) > 0 && agentIDs.CanonicalAgentIDFor(req.Ref.ID) != r.AgentID {
 			break
