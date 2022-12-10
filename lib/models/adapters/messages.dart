@@ -179,6 +179,8 @@ DeltaEvent? _toDeltaEvent(
           streakMonths: data['event']['streak_months'],
           cumulativeMonths: data['event']['cumulative_months'],
           durationMonths: data['event']['duration_months'],
+          emotes: SubscriptionMessageEventEmote.fromDynamicList(
+              data['event']['message']['emotes']),
           text: data['event']['message']['text']);
 
       return AppendDeltaEvent(model);
