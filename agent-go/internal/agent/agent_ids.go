@@ -41,10 +41,10 @@ func (a AgentIDs) CanonicalAgentIDFor(key string) AgentID {
 }
 
 func AgentIDsForDocument(doc map[string]interface{}) AgentIDs {
-	if doc["agentIDs"] == nil {
+	if doc["agentIds"] == nil {
 		return nil
 	}
-	agentIDs := doc["agentIDs"].([]interface{})
+	agentIDs := doc["agentIds"].([]interface{})
 	ids := make(AgentIDs, len(agentIDs))
 	for i, id := range agentIDs {
 		ids[i] = AgentID(id.(string))

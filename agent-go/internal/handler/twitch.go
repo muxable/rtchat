@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -20,8 +21,7 @@ import (
 )
 
 type TwitchHandler struct {
-	lock      *agent.RequestLock
-	firestore *firestore.Client
+	firestore              *firestore.Client
 	clientID, clientSecret string
 }
 
@@ -33,7 +33,7 @@ type Action struct {
 
 func (h *TwitchHandler) bindOutboundClient(ctx context.Context, client *twitch.Client, channelID string) error {
 	// listen on firestore for new messages
-	zap.L().Info("listening for new messages", zap.String("channelID", channelID))
+	zap.L().Info("listening for new messages", zap.String("channelId", channelID))
 	snapshots := h.firestore.Collection("actions").Where("channelId", "==", channelID).Where("sentAt", "==", nil).OrderBy("createdAt", firestore.Desc).Snapshots(ctx)
 	for {
 		snapshot, err := snapshots.Next()
@@ -50,7 +50,7 @@ func (h *TwitchHandler) bindOutboundClient(ctx context.Context, client *twitch.C
 					zap.L().Error("failed to unmarshal action", zap.Error(err))
 					continue
 				}
-				zap.L().Info("sending message", zap.String("channelID", channelID), zap.Any("message", change.Doc.Data()))
+				zap.L().Info("sending message", zap.String("channelId", channelID), zap.Any("message", change.Doc.Data()))
 				if action.ReplyMessageId != "" {
 					client.Reply(action.TargetChannel, action.ReplyMessageId, action.Message)
 				} else {
@@ -114,7 +114,7 @@ func (h *TwitchHandler) bindRaidClient(ctx context.Context, channelID, userID st
 	}); err != nil {
 		return err
 	}
-	zap.L().Info("subscribed to raid events", zap.String("channelID", channelID))
+	zap.L().Info("subscribed to raid events", zap.String("channelId", channelID))
 	go func() {
 		<-ctx.Done()
 		if err := ws.Close(); err != nil {
@@ -170,9 +170,13 @@ func (h *TwitchHandler) bindRaidClient(ctx context.Context, channelID, userID st
 func joinWithTimeout(client *twitch.Client, channel string, timeout time.Duration) error {
 	// connect to the chat
 	success := make(chan bool, 1)
+	once := &sync.Once{}
 	client.OnConnect(func() {
-		zap.L().Info("connected to chat")
-		close(success)
+		// apparently this can be called multiple times
+		once.Do(func() {
+			zap.L().Info("connected to chat", zap.String("channel", channel))
+			close(success)
+		})
 	})
 	client.Join(channel)
 
@@ -190,114 +194,91 @@ func joinWithTimeout(client *twitch.Client, channel string, timeout time.Duratio
 		return nil
 	case <-time.After(5 * time.Second):
 		if err := client.Disconnect(); err != nil {
-			zap.L().Error("failed to disconnect from chat", zap.Error(err))
+			if !errors.Is(err, twitch.ErrConnectionIsNotOpen) {
+				zap.L().Error("failed to disconnect from chat", zap.Error(err))
+			}
 		}
 		return errors.New("timeout")
 	}
 }
 
-func encodeEmotes(emotes []*twitch.Emote) string {
-	blocks := make([]string, 0, len(emotes))
-	for _, emote := range emotes {
-		block := make([]string, 0, len(emote.Positions))
-		for _, pos := range emote.Positions {
-			block = append(block, fmt.Sprintf("%s:%d-%d", emote.ID, pos.Start, pos.End))
+func (h *TwitchHandler) metadata(channelID string, data interface{}) {
+	go func() {
+		for i := 0; i < 3; i++ {
+			if _, err := h.firestore.Collection("channels").Doc(channelID).Set(context.Background(), data, firestore.MergeAll); err != nil {
+				zap.L().Error("failed to update channel metadata", zap.Error(err), zap.String("channelId", channelID), zap.Any("data", data))
+				time.Sleep(1 * time.Second)
+				continue
+			}
+			break
 		}
-		blocks = append(blocks, strings.Join(block, ","))
-	}
-	return strings.Join(blocks, ",")
+	}()
 }
 
-func (h *TwitchHandler) metadata(channelID string, data interface{}) error {
-	_, err := h.firestore.Collection("channels").Doc(channelID).Set(context.Background(), data, firestore.MergeAll)
-	return err
-}
-
-func (h *TwitchHandler) write(channelID, messageID string, data interface{}) error {
-	_, err := h.firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Set(context.Background(), data)
-	return err
+func (h *TwitchHandler) write(channelID, messageID string, data interface{}) {
+	go func() {
+		for i := 0; i < 3; i++ {
+			if _, err := h.firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Set(context.Background(), data); err != nil {
+				zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID), zap.Any("data", data))
+				time.Sleep(1 * time.Second)
+				continue
+			}
+			break
+		}
+	}()
 }
 
 func (h *TwitchHandler) bindEvents(client *twitch.Client) context.Context {
 	client.OnNoticeMessage(func(message twitch.NoticeMessage) {
-		zap.L().Info("notice", zap.String("message", message.Raw))
+		if message.Channel == "*" {
+			return
+		}
 		userID, err := auth.TwitchUserIDFromUsername(h.firestore, h.clientID, h.clientSecret, message.Channel)
 		if err != nil {
-			zap.L().Error("failed to get user id from username", zap.Error(err))
 			return
 		}
 		channelID := fmt.Sprintf("twitch:%s", userID)
 		switch message.MsgID {
 		case "r9k_on", "already_r9k_on":
-			if err := h.metadata(channelID, map[string]interface{}{
+			h.metadata(channelID, map[string]interface{}{
 				"isR9k": true,
-			}); err != nil {
-				zap.L().Error("failed to update metadata", zap.Error(err))
-				return
-			}
+			})
 		case "r9k_off", "already_r9k_off":
-			if err := h.metadata(channelID, map[string]interface{}{
+			h.metadata(channelID, map[string]interface{}{
 				"isR9k": false,
-			}); err != nil {
-				zap.L().Error("failed to update metadata", zap.Error(err))
-				return
-			}
+			})
 		case "slow_on", "already_slow_on":
-			if err := h.metadata(channelID, map[string]interface{}{
+			h.metadata(channelID, map[string]interface{}{
 				"isSlowMode": true,
-			}); err != nil {
-				zap.L().Error("failed to update metadata", zap.Error(err))
-				return
-			}
+			})
 		case "slow_off", "already_slow_off":
-			if err := h.metadata(channelID, map[string]interface{}{
+			h.metadata(channelID, map[string]interface{}{
 				"isSlowMode": false,
-			}); err != nil {
-				zap.L().Error("failed to update metadata", zap.Error(err))
-				return
-			}
+			})
 		case "subs_on", "already_subs_on":
-			if err := h.metadata(channelID, map[string]interface{}{
+			h.metadata(channelID, map[string]interface{}{
 				"isSubsOnly": true,
-			}); err != nil {
-				zap.L().Error("failed to update metadata", zap.Error(err))
-				return
-			}
+			})
 		case "subs_off", "already_subs_off":
-			if err := h.metadata(channelID, map[string]interface{}{
+			h.metadata(channelID, map[string]interface{}{
 				"isSubsOnly": false,
-			}); err != nil {
-				zap.L().Error("failed to update metadata", zap.Error(err))
-				return
-			}
+			})
 		case "followers_on", "already_followers_on":
-			if err := h.metadata(channelID, map[string]interface{}{
+			h.metadata(channelID, map[string]interface{}{
 				"isFollowersOnly": true,
-			}); err != nil {
-				zap.L().Error("failed to update metadata", zap.Error(err))
-				return
-			}
+			})
 		case "followers_off", "already_followers_off":
-			if err := h.metadata(channelID, map[string]interface{}{
+			h.metadata(channelID, map[string]interface{}{
 				"isFollowersOnly": false,
-			}); err != nil {
-				zap.L().Error("failed to update metadata", zap.Error(err))
-				return
-			}
+			})
 		case "emote_only_on", "already_emote_only_on":
-			if err := h.metadata(channelID, map[string]interface{}{
+			h.metadata(channelID, map[string]interface{}{
 				"isEmoteOnly": true,
-			}); err != nil {
-				zap.L().Error("failed to update metadata", zap.Error(err))
-				return
-			}
+			})
 		case "emote_only_off", "already_emote_only_off":
-			if err := h.metadata(channelID, map[string]interface{}{
+			h.metadata(channelID, map[string]interface{}{
 				"isEmoteOnly": false,
-			}); err != nil {
-				zap.L().Error("failed to update metadata", zap.Error(err))
-				return
-			}
+			})
 		}
 	})
 
@@ -305,41 +286,38 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) context.Context {
 		zap.L().Info("user notice", zap.String("message", message.Raw))
 		switch message.MsgID {
 		case "announcement":
-		channelID := fmt.Sprintf("twitch:%s", message.RoomID)
-		data := map[string]interface{}{
-			"channelId": channelID,
-			"annotations": map[string]interface{}{
-				"isAction": false,
-				"isFirstTimeChatter": false,
-				"announcement": map[string]interface{}{
-					"color": message.MsgParams["msg-param-color"],
+			channelID := fmt.Sprintf("twitch:%s", message.RoomID)
+			data := map[string]interface{}{
+				"channelId": channelID,
+				"annotations": map[string]interface{}{
+					"isAction":           false,
+					"isFirstTimeChatter": false,
+					"announcement": map[string]interface{}{
+						"color": message.MsgParams["msg-param-color"],
+					},
 				},
-			},
-			"author": map[string]interface{}{
-				"displayName": message.User.DisplayName,
-				"userId": message.User.ID,
-				"color": message.User.Color,
-			},
-			"message": message.Message,
-			"timestamp": message.Time,
-			"tags": map[string]interface{}{
-				"user-id": message.User.ID,
-				"room-id": message.RoomID,
-				"display-name": message.User.DisplayName,
-				"color": message.User.Color,
-				"username": message.User.Name,
-				"badges": map[string]bool {
-					"vip": message.User.Badges["vip"] > 0,
-					"moderator": message.User.Badges["moderator"] > 0,
+				"author": map[string]interface{}{
+					"displayName": message.User.DisplayName,
+					"userId":      message.User.ID,
+					"color":       message.User.Color,
 				},
-				"emotes-raw": encodeEmotes(message.Emotes),
-			},
-			"type": "message",
-		}
-		if err := h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data); err != nil {
-			zap.L().Error("failed to send message", zap.Error(err))
-			return
-		}
+				"message":   message.Message,
+				"timestamp": message.Time,
+				"tags": map[string]interface{}{
+					"user-id":      message.User.ID,
+					"room-id":      message.RoomID,
+					"display-name": message.User.DisplayName,
+					"color":        message.User.Color,
+					"username":     message.User.Name,
+					"badges": map[string]bool{
+						"vip":       message.User.Badges["vip"] > 0,
+						"moderator": message.User.Badges["moderator"] > 0,
+					},
+					"emotes-raw": message.Tags["emotes"],
+				},
+				"type": "message",
+			}
+			h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
 		}
 	})
 
@@ -350,30 +328,26 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) context.Context {
 		data := map[string]interface{}{
 			"channelId": channelID,
 			"timestamp": message.Time,
-			"type": 	"clear",
+			"type":      "clear",
 		}
-		if err := h.write(channelID, fmt.Sprintf("twitch:clear-%s", message.Time.Format(time.RFC3339)), data); err != nil {
-			zap.L().Error("failed to write clear message to firestore", zap.Error(err))
-		}
+		h.write(channelID, fmt.Sprintf("twitch:clear-%s", message.Time.Format(time.RFC3339)), data)
 	})
 
 	client.OnClearMessage(func(message twitch.ClearMessage) {
 		// handle deleted message
 		userID, err := auth.TwitchUserIDFromUsername(h.firestore, h.clientID, h.clientSecret, message.Channel)
 		if err != nil {
-			zap.L().Error("failed to get twitch user id", zap.Error(err))
+			zap.L().Error("failed to get twitch user id", zap.Error(err), zap.String("channel", message.Channel))
 			return
 		}
 		channelID := fmt.Sprintf("twitch:%s", userID)
 		data := map[string]interface{}{
 			"channelId": channelID,
 			"timestamp": firestore.ServerTimestamp,
-			"type": 	"messagedeleted",
+			"type":      "messagedeleted",
 			"messageId": fmt.Sprintf("twitch:%s", message.TargetMsgID),
 		}
-		if err := h.write(channelID, fmt.Sprintf("twitch:x-%s", message.TargetMsgID), data); err != nil {
-			zap.L().Error("failed to write message deleted message to firestore", zap.Error(err))
-		}
+		h.write(channelID, fmt.Sprintf("twitch:x-%s", message.TargetMsgID), data)
 	})
 
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
@@ -382,45 +356,43 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) context.Context {
 		var reply map[string]interface{}
 		if message.Reply != nil {
 			reply = map[string]interface{}{
-				"messageId": fmt.Sprintf("twitch:%s", message.Reply.ParentMsgID),
+				"messageId":   fmt.Sprintf("twitch:%s", message.Reply.ParentMsgID),
 				"displayName": message.Reply.ParentDisplayName,
-				"userLogin": message.Reply.ParentUserLogin,
-				"userId": message.Reply.ParentUserID,
-				"message": message.Reply.ParentMsgBody,
+				"userLogin":   message.Reply.ParentUserLogin,
+				"userId":      message.Reply.ParentUserID,
+				"message":     message.Reply.ParentMsgBody,
 			}
 		}
 		data := map[string]interface{}{
 			"channelId": channelID,
 			"annotations": map[string]interface{}{
-				"isAction": message.Action,
+				"isAction":           message.Action,
 				"isFirstTimeChatter": message.FirstMessage,
 			},
 			"author": map[string]interface{}{
 				"displayName": message.User.DisplayName,
-				"userId": message.User.ID,
-				"color": message.User.Color,
+				"userId":      message.User.ID,
+				"color":       message.User.Color,
 			},
-			"message": message.Message,
-			"reply": reply,
+			"message":   message.Message,
+			"reply":     reply,
 			"timestamp": message.Time,
 			"tags": map[string]interface{}{
-				"user-id": message.User.ID,
-				"room-id": message.RoomID,
+				"user-id":      message.User.ID,
+				"room-id":      message.RoomID,
 				"display-name": message.User.DisplayName,
-				"color": message.User.Color,
-				"username": message.User.Name,
-				"badges": map[string]bool {
-					"vip": message.User.Badges["vip"] > 0,
+				"color":        message.User.Color,
+				"username":     message.User.Name,
+				"badges": map[string]bool{
+					"vip":       message.User.Badges["vip"] > 0,
 					"moderator": message.User.Badges["moderator"] > 0,
 				},
-				"emotes-raw": encodeEmotes(message.Emotes),
+				"emotes-raw": message.Tags["emotes"],
 			},
 			"type": "message",
 		}
-		zap.L().Info("message", zap.Any("data", data))
-		if err := h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data); err != nil {
-			zap.L().Error("failed to write message to firestore", zap.Error(err))
-		}
+		zap.L().Info("adding message", zap.String("message", message.Message), zap.String("channelId", channelID), zap.String("channel", message.Channel))
+		h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
 	})
 
 	reconnectCtx, reconnectCancel := context.WithCancel(context.Background())
@@ -432,24 +404,25 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) context.Context {
 	return reconnectCtx
 }
 
-func (h *TwitchHandler) HandleRequest(r *agent.Request, asUserID string) error {
+func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) (*JoinContext, error) {
+	zap.L().Info("joining as user", zap.String("asUserID", asUserID), zap.String("request", r.String()))
 	profile, err := h.firestore.Collection("profiles").Doc(asUserID).Get(context.Background())
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if !profile.Exists() {
-		return errors.New("profile not found")
+		return nil, errors.New("profile not found")
 	}
 	profileData := profile.Data()["twitch"].(map[string]interface{})
-	
+
 	authProvider, err := auth.NewFirestoreTwitchTokenSource(h.firestore, h.clientID, h.clientSecret, asUserID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	token, err := authProvider.Token()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// create a new chat client and attempt to connect
@@ -487,54 +460,30 @@ func (h *TwitchHandler) HandleRequest(r *agent.Request, asUserID string) error {
 
 	// join the channel
 	if err := joinWithTimeout(client, r.Channel(), 5*time.Second); err != nil {
-		return err
+		return nil, err
 	}
 
 	zap.L().Info("joined channel", zap.String("channel", r.Channel()))
 
-	// claim the request
-	if err := h.lock.LockClaim(r, reconnectCtx); err != nil {
-		// this is a non-fatal error.
-		if !cancel.IsCanceled(err) {
-			zap.L().Error("failed to claim request", zap.Error(err))
-		}
-	}
-
-	zap.L().Info("unassigned from channel", zap.String("channel", r.Channel()))
-
-	if err := client.Disconnect(); err != nil {
-		return err
-	}
-
-	if err := reconnectCtx.Err(); err != nil {
-		return errReconnect
-	}
-	return nil
+	return &JoinContext{
+		ReconnectCtx: reconnectCtx,
+		Close:        client.Disconnect,
+	}, nil
 }
 
-func (h *TwitchHandler) HandleRequestAnonymously(r *agent.Request) error {
+func (h *TwitchHandler) JoinAnonymously(r *agent.Request) (*JoinContext, error) {
 	// create a new chat client and attempt to connect
 	client := twitch.NewAnonymousClient()
 
 	reconnectCtx := h.bindEvents(client)
-	
+
 	// join the channel
 	if err := joinWithTimeout(client, r.Channel(), 5*time.Second); err != nil {
-		return err
-	}
-	
-	// claim the request
-	if err := h.lock.LockClaim(r, reconnectCtx); err != nil {
-		// this is a non-fatal error.
-		zap.L().Error("failed to claim request", zap.Error(err))
+		return nil, err
 	}
 
-	if err := client.Disconnect(); err != nil {
-		return err
-	}
-
-	if err := reconnectCtx.Err(); err != nil {
-		return errReconnect
-	}
-	return nil
+	return &JoinContext{
+		ReconnectCtx: reconnectCtx,
+		Close:        client.Disconnect,
+	}, nil
 }

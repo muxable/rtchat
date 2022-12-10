@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"os"
-	"sync"
 
 	"cloud.google.com/go/firestore"
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
@@ -15,10 +14,6 @@ import (
 )
 
 type Handler struct {
-	lock           *agent.RequestLock
-	activeChannels map[string]bool
-	activeLock     *sync.Mutex
-
 	firestore *firestore.Client
 	twitch    *TwitchHandler
 }
@@ -61,12 +56,8 @@ func NewHandler(lock *agent.RequestLock, firestore *firestore.Client) (*Handler,
 	}
 
 	return &Handler{
-		lock:           lock,
-		activeChannels: make(map[string]bool),
-		activeLock:     &sync.Mutex{},
-		firestore:      firestore,
+		firestore: firestore,
 		twitch: &TwitchHandler{
-			lock:         lock,
 			firestore:    firestore,
 			clientID:     twitchClientID,
 			clientSecret: twitchClientSecret,
@@ -74,65 +65,38 @@ func NewHandler(lock *agent.RequestLock, firestore *firestore.Client) (*Handler,
 	}, nil
 }
 
-func (h *Handler) HandleRequest(r *agent.Request) error {
-	h.activeLock.Lock()
-	if h.activeChannels[r.Channel()] {
-		h.activeLock.Unlock()
-		return errors.New("channel already active")
-	}
-	h.activeChannels[r.Channel()] = true
-	h.activeLock.Unlock()
+type JoinContext struct {
+	ReconnectCtx context.Context
+	Close        func() error
+}
 
-	defer func() {
-		h.activeLock.Lock()
-		delete(h.activeChannels, r.Channel())
-		h.activeLock.Unlock()
-	}()
-
+func (h *Handler) Join(r *agent.Request) (*JoinContext, error) {
 	switch r.Provider() {
 	case agent.ProviderTwitch:
 		// handle twitch request
-		for {
-			userID, err := auth.TwitchUserIDFromUsername(h.firestore, h.twitch.clientID, h.twitch.clientSecret, r.Channel())
-			if err != nil {
-				zap.L().Info("failed to get twitch user id, probably never used realtimechat", zap.Error(err))
-				break
-			}
-			if err := h.twitch.HandleRequest(r, userID); err != nil {
-				if err == errReconnect {
-					continue
-				}
-				zap.L().Warn("failed to join channel as authed user", zap.Error(err))
-				break
-			}
-			// completed successfully.
-			return nil
+		if userID, err := auth.TwitchUserIDFromUsername(h.firestore, h.twitch.clientID, h.twitch.clientSecret, r.Channel()); err != nil {
+			zap.L().Info("failed to get twitch user id, probably never used realtimechat", zap.Error(err))
+		} else if ctx, err := h.twitch.JoinAsUser(r, userID); err != nil {
+			zap.L().Warn("failed to join channel as authed user", zap.Error(err))
+		} else {
+			return ctx, nil
 		}
+
 		// try again as realtimechat
-		for {
-			if err := h.twitch.HandleRequest(r, "JSdHKOEgwcZijVsuXXdftmizt6E3"); err != nil {
-				if err == errReconnect {
-					continue
-				}
-				zap.L().Warn("failed to join channel as realtimechat", zap.Error(err))
-				break
-			}
-			// completed successfully.
-			return nil
+		if ctx, err := h.twitch.JoinAsUser(r, "JSdHKOEgwcZijVsuXXdftmizt6E3"); err != nil {
+			zap.L().Warn("failed to join channel as realtimechat", zap.Error(err))
+		} else {
+			return ctx, nil
 		}
+
 		// maybe we got banned, try again as anonymous
-		for {
-			if err := h.twitch.HandleRequestAnonymously(r); err != nil {
-				if err == errReconnect {
-					continue
-				}
-				zap.L().Warn("failed to join channel as anonymous", zap.Error(err))
-				break
-			}
-			// completed successfully.
-			return nil
+		if ctx, err := h.twitch.JoinAnonymously(r); err != nil {
+			zap.L().Warn("failed to join channel as anonymous", zap.Error(err))
+		} else {
+			return ctx, nil
 		}
-		return errors.New("failed to join channel")
+
+		return nil, errors.New("failed to join channel")
 	}
-	return errors.New("unknown provider")
+	return nil, errors.New("unknown provider")
 }

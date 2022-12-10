@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"time"
@@ -20,7 +21,6 @@ type TwitchAuthProvider struct {
 	userID, username string
 }
 
-
 func TwitchUserIDFromUsername(firestore *firestore.Client, clientID, clientSecret, username string) (string, error) {
 	userDoc, err := firestore.Collection("profiles").Where("twitch.login", "==", username).Documents(context.Background()).Next()
 	if err == nil {
@@ -30,12 +30,10 @@ func TwitchUserIDFromUsername(firestore *firestore.Client, clientID, clientSecre
 	req := &http.Request{
 		Method: "GET",
 		URL: &url.URL{
-			Scheme: "https",
-			Host: "api.twitch.tv",
-			Path: "/helix/users",
-			RawQuery: url.Values{
-				"login": []string{username},
-			}.Encode(),
+			Scheme:   "https",
+			Host:     "api.twitch.tv",
+			Path:     "/helix/users",
+			RawQuery: fmt.Sprintf("login=%s", username),
 		},
 	}
 	cfg := &clientcredentials.Config{
@@ -45,19 +43,24 @@ func TwitchUserIDFromUsername(firestore *firestore.Client, clientID, clientSecre
 	}
 	resp, err := cfg.Client(context.Background()).Do(req)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to fetch user: %w", err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to fetch user: %s", resp.Status)
+	}
+
 	var data struct {
 		Data []struct {
 			ID string `json:"id"`
 		} `json:"data"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to decode response: %w", err)
 	}
 	if len(data.Data) == 0 {
-		return "", errors.New("user not found")
+		return "", fmt.Errorf("user not found: %s", username)
 	}
 	return data.Data[0].ID, nil
 }
@@ -130,8 +133,8 @@ func (p *TwitchAuthProvider) Token() (*oauth2.Token, error) {
 		Method: "GET",
 		URL: &url.URL{
 			Scheme: "https",
-			Host: "id.twitch.tv",
-			Path: "/oauth2/validate",
+			Host:   "id.twitch.tv",
+			Path:   "/oauth2/validate",
 		},
 		Header: http.Header{
 			"Authorization": []string{"OAuth " + token.AccessToken},
