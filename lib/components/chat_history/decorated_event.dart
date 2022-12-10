@@ -9,6 +9,7 @@ class DecoratedEventWidget extends StatelessWidget {
   final IconData? icon;
   final Color? accentColor;
   final BoxDecoration decoration;
+  final EdgeInsets padding;
 
   const DecoratedEventWidget._(
       {Key? key,
@@ -16,6 +17,7 @@ class DecoratedEventWidget extends StatelessWidget {
       this.avatar,
       this.icon,
       this.accentColor,
+      this.padding = const EdgeInsets.fromLTRB(12, 4, 16, 4),
       this.decoration = const BoxDecoration()})
       : super(key: key);
 
@@ -32,7 +34,7 @@ class DecoratedEventWidget extends StatelessWidget {
         ),
       ),
       child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 4, 16, 4),
+          padding: padding,
           child: Consumer<StyleModel>(
               builder: (context, styleModel, child) {
                 if (avatar == null && icon == null) {
@@ -93,7 +95,11 @@ class DecoratedEventWidget extends StatelessWidget {
       {Key? key, required Widget child, required IconData icon})
       : this._(key: key, child: child, icon: icon);
 
-  const DecoratedEventWidget(
-      {Key? key, required Widget child, Color? accentColor})
-      : this._(key: key, child: child, accentColor: accentColor);
+  const DecoratedEventWidget({
+    Key? key,
+    required Widget child,
+    Color? accentColor,
+    EdgeInsets padding = const EdgeInsets.fromLTRB(12, 4, 16, 4),
+  }) : this._(
+            key: key, child: child, accentColor: accentColor, padding: padding);
 }
