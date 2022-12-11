@@ -17,7 +17,7 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
     Product? product;
 
     if (purchases.storeState == StoreState.available) {
-      product = purchases.products[cloudTtsSubscription];
+      product = purchases.getProduct(cloudTtsSubscription);
       switch (product?.status) {
         case ProductStatus.purchasable:
           buttonText = 'Subscribe';
