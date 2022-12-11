@@ -50,9 +50,8 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                   child: MarkdownBody(
                     data: '''# High-Quality Text-to-Speech Voices
-                        \n* It will make your life better
-                        \n* Access to billions of languages
-                        \n* Trillions of languages
+                        \n* Per viewer voices
+                        \n* Access to all Twitch supported languages
                         \n* No more robot speech!''',
                     styleSheet: MarkdownStyleSheet(
                       listBullet: Theme.of(context).textTheme.titleLarge,
