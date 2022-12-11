@@ -157,6 +157,50 @@ void main() {
           ]));
     });
 
+    test('regular multi emote format should tokenize', () {
+      final model = createMessageModel("premium/1", "25:36-40,42-46", [],
+          "have you followed @muxfd on twitch? Kappa Kappa");
+
+      expect(
+          model.tokenized,
+          orderedEquals([
+            const TextToken("have you followed "),
+            const UserMentionToken("muxfd"),
+            const TextToken(" on twitch? "),
+            EmoteToken(
+                url: Uri.parse(
+                    "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0"),
+                code: "Kappa"),
+            const TextToken(" "),
+            EmoteToken(
+                url: Uri.parse(
+                    "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0"),
+                code: "Kappa")
+          ]));
+    });
+
+    test('alternate emote format should tokenize', () {
+      final model = createMessageModel("premium/1", "25:36-40,25:42-46", [],
+          "have you followed @muxfd on twitch? Kappa Kappa");
+
+      expect(
+          model.tokenized,
+          orderedEquals([
+            const TextToken("have you followed "),
+            const UserMentionToken("muxfd"),
+            const TextToken(" on twitch? "),
+            EmoteToken(
+                url: Uri.parse(
+                    "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0"),
+                code: "Kappa"),
+            const TextToken(" "),
+            EmoteToken(
+                url: Uri.parse(
+                    "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0"),
+                code: "Kappa")
+          ]));
+    });
+
     test('emojis, emotes and text should tokenize', () {
       final model = createMessageModel("premium/1", "25:38-42", [],
           "\u{1F603} have you followed @muxfd on twitch? Kappa");

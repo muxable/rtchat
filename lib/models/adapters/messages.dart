@@ -179,6 +179,8 @@ DeltaEvent? _toDeltaEvent(
           streakMonths: data['event']['streak_months'],
           cumulativeMonths: data['event']['cumulative_months'],
           durationMonths: data['event']['duration_months'],
+          emotes: SubscriptionMessageEventEmote.fromDynamicList(
+              data['event']['message']['emotes']),
           text: data['event']['message']['text']);
 
       return AppendDeltaEvent(model);
@@ -400,21 +402,17 @@ class MessagesAdapter {
     if (timestamp != null) {
       query = query.where("timestamp", isLessThan: timestamp);
     }
-    return query
-        .orderBy("timestamp")
-        .limitToLast(1)
-        .snapshots()
-        .map((event) {
-          if (event.docs.isEmpty) {
-            return null;
-          }
-          final doc = event.docs.first;
-          final data = doc.data();
-          if (data['type'] == "stream.offline") {
-            return null;
-          }
-          return data['timestamp'].toDate();
-        });
+    return query.orderBy("timestamp").limitToLast(1).snapshots().map((event) {
+      if (event.docs.isEmpty) {
+        return null;
+      }
+      final doc = event.docs.first;
+      final data = doc.data();
+      if (data['type'] == "stream.offline") {
+        return null;
+      }
+      return data['timestamp'].toDate();
+    });
   }
 
   Future<bool> hasMessages(Channel channel) async {

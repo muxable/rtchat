@@ -18,7 +18,7 @@ class TwitchCheerEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = model.isAnonymous ? 'Anonymous' : model.giverName;
-    final boldStyle = Theme.of(context).textTheme.subtitle2;
+    final boldStyle = Theme.of(context).textTheme.titleSmall;
     return DecoratedEventWidget.avatar(
       avatar: ResilientNetworkImage(getCorrespondingImageUrl(model.bits)),
       child: Text.rich(

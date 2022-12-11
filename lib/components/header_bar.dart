@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/models/adapters/messages.dart';
+import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 
@@ -74,13 +74,9 @@ class HeaderBarWidget extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _HeaderBarWidgetState extends State<HeaderBarWidget> {
-  late Timer _pollTimer;
   late Timer _fadeTimer;
 
-  var _loading = true;
   var _locked = false;
-  var _viewers = 0;
-  var _followers = 0;
   var _iteration = 0;
 
   final NumberFormat _formatter = NumberFormat.compact();
@@ -89,8 +85,6 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
   void initState() {
     super.initState();
 
-    _poll();
-    _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) => _poll());
     _fadeTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (_locked) {
         return;
@@ -102,39 +96,8 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
   }
 
   @override
-  void didUpdateWidget(HeaderBarWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.channel != widget.channel) {
-      setState(() => _loading = true);
-      _poll();
-    }
-  }
-
-  Future<void> _poll() async {
-    try {
-      final statistics = await getStreamMetadata(
-          provider: widget.channel.provider,
-          channelId: widget.channel.channelId);
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _loading = false;
-        if (statistics is TwitchStreamMetadata) {
-          _viewers = statistics.viewerCount;
-          _followers = statistics.followerCount;
-        }
-      });
-    } catch (e) {
-      return;
-    }
-  }
-
-  @override
   void dispose() {
     _fadeTimer.cancel();
-    _pollTimer.cancel();
 
     super.dispose();
   }
@@ -144,12 +107,10 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
     return AppBar(
         title: GestureDetector(
             onTap: () => setState(() => _locked = !_locked),
-            child: StreamBuilder<DateTime?>(
-                stream:
-                    MessagesAdapter.instance.forChannelUptime(widget.channel),
+            child: StreamBuilder<ChannelMetadata?>(
+                stream: ChannelsAdapter.instance.forChannel(widget.channel),
                 builder: (context, snapshot) {
-                  final onlineAt = snapshot.data;
-
+                  final data = snapshot.data;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -167,35 +128,38 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                           const Padding(
                               padding: EdgeInsets.only(right: 4),
                               child: Icon(Icons.lock_outline, size: 12)),
-                      Consumer<LayoutModel>(
-                          builder: (context, layoutModel, child) {
-                        final style = Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(color: Colors.white);
-                        if (_loading) {
-                          return Text("...", style: style);
-                        }
-                        final texts = <Widget>[];
-                        if (layoutModel.isStatsVisible && onlineAt == null) {
-                          texts.add(Text(
-                              "${_formatter.format(_followers)} followers",
-                              style: style));
-                        }
-                        if (layoutModel.isStatsVisible && onlineAt != null) {
-                            texts.add(Text(
-                                "${_formatter.format(_viewers)} viewers",
-                                style: style));
-                        }
-                        if (onlineAt != null) {
-                          texts.add(
-                              _DurationWidget(from: onlineAt, style: style));
-                        }
-                        if (texts.isEmpty) {
-                          return Container();
-                        }
-                        return texts[_iteration % texts.length];
-                      }),
+                        Consumer<LayoutModel>(
+                            builder: (context, layoutModel, child) {
+                          final style = Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: Colors.white);
+                          if (data == null) {
+                            return Text("...", style: style);
+                          }
+                          final texts = <Widget>[];
+                          if (layoutModel.isStatsVisible) {
+                            if (data is TwitchChannelMetadata) {
+                              if (data.onlineAt == null) {
+                                texts.add(Text(
+                                    "${_formatter.format(data.followerCount)} followers",
+                                    style: style));
+                              } else {
+                                texts.add(Text(
+                                    "${_formatter.format(data.viewerCount)} viewers",
+                                    style: style));
+                              }
+                            }
+                          }
+                          if (data.onlineAt != null) {
+                            texts.add(_DurationWidget(
+                                from: data.onlineAt!, style: style));
+                          }
+                          if (texts.isEmpty) {
+                            return Container();
+                          }
+                          return texts[_iteration % texts.length];
+                        }),
                       ]),
                     ],
                   );

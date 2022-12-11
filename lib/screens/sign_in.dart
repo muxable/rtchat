@@ -26,7 +26,7 @@ class _SignInScreenState extends State<SignInScreen> {
           child: Text("RealtimeChat",
               style: Theme.of(context)
                   .textTheme
-                  .headline6!
+                  .titleLarge!
                   .copyWith(color: Colors.white))),
       if (_isLoading)
         const CircularProgressIndicator()

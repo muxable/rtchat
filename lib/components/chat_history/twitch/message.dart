@@ -73,7 +73,7 @@ class TwitchMessageWidget extends StatelessWidget {
       BuildContext context, StyleModel styleModel, MessageToken token) sync* {
     final linkStyle = Theme.of(context)
         .textTheme
-        .bodyText2!
+        .bodyMedium!
         .copyWith(color: Theme.of(context).colorScheme.secondary);
 
     final tagStyleStreamer = TextStyle(
@@ -90,7 +90,7 @@ class TwitchMessageWidget extends StatelessWidget {
 
     final multiplierStyle = Theme.of(context)
         .textTheme
-        .caption!
+        .bodySmall!
         .copyWith(color: Theme.of(context).colorScheme.secondary);
 
     if (token is TextToken) {
@@ -102,7 +102,7 @@ class TwitchMessageWidget extends StatelessWidget {
               message: token.code,
               preferBelow: false,
               child: Image(
-              height: styleModel.fontSize,
+                  height: styleModel.fontSize,
                   image: ResilientNetworkImage(token.url))));
     } else if (token is LinkToken) {
       yield WidgetSpan(
@@ -186,7 +186,7 @@ class TwitchMessageWidget extends StatelessWidget {
       }
       final authorStyle = Theme.of(context)
           .textTheme
-          .subtitle2!
+          .titleSmall!
           .copyWith(color: styleModel.applyLightnessBoost(context, color));
 
       final List<InlineSpan> children = [];
@@ -264,7 +264,7 @@ class TwitchMessageWidget extends StatelessWidget {
                   ]),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.subtitle1?.apply(
+                  style: Theme.of(context).textTheme.titleMedium?.apply(
                         color: Theme.of(context).hintColor,
                         fontSizeFactor: 0.75,
                       ),
