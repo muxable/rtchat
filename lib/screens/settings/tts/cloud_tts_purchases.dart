@@ -13,15 +13,12 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     var purchases = context.watch<Purchases>();
     var userModel = context.watch<UserModel>();
-    String price = '';
     String buttonText = 'Unavailable';
     Product? product;
 
     if (purchases.storeState == StoreState.available) {
-      product = purchases.products
-          .firstWhere((product) => product.id == cloudTtsSubscription);
-      price = '${product.price}/mo  ';
-      switch (product.status) {
+      product = purchases.products[cloudTtsSubscription];
+      switch (product?.status) {
         case ProductStatus.purchasable:
           buttonText = 'Subscribe';
           break;
@@ -31,11 +28,14 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
         case ProductStatus.purchased:
           buttonText = 'Subscribed';
           break;
-      }
-      if (!userModel.isSignedIn()) {
-        buttonText = 'Please Sign In';
+        default:
+          break;
       }
     }
+    if (!userModel.isSignedIn()) {
+      buttonText = 'Please Sign In';
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text("Text to speech")),
       body: SafeArea(
@@ -103,7 +103,9 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Text('${price}Cancel at any time.'),
+                  child: Text(
+                    '${product != null ? '${product.price}/mo   ' : ''}Cancel at any time.',
+                  ),
                 ),
               ],
             ),

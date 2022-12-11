@@ -30,7 +30,7 @@ class Purchases extends ChangeNotifier {
   StoreState storeState = StoreState.loading;
   late StreamSubscription<List<PurchaseDetails>> _subscription;
   final iapConnection = IAPConnection.instance;
-  List<Product> products = [];
+  Map<String, Product> products = {};
 
   Purchases(this.ttsModel) {
     final purchaseUpdated = iapConnection.purchaseStream;
@@ -56,7 +56,8 @@ class Purchases extends ChangeNotifier {
     for (var element in response.notFoundIDs) {
       debugPrint('Purchase $element not found');
     }
-    products = response.productDetails.map((e) => Product(e)).toList();
+    final productList = response.productDetails.map((e) => Product(e)).toList();
+    products = {for (Product e in productList) e.id: e};
     storeState = StoreState.available;
     notifyListeners();
   }
