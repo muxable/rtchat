@@ -152,7 +152,12 @@ func main() {
 		w.Write([]byte("ok"))
 	}))
 
-	go http.ListenAndServe(":8080", nil)
+	go func() {
+		zap.L().Info("starting http server")
+		if err := http.ListenAndServe(":8080", nil); err != nil {
+			zap.L().Fatal("failed to start http server", zap.Error(err))
+		}
+	}()
 
 	var errwg errgroup.Group
 
