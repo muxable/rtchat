@@ -67,6 +67,7 @@ func quitContext() context.Context {
 	http.HandleFunc("/quitquitquit", func(w http.ResponseWriter, r *http.Request) {
 		zap.L().Info("received quitquitquit request")
 		cancel()
+		w.Write([]byte("ok"))
 	})
 
 	return ctx
