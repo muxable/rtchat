@@ -84,4 +84,4 @@ jobs:
       - name: Deploy to GCE
         id: deploy
         run: |
-          gcloud compute instance-groups managed rolling-action replace agent-small-us-central1
+          gcloud compute instance-groups managed rolling-action replace agent-small-us-central1 --region=us-central1
