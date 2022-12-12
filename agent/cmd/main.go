@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -80,29 +81,31 @@ func fetchAgentID() (agent.AgentID, error) {
 		return "", fmt.Errorf("failed to get instance id: %d", res.StatusCode)
 	}
 	defer res.Body.Close()
-	id := make([]byte, 32)
-	_, err = res.Body.Read(id)
+	
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return "", err
 	}
-	return agent.AgentID(id), nil
+	return agent.AgentID(body), nil
 }
 
 func main() {
-	agentID, err := fetchAgentID()
-	if err != nil {
-		zap.L().Warn("failed to fetch agent id, using randomly generated one", zap.Error(err))
-		agentID = agent.AgentID(uuid.New().String())
-	}
-
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
 	}
 	defer logger.Sync()
 
-	undo := zap.ReplaceGlobals(logger.With(zap.String("agentId", string(agentID))))
-	defer undo()
+	agentID, err := fetchAgentID()
+	if err != nil {
+		agentID = agent.AgentID(uuid.New().String())
+		undo := zap.ReplaceGlobals(logger.With(zap.String("agentId", string(agentID))))
+		defer undo()
+		zap.L().Warn("failed to fetch agent id", zap.Error(err))
+	} else {
+		undo := zap.ReplaceGlobals(logger.With(zap.String("agentId", string(agentID))))
+		defer undo()
+	}
 
 	// don't use the application context because we will perform cleanup on SIGINT/SIGTERM
 	client, err := firestore.NewClient(context.Background(), "rtchat-47692")
@@ -145,7 +148,7 @@ func main() {
 	isListening := &atomic.Bool{}
 
 	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if isListening.Load() {
+		if !isListening.Load() {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
