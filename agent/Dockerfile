@@ -1,15 +1,20 @@
-FROM node:alpine
+FROM golang:1.19-alpine AS builder
 
-WORKDIR /usr/src/app
+WORKDIR /go/src/app
 
-COPY package*.json ./
+COPY go.mod ./
+COPY go.sum ./
 
-RUN npm ci --only=production
+RUN go mod download
 
 COPY . .
 
-ENV NODE_ENV=production
+RUN go build -o /go/bin/app cmd/main.go
 
-RUN npm run build
+FROM scratch
 
-CMD [ "npm", "run", "start" ]
+COPY --from=builder /go/bin/app /go/bin/app
+
+EXPOSE 8080
+
+ENTRYPOINT ["/go/bin/app"]
