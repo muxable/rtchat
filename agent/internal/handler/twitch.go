@@ -25,12 +25,6 @@ type TwitchHandler struct {
 	clientID, clientSecret string
 }
 
-type Action struct {
-	Message        string
-	TargetChannel  string
-	ReplyMessageId string
-}
-
 func (h *TwitchHandler) bindOutboundClient(ctx context.Context, client *twitch.Client, channelID string) error {
 	// listen on firestore for new messages
 	zap.L().Info("listening for new messages", zap.String("channelId", channelID))
@@ -45,7 +39,11 @@ func (h *TwitchHandler) bindOutboundClient(ctx context.Context, client *twitch.C
 		}
 		for _, change := range snapshot.Changes {
 			if change.Kind == firestore.DocumentAdded {
-				var action Action
+				var action struct {
+					Message        string
+					TargetChannel  string
+					ReplyMessageId string
+				}
 				if err := change.Doc.DataTo(&action); err != nil {
 					zap.L().Error("failed to unmarshal action", zap.Error(err))
 					continue
@@ -435,7 +433,6 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) (*JoinCont
 
 	if profileData["login"].(string) != "realtimechat" {
 		sendCtx, sendCancel := context.WithCancel(context.Background())
-		defer sendCancel()
 		go func() {
 			if err := h.bindOutboundClient(sendCtx, client, fmt.Sprintf("twitch:%s", profileData["id"].(string))); err != nil {
 				if !cancel.IsCanceled(err) {
@@ -445,7 +442,6 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) (*JoinCont
 		}()
 
 		raidCtx, raidCancel := context.WithCancel(context.Background())
-		defer raidCancel()
 		go func() {
 			for {
 				if err := h.bindRaidClient(raidCtx, profileData["id"].(string), asUserID); err != nil {
@@ -459,6 +455,24 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) (*JoinCont
 				}
 			}
 		}()
+
+		// join the channel
+		if err := joinWithTimeout(client, r.Channel(), 5*time.Second); err != nil {
+			sendCancel()
+			raidCancel()
+			return nil, err
+		}
+
+		zap.L().Info("joined channel", zap.String("channel", r.Channel()))
+
+		return &JoinContext{
+			ReconnectCtx: reconnectCtx,
+			Close:        func() error {
+				sendCancel()
+				raidCancel()
+				return client.Disconnect()
+			},
+		}, nil
 	}
 
 	// join the channel
