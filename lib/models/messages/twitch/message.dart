@@ -109,6 +109,19 @@ Iterable<MessageToken> tokenizeEmotes(
 List<EmoteData> parseEmotes(String emotes) {
   return emotes.split("/").expand((block) {
     final blockTokens = block.split(':');
+
+    // 301072977:66-75,301072977:105-114
+    if (blockTokens.length > 2) {
+      return block.split(',').map((block) {
+        final tokens = block.split(':');
+        final key = tokens[0];
+        final indexTokens = tokens[1].split('-');
+        final start = int.parse(indexTokens[0]);
+        final end = int.parse(indexTokens[1]);
+        return EmoteData(key, start, end);
+      });
+    }
+
     final key = blockTokens[0];
     return blockTokens[1].split(',').map((indices) {
       final indexTokens = indices.split('-');
