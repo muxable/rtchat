@@ -66,8 +66,34 @@ func quitContext() context.Context {
 	return ctx
 }
 
+func fetchAgentID() (agent.AgentID, error) {
+	req, err := http.NewRequest("GET", "http://metadata.google.internal/computeMetadata/v1/instance/id", nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("Metadata-Flavor", "Google")
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to get instance id: %d", res.StatusCode)
+	}
+	defer res.Body.Close()
+	id := make([]byte, 32)
+	_, err = res.Body.Read(id)
+	if err != nil {
+		return "", err
+	}
+	return agent.AgentID(id), nil
+}
+
 func main() {
-	agentID := agent.AgentID(uuid.New().String())
+	agentID, err := fetchAgentID()
+	if err != nil {
+		zap.L().Warn("failed to fetch agent id, using randomly generated one", zap.Error(err))
+		agentID = agent.AgentID(uuid.New().String())
+	}
 
 	logger, err := zap.NewDevelopment()
 	if err != nil {
