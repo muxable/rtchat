@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -115,10 +116,24 @@ func main() {
 		}
 	}()
 
+	isListening := &atomic.Bool{}
+
+	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if isListening.Load() {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		w.Write([]byte("ok"))
+	}))
+
+	go http.ListenAndServe(":8080", nil)
+
 	var errwg errgroup.Group
 
 	for {
+		isListening.Store(true)
 		req, err := lock.Next()
+		isListening.Store(false)
 		if err != nil {
 			if !errors.Is(err, context.Canceled) {
 				zap.L().Error("failed to get next request", zap.Error(err))
