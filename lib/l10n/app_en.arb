@@ -23,11 +23,11 @@
     "@search": {
       "description": "Placeholder text for search bar"
     },
-    "searchChannels": "Search Channels",
+    "searchChannels": "Search",
     "@searchChannels": {
       "description": "Header for a page that lets the user search channels"
     },
-    "raidAChannel": "Raid a Channel",
+    "raidAChannel": "Raid",
     "@raidAChannel": {
       "description": "Header for a page that lets the raid channels"
     }

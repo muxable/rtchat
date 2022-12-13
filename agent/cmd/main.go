@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -63,20 +64,58 @@ func quitContext() context.Context {
 		}
 	}()
 
+	http.HandleFunc("/quitquitquit", func(w http.ResponseWriter, r *http.Request) {
+		zap.L().Info("received quitquitquit request")
+		cancel()
+		w.Write([]byte("ok"))
+	})
+
 	return ctx
 }
 
-func main() {
-	agentID := agent.AgentID(uuid.New().String())
-
-	logger, err := zap.NewDevelopment()
+func fetchAgentID() (agent.AgentID, error) {
+	req, err := http.NewRequest("GET", "http://metadata.google.internal/computeMetadata/v1/instance/id", nil)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	defer logger.Sync()
+	req.Header.Add("Metadata-Flavor", "Google")
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to get instance id: %d", res.StatusCode)
+	}
+	defer res.Body.Close()
+	
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	return agent.AgentID(body), nil
+}
 
-	undo := zap.ReplaceGlobals(logger.With(zap.String("agentId", string(agentID))))
-	defer undo()
+func main() {
+	agentID, err := fetchAgentID()
+	if err != nil {
+		logger, err := zap.NewDevelopment()
+		if err != nil {
+			panic(err)
+		}
+		defer logger.Sync()
+		agentID = agent.AgentID(fmt.Sprintf("pseudo:%s", uuid.New().String()))
+		undo := zap.ReplaceGlobals(logger.With(zap.String("agentId", string(agentID))))
+		defer undo()
+		zap.L().Warn("failed to fetch agent id", zap.Error(err))
+	} else {
+		logger, err := zap.NewProduction()
+		if err != nil {
+			panic(err)
+		}
+		defer logger.Sync()
+		undo := zap.ReplaceGlobals(logger.With(zap.String("agentId", string(agentID))))
+		defer undo()
+	}
 
 	// don't use the application context because we will perform cleanup on SIGINT/SIGTERM
 	client, err := firestore.NewClient(context.Background(), "rtchat-47692")
@@ -85,6 +124,8 @@ func main() {
 	}
 
 	terminateCtx, terminate := context.WithCancel(quitContext())
+
+	go agent.RunWatchdog(terminateCtx, agentID, client)
 
 	// create a new RequestLock
 	lock := agent.NewRequestLock(terminateCtx, agentID, client)
@@ -119,14 +160,19 @@ func main() {
 	isListening := &atomic.Bool{}
 
 	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if isListening.Load() {
+		if !isListening.Load() {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
 		w.Write([]byte("ok"))
 	}))
 
-	go http.ListenAndServe(":8080", nil)
+	go func() {
+		zap.L().Info("starting http server")
+		if err := http.ListenAndServe(":8080", nil); err != nil {
+			zap.L().Fatal("failed to start http server", zap.Error(err))
+		}
+	}()
 
 	var errwg errgroup.Group
 

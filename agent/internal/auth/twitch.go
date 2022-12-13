@@ -27,6 +27,16 @@ func TwitchUserIDFromUsername(firestore *firestore.Client, clientID, clientSecre
 		return userDoc.Ref.ID, nil
 	}
 	// try fetching it from twitch.
+	cfg := &clientcredentials.Config{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		TokenURL:     twitch.Endpoint.TokenURL,
+	}
+	token, err := cfg.Token(context.Background())
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch auth token: %w", err)
+	}
+	client := &http.Client{Timeout: 10 * time.Second}
 	req := &http.Request{
 		Method: "GET",
 		URL: &url.URL{
@@ -35,13 +45,12 @@ func TwitchUserIDFromUsername(firestore *firestore.Client, clientID, clientSecre
 			Path:     "/helix/users",
 			RawQuery: fmt.Sprintf("login=%s", username),
 		},
+		Header: http.Header{
+			"Authorization": []string{fmt.Sprintf("Bearer %s", token.AccessToken)},
+			"Client-Id":     []string{clientID},
+		},
 	}
-	cfg := &clientcredentials.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		TokenURL:     twitch.Endpoint.TokenURL,
-	}
-	resp, err := cfg.Client(context.Background()).Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch user: %w", err)
 	}
