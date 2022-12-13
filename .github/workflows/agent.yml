@@ -38,7 +38,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/muxable/rtchat-agent
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -58,10 +58,16 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     needs: build
     concurrency:
       group: deploy
       cancel-in-progress: true
+    environment:
+      name: agent
+      url: https://console.cloud.google.com/compute/instanceGroups/details/us-central1-c/agent-small-us-central1?project=rtchat-47692
 
     steps:
       - name: Checkout repository
@@ -75,7 +81,7 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
 
-      # - name: Deploy to GCE
-      #   id: deploy
-      #   run: |
-      #     gcloud compute instance-groups managed rolling-action start-update agent-us-central1 --version=template=agent-e2-medium-shutdown-script --zone=us-central1-a
+      - name: Deploy to GCE
+        id: deploy
+        run: |
+          gcloud compute instance-groups managed rolling-action replace agent-small-us-central1 --region=us-central1
