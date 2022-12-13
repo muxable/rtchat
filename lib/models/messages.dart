@@ -200,7 +200,7 @@ class MessagesModel extends ChangeNotifier {
 
   Duration get announcementPinDuration => _announcementPinDuration;
 
-  Duration _pingMinGapDuration = const Duration(minutes: 1);
+  Duration _pingMinGapDuration = const Duration(days: 10000);
 
   set pingMinGapDuration(Duration duration) {
     _pingMinGapDuration = duration;

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -55,6 +56,13 @@ class _StreamPreviewState extends State<StreamPreview> {
     super.dispose();
 
     _promptTimer?.cancel();
+
+    // on iOS, the webview is not disposed when the widget is disposed.
+    // this causes audio to keep playing even when the widget is closed.
+    // therefore, we load a blank page to silence the audio.
+    if (Platform.isIOS) {
+      _controller?.loadHtmlString(" ");
+    }
   }
 
   @override
@@ -88,19 +96,26 @@ class _StreamPreviewState extends State<StreamPreview> {
             return;
           }
           final model = Provider.of<StreamPreviewModel>(context, listen: false);
+          print("loading");
           await controller.runJavascript(
               await rootBundle.loadString('assets/twitch-tunnel.js'));
           // wait a second for twitch to catch up.
           await Future.delayed(const Duration(seconds: 1));
-          await _controller?.runJavascript("action(Actions.SetMuted, false)");
-          await _controller?.runJavascript(
-              "action(Actions.SetVolume, ${model.volume / 100})");
-          if (model.isHighDefinition) {
-            await _controller
-                ?.runJavascript("action(Actions.SetQuality, 'auto')");
+          if (Platform.isIOS) {
+            await _controller?.runJavascript(
+                "window.action(window.Actions.SetMuted, ${model.volume == 0})");
           } else {
-            await _controller
-                ?.runJavascript("action(Actions.SetQuality, '160p')");
+            await controller
+                .runJavascript("window.action(window.Actions.SetMuted, false)");
+            await controller.runJavascript(
+                "window.action(window.Actions.SetVolume, ${model.volume / 100})");
+            if (model.isHighDefinition) {
+              await controller.runJavascript(
+                  "window.action(window.Actions.SetQuality, 'auto')");
+            } else {
+              await controller.runJavascript(
+                  "window.action(window.Actions.SetQuality, '160p')");
+            }
           }
         },
         javascriptMode: JavascriptMode.unrestricted,
@@ -171,6 +186,14 @@ class _StreamPreviewState extends State<StreamPreview> {
                               onPressed: !_isOverlayActive
                                   ? null
                                   : () async {
+                                      if (Platform.isIOS) {
+                                        // SetVolume doesn't seem to work on ios so we use SetMuted instead and toggle between 0 and 100.
+                                        model.volume =
+                                            model.volume == 0 ? 100 : 0;
+                                        await _controller?.runJavascript(
+                                            "window.action(window.Actions.SetMuted, ${model.volume == 0})");
+                                        return;
+                                      }
                                       if (model.volume == 0) {
                                         model.volume = 100;
                                       } else if (model.volume == 100) {
@@ -179,9 +202,9 @@ class _StreamPreviewState extends State<StreamPreview> {
                                         model.volume = 0;
                                       }
                                       await _controller?.runJavascript(
-                                          "action(Actions.SetMuted, false)");
+                                          "window.action(window.Actions.SetMuted, false)");
                                       await _controller?.runJavascript(
-                                          "action(Actions.SetVolume, ${model.volume / 100})");
+                                          "window.action(window.Actions.SetVolume, ${model.volume / 100})");
                                     },
                               color: Colors.white,
                               icon: Icon(
@@ -191,24 +214,26 @@ class _StreamPreviewState extends State<StreamPreview> {
                                         ? Icons.volume_up
                                         : Icons.volume_down,
                               )),
-                          IconButton(
-                              onPressed: !_isOverlayActive
-                                  ? null
-                                  : () async {
-                                      model.isHighDefinition =
-                                          !model.isHighDefinition;
-                                      if (model.isHighDefinition) {
-                                        await _controller?.runJavascript(
-                                            "action(Actions.SetQuality, 'auto')");
-                                      } else {
-                                        await _controller?.runJavascript(
-                                            "action(Actions.SetQuality, '160p')");
-                                      }
-                                    },
-                              color: Colors.white,
-                              icon: Icon(model.isHighDefinition
-                                  ? Icons.hd
-                                  : Icons.sd)),
+                          // SetQuality doesn't seem to work on ios so we don't show the button.
+                          if (!Platform.isIOS)
+                            IconButton(
+                                onPressed: !_isOverlayActive
+                                    ? null
+                                    : () async {
+                                        model.isHighDefinition =
+                                            !model.isHighDefinition;
+                                        if (model.isHighDefinition) {
+                                          await _controller?.runJavascript(
+                                              "window.action(window.Actions.SetQuality, 'auto')");
+                                        } else {
+                                          await _controller?.runJavascript(
+                                              "window.action(window.Actions.SetQuality, '160p')");
+                                        }
+                                      },
+                                color: Colors.white,
+                                icon: Icon(model.isHighDefinition
+                                    ? Icons.hd
+                                    : Icons.sd)),
                         ],
                       );
                     },
