@@ -104,7 +104,7 @@ func main() {
 
 	agentID, err := fetchAgentID()
 	if err != nil {
-		agentID = agent.AgentID(uuid.New().String())
+		agentID = agent.AgentID(fmt.Sprintf("pseudo:%s", uuid.New().String()))
 		undo := zap.ReplaceGlobals(logger.With(zap.String("agentId", string(agentID))))
 		defer undo()
 		zap.L().Warn("failed to fetch agent id", zap.Error(err))
@@ -120,6 +120,8 @@ func main() {
 	}
 
 	terminateCtx, terminate := context.WithCancel(quitContext())
+
+	go agent.RunWatchdog(terminateCtx, agentID, client)
 
 	// create a new RequestLock
 	lock := agent.NewRequestLock(terminateCtx, agentID, client)
