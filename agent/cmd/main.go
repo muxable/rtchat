@@ -96,19 +96,24 @@ func fetchAgentID() (agent.AgentID, error) {
 }
 
 func main() {
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		panic(err)
-	}
-	defer logger.Sync()
 
 	agentID, err := fetchAgentID()
 	if err != nil {
+		logger, err := zap.NewDevelopment()
+		if err != nil {
+			panic(err)
+		}
+		defer logger.Sync()
 		agentID = agent.AgentID(fmt.Sprintf("pseudo:%s", uuid.New().String()))
 		undo := zap.ReplaceGlobals(logger.With(zap.String("agentId", string(agentID))))
 		defer undo()
 		zap.L().Warn("failed to fetch agent id", zap.Error(err))
 	} else {
+		logger, err := zap.NewProduction()
+		if err != nil {
+			panic(err)
+		}
+		defer logger.Sync()
 		undo := zap.ReplaceGlobals(logger.With(zap.String("agentId", string(agentID))))
 		defer undo()
 	}
