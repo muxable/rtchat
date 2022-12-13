@@ -25,7 +25,6 @@ class VoicesScreen extends StatelessWidget {
                   final response = await FirebaseFunctions.instance
                       .httpsCallable("synthesize")({
                     "voice": model.voices[index],
-                    "language": model.language.languageCode,
                     "text": "kevin calmly and collectively consumes cheesecake",
                   });
                   final bytes = const Base64Decoder().convert(response.data);
