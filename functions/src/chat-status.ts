@@ -182,7 +182,7 @@ export const getViewerList = functions.https.onCall(
           }
         );
         const profileJson = await profile.json();
-        if (profileJson["data"].length === 0) {
+        if (!profileJson["data"]?.length) {
           throw new functions.https.HttpsError(
             "not-found",
             "channel not found"
