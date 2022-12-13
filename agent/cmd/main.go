@@ -96,7 +96,6 @@ func fetchAgentID() (agent.AgentID, error) {
 }
 
 func main() {
-
 	agentID, err := fetchAgentID()
 	if err != nil {
 		logger, err := zap.NewDevelopment()

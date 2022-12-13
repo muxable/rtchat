@@ -57,6 +57,7 @@ func (h *TwitchHandler) bindOutboundClient(ctx context.Context, client *twitch.C
 				// mark the action as sent
 				if _, err := change.Doc.Ref.Set(context.Background(), map[string]interface{}{
 					"sentAt": firestore.ServerTimestamp,
+					"isComplete": true,
 				}, firestore.MergeAll); err != nil {
 					zap.L().Error("failed to mark action as sent", zap.Error(err))
 					continue
