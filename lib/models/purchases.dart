@@ -54,7 +54,8 @@ class Purchases extends ChangeNotifier {
     };
     final response = await iapConnection.queryProductDetails(ids);
     for (var element in response.notFoundIDs) {
-      debugPrint('Purchase $element not found');
+      FirebaseCrashlytics.instance
+          .recordError('Purchase $element not found', StackTrace.current);
     }
     products = response.productDetails.map((e) => Product(e)).toList();
     storeState = StoreState.available;
