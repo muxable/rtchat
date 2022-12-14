@@ -12,28 +12,9 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var purchases = context.watch<Purchases>();
-    var userModel = context.watch<UserModel>();
-    String buttonText = 'Unavailable';
     Product? product;
-
     if (purchases.storeState == StoreState.available) {
       product = purchases.getProduct(cloudTtsSubscription);
-      switch (product?.status) {
-        case ProductStatus.purchasable:
-          buttonText = 'Subscribe';
-          break;
-        case ProductStatus.pending:
-          buttonText = 'Pending';
-          break;
-        case ProductStatus.purchased:
-          buttonText = 'Subscribed';
-          break;
-        default:
-          break;
-      }
-    }
-    if (!userModel.isSignedIn()) {
-      buttonText = 'Please Sign In';
     }
 
     return Scaffold(
@@ -77,27 +58,51 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ElevatedButton(
-                    onPressed: userModel.isSignedIn() &&
-                            purchases.storeState == StoreState.available &&
-                            product!.status == ProductStatus.purchasable
-                        ? () => purchases.buy(product!)
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(0),
-                      padding: const EdgeInsets.all(20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        side: const BorderSide(color: Colors.transparent),
-                      ),
-                    ),
-                    child: Text(
-                      buttonText,
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  child: Consumer<UserModel>(
+                    builder: (context, userModel, child) {
+                      String buttonText = 'Unavailable';
+                      switch (product?.status) {
+                        case ProductStatus.purchasable:
+                          buttonText = 'Subscribe';
+                          break;
+                        case ProductStatus.pending:
+                          buttonText = 'Pending';
+                          break;
+                        case ProductStatus.purchased:
+                          buttonText = 'Subscribed';
+                          break;
+                        default:
+                          break;
+                      }
+                      if (!userModel.isSignedIn()) {
+                        buttonText = 'Please Sign In';
+                      }
+
+                      return ElevatedButton(
+                        onPressed: userModel.isSignedIn() &&
+                                purchases.storeState == StoreState.available &&
+                                product!.status == ProductStatus.purchasable
+                            ? () => purchases.buy(product!)
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(0),
+                          padding: const EdgeInsets.all(20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            side: const BorderSide(color: Colors.transparent),
+                          ),
+                        ),
+                        child: Text(
+                          buttonText,
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(
                                 color: Theme.of(context).colorScheme.onPrimary,
                               ),
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 Padding(
