@@ -40,16 +40,6 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: ElevatedButton(
-                    child: const Text("Play sample message"),
-                    onPressed: () {},
-                  ),
-                ),
-                const SizedBox(
-                  height: 16,
-                )
               ],
             ),
             Column(
