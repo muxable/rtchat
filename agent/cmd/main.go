@@ -218,7 +218,7 @@ func main() {
 
 	go func() {
 		zap.L().Info("starting http server")
-		if err := http.ListenAndServe(":8080", nil); err != nil {
+		if err := http.ListenAndServe(":8082", nil); err != nil {
 			zap.L().Fatal("failed to start http server", zap.Error(err))
 		}
 	}()
@@ -235,6 +235,9 @@ func main() {
 			}
 			terminate()
 			break
+		}
+		if req.String() != "twitch:muxfd" {
+			continue
 		}
 		zap.L().Info("got request", zap.String("id", req.String()))
 		// check if it's in the active channels map

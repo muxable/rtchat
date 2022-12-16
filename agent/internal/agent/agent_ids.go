@@ -24,7 +24,7 @@ func (a AgentID) Hash() [20]byte {
 	return sha1.Sum([]byte(a))
 }
 
-func (a AgentIDs) CanonicalAgentIDFor(key string) AgentID {
+func (a AgentIDs) CanonicalAgentIDsFor(key string) (AgentID, AgentID) {
 	// The canonical agent id is defined as the agent id whose sha1 hash
 	// exceeds the sha1 hash of the key. If no such agent id exists, the
 	// lowest agent id is returned.
@@ -32,12 +32,12 @@ func (a AgentIDs) CanonicalAgentIDFor(key string) AgentID {
 	sort.Slice(a, func(i, j int) bool {
 		return cmp(a[i].Hash(), a[j].Hash()) < 0
 	})
-	for _, id := range a {
+	for i, id := range a {
 		if cmp(id.Hash(), keyHash) > 0 {
-			return id
+			return id, a[(i+1)%len(a)]
 		}
 	}
-	return a[0]
+	return a[0], a[1]
 }
 
 func AgentIDsForDocument(doc map[string]interface{}) AgentIDs {

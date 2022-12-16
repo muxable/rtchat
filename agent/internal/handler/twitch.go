@@ -48,19 +48,28 @@ func (h *TwitchHandler) bindOutboundClient(ctx context.Context, client *twitch.C
 					zap.L().Error("failed to unmarshal action", zap.Error(err))
 					continue
 				}
+				if err := h.firestore.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+					doc, err := tx.Get(change.Doc.Ref)
+					if err != nil {
+						return err
+					}
+					if doc.Data()["isComplete"] == true {
+						return fmt.Errorf("action already complete")
+					}
+					return tx.Update(change.Doc.Ref, []firestore.Update{
+						{Path: "sentAt", Value: firestore.ServerTimestamp},
+						{Path: "isComplete", Value: true},
+					})
+				}); err != nil {
+					zap.L().Warn("failed to lock action, probably another agent took it.", zap.Error(err))
+					continue
+				}
+
 				zap.L().Info("sending message", zap.String("channelId", channelID), zap.Any("message", change.Doc.Data()))
 				if action.ReplyMessageId != "" {
 					client.Reply(action.TargetChannel, action.ReplyMessageId, action.Message)
 				} else {
 					client.Say(action.TargetChannel, action.Message)
-				}
-				// mark the action as sent
-				if _, err := change.Doc.Ref.Set(context.Background(), map[string]interface{}{
-					"sentAt": firestore.ServerTimestamp,
-					"isComplete": true,
-				}, firestore.MergeAll); err != nil {
-					zap.L().Error("failed to mark action as sent", zap.Error(err))
-					continue
 				}
 			}
 		}

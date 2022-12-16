@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -76,6 +77,7 @@ func TwitchUserIDFromUsername(firestore *firestore.Client, clientID, clientSecre
 
 func NewFirestoreTwitchTokenSource(firestore *firestore.Client, clientID, clientSecret, userID string) (*TwitchAuthProvider, error) {
 	// get the user's token
+	log.Printf("reading from firestore")
 	tokenDoc, err := firestore.Collection("tokens").Doc(userID).Get(context.Background())
 	if err != nil {
 		return nil, err
@@ -96,6 +98,7 @@ func NewFirestoreTwitchTokenSource(firestore *firestore.Client, clientID, client
 	if err := json.Unmarshal([]byte(strToken), &token); err != nil {
 		return nil, err
 	}
+	log.Printf("getting username")
 	// get the user's username
 	usernameDoc, err := firestore.Collection("profiles").Doc(userID).Get(context.Background())
 	if err != nil {
@@ -110,6 +113,7 @@ func NewFirestoreTwitchTokenSource(firestore *firestore.Client, clientID, client
 		return nil, errors.New("invalid username")
 	}
 
+	log.Printf("reading token src")
 	cfg := &oauth2.Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
@@ -119,11 +123,13 @@ func NewFirestoreTwitchTokenSource(firestore *firestore.Client, clientID, client
 	if err != nil {
 		return nil, err
 	}
-	source := cfg.TokenSource(context.Background(), &oauth2.Token{
+	ctx, _ := context.WithTimeout(context.Background(), 5 * time.Second)
+	source := cfg.TokenSource(ctx, &oauth2.Token{
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
 		Expiry:       expiry,
 	})
+	log.Printf("done")
 	return &TwitchAuthProvider{
 		firestore:   firestore,
 		tokenSource: source,

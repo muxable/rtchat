@@ -112,12 +112,12 @@ func (c *Claim) Wait() error {
 			return nil
 		}
 		agentIDs := AgentIDsForDocument(snapshot.Data())
-		if len(agentIDs) == 0 {
+		if len(agentIDs) < 2 {
 			continue
 		}
-		canonical := agentIDs.CanonicalAgentIDFor(c.ID)
-		zap.L().Info("assignment changed", zap.String("id", snapshot.Ref.ID), zap.Any("data", snapshot.Data()), zap.String("canonical", string(canonical)))
-		if canonical != c.AgentID {
+		c1, c2 := agentIDs.CanonicalAgentIDsFor(c.ID)
+		zap.L().Info("assignment changed", zap.String("id", snapshot.Ref.ID), zap.Any("data", snapshot.Data()), zap.String("c1", string(c1)), zap.String("c2", string(c2)))
+		if c1 != c.AgentID && c2 != c.AgentID {
 			break
 		}
 	}
