@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"sync/atomic"
 
 	"cloud.google.com/go/firestore"
 	"go.uber.org/zap"
@@ -104,8 +103,6 @@ func (r *RequestLock) Next() (*Request, error) {
 
 type Claim struct {
 	*Request
-
-	unlocked *atomic.Bool
 }
 
 func LockClaim(req *Request) (*Claim, error) {
@@ -132,7 +129,7 @@ func LockClaim(req *Request) (*Claim, error) {
 		return nil, fmt.Errorf("failed to lock claim: %w", err)
 	}
 
-	return &Claim{Request: req, unlocked: &atomic.Bool{}}, nil
+	return &Claim{Request: req}, nil
 }
 
 func (c *Claim) Wait() error {
@@ -162,10 +159,6 @@ func (c *Claim) Wait() error {
 }
 
 func (c *Claim) Unlock() error {
-	if !c.unlocked.CompareAndSwap(false, true) {
-		return nil
-	}
-
 	zap.L().Info("unlocking claim", zap.String("request", c.String()))
 
 	if err := c.client.RunTransaction(context.Background(), func(ctx context.Context, tx *firestore.Transaction) error {
