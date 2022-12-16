@@ -218,7 +218,9 @@ func (h *TwitchHandler) write(channelID, messageID string, data interface{}) {
 	go func() {
 		for i := 0; i < 3; i++ {
 			if _, err := h.firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Set(context.Background(), data); err != nil {
-				zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID), zap.Any("data", data))
+				if i == 2 {
+					zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID), zap.Any("data", data))
+				}
 				time.Sleep(1 * time.Second)
 				continue
 			}
