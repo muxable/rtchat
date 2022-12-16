@@ -8,7 +8,6 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 	"google.golang.org/api/iterator"
 )
 
@@ -88,25 +87,10 @@ type Claim struct {
 }
 
 func LockClaim(req *Request) (*Claim, error) {
-	// increment agentCount and add agentID to agentIDs
 	zap.L().Info("locking claim", zap.String("request", req.String()))
 
-	if err := req.client.RunTransaction(context.Background(), func(ctx context.Context, tx *firestore.Transaction) error {
-		doc, err := tx.Get(req.DocumentRef)
-		if err != nil {
-			return err
-		}
-		agentIDs := AgentIDsForDocument(doc.Data())
-
-		// if we are already in the set of agentIDs, return an error.
-		if slices.Contains(agentIDs, req.AgentID) {
-			return fmt.Errorf("agent %s already has claim %s", req.AgentID, req.ID)
-		}
-		// increment the agent count and add our agentID to the set of agentIDs
-		return tx.Update(req.DocumentRef, []firestore.Update{
-			{Path: "agentCount", Value: firestore.Increment(1)},
-			{Path: "agentIds", Value: append(agentIDs, req.AgentID)},
-		})
+	if _, err := req.DocumentRef.Update(context.Background(), []firestore.Update{
+		{Path: "agentIds", Value: firestore.ArrayUnion(string(req.AgentID))},
 	}); err != nil {
 		return nil, fmt.Errorf("failed to lock claim: %w", err)
 	}
@@ -143,19 +127,8 @@ func (c *Claim) Wait() error {
 func (c *Claim) Unlock() error {
 	zap.L().Info("unlocking claim", zap.String("request", c.String()))
 
-	if err := c.client.RunTransaction(context.Background(), func(ctx context.Context, tx *firestore.Transaction) error {
-		doc, err := tx.Get(c.DocumentRef)
-		if err != nil {
-			return err
-		}
-		agentIDs := AgentIDsForDocument(doc.Data())
-		if !slices.Contains(agentIDs, c.AgentID) {
-			return fmt.Errorf("agent %s does not have claim %s", c.AgentID, c.ID)
-		}
-		return tx.Update(c.DocumentRef, []firestore.Update{
-			{Path: "agentCount", Value: firestore.Increment(-1)},
-			{Path: "agentIds", Value: firestore.ArrayRemove(c.AgentID)},
-		})
+	if _, err := c.DocumentRef.Update(context.Background(), []firestore.Update{
+		{Path: "agentIds", Value: firestore.ArrayRemove(string(c.AgentID))},
 	}); err != nil {
 		return fmt.Errorf("failed to unlock claim: %w", err)
 	}
