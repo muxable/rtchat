@@ -43,11 +43,11 @@ func RunWatchdog(ctx context.Context, agentID AgentID, client *firestore.Client)
 				continue
 			}
 			lock.Lock()
-			for agentID := range knownAgents {
+			for foreignAgentID := range knownAgents {
 				found := false
 				for _, items := range resp.Items {
 					for _, instance := range items.Instances {
-						if fmt.Sprintf("%d", instance.Id) == agentID {
+						if fmt.Sprintf("%d", instance.Id) == foreignAgentID {
 							found = true
 							break
 						}
@@ -57,14 +57,14 @@ func RunWatchdog(ctx context.Context, agentID AgentID, client *firestore.Client)
 					}
 				}
 				if !found {
-					zap.L().Info("agent is not running according to GCP", zap.String("agentID", agentID))
-					delete(knownAgents, agentID)
+					zap.L().Info("agent is not running according to GCP", zap.String("agentID", foreignAgentID))
+					delete(knownAgents, foreignAgentID)
 					// delete the agent
-					if _, err := client.Collection("agents").Doc(agentID).Delete(context.Background()); err != nil {
+					if _, err := client.Collection("agents").Doc(foreignAgentID).Delete(context.Background()); err != nil {
 						zap.L().Error("failed to delete agent", zap.Error(err))
 					}
 					// delete all assignments
-					assignments, err := client.Collection("assignments").Where("agentIds", "array-contains", agentID).Documents(context.Background()).GetAll()
+					assignments, err := client.Collection("assignments").Where("agentIds", "array-contains", foreignAgentID).Documents(context.Background()).GetAll()
 					if err != nil {
 						zap.L().Error("failed to query for assignments", zap.Error(err))
 						continue
@@ -76,12 +76,12 @@ func RunWatchdog(ctx context.Context, agentID AgentID, client *firestore.Client)
 								return err
 							}
 							agentIDs := AgentIDsForDocument(doc.Data())
-							if !slices.Contains(agentIDs, AgentID(agentID)) {
+							if !slices.Contains(agentIDs, AgentID(foreignAgentID)) {
 								return nil
 							}
 							return tx.Update(assignment.Ref, []firestore.Update{
 								{Path: "agentCount", Value: firestore.Increment(-1)},
-								{Path: "agentIds", Value: firestore.ArrayRemove(agentID)},
+								{Path: "agentIds", Value: firestore.ArrayRemove(foreignAgentID)},
 							})
 						}); err != nil {
 							zap.L().Error("failed to update assignment", zap.Error(err))
