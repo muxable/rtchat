@@ -432,6 +432,13 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) (*JoinCont
 	// create a new chat client and attempt to connect
 	client := twitch.NewClient(profileData["login"].(string), fmt.Sprintf("oauth:%s", token.AccessToken))
 
+	// join the channel
+	if err := joinWithTimeout(client, r.Channel(), 5*time.Second); err != nil {
+		return nil, err
+	}
+
+	zap.L().Info("joined channel", zap.String("channel", r.Channel()))
+
 	reconnectCtx := h.bindEvents(client)
 
 	if profileData["login"].(string) != "realtimechat" {
@@ -459,15 +466,6 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) (*JoinCont
 			}
 		}()
 
-		// join the channel
-		if err := joinWithTimeout(client, r.Channel(), 5*time.Second); err != nil {
-			sendCancel()
-			raidCancel()
-			return nil, err
-		}
-
-		zap.L().Info("joined channel", zap.String("channel", r.Channel()))
-
 		return &JoinContext{
 			ReconnectCtx: reconnectCtx,
 			Close:        func() error {
@@ -477,13 +475,6 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) (*JoinCont
 			},
 		}, nil
 	}
-
-	// join the channel
-	if err := joinWithTimeout(client, r.Channel(), 5*time.Second); err != nil {
-		return nil, err
-	}
-
-	zap.L().Info("joined channel", zap.String("channel", r.Channel()))
 
 	return &JoinContext{
 		ReconnectCtx: reconnectCtx,
@@ -495,15 +486,13 @@ func (h *TwitchHandler) JoinAnonymously(r *agent.Request) (*JoinContext, error) 
 	// create a new chat client and attempt to connect
 	client := twitch.NewAnonymousClient()
 
-	reconnectCtx := h.bindEvents(client)
-
 	// join the channel
 	if err := joinWithTimeout(client, r.Channel(), 5*time.Second); err != nil {
 		return nil, err
 	}
 
 	return &JoinContext{
-		ReconnectCtx: reconnectCtx,
+		ReconnectCtx: h.bindEvents(client),
 		Close:        client.Disconnect,
 	}, nil
 }
