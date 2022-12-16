@@ -93,9 +93,13 @@ func (r *RequestLock) Next() (*Request, error) {
 			}
 			return nil, err
 		}
-		for _, change := range snapshot.Changes {
-			if change.Kind == firestore.DocumentAdded {
-				r.buf = append(r.buf, &Request{DocumentRef: change.Doc.Ref, AgentID: r.agentID, client: r.client})
+		docs, err := snapshot.Documents.GetAll()
+		if err != nil {
+			return nil, err
+		}
+		for _, doc := range docs {
+			if len(AgentIDsForDocument(doc.Data())) == 0 {
+				r.buf = append(r.buf, &Request{DocumentRef: doc.Ref, AgentID: r.agentID, client: r.client})
 			}
 		}
 	}
