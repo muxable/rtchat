@@ -404,7 +404,7 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) context.Context {
 			},
 			"type": "message",
 		}
-		zap.L().Info("adding message", zap.String("message", message.Message), zap.String("channelId", channelID), zap.String("channel", message.Channel))
+		zap.L().Info("adding message", zap.String("content", message.Message), zap.String("channelId", channelID), zap.String("channel", message.Channel))
 		h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
 	})
 
