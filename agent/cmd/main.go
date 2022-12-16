@@ -236,9 +236,6 @@ func main() {
 			terminate()
 			break
 		}
-		if req.String() != "twitch:muxfd" {
-			continue
-		}
 		zap.L().Info("got request", zap.String("id", req.String()))
 		// check if it's in the active channels map
 		if _, loaded := activeChannels.LoadOrStore(req.String(), struct{}{}); loaded {
