@@ -196,7 +196,7 @@ export const getViewerList = functions.https.onCall(
           );
         }
         const chatters = await fetch(
-          `https://tmi.twitch.tv/group/user/${channel}/chatters`
+          `https://tmi.twitch.tv/group/user/${login}/chatters`
         );
         const chattersJson = await chatters.json();
         return chattersJson["chatters"];
