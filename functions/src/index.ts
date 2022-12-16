@@ -63,7 +63,9 @@ export const send = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      const ref = admin.firestore().collection("actions").doc(data?.id); // optional idempotency key
+      const ref = data?.id
+        ? admin.firestore().collection("actions").doc(String(data?.id))
+        : admin.firestore().collection("actions").doc(); // optional idempotency key
       const senderChannelId = await getChannelId(context.auth.uid, "twitch");
       await admin.firestore().runTransaction(async (transaction) => {
         const doc = await transaction.get(ref);
@@ -372,52 +374,6 @@ export const embedRedirect = functions.https.onRequest(async (req, res) => {
         "invalid provider"
       );
   }
-});
-
-export const agentPreemption = functions.https.onRequest(async (req, res) => {
-  // for now, just log the preemption request.
-  const agentId = String(req.query["q"]).replace(/\./g, ":");
-  if (!agentId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing agentId query parameter"
-    );
-  }
-  functions.logger.info(`agent ${agentId} preempted`);
-  // go through all the channels and see if any of them are using this agent.
-  const ref = await admin.database().ref("connections").once("value");
-  const connections = ref.val() as {
-    [provider: string]: { [channel: string]: { [agentId: string]: true } };
-  };
-
-  async function reconnect(provider: string, channel: string) {
-    // mark any existing agents for a disconnect. this cleans up any accidental zombie agents.
-    await admin
-      .database()
-      .ref("connections")
-      .child(provider)
-      .child(channel)
-      .remove();
-
-    // acquire a new agent.
-    await admin
-      .database()
-      .ref("requests")
-      .child(provider)
-      .child(channel)
-      .set(admin.database.ServerValue.TIMESTAMP);
-  }
-
-  const promises = [];
-  for (const [provider, channels] of Object.entries(connections)) {
-    for (const [channel, connections] of Object.entries(channels)) {
-      if (connections[agentId]) {
-        promises.push(reconnect(provider, channel));
-      }
-    }
-  }
-  await Promise.all(promises);
-  res.status(200).send("ok");
 });
 
 async function validate(
