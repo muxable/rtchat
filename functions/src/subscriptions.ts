@@ -31,31 +31,6 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         channelId
       );
 
-      // log the subscription.
-      await admin
-        .database()
-        .ref("subscriptions")
-        .child(provider)
-        .child(channel)
-        .set(admin.database.ServerValue.TIMESTAMP);
-
-      // mark any existing agents for a disconnect. this cleans up any accidental zombie agents.
-      await admin
-        .database()
-        .ref("connections")
-        .child(provider)
-        .child(channel)
-        .remove();
-
-      // acquire an agent. this might cause a reconnection but it's ok because
-      // the user just opened the app.
-      await admin
-        .database()
-        .ref("requests")
-        .child(provider)
-        .child(channel)
-        .set(admin.database.ServerValue.TIMESTAMP);
-
       // acquire a new assignment.
       await admin
         .firestore()
@@ -98,41 +73,15 @@ export const subscribe = functions.https.onCall(async (data, context) => {
 
 export const unsubscribe = functions.pubsub
   .schedule("0 4 * * *") // daily at 4a
-  .onRun(async (context) => {
+  .onRun(async () => {
     const limit = Date.now() - 7 * 86400 * 1000;
-    const subscriptionsRef = admin.database().ref("subscriptions");
-    const subscriptions = await subscriptionsRef.get();
-    const providers = subscriptions.val() as {
-      [provider: string]: { [channel: string]: number };
-    };
-
-    for (const [provider, channels] of Object.entries(providers)) {
-      for (const [channel, timestamp] of Object.entries(channels)) {
-        if (timestamp > limit) {
-          continue;
-        }
-
-        switch (provider) {
-          case "twitch":
-            console.log("unsubscribing from", provider, channel);
-
-            // release the agent.
-            await admin
-              .database()
-              .ref("connections")
-              .child(provider)
-              .child(channel)
-              .set(null);
-
-            await subscriptionsRef.child(provider).child(channel).set(null);
-
-            // release the agent assigments.
-            await admin
-              .firestore()
-              .collection("assignments")
-              .doc(`${provider}:${channel}`)
-              .delete();
-        }
+    const assignmentsRef = admin.firestore().collection("assignments");
+    const assignments = await assignmentsRef.get();
+    for (const assignment of assignments.docs) {
+      const data = assignment.data();
+      if (data.subscribedAt.toMillis() > limit) {
+        // delete this doc
+        await assignment.ref.delete();
       }
     }
   });
