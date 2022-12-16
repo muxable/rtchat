@@ -63,12 +63,29 @@ export const send = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      const response = await write(
-        await getChannelId(context.auth.uid, "twitch"),
-        targetChannel,
-        message
+      const ref = admin.firestore().collection("actions").doc(data?.id); // optional idempotency key
+      const senderChannelId = await getChannelId(context.auth.uid, "twitch");
+      await admin.firestore().runTransaction(async (transaction) => {
+        const doc = await transaction.get(ref);
+        if (doc.exists) {
+          return;
+        }
+        transaction.set(ref, {
+          channelId: senderChannelId,
+          targetChannel,
+          message,
+          sentAt: null,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      });
+      // wait for the message to be sent.
+      return await new Promise<string | null>((resolve) =>
+        ref.onSnapshot((snapshot) => {
+          if (snapshot.get("isComplete")) {
+            resolve(snapshot.get("error") || null);
+          }
+        })
       );
-      return response;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
