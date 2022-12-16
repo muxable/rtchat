@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/material.dart';
 
 class Viewers {
   final List<String> broadcaster;
@@ -54,6 +55,8 @@ class ChatStateAdapter {
   static ChatStateAdapter? _instance;
 
   Future<Viewers> getViewers({required String channelId}) {
+    debugPrint("@@@@@@@@@@@@@@@@@@@");
+    debugPrint(channelId);
     return functions
         .httpsCallable("getViewerList")
         .call(channelId)
