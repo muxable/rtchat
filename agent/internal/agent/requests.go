@@ -37,7 +37,6 @@ func (r *Request) String() string {
 }
 
 type RequestLock struct {
-	bootstrapIter *firestore.DocumentIterator
 	snapshotIter  *firestore.QuerySnapshotIterator
 	agentID       AgentID
 	client        *firestore.Client
@@ -48,8 +47,7 @@ type RequestLock struct {
 
 func NewRequestLock(ctx context.Context, agentID AgentID, client *firestore.Client) *RequestLock {
 	return &RequestLock{
-		bootstrapIter: client.Collection("assignments").Documents(ctx),
-		snapshotIter:  client.Collection("assignments").Where("agentCount", "<", 1).Snapshots(ctx),
+		snapshotIter:  client.Collection("assignments").Snapshots(ctx),
 		agentID:       agentID,
 		client:        client,
 		ctx:           ctx,
@@ -59,22 +57,6 @@ func NewRequestLock(ctx context.Context, agentID AgentID, client *firestore.Clie
 func (r *RequestLock) Next() (*Request, error) {
 	if r.ctx.Err() != nil {
 		return nil, r.ctx.Err()
-	}
-
-	// this is done in a separate goroutine to allow for preemption racing.
-	for {
-		assignment, err := r.bootstrapIter.Next()
-		if err != nil {
-			if errors.Is(err, iterator.Done) {
-				break
-			}
-			return nil, err
-		}
-		agentIDs := append(AgentIDsForDocument(assignment.Data()), r.agentID)
-		if len(agentIDs) > 1 && agentIDs.CanonicalAgentIDFor(assignment.Ref.ID) == r.agentID {
-			// we would win election so join the assignment
-			return &Request{DocumentRef: assignment.Ref, AgentID: r.agentID, client: r.client}, nil
-		}
 	}
 
 	// listen for changes to requests
@@ -93,7 +75,7 @@ func (r *RequestLock) Next() (*Request, error) {
 			return nil, err
 		}
 		for _, change := range snapshot.Changes {
-			if len(AgentIDsForDocument(change.Doc.Data())) == 0 {
+			if change.Doc.Exists() && len(AgentIDsForDocument(change.Doc.Data())) == 0 {
 				r.buf = append(r.buf, &Request{DocumentRef: change.Doc.Ref, AgentID: r.agentID, client: r.client})
 			}
 		}
