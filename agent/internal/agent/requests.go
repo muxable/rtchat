@@ -74,7 +74,7 @@ func (r *RequestLock) Next() (*Request, error) {
 			return nil, err
 		}
 		for _, change := range snapshot.Changes {
-			if change.Doc.Exists() && len(AgentIDsForDocument(change.Doc.Data())) == 0 {
+			if change.Doc.Exists() && len(AgentIDsForDocument(change.Doc.Data())) < 2 {
 				r.buf = append(r.buf, &Request{DocumentRef: change.Doc.Ref, AgentID: r.agentID, client: r.client})
 			}
 		}
