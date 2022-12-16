@@ -189,22 +189,19 @@ func main() {
 		}
 		zap.L().Info("got request", zap.String("id", req.String()))
 		// check if it's in the active channels map
-		if _, ok := activeChannels.Load(req.String()); ok {
+		if _, loaded := activeChannels.LoadOrStore(req.String(), struct{}{}); loaded {
 			zap.L().Info("request already active", zap.String("id", req.String()))
 			continue
 		}
 
-		joinCtx, err := handler.Join(req)
-		if err != nil {
-			zap.L().Error("failed to open request", zap.Error(err))
-			continue
-		}
-
-		// add the channel to the active channels map
-		activeChannels.Store(req.String(), struct{}{})
-
 		errwg.Go(func() error {
 			defer activeChannels.Delete(req.String())
+
+			joinCtx, err := handler.Join(req)
+			if err != nil {
+				zap.L().Error("failed to open request", zap.Error(err))
+				return nil
+			}
 
 			// lock the request
 			claim, err := agent.LockClaim(req)
