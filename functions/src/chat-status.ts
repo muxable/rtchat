@@ -177,7 +177,7 @@ export const getViewerList = functions.https.onCall(
           {
             headers: {
               "Client-ID": TWITCH_CLIENT_ID,
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token.token.access_token}`,
             },
           }
         );
