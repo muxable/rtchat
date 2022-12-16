@@ -10,7 +10,6 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/iterator"
 )
@@ -70,19 +69,8 @@ func RunWatchdog(ctx context.Context, agentID AgentID, client *firestore.Client)
 						continue
 					}
 					for _, assignment := range assignments {
-						if err := client.RunTransaction(context.Background(), func(ctx context.Context, tx *firestore.Transaction) error {
-							doc, err := tx.Get(assignment.Ref)
-							if err != nil {
-								return err
-							}
-							agentIDs := AgentIDsForDocument(doc.Data())
-							if !slices.Contains(agentIDs, AgentID(foreignAgentID)) {
-								return nil
-							}
-							return tx.Update(assignment.Ref, []firestore.Update{
-								{Path: "agentCount", Value: firestore.Increment(-1)},
-								{Path: "agentIds", Value: firestore.ArrayRemove(foreignAgentID)},
-							})
+						if _, err := assignment.Ref.Update(context.Background(), []firestore.Update{
+							{Path: "agentIds", Value: firestore.ArrayRemove(foreignAgentID)},
 						}); err != nil {
 							zap.L().Error("failed to update assignment", zap.Error(err))
 						}
