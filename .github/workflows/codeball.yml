@@ -8,6 +8,9 @@ jobs:
   codeball_job:
     runs-on: ubuntu-latest
     name: Codeball
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       # Run Codeball on all new Pull Requests and Review Comments! 🚀
       # For customizations and more documentation, see https://github.com/sturdy-dev/codeball-action

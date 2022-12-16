@@ -15,7 +15,7 @@ document.body.appendChild(ifr);
 
 window.parent = ifr.contentWindow;
 
-var Actions = {
+window.Actions = {
   DisableCaptions: 0,
   EnableCaptions: 1,
   Pause: 2,
@@ -30,7 +30,7 @@ var Actions = {
   SetVolume: 11,
 };
 
-function action(eventName, params) {
+window.action = function(eventName, params) {
   ifr.contentWindow.postMessage(
     { eventName, params, namespace: "twitch-embed-player-proxy" },
     "*"

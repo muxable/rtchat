@@ -339,7 +339,6 @@ class TtsModel extends ChangeNotifier {
         final response =
             await FirebaseFunctions.instance.httpsCallable("synthesize")({
           "voice": voice ?? "en-US-WaveNet-F",
-          "language": _language.languageCode,
           "text": vocalization,
           "rate": _speed * 1.5 + 0.5,
           "pitch": pitch ?? 0,

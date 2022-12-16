@@ -152,7 +152,6 @@ class TextToSpeechScreen extends StatelessWidget {
                     final response = await FirebaseFunctions.instance
                         .httpsCallable("synthesize")({
                       "voice": model.voice,
-                      "language": model.language.languageCode,
                       "rate": model.speed * 1.5 + 0.5,
                       "pitch": model.pitch * 4 - 2,
                       "text":

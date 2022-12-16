@@ -18,8 +18,57 @@ import (
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"golang.org/x/sync/errgroup"
 )
+
+func NewGCPLogger() (*zap.Logger, error) {
+    loggerCfg := &zap.Config{
+		Level:            zap.NewAtomicLevelAt(zapcore.InfoLevel),
+		Encoding:         "json",
+		EncoderConfig:    encoderConfig,
+		OutputPaths:      []string{"stdout"},
+		ErrorOutputPaths: []string{"stderr"},
+    }
+
+	return loggerCfg.Build(zap.AddStacktrace(zap.DPanicLevel))
+}
+
+
+var encoderConfig = zapcore.EncoderConfig{
+	TimeKey:        "time",
+	LevelKey:       "severity",
+	NameKey:        "logger",
+	CallerKey:      "caller",
+	MessageKey:     "message",
+	StacktraceKey:  "stacktrace",
+	LineEnding:     zapcore.DefaultLineEnding,
+	EncodeLevel:    encodeLevel(),
+	EncodeTime:     zapcore.RFC3339TimeEncoder,
+	EncodeDuration: zapcore.MillisDurationEncoder,
+	EncodeCaller:   zapcore.ShortCallerEncoder,
+}
+
+func encodeLevel() zapcore.LevelEncoder {
+	return func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
+		switch l {
+		case zapcore.DebugLevel:
+			enc.AppendString("DEBUG")
+		case zapcore.InfoLevel:
+			enc.AppendString("INFO")
+		case zapcore.WarnLevel:
+			enc.AppendString("WARNING")
+		case zapcore.ErrorLevel:
+			enc.AppendString("ERROR")
+		case zapcore.DPanicLevel:
+			enc.AppendString("CRITICAL")
+		case zapcore.PanicLevel:
+			enc.AppendString("ALERT")
+		case zapcore.FatalLevel:
+			enc.AppendString("EMERGENCY")
+		}
+	}
+}
 
 func quitContext() context.Context {
 	sigs := make(chan os.Signal, 1)
@@ -108,7 +157,7 @@ func main() {
 		defer undo()
 		zap.L().Warn("failed to fetch agent id", zap.Error(err))
 	} else {
-		logger, err := zap.NewProduction()
+		logger, err := NewGCPLogger()
 		if err != nil {
 			panic(err)
 		}
@@ -189,22 +238,19 @@ func main() {
 		}
 		zap.L().Info("got request", zap.String("id", req.String()))
 		// check if it's in the active channels map
-		if _, ok := activeChannels.Load(req.String()); ok {
+		if _, loaded := activeChannels.LoadOrStore(req.String(), struct{}{}); loaded {
 			zap.L().Info("request already active", zap.String("id", req.String()))
 			continue
 		}
 
-		joinCtx, err := handler.Join(req)
-		if err != nil {
-			zap.L().Error("failed to open request", zap.Error(err))
-			continue
-		}
-
-		// add the channel to the active channels map
-		activeChannels.Store(req.String(), struct{}{})
-
 		errwg.Go(func() error {
 			defer activeChannels.Delete(req.String())
+
+			joinCtx, err := handler.Join(req)
+			if err != nil {
+				zap.L().Error("failed to open request", zap.Error(err))
+				return nil
+			}
 
 			// lock the request
 			claim, err := agent.LockClaim(req)

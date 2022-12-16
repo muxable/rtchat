@@ -10,7 +10,6 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/iterator"
 )
@@ -43,11 +42,11 @@ func RunWatchdog(ctx context.Context, agentID AgentID, client *firestore.Client)
 				continue
 			}
 			lock.Lock()
-			for agentID := range knownAgents {
+			for foreignAgentID := range knownAgents {
 				found := false
 				for _, items := range resp.Items {
 					for _, instance := range items.Instances {
-						if fmt.Sprintf("%d", instance.Id) == agentID {
+						if fmt.Sprintf("%d", instance.Id) == foreignAgentID {
 							found = true
 							break
 						}
@@ -57,32 +56,21 @@ func RunWatchdog(ctx context.Context, agentID AgentID, client *firestore.Client)
 					}
 				}
 				if !found {
-					zap.L().Info("agent is not running according to GCP", zap.String("agentID", agentID))
-					delete(knownAgents, agentID)
+					zap.L().Info("agent is not running according to GCP", zap.String("agentID", foreignAgentID))
+					delete(knownAgents, foreignAgentID)
 					// delete the agent
-					if _, err := client.Collection("agents").Doc(agentID).Delete(context.Background()); err != nil {
+					if _, err := client.Collection("agents").Doc(foreignAgentID).Delete(context.Background()); err != nil {
 						zap.L().Error("failed to delete agent", zap.Error(err))
 					}
 					// delete all assignments
-					assignments, err := client.Collection("assignments").Where("agentIds", "array-contains", agentID).Documents(context.Background()).GetAll()
+					assignments, err := client.Collection("assignments").Where("agentIds", "array-contains", foreignAgentID).Documents(context.Background()).GetAll()
 					if err != nil {
 						zap.L().Error("failed to query for assignments", zap.Error(err))
 						continue
 					}
 					for _, assignment := range assignments {
-						if err := client.RunTransaction(context.Background(), func(ctx context.Context, tx *firestore.Transaction) error {
-							doc, err := tx.Get(assignment.Ref)
-							if err != nil {
-								return err
-							}
-							agentIDs := AgentIDsForDocument(doc.Data())
-							if !slices.Contains(agentIDs, AgentID(agentID)) {
-								return nil
-							}
-							return tx.Update(assignment.Ref, []firestore.Update{
-								{Path: "agentCount", Value: firestore.Increment(-1)},
-								{Path: "agentIds", Value: firestore.ArrayRemove(agentID)},
-							})
+						if _, err := assignment.Ref.Update(context.Background(), []firestore.Update{
+							{Path: "agentIds", Value: firestore.ArrayRemove(foreignAgentID)},
 						}); err != nil {
 							zap.L().Error("failed to update assignment", zap.Error(err))
 						}
