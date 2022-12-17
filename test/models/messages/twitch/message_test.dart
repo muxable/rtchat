@@ -13,7 +13,6 @@ TwitchMessageModel createMessageModel(String? badgesRaw, String? emotesRaw,
         "color": "#800000",
         "badges-raw": badgesRaw,
         "emotes-raw": emotesRaw,
-        "room-id": "158394109",
       },
       annotations: const TwitchMessageAnnotationsModel(
           isAction: false, isFirstTimeChatter: false, announcement: null),
@@ -282,7 +281,6 @@ void main() {
         author: author,
         tags: {
           "color": "#800000",
-          "room-id": "158394109",
         },
         annotations: const TwitchMessageAnnotationsModel(
             isAction: false, isFirstTimeChatter: false, announcement: null),
@@ -297,7 +295,6 @@ void main() {
         author: author,
         tags: {
           "color": "#800000",
-          "room-id": "158394109",
         },
         annotations: const TwitchMessageAnnotationsModel(
             isAction: false, isFirstTimeChatter: false, announcement: null),
@@ -312,7 +309,6 @@ void main() {
         author: author,
         tags: {
           "color": "#800000",
-          "room-id": "158394109",
         },
         annotations: const TwitchMessageAnnotationsModel(
             isAction: true, isFirstTimeChatter: false, announcement: null),
@@ -327,7 +323,6 @@ void main() {
         author: author,
         tags: {
           "color": "#800000",
-          "room-id": "158394109",
         },
         annotations: const TwitchMessageAnnotationsModel(
             isAction: true, isFirstTimeChatter: false, announcement: null),
