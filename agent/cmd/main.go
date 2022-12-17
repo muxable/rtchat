@@ -14,21 +14,33 @@ import (
 	"github.com/muxable/rtchat/agent/internal/handler"
 	stackdriver "github.com/yanolab/stackdriver-zaplogger"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
+func isRunningOnGoogleCloud() bool {
+	// fetch metadata.google.internal
+	_, err := http.Get("http://metadata.google.internal")
+	return err == nil
+}
+
 func main() {
-	logclient, err := logging.NewClient(context.Background(), "rtchat-47692")
-	if err != nil {
-		panic(err)
+	if isRunningOnGoogleCloud() {
+		logclient, err := logging.NewClient(context.Background(), "rtchat-47692")
+		if err != nil {
+			panic(err)
+		}
+		logger := zap.New(stackdriver.NewCore(logclient, zap.DebugLevel))
+		defer logger.Sync()
+		undo := zap.ReplaceGlobals(logger)
+		defer undo()
+	} else {
+		logger, err := zap.NewDevelopment()
+		if err != nil {
+			panic(err)
+		}
+		defer logger.Sync()
+		undo := zap.ReplaceGlobals(logger)
+		defer undo()
 	}
-	logger := zap.New(zapcore.NewTee(
-		stackdriver.NewCore(logclient, zap.DebugLevel),
-		zapcore.NewCore(zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()), zapcore.AddSync(os.Stdout), zap.InfoLevel),
-	))
-	defer logger.Sync()
-	undo := zap.ReplaceGlobals(logger)
-	defer undo()
 
 	client, err := firestore.NewClient(context.Background(), "rtchat-47692")
 	if err != nil {
