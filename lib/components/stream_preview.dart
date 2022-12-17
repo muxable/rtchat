@@ -96,7 +96,6 @@ class _StreamPreviewState extends State<StreamPreview> {
             return;
           }
           final model = Provider.of<StreamPreviewModel>(context, listen: false);
-          print("loading");
           await controller.runJavascript(
               await rootBundle.loadString('assets/twitch-tunnel.js'));
           // wait a second for twitch to catch up.

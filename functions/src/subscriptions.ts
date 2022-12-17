@@ -37,7 +37,6 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         .collection("assignments")
         .doc(`${provider}:${channel}`)
         .set({
-          agentIds: [],
           subscribedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 

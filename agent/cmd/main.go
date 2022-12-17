@@ -115,8 +115,6 @@ func main() {
 		zap.L().Fatal("failed to create firestore client", zap.Error(err))
 	}
 
-	go agent.RunWatchdog(context.Background(), agentID, client)
-
 	// create a new RequestLock
 	lock := agent.NewRequestLock(context.Background(), agentID, client)
 
