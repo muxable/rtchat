@@ -15,7 +15,6 @@ const (
 
 type Request struct {
 	*firestore.DocumentRef
-	AgentID
 	client *firestore.Client
 }
 
@@ -33,16 +32,14 @@ func (r *Request) String() string {
 
 type RequestLock struct {
 	snapshotIter *firestore.QuerySnapshotIterator
-	agentID      AgentID
 	client       *firestore.Client
 	ctx          context.Context
 	reqCh        chan *Request
 }
 
-func NewRequestLock(ctx context.Context, agentID AgentID, client *firestore.Client) *RequestLock {
+func NewRequestLock(ctx context.Context, client *firestore.Client) *RequestLock {
 	r := &RequestLock{
 		snapshotIter: client.Collection("assignments").Snapshots(ctx),
-		agentID:      agentID,
 		client:       client,
 		ctx:          ctx,
 		reqCh:        make(chan *Request, 8192),
@@ -55,7 +52,7 @@ func NewRequestLock(ctx context.Context, agentID AgentID, client *firestore.Clie
 			}
 			for _, change := range snapshot.Changes {
 				if change.Kind != firestore.DocumentRemoved {
-					r.reqCh <- &Request{DocumentRef: change.Doc.Ref, AgentID: r.agentID, client: r.client}
+					r.reqCh <- &Request{DocumentRef: change.Doc.Ref, client: r.client}
 				}
 			}
 		}

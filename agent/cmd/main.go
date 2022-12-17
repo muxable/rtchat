@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"sync"
@@ -11,104 +9,57 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
-	"github.com/google/uuid"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-func NewGCPLogger() (*zap.Logger, error) {
-    loggerCfg := &zap.Config{
-		Level:            zap.NewAtomicLevelAt(zapcore.InfoLevel),
-		Encoding:         "json",
-		EncoderConfig:    encoderConfig,
-		OutputPaths:      []string{"stdout"},
-		ErrorOutputPaths: []string{"stderr"},
-    }
-
-	return loggerCfg.Build(zap.AddStacktrace(zap.DPanicLevel))
-}
-
-
-var encoderConfig = zapcore.EncoderConfig{
-	TimeKey:        "time",
-	LevelKey:       "severity",
-	NameKey:        "logger",
-	CallerKey:      "caller",
-	MessageKey:     "message",
-	StacktraceKey:  "stacktrace",
-	LineEnding:     zapcore.DefaultLineEnding,
-	EncodeLevel:    encodeLevel(),
-	EncodeTime:     zapcore.RFC3339TimeEncoder,
-	EncodeDuration: zapcore.MillisDurationEncoder,
-	EncodeCaller:   zapcore.ShortCallerEncoder,
-}
-
-func encodeLevel() zapcore.LevelEncoder {
-	return func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
-		switch l {
-		case zapcore.DebugLevel:
-			enc.AppendString("DEBUG")
-		case zapcore.InfoLevel:
-			enc.AppendString("INFO")
-		case zapcore.WarnLevel:
-			enc.AppendString("WARNING")
-		case zapcore.ErrorLevel:
-			enc.AppendString("ERROR")
-		case zapcore.DPanicLevel:
-			enc.AppendString("CRITICAL")
-		case zapcore.PanicLevel:
-			enc.AppendString("ALERT")
-		case zapcore.FatalLevel:
-			enc.AppendString("EMERGENCY")
-		}
-	}
-}
-
-func fetchAgentID() (agent.AgentID, error) {
-	req, err := http.NewRequest("GET", "http://metadata.google.internal/computeMetadata/v1/instance/id", nil)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Add("Metadata-Flavor", "Google")
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-	if res.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to get instance id: %d", res.StatusCode)
-	}
-	defer res.Body.Close()
-	
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return "", err
-	}
-	return agent.AgentID(body), nil
+var loggerCfg = &zap.Config{
+	Level:    zap.NewAtomicLevelAt(zapcore.InfoLevel),
+	Encoding: "json",
+	EncoderConfig: zapcore.EncoderConfig{
+		TimeKey:       "time",
+		LevelKey:      "severity",
+		NameKey:       "logger",
+		CallerKey:     "caller",
+		MessageKey:    "message",
+		StacktraceKey: "stacktrace",
+		LineEnding:    zapcore.DefaultLineEnding,
+		EncodeLevel: func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
+			switch l {
+			case zapcore.DebugLevel:
+				enc.AppendString("DEBUG")
+			case zapcore.InfoLevel:
+				enc.AppendString("INFO")
+			case zapcore.WarnLevel:
+				enc.AppendString("WARNING")
+			case zapcore.ErrorLevel:
+				enc.AppendString("ERROR")
+			case zapcore.DPanicLevel:
+				enc.AppendString("CRITICAL")
+			case zapcore.PanicLevel:
+				enc.AppendString("ALERT")
+			case zapcore.FatalLevel:
+				enc.AppendString("EMERGENCY")
+			}
+		},
+		EncodeTime:     zapcore.RFC3339TimeEncoder,
+		EncodeDuration: zapcore.MillisDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+	},
+	OutputPaths:      []string{"stdout"},
+	ErrorOutputPaths: []string{"stderr"},
 }
 
 func main() {
-	agentID, err := fetchAgentID()
+	logger, err := loggerCfg.Build(zap.AddStacktrace(zap.ErrorLevel))
 	if err != nil {
-		logger, err := zap.NewDevelopment()
-		if err != nil {
-			panic(err)
-		}
-		defer logger.Sync()
-		agentID = agent.AgentID(fmt.Sprintf("pseudo:%s", uuid.New().String()))
-		undo := zap.ReplaceGlobals(logger.With(zap.String("agentId", string(agentID))))
-		defer undo()
-		zap.L().Warn("failed to fetch agent id", zap.Error(err))
-	} else {
-		logger, err := NewGCPLogger()
-		if err != nil {
-			panic(err)
-		}
-		defer logger.Sync()
-		undo := zap.ReplaceGlobals(logger.With(zap.String("agentId", string(agentID))))
-		defer undo()
+		panic(err)
 	}
+	defer logger.Sync()
+	undo := zap.ReplaceGlobals(logger)
+	defer undo()
 
 	client, err := firestore.NewClient(context.Background(), "rtchat-47692")
 	if err != nil {
@@ -116,7 +67,7 @@ func main() {
 	}
 
 	// create a new RequestLock
-	lock := agent.NewRequestLock(context.Background(), agentID, client)
+	lock := agent.NewRequestLock(context.Background(), client)
 
 	handler, err := handler.NewHandler(lock, client)
 	if err != nil {
@@ -154,7 +105,7 @@ func main() {
 		if port == "" {
 			port = "8080"
 		}
-		if err := http.ListenAndServe(":" + port, nil); err != nil {
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
 			zap.L().Fatal("failed to start http server", zap.Error(err))
 		}
 	}()
