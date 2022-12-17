@@ -46,6 +46,9 @@ class TwitchSubscriptionMessageEventModel extends MessageModel {
       : super(messageId: messageId, timestamp: timestamp);
 
   String emotesToString() {
+    if (emotes.isEmpty) {
+      return "";
+    }
     return emotes
         .map((e) => '${e.id}:${e.begin}-${e.end}')
         .reduce((value, element) => '$value/$element');
