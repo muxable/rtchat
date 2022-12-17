@@ -9,54 +9,23 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"cloud.google.com/go/logging"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/handler"
+	stackdriver "github.com/yanolab/stackdriver-zaplogger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-var loggerCfg = &zap.Config{
-	Level:    zap.NewAtomicLevelAt(zapcore.InfoLevel),
-	Encoding: "json",
-	EncoderConfig: zapcore.EncoderConfig{
-		TimeKey:       "time",
-		LevelKey:      "severity",
-		NameKey:       "logger",
-		CallerKey:     "caller",
-		MessageKey:    "message",
-		StacktraceKey: "stacktrace",
-		LineEnding:    zapcore.DefaultLineEnding,
-		EncodeLevel: func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
-			switch l {
-			case zapcore.DebugLevel:
-				enc.AppendString("DEBUG")
-			case zapcore.InfoLevel:
-				enc.AppendString("INFO")
-			case zapcore.WarnLevel:
-				enc.AppendString("WARNING")
-			case zapcore.ErrorLevel:
-				enc.AppendString("ERROR")
-			case zapcore.DPanicLevel:
-				enc.AppendString("CRITICAL")
-			case zapcore.PanicLevel:
-				enc.AppendString("ALERT")
-			case zapcore.FatalLevel:
-				enc.AppendString("EMERGENCY")
-			}
-		},
-		EncodeTime:     zapcore.RFC3339TimeEncoder,
-		EncodeDuration: zapcore.MillisDurationEncoder,
-		EncodeCaller:   zapcore.ShortCallerEncoder,
-	},
-	OutputPaths:      []string{"stdout"},
-	ErrorOutputPaths: []string{"stderr"},
-}
-
 func main() {
-	logger, err := loggerCfg.Build(zap.AddStacktrace(zap.ErrorLevel))
+	logclient, err := logging.NewClient(context.Background(), "rtchat-47692")
 	if err != nil {
 		panic(err)
 	}
+	logger := zap.New(zapcore.NewTee(
+		stackdriver.NewCore(logclient, zap.DebugLevel),
+		zapcore.NewCore(zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()), zapcore.AddSync(os.Stdout), zap.InfoLevel),
+	))
 	defer logger.Sync()
 	undo := zap.ReplaceGlobals(logger)
 	defer undo()
