@@ -195,7 +195,6 @@ class TwitchMessageWidget extends StatelessWidget {
       children.addAll(model.badges.map((badge) => WidgetSpan(
           alignment: PlaceholderAlignment.middle,
           child: TwitchBadgeWidget(
-              channelId: model.tags['room-id'],
               badge: badge.key,
               version: badge.version,
               height: styleModel.fontSize))));
