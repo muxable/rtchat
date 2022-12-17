@@ -7,6 +7,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"go.uber.org/zap"
@@ -14,8 +15,7 @@ import (
 )
 
 type Handler struct {
-	firestore *firestore.Client
-	twitch    *TwitchHandler
+	twitch *TwitchHandler
 }
 
 func twitchClientID() string {
@@ -55,48 +55,51 @@ func NewHandler(lock *agent.RequestLock, firestore *firestore.Client) (*Handler,
 		return nil, err
 	}
 
-	return &Handler{
-		firestore: firestore,
+	h := &Handler{
 		twitch: &TwitchHandler{
 			firestore:    firestore,
 			clientID:     twitchClientID,
 			clientSecret: twitchClientSecret,
+			sendClients:  make(map[string]*twitch.Client),
 		},
-	}, nil
+	}
+
+	go func() {
+		if err := h.twitch.bindOutboundClient(context.Background()); err != nil {
+			zap.L().Fatal("failed to bind outbound client", zap.Error(err))
+		}
+	}()
+
+	return h, nil
 }
 
-type JoinContext struct {
-	ReconnectCtx context.Context
-	Close        func() error
-}
-
-func (h *Handler) Join(r *agent.Request) (*JoinContext, error) {
+func (h *Handler) Join(r *agent.Request) error {
 	switch r.Provider() {
 	case agent.ProviderTwitch:
 		// handle twitch request
-		if userID, err := auth.TwitchUserIDFromUsername(h.firestore, h.twitch.clientID, h.twitch.clientSecret, r.Channel()); err != nil {
+		if userID, err := auth.TwitchUserIDFromUsername(h.twitch.firestore, h.twitch.clientID, h.twitch.clientSecret, r.Channel()); err != nil {
 			zap.L().Info("failed to get twitch user id, probably never used realtimechat", zap.Error(err))
-		} else if ctx, err := h.twitch.JoinAsUser(r, userID); err != nil {
+		} else if err := h.twitch.JoinAsUser(r, userID); err != nil {
 			zap.L().Warn("failed to join channel as authed user", zap.Error(err))
 		} else {
-			return ctx, nil
+			return nil
 		}
 
 		// try again as realtimechat
-		if ctx, err := h.twitch.JoinAsUser(r, "JSdHKOEgwcZijVsuXXdftmizt6E3"); err != nil {
+		if err := h.twitch.JoinAsUser(r, "JSdHKOEgwcZijVsuXXdftmizt6E3"); err != nil {
 			zap.L().Warn("failed to join channel as realtimechat", zap.Error(err))
 		} else {
-			return ctx, nil
+			return nil
 		}
 
 		// maybe we got banned, try again as anonymous
-		if ctx, err := h.twitch.JoinAnonymously(r); err != nil {
+		if err := h.twitch.JoinAnonymously(r); err != nil {
 			zap.L().Warn("failed to join channel as anonymous", zap.Error(err))
 		} else {
-			return ctx, nil
+			return nil
 		}
 
-		return nil, errors.New("failed to join channel")
+		return errors.New("failed to join channel")
 	}
-	return nil, errors.New("unknown provider")
+	return errors.New("unknown provider")
 }

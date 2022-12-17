@@ -23,12 +23,12 @@ import (
 type TwitchHandler struct {
 	firestore              *firestore.Client
 	clientID, clientSecret string
+	sendClients            map[string]*twitch.Client
 }
 
-func (h *TwitchHandler) bindOutboundClient(ctx context.Context, client *twitch.Client, channelID string) error {
+func (h *TwitchHandler) bindOutboundClient(ctx context.Context) error {
 	// listen on firestore for new messages
-	zap.L().Info("listening for new messages", zap.String("channelId", channelID))
-	snapshots := h.firestore.Collection("actions").Where("channelId", "==", channelID).Where("sentAt", "==", nil).OrderBy("createdAt", firestore.Desc).Snapshots(ctx)
+	snapshots := h.firestore.Collection("actions").OrderBy("createdAt", firestore.Desc).Limit(1).Snapshots(ctx)
 	for {
 		snapshot, err := snapshots.Next()
 		if err == iterator.Done {
@@ -40,12 +40,19 @@ func (h *TwitchHandler) bindOutboundClient(ctx context.Context, client *twitch.C
 		for _, change := range snapshot.Changes {
 			if change.Kind == firestore.DocumentAdded {
 				var action struct {
+					ChannelId string
 					Message        string
 					TargetChannel  string
 					ReplyMessageId string
 				}
+				zap.L().Info("new action", zap.Any("action", change.Doc.Data()))
 				if err := change.Doc.DataTo(&action); err != nil {
 					zap.L().Error("failed to unmarshal action", zap.Error(err))
+					continue
+				}
+				client, ok := h.sendClients[action.ChannelId]
+				if !ok {
+					zap.L().Warn("no client found for channel", zap.String("channelId", action.ChannelId))
 					continue
 				}
 				if err := h.firestore.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
@@ -65,7 +72,7 @@ func (h *TwitchHandler) bindOutboundClient(ctx context.Context, client *twitch.C
 					continue
 				}
 
-				zap.L().Info("sending message", zap.String("channelId", channelID), zap.Any("message", change.Doc.Data()))
+				zap.L().Info("sending message", zap.String("channelId", action.ChannelId), zap.Any("message", change.Doc.Data()))
 				if action.ReplyMessageId != "" {
 					client.Reply(action.TargetChannel, action.ReplyMessageId, action.Message)
 				} else {
@@ -238,7 +245,7 @@ func (h *TwitchHandler) write(channelID, messageID string, data interface{}) {
 	}()
 }
 
-func (h *TwitchHandler) bindEvents(client *twitch.Client) context.Context {
+func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 	client.OnNoticeMessage(func(message twitch.NoticeMessage) {
 		if message.Channel == "*" {
 			return
@@ -408,34 +415,32 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) context.Context {
 		h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
 	})
 
-	reconnectCtx, reconnectCancel := context.WithCancel(context.Background())
 	client.OnReconnectMessage(func(message twitch.ReconnectMessage) {
-		// handle reconnect message
-		reconnectCancel()
+		if err := client.Connect(); err != nil {
+			zap.L().Error("failed to reconnect", zap.Error(err))
+		}
 	})
-
-	return reconnectCtx
 }
 
-func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) (*JoinContext, error) {
+func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) error {
 	zap.L().Info("joining as user", zap.String("asUserID", asUserID), zap.String("request", r.String()))
 	profile, err := h.firestore.Collection("profiles").Doc(asUserID).Get(context.Background())
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if !profile.Exists() {
-		return nil, errors.New("profile not found")
+		return errors.New("profile not found")
 	}
 	profileData := profile.Data()["twitch"].(map[string]interface{})
 
 	authProvider, err := auth.NewFirestoreTwitchTokenSource(h.firestore, h.clientID, h.clientSecret, asUserID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	token, err := authProvider.Token()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// create a new chat client and attempt to connect
@@ -443,27 +448,31 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) (*JoinCont
 
 	// join the channel
 	if err := joinWithTimeout(client, r.Channel(), 5*time.Second); err != nil {
-		return nil, err
+		return err
 	}
 
 	zap.L().Info("joined channel", zap.String("channel", r.Channel()))
 
-	reconnectCtx := h.bindEvents(client)
+	h.bindEvents(client)
 
 	if profileData["login"].(string) != "realtimechat" {
-		sendCtx, sendCancel := context.WithCancel(context.Background())
-		go func() {
-			if err := h.bindOutboundClient(sendCtx, client, fmt.Sprintf("twitch:%s", profileData["id"].(string))); err != nil {
-				if !cancel.IsCanceled(err) {
-					zap.L().Error("failed to bind outbound client", zap.Error(err))
-				}
-			}
-		}()
+		sendClient := twitch.NewClient(profileData["login"].(string), fmt.Sprintf("oauth:%s", token.AccessToken))
 
-		raidCtx, raidCancel := context.WithCancel(context.Background())
+		if err := joinWithTimeout(sendClient, r.Channel(), 5*time.Second); err != nil {
+			return err
+		}
+
+		sendClient.OnReconnectMessage(func(message twitch.ReconnectMessage) {
+			if err := sendClient.Connect(); err != nil {
+				zap.L().Error("failed to reconnect", zap.Error(err))
+			}
+		})
+
+		h.sendClients[fmt.Sprintf("twitch:%s", profileData["id"].(string))] = sendClient
+
 		go func() {
 			for {
-				if err := h.bindRaidClient(raidCtx, profileData["id"].(string), asUserID); err != nil {
+				if err := h.bindRaidClient(context.Background(), profileData["id"].(string), asUserID); err != nil {
 					if !cancel.IsCanceled(err) && !errors.Is(err, net.ErrClosed) {
 						zap.L().Error("failed to bind raid client", zap.Error(err))
 					}
@@ -474,34 +483,14 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) (*JoinCont
 				}
 			}
 		}()
-
-		return &JoinContext{
-			ReconnectCtx: reconnectCtx,
-			Close:        func() error {
-				sendCancel()
-				raidCancel()
-				return client.Disconnect()
-			},
-		}, nil
 	}
-
-	return &JoinContext{
-		ReconnectCtx: reconnectCtx,
-		Close:        client.Disconnect,
-	}, nil
+	return nil
 }
 
-func (h *TwitchHandler) JoinAnonymously(r *agent.Request) (*JoinContext, error) {
+func (h *TwitchHandler) JoinAnonymously(r *agent.Request) error {
 	// create a new chat client and attempt to connect
 	client := twitch.NewAnonymousClient()
 
 	// join the channel
-	if err := joinWithTimeout(client, r.Channel(), 5*time.Second); err != nil {
-		return nil, err
-	}
-
-	return &JoinContext{
-		ReconnectCtx: h.bindEvents(client),
-		Close:        client.Disconnect,
-	}, nil
+	return joinWithTimeout(client, r.Channel(), 5*time.Second)
 }

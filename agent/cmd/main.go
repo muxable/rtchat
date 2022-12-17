@@ -2,15 +2,12 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"os/signal"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -19,7 +16,6 @@ import (
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"golang.org/x/sync/errgroup"
 )
 
 func NewGCPLogger() (*zap.Logger, error) {
@@ -70,58 +66,6 @@ func encodeLevel() zapcore.LevelEncoder {
 	}
 }
 
-func quitContext() context.Context {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	preemption := make(chan struct{})
-	go func() {
-		req, err := http.NewRequest("GET", "http://metadata.google.internal/computeMetadata/v1/instance/preempted?wait_for_change=true", nil)
-		if err != nil {
-			zap.L().Warn("failed to create preemption request", zap.Error(err))
-			return
-		}
-		req.Header.Add("Metadata-Flavor", "Google")
-		for {
-			res, err := http.DefaultClient.Do(req)
-			if err != nil {
-				if os.IsTimeout(err) {
-					continue
-				}
-				zap.L().Warn("failed to send preemption request", zap.Error(err))
-				return
-			}
-			if res.StatusCode != http.StatusOK {
-				zap.L().Warn("preemption request failed", zap.Int("status", res.StatusCode))
-				continue
-			}
-			close(preemption)
-		}
-	}()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	go func() {
-		select {
-		case <-preemption:
-			zap.L().Info("instance is being preempted")
-			cancel()
-			break
-		case <-sigs:
-			zap.L().Info("received termination signal")
-			cancel()
-			break
-		}
-	}()
-
-	http.HandleFunc("/quitquitquit", func(w http.ResponseWriter, r *http.Request) {
-		zap.L().Info("received quitquitquit request")
-		cancel()
-		w.Write([]byte("ok"))
-	})
-
-	return ctx
-}
-
 func fetchAgentID() (agent.AgentID, error) {
 	req, err := http.NewRequest("GET", "http://metadata.google.internal/computeMetadata/v1/instance/id", nil)
 	if err != nil {
@@ -166,18 +110,15 @@ func main() {
 		defer undo()
 	}
 
-	// don't use the application context because we will perform cleanup on SIGINT/SIGTERM
 	client, err := firestore.NewClient(context.Background(), "rtchat-47692")
 	if err != nil {
 		zap.L().Fatal("failed to create firestore client", zap.Error(err))
 	}
 
-	terminateCtx, terminate := context.WithCancel(quitContext())
-
-	go agent.RunWatchdog(terminateCtx, agentID, client)
+	go agent.RunWatchdog(context.Background(), agentID, client)
 
 	// create a new RequestLock
-	lock := agent.NewRequestLock(terminateCtx, agentID, client)
+	lock := agent.NewRequestLock(context.Background(), agentID, client)
 
 	handler, err := handler.NewHandler(lock, client)
 	if err != nil {
@@ -187,22 +128,15 @@ func main() {
 	activeChannels := &sync.Map{}
 
 	go func() {
-		for {
-			done := false
-			select {
-			case <-terminateCtx.Done():
-				done = true
-			case <-time.After(15 * time.Second):
-			}
+		ticker := time.NewTicker(15 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
 			chs := make([]string, 0)
 			activeChannels.Range(func(key, value interface{}) bool {
 				chs = append(chs, key.(string))
 				return true
 			})
 			zap.L().Info("active channels", zap.Strings("channels", chs))
-			if done {
-				break
-			}
 		}
 	}()
 
@@ -218,22 +152,21 @@ func main() {
 
 	go func() {
 		zap.L().Info("starting http server")
-		if err := http.ListenAndServe(":8080", nil); err != nil {
+		port := os.Getenv("PORT")
+		if port == "" {
+			port = "8080"
+		}
+		if err := http.ListenAndServe(":" + port, nil); err != nil {
 			zap.L().Fatal("failed to start http server", zap.Error(err))
 		}
 	}()
-
-	var errwg errgroup.Group
 
 	for {
 		isListening.Store(true)
 		req, err := lock.Next()
 		isListening.Store(false)
 		if err != nil {
-			if !errors.Is(err, context.Canceled) {
-				zap.L().Error("failed to get next request", zap.Error(err))
-			}
-			terminate()
+			zap.L().Error("failed to get next request", zap.Error(err))
 			break
 		}
 		zap.L().Info("got request", zap.String("id", req.String()))
@@ -242,56 +175,12 @@ func main() {
 			zap.L().Info("request already active", zap.String("id", req.String()))
 			continue
 		}
-
-		errwg.Go(func() error {
-			defer activeChannels.Delete(req.String())
-
-			joinCtx, err := handler.Join(req)
-			if err != nil {
+		go func() {
+			if err := handler.Join(req); err != nil {
 				zap.L().Error("failed to open request", zap.Error(err))
-				return nil
+				return
 			}
-
-			// lock the request
-			claim, err := agent.LockClaim(req)
-			if err != nil {
-				if errors.Is(err, context.Canceled) {
-					return nil
-				}
-				return fmt.Errorf("failed to lock request: %w", err)
-			}
-
-			go func() {
-				select {
-				case <-joinCtx.ReconnectCtx.Done():
-					break
-				case <-terminateCtx.Done():
-					break
-				}
-				if err := claim.Unlock(); err != nil {
-					zap.L().Error("failed to unlock request", zap.Error(err))
-				}
-			}()
-
-			if err := claim.Wait(); err != nil {
-				zap.L().Error("failed to wait for request lock", zap.Error(err))
-			}
-
-			// leave
-			if err := joinCtx.Close(); err != nil {
-				zap.L().Error("failed to leave request", zap.Error(err))
-			}
-
-			// call unlock again to ensure it's unlocked
-			if err := claim.Unlock(); err != nil {
-				return fmt.Errorf("failed to unlock request: %w", err)
-			}
-
-			return nil
-		})
-	}
-
-	if err := errwg.Wait(); err != nil {
-		zap.L().Error("failed to join request", zap.Error(err))
+		}()
+		time.Sleep(500 * time.Millisecond)
 	}
 }
