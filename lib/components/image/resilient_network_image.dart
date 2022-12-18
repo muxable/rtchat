@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:crypto/crypto.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -140,8 +141,16 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
 
     String? etagValue;
 
+    Codec? decodedCache;
+
     if (await cacheFile.exists() && await etagFile.exists()) {
-      etagValue = await etagFile.readAsString();
+      try {
+        final bytes = await cacheFile.readAsBytes();
+        decodedCache = await decode(await ImmutableBuffer.fromUint8List(bytes));
+        etagValue = await etagFile.readAsString();
+      } catch (e) {
+        FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
+      }
     }
 
     var delay = const Duration(seconds: 1);
@@ -151,7 +160,7 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
       try {
         final request = await _httpClient.getUrl(key.uri);
 
-        if (etagValue != null) {
+        if (etagValue != null && decodedCache != null) {
           request.headers.add(HttpHeaders.ifNoneMatchHeader, etagValue);
         }
 
@@ -161,14 +170,15 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
           await response.drain<List<int>>(<int>[]);
 
           if (response.statusCode == HttpStatus.notModified &&
-              etagValue != null) {
+              etagValue != null &&
+              decodedCache != null) {
             final bytes = await cacheFile.readAsBytes();
             chunkEvents.add(ImageChunkEvent(
               cumulativeBytesLoaded: bytes.lengthInBytes,
               expectedTotalBytes: bytes.lengthInBytes,
             ));
             chunkEvents.close();
-            return decode(await ImmutableBuffer.fromUint8List(bytes));
+            return decodedCache;
           }
           if (response.statusCode >= 400 && response.statusCode < 500) {
             throw NetworkImageLoadException(
@@ -200,7 +210,7 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
         }
 
         chunkEvents.close();
-        return decode(await ImmutableBuffer.fromUint8List(bytes));
+        return await decode(await ImmutableBuffer.fromUint8List(bytes));
       } on NetworkImageLoadException {
         chunkEvents.close();
         scheduleMicrotask(() {
