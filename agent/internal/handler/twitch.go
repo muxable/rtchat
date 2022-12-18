@@ -148,7 +148,7 @@ func (h *TwitchHandler) bindRaidClient(ctx context.Context, channelID, userID st
 		}
 		if message["type"] == "MESSAGE" {
 			data := message["data"].(map[string]interface{})
-			if data["topic"] == fmt.Sprintf("raid.%s", userID) {
+			if data["topic"] == fmt.Sprintf("raid.%s", channelID) {
 				// parse the message
 				var raid struct {
 					Type string                 `json:"type"`
@@ -163,17 +163,14 @@ func (h *TwitchHandler) bindRaidClient(ctx context.Context, channelID, userID st
 					continue
 				}
 
-				id := fmt.Sprintf("twitch:%s-%s", raid.Type, raid.Raid["id"].(string))
+				id := fmt.Sprintf("%s-%s", raid.Type, raid.Raid["id"].(string))
 				zap.L().Info("received raid", zap.String("id", id), zap.Any("raid", raid.Raid))
 				// write this event to firestore
-				if _, err := h.firestore.Collection("channels").Doc(userID).Collection("messages").Doc(id).Set(ctx, map[string]interface{}{
+				go h.write(fmt.Sprintf("twitch:%s", channelID), id, map[string]interface{}{
 					"raid":      raid.Raid,
 					"type":      raid.Type,
 					"timestamp": firestore.ServerTimestamp,
-				}); err != nil {
-					zap.L().Error("failed to write raid message to firestore", zap.Error(err))
-					continue
-				}
+				})
 			}
 		}
 		if message["type"] == "RECONNECT" {
