@@ -48,9 +48,9 @@ func main() {
 	}
 
 	// create a new RequestLock
-	lock := agent.NewRequestLock(context.Background(), client)
+	lock := client.Collection("assignments").Snapshots(context.Background())
 
-	handler, err := handler.NewHandler(lock, client)
+	handler, err := handler.NewHandler(client)
 	if err != nil {
 		zap.L().Fatal("failed to create handler", zap.Error(err))
 	}
@@ -93,24 +93,28 @@ func main() {
 
 	for {
 		isListening.Store(true)
-		req, err := lock.Next()
+		snapshot, err := lock.Next()
 		isListening.Store(false)
 		if err != nil {
-			zap.L().Error("failed to get next request", zap.Error(err))
-			break
+			return 
 		}
-		zap.L().Info("got request", zap.String("id", req.String()))
-		// check if it's in the active channels map
-		if _, loaded := activeChannels.LoadOrStore(req.String(), struct{}{}); loaded {
-			zap.L().Info("request already active", zap.String("id", req.String()))
-			continue
-		}
-		go func() {
-			if err := handler.Join(req); err != nil {
-				zap.L().Error("failed to open request", zap.Error(err))
-				return
+		for _, change := range snapshot.Changes {
+			if change.Kind != firestore.DocumentRemoved {
+				req := (*agent.Request)(change.Doc.Ref)
+				zap.L().Info("got request", zap.String("id", req.String()))
+				// check if it's in the active channels map
+				if _, loaded := activeChannels.LoadOrStore(req.String(), struct{}{}); loaded {
+					zap.L().Info("request already active", zap.String("id", req.String()))
+					continue
+				}
+				go func() {
+					if err := handler.Join(req); err != nil {
+						zap.L().Error("failed to open request", zap.Error(err))
+						return
+					}
+				}()
+				time.Sleep(200 * time.Millisecond)
 			}
-		}()
-		time.Sleep(500 * time.Millisecond)
+		}
 	}
 }

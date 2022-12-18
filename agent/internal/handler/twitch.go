@@ -325,7 +325,7 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 				},
 				"type": "message",
 			}
-			h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
+			go h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
 		}
 	})
 
@@ -341,7 +341,7 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 			"timestamp": message.Time,
 			"type":      "clear",
 		}
-		h.write(channelID, fmt.Sprintf("twitch:clear-%s", message.Time.Format(time.RFC3339)), data)
+		go h.write(channelID, fmt.Sprintf("twitch:clear-%s", message.Time.Format(time.RFC3339)), data)
 	})
 
 	client.OnClearMessage(func(message twitch.ClearMessage) {
@@ -358,7 +358,7 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 			"type":      "messagedeleted",
 			"messageId": fmt.Sprintf("twitch:%s", message.TargetMsgID),
 		}
-		h.write(channelID, fmt.Sprintf("twitch:x-%s", message.TargetMsgID), data)
+		go h.write(channelID, fmt.Sprintf("twitch:x-%s", message.TargetMsgID), data)
 	})
 
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
@@ -404,7 +404,7 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 			"type": "message",
 		}
 		zap.L().Info("adding message", zap.String("content", message.Message), zap.String("channelId", channelID), zap.String("channel", message.Channel))
-		h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
+		go h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
 	})
 
 	client.OnReconnectMessage(func(message twitch.ReconnectMessage) {

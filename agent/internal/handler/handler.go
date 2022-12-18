@@ -48,7 +48,7 @@ func twitchClientSecret() (string, error) {
 	return string(result.Payload.Data), err
 }
 
-func NewHandler(lock *agent.RequestLock, firestore *firestore.Client) (*Handler, error) {
+func NewHandler(firestore *firestore.Client) (*Handler, error) {
 	twitchClientID := twitchClientID()
 	twitchClientSecret, err := twitchClientSecret()
 	if err != nil {
