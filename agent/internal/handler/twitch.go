@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"strings"
 	"sync"
@@ -15,7 +16,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
-	"github.com/muxable/rtchat/agent/internal/cancel"
 	"go.uber.org/zap"
 	"google.golang.org/api/iterator"
 )
@@ -465,12 +465,11 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) error {
 		go func() {
 			for {
 				if err := h.bindRaidClient(context.Background(), profileData["id"].(string), asUserID); err != nil {
-					if !cancel.IsCanceled(err) && !errors.Is(err, net.ErrClosed) {
-						zap.L().Error("failed to bind raid client", zap.Error(err))
-					}
-					if errors.Is(err, errReconnect) {
+					if errors.Is(err, errReconnect) || errors.Is(err, net.ErrClosed) || errors.Is(err, io.EOF) {
+						zap.L().Info("reconnecting raid client due to error", zap.Error(err), zap.String("channel", r.Channel()), zap.String("asUserID", asUserID))
 						continue
 					}
+					zap.L().Error("failed to bind raid client", zap.Error(err), zap.String("channel", r.Channel()), zap.String("asUserID", asUserID))
 					return
 				}
 			}
