@@ -399,6 +399,7 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 					"moderator": message.User.Badges["moderator"] > 0,
 				},
 				"emotes-raw": message.Tags["emotes"],
+				"badges-raw": message.Tags["badges"],
 			},
 			"type": "message",
 		}
