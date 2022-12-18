@@ -84,4 +84,4 @@ jobs:
       - name: Deploy to GCE
         id: deploy
         run: |
-          gcloud compute instance-groups managed rolling-action start-update agent-small-us-central1 --project=rtchat-47692 --type='proactive' --max-surge=1 --max-unavailable=1 --min-ready=120 --minimal-action='replace' --replacement-method='substitute' --version=template=https://www.googleapis.com/compute/beta/projects/rtchat-47692/global/instanceTemplates/agent-e2-small --zone=us-central1-c
+          gcloud compute instance-groups managed rolling-action start-update agent-small-us-central1 --project=rtchat-47692 --type='proactive' --max-surge=1 --max-unavailable=1 --minimal-action='replace' --replacement-method='substitute' --version=template=https://www.googleapis.com/compute/beta/projects/rtchat-47692/global/instanceTemplates/agent-e2-small --zone=us-central1-c
