@@ -3,6 +3,7 @@ module github.com/muxable/rtchat/agent
 go 1.19
 
 require (
+	cloud.google.com/go/compute/metadata v0.2.3
 	cloud.google.com/go/firestore v1.9.0
 	cloud.google.com/go/logging v1.6.1
 	github.com/gempir/go-twitch-irc/v3 v3.2.0
@@ -14,7 +15,6 @@ require (
 )
 
 require (
-	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/longrunning v0.3.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/time v0.3.0 // indirect

@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/logging"
 	"github.com/muxable/rtchat/agent/internal/agent"
@@ -16,14 +17,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func isRunningOnGoogleCloud() bool {
-	// fetch metadata.google.internal
-	_, err := http.Get("http://metadata.google.internal")
-	return err == nil
-}
-
 func main() {
-	if isRunningOnGoogleCloud() {
+	if metadata.OnGCE() {
 		logclient, err := logging.NewClient(context.Background(), "rtchat-47692")
 		if err != nil {
 			panic(err)
