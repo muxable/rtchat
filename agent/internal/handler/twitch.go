@@ -329,17 +329,16 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 	// configure handlers
 	client.OnClearChatMessage(func(message twitch.ClearChatMessage) {
 		// handle clear chat message
+		channelID := fmt.Sprintf("twitch:%s", message.RoomID)
 		if message.TargetUserID != "" || message.TargetUsername != "" {
-			channelID := fmt.Sprintf("twitch:%s", message.RoomID)
 			data := map[string]interface{}{
 				"channelId":    channelID,
 				"targetUserId": message.TargetUserID,
 				"timestamp":    message.Time,
 				"type":         "userclear",
 			}
-			go h.write(channelID, fmt.Sprintf("twitch:clear-%s", message.Time.Format(time.RFC3339)), data)
+			go h.write(channelID, fmt.Sprintf("twitch:userclear-%s", message.Time.Format(time.RFC3339)), data)
 		} else {
-			channelID := fmt.Sprintf("twitch:%s", message.RoomID)
 			data := map[string]interface{}{
 				"channelId": channelID,
 				"timestamp": message.Time,
