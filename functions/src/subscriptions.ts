@@ -78,7 +78,7 @@ export const unsubscribe = functions.pubsub
     const assignments = await assignmentsRef.get();
     for (const assignment of assignments.docs) {
       const data = assignment.data();
-      if (data.subscribedAt.toMillis() > limit) {
+      if (data.subscribedAt.toMillis() < limit) {
         // delete this doc
         await assignment.ref.delete();
       }
