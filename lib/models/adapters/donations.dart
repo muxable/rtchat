@@ -7,6 +7,12 @@ class StreamlabsConfig {
   StreamlabsConfig({this.currency});
 }
 
+class StreamElementsConfig {
+  final String? currency;
+
+  StreamElementsConfig({this.currency});
+}
+
 class DonationsAdapter {
   final FirebaseFirestore db;
   final FirebaseFunctions functions;
@@ -37,6 +43,17 @@ class DonationsAdapter {
         return null;
       }
       return StreamlabsConfig(currency: data["currency"]);
+    });
+  }
+
+  Stream<StreamElementsConfig?> forStreamElementsConfig(
+      {required String userId}) {
+    return db.collection("streamelements").doc(userId).snapshots().map((doc) {
+      final data = doc.data();
+      if (data == null || data["token"] == null) {
+        return null;
+      }
+      return StreamElementsConfig(currency: data["currency"]);
     });
   }
 }
