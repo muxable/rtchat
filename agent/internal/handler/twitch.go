@@ -40,7 +40,7 @@ func (h *TwitchHandler) bindOutboundClient(ctx context.Context) error {
 		for _, change := range snapshot.Changes {
 			if change.Kind == firestore.DocumentAdded {
 				var action struct {
-					ChannelId string
+					ChannelId      string
 					Message        string
 					TargetChannel  string
 					ReplyMessageId string
@@ -328,17 +328,24 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 
 	// configure handlers
 	client.OnClearChatMessage(func(message twitch.ClearChatMessage) {
-		if message.TargetUserID != "" || message.TargetUsername != "" {
-			return
-		}
 		// handle clear chat message
 		channelID := fmt.Sprintf("twitch:%s", message.RoomID)
-		data := map[string]interface{}{
-			"channelId": channelID,
-			"timestamp": message.Time,
-			"type":      "clear",
+		if message.TargetUserID != "" || message.TargetUsername != "" {
+			data := map[string]interface{}{
+				"channelId":    channelID,
+				"targetUserId": message.TargetUserID,
+				"timestamp":    message.Time,
+				"type":         "userclear",
+			}
+			go h.write(channelID, fmt.Sprintf("twitch:userclear-%s", message.Time.Format(time.RFC3339)), data)
+		} else {
+			data := map[string]interface{}{
+				"channelId": channelID,
+				"timestamp": message.Time,
+				"type":      "clear",
+			}
+			go h.write(channelID, fmt.Sprintf("twitch:clear-%s", message.Time.Format(time.RFC3339)), data)
 		}
-		go h.write(channelID, fmt.Sprintf("twitch:clear-%s", message.Time.Format(time.RFC3339)), data)
 	})
 
 	client.OnClearMessage(func(message twitch.ClearMessage) {

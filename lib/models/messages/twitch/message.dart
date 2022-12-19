@@ -280,4 +280,18 @@ class TwitchMessageModel extends MessageModel {
     }
     return tokens.toList();
   }
+
+  TwitchMessageModel withDeleted(bool deleted) {
+    return TwitchMessageModel(
+        messageId: messageId,
+        author: author,
+        message: message,
+        reply: reply,
+        tags: tags,
+        annotations: annotations,
+        thirdPartyEmotes: thirdPartyEmotes,
+        timestamp: timestamp,
+        deleted: deleted,
+        channelId: channelId);
+  }
 }
