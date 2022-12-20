@@ -5,10 +5,8 @@ go 1.19
 require (
 	cloud.google.com/go/compute/metadata v0.2.3
 	cloud.google.com/go/firestore v1.9.0
-	cloud.google.com/go/logging v1.6.1
 	github.com/gempir/go-twitch-irc/v3 v3.2.0
 	github.com/gorilla/websocket v1.5.0
-	github.com/yanolab/stackdriver-zaplogger v0.0.0-20190303094518-424582002240
 	go.uber.org/zap v1.24.0
 	golang.org/x/oauth2 v0.3.0
 	google.golang.org/api v0.105.0

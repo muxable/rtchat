@@ -10,20 +10,55 @@ import (
 
 	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/firestore"
-	"cloud.google.com/go/logging"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/handler"
-	stackdriver "github.com/yanolab/stackdriver-zaplogger"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
+
+var loggerConfig = &zap.Config{
+	Level:    zap.NewAtomicLevelAt(zapcore.InfoLevel),
+	Encoding: "json",
+	EncoderConfig: zapcore.EncoderConfig{
+		TimeKey:       "time",
+		LevelKey:      "severity",
+		NameKey:       "logger",
+		CallerKey:     "caller",
+		MessageKey:    "message",
+		StacktraceKey: "stacktrace",
+		LineEnding:    zapcore.DefaultLineEnding,
+		EncodeLevel: func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
+			switch l {
+			case zapcore.DebugLevel:
+				enc.AppendString("DEBUG")
+			case zapcore.InfoLevel:
+				enc.AppendString("INFO")
+			case zapcore.WarnLevel:
+				enc.AppendString("WARNING")
+			case zapcore.ErrorLevel:
+				enc.AppendString("ERROR")
+			case zapcore.DPanicLevel:
+				enc.AppendString("CRITICAL")
+			case zapcore.PanicLevel:
+				enc.AppendString("ALERT")
+			case zapcore.FatalLevel:
+				enc.AppendString("EMERGENCY")
+			}
+		},
+		EncodeTime:     zapcore.ISO8601TimeEncoder,
+		EncodeDuration: zapcore.MillisDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+	},
+	OutputPaths:      []string{"stdout"},
+	ErrorOutputPaths: []string{"stderr"},
+}
 
 func main() {
 	if metadata.OnGCE() {
-		logclient, err := logging.NewClient(context.Background(), "rtchat-47692")
+		logger, err := loggerConfig.Build(zap.AddStacktrace(zap.ErrorLevel))
 		if err != nil {
 			panic(err)
 		}
-		logger := zap.New(stackdriver.NewCore(logclient, zap.DebugLevel))
 		defer logger.Sync()
 		undo := zap.ReplaceGlobals(logger)
 		defer undo()
@@ -91,7 +126,7 @@ func main() {
 		snapshot, err := lock.Next()
 		isListening.Store(false)
 		if err != nil {
-			return 
+			return
 		}
 		for _, change := range snapshot.Changes {
 			if change.Kind != firestore.DocumentRemoved {
