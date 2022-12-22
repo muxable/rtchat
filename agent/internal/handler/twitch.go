@@ -170,6 +170,7 @@ func (h *TwitchHandler) bindRaidClient(ctx context.Context, channelID, userID st
 					"raid":      raid.Raid,
 					"type":      raid.Type,
 					"timestamp": firestore.ServerTimestamp,
+					"expiresAt": time.Now().Add(time.Hour * 24 * 7 * 2),
 				})
 			}
 		}
@@ -320,7 +321,8 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 					},
 					"emotes-raw": message.Tags["emotes"],
 				},
-				"type": "message",
+				"type":      "message",
+				"expiresAt": time.Now().Add(time.Hour * 24 * 7 * 2),
 			}
 			go h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
 		}
@@ -336,6 +338,7 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 				"targetUserId": message.TargetUserID,
 				"timestamp":    message.Time,
 				"type":         "userclear",
+				"expiresAt":    time.Now().Add(time.Hour * 24 * 7 * 2),
 			}
 			go h.write(channelID, fmt.Sprintf("twitch:userclear-%s", message.Time.Format(time.RFC3339)), data)
 		} else {
@@ -343,6 +346,7 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 				"channelId": channelID,
 				"timestamp": message.Time,
 				"type":      "clear",
+				"expiresAt": time.Now().Add(time.Hour * 24 * 7 * 2),
 			}
 			go h.write(channelID, fmt.Sprintf("twitch:clear-%s", message.Time.Format(time.RFC3339)), data)
 		}
@@ -361,6 +365,7 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 			"timestamp": firestore.ServerTimestamp,
 			"type":      "messagedeleted",
 			"messageId": fmt.Sprintf("twitch:%s", message.TargetMsgID),
+			"expiresAt": time.Now().Add(time.Hour * 24 * 7 * 2),
 		}
 		go h.write(channelID, fmt.Sprintf("twitch:x-%s", message.TargetMsgID), data)
 	})
@@ -405,7 +410,8 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 				"emotes-raw": message.Tags["emotes"],
 				"badges-raw": message.Tags["badges"],
 			},
-			"type": "message",
+			"type":      "message",
+			"expiresAt": time.Now().Add(time.Hour * 24 * 7 * 2),
 		}
 		zap.L().Info("adding message", zap.String("content", message.Message), zap.String("channelId", channelID), zap.String("channel", message.Channel))
 		go h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
