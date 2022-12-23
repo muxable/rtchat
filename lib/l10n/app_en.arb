@@ -72,5 +72,47 @@
   "activityFeed": "Activity feed",
   "@activityFeed": {
     "description": "Tooltip text for a button that shows the activity feed"
+  },
+  "streamOnline": "Stream online at {date}, {time}",
+  "@streamOnline": {
+    "description": "Event label to indicate that the stream is online",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMEEEEd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jms"
+      }
+    }
+  },
+  "streamOffline": "Stream offline at {date}, {time}",
+  "@streamOffline": {
+    "description": "Event label to indicate that the stream is offline",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMEEEEd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jms"
+      }
+    }
+  },
+  "chatCleared": "Chat cleared at {date}, {time}",
+  "@chatCleared": {
+    "description": "Event label to indicate that the chat was cleared",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMEEEEd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jms"
+      }
+    }
   }
 }
