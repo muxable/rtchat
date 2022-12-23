@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/components/drawer/quicklinks_listview.dart';
@@ -82,7 +83,7 @@ class _DrawerHeader extends StatelessWidget {
                     icon: const Icon(Icons.search),
                     iconSize: 32,
                     splashRadius: 24,
-                    tooltip: 'Search channels',
+                    tooltip: AppLocalizations.of(context)!.searchChannels,
                     color: Theme.of(context).colorScheme.onTertiary,
                     onPressed: () {
                       Navigator.of(context).pop();
@@ -150,7 +151,7 @@ class _SidebarState extends State<Sidebar> {
     final tiles = <Widget>[
       ListTile(
           leading: const Icon(Icons.add_link_sharp),
-          title: const Text("Configure quick links"),
+          title: Text(AppLocalizations.of(context)!.configureQuickLinks),
           onTap: () =>
               Navigator.of(context).pushNamed("/settings/quick-links")),
 
@@ -161,8 +162,9 @@ class _SidebarState extends State<Sidebar> {
         if (!layoutModel.locked) {
           return ListTile(
             leading: const Icon(Icons.thunderstorm),
-            title: const Text("Enable rain mode"),
-            subtitle: const Text("Interaction will be disabled"),
+            title: Text(AppLocalizations.of(context)!.enableRainMode),
+            subtitle:
+                Text(AppLocalizations.of(context)!.enableRainModeSubtitle),
             onTap: () async {
               layoutModel.locked = !layoutModel.locked;
               Navigator.pop(context);
@@ -171,8 +173,8 @@ class _SidebarState extends State<Sidebar> {
         }
         return ListTile(
           leading: const Icon(Icons.thunderstorm),
-          title: const Text("Disable rain mode"),
-          subtitle: const Text("Interaction will be enabled"),
+          title: Text(AppLocalizations.of(context)!.disableRainMode),
+          subtitle: Text(AppLocalizations.of(context)!.disableRainModeSubtitle),
           onTap: () async {
             layoutModel.locked = !layoutModel.locked;
             Navigator.pop(context);
@@ -185,20 +187,19 @@ class _SidebarState extends State<Sidebar> {
         }
         return ListTile(
           leading: const Icon(Icons.cached_outlined),
-          title: const Text("Refresh audio sources"),
+          title: Text(AppLocalizations.of(context)!.refreshAudioSources),
           onTap: () async {
             final count = await audioModel.refreshAllSources();
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(count == 1
-                    ? '1 audio source refreshed'
-                    : '$count audio sources refreshed')));
+                content: Text(AppLocalizations.of(context)!
+                    .refreshAudioSourcesCount(count))));
           },
         );
       }),
       ListTile(
         leading: const Icon(Icons.build_outlined),
-        title: const Text("Settings"),
+        title: Text(AppLocalizations.of(context)!.settings),
         onTap: () async {
           await Navigator.pushNamed(context, "/settings");
         },
@@ -210,23 +211,24 @@ class _SidebarState extends State<Sidebar> {
         return ListTile(
           leading: const Icon(Icons.logout_outlined),
           iconColor: Colors.redAccent,
-          title: const Text("Sign out"),
+          title: Text(AppLocalizations.of(context)!.signOut),
           onTap: () async {
             await showDialog(
               context: context,
               builder: (context) {
                 return AlertDialog(
-                  title: const Text('Sign Out'),
-                  content: const Text('Are you sure you want to sign out?'),
+                  title: Text(AppLocalizations.of(context)!.signOut),
+                  content:
+                      Text(AppLocalizations.of(context)!.signOutConfirmation),
                   actions: [
                     TextButton(
-                      child: const Text('Cancel'),
+                      child: Text(AppLocalizations.of(context)!.cancel),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
                     ),
                     TextButton(
-                      child: const Text('Sign Out'),
+                      child: Text(AppLocalizations.of(context)!.signOut),
                       onPressed: () async {
                         await Provider.of<UserModel>(context, listen: false)
                             .signOut();

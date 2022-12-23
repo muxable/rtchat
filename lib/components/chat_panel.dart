@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/chat_history/separator.dart';
 import 'package:rtchat/components/connection_status.dart';
-import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/pinnable/reverse_refresh_indicator.dart';
 import 'package:rtchat/components/pinnable/scroll_view.dart';
 import 'package:rtchat/components/style_model_theme.dart';
@@ -299,7 +300,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Text(
-                        'It\'s quiet in here.',
+                        AppLocalizations.of(context)!.noMessagesEmptyState,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: Theme.of(context).colorScheme.primary,
                             fontWeight: FontWeight.bold),
@@ -397,7 +398,8 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                   child: dropped == 0
                       ? null
                       : Text(
-                          "$dropped new message${dropped == 1 ? '' : 's'}",
+                          AppLocalizations.of(context)!
+                              .newMessageCount(dropped),
                           textAlign: TextAlign.center,
                           maxLines: 1,
                         )),

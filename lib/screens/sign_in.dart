@@ -1,9 +1,10 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
 
 final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
 
@@ -41,7 +42,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       MaterialStateProperty.all(const Color(0xFF6441A5)),
                 ),
                 child: Consumer<UserModel>(builder: (context, user, child) {
-                  return const Text("Sign in with Twitch");
+                  return Text(AppLocalizations.of(context)!.signInWithTwitch);
                 }),
                 onPressed: () async {
                   setState(() => _isLoading = true);
