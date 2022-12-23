@@ -26,7 +26,7 @@ class SliverSearchBarWidget extends StatelessWidget {
                   Expanded(
                     child: TextField(
                       textInputAction: TextInputAction.search,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: AppLocalizations.of(context)!.search,
                         isDense: true,
                         border: InputBorder.none,
