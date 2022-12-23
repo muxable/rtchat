@@ -33,6 +33,7 @@ Future<List<SearchResult>> fastSearch() async {
         imageUrl: Uri.parse(
             "https://rtirl.com/pfp.png?provider=$provider&channelId=$channelId"),
         title: "${data['categoryName']} - ${data['title']}",
+        language: data['language'],
         isPromoted: true);
   }).toList();
 }
@@ -55,6 +56,7 @@ Stream<List<SearchResult>> search(String query, bool isShowOnlyOnline) async* {
             isOnline: data['isOnline'],
             imageUrl: Uri.parse(data['imageUrl']),
             title: data['title'],
+            language: data['language'],
             isPromoted: false))
         .toList();
   });
@@ -74,6 +76,7 @@ class SearchResult {
   final Uri imageUrl;
   final String title;
   final bool isPromoted;
+  final String? language;
 
   const SearchResult(
       {required this.channelId,
@@ -82,7 +85,8 @@ class SearchResult {
       required this.isOnline,
       required this.imageUrl,
       required this.title,
-      required this.isPromoted});
+      required this.isPromoted,
+      required this.language});
 }
 
 class ChannelSearchResultsWidget extends StatefulWidget {
@@ -191,7 +195,16 @@ class _ChannelSearchResultsWidgetState
                                           )
                                         : Container())
                               ])),
-                      title: Text(result.displayName),
+                      title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(result.displayName),
+                            Text(result.language ?? "??",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                )),
+                          ]),
                       subtitle: Text(result.title),
                       onTap: () {
                         widget.onChannelSelect(Channel(
