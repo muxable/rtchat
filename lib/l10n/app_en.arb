@@ -30,5 +30,15 @@
     "raidAChannel": "Raid",
     "@raidAChannel": {
       "description": "Header for a page that lets the raid channels"
-    }
+    },
+    "noMessagesEmptyState": "It\'s quiet in here.",
+    "@noMessagesEmptyState": {
+      "description": "Empty state placeholder when there are no messages"
+    },
+    "newMessageCount": "{count,plural, =0{No new messages} =1{1 new message} other{{count} new messages}}",
+    "@newMessageCount": {
+      "placeholders": {
+        "count": {}
+      }
+    },
 }
