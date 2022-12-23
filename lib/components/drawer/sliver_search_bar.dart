@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SliverSearchBarWidget extends StatelessWidget {
   final void Function(String) onFilterBySearchBarText;
@@ -26,17 +27,13 @@ class SliverSearchBarWidget extends StatelessWidget {
                     child: TextField(
                       textInputAction: TextInputAction.search,
                       decoration: const InputDecoration(
-                        hintText: 'Search',
+                        hintText: AppLocalizations.of(context)!.search,
                         isDense: true,
                         border: InputBorder.none,
                       ),
                       onChanged: (value) async {
                         onFilterBySearchBarText(value);
-                        // viewersListModel.filteredByText(value);
                       },
-                      // onSubmitted: (value) {
-                      //   viewersListModel.filteredByText(value);
-                      // },
                     ),
                   ),
                   const Padding(
