@@ -40,5 +40,37 @@
     "placeholders": {
       "count": {}
     }
+  },
+  "signInWithTwitch": "Sign in with Twitch",
+  "@signInWithTwitch": {
+    "description": "Button label to allow a user to sign in with Twitch"
+  },
+  "signInError": "An error occurred when signing in. Please try again.",
+  "@signInError": {
+    "description": "Error message that shows when signing in fails"
+  },
+  "continueAsGuest": "Continue as Guest",
+  "@continueAsGuest": {
+    "description": "Button label to allow a user to use the app without signing in"
+  },
+  "signInToSendMessages": "Sign in to send messages",
+  "@signInToSendMessages": {
+    "description": "Text label to indicate that signing in is required to send messages"
+  },
+  "currentViewers": "Current viewers",
+  "@currentViewers": {
+    "description": "Tooltip text for a button that shows the current viewers"
+  },
+  "textToSpeech": "Text to speech",
+  "@textToSpeech": {
+    "description": "Tooltip text for a button that enables text to speech"
+  },
+  "streamPreview": "Stream preview",
+  "@streamPreview": {
+    "description": "Tooltip text for a button that shows the stream preview"
+  },
+  "activityFeed": "Activity feed",
+  "@activityFeed": {
+    "description": "Tooltip text for a button that shows the activity feed"
   }
 }

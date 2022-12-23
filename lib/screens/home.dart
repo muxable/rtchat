@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
@@ -199,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     icon: Icon(layoutModel.isShowNotifications
                         ? Icons.notifications
                         : Icons.notifications_outlined),
-                    tooltip: 'Activity feed',
+                    tooltip: AppLocalizations.of(context)!.activityFeed,
                     onPressed: () {
                       layoutModel.isShowNotifications =
                           !layoutModel.isShowNotifications;
@@ -211,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     icon: Icon(layoutModel.isShowPreview
                         ? Icons.preview
                         : Icons.preview_outlined),
-                    tooltip: 'Stream preview',
+                    tooltip: AppLocalizations.of(context)!.streamPreview,
                     onPressed: () {
                       layoutModel.isShowPreview = !layoutModel.isShowPreview;
                     },
@@ -222,14 +223,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       icon: Icon(ttsModel.enabled
                           ? Icons.record_voice_over
                           : Icons.voice_over_off),
-                      tooltip: 'Text to speech',
+                      tooltip: AppLocalizations.of(context)!.textToSpeech,
                       onPressed: () {
                         ttsModel.enabled = !ttsModel.enabled;
                       });
                 }),
                 IconButton(
                   icon: const Icon(Icons.people),
-                  tooltip: 'Current viewers',
+                  tooltip: AppLocalizations.of(context)!.currentViewers,
                   onPressed: () {
                     _scaffoldKey.currentState?.openEndDrawer();
                   },
@@ -253,7 +254,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 const Flexible(child: Divider()),
                                 Padding(
                                     padding: const EdgeInsets.all(8),
-                                    child: Text("Sign in to send messages",
+                                    child: Text(
+                                        AppLocalizations.of(context)!
+                                            .signInToSendMessages,
                                         style: Theme.of(context)
                                             .textTheme
                                             .labelLarge)),
