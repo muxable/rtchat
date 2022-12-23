@@ -114,5 +114,51 @@
         "format": "jms"
       }
     }
+  },
+  "configureQuickLinks": "Configure quick links",
+  "@configureQuickLinks": {
+    "description": "Button label that shows the quick links configuration"
+  },
+  "disableRainMode": "Disable rain mode",
+  "@disableRainMode": {
+    "description": "Button label that disables rain mode"
+  },
+  "enableRainMode": "Enable rain mode",
+  "@enableRainMode": {
+    "description": "Button label that enables rain mode"
+  },
+  "disableRainModeSubtitle": "Interaction will be disabled",
+  "@disableRainModeSubtitle": {
+    "description": "Subtitle for the button that disables rain mode, indicating that interaction will be disabled"
+  },
+  "enableRainModeSubtitle": "Interaction will be enabled",
+  "@enableRainModeSubtitle": {
+    "description": "Subtitle for the button that enables rain mode, indicating that interaction will be enabled"
+  },
+  "refreshAudioSources": "Refresh audio sources",
+  "@refreshAudioSources": {
+    "description": "Button label that refreshes the audio sources"
+  },
+  "refreshAudioSourcesCount": "{count,plural, =0{No audio sources refreshed} =1{1 audio source refreshed} other{{count} audio sources refreshed}}",
+  "@refreshAudioSourcesCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Button label that shows the settings"
+  },
+  "signOut": "Sign out",
+  "@signOut": {
+    "description": "Button label that signs the user out"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Button label that cancels an action"
+  },
+  "signOutConfirmation": "Are you sure you want to sign out?",
+  "@signOutConfirmation": {
+    "description": "Confirmation message that shows when the user wants to sign out"
   }
 }
