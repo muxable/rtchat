@@ -18,6 +18,8 @@ import (
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"go.uber.org/zap"
 	"google.golang.org/api/iterator"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type TwitchHandler struct {
@@ -216,20 +218,13 @@ func joinWithTimeout(client *twitch.Client, channel string, timeout time.Duratio
 }
 
 func (h *TwitchHandler) metadata(channelID string, data interface{}) {
-	go func() {
-		for i := 0; i < 3; i++ {
-			if _, err := h.firestore.Collection("channels").Doc(channelID).Set(context.Background(), data, firestore.MergeAll); err != nil {
-				zap.L().Error("failed to update channel metadata", zap.Error(err), zap.String("channelId", channelID), zap.Any("data", data))
-				time.Sleep(1 * time.Second)
-				continue
-			}
-			break
-		}
-	}()
+	if _, err := h.firestore.Collection("channels").Doc(channelID).Set(context.Background(), data, firestore.MergeAll); err != nil {
+		zap.L().Error("failed to update channel metadata", zap.Error(err), zap.String("channelId", channelID), zap.Any("data", data))
+	}
 }
 
 func (h *TwitchHandler) write(channelID, messageID string, data interface{}) {
-	if _, err := h.firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Set(context.Background(), data); err != nil {
+	if _, err := h.firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Create(context.Background(), data); err != nil && status.Code(err) != codes.AlreadyExists {
 		zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID), zap.Any("data", data))
 	}
 }
@@ -246,43 +241,43 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 		channelID := fmt.Sprintf("twitch:%s", userID)
 		switch message.MsgID {
 		case "r9k_on", "already_r9k_on":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isR9k": true,
 			})
 		case "r9k_off", "already_r9k_off":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isR9k": false,
 			})
 		case "slow_on", "already_slow_on":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isSlowMode": true,
 			})
 		case "slow_off", "already_slow_off":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isSlowMode": false,
 			})
 		case "subs_on", "already_subs_on":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isSubsOnly": true,
 			})
 		case "subs_off", "already_subs_off":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isSubsOnly": false,
 			})
 		case "followers_on", "already_followers_on":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isFollowersOnly": true,
 			})
 		case "followers_off", "already_followers_off":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isFollowersOnly": false,
 			})
 		case "emote_only_on", "already_emote_only_on":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isEmoteOnly": true,
 			})
 		case "emote_only_off", "already_emote_only_off":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isEmoteOnly": false,
 			})
 		}
