@@ -108,6 +108,9 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
       }
     );
     const json = await response.json();
+    if (!json["data"]) {
+      continue;
+    }
     for (const stream of json["data"]) {
       const channelId = stream["user_id"];
       const viewerCount = stream["viewer_count"];
