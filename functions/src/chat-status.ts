@@ -195,6 +195,15 @@ export async function runUpdateFollowerAndViewerCount(
     }
   }
 
+  // shuffle and sample 200 channel ids to reduce the number of requests due to twitch rate limit
+  for (let i = channelIds.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = channelIds[i];
+    channelIds[i] = channelIds[j];
+    channelIds[j] = temp;
+  }
+  channelIds = channelIds.slice(0, 200);
+
   // lastly, fetch the follower count for each channel individually.
   const followerCountRequests = channelIds.map((channelId) =>
     twitchGetFollowerCount(token, channelId)
