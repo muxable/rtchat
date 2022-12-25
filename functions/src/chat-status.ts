@@ -58,7 +58,7 @@ async function twitchLoginsToUserIds(token: AccessToken, logins: string[]) {
   for (let i = 0; i < logins.length; i += 100) {
     const query = logins
       .slice(i, i + 100)
-      .map((id) => "login=" + encodeURIComponent(id.slice(7)))
+      .map((id) => "login=" + encodeURIComponent(id))
       .join("&");
     const response = await fetch(`https://api.twitch.tv/helix/users?${query}`, {
       headers: {
@@ -85,13 +85,17 @@ async function twitchGetFollowerCount(token: AccessToken, channelId: string) {
     }
   );
   const json = await response.json();
-  console.log("twitchGetFollowerCount", channelId, json["total"]);
-  return json["total"] || 0;
+  return json["total"];
 }
 
 async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
   const data: {
-    [channelId: string]: { viewerCount: number; language: string };
+    [channelId: string]: {
+      viewerCount: number;
+      language: string;
+      displayName: string;
+      startedAt: Date | null;
+    };
   } = {};
   for (let i = 0; i < channelIds.length; i += 100) {
     const batch = channelIds.slice(i, i + 100);
@@ -113,9 +117,11 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
     }
     for (const stream of json["data"]) {
       const channelId = stream["user_id"];
+      const displayName = stream["user_name"];
+      const startedAt = new Date(Date.parse(stream["started_at"]));
       const viewerCount = stream["viewer_count"];
       const language = stream["language"];
-      data[channelId] = { viewerCount, language };
+      data[channelId] = { viewerCount, language, displayName, startedAt };
     }
     // find any channels that are not in the response and reissue a request to helix/channels
     const missingChannelIds = batch.filter(
@@ -142,7 +148,13 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
       for (const channel of json["data"]) {
         const channelId = channel["broadcaster_id"];
         const language = channel["broadcaster_language"];
-        data[channelId] = { viewerCount: 0, language };
+        const displayName = channel["broadcaster_name"];
+        data[channelId] = {
+          viewerCount: 0,
+          language,
+          displayName,
+          startedAt: null,
+        };
       }
     }
   }
@@ -157,7 +169,18 @@ export async function runUpdateFollowerAndViewerCount(
 
   // for each batch, fetch the viewer count
   const data = await twitchGetViewerCounts(token, channelIds);
-  for (const [channelId, { viewerCount, language }] of Object.entries(data)) {
+  for (const [
+    channelId,
+    { viewerCount, language, displayName, startedAt },
+  ] of Object.entries(data)) {
+    console.log(
+      "updating",
+      channelId,
+      viewerCount,
+      language,
+      displayName,
+      startedAt
+    );
     updateBatch.set(
       admin.firestore().collection("channels").doc(`twitch:${channelId}`),
       { viewerCount, language },
@@ -167,9 +190,14 @@ export async function runUpdateFollowerAndViewerCount(
 
   // lastly, fetch the follower count for each channel individually.
   for (const channelId of channelIds) {
+    const followerCount = await twitchGetFollowerCount(token, channelId);
+    if (!followerCount) {
+      continue;
+    }
+    console.log("updating", channelId, followerCount);
     updateBatch.set(
       admin.firestore().collection("channels").doc(`twitch:${channelId}`),
-      { followerCount: await twitchGetFollowerCount(token, channelId) },
+      { followerCount },
       { merge: true }
     );
   }
@@ -185,7 +213,8 @@ export const updateFollowerAndViewerCount = functions.pubsub
     const snapshot = await admin.firestore().collection("assignments").get();
     const channels = snapshot.docs
       .map((doc) => doc.id)
-      .filter((id) => id.startsWith("twitch:"));
+      .filter((id) => id.startsWith("twitch:"))
+      .map((id) => id.slice(7));
     // process twitch channel ids.
     const token = await getAppAccessToken("twitch");
     if (!token) {
