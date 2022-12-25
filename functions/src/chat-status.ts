@@ -165,7 +165,8 @@ export async function runUpdateFollowerAndViewerCount(
   token: AccessToken,
   channelIds: string[]
 ) {
-  const updateBatch = admin.firestore().batch();
+  let updateBatch = admin.firestore().batch();
+  let batchSize = 0;
 
   // for each batch, fetch the viewer count
   const data = await twitchGetViewerCounts(token, channelIds);
@@ -183,14 +184,24 @@ export async function runUpdateFollowerAndViewerCount(
     );
     updateBatch.set(
       admin.firestore().collection("channels").doc(`twitch:${channelId}`),
-      { viewerCount, language },
+      { viewerCount, language, displayName, startedAt },
       { merge: true }
     );
+    if (++batchSize == 500) {
+      console.log("committing batch");
+      await updateBatch.commit();
+      updateBatch = admin.firestore().batch();
+      batchSize = 0;
+    }
   }
 
   // lastly, fetch the follower count for each channel individually.
-  for (const channelId of channelIds) {
-    const followerCount = await twitchGetFollowerCount(token, channelId);
+  const followerCountRequests = channelIds.map((channelId) =>
+    twitchGetFollowerCount(token, channelId)
+  );
+  for (let i = 0; i < channelIds.length; i++) {
+    const channelId = channelIds[i];
+    const followerCount = await followerCountRequests[i];
     if (!followerCount) {
       continue;
     }
@@ -200,14 +211,22 @@ export async function runUpdateFollowerAndViewerCount(
       { followerCount },
       { merge: true }
     );
+    if (++batchSize == 500) {
+      console.log("committing batch");
+      await updateBatch.commit();
+      updateBatch = admin.firestore().batch();
+      batchSize = 0;
+    }
   }
 
-  // commit the update batch
-  await updateBatch.commit();
+  if (batchSize > 0) {
+    console.log("committing batch");
+    await updateBatch.commit();
+  }
 }
 
 export const updateFollowerAndViewerCount = functions.pubsub
-  .schedule("*/2 * * * *") // every 2 minutes
+  .schedule("*/4 * * * *") // every 4 minutes
   .onRun(async () => {
     // fetch the channels that have been active in the last 3 days.
     const snapshot = await admin.firestore().collection("assignments").get();
