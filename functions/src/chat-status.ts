@@ -94,7 +94,7 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
       viewerCount: number;
       language: string;
       displayName: string;
-      startedAt: Date | null;
+      onlineAt: Date | null;
     };
   } = {};
   for (let i = 0; i < channelIds.length; i += 100) {
@@ -118,10 +118,10 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
     for (const stream of json["data"]) {
       const channelId = stream["user_id"];
       const displayName = stream["user_name"];
-      const startedAt = new Date(Date.parse(stream["started_at"]));
+      const onlineAt = new Date(Date.parse(stream["started_at"]));
       const viewerCount = stream["viewer_count"];
       const language = stream["language"];
-      data[channelId] = { viewerCount, language, displayName, startedAt };
+      data[channelId] = { viewerCount, language, displayName, onlineAt };
     }
     // find any channels that are not in the response and reissue a request to helix/channels
     const missingChannelIds = batch.filter(
@@ -153,7 +153,7 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
           viewerCount: 0,
           language,
           displayName,
-          startedAt: null,
+          onlineAt: null,
         };
       }
     }
@@ -170,21 +170,18 @@ export async function runUpdateFollowerAndViewerCount(
 
   // for each batch, fetch the viewer count
   const data = await twitchGetViewerCounts(token, channelIds);
-  for (const [
-    channelId,
-    { viewerCount, language, displayName, startedAt },
-  ] of Object.entries(data)) {
+  for (const [channelId, { viewerCount, language, displayName, onlineAt }]; of Object.entries(data)) {
     console.log(
       "updating",
       channelId,
       viewerCount,
       language,
       displayName,
-      startedAt
+      onlineAt
     );
     updateBatch.set(
       admin.firestore().collection("channels").doc(`twitch:${channelId}`),
-      { viewerCount, language, displayName, startedAt },
+      { viewerCount, language, displayName, onlineAt },
       { merge: true }
     );
     if (++batchSize == 500) {
