@@ -9,7 +9,6 @@ import (
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/muxable/rtchat/agent/internal/agent"
-	"github.com/muxable/rtchat/agent/internal/auth"
 	"go.uber.org/zap"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 )
@@ -77,9 +76,9 @@ func (h *Handler) Join(r *agent.Request) error {
 	switch r.Provider() {
 	case agent.ProviderTwitch:
 		// handle twitch request
-		if userID, err := auth.TwitchUserIDFromUsername(h.twitch.firestore, h.twitch.clientID, h.twitch.clientSecret, r.Channel()); err != nil {
+		if userDoc, err := h.twitch.firestore.Collection("profiles").Where("twitch.login", "==", r.Channel()).Documents(context.Background()).Next(); err != nil {
 			zap.L().Info("failed to get twitch user id, probably never used realtimechat", zap.Error(err))
-		} else if err := h.twitch.JoinAsUser(r, userID); err != nil {
+		} else if err := h.twitch.JoinAsUser(r, userDoc.Ref.ID); err != nil {
 			zap.L().Warn("failed to join channel as authed user", zap.Error(err))
 		} else {
 			return nil

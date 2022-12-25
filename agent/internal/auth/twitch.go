@@ -24,7 +24,7 @@ type TwitchAuthProvider struct {
 func TwitchUserIDFromUsername(firestore *firestore.Client, clientID, clientSecret, username string) (string, error) {
 	userDoc, err := firestore.Collection("profiles").Where("twitch.login", "==", username).Documents(context.Background()).Next()
 	if err == nil {
-		return userDoc.Ref.ID, nil
+		return userDoc.Data()["twitch"].(map[string]interface{})["id"].(string), nil
 	}
 	// try fetching it from twitch.
 	cfg := &clientcredentials.Config{
