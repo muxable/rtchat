@@ -40,7 +40,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
           subscribedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
-      if (context.auth != null) {
+      if (context.auth != null && provider == "twitch") {
         await checkEventSubSubscriptions(context.auth.uid);
         // get the channel id associated with the profile
         const profile = await admin
@@ -63,6 +63,36 @@ export const subscribe = functions.https.onCall(async (data, context) => {
             lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
           });
         }
+
+        // if there are no messages logged, this is a new user.
+        const isNewUser = await admin
+          .firestore()
+          .collection("channels")
+          .doc(channelId)
+          .collection("messages")
+          .limit(1)
+          .get();
+        if (isNewUser.empty) {
+          // send a welcome message as muxfd.
+          await admin
+            .firestore()
+            .collection("actions")
+            .add({
+              channelId: "twitch:158394109",
+              targetChannel: channel,
+              message: `Welcome to RealtimeChat, @${channel}! VoHiYo`,
+              sentAt: null,
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+          await admin.firestore().collection("actions").add({
+            channelId: "twitch:158394109",
+            targetChannel: channel,
+            message: `Your chat will appear here, even if you close the app. Have a good stream!`,
+            sentAt: null,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
       }
 
       return channel;
@@ -77,6 +107,10 @@ export const unsubscribe = functions.pubsub
     const assignmentsRef = admin.firestore().collection("assignments");
     const assignments = await assignmentsRef.get();
     for (const assignment of assignments.docs) {
+      // ignore twitch:muxfd
+      if (assignment.id === "twitch:muxfd") {
+        continue;
+      }
       const data = assignment.data();
       if (data.subscribedAt.toMillis() < limit) {
         // delete this doc
