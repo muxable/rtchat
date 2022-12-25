@@ -99,7 +99,7 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
       .map((channelId) => "user_id=" + encodeURIComponent(channelId))
       .join("&");
     const response = await fetch(
-      `https://api.twitch.tv/helix/streams?${query}`,
+      `https://api.twitch.tv/helix/streams?first=100&${query}`,
       {
         headers: {
           "Client-ID": TWITCH_CLIENT_ID,
