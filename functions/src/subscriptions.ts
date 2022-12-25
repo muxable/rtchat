@@ -40,59 +40,72 @@ export const subscribe = functions.https.onCall(async (data, context) => {
           subscribedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
-      if (context.auth != null && provider == "twitch") {
+      if (context.auth == null) {
+        break;
+      }
+
+      // get the channel id associated with the profile
+      const profile = await admin
+        .firestore()
+        .collection("profiles")
+        .doc(context.auth.uid)
+        .get();
+      if (!profile.exists) {
+        break;
+      }
+      // update the metadata for this channel to indicate the last active time.
+      await profile.ref.update({
+        lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      if (profile.get("twitch")) {
         await checkEventSubSubscriptions(context.auth.uid);
-        // get the channel id associated with the profile
-        const profile = await admin
-          .firestore()
-          .collection("profiles")
-          .doc(context.auth.uid)
-          .get();
-        if (profile.exists && profile.get("twitch")) {
+
+        // if there are no messages logged, this is a new user.
+        if (profile.get("lastActiveAt") == null) {
+          // send a welcome message as muxfd.
+          // we must directly inject this because the room might be in follower/sub only mode.
           const channelId = `twitch:${profile.get("twitch")["id"]}`;
-          // update the metadata for this channel to indicate the last active time.
-          await admin
+          const messagesRef = admin
             .firestore()
             .collection("channels")
             .doc(channelId)
-            .set(
-              { lastActiveAt: admin.firestore.FieldValue.serverTimestamp() },
-              { merge: true }
-            );
-          await profile.ref.update({
-            lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
+            .collection("messages");
+          const baseData = {
+            channelId,
+            annotations: {
+              isAction: false,
+              isFirstTimeChatter: false,
+            },
+            author: {
+              displayName: "muxfd",
+              userId: "158394109",
+              color: "",
+            },
+            reply: null,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            tags: {
+              "user-id": "158394109",
+              "room-id": "158394109",
+              "display-name": "muxfd",
+              color: "",
+              username: "muxfd",
+              badges: {},
+              "emotes-raw": "",
+              "badges-raw": "",
+            },
+            expiresAt: new Date(Date.now() + 2 * 7 * 86400 * 1000),
+          };
+          await messagesRef.add({
+            message: `Welcome to RealtimeChat, @${channel}! VoHiYo`,
+            ...baseData,
+          });
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+          await messagesRef.add({
+            message: `Your chat will appear here, even if you close the app. Have a good stream!`,
+            ...baseData,
           });
         }
-
-        // if there are no messages logged, this is a new user.
-        // const isNewUser = await admin
-        //   .firestore()
-        //   .collection("channels")
-        //   .doc(channelId)
-        //   .collection("messages")
-        //   .limit(1)
-        //   .get();
-        // if (isNewUser.empty) {
-        //   // send a welcome message as muxfd.
-        //   await admin
-        //     .firestore()
-        //     .collection("actions")
-        //     .add({
-        //       channelId: "twitch:158394109",
-        //       targetChannel: channel,
-        //       message: `Welcome to RealtimeChat, @${channel}! VoHiYo`,
-        //       sentAt: null,
-        //       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        //     });
-        //   await new Promise((resolve) => setTimeout(resolve, 3000));
-        //   await admin.firestore().collection("actions").add({
-        //     channelId: "twitch:158394109",
-        //     targetChannel: channel,
-        //     message: `Your chat will appear here, even if you close the app. Have a good stream!`,
-        //     sentAt: null,
-        //     createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        //   });
-        // }
       }
 
       return channel;
