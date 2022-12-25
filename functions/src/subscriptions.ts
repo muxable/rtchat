@@ -41,7 +41,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         });
 
       if (context.auth == null) {
-        break;
+        return channel;
       }
 
       // get the channel id associated with the profile
@@ -51,7 +51,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         .doc(context.auth.uid)
         .get();
       if (!profile.exists) {
-        break;
+        return channel;
       }
 
       functions.logger.info("updating last active time");
@@ -100,6 +100,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
               "emotes-raw": "",
               "badges-raw": "",
             },
+            type: "message",
           };
           await messagesRef.add({
             message: `Welcome to RealtimeChat, @${channel}! VoHiYo`,
