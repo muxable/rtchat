@@ -170,7 +170,10 @@ export async function runUpdateFollowerAndViewerCount(
 
   // for each batch, fetch the viewer count
   const data = await twitchGetViewerCounts(token, channelIds);
-  for (const [channelId, { viewerCount, language, displayName, onlineAt }]; of Object.entries(data)) {
+  for (const [
+    channelId,
+    { viewerCount, language, displayName, onlineAt },
+  ] of Object.entries(data)) {
     console.log(
       "updating",
       channelId,
