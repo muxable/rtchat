@@ -50,7 +50,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         .collection("profiles")
         .doc(context.auth.uid)
         .get();
-      if (!profile.exists) {
+      if (!profile.exists || profile.get("twitch")["id"] != channelId) {
         break;
       }
       // update the metadata for this channel to indicate the last active time.
