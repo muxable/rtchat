@@ -50,29 +50,35 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         .collection("profiles")
         .doc(context.auth.uid)
         .get();
-      if (!profile.exists || profile.get("twitch")["id"] != channelId) {
+      if (!profile.exists) {
         break;
       }
+
+      functions.logger.info("updating last active time");
+
       // update the metadata for this channel to indicate the last active time.
       await profile.ref.update({
         lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      if (profile.get("twitch")) {
+      if (profile.get("twitch") && profile.get("twitch")["id"] == channelId) {
+        functions.logger.info("checking eventsub subscriptions.");
+
         await checkEventSubSubscriptions(context.auth.uid);
 
         // if there are no messages logged, this is a new user.
         if (profile.get("lastActiveAt") == null) {
+          functions.logger.info("new user, sending welcome message.");
+
           // send a welcome message as muxfd.
           // we must directly inject this because the room might be in follower/sub only mode.
-          const channelId = `twitch:${profile.get("twitch")["id"]}`;
           const messagesRef = admin
             .firestore()
             .collection("channels")
-            .doc(channelId)
+            .doc(`twitch:${channelId}`)
             .collection("messages");
           const baseData = {
-            channelId,
+            channelId: `twitch:${channelId}`,
             annotations: {
               isAction: false,
               isFirstTimeChatter: false,
@@ -94,15 +100,16 @@ export const subscribe = functions.https.onCall(async (data, context) => {
               "emotes-raw": "",
               "badges-raw": "",
             },
-            expiresAt: new Date(Date.now() + 2 * 7 * 86400 * 1000),
           };
           await messagesRef.add({
             message: `Welcome to RealtimeChat, @${channel}! VoHiYo`,
+            expiresAt: new Date(Date.now() + 2 * 7 * 86400 * 1000),
             ...baseData,
           });
           await new Promise((resolve) => setTimeout(resolve, 3000));
           await messagesRef.add({
             message: `Your chat will appear here, even if you close the app. Have a good stream!`,
+            expiresAt: new Date(Date.now() + 2 * 7 * 86400 * 1000),
             ...baseData,
           });
         }
