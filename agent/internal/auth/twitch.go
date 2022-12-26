@@ -7,13 +7,46 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"cloud.google.com/go/firestore"
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 	"golang.org/x/oauth2/twitch"
 )
+
+func TwitchClientID() string {
+	id, ok := os.LookupEnv("TWITCH_CLIENT_ID")
+	if !ok {
+		return "edfnh2q85za8phifif9jxt3ey6t9b9"
+	}
+	return id
+}
+
+func TwitchClientSecret() (string, error) {
+	secret, ok := os.LookupEnv("TWITCH_CLIENT_SECRET")
+	if ok {
+		return secret, nil
+	}
+	ctx := context.Background()
+
+	c, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer c.Close()
+
+	req := &secretmanagerpb.AccessSecretVersionRequest{
+		Name: "projects/rtchat-47692/secrets/twitch-client-secret/versions/latest",
+	}
+
+	// Call the API.
+	result, err := c.AccessSecretVersion(ctx, req)
+	return string(result.Payload.Data), err
+}
 
 type TwitchAuthProvider struct {
 	firestore        *firestore.Client
