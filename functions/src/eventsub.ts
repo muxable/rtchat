@@ -157,9 +157,11 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
         break;
       case EventsubType.ChannelFollow:
         // increment the follower count.
-        await channelRef.update({
-          followerCount: admin.firestore.FieldValue.increment(1),
-        });
+        try {
+          await channelRef.update({
+            followerCount: admin.firestore.FieldValue.increment(1),
+          });
+        } catch {}
         break;
       case EventsubType.ChannelUpdate:
         await channelRef.set(
