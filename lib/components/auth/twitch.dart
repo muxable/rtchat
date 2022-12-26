@@ -31,9 +31,7 @@ class SignInWithTwitch extends StatelessWidget {
         final user = Provider.of<UserModel>(context, listen: false);
         final scaffoldMessenger = ScaffoldMessenger.of(context);
         final retrySnackbar =
-            SnackBar(
-            content:
-                Text(AppLocalizations.of(context)!.signInError));
+            SnackBar(content: Text(AppLocalizations.of(context)!.signInError));
         onStart?.call();
         try {
           await FirebaseAnalytics.instance.logLogin(loginMethod: "twitch");

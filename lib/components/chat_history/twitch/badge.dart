@@ -9,10 +9,7 @@ class TwitchBadgeWidget extends StatelessWidget {
   final double? height;
 
   const TwitchBadgeWidget(
-      {Key? key,
-      required this.badge,
-      required this.version,
-      this.height})
+      {Key? key, required this.badge, required this.version, this.height})
       : super(key: key);
 
   @override
