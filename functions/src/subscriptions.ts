@@ -70,7 +70,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
           .firestore()
           .collection("channels")
           .doc(`${provider}:${channelId}`)
-          .set({
+          .update({
             lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
           });
 
