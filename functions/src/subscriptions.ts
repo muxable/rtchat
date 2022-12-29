@@ -66,6 +66,14 @@ export const subscribe = functions.https.onCall(async (data, context) => {
 
         await checkEventSubSubscriptions(context.auth.uid);
 
+        await admin
+          .firestore()
+          .collection("channels")
+          .doc(`${provider}:${channelId}`)
+          .update({
+            lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
         // if there are no messages logged, this is a new user.
         if (profile.get("lastActiveAt") == null) {
           functions.logger.info("new user, sending welcome message.");
