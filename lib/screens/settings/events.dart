@@ -40,10 +40,12 @@ class EventsScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 child: StyleModelTheme(
                     child: TwitchFollowEventWidget(TwitchFollowEventModel(
-                  follower: const TwitchUserModel(
+                  followers: [
+                    const TwitchUserModel(
                       userId: '158394109',
                       login: 'muxfd',
-                      displayName: 'muxfd'),
+                        displayName: 'muxfd')
+                  ],
                   messageId: '',
                   timestamp: DateTime.now(),
                 )))),
