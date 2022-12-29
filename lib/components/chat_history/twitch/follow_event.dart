@@ -23,7 +23,7 @@ class TwitchFollowEventWidget extends StatelessWidget {
               TextSpan(
                   text: model.followers.first.display,
                   style: Theme.of(context).textTheme.titleSmall),
-              TextSpan(text: " is following you.")
+              const TextSpan(text: " is following you.")
             ]));
           case 2:
             // return x and y are following you.
@@ -31,11 +31,11 @@ class TwitchFollowEventWidget extends StatelessWidget {
               TextSpan(
                   text: model.followers.first.display,
                   style: Theme.of(context).textTheme.titleSmall),
-              TextSpan(text: " and "),
+              const TextSpan(text: " and "),
               TextSpan(
                   text: model.followers.last.display,
                   style: Theme.of(context).textTheme.titleSmall),
-              TextSpan(text: " are following you.")
+              const TextSpan(text: " are following you.")
             ]));
           default:
             // return x, y, and n others are following you.
@@ -43,7 +43,7 @@ class TwitchFollowEventWidget extends StatelessWidget {
               TextSpan(
                   text: model.followers.first.display,
                   style: Theme.of(context).textTheme.titleSmall),
-              TextSpan(text: ", "),
+              const TextSpan(text: ", "),
               TextSpan(
                   text: model.followers.last.display,
                   style: Theme.of(context).textTheme.titleSmall),
