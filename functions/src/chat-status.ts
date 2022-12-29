@@ -93,6 +93,7 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
     [channelId: string]: {
       viewerCount: number;
       language: string;
+      login: string;
       displayName: string;
       onlineAt: Date | null;
     };
@@ -121,7 +122,8 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
       const onlineAt = new Date(Date.parse(stream["started_at"]));
       const viewerCount = stream["viewer_count"];
       const language = stream["language"];
-      data[channelId] = { viewerCount, language, displayName, onlineAt };
+      const login = stream["user_login"];
+      data[channelId] = { viewerCount, language, login, displayName, onlineAt };
     }
     // find any channels that are not in the response and reissue a request to helix/channels
     const missingChannelIds = batch.filter(
@@ -149,9 +151,11 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
         const channelId = channel["broadcaster_id"];
         const language = channel["broadcaster_language"];
         const displayName = channel["broadcaster_name"];
+        const login = channel["broadcaster_login"];
         data[channelId] = {
           viewerCount: 0,
           language,
+          login,
           displayName,
           onlineAt: null,
         };
@@ -172,19 +176,20 @@ export async function runUpdateFollowerAndViewerCount(
   const data = await twitchGetViewerCounts(token, channelIds);
   for (const [
     channelId,
-    { viewerCount, language, displayName, onlineAt },
+    { viewerCount, language, login, displayName, onlineAt },
   ] of Object.entries(data)) {
     console.log(
       "updating",
       channelId,
       viewerCount,
       language,
+      login,
       displayName,
       onlineAt
     );
     updateBatch.set(
       admin.firestore().collection("channels").doc(`twitch:${channelId}`),
-      { viewerCount, language, displayName, onlineAt },
+      { viewerCount, language, login, displayName, onlineAt },
       { merge: true }
     );
     if (++batchSize == 500) {
