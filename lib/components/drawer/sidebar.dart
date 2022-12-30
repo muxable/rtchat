@@ -10,6 +10,7 @@ import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class _DrawerHeader extends StatelessWidget {
   const _DrawerHeader({Key? key}) : super(key: key);
@@ -20,116 +21,139 @@ class _DrawerHeader extends StatelessWidget {
       color: Theme.of(context).colorScheme.tertiary,
       child: SafeArea(
         child: SizedBox(
-          height: 96,
+          height: 146,
           child: DrawerHeader(
-            padding: EdgeInsets.zero,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Consumer<UserModel>(builder: (context, model, child) {
-                    final userChannel = model.userChannel;
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(10.0),
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  GestureDetector(
                       onTap: () {
-                        if (model.activeChannel != userChannel) {
-                          model.activeChannel = userChannel;
-                        }
-                        Navigator.of(context).pop();
+                        launchUrlString("https://muxable.com",
+                            mode: LaunchMode.externalApplication);
                       },
-                      child: Row(children: [
-                        if (userChannel != null) const SizedBox(width: 16),
-                        if (userChannel != null)
-                          ClipRRect(
-                              borderRadius: BorderRadius.circular(24),
-                              child: FadeInImage(
-                                  placeholder: MemoryImage(kTransparentImage),
-                                  image: ResilientNetworkImage(
-                                      userChannel.profilePictureUrl),
-                                  height: 36,
-                                  width: 36)),
-                        const SizedBox(width: 16),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(userChannel?.displayName ?? "Not signed in",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.copyWith(color: Colors.white)),
-                            const SizedBox(height: 8),
-                            Text("twitch.tv",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(color: Colors.white)),
-                          ],
-                        ),
-                      ]),
-                    );
-                  }),
-                ),
-                VerticalDivider(
-                  width: 4,
-                  thickness: 2,
-                  indent: 8,
-                  endIndent: 8,
-                  color:
-                      Theme.of(context).colorScheme.onTertiary.withOpacity(0.1),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: IconButton(
-                    icon: const Icon(Icons.search),
-                    iconSize: 32,
-                    splashRadius: 24,
-                    tooltip: AppLocalizations.of(context)!.searchChannels,
-                    color: Theme.of(context).colorScheme.onTertiary,
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      FirebaseAnalytics.instance
-                          .logEvent(name: 'search_channels', parameters: null);
-                      showModalBottomSheet<void>(
-                        context: context,
-                        isScrollControlled: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.vertical(top: Radius.circular(16)),
-                        ),
-                        builder: (context) {
-                          return DraggableScrollableSheet(
-                            initialChildSize: 0.8,
-                            maxChildSize: 0.9,
-                            expand: false,
-                            builder: (context, controller) {
-                              final model = Provider.of<UserModel>(context,
-                                  listen: false);
-                              final userChannel = model.userChannel;
-                              return ChannelSearchBottomSheetWidget(
-                                onChannelSelect: (channel) {
-                                  model.activeChannel = channel;
-                                },
-                                onRaid: userChannel == model.activeChannel &&
-                                        userChannel != null
-                                    ? (channel) {
-                                        ActionsAdapter.instance.send(
-                                          userChannel,
-                                          "/raid ${channel.displayName}",
-                                        );
-                                      }
-                                    : null,
-                                controller: controller,
-                              );
+                      child: SizedBox(
+                          height: 50,
+                          child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Image.asset("assets/muxable.png")))),
+                  const Divider(),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Consumer<UserModel>(
+                            builder: (context, model, child) {
+                          final userChannel = model.userChannel;
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(10.0),
+                            onTap: () {
+                              if (model.activeChannel != userChannel) {
+                                model.activeChannel = userChannel;
+                              }
+                              Navigator.of(context).pop();
                             },
+                            child: Row(children: [
+                              if (userChannel != null)
+                                const SizedBox(width: 16),
+                              if (userChannel != null)
+                                ClipRRect(
+                                    borderRadius: BorderRadius.circular(24),
+                                    child: FadeInImage(
+                                        placeholder:
+                                            MemoryImage(kTransparentImage),
+                                        image: ResilientNetworkImage(
+                                            userChannel.profilePictureUrl),
+                                        height: 36,
+                                        width: 36)),
+                              const SizedBox(width: 16),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      userChannel?.displayName ??
+                                          "Not signed in",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(color: Colors.white)),
+                                  const SizedBox(height: 8),
+                                  Text("twitch.tv",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(color: Colors.white)),
+                                ],
+                              ),
+                            ]),
                           );
-                        },
-                      );
-                    },
+                        }),
+                      ),
+                      VerticalDivider(
+                        width: 4,
+                        thickness: 2,
+                        indent: 8,
+                        endIndent: 8,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onTertiary
+                            .withOpacity(0.1),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: IconButton(
+                          icon: const Icon(Icons.search),
+                          iconSize: 32,
+                          splashRadius: 24,
+                          tooltip: AppLocalizations.of(context)!.searchChannels,
+                          color: Theme.of(context).colorScheme.onTertiary,
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            FirebaseAnalytics.instance.logEvent(
+                                name: 'search_channels', parameters: null);
+                            showModalBottomSheet<void>(
+                              context: context,
+                              isScrollControlled: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(16)),
+                              ),
+                              builder: (context) {
+                                return DraggableScrollableSheet(
+                                  initialChildSize: 0.8,
+                                  maxChildSize: 0.9,
+                                  expand: false,
+                                  builder: (context, controller) {
+                                    final model = Provider.of<UserModel>(
+                                        context,
+                                        listen: false);
+                                    final userChannel = model.userChannel;
+                                    return ChannelSearchBottomSheetWidget(
+                                      onChannelSelect: (channel) {
+                                        model.activeChannel = channel;
+                                      },
+                                      onRaid:
+                                          userChannel == model.activeChannel &&
+                                                  userChannel != null
+                                              ? (channel) {
+                                                  ActionsAdapter.instance.send(
+                                                    userChannel,
+                                                    "/raid ${channel.displayName}",
+                                                  );
+                                                }
+                                              : null,
+                                      controller: controller,
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              )),
         ),
       ),
     );
