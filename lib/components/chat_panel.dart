@@ -343,7 +343,26 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                       itemBuilder: (index) => StyleModelTheme(
                           key: Key(messages[index].messageId),
                           child: Builder(builder: (context) {
-                            final message = messages[index];
+                            var message = messages[index];
+                            // if the message is a TwitchFollowEventModel, we want to merge adjacents.
+                            // return Container() if the message is not the first and a merged model
+                            // if it is the first. keep in mind that the list is reversed.
+                            if (message is TwitchFollowEventModel) {
+                              if (index != messages.length - 1 &&
+                                  messages[index + 1]
+                                      is TwitchFollowEventModel) {
+                                return Container();
+                              }
+                              // find the last TwitchFollowEventModel
+                              final lastIndex = messages.lastIndexWhere(
+                                  (element) =>
+                                      element is! TwitchFollowEventModel,
+                                  index);
+                              message = TwitchFollowEventModel.merged(messages
+                                  .sublist(lastIndex + 1, index + 1)
+                                  .reversed
+                                  .toList());
+                            }
                             final messageWidget = ChatHistoryMessage(
                                 message: message, channel: widget.channel);
                             final showSeparator = messagesModel.separators
