@@ -9,11 +9,7 @@ import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
-import {
-  updateChatStatus,
-  getViewerList,
-  updateFollowerAndViewerCount,
-} from "./chat-status";
+import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
 import {
   setRealTimeCashAddress,
   alchemyWebhook,
@@ -450,7 +446,6 @@ export {
   getEmotes,
   synthesize,
   getVoices,
-  updateChatStatus,
   getViewerList,
   setRealTimeCashAddress,
   alchemyWebhook,
