@@ -200,6 +200,7 @@ async function storeDonation(
       donor: donor,
       message: message,
       timestamp: new Date(),
+      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 1000 * 86400 * 7 * 2),
     });
   functions.logger.info("Payload is stored in messages collection");
 }

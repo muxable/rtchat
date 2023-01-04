@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
 	"strings"
 	"sync"
 	"time"
@@ -17,77 +16,20 @@ import (
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"go.uber.org/zap"
-	"google.golang.org/api/iterator"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-type TwitchHandler struct {
-	firestore              *firestore.Client
-	clientID, clientSecret string
-	sendClients            map[string]*twitch.Client
-}
-
-func (h *TwitchHandler) bindOutboundClient(ctx context.Context) error {
-	// listen on firestore for new messages
-	snapshots := h.firestore.Collection("actions").OrderBy("createdAt", firestore.Desc).Limit(1).Snapshots(ctx)
-	for {
-		snapshot, err := snapshots.Next()
-		if err == iterator.Done {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-		for _, change := range snapshot.Changes {
-			if change.Kind == firestore.DocumentAdded {
-				var action struct {
-					ChannelId      string
-					Message        string
-					TargetChannel  string
-					ReplyMessageId string
-				}
-				zap.L().Info("new action", zap.Any("action", change.Doc.Data()))
-				if err := change.Doc.DataTo(&action); err != nil {
-					zap.L().Error("failed to unmarshal action", zap.Error(err))
-					continue
-				}
-				client, ok := h.sendClients[action.ChannelId]
-				if !ok {
-					zap.L().Warn("no client found for channel", zap.String("channelId", action.ChannelId))
-					continue
-				}
-				if err := h.firestore.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-					doc, err := tx.Get(change.Doc.Ref)
-					if err != nil {
-						return err
-					}
-					if doc.Data()["isComplete"] == true {
-						return fmt.Errorf("action already complete")
-					}
-					return tx.Update(change.Doc.Ref, []firestore.Update{
-						{Path: "sentAt", Value: firestore.ServerTimestamp},
-						{Path: "isComplete", Value: true},
-					})
-				}); err != nil {
-					zap.L().Warn("failed to lock action, probably another agent took it.", zap.Error(err))
-					continue
-				}
-
-				zap.L().Info("sending message", zap.String("channelId", action.ChannelId), zap.Any("message", change.Doc.Data()))
-				if action.ReplyMessageId != "" {
-					client.Reply(action.TargetChannel, action.ReplyMessageId, action.Message)
-				} else {
-					client.Say(action.TargetChannel, action.Message)
-				}
-			}
-		}
-	}
+type TwitchAgent struct {
+	Firestore              *firestore.Client
+	ClientID, ClientSecret string
 }
 
 var (
 	errReconnect = errors.New("reconnect")
 )
 
-func (h *TwitchHandler) bindRaidClient(ctx context.Context, channelID, userID string) error {
+func (h *TwitchAgent) bindRaidClient(ctx context.Context, channelID, userID string) error {
 	ws, _, err := websocket.DefaultDialer.Dial("wss://pubsub-edge.twitch.tv", nil)
 	if err != nil {
 		return err
@@ -109,7 +51,7 @@ func (h *TwitchHandler) bindRaidClient(ctx context.Context, channelID, userID st
 		}
 	}()
 
-	authProvider, err := auth.NewFirestoreTwitchTokenSource(h.firestore, h.clientID, h.clientSecret, userID)
+	authProvider, err := auth.NewFirestoreTwitchTokenSource(h.Firestore, h.ClientID, h.ClientSecret, userID)
 	if err != nil {
 		return err
 	}
@@ -187,7 +129,6 @@ func joinWithTimeout(client *twitch.Client, channel string, timeout time.Duratio
 	client.OnConnect(func() {
 		// apparently this can be called multiple times
 		once.Do(func() {
-			zap.L().Info("connected to chat", zap.String("channel", channel))
 			close(success)
 		})
 	})
@@ -215,74 +156,67 @@ func joinWithTimeout(client *twitch.Client, channel string, timeout time.Duratio
 	}
 }
 
-func (h *TwitchHandler) metadata(channelID string, data interface{}) {
-	go func() {
-		for i := 0; i < 3; i++ {
-			if _, err := h.firestore.Collection("channels").Doc(channelID).Set(context.Background(), data, firestore.MergeAll); err != nil {
-				zap.L().Error("failed to update channel metadata", zap.Error(err), zap.String("channelId", channelID), zap.Any("data", data))
-				time.Sleep(1 * time.Second)
-				continue
-			}
-			break
-		}
-	}()
+func (h *TwitchAgent) metadata(channelID string, data interface{}) {
+	if _, err := h.Firestore.Collection("channels").Doc(channelID).Set(context.Background(), data, firestore.MergeAll); err != nil {
+		zap.L().Error("failed to update channel metadata", zap.Error(err), zap.String("channelId", channelID), zap.Any("data", data))
+	}
 }
 
-func (h *TwitchHandler) write(channelID, messageID string, data interface{}) {
-	if _, err := h.firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Set(context.Background(), data); err != nil {
+func (h *TwitchAgent) write(channelID, messageID string, data interface{}) {
+	if _, err := h.Firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Create(context.Background(), data); err != nil && status.Code(err) != codes.AlreadyExists {
 		zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID), zap.Any("data", data))
 	}
 }
 
-func (h *TwitchHandler) bindEvents(client *twitch.Client) {
+func (h *TwitchAgent) bindEvents(client *twitch.Client) {
 	client.OnNoticeMessage(func(message twitch.NoticeMessage) {
 		if message.Channel == "*" {
 			return
 		}
-		userID, err := auth.TwitchUserIDFromUsername(h.firestore, h.clientID, h.clientSecret, message.Channel)
+		userID, err := auth.TwitchUserIDFromUsername(h.Firestore, h.ClientID, h.ClientSecret, message.Channel)
 		if err != nil {
 			return
 		}
 		channelID := fmt.Sprintf("twitch:%s", userID)
 		switch message.MsgID {
 		case "r9k_on", "already_r9k_on":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isR9k": true,
 			})
 		case "r9k_off", "already_r9k_off":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isR9k": false,
 			})
 		case "slow_on", "already_slow_on":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isSlowMode": true,
 			})
 		case "slow_off", "already_slow_off":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isSlowMode": false,
 			})
 		case "subs_on", "already_subs_on":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isSubsOnly": true,
 			})
 		case "subs_off", "already_subs_off":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isSubsOnly": false,
 			})
 		case "followers_on", "already_followers_on":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isFollowersOnly": true,
 			})
 		case "followers_off", "already_followers_off":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isFollowersOnly": false,
 			})
 		case "emote_only_on", "already_emote_only_on":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isEmoteOnly": true,
 			})
 		case "emote_only_off", "already_emote_only_off":
-			h.metadata(channelID, map[string]interface{}{
+			go h.metadata(channelID, map[string]interface{}{
 				"isEmoteOnly": false,
 			})
 		}
@@ -354,7 +288,7 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 
 	client.OnClearMessage(func(message twitch.ClearMessage) {
 		// handle deleted message
-		userID, err := auth.TwitchUserIDFromUsername(h.firestore, h.clientID, h.clientSecret, message.Channel)
+		userID, err := auth.TwitchUserIDFromUsername(h.Firestore, h.ClientID, h.ClientSecret, message.Channel)
 		if err != nil {
 			zap.L().Error("failed to get twitch user id", zap.Error(err), zap.String("channel", message.Channel))
 			return
@@ -424,25 +358,61 @@ func (h *TwitchHandler) bindEvents(client *twitch.Client) {
 	})
 }
 
-func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) error {
-	zap.L().Info("joining as user", zap.String("asUserID", asUserID), zap.String("request", r.String()))
-	profile, err := h.firestore.Collection("profiles").Doc(asUserID).Get(context.Background())
-	if err != nil {
+type AuthenticatedTwitchClient struct {
+	client *twitch.Client
+
+	sendClient *twitch.Client
+	raidCancel context.CancelFunc
+}
+
+func (c *AuthenticatedTwitchClient) Say(channel string, message string) {
+	c.sendClient.Say(channel, message)
+}
+
+func (c *AuthenticatedTwitchClient) Reply(channel string, parentMessageId string, message string) {
+	c.sendClient.Reply(channel, parentMessageId, message)
+}
+
+func (c *AuthenticatedTwitchClient) Close() error {
+	if err := c.client.Disconnect(); err != nil {
 		return err
 	}
+	if err := c.sendClient.Disconnect(); err != nil {
+		return err
+	}
+	if c.raidCancel != nil {
+		c.raidCancel()
+	}
+	return nil
+}
+
+type AnonymousTwitchClient struct {
+	client *twitch.Client
+}
+
+func (c *AnonymousTwitchClient) Close() error {
+	return c.client.Disconnect()
+}
+
+func (h *TwitchAgent) JoinAsUser(r *agent.Request, asUserID string) (io.Closer, error) {
+	zap.L().Info("joining as user", zap.String("asUserID", asUserID), zap.String("request", r.String()))
+	profile, err := h.Firestore.Collection("profiles").Doc(asUserID).Get(context.Background())
+	if err != nil {
+		return nil, err
+	}
 	if !profile.Exists() {
-		return errors.New("profile not found")
+		return nil, errors.New("profile not found")
 	}
 	profileData := profile.Data()["twitch"].(map[string]interface{})
 
-	authProvider, err := auth.NewFirestoreTwitchTokenSource(h.firestore, h.clientID, h.clientSecret, asUserID)
+	authProvider, err := auth.NewFirestoreTwitchTokenSource(h.Firestore, h.ClientID, h.ClientSecret, asUserID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	token, err := authProvider.Token()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// create a new chat client and attempt to connect
@@ -450,10 +420,8 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) error {
 
 	// join the channel
 	if err := joinWithTimeout(client, r.Channel(), 5*time.Second); err != nil {
-		return err
+		return nil, err
 	}
-
-	zap.L().Info("joined channel", zap.String("channel", r.Channel()))
 
 	h.bindEvents(client)
 
@@ -461,7 +429,7 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) error {
 		sendClient := twitch.NewClient(profileData["login"].(string), fmt.Sprintf("oauth:%s", token.AccessToken))
 
 		if err := joinWithTimeout(sendClient, r.Channel(), 5*time.Second); err != nil {
-			return err
+			return nil, err
 		}
 
 		sendClient.OnReconnectMessage(func(message twitch.ReconnectMessage) {
@@ -470,12 +438,12 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) error {
 			}
 		})
 
-		h.sendClients[fmt.Sprintf("twitch:%s", profileData["id"].(string))] = sendClient
+		raidCtx, raidCancel := context.WithCancel(context.Background())
 
 		go func() {
 			for {
-				if err := h.bindRaidClient(context.Background(), profileData["id"].(string), asUserID); err != nil {
-					if errors.Is(err, errReconnect) || errors.Is(err, net.ErrClosed) || errors.Is(err, io.EOF) {
+				if err := h.bindRaidClient(raidCtx, profileData["id"].(string), asUserID); err != nil {
+					if errors.Is(err, errReconnect) {
 						zap.L().Info("reconnecting raid client due to error", zap.Error(err), zap.String("channel", r.Channel()), zap.String("asUserID", asUserID))
 						continue
 					}
@@ -484,14 +452,16 @@ func (h *TwitchHandler) JoinAsUser(r *agent.Request, asUserID string) error {
 				}
 			}
 		}()
+
+		return &AuthenticatedTwitchClient{client: client, sendClient: sendClient, raidCancel: raidCancel}, nil
 	}
-	return nil
+	return &AnonymousTwitchClient{client: client}, nil
 }
 
-func (h *TwitchHandler) JoinAnonymously(r *agent.Request) error {
+func (h *TwitchAgent) JoinAnonymously(r *agent.Request) (*AnonymousTwitchClient, error) {
 	// create a new chat client and attempt to connect
 	client := twitch.NewAnonymousClient()
 
 	// join the channel
-	return joinWithTimeout(client, r.Channel(), 5*time.Second)
+	return &AnonymousTwitchClient{client: client}, joinWithTimeout(client, r.Channel(), 5*time.Second)
 }

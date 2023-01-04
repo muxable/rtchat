@@ -156,6 +156,7 @@ function listenForSingleUserId(userId: string) {
           ...donation,
           type: "streamlabs.donation",
           timestamp: admin.firestore.Timestamp.fromDate(donation.timestamp),
+          expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 1000 * 86400 * 7 * 2),
         });
     })
   );

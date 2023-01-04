@@ -4,61 +4,12 @@ import fetch from "cross-fetch";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { AccessToken } from "simple-oauth2";
 
-async function getTwitchUserId(channel: string) {
-  // fetch the twitch user id from the database based on login.
-  const doc = await admin
-    .firestore()
-    .collection("profiles")
-    .where("twitch.login", "==", channel)
-    .limit(1)
-    .get();
-  if (doc.empty) {
-    return null;
-  }
-  return doc.docs[0].data()["twitch"]["id"];
-}
-
-export const updateChatStatus = functions.pubsub
-  .schedule("* * * * *") // every 1 minute
-  .onRun(async () => {
-    const promises: Promise<any>[] = [];
-    // fetch the active connections from realtime database
-    const connections =
-      (await admin.database().ref("connections").once("value")).val() || {};
-    for (const [provider, channels] of Object.entries(connections)) {
-      for (const channel of Object.keys(channels as any)) {
-        switch (provider) {
-          case "twitch":
-            const promise = fetch(
-              `https://tmi.twitch.tv/group/user/${channel}/chatters`
-            )
-              .then((res) => res.json() as any)
-              .then(async (json) => {
-                return admin
-                  .firestore()
-                  .collection("chat-status")
-                  .add({
-                    provider,
-                    channel,
-                    channelId: `twitch:${await getTwitchUserId(channel)}`,
-                    ...json["chatters"],
-                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                  });
-              });
-            promises.push(promise);
-        }
-      }
-    }
-
-    await Promise.all(promises);
-  });
-
 async function twitchLoginsToUserIds(token: AccessToken, logins: string[]) {
   const twitchChannelIds: string[] = [];
   for (let i = 0; i < logins.length; i += 100) {
     const query = logins
       .slice(i, i + 100)
-      .map((id) => "login=" + encodeURIComponent(id.slice(7)))
+      .map((id) => "login=" + encodeURIComponent(id))
       .join("&");
     const response = await fetch(`https://api.twitch.tv/helix/users?${query}`, {
       headers: {
@@ -85,13 +36,18 @@ async function twitchGetFollowerCount(token: AccessToken, channelId: string) {
     }
   );
   const json = await response.json();
-  console.log("twitchGetFollowerCount", channelId, json["total"]);
-  return json["total"] || 0;
+  return json["total"];
 }
 
 async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
   const data: {
-    [channelId: string]: { viewerCount: number; language: string };
+    [channelId: string]: {
+      viewerCount: number;
+      language: string;
+      login: string;
+      displayName: string;
+      onlineAt: Date | null;
+    };
   } = {};
   for (let i = 0; i < channelIds.length; i += 100) {
     const batch = channelIds.slice(i, i + 100);
@@ -99,7 +55,7 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
       .map((channelId) => "user_id=" + encodeURIComponent(channelId))
       .join("&");
     const response = await fetch(
-      `https://api.twitch.tv/helix/streams?${query}`,
+      `https://api.twitch.tv/helix/streams?first=100&${query}`,
       {
         headers: {
           "Client-ID": TWITCH_CLIENT_ID,
@@ -108,11 +64,17 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
       }
     );
     const json = await response.json();
+    if (!json["data"]) {
+      continue;
+    }
     for (const stream of json["data"]) {
       const channelId = stream["user_id"];
+      const displayName = stream["user_name"];
+      const onlineAt = new Date(Date.parse(stream["started_at"]));
       const viewerCount = stream["viewer_count"];
       const language = stream["language"];
-      data[channelId] = { viewerCount, language };
+      const login = stream["user_login"];
+      data[channelId] = { viewerCount, language, login, displayName, onlineAt };
     }
     // find any channels that are not in the response and reissue a request to helix/channels
     const missingChannelIds = batch.filter(
@@ -133,60 +95,120 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
         }
       );
       const json = await response.json();
+      if (!json["data"]) {
+        continue;
+      }
       for (const channel of json["data"]) {
         const channelId = channel["broadcaster_id"];
         const language = channel["broadcaster_language"];
-        data[channelId] = { viewerCount: 0, language };
+        const displayName = channel["broadcaster_name"];
+        const login = channel["broadcaster_login"];
+        data[channelId] = {
+          viewerCount: 0,
+          language,
+          login,
+          displayName,
+          onlineAt: null,
+        };
       }
     }
   }
   return data;
 }
 
-export async function runUpdateFollowerAndViewerCount() {
-  // fetch the channels that have been active in the last 3 days.
-  const snapshot = await admin.firestore().collection("assignments").get();
-  const channels = snapshot.docs
-    .map((doc) => doc.id)
-    .filter((id) => id.startsWith("twitch:"));
-
-  // process twitch channel ids.
-  const token = await getAppAccessToken("twitch");
-  if (!token) {
-    throw new functions.https.HttpsError("internal", "auth error");
-  }
-
-  // first, convert the channel logins to twitch channel ids.
-  const channelIds = await twitchLoginsToUserIds(token, channels);
-
-  const updateBatch = admin.firestore().batch();
+export async function runUpdateFollowerAndViewerCount(
+  token: AccessToken,
+  channelIds: string[]
+) {
+  let updateBatch = admin.firestore().batch();
+  let batchSize = 0;
 
   // for each batch, fetch the viewer count
   const data = await twitchGetViewerCounts(token, channelIds);
-  for (const [channelId, { viewerCount, language }] of Object.entries(data)) {
+  for (const [
+    channelId,
+    { viewerCount, language, login, displayName, onlineAt },
+  ] of Object.entries(data)) {
+    console.log(
+      "updating",
+      channelId,
+      viewerCount,
+      language,
+      login,
+      displayName,
+      onlineAt
+    );
     updateBatch.set(
       admin.firestore().collection("channels").doc(`twitch:${channelId}`),
-      { viewerCount, language },
+      { viewerCount, language, login, displayName, onlineAt },
       { merge: true }
     );
+    if (++batchSize == 500) {
+      console.log("committing batch");
+      await updateBatch.commit();
+      updateBatch = admin.firestore().batch();
+      batchSize = 0;
+    }
   }
+
+  // shuffle and sample 200 channel ids to reduce the number of requests due to twitch rate limit
+  for (let i = channelIds.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = channelIds[i];
+    channelIds[i] = channelIds[j];
+    channelIds[j] = temp;
+  }
+  channelIds = channelIds.slice(0, 200);
 
   // lastly, fetch the follower count for each channel individually.
-  for (const channelId of channelIds) {
+  const followerCountRequests = channelIds.map((channelId) =>
+    twitchGetFollowerCount(token, channelId)
+  );
+  for (let i = 0; i < channelIds.length; i++) {
+    const channelId = channelIds[i];
+    const followerCount = await followerCountRequests[i];
+    if (!followerCount) {
+      continue;
+    }
+    console.log("updating", channelId, followerCount);
     updateBatch.set(
       admin.firestore().collection("channels").doc(`twitch:${channelId}`),
-      { followerCount: await twitchGetFollowerCount(token, channelId) },
+      { followerCount },
       { merge: true }
     );
+    if (++batchSize == 500) {
+      console.log("committing batch");
+      await updateBatch.commit();
+      updateBatch = admin.firestore().batch();
+      batchSize = 0;
+    }
   }
 
-  // commit the update batch
-  await updateBatch.commit();
+  if (batchSize > 0) {
+    console.log("committing batch");
+    await updateBatch.commit();
+  }
 }
 
 export const updateFollowerAndViewerCount = functions.pubsub
-  .schedule("*/5 * * * *") // every 5 minutes
-  .onRun(runUpdateFollowerAndViewerCount);
+  .schedule("*/4 * * * *") // every 4 minutes
+  .onRun(async () => {
+    // fetch the channels that have been active in the last 3 days.
+    const snapshot = await admin.firestore().collection("assignments").get();
+    const channels = snapshot.docs
+      .map((doc) => doc.id)
+      .filter((id) => id.startsWith("twitch:"))
+      .map((id) => id.slice(7));
+    // process twitch channel ids.
+    const token = await getAppAccessToken("twitch");
+    if (!token) {
+      throw new functions.https.HttpsError("internal", "auth error");
+    }
+
+    // first, convert the channel logins to twitch channel ids.
+    const channelIds = await twitchLoginsToUserIds(token, channels);
+    runUpdateFollowerAndViewerCount(token, channelIds);
+  });
 
 export const getViewerList = functions.https.onCall(
   async (channelId: string, context) => {

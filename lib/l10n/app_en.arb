@@ -1,34 +1,164 @@
 {
-    "sendAMessage": "Send a message...",
-    "@sendAMessage": {
-      "description": "Message input field placeholder text"
-    },
-    "writeSomething": "Write something...",
-    "@writeSomething": {
-      "description": "Message input field placeholder text"
-    },
-    "speakToTheCrowds": "Speak to the crowds...",
-    "@speakToTheCrowds": {
-      "description": "Message input field placeholder text"
-    },
-    "shareYourThoughts": "Share your thoughts...",
-    "@shareYourThoughts": {
-      "description": "Message input field placeholder text"
-    },
-    "saySomethingYouLittleBitch": "Say something, you little bitch...",
-    "@saySomethingYouLittleBitch": {
-      "description": "Message input field placeholder text"
-    },
-    "search": "Search",
-    "@search": {
-      "description": "Placeholder text for search bar"
-    },
-    "searchChannels": "Search",
-    "@searchChannels": {
-      "description": "Header for a page that lets the user search channels"
-    },
-    "raidAChannel": "Raid",
-    "@raidAChannel": {
-      "description": "Header for a page that lets the raid channels"
+  "sendAMessage": "Send a message...",
+  "@sendAMessage": {
+    "description": "Message input field placeholder text"
+  },
+  "writeSomething": "Write something...",
+  "@writeSomething": {
+    "description": "Message input field placeholder text"
+  },
+  "speakToTheCrowds": "Speak to the crowds...",
+  "@speakToTheCrowds": {
+    "description": "Message input field placeholder text"
+  },
+  "shareYourThoughts": "Share your thoughts...",
+  "@shareYourThoughts": {
+    "description": "Message input field placeholder text"
+  },
+  "saySomethingYouLittleBitch": "Say something, you little bitch...",
+  "@saySomethingYouLittleBitch": {
+    "description": "Message input field placeholder text"
+  },
+  "search": "Search",
+  "@search": {
+    "description": "Placeholder text for search bar"
+  },
+  "searchChannels": "Search",
+  "@searchChannels": {
+    "description": "Header for a page that lets the user search channels"
+  },
+  "raidAChannel": "Raid",
+  "@raidAChannel": {
+    "description": "Header for a page that lets the raid channels"
+  },
+  "noMessagesEmptyState": "It's quiet in here.",
+  "@noMessagesEmptyState": {
+    "description": "Empty state placeholder when there are no messages"
+  },
+  "newMessageCount": "{count,plural, =0{No new messages} =1{1 new message} other{{count} new messages}}",
+  "@newMessageCount": {
+    "placeholders": {
+      "count": {}
     }
+  },
+  "signInWithTwitch": "Sign in with Twitch",
+  "@signInWithTwitch": {
+    "description": "Button label to allow a user to sign in with Twitch"
+  },
+  "signInError": "An error occurred when signing in. Please try again.",
+  "@signInError": {
+    "description": "Error message that shows when signing in fails"
+  },
+  "continueAsGuest": "Continue as Guest",
+  "@continueAsGuest": {
+    "description": "Button label to allow a user to use the app without signing in"
+  },
+  "signInToSendMessages": "Sign in to send messages",
+  "@signInToSendMessages": {
+    "description": "Text label to indicate that signing in is required to send messages"
+  },
+  "currentViewers": "Current viewers",
+  "@currentViewers": {
+    "description": "Tooltip text for a button that shows the current viewers"
+  },
+  "textToSpeech": "Text to speech",
+  "@textToSpeech": {
+    "description": "Tooltip text for a button that enables text to speech"
+  },
+  "streamPreview": "Stream preview",
+  "@streamPreview": {
+    "description": "Tooltip text for a button that shows the stream preview"
+  },
+  "activityFeed": "Activity feed",
+  "@activityFeed": {
+    "description": "Tooltip text for a button that shows the activity feed"
+  },
+  "streamOnline": "Stream online at {date}, {time}",
+  "@streamOnline": {
+    "description": "Event label to indicate that the stream is online",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMEEEEd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jms"
+      }
+    }
+  },
+  "streamOffline": "Stream offline at {date}, {time}",
+  "@streamOffline": {
+    "description": "Event label to indicate that the stream is offline",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMEEEEd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jms"
+      }
+    }
+  },
+  "chatCleared": "Chat cleared at {date}, {time}",
+  "@chatCleared": {
+    "description": "Event label to indicate that the chat was cleared",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMEEEEd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jms"
+      }
+    }
+  },
+  "configureQuickLinks": "Configure quick links",
+  "@configureQuickLinks": {
+    "description": "Button label that shows the quick links configuration"
+  },
+  "disableRainMode": "Disable rain mode",
+  "@disableRainMode": {
+    "description": "Button label that disables rain mode"
+  },
+  "enableRainMode": "Enable rain mode",
+  "@enableRainMode": {
+    "description": "Button label that enables rain mode"
+  },
+  "disableRainModeSubtitle": "Interaction will be disabled",
+  "@disableRainModeSubtitle": {
+    "description": "Subtitle for the button that disables rain mode, indicating that interaction will be disabled"
+  },
+  "enableRainModeSubtitle": "Interaction will be enabled",
+  "@enableRainModeSubtitle": {
+    "description": "Subtitle for the button that enables rain mode, indicating that interaction will be enabled"
+  },
+  "refreshAudioSources": "Refresh audio sources",
+  "@refreshAudioSources": {
+    "description": "Button label that refreshes the audio sources"
+  },
+  "refreshAudioSourcesCount": "{count,plural, =0{No audio sources refreshed} =1{1 audio source refreshed} other{{count} audio sources refreshed}}",
+  "@refreshAudioSourcesCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Button label that shows the settings"
+  },
+  "signOut": "Sign out",
+  "@signOut": {
+    "description": "Button label that signs the user out"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Button label that cancels an action"
+  },
+  "signOutConfirmation": "Are you sure you want to sign out?",
+  "@signOutConfirmation": {
+    "description": "Confirmation message that shows when the user wants to sign out"
+  }
 }

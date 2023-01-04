@@ -4,10 +4,12 @@ import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
 import { ClientCredentials } from "simple-oauth2";
 import {
+  getAppAccessToken,
   TWITCH_CLIENT_ID,
   TWITCH_CLIENT_SECRET,
   TWITCH_OAUTH_CONFIG,
 } from "./oauth";
+import { runUpdateFollowerAndViewerCount } from "./chat-status";
 
 enum EventsubType {
   ChannelFollow = "channel.follow",
@@ -124,10 +126,9 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
       req.body.event["to_broadcaster_user_id"]
     }`;
 
-    const messageRef = admin
-      .firestore()
-      .collection("channels")
-      .doc(channelId)
+    const channelRef = admin.firestore().collection("channels").doc(channelId);
+
+    const messageRef = channelRef
       .collection("messages")
       .doc(`twitch:${messageId}`);
 
@@ -135,29 +136,36 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
       channelId,
       type,
       timestamp: admin.firestore.Timestamp.fromMillis(Date.parse(timestamp)),
+      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 1000 * 86400 * 7 * 2),
       event: req.body.event,
     });
 
     switch (type) {
       case EventsubType.StreamOnline:
-        await admin
-          .firestore()
-          .collection("channels")
-          .doc(channelId)
-          .set(
-            { onlineAt: admin.firestore.FieldValue.serverTimestamp() },
-            { merge: true }
-          );
+        await channelRef.set(
+          { onlineAt: admin.firestore.FieldValue.serverTimestamp() },
+          { merge: true }
+        );
+        // process twitch channel ids.
+        const token = await getAppAccessToken("twitch");
+        if (!token) {
+          throw new functions.https.HttpsError("internal", "auth error");
+        }
+        await runUpdateFollowerAndViewerCount(token, [channelId]);
         break;
       case EventsubType.StreamOffline:
-        await admin
-          .firestore()
-          .collection("channels")
-          .doc(channelId)
-          .set({ onlineAt: null }, { merge: true });
+        await channelRef.set({ onlineAt: null }, { merge: true });
+        break;
+      case EventsubType.ChannelFollow:
+        // increment the follower count.
+        try {
+          await channelRef.update({
+            followerCount: admin.firestore.FieldValue.increment(1),
+          });
+        } catch {}
         break;
       case EventsubType.ChannelUpdate:
-        await admin.firestore().collection("channels").doc(channelId).set(
+        await channelRef.set(
           {
             login: req.body.event.broadcaster_user_login,
             displayName: req.body.event.broadcaster_user_name,
@@ -168,6 +176,7 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
           },
           { merge: true }
         );
+        break;
     }
   }
   res.status(200).send();
