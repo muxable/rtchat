@@ -363,6 +363,31 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                                   .reversed
                                   .toList());
                             }
+                            // twitch will often send multiple subscription messages in a row.
+                            // if we see them, suppress the less informative ones.
+                            if (message is TwitchSubscriptionEventModel) {
+                              // if the next or prev message is a TwitchSubscriptionMessageEventModel by the same user and tier, ignore this one.
+                              if (index != messages.length - 1) {
+                                final next = messages[index + 1];
+                                if (next
+                                        is TwitchSubscriptionMessageEventModel &&
+                                    next.subscriberUserName ==
+                                        message.subscriberUserName &&
+                                    next.tier == message.tier) {
+                                  return Container();
+                                }
+                              }
+                              if (index > 0) {
+                                final prev = messages[index - 1];
+                                if (prev
+                                        is TwitchSubscriptionMessageEventModel &&
+                                    prev.subscriberUserName ==
+                                        message.subscriberUserName &&
+                                    prev.tier == message.tier) {
+                                  return Container();
+                                }
+                              }
+                            }
                             final messageWidget = ChatHistoryMessage(
                                 message: message, channel: widget.channel);
                             final showSeparator = messagesModel.separators
