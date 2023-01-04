@@ -136,6 +136,7 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
       channelId,
       type,
       timestamp: admin.firestore.Timestamp.fromMillis(Date.parse(timestamp)),
+      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 1000 * 86400 * 7 * 2),
       event: req.body.event,
     });
 
