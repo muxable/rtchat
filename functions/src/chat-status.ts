@@ -4,20 +4,6 @@ import fetch from "cross-fetch";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { AccessToken } from "simple-oauth2";
 
-async function getTwitchUserId(channel: string) {
-  // fetch the twitch user id from the database based on login.
-  const doc = await admin
-    .firestore()
-    .collection("profiles")
-    .where("twitch.login", "==", channel)
-    .limit(1)
-    .get();
-  if (doc.empty) {
-    return null;
-  }
-  return doc.docs[0].data()["twitch"]["id"];
-}
-
 async function twitchLoginsToUserIds(token: AccessToken, logins: string[]) {
   const twitchChannelIds: string[] = [];
   for (let i = 0; i < logins.length; i += 100) {
