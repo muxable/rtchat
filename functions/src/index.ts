@@ -10,7 +10,6 @@ import { subscribe, unsubscribe } from "./subscriptions";
 import { synthesize, getVoices } from "./tts";
 import { getTwitchLogin, getChannelId } from "./twitch";
 import {
-  updateChatStatus,
   getViewerList,
   updateFollowerAndViewerCount,
 } from "./chat-status";
@@ -450,7 +449,6 @@ export {
   getEmotes,
   synthesize,
   getVoices,
-  updateChatStatus,
   getViewerList,
   setRealTimeCashAddress,
   alchemyWebhook,
