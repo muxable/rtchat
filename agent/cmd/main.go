@@ -129,7 +129,7 @@ func main() {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
-		w.Write([]byte("ok"))
+		w.Write([]byte((72 * time.Hour - time.Since(start)).String()))
 	}))
 
 	go func() {
