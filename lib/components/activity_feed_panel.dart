@@ -43,6 +43,8 @@ class _ActivityFeedPanelWidgetState extends State<ActivityFeedPanelWidget> {
     _controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..enableZoom(false);
+
+    synchronizeActivityFeedUrl();
   }
 
   @override
