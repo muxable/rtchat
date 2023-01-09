@@ -146,8 +146,11 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
     if (await cacheFile.exists() && await etagFile.exists()) {
       try {
         final bytes = await cacheFile.readAsBytes();
-        decodedCache = await decode(await ImmutableBuffer.fromUint8List(bytes));
-        etagValue = await etagFile.readAsString();
+        if (bytes.isNotEmpty) {
+          decodedCache =
+              await decode(await ImmutableBuffer.fromUint8List(bytes));
+          etagValue = await etagFile.readAsString();
+        }
       } catch (e) {
         FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
       }
