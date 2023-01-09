@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:core';
-import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +40,6 @@ class AudioSource {
 class AudioModel extends ChangeNotifier {
   final List<AudioSource> _sources = [];
   late final Timer _speakerDisconnectTimer;
-  final _audioCache = AudioCache(duckAudio: Platform.isIOS);
 
   bool _isOnline = false;
   bool _isSettingsVisible = false;
@@ -171,9 +169,10 @@ class AudioModel extends ChangeNotifier {
   }
 
   AudioModel.fromJson(Map<String, dynamic> json) {
+    final player = AudioPlayer();
     _speakerDisconnectTimer = Timer.periodic(
       const Duration(minutes: 5),
-      (_) => _audioCache.play("silence.mp3"),
+      (_) => player.play(AssetSource("silence.mp3")),
     );
     final sources = json['sources'];
     if (sources != null) {
