@@ -3,9 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:url_launcher/url_launcher_string.dart';
-
-const discordUrl = "https://discord.gg/UKHJMQs74u";
+import 'package:rtchat/urls.dart';
 
 Widget _iconWithText(IconData icon, String text) {
   return Column(children: [
@@ -184,20 +182,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const Divider(),
-          FutureBuilder(
-              future: canLaunchUrlString(discordUrl),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData || !(snapshot.data as bool)) {
-                  return Container();
-                }
-
-                return ListTile(
+          ListTile(
                   title: const Text('Muxable Discord'),
                   subtitle: const Text("Join the Muxable Discord!"),
                   trailing: const Icon(Icons.launch),
-                  onTap: () => launchUrlString(discordUrl),
-                );
-              }),
+            onTap: () => openUrl(Uri.parse("https://discord.gg/UKHJMQs74u")),
+          ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text("Thanks to all the early testers who sent bug reports!",
@@ -214,7 +204,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   width: 24, image: AssetImage('assets/providers/twitch.png')),
               title: Text("/$key"),
               trailing: const Icon(Icons.launch),
-              onTap: () => launchUrlString(url),
+              onTap: () => openUrl(Uri.parse(url)),
             );
           }).toList()),
           FutureBuilder(

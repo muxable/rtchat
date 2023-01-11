@@ -10,7 +10,7 @@ import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:rtchat/urls.dart';
 
 const colors = [
   Color(0xFFFF0000),
@@ -113,8 +113,7 @@ class TwitchMessageWidget extends StatelessWidget {
               text: token.text,
               style: linkStyle,
               recognizer: (TapGestureRecognizer()
-                ..onTap = () =>
-                    launchUrl(token.url, mode: LaunchMode.externalApplication)),
+                ..onTap = () => openUrl(token.url)),
             ),
           ),
         ),

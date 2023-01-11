@@ -38,7 +38,7 @@ import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:rtchat/urls.dart';
 
 class ChatHistoryMessage extends StatelessWidget {
   final MessageModel message;
@@ -164,8 +164,8 @@ class ChatHistoryMessage extends StatelessWidget {
                                   title: Text(
                                       'View ${m.author.displayName}\'s profile'),
                                   onTap: () {
-                                    launchUrlString(
-                                        "https://www.twitch.tv/${m.author.displayName}");
+                                    openUrl(Uri.parse(
+                                        "https://www.twitch.tv/${m.author.displayName}"));
                                     Navigator.pop(context);
                                   }),
                             ]),
