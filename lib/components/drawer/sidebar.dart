@@ -10,7 +10,7 @@ import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:rtchat/urls.dart';
 
 class _DrawerHeader extends StatelessWidget {
   const _DrawerHeader({Key? key}) : super(key: key);
@@ -27,10 +27,7 @@ class _DrawerHeader extends StatelessWidget {
               child: Column(
                 children: [
                   GestureDetector(
-                      onTap: () {
-                        launchUrlString("https://muxable.com",
-                            mode: LaunchMode.externalApplication);
-                      },
+                      onTap: () => openUrl(Uri.parse("https://muxable.com")),
                       child: SizedBox(
                           height: 50,
                           child: Padding(
