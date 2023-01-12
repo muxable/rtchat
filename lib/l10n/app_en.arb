@@ -160,5 +160,25 @@
   "signOutConfirmation": "Are you sure you want to sign out?",
   "@signOutConfirmation": {
     "description": "Confirmation message that shows when the user wants to sign out"
+  },
+  "broadcaster": "Broadcaster",
+  "@broadcaster": {
+    "description": "Label for the broadcaster"
+  },
+  "moderators": "Moderators",
+  "@moderators": {
+    "description": "Label for the moderators"
+  },
+  "viewers": "Viewers",
+  "@viewers": {
+    "description": "Label for the viewers"
+  },
+  "communityVips": "Community VIPs",
+  "@communityVips": {
+    "description": "Label for the community VIPs"
+  },
+  "searchViewers": "Search Viewers",
+  "@searchViewers": {
+    "description": "Header for the search bar that lets the user search viewers"
   }
 }
