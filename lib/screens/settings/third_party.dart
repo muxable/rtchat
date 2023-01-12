@@ -5,7 +5,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/adapters/donations.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:rtchat/urls.dart';
 
 const streamlabsCurrencies = [
   [null, "Donation's currency"],
@@ -59,7 +59,7 @@ class _RealtimeCashWidget extends StatelessWidget {
                   : const Icon(Icons.help),
             ),
             // open https://cash.rtirl.com/
-            onTap: () => launchUrlString("https://cash.rtirl.com/"),
+            onTap: () => openUrl(Uri.parse("https://cash.rtirl.com/")),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 88, right: 16),
