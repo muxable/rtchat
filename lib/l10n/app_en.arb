@@ -316,5 +316,47 @@
   "thirdPartyServicesSubtitle": "Connect to a third-party service",
   "@thirdPartyServicesSubtitle": {
     "description": "Subtitle for the third-party services page"
+  },
+  "followingEvent": "<bold>{displayName}</bold> is following you",
+  "@followingEvent": {
+    "description": "Text label that shows when a user follows the streamer",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "followingEvent2": "<bold>{displayName}</bold> and <bold>{displayNameTwo}</bold> are following you",
+  "@followingEvent2": {
+    "description": "Text label that shows when two users follow the streamer",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "displayNameTwo": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "followingEvent3": "<bold>{displayName}</bold>, <bold>{displayNameTwo}</bold>, and {others} others are following you",
+  "@followingEvent3": {
+    "description": "Text label that shows when three or more users follow the streamer",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "displayNameTwo": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "others": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
   }
 }
