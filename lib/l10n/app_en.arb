@@ -212,5 +212,109 @@
   "duplicateUrlErrorText": "This link already exists",
   "@duplicateUrlErrorText": {
     "description": "Error message that shows when the URL already exists"
+  },
+  "or": "or",
+  "@or": {
+    "description": "Text label that separates two options"
+  },
+  "activityFeed": "Activity feed",
+  "@activityFeed": {
+    "description": "Header for the activity feed settings page"
+  },
+  "clearCookies": "Clear cookies",
+  "@clearCookies": {
+    "description": "Button label that clears the cookies"
+  },
+  "disabled": "Disabled",
+  "@disabled": {
+    "description": "Option label to disable a feature"
+  },
+  "twitchActivityFeed": "Twitch activity feed",
+  "@twitchActivityFeed": {
+    "description": "Option label to use the default Twitch activity feed"
+  },
+  "signInToEnable": "You must be signed in to enable this",
+  "@signInToEnable": {
+    "description": "Error message that shows when the user must be signed in to enable a feature"
+  },
+  "customUrl": "Custom URL",
+  "@customUrl": {
+    "description": "Option label to use a custom URL"
+  },
+  "preview": "Preview",
+  "@preview": {
+    "description": "Section header for the activity feed preview"
+  },
+  "audioSources": "Audio sources",
+  "@audioSources": {
+    "description": "Header for the audio sources page"
+  },
+  "enableOffstreamSwitchTitle": "Enable off-stream (uses more battery)",
+  "@enableOffstreamSwitchTitle": {
+    "description": "Option label to enable the off-stream tile"
+  },
+  "enableOffstreamSwitchEnabledSubtitle": "Audio will also play when you're offline",
+  "@enableOffstreamSwitchEnabledSubtitle": {
+    "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will also play when the user is offline"
+  },
+  "enableOffstreamSwitchDisabledSubtitle": "Audio will only play when you're live",
+  "@enableOffstreamSwitchDisabledSubtitle": {
+    "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will only play when the user is live"
+  },
+  "iosOggWarningTitle": "Hey! Listen!",
+  "@iosOggWarningTitle": {
+    "description": "Title for the warning that shows when the user is on iOS and the audio source is OGG"
+  },
+  "iosOggWarningSubtitle": "iOS doesn't support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won't play.",
+  "@iosOggWarningSubtitle": {
+    "description": "Message for the warning that shows when the user is on iOS and the audio source is OGG"
+  },
+  "url": "URL",
+  "@url": {
+    "description": "Label for the URL"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Header for the settings page"
+  },
+  "activityFeedSubtitle": "Customize your activity feed",
+  "@activityFeedSubtitle": {
+    "description": "Subtitle for the activity feed settings page"
+  },
+  "audioSourcesSubtitle": "Add web sources for alert sounds",
+  "@audioSourcesSubtitle": {
+    "description": "Subtitle for the audio sources page"
+  },
+  "quickLinksSubtitle": "Add shortcuts to commonly-used tools",
+  "@quickLinksSubtitle": {
+    "description": "Subtitle for the quick links page"
+  },
+  "chatHistory": "Chat history",
+  "@chatHistory": {
+    "description": "Header for the chat history page"
+  },
+  "chatHistorySubtitle": "Change the chat appearance",
+  "@chatHistorySubtitle": {
+    "description": "Subtitle for the chat history page"
+  },
+  "textToSpeechSubtitle": "Change text to speech settings",
+  "@textToSpeechSubtitle": {
+    "description": "Subtitle for the text to speech page"
+  },
+  "events": "Events",
+  "@events": {
+    "description": "Header for the events page"
+  },
+  "eventsSubtitle":"Configure Twitch events",
+  "@eventsSubtitle": {
+    "description": "Subtitle for the events page"
+  },
+  "thirdPartyServices": "Third-party services",
+  "@thirdPartyServices": {
+    "description": "Header for the third-party services page"
+  },
+  "thirdPartyServicesSubtitle": "Connect to a third-party service",
+  "@thirdPartyServicesSubtitle": {
+    "description": "Subtitle for the third-party services page"
   }
 }

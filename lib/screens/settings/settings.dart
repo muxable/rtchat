@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/style.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/urls.dart';
 
 Widget _iconWithText(IconData icon, String text) {
@@ -27,55 +28,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Settings"),
+        title: Text(AppLocalizations.of(context)!.settings),
       ),
       body: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return ListView(children: [
           ListTile(
-            title: const Text('Activity feed'),
-            subtitle: const Text("Customize your activity feed"),
+            title: Text(AppLocalizations.of(context)!.activityFeed),
+            subtitle: Text(AppLocalizations.of(context)!.activityFeedSubtitle),
             onTap: () {
               Navigator.pushNamed(context, "/settings/activity-feed");
             },
           ),
           ListTile(
-            title: const Text('Audio sources'),
-            subtitle: const Text("Add web sources for alert sounds"),
+            title: Text(AppLocalizations.of(context)!.audioSources),
+            subtitle: Text(AppLocalizations.of(context)!.audioSourcesSubtitle),
             onTap: () {
               Navigator.pushNamed(context, "/settings/audio-sources");
             },
           ),
           ListTile(
-            title: const Text('Quick links'),
-            subtitle: const Text("Add shortcuts to commonly-used tools"),
+            title: Text(AppLocalizations.of(context)!.quickLinks),
+            subtitle: Text(AppLocalizations.of(context)!.quickLinksSubtitle),
             onTap: () {
               Navigator.pushNamed(context, "/settings/quick-links");
             },
           ),
           ListTile(
-            title: const Text('Chat history'),
-            subtitle: const Text("Change the chat appearance"),
+            title: Text(AppLocalizations.of(context)!.chatHistory),
+            subtitle: Text(AppLocalizations.of(context)!.chatHistorySubtitle),
             onTap: () {
               Navigator.pushNamed(context, "/settings/chat-history");
             },
           ),
           ListTile(
-            title: const Text('Text to speech'),
-            subtitle: const Text("Change text to speech settings"),
+            title: Text(AppLocalizations.of(context)!.textToSpeech),
+            subtitle: Text(AppLocalizations.of(context)!.textToSpeechSubtitle),
             onTap: () {
               Navigator.pushNamed(context, "/settings/text-to-speech");
             },
           ),
           ListTile(
-            title: const Text('Events'),
-            subtitle: const Text("Configure Twitch events"),
+            title: Text(AppLocalizations.of(context)!.events),
+            subtitle: Text(AppLocalizations.of(context)!.eventsSubtitle),
             onTap: () {
               Navigator.pushNamed(context, "/settings/events");
             },
           ),
           ListTile(
-            title: const Text('Third-party services'),
-            subtitle: const Text("Connect to a third-party service"),
+            title: Text(AppLocalizations.of(context)!.thirdPartyServices),
+            subtitle:
+                Text(AppLocalizations.of(context)!.thirdPartyServicesSubtitle),
             onTap: () {
               Navigator.pushNamed(context, "/settings/third-party");
             },

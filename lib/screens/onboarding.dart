@@ -85,7 +85,7 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
               },
             )),
       ),
-      Text("or",
+      Text(AppLocalizations.of(context)!.or,
           style: Theme.of(context)
               .textTheme
               .titleMedium
