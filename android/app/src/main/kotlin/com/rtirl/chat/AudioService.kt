@@ -10,6 +10,7 @@ import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -26,6 +27,7 @@ class AudioService : Service() {
     }
 
     private val views = HashMap<String, WebView>()
+    private var wakelock: PowerManager.WakeLock? = null
 
     private val notification: NotificationCompat.Builder
         get() {
@@ -134,6 +136,11 @@ class AudioService : Service() {
             views.forEach { (_, view) -> view.reload() }
         }
 
+        if (wakelock == null) {
+            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+            wakelock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "RealtimeChat::Wakelock")
+        }
+
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         return if (views.isNotEmpty()) {
@@ -148,12 +155,14 @@ class AudioService : Service() {
                 nm.createNotificationChannel(mChannel)
             }
             startForeground(NOTIFICATION_ID, notification.build())
+            wakelock?.acquire()
             START_STICKY
         } else {
             // ensure the notification is removed
             stopForeground(true)
             nm.cancel(NOTIFICATION_ID)
             stopSelf()
+            wakelock?.release()
             START_NOT_STICKY
         }
     }
