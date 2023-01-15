@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
@@ -20,12 +21,12 @@ class TwitchBadgesScreen extends StatelessWidget {
             SliverAppBar(
                 pinned: true,
                 expandedHeight: 250.0,
-                flexibleSpace: const FlexibleSpaceBar(
-                  title: Text('Twitch badges'),
+                flexibleSpace: FlexibleSpaceBar(
+                  title: Text(AppLocalizations.of(context)!.twitchBadges),
                 ),
                 actions: [
                   Row(children: [
-                    const Text("Select all"),
+                    Text(AppLocalizations.of(context)!.selectAll),
                     Theme(
                       data: theme.copyWith(
                           unselectedWidgetColor: theme.colorScheme.onTertiary),
