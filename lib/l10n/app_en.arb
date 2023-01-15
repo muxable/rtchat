@@ -192,5 +192,25 @@
   "selectAll": "Select all",
   "@selectAll": {
     "description": "Button label that selects all badges"
+  },
+  "quickLinks": "Quick links",
+  "@quickLinks": {
+    "description": "Header for the quick links page"
+  },
+  "swipeToDeleteQuickLinks": "Swipe left or right to delete quick link",
+  "@swipeToDeleteQuickLinks": {
+    "description": "Text label that shows when the user can swipe to delete a quick link"
+  },
+  "quickLinksLabelHint": "Label",
+  "@quickLinksLabelHint": {
+    "description": "Hint text for the quick link label"
+  },
+  "invalidUrlErrorText": "This doesn't look like a valid URL",
+  "@invalidUrlErrorText": {
+    "description": "Error message that shows when the URL is invalid"
+  },
+  "duplicateUrlErrorText": "This link already exists",
+  "@duplicateUrlErrorText": {
+    "description": "Error message that shows when the URL already exists"
   }
 }
