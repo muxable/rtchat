@@ -180,5 +180,17 @@
   "searchViewers": "Search Viewers",
   "@searchViewers": {
     "description": "Header for the search bar that lets the user search viewers"
+  },
+  "reconnecting": "Reconnecting...",
+  "@reconnecting": {
+    "description": "Text label that shows when the app is reconnecting"
+  },
+  "twitchBadges": "Twitch badges",
+  "@twitchBadges": {
+    "description": "Header for the Twitch badges page"
+  },
+  "selectAll": "Select all",
+  "@selectAll": {
+    "description": "Button label that selects all badges"
   }
 }
