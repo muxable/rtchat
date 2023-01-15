@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
@@ -58,17 +59,20 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Audio sources")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.audioSources)),
       body: SafeArea(
         child: Consumer<AudioModel>(builder: (context, model, child) {
           return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SwitchListTile.adaptive(
-                  title: const Text('Enable off-stream (uses more battery)'),
+                  title: Text(
+                      AppLocalizations.of(context)!.enableOffstreamSwitchTitle),
                   subtitle: model.isAlwaysEnabled
-                      ? const Text('Audio will also play when you\'re offline')
-                      : const Text('Audio will only play when you\'re online'),
+                      ? Text(AppLocalizations.of(context)!
+                          .enableOffstreamSwitchEnabledSubtitle)
+                      : Text(AppLocalizations.of(context)!
+                          .enableOffstreamSwitchDisabledSubtitle),
                   value: model.isAlwaysEnabled,
                   onChanged: (value) {
                     model.isAlwaysEnabled = value;
@@ -76,11 +80,12 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                 ),
                 const Divider(),
                 if (Platform.isIOS)
-                  const ListTile(
-                    leading: Icon(Icons.warning),
-                    title: Text("Hey! Listen!"),
+                  ListTile(
+                    leading: const Icon(Icons.warning),
+                    title:
+                        Text(AppLocalizations.of(context)!.iosOggWarningTitle),
                     subtitle: Text(
-                        "iOS doesn't support *.ogg media files. Ensure your audio sources use another format, otherwise they won't play."),
+                        AppLocalizations.of(context)!.iosOggWarningSubtitle),
                     tileColor: Colors.yellow,
                     textColor: Colors.black,
                   )
@@ -121,7 +126,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                         child: TextFormField(
                             controller: _textEditingController,
                             decoration: InputDecoration(
-                                hintText: "URL",
+                                hintText: AppLocalizations.of(context)!.url,
                                 suffixIcon: IconButton(
                                     icon: const Icon(Icons.qr_code_scanner),
                                     onPressed: () {
@@ -144,7 +149,8 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                               if (value == null ||
                                   value.isEmpty ||
                                   Uri.tryParse(value) == null) {
-                                return "This doesn't look like a valid URL.";
+                                return AppLocalizations.of(context)!
+                                    .invalidUrlErrorText;
                               }
                               return null;
                             },

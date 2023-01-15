@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
@@ -74,11 +75,11 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
     return Scaffold(
       appBar: _showControls
           ? AppBar(
-              title: const Text("Activity feed"),
+              title: Text(AppLocalizations.of(context)!.activityFeed),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.cookie_outlined),
-                  tooltip: "Clear cookies",
+                  tooltip: AppLocalizations.of(context)!.clearCookies,
                   onPressed: () async {
                     final cookieManager = CookieManager();
                     if (await cookieManager.clearCookies()) {
@@ -95,7 +96,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
           return Column(children: [
             if (_showControls)
               RadioListTile(
-                title: const Text('Disabled'),
+                title: Text(AppLocalizations.of(context)!.disabled),
                 value: true,
                 groupValue: !activityFeedModel.isEnabled,
                 onChanged: (value) {
@@ -105,10 +106,10 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
               ),
             if (_showControls)
               RadioListTile(
-                title: const Text('Twitch activity feed'),
+                title: Text(AppLocalizations.of(context)!.twitchActivityFeed),
                 subtitle: userModel.isSignedIn()
                     ? null
-                    : const Text("Must be signed in"),
+                    : Text(AppLocalizations.of(context)!.signInToEnable),
                 value: true,
                 groupValue:
                     activityFeedModel.isEnabled && !activityFeedModel.isCustom,
@@ -126,7 +127,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                   child: TextFormField(
                       controller: _textEditingController,
                       decoration: InputDecoration(
-                          hintText: "Custom URL",
+                          hintText: AppLocalizations.of(context)!.customUrl,
                           suffixIcon: IconButton(
                               icon: const Icon(Icons.qr_code_scanner),
                               onPressed: () {
@@ -147,7 +148,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                               })),
                       validator: (value) {
                         if (value != null && Uri.tryParse(value) == null) {
-                          return "That's not a valid URL";
+                          return AppLocalizations.of(context)!
+                              .invalidUrlErrorText;
                         }
                         return null;
                       },
@@ -182,7 +184,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                           Icon(_showControls
                               ? Icons.unfold_more
                               : Icons.unfold_less),
-                          const Text("Preview"),
+                          Text(AppLocalizations.of(context)!.preview),
                         ]))),
             activityFeedModel.isEnabled
                 ? Expanded(
