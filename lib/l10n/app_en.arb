@@ -358,5 +358,73 @@
         "format": "decimalPattern"
       }
     }
+  },
+  "unmuteUser": "Unmute {displayName}",
+  "@unmuteUser": {
+    "description": "Unmute option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "muteUser": "Mute {displayName}",
+  "@muteUser": {
+    "description": "Mute option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "timeoutUser": "Timeout {displayName}",
+  "@timeoutUser": {
+    "description": "Timeout option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "banUser": "Ban {displayName}",
+  "@banUser": {
+    "description": "Ban option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "unbanUser": "Unban {displayName}",
+  "@unbanUser": {
+    "description": "Unban option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "viewProfile": "View {displayName}'s profile",
+  "@viewProfile": {
+    "description": "Unban option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "copyMessage": "Copy Message",
+  "@copyMessage": {
+    "description": "Copy option shown when long pressing on a chat message"
+  },
+  "deleteMessage": "Delete Message",
+  "@deleteMessage": {
+    "description": "Delete option shown when long pressing on a chat message"
   }
 }
