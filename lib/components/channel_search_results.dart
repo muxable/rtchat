@@ -25,6 +25,14 @@ Future<List<SearchResult>> fastSearch() async {
     final tokens = doc.id.split(":");
     final provider = tokens[0];
     final channelId = tokens[1];
+    String? title;
+    if (data['title'] != null && data['categoryName'] != null) {
+      title = "${data['categoryName']} - ${data['title']}";
+    } else if (data['title'] != null) {
+      title = data['title'];
+    } else if (data['categoryName'] != null) {
+      title = data['categoryName'];
+    }
     return SearchResult(
         channelId: channelId,
         provider: provider,
@@ -32,7 +40,7 @@ Future<List<SearchResult>> fastSearch() async {
         isOnline: data['onlineAt'] != null,
         imageUrl: Uri.parse(
             "https://rtirl.com/pfp.png?provider=$provider&channelId=$channelId"),
-        title: "${data['categoryName']} - ${data['title']}",
+        title: title,
         language: data['language'],
         isPromoted: true);
   }).toList();
@@ -74,7 +82,7 @@ class SearchResult {
   final String displayName;
   final bool isOnline;
   final Uri imageUrl;
-  final String title;
+  final String? title;
   final bool isPromoted;
   final String? language;
 
@@ -205,7 +213,8 @@ class _ChannelSearchResultsWidgetState
                                   color: Colors.grey,
                                 )),
                           ]),
-                      subtitle: Text(result.title),
+                      subtitle:
+                          result.title == null ? null : Text(result.title!),
                       onTap: () {
                         widget.onChannelSelect(Channel(
                           "twitch",
