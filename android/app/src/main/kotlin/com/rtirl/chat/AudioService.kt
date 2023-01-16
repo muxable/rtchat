@@ -162,7 +162,9 @@ class AudioService : Service() {
             stopForeground(true)
             nm.cancel(NOTIFICATION_ID)
             stopSelf()
-            wakelock?.release()
+            if(wakelock?.isHeld() == true) {
+                wakelock?.release()
+            }
             START_NOT_STICKY
         }
     }
