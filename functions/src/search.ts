@@ -38,7 +38,8 @@ export const search = functions.https.onCall(async (data, context) => {
             displayName: channel.user_name,
             isOnline: channel.type == "live",
             imageUrl: imageUrl,
-            title: `${channel.game_name} - ${channel.title}`,
+            categoryName: channel.game_name,
+            title: channel.title,
             viewerCount: channel.viewer_count,
             language: channel.language,
           };
@@ -70,7 +71,8 @@ export const search = functions.https.onCall(async (data, context) => {
         displayName: channel.display_name,
         isOnline: channel.is_live,
         imageUrl: channel.thumbnail_url,
-        title: `${channel.game_name} - ${channel.title}`,
+        categoryName: channel.game_name,
+        title: channel.title,
         viewerCount: channel.viewer_count,
         language: channel.language,
       };
