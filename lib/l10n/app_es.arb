@@ -21,7 +21,7 @@
   "streamOffline": "Fuera de línea {date}, {time}",
   "chatCleared": "Chat limpiado {date}, {time}",
   "configureQuickLinks": "Configuración enlaces rápidos",
-  "disableRainMode": "Desactivad modo lluvia",
+  "disableRainMode": "Desactivar modo lluvia",
   "enableRainMode": "Activar modo lluvia",
   "disableRainModeSubtitle": "Desactiva la interacción",
   "enableRainModeSubtitle": "Activa la interacción",
