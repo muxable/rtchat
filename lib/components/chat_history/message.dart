@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/ad.dart';
 import 'package:rtchat/components/chat_history/auxiliary/realtimecash_donation.dart';
@@ -96,8 +97,9 @@ class ChatHistoryMessage extends StatelessWidget {
                                       leading: const Icon(
                                           Icons.volume_up_rounded,
                                           color: Colors.deepPurpleAccent),
-                                      title: Text(
-                                          'Unmute ${m.author.displayName}'),
+                                      title: Text(AppLocalizations.of(context)!
+                                          .unmuteUser(m.author.displayName ??
+                                              m.author.login)),
                                       onTap: () {
                                         ttsModel.unmute(m.author);
                                         Navigator.pop(context);
@@ -107,7 +109,9 @@ class ChatHistoryMessage extends StatelessWidget {
                                     leading: const Icon(
                                         Icons.volume_off_rounded,
                                         color: Colors.redAccent),
-                                    title: Text('Mute ${m.author.displayName}'),
+                                    title: Text(AppLocalizations.of(context)!
+                                        .muteUser(m.author.displayName ??
+                                            m.author.login)),
                                     onTap: () {
                                       ttsModel.mute(m.author);
                                       Navigator.pop(context);
@@ -116,7 +120,8 @@ class ChatHistoryMessage extends StatelessWidget {
                               ListTile(
                                   leading: const Icon(Icons.delete,
                                       color: Colors.redAccent),
-                                  title: const Text('Delete Message'),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .deleteMessage),
                                   onTap: () {
                                     ActionsAdapter.instance
                                         .delete(channel, m.messageId);
@@ -125,8 +130,9 @@ class ChatHistoryMessage extends StatelessWidget {
                               ListTile(
                                   leading: const Icon(Icons.timer_outlined,
                                       color: Colors.orangeAccent),
-                                  title:
-                                      Text('Timeout ${m.author.displayName}'),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .timeoutUser(m.author.displayName ??
+                                          m.author.login)),
                                   onTap: () {
                                     Navigator.pop(context, true);
                                   }),
@@ -134,7 +140,9 @@ class ChatHistoryMessage extends StatelessWidget {
                                   leading: const Icon(
                                       Icons.dnd_forwardslash_outlined,
                                       color: Colors.redAccent),
-                                  title: Text('Ban ${m.author.displayName}'),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .banUser(m.author.displayName ??
+                                          m.author.login)),
                                   onTap: () {
                                     ActionsAdapter.instance
                                         .ban(channel, m.author.login);
@@ -143,7 +151,9 @@ class ChatHistoryMessage extends StatelessWidget {
                               ListTile(
                                   leading: const Icon(Icons.circle_outlined,
                                       color: Colors.greenAccent),
-                                  title: Text('Unban ${m.author.displayName}'),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .unbanUser(m.author.displayName ??
+                                          m.author.login)),
                                   onTap: () {
                                     ActionsAdapter.instance
                                         .unban(channel, m.author.login);
@@ -152,7 +162,8 @@ class ChatHistoryMessage extends StatelessWidget {
                               ListTile(
                                   leading: const Icon(Icons.copy_outlined,
                                       color: Colors.greenAccent),
-                                  title: const Text('Copy message'),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .copyMessage),
                                   onTap: () {
                                     Clipboard.setData(
                                         ClipboardData(text: m.message));
@@ -161,8 +172,9 @@ class ChatHistoryMessage extends StatelessWidget {
                               ListTile(
                                   leading: const Icon(Icons.link_outlined,
                                       color: Colors.blueAccent),
-                                  title: Text(
-                                      'View ${m.author.displayName}\'s profile'),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .viewProfile(m.author.displayName ??
+                                          m.author.login)),
                                   onTap: () {
                                     openUrl(Uri.parse(
                                         "https://www.twitch.tv/${m.author.displayName}"));
@@ -176,7 +188,8 @@ class ChatHistoryMessage extends StatelessWidget {
                       context: context,
                       builder: (context) {
                         return TimeoutDialog(
-                            title: "Timeout ${m.author.displayName}",
+                            title: AppLocalizations.of(context)!.timeoutUser(
+                                m.author.displayName ?? m.author.login),
                             onPressed: (duration) {
                               ActionsAdapter.instance.timeout(
                                   channel,
