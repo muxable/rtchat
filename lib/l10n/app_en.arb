@@ -341,7 +341,7 @@
       }
     }
   },
-  "followingEvent3": "<bold>{displayName}</bold>, <bold>{displayNameTwo}</bold>, and {others} others are following you",
+  "followingEvent3": "<bold>{displayName}</bold>, <bold>{displayNameTwo}</bold>, and {numOthers} others are following you",
   "@followingEvent3": {
     "description": "Text label that shows when three or more users follow the streamer",
     "placeholders": {
@@ -353,7 +353,7 @@
         "type": "String",
         "example": "muxfd"
       },
-      "others": {
+      "numOthers": {
         "type": "int",
         "format": "decimalPattern"
       }
