@@ -72,7 +72,7 @@
   "thirdPartyServicesSubtitle": "Conecta un servicio de terceros",
   "followingEvent": "<bold>{displayName}</bold> te está siguiendo",
   "followingEvent2": "<bold>{displayName}</bold> y <bold>{displayNameTwo}</bold> te están siguiendo",
-  "followingEvent3": "<bold>{displayName}</bold>, <bold>{displayNameTwo}</bold>, y {others} otros te están siguiendo",
+  "followingEvent3": "<bold>{displayName}</bold>, <bold>{displayNameTwo}</bold>, y {numOthers} otros te están siguiendo",
   "unmuteUser": "Quitar silencio a {displayName}",
   "muteUser": "Silenciar a {displayName}",
   "timeoutUser": "Suspender a {displayName}",
