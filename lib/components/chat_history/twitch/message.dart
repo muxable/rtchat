@@ -103,7 +103,9 @@ class TwitchMessageWidget extends StatelessWidget {
               preferBelow: false,
               child: Image(
                   height: styleModel.fontSize,
-                  image: ResilientNetworkImage(token.url))));
+                  image: ResilientNetworkImage(token.url),
+                  errorBuilder: (context, error, stackTrace) =>
+                      Text(token.code))));
     } else if (token is LinkToken) {
       yield WidgetSpan(
         child: MouseRegion(
