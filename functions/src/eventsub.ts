@@ -48,7 +48,10 @@ function createEventsub(token: string, type: string, twitchUserId: string) {
     type === "channel.shoutout.create" ||
     type === "channel.shoutout.receive"
   ) {
-    condition = { moderator_user_id: twitchUserId };
+    condition = {
+      broadcaster_user_id: twitchUserId,
+      moderator_user_id: twitchUserId,
+    };
   }
   const version =
     type === "channel.shoutout.create" || type === "channel.shoutout.receive"
