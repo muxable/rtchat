@@ -41,10 +41,18 @@ enum EventsubType {
 }
 
 function createEventsub(token: string, type: string, twitchUserId: string) {
-  const condition =
-    type == "channel.raid"
-      ? { to_broadcaster_user_id: twitchUserId }
-      : { broadcaster_user_id: twitchUserId };
+  var condition: any = { broadcaster_user_id: twitchUserId };
+  if (type === "channel.raid") {
+    condition = { to_broadcaster_user_id: twitchUserId };
+  } else if (
+    type === "channel.shoutout.create" ||
+    type === "channel.shoutout.receive"
+  ) {
+    condition = {
+      broadcaster_user_id: twitchUserId,
+      moderator_user_id: twitchUserId,
+    };
+  }
   const version =
     type === "channel.shoutout.create" || type === "channel.shoutout.receive"
       ? "beta"
