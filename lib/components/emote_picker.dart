@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -67,9 +67,9 @@ class EmotesList extends StatelessWidget {
                     child: IconButton(
                         onPressed: () => onEmoteSelected(emote),
                         splashRadius: 24,
-                        icon: FadeInImage(
-                            placeholder: MemoryImage(kTransparentImage),
-                            image: ResilientNetworkImage(emote.uri))));
+                        icon: CrossFadeImage(
+                            placeholder: emote.image.placeholderImage,
+                            image: emote.image)));
               }).toList(),
             )),
           );

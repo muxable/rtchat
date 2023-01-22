@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/channels.dart';
@@ -79,8 +78,6 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
 
   var _locked = false;
   var _iteration = 0;
-
-  final NumberFormat _formatter = NumberFormat.compact();
 
   @override
   void initState() {
