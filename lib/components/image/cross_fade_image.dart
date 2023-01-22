@@ -12,7 +12,7 @@ class CrossFadeImage extends StatelessWidget {
     this.width,
     this.height,
     this.fit,
-    this.alignment = Alignment.center,
+    this.alignment = Alignment.topCenter,
     this.repeat = ImageRepeat.noRepeat,
     this.matchTextDirection = false,
   }) : super(key: key);
