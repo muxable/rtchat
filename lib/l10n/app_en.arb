@@ -426,5 +426,69 @@
   "deleteMessage": "Delete Message",
   "@deleteMessage": {
     "description": "Delete option shown when long pressing on a chat message"
+  },
+  "longScrollNotification": "You're scrolling kind of far, don't you think?",
+  "@longScrollNotification": {
+    "description": "Notification shown when the user scrolls very far back in the chat history"
+  },
+  "stfu": "stfu",
+  "@stfu": {
+    "description": "Text label for the stfu button"
+  },
+  "globalEmotes": "Global Emotes",
+  "@globalEmotes": {
+    "description": "Text label for the global emotes category header"
+  },
+  "followerCount": "{count,plural, =0{0 followers} =1{1 follower} other{{count} followers}}",
+  "@followerCount": {
+    "description": "Text label for the followers count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "viewerCount": "{count,plural, =0{0 viewers} =1{1 viewer} other{{count} viewers}}",
+  "@viewerCount": {
+    "description": "Text label for the viewers count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "streamPreviewMessage": "Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.",
+  "@streamPreviewMessage": {
+    "description": "Notification shown when the user leaves the stream preview open for a long time"
+  },
+  "okay": "Okay",
+  "@okay": {
+    "description": "Okay button text"
+  },
+  "streamPreviewLoading": "Loading (or stream is offline)...",
+  "@streamPreviewLoading": {
+    "description": "Text label shown when the stream preview is loading"
+  },
+  "copiedToClipboard": "Copied to clipboard",
+  "@copiedToClipboard": {
+    "description": "Notification shown when a message is copied to the clipboard"
+  },
+  "audioSourcesRequirePermissions": "Audio sources require permissions",
+  "@audioSourcesRequirePermissions": {
+    "description": "Alert title prompting the user to grant permissions to use audio sources"
+  },
+  "audioSourcesRequirePermissionsMessage": "Approve RealtimeChat to draw over other apps to use audio sources.",
+  "@audioSourcesRequirePermissionsMessage": {
+    "description": "Alert message prompting the user to grant permissions to use audio sources"
+  },
+  "audioSourcesRemoveButton": "Remove audio sources",
+  "@audioSourcesRemoveButton": {
+    "description": "Button text for removing audio sources"
+  },
+  "audioSourcesOpenSettingsButton": "Open settings",
+  "@audioSourcesOpenSettingsButton": {
+    "description": "Button text for opening settings"
   }
 }
