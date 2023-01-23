@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/style.dart';
 
@@ -61,9 +62,7 @@ class DecoratedEventWidget extends StatelessWidget {
                                       return ClipRRect(
                                         borderRadius: BorderRadius.circular(
                                             styleModel.fontSize),
-                                        child: FadeInImage(
-                                            placeholder:
-                                                MemoryImage(kTransparentImage),
+                                        child: CrossFadeImage(
                                             image: avatars.first,
                                             height: styleModel.fontSize * 1.5,
                                             width: styleModel.fontSize * 1.5),
@@ -85,7 +84,7 @@ class DecoratedEventWidget extends StatelessWidget {
                                                         BorderRadius.circular(
                                                             styleModel
                                                                 .fontSize),
-                                                    child: FadeInImage(
+                                                    child: CrossFadeImage(
                                                         placeholder: MemoryImage(
                                                             kTransparentImage),
                                                         image: avatar,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 
@@ -48,12 +49,13 @@ class TwitchBadgesScreen extends StatelessWidget {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final badgeSet = model.badgeSets[keys[index]];
+                  final image = ResilientNetworkImage(
+                      Uri.parse(badgeSet["image_url_4x"]));
                   return CheckboxListTile(
-                      secondary: FadeInImage(
+                      secondary: CrossFadeImage(
                           alignment: Alignment.center,
-                          placeholder: MemoryImage(kTransparentImage),
-                          image: ResilientNetworkImage(
-                              Uri.parse(badgeSet["image_url_4x"])),
+                          placeholder: image.placeholderImage,
+                          image: image,
                           height: 36),
                       title: Text(badgeSet["title"],
                           overflow: TextOverflow.ellipsis),
