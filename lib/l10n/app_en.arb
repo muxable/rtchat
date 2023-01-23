@@ -445,7 +445,7 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "format": "decimalPattern"
+        "format": "compact"
       }
     }
   },
@@ -455,7 +455,7 @@
     "placeholders": {
       "count": {
         "type": "int",
-        "format": "decimalPattern"
+        "format": "compact"
       }
     }
   },
