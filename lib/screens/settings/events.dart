@@ -42,8 +42,8 @@ class EventsScreen extends StatelessWidget {
                     child: TwitchFollowEventWidget(TwitchFollowEventModel(
                   followers: [
                     const TwitchUserModel(
-                      userId: '158394109',
-                      login: 'muxfd',
+                        userId: '158394109',
+                        login: 'muxfd',
                         displayName: 'muxfd')
                   ],
                   messageId: '',
