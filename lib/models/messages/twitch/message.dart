@@ -146,7 +146,7 @@ List<BadgeData> parseBadges(String badges) {
 
 Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
   if (emotes.isNotEmpty) {
-    final messsageGrapheme = message.characters;
+    final messageGrapheme = message.characters;
     final parsed = parseEmotes(emotes);
     parsed.sort((a, b) => a.start.compareTo(b.start));
 
@@ -154,18 +154,19 @@ Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
     for (final child in parsed) {
       if (child.start > index) {
         final substring =
-            messsageGrapheme.getRange(index, child.start).toString();
+            messageGrapheme.getRange(index, child.start).toString();
         yield TextToken(substring);
       }
       final url = Uri.parse(
           "https://static-cdn.jtvnw.net/emoticons/v2/${child.key}/default/dark/1.0");
-      yield EmoteToken(
-          url: url, code: message.substring(child.start, child.end + 1));
+      final code =
+          messageGrapheme.getRange(child.start, child.end + 1).toString();
+      yield EmoteToken(url: url, code: code);
       index = child.end + 1;
     }
 
-    if (index < messsageGrapheme.length) {
-      yield TextToken(messsageGrapheme.getRange(index).toString());
+    if (index < messageGrapheme.length) {
+      yield TextToken(messageGrapheme.getRange(index).toString());
     }
   } else {
     yield TextToken(message);

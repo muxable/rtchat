@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
 
@@ -95,6 +96,8 @@ class SearchResult {
       required this.title,
       required this.isPromoted,
       required this.language});
+
+  ResilientNetworkImage get image => ResilientNetworkImage(imageUrl);
 }
 
 class ChannelSearchResultsWidget extends StatefulWidget {
@@ -176,11 +179,10 @@ class _ChannelSearchResultsWidgetState
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(24),
-                                  child: FadeInImage(
+                                  child: CrossFadeImage(
                                       placeholder:
-                                          MemoryImage(kTransparentImage),
-                                      image: ResilientNetworkImage(
-                                          result.imageUrl),
+                                          result.image.placeholderImage,
+                                      image: result.image,
                                       height: 48,
                                       width: 48),
                                 ),
