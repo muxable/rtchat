@@ -258,15 +258,18 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
       _refreshPending = true;
       final model = Provider.of<MessagesModel>(context, listen: false);
       final messenger = ScaffoldMessenger.of(context);
+      final localizations = AppLocalizations.of(context)!;
       await model.pullMoreMessages();
       _refreshPending = false;
       if (_showScrollNotification && model.messages.length > 5000) {
         messenger.showSnackBar(SnackBar(
-          content: const Text('You\'re scrolling kinda far, don\'t you think?'),
+          content: Text(localizations.longScrollNotification),
           action: SnackBarAction(
-            label: 'stfu',
+            label: localizations.stfu,
             onPressed: () {
-              _showScrollNotification = false;
+              setState(() {
+                _showScrollNotification = false;
+              });
             },
           ),
         ));

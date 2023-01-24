@@ -3,6 +3,7 @@ import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/quick_links.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
 class QuickLinksScreen extends StatefulWidget {
@@ -59,7 +60,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Quick links")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.quickLinks)),
       body: SafeArea(
         child: Column(children: [
           Expanded(child:
@@ -72,7 +73,8 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                   background: const DismissibleDeleteBackground(),
                   child: Tooltip(
                       triggerMode: TooltipTriggerMode.tap,
-                      message: "Swipe left or right to delete quick link",
+                      message:
+                          AppLocalizations.of(context)!.swipeToDeleteQuickLinks,
                       child: ListTile(
                         key: ValueKey(source),
                         leading:
@@ -120,7 +122,9 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                                   return TextFormField(
                                     controller: _labelEditingController,
                                     decoration: InputDecoration(
-                                      hintText: snapshot.data ?? "Label",
+                                      hintText: snapshot.data ??
+                                          AppLocalizations.of(context)!
+                                              .quickLinksLabelHint,
                                     ),
                                   );
                                 },
@@ -152,14 +156,16 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                               if (value == null ||
                                   value.isEmpty ||
                                   Uri.tryParse(value) == null) {
-                                return "This doesn't look like a valid URL.";
+                                return AppLocalizations.of(context)!
+                                    .invalidUrlErrorText;
                               }
                               final quickLinksModel =
                                   Provider.of<QuickLinksModel>(context,
                                       listen: false);
                               if (quickLinksModel.sources.any((s) =>
                                   s.url.toString() == Uri.encodeFull(value))) {
-                                return "This link already exists";
+                                return AppLocalizations.of(context)!
+                                    .duplicateUrlErrorText;
                               }
                               return null;
                             },

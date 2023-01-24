@@ -36,13 +36,27 @@ enum EventsubType {
   ChannelUpdate = "channel.update",
   StreamOnline = "stream.online",
   StreamOffline = "stream.offline",
+  ChannelShoutoutCreate = "channel.shoutout.create",
+  ChannelShoutoutReceive = "channel.shoutout.receive",
 }
 
 function createEventsub(token: string, type: string, twitchUserId: string) {
-  const condition =
-    type == "channel.raid"
-      ? { to_broadcaster_user_id: twitchUserId }
-      : { broadcaster_user_id: twitchUserId };
+  var condition: any = { broadcaster_user_id: twitchUserId };
+  if (type === "channel.raid") {
+    condition = { to_broadcaster_user_id: twitchUserId };
+  } else if (
+    type === "channel.shoutout.create" ||
+    type === "channel.shoutout.receive"
+  ) {
+    condition = {
+      broadcaster_user_id: twitchUserId,
+      moderator_user_id: twitchUserId,
+    };
+  }
+  const version =
+    type === "channel.shoutout.create" || type === "channel.shoutout.receive"
+      ? "beta"
+      : "1";
   return fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
     method: "POST",
     headers: {
@@ -52,7 +66,7 @@ function createEventsub(token: string, type: string, twitchUserId: string) {
     },
     body: JSON.stringify({
       type,
-      version: "1",
+      version: version,
       condition,
       transport: {
         method: "webhook",
@@ -136,7 +150,9 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
       channelId,
       type,
       timestamp: admin.firestore.Timestamp.fromMillis(Date.parse(timestamp)),
-      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 1000 * 86400 * 7 * 2),
+      expiresAt: admin.firestore.Timestamp.fromMillis(
+        Date.now() + 1000 * 86400 * 7 * 2
+      ),
       event: req.body.event,
     });
 

@@ -1,5 +1,7 @@
 import 'dart:core';
 
+import 'package:rtchat/components/image/resilient_network_image.dart';
+
 class Channel {
   final String provider;
   final String channelId;
@@ -22,5 +24,9 @@ class Channel {
   Uri get profilePictureUrl {
     return Uri.parse(
         "https://rtirl.com/pfp.png?provider=twitch&channelId=$channelId");
+  }
+
+  ResilientNetworkImage get profilePicture {
+    return ResilientNetworkImage(profilePictureUrl);
   }
 }

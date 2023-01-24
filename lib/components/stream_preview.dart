@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/stream_preview.dart';
@@ -46,10 +47,9 @@ class _StreamPreviewState extends State<StreamPreview> {
       _promptTimer = Timer(const Duration(minutes: 5), () {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           duration: const Duration(minutes: 1),
-          content: const Text(
-              "Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life."),
+          content: Text(AppLocalizations.of(context)!.streamPreviewMessage),
           action: SnackBarAction(
-            label: 'Okay',
+            label: AppLocalizations.of(context)!.okay,
             onPressed: () {
               model.showBatteryPrompt = false;
               _promptTimer = null;
@@ -151,10 +151,10 @@ class _StreamPreviewState extends State<StreamPreview> {
           child: IgnorePointer(
             child: Container(
               color: Colors.black.withOpacity(0.8),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  "Loading (or stream is offline)...",
-                  style: TextStyle(color: Colors.white),
+                  AppLocalizations.of(context)!.streamPreviewLoading,
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
             ),

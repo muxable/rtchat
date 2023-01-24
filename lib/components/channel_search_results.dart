@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
 
@@ -25,6 +26,14 @@ Future<List<SearchResult>> fastSearch() async {
     final tokens = doc.id.split(":");
     final provider = tokens[0];
     final channelId = tokens[1];
+    String? title;
+    if (data['title'] != null && data['categoryName'] != null) {
+      title = "${data['categoryName']} - ${data['title']}";
+    } else if (data['title'] != null) {
+      title = data['title'];
+    } else if (data['categoryName'] != null) {
+      title = data['categoryName'];
+    }
     return SearchResult(
         channelId: channelId,
         provider: provider,
@@ -32,7 +41,7 @@ Future<List<SearchResult>> fastSearch() async {
         isOnline: data['onlineAt'] != null,
         imageUrl: Uri.parse(
             "https://rtirl.com/pfp.png?provider=$provider&channelId=$channelId"),
-        title: "${data['categoryName']} - ${data['title']}",
+        title: title,
         language: data['language'],
         isPromoted: true);
   }).toList();
@@ -74,7 +83,7 @@ class SearchResult {
   final String displayName;
   final bool isOnline;
   final Uri imageUrl;
-  final String title;
+  final String? title;
   final bool isPromoted;
   final String? language;
 
@@ -87,6 +96,8 @@ class SearchResult {
       required this.title,
       required this.isPromoted,
       required this.language});
+
+  ResilientNetworkImage get image => ResilientNetworkImage(imageUrl);
 }
 
 class ChannelSearchResultsWidget extends StatefulWidget {
@@ -168,11 +179,10 @@ class _ChannelSearchResultsWidgetState
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(24),
-                                  child: FadeInImage(
+                                  child: CrossFadeImage(
                                       placeholder:
-                                          MemoryImage(kTransparentImage),
-                                      image: ResilientNetworkImage(
-                                          result.imageUrl),
+                                          result.image.placeholderImage,
+                                      image: result.image,
                                       height: 48,
                                       width: 48),
                                 ),
@@ -205,7 +215,8 @@ class _ChannelSearchResultsWidgetState
                                   color: Colors.grey,
                                 )),
                           ]),
-                      subtitle: Text(result.title),
+                      subtitle:
+                          result.title == null ? null : Text(result.title!),
                       onTap: () {
                         widget.onChannelSelect(Channel(
                           "twitch",

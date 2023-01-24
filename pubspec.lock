@@ -293,6 +293,27 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_custom_tabs:
+    dependency: "direct main"
+    description:
+      name: flutter_custom_tabs
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.4"
+  flutter_custom_tabs_platform_interface:
+    dependency: transitive
+    description:
+      name: flutter_custom_tabs_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.1"
+  flutter_custom_tabs_web:
+    dependency: transitive
+    description:
+      name: flutter_custom_tabs_web
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
   flutter_keyboard_visibility:
     dependency: "direct main"
     description:
@@ -768,6 +789,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.0"
+  styled_text:
+    dependency: "direct main"
+    description:
+      name: styled_text
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "6.0.0"
   term_glyph:
     dependency: transitive
     description:
@@ -943,6 +971,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.0+2"
+  xmlstream:
+    dependency: transitive
+    description:
+      name: xmlstream
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
 sdks:
   dart: ">=2.17.0 <3.0.0"
-  flutter: ">=3.0.0"
+  flutter: ">=3.3.0"
