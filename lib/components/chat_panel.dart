@@ -267,7 +267,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
           action: SnackBarAction(
             label: localizations.stfu,
             onPressed: () {
-              _showScrollNotification = false;
+              setState(() {
+                _showScrollNotification = false;
+              });
             },
           ),
         ));

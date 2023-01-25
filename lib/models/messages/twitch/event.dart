@@ -38,15 +38,14 @@ class TwitchFollowEventModel extends MessageModel {
 
   static TwitchFollowEventModel fromDocumentData(
       String messageId, Map<String, dynamic> data) {
-    return TwitchFollowEventModel(
-        followers: [
+    return TwitchFollowEventModel(followers: [
       TwitchUserModel(
-            userId: data['event']['user_id'],
-            login: data['event']['user_login'],
+          userId: data['event']['user_id'],
+          login: data['event']['user_login'],
           displayName: data['event']['user_name'])
     ],
-        messageId: messageId,
-        timestamp: data['timestamp'].toDate());
+    messageId: messageId,
+    timestamp: data['timestamp'].toDate());
   }
 
   static TwitchFollowEventModel merged(List<MessageModel> models) {
