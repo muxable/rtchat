@@ -5,6 +5,7 @@ import 'package:motion_sensors/motion_sensors.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
@@ -115,7 +116,13 @@ class TwitchMessageWidget extends StatelessWidget {
               text: token.text,
               style: linkStyle,
               recognizer: (TapGestureRecognizer()
-                ..onTap = () => openUrl(token.url)),
+                ..onTap = () async {
+                  final model =
+                      Provider.of<LayoutModel>(context, listen: false);
+                  if (!model.locked) {
+                    await openUrl(token.url);
+                  }
+                }),
             ),
           ),
         ),
