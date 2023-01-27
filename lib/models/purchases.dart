@@ -62,6 +62,11 @@ class Purchases extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> isStoreAvailable() async {
+    await loadPurchases();
+    return await iapConnection.isAvailable();
+  }
+
   Product? getProduct(String productId) {
     return products.firstWhere((product) => product.id == productId);
   }
