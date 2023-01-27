@@ -80,7 +80,7 @@ class PollChoiceWidget extends StatelessWidget {
               padding: const EdgeInsets.only(right: 12),
               child: Align(
                   alignment: Alignment.centerRight,
-                  child: Text("${(percentage * 100).floor()}% (${data.votes})",
+                  child: Text("${(percentage * 100).round()}% (${data.votes})",
                       style: baseStyle)),
             ),
           ]));
