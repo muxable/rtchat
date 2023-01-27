@@ -490,5 +490,13 @@
   "audioSourcesOpenSettingsButton": "Open settings",
   "@audioSourcesOpenSettingsButton": {
     "description": "Button text for opening settings"
+  },
+  "flashOn": "Flash on",
+  "@flashOn": {
+    "description": "Text label for the camera flash enable button."
+  },
+  "flashOff": "Flash off",
+  "@flashOff": {
+    "description": "Text label for the camera flash disable button."
   }
 }

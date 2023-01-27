@@ -33,8 +33,7 @@ dependencies:
   firebase_analytics: ^10.1.0
   flutter_keyboard_visibility: ^5.0.3
   characters: ^1.2.0
-  google_fonts: ^3.0.1
-  mobile_scanner: ^2.0.0
+  google_fonts: ^4.0.0
   motion_sensors: ^0.1.0
   crypto: ^3.0.2
   path_provider: ^2.0.10
@@ -49,7 +48,8 @@ dependencies:
   webview_flutter_android: ^3.1.1
   webview_flutter_wkwebview: ^3.0.1
   flutter_custom_tabs: ^1.0.4
-  styled_text: ^6.0.0
+  styled_text: ^7.0.0
+  barcode_scan2: ^4.2.3
 
 dev_dependencies:
   flutter_lints: ^2.0.1

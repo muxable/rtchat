@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/layout.dart';
@@ -142,21 +142,30 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                           hintText: AppLocalizations.of(context)!.customUrl,
                           suffixIcon: IconButton(
                               icon: const Icon(Icons.qr_code_scanner),
-                              onPressed: () {
-                                showModalBottomSheet<void>(
-                                    context: context,
-                                    builder: (context) {
-                                      return MobileScanner(
-                                          allowDuplicates: false,
-                                          onDetect: (barcode, args) {
-                                            final code = barcode.rawValue;
-                                            if (code != null) {
-                                              _textEditingController.text =
-                                                  code;
-                                            }
-                                            Navigator.of(context).pop();
-                                          });
-                                    });
+                              onPressed: () async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                final result = await BarcodeScanner.scan(
+                                  options: ScanOptions(strings: {
+                                    "cancel":
+                                        AppLocalizations.of(context)!.cancel,
+                                    "flash_on":
+                                        AppLocalizations.of(context)!.flashOn,
+                                    "flash_off":
+                                        AppLocalizations.of(context)!.flashOff,
+                                  }),
+                                );
+                                switch (result.type) {
+                                  case ResultType.Barcode:
+                                    _textEditingController.text =
+                                        result.rawContent;
+                                    break;
+                                  case ResultType.Cancelled:
+                                    break;
+                                  case ResultType.Error:
+                                    messenger.showSnackBar(SnackBar(
+                                        content: Text(result.rawContent)));
+                                    break;
+                                }
                               }),
                           errorText:
                               Uri.tryParse(activityFeedModel.customUrl) == null
