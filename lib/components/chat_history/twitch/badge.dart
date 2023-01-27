@@ -4,17 +4,12 @@ import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 
 class TwitchBadgeWidget extends StatelessWidget {
-  final String channelId;
   final String badge;
   final String version;
   final double? height;
 
   const TwitchBadgeWidget(
-      {Key? key,
-      required this.channelId,
-      required this.badge,
-      required this.version,
-      this.height})
+      {Key? key, required this.badge, required this.version, this.height})
       : super(key: key);
 
   @override

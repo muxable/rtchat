@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sticky_headers/sticky_headers/widget.dart';
 
 class EmotesList extends StatelessWidget {
@@ -18,8 +19,9 @@ class EmotesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final globalEmotes = AppLocalizations.of(context)!.globalEmotes;
     final byCategory = emotes.fold<Map<String, List<Emote>>>({}, (map, emote) {
-      final category = emote.category ?? "Global Emotes";
+      final category = emote.category ?? globalEmotes;
       if (!map.containsKey(category)) {
         map[category] = [];
       }
@@ -29,10 +31,10 @@ class EmotesList extends StatelessWidget {
     final categories = byCategory.keys.toList();
     categories.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     // ensure global emotes is first.
-    final globalEmotesIndex = categories.indexOf("Global Emotes");
+    final globalEmotesIndex = categories.indexOf(globalEmotes);
     if (globalEmotesIndex != -1) {
       categories.removeAt(globalEmotesIndex);
-      categories.insert(0, "Global Emotes");
+      categories.insert(0, globalEmotes);
     }
     // ensure channel emotes is second.
     final channelEmotesIndex = categories.indexOf(channel.displayName);
@@ -65,9 +67,9 @@ class EmotesList extends StatelessWidget {
                     child: IconButton(
                         onPressed: () => onEmoteSelected(emote),
                         splashRadius: 24,
-                        icon: FadeInImage(
-                            placeholder: MemoryImage(kTransparentImage),
-                            image: ResilientNetworkImage(emote.uri))));
+                        icon: CrossFadeImage(
+                            placeholder: emote.image.placeholderImage,
+                            image: emote.image)));
               }).toList(),
             )),
           );

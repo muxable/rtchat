@@ -28,6 +28,9 @@ export const synthesize = functions.https.onCall(async (data, context) => {
 
   const token = await auth.getAccessToken();
 
+  const voiceNameTokens = data.voice.split("-");
+  const languageCode = `${voiceNameTokens[0]}-${voiceNameTokens[1]}`;
+
   const response = await fetch(
     "https://texttospeech.googleapis.com/v1/text:synthesize",
     {
@@ -41,7 +44,7 @@ export const synthesize = functions.https.onCall(async (data, context) => {
           text: data.text,
         },
         voice: {
-          languageCode: data.language,
+          languageCode: languageCode,
           name: data.voice,
         },
         audioConfig: {

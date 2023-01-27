@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/components/auth/twitch.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/models/channels.dart';
@@ -84,7 +85,7 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
               },
             )),
       ),
-      Text("or",
+      Text(AppLocalizations.of(context)!.or,
           style: Theme.of(context)
               .textTheme
               .titleMedium
@@ -94,8 +95,8 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 64),
           child: ElevatedButton(
-            child: const Text(
-              "Continue as Guest",
+            child: Text(
+              AppLocalizations.of(context)!.continueAsGuest,
               textAlign: TextAlign.center,
             ),
             onPressed: () async {

@@ -38,7 +38,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/muxable/rtchat-agent
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -58,18 +58,25 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     needs: build
     concurrency:
       group: deploy
       cancel-in-progress: true
+    environment:
+      name: agent
+      url: https://console.cloud.google.com/compute/instanceGroups/details/us-central1-c/agent-small-us-central1?project=rtchat-47692
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         
-      - uses: google-github-actions/auth@v0
+      - uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          workload_identity_provider: 'projects/832669896677/locations/global/workloadIdentityPools/github-actions/providers/github-actions'
+          service_account: 'github-action-356868763@rtchat-47692.iam.gserviceaccount.com'
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
@@ -77,4 +84,4 @@ jobs:
       - name: Deploy to GCE
         id: deploy
         run: |
-          gcloud compute instance-groups managed rolling-action start-update agent-us-central1 --version=template=agent-e2-medium-shutdown-script --zone=us-central1-a
+          gcloud compute instance-groups managed rolling-action start-update agent-small-us-central1 --project=rtchat-47692 --type='proactive' --max-surge=1 --max-unavailable=1 --minimal-action='replace' --replacement-method='substitute' --version=template=https://www.googleapis.com/compute/beta/projects/rtchat-47692/global/instanceTemplates/agent-e2-small --zone=us-central1-c

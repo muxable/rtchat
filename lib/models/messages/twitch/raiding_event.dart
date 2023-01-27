@@ -37,7 +37,8 @@ class TwitchRaidingEventModel extends MessageModel {
     return TwitchRaidingEventModel(
       timestamp: data['timestamp'].toDate(),
       messageId: "raiding.${data['raid']['id']}",
-      duration: Duration(seconds: data['raid']['force_raid_now_seconds']),
+      duration:
+          Duration(seconds: data['raid']['force_raid_now_seconds'].toInt()),
       targetUser: TwitchUserModel(
         userId: data['raid']['target_id'],
         displayName: data['raid']['target_display_name'],

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/user.dart';
@@ -25,13 +26,12 @@ class SignInWithTwitch extends StatelessWidget {
       style: ButtonStyle(
         backgroundColor: MaterialStateProperty.all(const Color(0xFF6441A5)),
       ),
-      child: const Text("Sign in with Twitch"),
+      child: Text(AppLocalizations.of(context)!.signInWithTwitch),
       onPressed: () async {
         final user = Provider.of<UserModel>(context, listen: false);
         final scaffoldMessenger = ScaffoldMessenger.of(context);
-        const retrySnackbar = SnackBar(
-            content:
-                Text("An error occurred when signing in. Please try again."));
+        final retrySnackbar =
+            SnackBar(content: Text(AppLocalizations.of(context)!.signInError));
         onStart?.call();
         try {
           await FirebaseAnalytics.instance.logLogin(loginMethod: "twitch");

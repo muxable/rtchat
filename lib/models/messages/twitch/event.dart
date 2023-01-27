@@ -28,23 +28,34 @@ class TwitchHostEventModel extends MessageModel {
 }
 
 class TwitchFollowEventModel extends MessageModel {
-  final TwitchUserModel follower;
+  final List<TwitchUserModel> followers;
 
   const TwitchFollowEventModel({
-    required this.follower,
+    required this.followers,
     required String messageId,
     required DateTime timestamp,
   }) : super(messageId: messageId, timestamp: timestamp);
 
   static TwitchFollowEventModel fromDocumentData(
       String messageId, Map<String, dynamic> data) {
+    return TwitchFollowEventModel(followers: [
+      TwitchUserModel(
+          userId: data['event']['user_id'],
+          login: data['event']['user_login'],
+          displayName: data['event']['user_name'])
+    ],
+    messageId: messageId,
+    timestamp: data['timestamp'].toDate());
+  }
+
+  static TwitchFollowEventModel merged(List<MessageModel> models) {
     return TwitchFollowEventModel(
-        follower: TwitchUserModel(
-            userId: data['event']['user_id'],
-            login: data['event']['user_login'],
-            displayName: data['event']['user_name']),
-        messageId: messageId,
-        timestamp: data['timestamp'].toDate());
+        followers: models
+            .whereType<TwitchFollowEventModel>()
+            .expand((element) => element.followers)
+            .toList(),
+        messageId: models.first.messageId,
+        timestamp: models.last.timestamp);
   }
 }
 

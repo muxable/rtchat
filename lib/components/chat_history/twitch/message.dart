@@ -5,12 +5,13 @@ import 'package:motion_sensors/motion_sensors.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:rtchat/urls.dart';
 
 const colors = [
   Color(0xFFFF0000),
@@ -103,7 +104,9 @@ class TwitchMessageWidget extends StatelessWidget {
               preferBelow: false,
               child: Image(
                   height: styleModel.fontSize,
-                  image: ResilientNetworkImage(token.url))));
+                  image: ResilientNetworkImage(token.url),
+                  errorBuilder: (context, error, stackTrace) =>
+                      Text(token.code))));
     } else if (token is LinkToken) {
       yield WidgetSpan(
         child: MouseRegion(
@@ -113,7 +116,13 @@ class TwitchMessageWidget extends StatelessWidget {
               text: token.text,
               style: linkStyle,
               recognizer: (TapGestureRecognizer()
-                ..onTap = () => launchUrl(token.url)),
+                ..onTap = () async {
+                  final model =
+                      Provider.of<LayoutModel>(context, listen: false);
+                  if (!model.locked) {
+                    await openUrl(token.url);
+                  }
+                }),
             ),
           ),
         ),
@@ -195,7 +204,6 @@ class TwitchMessageWidget extends StatelessWidget {
       children.addAll(model.badges.map((badge) => WidgetSpan(
           alignment: PlaceholderAlignment.middle,
           child: TwitchBadgeWidget(
-              channelId: model.tags['room-id'],
               badge: badge.key,
               version: badge.version,
               height: styleModel.fontSize))));

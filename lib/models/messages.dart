@@ -92,7 +92,16 @@ class MessagesModel extends ChangeNotifier {
               if (message is TwitchMessageModel && message.deleted) {
                 _tts?.unsay(message.messageId);
               }
+              break;
             }
+          }
+        } else if (event is UpdateAllDeltaEvent) {
+          for (var i = 0; i < _messages.length; i++) {
+            final message = event.update(_messages[i]);
+            if (message is TwitchMessageModel && message.deleted) {
+              _tts?.unsay(message.messageId);
+            }
+            _messages[i] = message;
           }
         } else if (event is ClearDeltaEvent) {
           _messages = [
@@ -155,7 +164,12 @@ class MessagesModel extends ChangeNotifier {
           final message = messages[i];
           if (message.messageId == event.messageId) {
             messages[i] = event.update(message);
+            break;
           }
+        }
+      } else if (event is UpdateAllDeltaEvent) {
+        for (var i = 0; i < messages.length; i++) {
+          messages[i] = event.update(messages[i]);
         }
       } else if (event is ClearDeltaEvent) {
         messages = [
@@ -200,7 +214,7 @@ class MessagesModel extends ChangeNotifier {
 
   Duration get announcementPinDuration => _announcementPinDuration;
 
-  Duration _pingMinGapDuration = const Duration(minutes: 1);
+  Duration _pingMinGapDuration = const Duration(days: 10000);
 
   set pingMinGapDuration(Duration duration) {
     _pingMinGapDuration = duration;

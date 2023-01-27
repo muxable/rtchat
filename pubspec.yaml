@@ -42,11 +42,12 @@ dependencies:
   firebase_database: ^9.0.18
   flutter_markdown: ^0.6.10+2
   flutter_localized_locales: ^2.0.3
-  flutter_custom_tabs: ^1.0.4
   webview_flutter: ^3.0.4
   just_audio: ^0.9.28
   sticky_headers: ^0.3.0+2
   google_mobile_ads: ^2.0.1
+  flutter_custom_tabs: ^1.0.4
+  styled_text: ^6.0.0
 
 dev_dependencies:
   flutter_lints: ^2.0.1

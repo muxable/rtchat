@@ -47,7 +47,7 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                     Text.rich(TextSpan(
                         text: remaining.isNegative
                             ? "0s"
-                            : "${remaining.inSeconds}s",
+                            : "${remaining.inSeconds + 1}s",
                         style: Theme.of(context).textTheme.titleSmall))
                   ])),
             ]);

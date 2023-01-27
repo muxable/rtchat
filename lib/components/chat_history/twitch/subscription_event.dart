@@ -96,7 +96,9 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
               preferBelow: false,
               child: Image(
                   height: styleModel.fontSize,
-                  image: ResilientNetworkImage(token.url))));
+                  image: ResilientNetworkImage(token.url),
+                  errorBuilder: (context, error, stackTrace) =>
+                      Text(token.code))));
     } else if (token is UserMentionToken) {
       final userModel = Provider.of<UserModel>(context, listen: false);
       final loginChannel = userModel.userChannel?.displayName;
@@ -119,7 +121,7 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedEventWidget(
-      padding: const EdgeInsets.fromLTRB(12, 0, 16, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text.rich(
           TextSpan(
@@ -147,21 +149,24 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
           ),
         ),
         if (model.text.isNotEmpty)
-          Consumer<StyleModel>(builder: (context, styleModel, child) {
-            return Text.rich(
-              TextSpan(
-                children: [
+          Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child:
+                  Consumer<StyleModel>(builder: (context, styleModel, child) {
+                return Text.rich(
                   TextSpan(
-                      text: model.subscriberUserName,
-                      style: Theme.of(context).textTheme.titleSmall),
-                  const TextSpan(text: ": "),
-                  ...model.tokenize().expand((token) {
-                    return _render(context, styleModel, token);
-                  }),
-                ],
-              ),
-            );
-          }),
+                    children: [
+                      TextSpan(
+                          text: model.subscriberUserName,
+                          style: Theme.of(context).textTheme.titleSmall),
+                      const TextSpan(text: ": "),
+                      ...model.tokenize().expand((token) {
+                        return _render(context, styleModel, token);
+                      }),
+                    ],
+                  ),
+                );
+              })),
       ]),
     );
   }

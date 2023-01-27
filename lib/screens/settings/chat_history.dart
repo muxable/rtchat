@@ -15,7 +15,6 @@ final message1 = TwitchMessageModel(
       "color": "#800000",
       "badges-raw": "premium/1",
       "emotes-raw": "25:36-40",
-      "room-id": "158394109",
     },
     annotations: const TwitchMessageAnnotationsModel(
         isAction: false, isFirstTimeChatter: false, announcement: null),
@@ -30,7 +29,6 @@ final message2 = TwitchMessageModel(
     tags: {
       "color": "#DAA520",
       "badges-raw": "moderator/1",
-      "room-id": "158394109",
     },
     annotations: const TwitchMessageAnnotationsModel(
         isAction: true, isFirstTimeChatter: false, announcement: null),
@@ -45,7 +43,6 @@ final message3 = TwitchMessageModel(
     tags: {
       "color": "#00FF7F",
       "badges-raw": "broadcaster/1,moderator/1",
-      "room-id": "158394109",
     },
     annotations: const TwitchMessageAnnotationsModel(
         isAction: false, isFirstTimeChatter: false, announcement: null),
