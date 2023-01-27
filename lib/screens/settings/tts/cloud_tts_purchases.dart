@@ -35,8 +35,8 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
                             horizontal: 24, vertical: 16),
                         child: MarkdownBody(
                           data: '''# High-Quality Text-to-Speech Voices
-                        \n* Per-viewer voices
-                        \n* Access to all Twitch-supported languages
+                        \n* Unique voices for all of your viewers
+                        \n* Access to all Twitch-supported languages and more
                         \n* No more robot speech!''',
                           styleSheet: MarkdownStyleSheet(
                             listBullet: Theme.of(context).textTheme.titleLarge,
