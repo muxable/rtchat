@@ -49,6 +49,7 @@ class Themes {
         tertiary: detailColor,
         background: Colors.white,
       ),
+      indicatorColor: lightAccentColor,
       inputDecorationTheme: const InputDecorationTheme(
         fillColor: lightTextFieldColor,
       ),
@@ -115,6 +116,7 @@ class Themes {
       accentColor: accentColor,
     ).copyWith(primary: accentColor, tertiary: detailColor),
     dialogBackgroundColor: Colors.black,
+    indicatorColor: accentColor,
     bottomSheetTheme: const BottomSheetThemeData(backgroundColor: detailColor),
     drawerTheme: const DrawerThemeData(backgroundColor: detailColor),
     inputDecorationTheme: const InputDecorationTheme(
