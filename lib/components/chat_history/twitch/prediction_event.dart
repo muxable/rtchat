@@ -48,7 +48,7 @@ class _TwitchOutcomeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final outcomePercentage =
-        "${((outcome.points / max(1, totalPoints)) * 100).floor()}%";
+        "${((outcome.points / max(1, totalPoints)) * 100).round()}%";
     return Padding(
         padding: const EdgeInsets.only(bottom: 8),
         child: Stack(alignment: AlignmentDirectional.center, children: [

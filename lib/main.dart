@@ -77,6 +77,13 @@ void main() async {
       systemNavigationBarColor: Colors.transparent,
     ));
 
+    AudioPlayer.global.setGlobalAudioContext(AudioContextConfig(
+      forceSpeaker: false,
+      duckAudio: false,
+      respectSilence: false,
+      stayAwake: true,
+    ).build());
+
     runApp(App(prefs: prefs));
   }, FirebaseCrashlytics.instance.recordError);
 }
@@ -96,7 +103,6 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   bool _isDiscoModeRunning = false;
   Timer? _discoModeTimer;
-  final _player = AudioCache();
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +142,9 @@ class _AppState extends State<App> {
             final model = MessagesModel.fromJson(
               jsonDecode(widget.prefs.getString("message_config") ?? "{}"),
             );
-            model.onMessagePing = () => _player.play('message-sound.wav');
+            final player = AudioPlayer();
+            model.onMessagePing =
+                () => player.play(AssetSource('message-sound.wav'));
             model.channel =
                 Provider.of<UserModel>(context, listen: false).activeChannel;
             model.tts = Provider.of<TtsModel>(context, listen: false);
