@@ -193,7 +193,8 @@ class _ChannelSearchResultsWidgetState
                                         ? Container(
                                             decoration: BoxDecoration(
                                               color: Theme.of(context)
-                                                  .primaryColor,
+                                                  .colorScheme
+                                                  .tertiary,
                                               borderRadius:
                                                   BorderRadius.circular(18.0),
                                             ),
