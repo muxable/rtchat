@@ -21,7 +21,7 @@ class TwitchBadgesScreen extends StatelessWidget {
           return CustomScrollView(slivers: <Widget>[
             SliverAppBar(
                 pinned: true,
-                expandedHeight: 250.0,
+                expandedHeight: 100.0,
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(AppLocalizations.of(context)!.twitchBadges),
                 ),
