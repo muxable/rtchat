@@ -47,7 +47,7 @@ class EmotesList extends StatelessWidget {
         itemBuilder: (context, index) {
           return StickyHeader(
             header: Container(
-              color: Theme.of(context).secondaryHeaderColor,
+              color: Theme.of(context).inputDecorationTheme.fillColor,
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               alignment: Alignment.centerLeft,
               child: Padding(
