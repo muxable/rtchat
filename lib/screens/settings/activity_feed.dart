@@ -2,12 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 enum ActivityFeedType { disabled, standard, custom }
 
@@ -20,8 +22,7 @@ class ActivityFeedScreen extends StatefulWidget {
 
 class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   final _textEditingController = TextEditingController();
-  WebViewController? _webViewController;
-  ActivityFeedModel? _activityFeedModel;
+  late final WebViewController _controller;
   var _showControls = true;
   final _formKey = GlobalKey<FormState>();
 
@@ -29,49 +30,36 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   void initState() {
     super.initState();
 
-    _activityFeedModel = Provider.of<ActivityFeedModel>(context, listen: false);
-    _textEditingController.text = _activityFeedModel!.customUrl;
-    _activityFeedModel!.addListener(synchronizeUrl);
+    _textEditingController.text =
+        Provider.of<ActivityFeedModel>(context, listen: false).customUrl;
+
+    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
+      _controller = WebViewController.fromPlatformCreationParams(
+          WebKitWebViewControllerCreationParams(
+        allowsInlineMediaPlayback: true,
+        mediaTypesRequiringUserAction: const {},
+      ));
+    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
+      _controller = WebViewController.fromPlatformCreationParams(
+          AndroidWebViewControllerCreationParams());
+    } else {
+      throw UnsupportedError("Unsupported platform");
+    }
+
+    _controller
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..enableZoom(false);
   }
 
   @override
   void dispose() {
-    _activityFeedModel?.removeListener(synchronizeUrl);
+    _textEditingController.dispose();
 
     super.dispose();
   }
 
-  void synchronizeUrl() async {
-    final url = getUri();
-    if (url != null && url.isNotEmpty) {
-      await _webViewController?.loadUrl(url);
-    }
-  }
-
-  String? getUri() {
-    final activityFeedModel =
-        Provider.of<ActivityFeedModel>(context, listen: false);
-    final userModel = Provider.of<UserModel>(context, listen: false);
-    final channel = userModel.userChannel;
-    if (activityFeedModel.isCustom) {
-      final uri = Uri.tryParse(activityFeedModel.customUrl);
-      if (uri == null) {
-        return null;
-      }
-      return uri.scheme.isEmpty ? 'https://$uri' : uri.toString();
-    } else if (channel == null) {
-      return null;
-    }
-    switch (channel.provider) {
-      case "twitch":
-        return "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed";
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final uri = getUri();
     return Scaffold(
       appBar: _showControls
           ? AppBar(
@@ -81,9 +69,9 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                   icon: const Icon(Icons.cookie_outlined),
                   tooltip: AppLocalizations.of(context)!.clearCookies,
                   onPressed: () async {
-                    final cookieManager = CookieManager();
+                    final cookieManager = WebViewCookieManager();
                     if (await cookieManager.clearCookies()) {
-                      await _webViewController?.reload();
+                      _controller.reload();
                     }
                   },
                 ),
@@ -93,6 +81,30 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
       body: SafeArea(
         child: Consumer3<ActivityFeedModel, UserModel, LayoutModel>(builder:
             (context, activityFeedModel, userModel, layoutModel, child) {
+          late final Uri? uri;
+
+          final channel = userModel.userChannel;
+          if (activityFeedModel.isCustom) {
+            final tryUri = Uri.tryParse(activityFeedModel.customUrl);
+            if (tryUri != null) {
+              uri = tryUri.scheme.isEmpty
+                  ? Uri.tryParse("https://$tryUri")
+                  : tryUri;
+            }
+          } else if (channel != null) {
+            switch (channel.provider) {
+              case "twitch":
+                uri = Uri.tryParse(
+                    "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
+            }
+          }
+
+          if (uri != null) {
+            _controller.loadRequest(uri);
+          } else {
+            _controller.loadHtmlString(" ");
+          }
+
           return Column(children: [
             if (_showControls)
               RadioListTile(
@@ -130,22 +142,35 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                           hintText: AppLocalizations.of(context)!.customUrl,
                           suffixIcon: IconButton(
                               icon: const Icon(Icons.qr_code_scanner),
-                              onPressed: () {
-                                showModalBottomSheet<void>(
-                                    context: context,
-                                    builder: (context) {
-                                      return MobileScanner(
-                                          allowDuplicates: false,
-                                          onDetect: (barcode, args) {
-                                            final code = barcode.rawValue;
-                                            if (code != null) {
-                                              _textEditingController.text =
-                                                  code;
-                                            }
-                                            Navigator.of(context).pop();
-                                          });
-                                    });
-                              })),
+                              onPressed: () async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                final result = await BarcodeScanner.scan(
+                                  options: ScanOptions(strings: {
+                                    "cancel":
+                                        AppLocalizations.of(context)!.cancel,
+                                    "flash_on":
+                                        AppLocalizations.of(context)!.flashOn,
+                                    "flash_off":
+                                        AppLocalizations.of(context)!.flashOff,
+                                  }),
+                                );
+                                switch (result.type) {
+                                  case ResultType.Barcode:
+                                    _textEditingController.text =
+                                        result.rawContent;
+                                    break;
+                                  case ResultType.Cancelled:
+                                    break;
+                                  case ResultType.Error:
+                                    messenger.showSnackBar(SnackBar(
+                                        content: Text(result.rawContent)));
+                                    break;
+                                }
+                              }),
+                          errorText:
+                              Uri.tryParse(activityFeedModel.customUrl) == null
+                                  ? "That's not a valid URL"
+                                  : null),
                       validator: (value) {
                         if (value != null && Uri.tryParse(value) == null) {
                           return AppLocalizations.of(context)!
@@ -154,10 +179,9 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                         return null;
                       },
                       onChanged: (value) {
-                        activityFeedModel.isEnabled = true;
-                        if (Uri.tryParse(value) != null) {
-                          activityFeedModel.customUrl = value;
-                        }
+                        activityFeedModel.isEnabled =
+                            Uri.tryParse(value) != null;
+                        activityFeedModel.customUrl = value;
                         activityFeedModel.isCustom = true;
                         _formKey.currentState?.validate();
                       }),
@@ -166,7 +190,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                 groupValue:
                     activityFeedModel.isEnabled && activityFeedModel.isCustom,
                 onChanged: (value) {
-                  activityFeedModel.isEnabled = true;
+                  final uri = Uri.tryParse(activityFeedModel.customUrl);
+                  activityFeedModel.isEnabled = uri != null;
                   activityFeedModel.isCustom = true;
                 },
               ),
@@ -192,15 +217,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                         padding: _showControls
                             ? const EdgeInsets.all(16)
                             : const EdgeInsets.only(top: 16),
-                        child: WebView(
-                          initialUrl: uri,
-                          javascriptMode: JavascriptMode.unrestricted,
-                          initialMediaPlaybackPolicy:
-                              AutoMediaPlaybackPolicy.always_allow,
-                          allowsInlineMediaPlayback: true,
-                          zoomEnabled: false,
-                          onWebViewCreated: (controller) =>
-                              setState(() => _webViewController = controller),
+                        child: WebViewWidget(
+                          controller: _controller,
                           gestureRecognizers: {
                             Factory<OneSequenceGestureRecognizer>(
                                 () => EagerGestureRecognizer()),
