@@ -124,6 +124,7 @@ class ChatHistoryScreen extends StatelessWidget {
             ListTile(
               title: const Text('Twitch badge settings'),
               subtitle: const Text("Control which badges are visible"),
+              trailing: const Icon( Icons.arrow_forward_ios),
               onTap: () {
                 Navigator.pushNamed(context, "/settings/badges");
               },
