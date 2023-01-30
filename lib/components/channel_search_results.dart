@@ -214,11 +214,7 @@ class _ChannelSearchResultsWidgetState
                       title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            result.displayName.toLowerCase() ==
-                                    result.login.toLowerCase()
-                                ? Text(result.displayName)
-                                : Text(
-                                    "${result.displayName} (${result.login})"),
+                            Text(result.displayName),
                             Text(result.language ?? "??",
                                 style: const TextStyle(
                                   fontSize: 12,
