@@ -214,7 +214,8 @@ class _ChannelSearchResultsWidgetState
                       title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            result.displayName == result.login
+                            result.displayName.toLowerCase() ==
+                                    result.login.toLowerCase()
                                 ? Text(result.displayName)
                                 : Text(
                                     "${result.displayName} (${result.login})"),
