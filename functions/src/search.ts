@@ -35,6 +35,7 @@ export const search = functions.https.onCall(async (data, context) => {
           return {
             provider: "twitch",
             channelId: channel.user_id,
+            login: channel.user_login,
             displayName: channel.user_name,
             isOnline: channel.type == "live",
             imageUrl: imageUrl,
@@ -68,6 +69,7 @@ export const search = functions.https.onCall(async (data, context) => {
       return {
         provider: "twitch",
         channelId: channel.id,
+        login: channel.login,
         displayName: channel.display_name,
         isOnline: channel.is_live,
         imageUrl: channel.thumbnail_url,
