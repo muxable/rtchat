@@ -45,7 +45,9 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
       if (!mounted) return;
       final model = Provider.of<AudioModel>(context, listen: false);
       if (!await AudioChannel.hasPermission()) {
-        await model.showAudioPermissionDialog(context);
+        if (context.mounted) {
+          await model.showAudioPermissionDialog(context);
+        }
       }
       await model
           .addSource(AudioSource(metadata?.title, Uri.parse(url), false));
