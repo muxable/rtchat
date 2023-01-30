@@ -183,7 +183,7 @@ class ChatHistoryMessage extends StatelessWidget {
                             ]),
                       );
                     });
-                if (showTimeoutDialog == true) {
+                if (showTimeoutDialog == true && context.mounted) {
                   await showDialog(
                       context: context,
                       builder: (context) {
