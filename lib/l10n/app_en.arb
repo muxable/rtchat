@@ -127,13 +127,13 @@
   "@enableRainMode": {
     "description": "Button label that enables rain mode"
   },
-  "disableRainModeSubtitle": "Interaction will be disabled",
+  "disableRainModeSubtitle": "Interaction will be enabled",
   "@disableRainModeSubtitle": {
-    "description": "Subtitle for the button that disables rain mode, indicating that interaction will be disabled"
+    "description": "Subtitle for the button that disables rain mode, indicating that interaction will be enabled"
   },
-  "enableRainModeSubtitle": "Interaction will be enabled",
+  "enableRainModeSubtitle": "Interaction will be disabled",
   "@enableRainModeSubtitle": {
-    "description": "Subtitle for the button that enables rain mode, indicating that interaction will be enabled"
+    "description": "Subtitle for the button that enables rain mode, indicating that interaction will be disabled"
   },
   "refreshAudioSources": "Refresh audio sources",
   "@refreshAudioSources": {

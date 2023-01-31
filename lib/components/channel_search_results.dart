@@ -37,6 +37,7 @@ Future<List<SearchResult>> fastSearch() async {
     return SearchResult(
         channelId: channelId,
         provider: provider,
+        login: data['login'],
         displayName: data['displayName'],
         isOnline: data['onlineAt'] != null,
         imageUrl: Uri.parse(
@@ -50,7 +51,8 @@ Future<List<SearchResult>> fastSearch() async {
 Stream<List<SearchResult>> search(String query, bool isShowOnlyOnline) async* {
   final fast = await fastSearch();
   final fastFiltered = fast.where((result) =>
-      result.displayName.toLowerCase().contains(query.toLowerCase()));
+      result.displayName.toLowerCase().contains(query.toLowerCase()) ||
+      result.login.toLowerCase().contains(query.toLowerCase()));
   final fastRanked = [
     ...fastFiltered.where((element) => element.isOnline),
     ...fastFiltered.where((element) => !element.isOnline)
@@ -61,6 +63,7 @@ Stream<List<SearchResult>> search(String query, bool isShowOnlyOnline) async* {
         .map((data) => SearchResult(
             channelId: data['channelId'],
             provider: data['provider'],
+            login: data['login'],
             displayName: data['displayName'],
             isOnline: data['isOnline'],
             imageUrl: Uri.parse(data['imageUrl']),
@@ -80,6 +83,7 @@ final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
 class SearchResult {
   final String channelId;
   final String provider;
+  final String login;
   final String displayName;
   final bool isOnline;
   final Uri imageUrl;
@@ -90,6 +94,7 @@ class SearchResult {
   const SearchResult(
       {required this.channelId,
       required this.provider,
+      required this.login,
       required this.displayName,
       required this.isOnline,
       required this.imageUrl,
@@ -193,7 +198,8 @@ class _ChannelSearchResultsWidgetState
                                         ? Container(
                                             decoration: BoxDecoration(
                                               color: Theme.of(context)
-                                                  .primaryColor,
+                                                  .colorScheme
+                                                  .tertiary,
                                               borderRadius:
                                                   BorderRadius.circular(18.0),
                                             ),
