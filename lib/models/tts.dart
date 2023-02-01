@@ -20,7 +20,13 @@ import 'package:rtchat/models/user.dart';
 
 class TtsModel extends ChangeNotifier {
   var _isCloudTtsEnabled = false;
-  final _tts = FlutterTts();
+  final _tts = FlutterTts()
+    ..setSharedInstance(true)
+    ..setIosAudioCategory(
+        IosTextToSpeechAudioCategory.playback,
+        [IosTextToSpeechAudioCategoryOptions.mixWithOthers],
+        IosTextToSpeechAudioMode.voicePrompt);
+
   final audioPlayer = AudioPlayer();
   Future<void> _previousUtterance = Future.value();
   final Set<String> _pending = {};
@@ -316,6 +322,11 @@ class TtsModel extends ChangeNotifier {
           await _tts.setSpeechRate(_speed);
           await _tts.setPitch(_pitch);
           await _tts.awaitSpeakCompletion(true);
+          await _tts.setSharedInstance(true);
+          await _tts.setIosAudioCategory(
+              IosTextToSpeechAudioCategory.playAndRecord,
+              [IosTextToSpeechAudioCategoryOptions.mixWithOthers],
+              IosTextToSpeechAudioMode.spokenAudio);
           await _tts.speak(vocalization);
         } catch (e, st) {
           FirebaseCrashlytics.instance.recordError(e, st);
