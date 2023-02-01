@@ -53,9 +53,6 @@ class TwitchShoutoutReceiveEventWidget extends StatelessWidget {
           TextSpan(
             children: [
               TextSpan(
-                  text: "You were given a shoutout by ",
-                  style: Theme.of(context).textTheme.titleSmall),
-              TextSpan(
                 text: model.fromBroadcasterUserName,
                 style: Theme.of(context)
                     .textTheme
@@ -63,7 +60,10 @@ class TwitchShoutoutReceiveEventWidget extends StatelessWidget {
                     .copyWith(color: Colors.purpleAccent),
               ),
               TextSpan(
-                  text: " with ${model.viewerCount} viewers",
+                  text: " gave you a shoutout",
+                  style: Theme.of(context).textTheme.titleSmall),
+              TextSpan(
+                  text: " to ${model.viewerCount} viewers",
                   style: Theme.of(context).textTheme.titleSmall),
             ],
           ),
