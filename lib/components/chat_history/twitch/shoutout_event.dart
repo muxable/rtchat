@@ -12,7 +12,7 @@ class TwitchShoutoutCreateEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedEventWidget.icon(
-      icon: Icons.auto_awesome,
+      icon: Icons.campaign,
       child: Builder(builder: (context) {
         return Text.rich(
           TextSpan(
@@ -47,7 +47,7 @@ class TwitchShoutoutReceiveEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedEventWidget.icon(
-      icon: Icons.auto_awesome,
+      icon: Icons.campaign,
       child: Builder(builder: (context) {
         return Text.rich(
           TextSpan(
