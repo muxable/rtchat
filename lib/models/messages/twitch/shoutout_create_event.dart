@@ -36,8 +36,8 @@ class TwitchShoutoutCreateEventModel extends MessageModel {
   static TwitchShoutoutCreateEventModel fromDocumentData(
       String messageId, Map<String, dynamic> data) {
     return TwitchShoutoutCreateEventModel(
-      fromBroadcasterUserId: data['event']['from_broadcaster_user_id'],
-      fromBroadcasterUserName: data['event']['from_broadcaster_user_name'],
+      fromBroadcasterUserId: data['event']['broadcaster_user_id'],
+      fromBroadcasterUserName: data['event']['broadcaster_user_name'],
       toBroadcasterUserId: data['event']['to_broadcaster_user_id'],
       toBroadcasterUserName: data['event']['to_broadcaster_user_name'],
       viewerCount: data['event']['viewer_count'],
