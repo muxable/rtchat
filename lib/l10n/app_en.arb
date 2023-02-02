@@ -127,13 +127,13 @@
   "@enableRainMode": {
     "description": "Button label that enables rain mode"
   },
-  "disableRainModeSubtitle": "Interaction will be disabled",
+  "disableRainModeSubtitle": "Interaction will be enabled",
   "@disableRainModeSubtitle": {
-    "description": "Subtitle for the button that disables rain mode, indicating that interaction will be disabled"
+    "description": "Subtitle for the button that disables rain mode, indicating that interaction will be enabled"
   },
-  "enableRainModeSubtitle": "Interaction will be enabled",
+  "enableRainModeSubtitle": "Interaction will be disabled",
   "@enableRainModeSubtitle": {
-    "description": "Subtitle for the button that enables rain mode, indicating that interaction will be enabled"
+    "description": "Subtitle for the button that enables rain mode, indicating that interaction will be disabled"
   },
   "refreshAudioSources": "Refresh audio sources",
   "@refreshAudioSources": {
@@ -160,5 +160,343 @@
   "signOutConfirmation": "Are you sure you want to sign out?",
   "@signOutConfirmation": {
     "description": "Confirmation message that shows when the user wants to sign out"
+  },
+  "broadcaster": "Broadcaster",
+  "@broadcaster": {
+    "description": "Label for the broadcaster"
+  },
+  "moderators": "Moderators",
+  "@moderators": {
+    "description": "Label for the moderators"
+  },
+  "viewers": "Viewers",
+  "@viewers": {
+    "description": "Label for the viewers"
+  },
+  "communityVips": "Community VIPs",
+  "@communityVips": {
+    "description": "Label for the community VIPs"
+  },
+  "searchViewers": "Search Viewers",
+  "@searchViewers": {
+    "description": "Header for the search bar that lets the user search viewers"
+  },
+  "reconnecting": "Reconnecting...",
+  "@reconnecting": {
+    "description": "Text label that shows when the app is reconnecting"
+  },
+  "twitchBadges": "Twitch badges",
+  "@twitchBadges": {
+    "description": "Header for the Twitch badges page"
+  },
+  "selectAll": "Select all",
+  "@selectAll": {
+    "description": "Button label that selects all badges"
+  },
+  "quickLinks": "Quick links",
+  "@quickLinks": {
+    "description": "Header for the quick links page"
+  },
+  "swipeToDeleteQuickLinks": "Swipe left or right to delete quick link",
+  "@swipeToDeleteQuickLinks": {
+    "description": "Text label that shows when the user can swipe to delete a quick link"
+  },
+  "quickLinksLabelHint": "Label",
+  "@quickLinksLabelHint": {
+    "description": "Hint text for the quick link label"
+  },
+  "invalidUrlErrorText": "This doesn't look like a valid URL",
+  "@invalidUrlErrorText": {
+    "description": "Error message that shows when the URL is invalid"
+  },
+  "duplicateUrlErrorText": "This link already exists",
+  "@duplicateUrlErrorText": {
+    "description": "Error message that shows when the URL already exists"
+  },
+  "or": "or",
+  "@or": {
+    "description": "Text label that separates two options"
+  },
+  "activityFeed": "Activity feed",
+  "@activityFeed": {
+    "description": "Header for the activity feed settings page"
+  },
+  "clearCookies": "Clear cookies",
+  "@clearCookies": {
+    "description": "Button label that clears the cookies"
+  },
+  "disabled": "Disabled",
+  "@disabled": {
+    "description": "Option label to disable a feature"
+  },
+  "twitchActivityFeed": "Twitch activity feed",
+  "@twitchActivityFeed": {
+    "description": "Option label to use the default Twitch activity feed"
+  },
+  "signInToEnable": "You must be signed in to enable this",
+  "@signInToEnable": {
+    "description": "Error message that shows when the user must be signed in to enable a feature"
+  },
+  "customUrl": "Custom URL",
+  "@customUrl": {
+    "description": "Option label to use a custom URL"
+  },
+  "preview": "Preview",
+  "@preview": {
+    "description": "Section header for the activity feed preview"
+  },
+  "audioSources": "Audio sources",
+  "@audioSources": {
+    "description": "Header for the audio sources page"
+  },
+  "enableOffstreamSwitchTitle": "Enable off-stream (uses more battery)",
+  "@enableOffstreamSwitchTitle": {
+    "description": "Option label to enable the off-stream tile"
+  },
+  "enableOffstreamSwitchEnabledSubtitle": "Audio will also play when you're offline",
+  "@enableOffstreamSwitchEnabledSubtitle": {
+    "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will also play when the user is offline"
+  },
+  "enableOffstreamSwitchDisabledSubtitle": "Audio will only play when you're live",
+  "@enableOffstreamSwitchDisabledSubtitle": {
+    "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will only play when the user is live"
+  },
+  "iosOggWarningTitle": "Hey! Listen!",
+  "@iosOggWarningTitle": {
+    "description": "Title for the warning that shows when the user is on iOS and the audio source is OGG"
+  },
+  "iosOggWarningSubtitle": "iOS doesn't support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won't play.",
+  "@iosOggWarningSubtitle": {
+    "description": "Message for the warning that shows when the user is on iOS and the audio source is OGG"
+  },
+  "url": "URL",
+  "@url": {
+    "description": "Label for the URL"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Header for the settings page"
+  },
+  "activityFeedSubtitle": "Customize your activity feed",
+  "@activityFeedSubtitle": {
+    "description": "Subtitle for the activity feed settings page"
+  },
+  "audioSourcesSubtitle": "Add web sources for alert sounds",
+  "@audioSourcesSubtitle": {
+    "description": "Subtitle for the audio sources page"
+  },
+  "quickLinksSubtitle": "Add shortcuts to commonly-used tools",
+  "@quickLinksSubtitle": {
+    "description": "Subtitle for the quick links page"
+  },
+  "chatHistory": "Chat history",
+  "@chatHistory": {
+    "description": "Header for the chat history page"
+  },
+  "chatHistorySubtitle": "Change the chat appearance",
+  "@chatHistorySubtitle": {
+    "description": "Subtitle for the chat history page"
+  },
+  "textToSpeechSubtitle": "Change text to speech settings",
+  "@textToSpeechSubtitle": {
+    "description": "Subtitle for the text to speech page"
+  },
+  "events": "Events",
+  "@events": {
+    "description": "Header for the events page"
+  },
+  "eventsSubtitle":"Configure Twitch events",
+  "@eventsSubtitle": {
+    "description": "Subtitle for the events page"
+  },
+  "thirdPartyServices": "Third-party services",
+  "@thirdPartyServices": {
+    "description": "Header for the third-party services page"
+  },
+  "thirdPartyServicesSubtitle": "Connect to a third-party service",
+  "@thirdPartyServicesSubtitle": {
+    "description": "Subtitle for the third-party services page"
+  },
+  "followingEvent": "<bold>{displayName}</bold> is following you",
+  "@followingEvent": {
+    "description": "Text label that shows when a user follows the streamer",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "followingEvent2": "<bold>{displayName}</bold> and <bold>{displayNameTwo}</bold> are following you",
+  "@followingEvent2": {
+    "description": "Text label that shows when two users follow the streamer",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "displayNameTwo": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "followingEvent3": "<bold>{displayName}</bold>, <bold>{displayNameTwo}</bold>, and {numOthers} others are following you",
+  "@followingEvent3": {
+    "description": "Text label that shows when three or more users follow the streamer",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "displayNameTwo": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "numOthers": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "unmuteUser": "Unmute {displayName}",
+  "@unmuteUser": {
+    "description": "Unmute option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "muteUser": "Mute {displayName}",
+  "@muteUser": {
+    "description": "Mute option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "timeoutUser": "Timeout {displayName}",
+  "@timeoutUser": {
+    "description": "Timeout option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "banUser": "Ban {displayName}",
+  "@banUser": {
+    "description": "Ban option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "unbanUser": "Unban {displayName}",
+  "@unbanUser": {
+    "description": "Unban option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "viewProfile": "View {displayName}'s profile",
+  "@viewProfile": {
+    "description": "Unban option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "copyMessage": "Copy Message",
+  "@copyMessage": {
+    "description": "Copy option shown when long pressing on a chat message"
+  },
+  "deleteMessage": "Delete Message",
+  "@deleteMessage": {
+    "description": "Delete option shown when long pressing on a chat message"
+  },
+  "longScrollNotification": "You're scrolling kind of far, don't you think?",
+  "@longScrollNotification": {
+    "description": "Notification shown when the user scrolls very far back in the chat history"
+  },
+  "stfu": "stfu",
+  "@stfu": {
+    "description": "Text label for the stfu button"
+  },
+  "globalEmotes": "Global Emotes",
+  "@globalEmotes": {
+    "description": "Text label for the global emotes category header"
+  },
+  "followerCount": "{count,plural, =0{0 followers} =1{1 follower} other{{count} followers}}",
+  "@followerCount": {
+    "description": "Text label for the followers count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "viewerCount": "{count,plural, =0{0 viewers} =1{1 viewer} other{{count} viewers}}",
+  "@viewerCount": {
+    "description": "Text label for the viewers count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "streamPreviewMessage": "Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.",
+  "@streamPreviewMessage": {
+    "description": "Notification shown when the user leaves the stream preview open for a long time"
+  },
+  "okay": "Okay",
+  "@okay": {
+    "description": "Okay button text"
+  },
+  "streamPreviewLoading": "Loading (or stream is offline)...",
+  "@streamPreviewLoading": {
+    "description": "Text label shown when the stream preview is loading"
+  },
+  "copiedToClipboard": "Copied to clipboard",
+  "@copiedToClipboard": {
+    "description": "Notification shown when a message is copied to the clipboard"
+  },
+  "audioSourcesRequirePermissions": "Audio sources require permissions",
+  "@audioSourcesRequirePermissions": {
+    "description": "Alert title prompting the user to grant permissions to use audio sources"
+  },
+  "audioSourcesRequirePermissionsMessage": "Approve RealtimeChat to draw over other apps to use audio sources.",
+  "@audioSourcesRequirePermissionsMessage": {
+    "description": "Alert message prompting the user to grant permissions to use audio sources"
+  },
+  "audioSourcesRemoveButton": "Remove audio sources",
+  "@audioSourcesRemoveButton": {
+    "description": "Button text for removing audio sources"
+  },
+  "audioSourcesOpenSettingsButton": "Open settings",
+  "@audioSourcesOpenSettingsButton": {
+    "description": "Button text for opening settings"
+  },
+  "flashOn": "Flash on",
+  "@flashOn": {
+    "description": "Text label for the camera flash enable button."
+  },
+  "flashOff": "Flash off",
+  "@flashOff": {
+    "description": "Text label for the camera flash disable button."
   }
 }

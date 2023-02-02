@@ -16,6 +16,8 @@ import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/messages/twitch/reply.dart';
+import 'package:rtchat/models/messages/twitch/shoutout_create_event.dart';
+import 'package:rtchat/models/messages/twitch/shoutout_receive_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -303,6 +305,14 @@ DeltaEvent? _toDeltaEvent(
     case "realtimecash.donation":
       final model =
           SimpleRealtimeCashDonationEventModel.fromDocumentData(doc.id, data);
+      return AppendDeltaEvent(model);
+    case "channel.shoutout.create":
+      final model =
+          TwitchShoutoutCreateEventModel.fromDocumentData(doc.id, data);
+      return AppendDeltaEvent(model);
+    case "channel.shoutout.receive":
+      final model =
+          TwitchShoutoutReceiveEventModel.fromDocumentData(doc.id, data);
       return AppendDeltaEvent(model);
   }
   return null;

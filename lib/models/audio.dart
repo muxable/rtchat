@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:core';
-import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
@@ -41,7 +41,6 @@ class AudioSource {
 class AudioModel extends ChangeNotifier {
   final List<AudioSource> _sources = [];
   late final Timer _speakerDisconnectTimer;
-  final _audioCache = AudioCache(duckAudio: Platform.isIOS);
 
   bool _isOnline = false;
   bool _isSettingsVisible = false;
@@ -147,19 +146,22 @@ class AudioModel extends ChangeNotifier {
         barrierDismissible: false, // user must tap button!
         builder: (context) {
           return AlertDialog(
-            title: const Text('Audio sources require permissions'),
-            content: const Text(
-                'Approve RealtimeChat to draw over other apps to use audio sources.'),
+            title: Text(
+                AppLocalizations.of(context)!.audioSourcesRequirePermissions),
+            content: Text(AppLocalizations.of(context)!
+                .audioSourcesRequirePermissionsMessage),
             actions: <Widget>[
               TextButton(
-                child: const Text('Remove audio sources'),
+                child: Text(
+                    AppLocalizations.of(context)!.audioSourcesRemoveButton),
                 onPressed: () {
                   _sources.clear();
                   Navigator.of(context).pop();
                 },
               ),
               TextButton(
-                child: const Text('Open Settings'),
+                child: Text(AppLocalizations.of(context)!
+                    .audioSourcesOpenSettingsButton),
                 onPressed: () async {
                   Navigator.of(context).pop();
                   await AudioChannel.requestPermission();
@@ -171,9 +173,10 @@ class AudioModel extends ChangeNotifier {
   }
 
   AudioModel.fromJson(Map<String, dynamic> json) {
+    final player = AudioPlayer();
     _speakerDisconnectTimer = Timer.periodic(
       const Duration(minutes: 5),
-      (_) => _audioCache.play("silence.mp3"),
+      (_) => player.play(AssetSource("silence.mp3")),
     );
     final sources = json['sources'];
     if (sources != null) {

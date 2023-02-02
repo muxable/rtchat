@@ -5,10 +5,13 @@ import 'dart:io';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/stream_preview.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class StreamPreview extends StatefulWidget {
   const StreamPreview({Key? key, required this.channel}) : super(key: key);
@@ -19,9 +22,16 @@ class StreamPreview extends StatefulWidget {
   State<StreamPreview> createState() => _StreamPreviewState();
 }
 
+extension Embed on Channel {
+  Uri get embedUri {
+    return Uri.parse(
+        'https://chat.rtirl.com/embed?provider=$provider&channelId=$channelId');
+  }
+}
+
 class _StreamPreviewState extends State<StreamPreview> {
-  WebViewController? _controller;
-  String? url;
+  late WebViewController _controller;
+  late Uri url;
 
   var _isOverlayActive = false;
   Timer? _overlayTimer;
@@ -37,10 +47,9 @@ class _StreamPreviewState extends State<StreamPreview> {
       _promptTimer = Timer(const Duration(minutes: 5), () {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           duration: const Duration(minutes: 1),
-          content: const Text(
-              "Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life."),
+          content: Text(AppLocalizations.of(context)!.streamPreviewMessage),
           action: SnackBarAction(
-            label: 'Okay',
+            label: AppLocalizations.of(context)!.okay,
             onPressed: () {
               model.showBatteryPrompt = false;
               _promptTimer = null;
@@ -49,6 +58,64 @@ class _StreamPreviewState extends State<StreamPreview> {
         ));
       });
     }
+
+    url = widget.channel.embedUri;
+
+    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
+      _controller = WebViewController.fromPlatformCreationParams(
+          WebKitWebViewControllerCreationParams(
+        allowsInlineMediaPlayback: true,
+        mediaTypesRequiringUserAction: const {},
+      ));
+    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
+      _controller = WebViewController.fromPlatformCreationParams(
+          AndroidWebViewControllerCreationParams());
+    } else {
+      throw UnsupportedError("Unsupported platform");
+    }
+
+    _controller
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..enableZoom(false)
+      ..loadRequest(url)
+      ..addJavaScriptChannel("Flutter", onMessageReceived: (message) {
+        try {
+          final data = jsonDecode(message.message);
+          if (data is Map && data.containsKey('params')) {
+            final params = data['params'];
+            if (params is Map && mounted) {
+              setState(() => _playerState = params["playback"]);
+            }
+          }
+        } catch (e, st) {
+          FirebaseCrashlytics.instance.recordError(e, st);
+        }
+      })
+      ..setNavigationDelegate(NavigationDelegate(
+        onPageFinished: (url) async {
+          final model = Provider.of<StreamPreviewModel>(context, listen: false);
+          await _controller.runJavaScript(
+              await rootBundle.loadString('assets/twitch-tunnel.js'));
+          // wait a second for twitch to catch up.
+          await Future.delayed(const Duration(seconds: 1));
+          if (Platform.isIOS) {
+            await _controller.runJavaScript(
+                "window.action(window.Actions.SetMuted, ${model.volume == 0})");
+          } else {
+            await _controller
+                .runJavaScript("window.action(window.Actions.SetMuted, false)");
+            await _controller.runJavaScript(
+                "window.action(window.Actions.SetVolume, ${model.volume / 100})");
+            if (model.isHighDefinition) {
+              await _controller.runJavaScript(
+                  "window.action(window.Actions.SetQuality, 'auto')");
+            } else {
+              await _controller.runJavaScript(
+                  "window.action(window.Actions.SetQuality, '160p')");
+            }
+          }
+        },
+      ));
   }
 
   @override
@@ -61,17 +128,16 @@ class _StreamPreviewState extends State<StreamPreview> {
     // this causes audio to keep playing even when the widget is closed.
     // therefore, we load a blank page to silence the audio.
     if (Platform.isIOS) {
-      _controller?.loadHtmlString(" ");
+      _controller.loadHtmlString(" ");
     }
   }
 
   @override
   void didUpdateWidget(StreamPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final newUrl =
-        'https://chat.rtirl.com/embed?provider=${widget.channel.provider}&channelId=${widget.channel.channelId}';
-    if (url != newUrl && _controller != null) {
-      _controller!.loadUrl(newUrl);
+    final newUrl = widget.channel.embedUri;
+    if (url != newUrl) {
+      _controller.loadRequest(newUrl);
       url = newUrl;
     }
   }
@@ -79,74 +145,16 @@ class _StreamPreviewState extends State<StreamPreview> {
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
-      WebView(
-        initialUrl:
-            'https://chat.rtirl.com/embed?provider=${widget.channel.provider}&channelId=${widget.channel.channelId}',
-        onWebViewCreated: (controller) {
-          if (!mounted) {
-            return;
-          }
-          setState(() {
-            _controller = controller;
-          });
-        },
-        onPageFinished: (url) async {
-          final controller = _controller;
-          if (controller == null || !mounted) {
-            return;
-          }
-          final model = Provider.of<StreamPreviewModel>(context, listen: false);
-          await controller.runJavascript(
-              await rootBundle.loadString('assets/twitch-tunnel.js'));
-          // wait a second for twitch to catch up.
-          await Future.delayed(const Duration(seconds: 1));
-          if (Platform.isIOS) {
-            await _controller?.runJavascript(
-                "window.action(window.Actions.SetMuted, ${model.volume == 0})");
-          } else {
-            await controller
-                .runJavascript("window.action(window.Actions.SetMuted, false)");
-            await controller.runJavascript(
-                "window.action(window.Actions.SetVolume, ${model.volume / 100})");
-            if (model.isHighDefinition) {
-              await controller.runJavascript(
-                  "window.action(window.Actions.SetQuality, 'auto')");
-            } else {
-              await controller.runJavascript(
-                  "window.action(window.Actions.SetQuality, '160p')");
-            }
-          }
-        },
-        javascriptMode: JavascriptMode.unrestricted,
-        allowsInlineMediaPlayback: true,
-        initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
-        javascriptChannels: {
-          JavascriptChannel(
-              name: "Flutter",
-              onMessageReceived: (message) {
-                try {
-                  final data = jsonDecode(message.message);
-                  if (data is Map && data.containsKey('params')) {
-                    final params = data['params'];
-                    if (params is Map && mounted) {
-                      setState(() => _playerState = params["playback"]);
-                    }
-                  }
-                } catch (e, st) {
-                  FirebaseCrashlytics.instance.recordError(e, st);
-                }
-              })
-        },
-      ),
+      WebViewWidget(controller: _controller),
       if (_playerState == null || _playerState == "Idle")
         Positioned.fill(
           child: IgnorePointer(
             child: Container(
               color: Colors.black.withOpacity(0.8),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  "Loading (or stream is offline)...",
-                  style: TextStyle(color: Colors.white),
+                  AppLocalizations.of(context)!.streamPreviewLoading,
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
             ),
@@ -189,7 +197,7 @@ class _StreamPreviewState extends State<StreamPreview> {
                                         // SetVolume doesn't seem to work on ios so we use SetMuted instead and toggle between 0 and 100.
                                         model.volume =
                                             model.volume == 0 ? 100 : 0;
-                                        await _controller?.runJavascript(
+                                        await _controller.runJavaScript(
                                             "window.action(window.Actions.SetMuted, ${model.volume == 0})");
                                         return;
                                       }
@@ -200,9 +208,9 @@ class _StreamPreviewState extends State<StreamPreview> {
                                       } else {
                                         model.volume = 0;
                                       }
-                                      await _controller?.runJavascript(
+                                      await _controller.runJavaScript(
                                           "window.action(window.Actions.SetMuted, false)");
-                                      await _controller?.runJavascript(
+                                      await _controller.runJavaScript(
                                           "window.action(window.Actions.SetVolume, ${model.volume / 100})");
                                     },
                               color: Colors.white,
@@ -222,10 +230,10 @@ class _StreamPreviewState extends State<StreamPreview> {
                                         model.isHighDefinition =
                                             !model.isHighDefinition;
                                         if (model.isHighDefinition) {
-                                          await _controller?.runJavascript(
+                                          await _controller.runJavaScript(
                                               "window.action(window.Actions.SetQuality, 'auto')");
                                         } else {
-                                          await _controller?.runJavascript(
+                                          await _controller.runJavaScript(
                                               "window.action(window.Actions.SetQuality, '160p')");
                                         }
                                       },

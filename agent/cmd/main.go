@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"os"
 	"sync"
@@ -122,13 +123,13 @@ func main() {
 	}()
 
 	isListening := &atomic.Bool{}
-
+	start := time.Now().Add(time.Duration(rand.Intn(24)) * time.Hour)
 	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !isListening.Load() {
+		if !isListening.Load() || time.Since(start) > 72*time.Hour {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
-		w.Write([]byte("ok"))
+		w.Write([]byte((72 * time.Hour - time.Since(start)).String()))
 	}))
 
 	go func() {
@@ -140,13 +141,6 @@ func main() {
 		if err := http.ListenAndServe(":"+port, nil); err != nil {
 			zap.L().Fatal("failed to start http server", zap.Error(err))
 		}
-	}()
-
-	go func() {
-		time.Sleep(72 * time.Hour)
-		// restart the server after 72 hours because twitch will disconnect
-		// connections and we'll suddenly drop messages. hopefully we'll be preempted before that...
-		zap.L().Fatal("server has been running for 72 hours, restarting")
 	}()
 
 	go func() {

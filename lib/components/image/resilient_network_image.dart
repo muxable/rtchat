@@ -8,6 +8,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:rtchat/components/image/placeholder_image.dart';
 
 // https://github.com/brianegan/transparent_image/blob/master/lib/transparent_image.dart
 final kTransparentImage = Uint8List.fromList(<int>[
@@ -100,6 +101,8 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
   String get hash =>
       sha1.convert(convert.utf8.encode(uri.toString())).toString();
 
+  PlaceholderImage get placeholderImage => PlaceholderImage(uri, scale: scale);
+
   const ResilientNetworkImage(this.uri, {this.scale = 1.0});
 
   @override
@@ -146,8 +149,11 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
     if (await cacheFile.exists() && await etagFile.exists()) {
       try {
         final bytes = await cacheFile.readAsBytes();
-        decodedCache = await decode(await ImmutableBuffer.fromUint8List(bytes));
-        etagValue = await etagFile.readAsString();
+        if (bytes.isNotEmpty) {
+          decodedCache =
+              await decode(await ImmutableBuffer.fromUint8List(bytes));
+          etagValue = await etagFile.readAsString();
+        }
       } catch (e) {
         FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
       }
@@ -178,6 +184,7 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
               expectedTotalBytes: bytes.lengthInBytes,
             ));
             chunkEvents.close();
+            await cacheFile.setLastModified(DateTime.now());
             return decodedCache;
           }
           if (response.statusCode >= 400 && response.statusCode < 500) {

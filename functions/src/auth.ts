@@ -136,6 +136,8 @@ app.get("/auth/twitch/redirect", (req, res) => {
       "channel:read:subscriptions",
       "channel:read:redemptions",
       "moderation:read",
+      "moderator:manage:shoutouts",
+      "moderator:read:shoutouts",
       "user:read:email",
       "user:read:follows",
     ],

@@ -4,13 +4,13 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/components/drawer/quicklinks_listview.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:rtchat/urls.dart';
 
 class _DrawerHeader extends StatelessWidget {
   const _DrawerHeader({Key? key}) : super(key: key);
@@ -27,10 +27,7 @@ class _DrawerHeader extends StatelessWidget {
               child: Column(
                 children: [
                   GestureDetector(
-                      onTap: () {
-                        launchUrlString("https://muxable.com",
-                            mode: LaunchMode.externalApplication);
-                      },
+                      onTap: () => openUrl(Uri.parse("https://muxable.com")),
                       child: SizedBox(
                           height: 50,
                           child: Padding(
@@ -57,11 +54,10 @@ class _DrawerHeader extends StatelessWidget {
                               if (userChannel != null)
                                 ClipRRect(
                                     borderRadius: BorderRadius.circular(24),
-                                    child: FadeInImage(
-                                        placeholder:
-                                            MemoryImage(kTransparentImage),
-                                        image: ResilientNetworkImage(
-                                            userChannel.profilePictureUrl),
+                                    child: CrossFadeImage(
+                                        placeholder: userChannel
+                                            .profilePicture.placeholderImage,
+                                        image: userChannel.profilePicture,
                                         height: 36,
                                         width: 36)),
                               const SizedBox(width: 16),

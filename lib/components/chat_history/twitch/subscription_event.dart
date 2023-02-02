@@ -57,7 +57,7 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
                 text: model.total > 1 ? "subscriptions. " : "subscription. "),
             TextSpan(
                 text: model.cumulativeTotal > 0
-                    ? "They've gifted ${model.cumulativeTotal} months in the channel"
+                    ? "They've gifted ${model.cumulativeTotal} subs in the channel"
                     : ""),
           ],
         ),
@@ -96,7 +96,9 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
               preferBelow: false,
               child: Image(
                   height: styleModel.fontSize,
-                  image: ResilientNetworkImage(token.url))));
+                  image: ResilientNetworkImage(token.url),
+                  errorBuilder: (context, error, stackTrace) =>
+                      Text(token.code))));
     } else if (token is UserMentionToken) {
       final userModel = Provider.of<UserModel>(context, listen: false);
       final loginChannel = userModel.userChannel?.displayName;
