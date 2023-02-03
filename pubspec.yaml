@@ -20,7 +20,7 @@ dependencies:
   shared_preferences: ^2.0.5
   cloud_firestore: ^4.3.1
   cloud_functions: ^4.0.7
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.5
   flutter_tts: ^3.0.0
   wakelock: ^0.6.1+1
   linkify: ^4.0.0
@@ -33,7 +33,7 @@ dependencies:
   firebase_analytics: ^10.1.0
   flutter_keyboard_visibility: ^5.0.3
   characters: ^1.2.0
-  google_fonts: ^4.0.0
+  google_fonts: ^4.0.3
   motion_sensors: ^0.1.0
   crypto: ^3.0.2
   path_provider: ^2.0.10
