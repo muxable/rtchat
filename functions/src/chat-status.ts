@@ -80,6 +80,9 @@ async function findChatters(
       },
     }
   );
+  if (chatters.status !== 200) {
+    throw new Error("Failed to fetch chatters");
+  }
   const json = await chatters.json();
   if (json["data"]) {
     const chatters = json["data"];
@@ -209,6 +212,55 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
   return data;
 }
 
+export async function twitchGetChatters(
+  twitchBroadcasterId: string,
+  asUserId: string
+) {
+  const token = await getAccessToken(asUserId, "twitch");
+  if (!token) {
+    throw new functions.https.HttpsError("internal", "auth error");
+  }
+  // fetch the chatters for the requested channel.
+  const chatters = await findChatters(token, twitchBroadcasterId);
+  // find the moderators if possible
+  let mods: UserData[] = [];
+  try {
+    mods = await findModerators(
+      token,
+      twitchBroadcasterId,
+      chatters.map((c) => c.user_id)
+    );
+  } catch (e) {
+    console.error(e);
+  }
+  let vips: UserData[] = [];
+  try {
+    vips = await findVIPs(
+      token,
+      twitchBroadcasterId,
+      chatters.map((c) => c.user_id)
+    );
+  } catch (e) {
+    console.error(e);
+  }
+  // remove mods and vips from the list of chatters.
+  const viewers = chatters.filter(
+    (c) =>
+      !mods.some((m) => m.user_id == c.user_id) &&
+      !vips.some((v) => v.user_id == c.user_id)
+  );
+  // for backwards compatibility, return the list of usernames as strings.
+  // and return the full profile as <key>Data.
+  return {
+    viewers: viewers.map((c) => c.user_name),
+    viewersData: viewers,
+    moderators: mods.map((c) => c.user_name),
+    moderatorsData: mods,
+    vips: vips.map((c) => c.user_name),
+    vipsData: vips,
+  };
+}
+
 export async function runUpdateFollowerAndViewerCount(
   token: AccessToken,
   channelIds: string[]
@@ -305,12 +357,12 @@ export const updateFollowerAndViewerCount = functions.pubsub
 
 export const getViewerList = functions.https.onCall(
   async (channelId: string, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
-        "unauthenticated",
-        "must be authenticated"
-      );
-    }
+    // if (!context.auth) {
+    //   throw new functions.https.HttpsError(
+    //     "unauthenticated",
+    //     "must be authenticated"
+    //   );
+    // }
     const [provider, channel] = channelId.split(":");
     switch (provider) {
       case "twitch":
@@ -328,64 +380,13 @@ export const getViewerList = functions.https.onCall(
           .collection("profiles")
           .where("twitch.id", "==", channel)
           .get();
-        if (profile.empty) {
-          // channel is not in the database, use the authenticated user's token.
-          const token = await getAccessToken(context.auth.uid, "twitch");
-          if (!token) {
-            throw new functions.https.HttpsError("internal", "auth error");
-          }
-          // fetch the chatters for the requested channel.
-          const chatters = await findChatters(token, channel);
-          // for backwards compatibility, return the list of usernames as strings.
-          // and return the full profile as <key>Data.
-          return {
-            viewers: chatters.map((c) => c.user_name),
-            viewersData: chatters,
-          };
+        if (!profile.empty) {
+          try {
+            return await twitchGetChatters(channel, profile.docs[0].id);
+          } catch (e) {}
         }
-        const token = await getAccessToken(profile.docs[0].id, "twitch");
-        if (!token) {
-          throw new functions.https.HttpsError("internal", "auth error");
-        }
-        // fetch the chatters for the requested channel.
-        const chatters = await findChatters(token, channel);
-        // find the moderators if possible
-        let mods: UserData[] = [];
-        try {
-          mods = await findModerators(
-            token,
-            channel,
-            chatters.map((c) => c.user_id)
-          );
-        } catch (e) {
-          console.error(e);
-        }
-        let vips: UserData[] = [];
-        try {
-          vips = await findVIPs(
-            token,
-            channel,
-            chatters.map((c) => c.user_id)
-          );
-        } catch (e) {
-          console.error(e);
-        }
-        // remove mods and vips from the list of chatters.
-        const viewers = chatters.filter(
-          (c) =>
-            !mods.some((m) => m.user_id == c.user_id) &&
-            !vips.some((v) => v.user_id == c.user_id)
-        );
-        // for backwards compatibility, return the list of usernames as strings.
-        // and return the full profile as <key>Data.
-        return {
-          viewers: viewers.map((c) => c.user_name),
-          viewersData: viewers,
-          mods: mods.map((c) => c.user_name),
-          modsData: mods,
-          vips: vips.map((c) => c.user_name),
-          vipsData: vips,
-        };
+        // channel is not in the database, use the authenticated user's token.
+        return await twitchGetChatters(channel, context.auth.uid);
     }
     throw new functions.https.HttpsError("invalid-argument", "invalid channel");
   }
