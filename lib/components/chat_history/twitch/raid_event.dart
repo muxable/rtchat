@@ -50,7 +50,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
                           Theme.of(context).buttonTheme.colorScheme?.primary))),
               onTap: () {
                 ActionsAdapter.instance
-                    .send(channel, "https://twitch.tv/${model.from.login}");
+                    .send(channel, "/shoutout ${model.from.login}");
               });
         }),
       ]),
