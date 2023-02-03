@@ -1,8 +1,101 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
-import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { getAppAccessToken, getAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { AccessToken } from "simple-oauth2";
+
+type UserData = {
+  user_id: string;
+  user_login: string;
+  user_name: string;
+};
+
+async function findModerators(
+  token: string,
+  twitchBroadcasterId: string,
+  twitchUserIds: string[]
+) {
+  const twitchChannelIds: UserData[] = [];
+  for (let i = 0; i < twitchUserIds.length; i += 100) {
+    const query = twitchUserIds
+      .slice(i, i + 100)
+      .map((id) => "user_id=" + encodeURIComponent(id))
+      .join("&");
+    const response = await fetch(
+      `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${twitchBroadcasterId}&${query}&first=100`,
+      {
+        headers: {
+          "Client-ID": TWITCH_CLIENT_ID,
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const json = await response.json();
+    if (json["data"]) {
+      twitchChannelIds.push(...json["data"]);
+    }
+  }
+  return twitchChannelIds;
+}
+
+async function findVIPs(
+  token: string,
+  twitchBroadcasterId: string,
+  twitchUserIds: string[]
+) {
+  const twitchChannelIds: UserData[] = [];
+  for (let i = 0; i < twitchUserIds.length; i += 100) {
+    const query = twitchUserIds
+      .slice(i, i + 100)
+      .map((id) => "user_id=" + encodeURIComponent(id))
+      .join("&");
+    const response = await fetch(
+      `https://api.twitch.tv/helix/channels/vips?broadcaster_id=${twitchBroadcasterId}&${query}&first=100`,
+      {
+        headers: {
+          "Client-ID": TWITCH_CLIENT_ID,
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const json = await response.json();
+    if (json["data"]) {
+      twitchChannelIds.push(...json["data"]);
+    }
+  }
+  return twitchChannelIds;
+}
+
+async function findChatters(
+  token: string,
+  twitchBroadcasterId: string,
+  after = ""
+): Promise<UserData[]> {
+  const chatters = await fetch(
+    `https://api.twitch.tv/helix/chat/chatters?broadcaster_id=${twitchBroadcasterId}&moderator_id=${twitchBroadcasterId}&first=1000&after=${after}`,
+    {
+      headers: {
+        "Client-ID": TWITCH_CLIENT_ID,
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  const json = await chatters.json();
+  if (json["data"]) {
+    const chatters = json["data"];
+    if (json["pagination"]["cursor"]) {
+      chatters.push(
+        ...(await findChatters(
+          token,
+          twitchBroadcasterId,
+          json["pagination"]["cursor"]
+        ))
+      );
+    }
+    return chatters;
+  }
+  return [];
+}
 
 async function twitchLoginsToUserIds(token: AccessToken, logins: string[]) {
   const twitchChannelIds: string[] = [];
@@ -221,39 +314,79 @@ export const getViewerList = functions.https.onCall(
     const [provider, channel] = channelId.split(":");
     switch (provider) {
       case "twitch":
-        const token = await getAppAccessToken(provider);
+        // twitch's permission scheme is a little annoying here. we need an auth
+        // token that represents the broadcaster, otherwise pretty much all the
+        // calls will fail.
+        //
+        // so, we do this in three steps:
+        // 1. fetch the user id corresponding to the requested channel and its token.
+        //    if this fails, then use the user's token and we will not filter mods/vips.
+        // 2. fetch the chatters for the requested channel.
+        // 3. filter out mods/vips.
+        const profile = await admin
+          .firestore()
+          .collection("profiles")
+          .where("twitch.id", "==", channel)
+          .get();
+        if (profile.empty) {
+          // channel is not in the database, use the authenticated user's token.
+          const token = await getAccessToken(context.auth.uid, "twitch");
+          if (!token) {
+            throw new functions.https.HttpsError("internal", "auth error");
+          }
+          // fetch the chatters for the requested channel.
+          const chatters = await findChatters(token, channel);
+          // for backwards compatibility, return the list of usernames as strings.
+          // and return the full profile as <key>Data.
+          return {
+            viewers: chatters.map((c) => c.user_name),
+            viewersData: chatters,
+          };
+        }
+        const token = await getAccessToken(profile.docs[0].id, "twitch");
         if (!token) {
           throw new functions.https.HttpsError("internal", "auth error");
         }
-        // fetch the twitch login from the helix api
-        const profile = await fetch(
-          `https://api.twitch.tv/helix/users?id=${channel}`,
-          {
-            headers: {
-              "Client-ID": TWITCH_CLIENT_ID,
-              Authorization: `Bearer ${token.token.access_token}`,
-            },
-          }
-        );
-        const profileJson = await profile.json();
-        if (!profileJson["data"]?.length) {
-          throw new functions.https.HttpsError(
-            "not-found",
-            "channel not found"
+        // fetch the chatters for the requested channel.
+        const chatters = await findChatters(token, channel);
+        // find the moderators if possible
+        let mods: UserData[] = [];
+        try {
+          mods = await findModerators(
+            token,
+            channel,
+            chatters.map((c) => c.user_id)
           );
+        } catch (e) {
+          console.error(e);
         }
-        const login = profileJson["data"][0]["login"];
-        if (!login) {
-          throw new functions.https.HttpsError(
-            "not-found",
-            "channel not found"
+        let vips: UserData[] = [];
+        try {
+          vips = await findVIPs(
+            token,
+            channel,
+            chatters.map((c) => c.user_id)
           );
+        } catch (e) {
+          console.error(e);
         }
-        const chatters = await fetch(
-          `https://tmi.twitch.tv/group/user/${login}/chatters`
+        // remove mods and vips from the list of chatters.
+        const viewers = chatters.filter(
+          (c) =>
+            !mods.some((m) => m.user_id == c.user_id) &&
+            !vips.some((v) => v.user_id == c.user_id)
         );
-        const chattersJson = await chatters.json();
-        return chattersJson["chatters"];
+        // for backwards compatibility, return the list of usernames as strings.
+        // and return the full profile as <key>Data.
+        return {
+          viewers: viewers.map((c) => c.user_name),
+          viewersData: viewers,
+          mods: mods.map((c) => c.user_name),
+          modsData: mods,
+          vips: vips.map((c) => c.user_name),
+          vipsData: vips,
+        };
     }
+    throw new functions.https.HttpsError("invalid-argument", "invalid channel");
   }
 );
