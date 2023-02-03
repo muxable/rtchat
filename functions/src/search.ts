@@ -69,14 +69,13 @@ export const search = functions.https.onCall(async (data, context) => {
       return {
         provider: "twitch",
         channelId: channel.id,
-        login: channel.login,
+        login: channel.broadcaster_login,
         displayName: channel.display_name,
         isOnline: channel.is_live,
         imageUrl: channel.thumbnail_url,
         categoryName: channel.game_name,
         title: channel.title,
-        viewerCount: channel.viewer_count,
-        language: channel.language,
+        language: channel.broadcaster_language,
       };
     }),
   ];

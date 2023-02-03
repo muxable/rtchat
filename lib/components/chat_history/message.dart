@@ -20,6 +20,7 @@ import 'package:rtchat/components/chat_history/twitch/poll_event.dart';
 import 'package:rtchat/components/chat_history/twitch/prediction_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raiding_event.dart';
+import 'package:rtchat/components/chat_history/twitch/shoutout_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
@@ -34,6 +35,8 @@ import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
+import 'package:rtchat/models/messages/twitch/shoutout_create_event.dart';
+import 'package:rtchat/models/messages/twitch/shoutout_receive_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -293,6 +296,10 @@ class ChatHistoryMessage extends StatelessWidget {
       return StreamlabsDonationEventWidget(m);
     } else if (m is SimpleRealtimeCashDonationEventModel) {
       return RealtimeCashDonationEventWidget(m);
+    } else if (m is TwitchShoutoutCreateEventModel) {
+      return TwitchShoutoutCreateEventWidget(m);
+    } else if (m is TwitchShoutoutReceiveEventModel) {
+      return TwitchShoutoutReceiveEventWidget(m);
     } else {
       throw AssertionError("invalid message type $m");
     }
