@@ -357,12 +357,12 @@ export const updateFollowerAndViewerCount = functions.pubsub
 
 export const getViewerList = functions.https.onCall(
   async (channelId: string, context) => {
-    // if (!context.auth) {
-    //   throw new functions.https.HttpsError(
-    //     "unauthenticated",
-    //     "must be authenticated"
-    //   );
-    // }
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "must be authenticated"
+      );
+    }
     const [provider, channel] = channelId.split(":");
     switch (provider) {
       case "twitch":
