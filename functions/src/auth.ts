@@ -197,7 +197,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
     displayName: users["data"][0]["display_name"],
     login: users["data"][0]["login"],
     profilePictureUrl: users["data"][0]["profile_image_url"],
-    email: email,
+    email: email || null,
   };
 
   await admin
