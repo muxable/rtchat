@@ -358,7 +358,8 @@ export const embedRedirect = functions.https.onRequest(async (req, res) => {
     case "twitch":
       const login = await getTwitchLogin(channelId);
       if (!login) {
-        throw new functions.https.HttpsError("not-found", "channel not found");
+        res.status(404).send("channel not found");
+        return;
       }
       res.redirect(
         `https://player.twitch.tv/?channel=${login}&controls=false&parent=chat.rtirl.com&muted=true`
