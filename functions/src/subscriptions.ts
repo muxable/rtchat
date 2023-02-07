@@ -57,9 +57,9 @@ export const subscribe = functions.https.onCall(async (data, context) => {
       functions.logger.info("updating last active time");
 
       // update the metadata for this channel to indicate the last active time.
-      await profile.ref.update({
+      await profile.ref.set({
         lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
+      }, { merge: true });
 
       if (profile.get("twitch") && profile.get("twitch")["id"] == channelId) {
         functions.logger.info("checking eventsub subscriptions.");
@@ -70,9 +70,9 @@ export const subscribe = functions.https.onCall(async (data, context) => {
           .firestore()
           .collection("channels")
           .doc(`${provider}:${channelId}`)
-          .update({
+          .set({
             lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
+          }, { merge: true });
 
         // if there are no messages logged, this is a new user.
         if (profile.get("lastActiveAt") == null) {
