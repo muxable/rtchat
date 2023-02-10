@@ -121,10 +121,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             });
             return;
           }
-          setState(() {
-            _textEditingController.text =
-                "${_textEditingController.text} ${emote.code}";
-          });
+          _textEditingController.text =
+              "${_textEditingController.text} ${emote.code}";
         });
   }
 
