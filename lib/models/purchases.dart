@@ -66,6 +66,9 @@ class Purchases extends ChangeNotifier {
   }
 
   Future<bool> isStoreAvailable() async {
+    if (storeState == StoreState.available) {
+      return true;
+    }
     await loadPurchases();
     return await iapConnection.isAvailable();
   }
