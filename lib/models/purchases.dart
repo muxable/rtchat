@@ -45,6 +45,9 @@ class Purchases extends ChangeNotifier {
   Future<void> loadPurchases() async {
     final available = await iapConnection.isAvailable();
     if (!available) {
+      if (storeState == StoreState.notAvailable) {
+        return;
+      }
       storeState = StoreState.notAvailable;
       notifyListeners();
       return;
