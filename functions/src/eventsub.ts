@@ -53,10 +53,7 @@ function createEventsub(token: string, type: string, twitchUserId: string) {
       moderator_user_id: twitchUserId,
     };
   }
-  const version =
-    type === "channel.shoutout.create" || type === "channel.shoutout.receive"
-      ? "beta"
-      : "1";
+  const version = "1";
   return fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
     method: "POST",
     headers: {
