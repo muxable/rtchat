@@ -53,7 +53,6 @@ function createEventsub(token: string, type: string, twitchUserId: string) {
       moderator_user_id: twitchUserId,
     };
   }
-  const version = "1";
   return fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
     method: "POST",
     headers: {
@@ -63,7 +62,7 @@ function createEventsub(token: string, type: string, twitchUserId: string) {
     },
     body: JSON.stringify({
       type,
-      version: version,
+      version: "1",
       condition,
       transport: {
         method: "webhook",
