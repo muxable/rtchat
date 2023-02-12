@@ -82,6 +82,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pushNamed(context, "/settings/third-party");
             },
           ),
+          SwitchListTile.adaptive(
+            title: const Text('Show viewer and follower count'),
+            subtitle: const Text('Disable/Enable across the app'),
+            value: layoutModel.isStatsVisible,
+            onChanged: (value) {
+              layoutModel.isStatsVisible = value;
+            },
+          ),
           const Divider(),
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -176,13 +184,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                     ),
                   ])),
-          SwitchListTile.adaptive(
-            title: const Text('Show viewer and follower count'),
-            value: layoutModel.isStatsVisible,
-            onChanged: (value) {
-              layoutModel.isStatsVisible = value;
-            },
-          ),
           const Divider(),
           ListTile(
             title: const Text('RealtimeChat is open source!'),
