@@ -84,7 +84,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           SwitchListTile.adaptive(
             title: const Text('Show viewer and follower count'),
-            subtitle: const Text('Disable/Enable across the app'),
             value: layoutModel.isStatsVisible,
             onChanged: (value) {
               layoutModel.isStatsVisible = value;
