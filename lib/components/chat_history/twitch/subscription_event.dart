@@ -72,11 +72,11 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
   const TwitchSubscriptionMessageEventWidget(this.model, {Key? key})
       : super(key: key);
 
-  Color chipBackgroundColor(String tier, BuildContext context) {
+  Color chipBackgroundColor(BuildContext context, String tier) {
     if (tier == '2000') {
-      return  const Color(0xFFFFEA00);
+      return const Color(0xFFD2D2e6);
     } else if (tier == '3000') {
-      return  const Color(0xFFD2D2e6);
+      return const Color(0xFFFFEA00);
     } else {
       return Theme.of(context).colorScheme.secondary;
     }
@@ -142,7 +142,7 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 8),
                   child: Chip(
                     label: Text("Tier ${model.tier.replaceAll("000", "")}"),
-                    backgroundColor: chipBackgroundColor(model.tier, context),
+                    backgroundColor: chipBackgroundColor(context, model.tier),
                   ),
                 ),
               ),
