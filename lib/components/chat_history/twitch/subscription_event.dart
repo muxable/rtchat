@@ -74,7 +74,7 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
 
   Color chipBackgroundColor(BuildContext context, String tier) {
     if (tier == '2000') {
-      return const Color(0xFFD2D2e6);
+      return const Color(0xFFD2D2E6);
     } else if (tier == '3000') {
       return const Color(0xFFFFEA00);
     } else {
