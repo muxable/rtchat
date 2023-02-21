@@ -185,7 +185,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ])),
           const Divider(),
           ListTile(
-            title: const Text('RealtimeChat is open source!'),
+            title: const Text('RealtimeChat is open source'),
             subtitle: const Text("Find us on GitHub!"),
             trailing: const Icon(Icons.terminal),
             onTap: () =>
