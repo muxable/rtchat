@@ -23,6 +23,10 @@
   "@search": {
     "description": "Placeholder text for search bar"
   },
+  "notSignedIn": "Not signed in",
+  "@notSignedIn": {
+    "description": "Label for unauthenticated user"
+  },
   "searchChannels": "Search",
   "@searchChannels": {
     "description": "Header for a page that lets the user search channels"

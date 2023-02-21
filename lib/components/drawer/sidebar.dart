@@ -67,7 +67,8 @@ class _DrawerHeader extends StatelessWidget {
                                 children: [
                                   Text(
                                       userChannel?.displayName ??
-                                          "Not signed in",
+                                          AppLocalizations.of(context)!
+                                              .notSignedIn,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge
