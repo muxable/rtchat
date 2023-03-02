@@ -76,7 +76,7 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
     if (tier == '2000') {
       return const Color(0xFF9A93A9);
     } else if (tier == '3000') {
-      return const Color(0xFFFFEA00);
+      return const Color(0xFFC09C39);
     } else {
       return Theme.of(context).colorScheme.secondary;
     }
