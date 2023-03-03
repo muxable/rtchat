@@ -73,12 +73,12 @@
   "followingEvent": "<bold>{displayName}</bold> te estÃ¡ siguiendo",
   "followingEvent2": "<bold>{displayName}</bold> y <bold>{displayNameTwo}</bold> te estÃ¡n siguiendo",
   "followingEvent3": "<bold>{displayName}</bold>, <bold>{displayNameTwo}</bold>, y {numOthers} otros te estÃ¡n siguiendo",
-  "unmuteUser": "Quitar silencio a {displayName}",
-  "muteUser": "Silenciar a {displayName}",
-  "timeoutUser": "Suspender a {displayName}",
-  "banUser": "Bannear a {displayName}",
-  "unbanUser": "Quitar ban a {displayName}",
-  "viewProfile": "Ver perfil de {displayName}",
+  "unmuteUser": "{displayName}Stummschaltung aufheben",
+  "muteUser": "{displayName} stumm schalten",
+  "timeoutUser": "{displayName} vorübergehend sperren ",
+  "banUser": "{displayName} sperren",
+  "unbanUser": "{displayName} entsperren",
+  "viewProfile": "{displayName} Profil anschauen",
   "copyMessage": "Nachricht kopieren",
   "deleteMessage": "Nachricht löschen"
 }
