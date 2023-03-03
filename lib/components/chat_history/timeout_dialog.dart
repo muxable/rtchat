@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TimeoutDialog extends StatefulWidget {
   final String title;
@@ -14,30 +15,59 @@ class TimeoutDialog extends StatefulWidget {
 class _TimeoutDialogState extends State<TimeoutDialog> {
   var _value = 5;
 
-  String get _label {
+  String? getLabel(BuildContext context) {
     switch (_value) {
       case 1:
-        return "1 minute";
+        return AppLocalizations.of(context)!.durationOneMinute;
       case 2:
-        return "15 minutes";
+        return AppLocalizations.of(context)!.durationFifteenMinutes;
       case 3:
-        return "1 hour";
+        return AppLocalizations.of(context)!.durationOneHour;
       case 4:
-        return "6 hours";
+        return AppLocalizations.of(context)!.durationSixHours;
       case 5:
-        return "1 day";
+        return AppLocalizations.of(context)!.durationOneDay;
       case 6:
-        return "2 days";
+        return AppLocalizations.of(context)!.durationTwoDays;
       case 7:
-        return "1 week";
+        return AppLocalizations.of(context)!.durationOneWeek;
       case 8:
-        return "1 month";
+        return AppLocalizations.of(context)!.durationOneMonth;
       case 9:
-        return "3 months";
+        return AppLocalizations.of(context)!.durationThreeMonths;
       case 10:
-        return "1 year";
+        return AppLocalizations.of(context)!.durationOneYear;
       case 11:
-        return "forever";
+        return AppLocalizations.of(context)!.durationForever;
+    }
+    return null;
+  }
+
+  String getPrompt(BuildContext context) {
+    switch (_value) {
+      case 1:
+        return AppLocalizations.of(context)!.durationOneMinuteTimeoutPrompt;
+      case 2:
+        return AppLocalizations.of(context)!
+            .durationFifteenMinutesTimeoutPrompt;
+      case 3:
+        return AppLocalizations.of(context)!.durationOneHourTimeoutPrompt;
+      case 4:
+        return AppLocalizations.of(context)!.durationSixHoursTimeoutPrompt;
+      case 5:
+        return AppLocalizations.of(context)!.durationOneDayTimeoutPrompt;
+      case 6:
+        return AppLocalizations.of(context)!.durationTwoDaysTimeoutPrompt;
+      case 7:
+        return AppLocalizations.of(context)!.durationOneWeekTimeoutPrompt;
+      case 8:
+        return AppLocalizations.of(context)!.durationOneMonthTimeoutPrompt;
+      case 9:
+        return AppLocalizations.of(context)!.durationThreeMonthsTimeoutPrompt;
+      case 10:
+        return AppLocalizations.of(context)!.durationOneYearTimeoutPrompt;
+      case 11:
+        return AppLocalizations.of(context)!.durationForeverTimeoutPrompt;
     }
     return "";
   }
@@ -81,7 +111,7 @@ class _TimeoutDialogState extends State<TimeoutDialog> {
             min: 1,
             max: 11,
             divisions: 11,
-            label: _label,
+            label: getLabel(context),
             onChanged: (double value) {
               setState(() {
                 _value = value.toInt();
@@ -91,7 +121,7 @@ class _TimeoutDialogState extends State<TimeoutDialog> {
         ),
         actions: [
           TextButton(
-              child: Text("Timeout for $_label"),
+              child: Text(getPrompt(context)),
               onPressed: () {
                 widget.onPressed(_duration);
               })
