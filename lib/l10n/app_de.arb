@@ -19,7 +19,7 @@
   "activityFeed": "Aktivitäten-Feed",
   "streamOnline": "Stream online um {date}, {time}",
   "streamOffline": "Stream offline um {date}, {time}",
-  "chatCleared": "Chat limpiado {date}, {time}",
+  "chatCleared": "Chat gelöscht um {date}, {time}",
   "configureQuickLinks": "Schnell-Links erstellen",
   "disableRainMode": "Regen-Modus deaktivieren",
   "enableRainMode": "Regen-Modus aktivieren",
