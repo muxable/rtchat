@@ -41,7 +41,7 @@
   "selectAll": "alles auswählen",
   "quickLinks": "Schnell-Links",
   "swipeToDeleteQuickLinks": "Wischen Sie um Schnell-Links zu löschen",
-  "quickLinksLabelHint": "Name"
+  "quickLinksLabelHint": "Name",
   "invalidUrlErrorText": "Dieser Link scheint ungültig zu sein.",
   "duplicateUrlErrorText": "Dieser Link existiert schon",
   "or": "oder",
