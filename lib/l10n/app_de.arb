@@ -26,7 +26,7 @@
   "disableRainModeSubtitle": "Regen-Modus Untertitel deaktivieren",
   "enableRainModeSubtitle": "Regen-Modus Untertitel aktivieren",
   "refreshAudioSources": "Audioquellen aktualisieren",
-  "refreshAudioSourcesCount": "{count,plural, =0{Keine aktualisierten Audioquellen} =1{1 aktualisierte Audioquelle } andere{{count} aktualisierten Audioquellen}}",
+  "refreshAudioSourcesCount": "{count,plural, =0{Keine aktualisierten Audioquellen} =1{1 aktualisierte Audioquelle } other{{count} aktualisierten Audioquellen}}",
   "settings": "Einstellungen",
   "signOut": "abmelden",
   "cancel": "absagen",
