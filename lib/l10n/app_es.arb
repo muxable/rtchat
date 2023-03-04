@@ -67,7 +67,7 @@
   "chatHistorySubtitle": "Cambia la apariencia del chat",
   "textToSpeechSubtitle": "Cambia la configuración de Texto a Voz",
   "events": "Eventos",
-  "eventsSubtitle":"Configura eventos de Twitch",
+  "eventsSubtitle": "Configura eventos de Twitch",
   "thirdPartyServices": "Servicios de terceros",
   "thirdPartyServicesSubtitle": "Conecta un servicio de terceros",
   "followingEvent": "<bold>{displayName}</bold> te está siguiendo",
