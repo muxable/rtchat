@@ -8,7 +8,7 @@
   "searchChannels": "Kanal suchen",
   "raidAChannel": "Kanal raiden",
   "noMessagesEmptyState": "keine Nachricht",
-  "newMessageCount": "{count,plural, =0{Keine neuen Nachrichten} =1{1 neue Nachricht} andere {{count} neue Nachrichten}}",
+  "newMessageCount": "{count,plural, =0{Keine neuen Nachrichten} =1{1 neue Nachricht} andere{{count} neue Nachrichten}}",
   "signInWithTwitch": "Mit Twitch anmelden",
   "signInError": "Etwas ist mit der Anmeldung falsch gelaufen. Erneut versuchen",
   "continueAsGuest": "Als Gastnutzer weiterfahren",
