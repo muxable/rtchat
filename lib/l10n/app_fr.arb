@@ -79,5 +79,5 @@
   "unbanUser": "débannir {displayName}",
   "viewProfile": "voir le profil de {displayName}",
   "copyMessage": "copier le message",
-  "deleteMessage": "supprimer le message"
+  "deleteMessage": "supprimer le message",
 }
