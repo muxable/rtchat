@@ -7,7 +7,7 @@
   "search": "Rechercher",
   "searchChannels": "chercher chaînes",
   "raidAChannel": "lancer un raid",
-  "noMessagesEmptyState": "aucun message",
+  "noMessagesEmptyState": "aucuns messages",
   "newMessageCount": "{count,plural, =0{aucun nouveau message} =1{1 nouveau message} other{{count} nouveaux messages}}",
   "signInWithTwitch": "se connecter avec twitch",
   "signInError": "La connection avec twitch a raté. Veuillez réessayer.",
