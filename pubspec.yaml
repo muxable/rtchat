@@ -62,3 +62,9 @@ flutter:
   assets:
     - assets/
     - assets/providers/
+  
+  fonts:
+  - family: HansonBold
+    fonts:
+      - asset: assets/Hanson-Bold-700.otf
+        weight: 700

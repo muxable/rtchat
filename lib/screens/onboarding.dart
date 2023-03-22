@@ -30,12 +30,20 @@ class OnboardingScreen extends StatelessWidget {
                     const Image(
                         width: 160, image: AssetImage('assets/logo.png')),
                     Padding(
-                        padding: const EdgeInsets.only(bottom: 64),
-                        child: Text("RealtimeChat",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(color: Colors.white))),
+                      padding: const EdgeInsets.only(bottom: 64),
+                      child: Text(
+                        "REALTIMECHAT",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: Theme.of(context)
+                              .textTheme
+                              .displaySmall!
+                              .fontSize,
+                          fontFamily: 'HansonBold',
+                          color: const Color.fromARGB(255, 255, 255, 255),
+                        ),
+                      ),
+                    ),
                     LoginOptionsWidget(onChannelSelect: onChannelSelect),
                   ],
                 ),
