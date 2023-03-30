@@ -37,6 +37,7 @@ class TtsModel extends ChangeNotifier {
   var _isRandomVoiceEnabled = true;
   var _isBotMuted = false;
   var _isEmoteMuted = false;
+  var _isPreludeMuted = false;
   var _speed = Platform.isAndroid ? 0.8 : 0.395;
   var _pitch = 1.0;
   var _isEnabled = false;
@@ -131,7 +132,7 @@ class TtsModel extends ChangeNotifier {
         return "";
       }
       final author = model.author.displayName ?? model.author.login;
-      if (!includeAuthorPrelude) {
+      if (!includeAuthorPrelude || isPreludeMuted) {
         return text;
       }
       return model.isAction ? "$author $text" : "$author said $text";
@@ -216,6 +217,15 @@ class TtsModel extends ChangeNotifier {
 
   set isEmoteMuted(bool value) {
     _isEmoteMuted = value;
+    notifyListeners();
+  }
+
+  bool get isPreludeMuted {
+    return _isPreludeMuted;
+  }
+
+  set isPreludeMuted(bool value) {
+    _isPreludeMuted = value;
     notifyListeners();
   }
 
@@ -383,6 +393,9 @@ class TtsModel extends ChangeNotifier {
     if (json['isEmoteMuted'] != null) {
       _isEmoteMuted = json['isEmoteMuted'];
     }
+    if (json['isPreludeMuted'] != null) {
+      _isPreludeMuted = json['isPreludeMuted'];
+    }
     if (json['isRandomVoiceEnabled'] != null) {
       _isRandomVoiceEnabled = json['isRandomVoiceEnabled'];
     }
@@ -403,6 +416,7 @@ class TtsModel extends ChangeNotifier {
   Map<String, dynamic> toJson() => {
         "isBotMuted": isBotMuted,
         "isEmoteMuted": isEmoteMuted,
+        "isPreludeMuted": isPreludeMuted,
         "isRandomVoiceEnabled": isRandomVoiceEnabled,
         "language": language.languageCode,
         "pitch": pitch,
