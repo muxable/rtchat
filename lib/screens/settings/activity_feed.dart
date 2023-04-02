@@ -81,7 +81,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
       body: SafeArea(
         child: Consumer3<ActivityFeedModel, UserModel, LayoutModel>(builder:
             (context, activityFeedModel, userModel, layoutModel, child) {
-          late final Uri? uri;
+          Uri? uri;
 
           final channel = userModel.userChannel;
           if (activityFeedModel.isCustom) {
