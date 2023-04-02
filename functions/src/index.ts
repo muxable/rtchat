@@ -1,20 +1,21 @@
+import fetch from "cross-fetch";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
-import fetch from "cross-fetch";
+import {
+  alchemyWebhook,
+  ethAlchemyWebhook,
+  setRealTimeCashAddress,
+} from "./alchemy_webhook";
 import { app as authApp } from "./auth";
-import { getUserEmotes, getEmotes } from "./emotes";
+import { getBadges } from "./badges";
+import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
+import { getEmotes, getUserEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
 import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
-import { synthesize, getVoices } from "./tts";
-import { getTwitchLogin, getChannelId } from "./twitch";
-import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
-import {
-  setRealTimeCashAddress,
-  alchemyWebhook,
-  ethAlchemyWebhook,
-} from "./alchemy_webhook";
+import { getVoices, synthesize } from "./tts";
+import { getChannelId, getTwitchLogin } from "./twitch";
 
 async function write(
   channelId: string,
@@ -445,6 +446,7 @@ export {
   search,
   getUserEmotes,
   getEmotes,
+  getBadges,
   synthesize,
   getVoices,
   getViewerList,
