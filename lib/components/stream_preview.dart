@@ -93,7 +93,6 @@ class _StreamPreviewState extends State<StreamPreview> {
       })
       ..setNavigationDelegate(NavigationDelegate(
         onPageFinished: (url) async {
-          final model = Provider.of<StreamPreviewModel>(context, listen: false);
           await _controller.runJavaScript(
               await rootBundle.loadString('assets/twitch-tunnel.js'));
           // wait a second for twitch to catch up.
