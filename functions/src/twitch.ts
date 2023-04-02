@@ -33,3 +33,28 @@ export async function getTwitchLogin(id: string) {
   }
   return json["data"][0]["login"] as string;
 }
+
+export async function getTwitchId(login: string) {
+  const token = await getAppAccessToken("twitch");
+
+  if (!token) {
+    return null;
+  }
+
+  const response = await fetch(
+    `https://api.twitch.tv/helix/users?login=${login}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token.token["access_token"]}`,
+        "Client-Id": TWITCH_CLIENT_ID,
+      },
+    }
+  );
+
+  const json = (await response.json()) as any;
+
+  if (!json || !json["data"] || json["data"].length == 0) {
+    return null;
+  }
+  return json["data"][0]["id"] as string;
+}
