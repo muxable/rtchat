@@ -7,14 +7,15 @@ import {
   setRealTimeCashAddress,
 } from "./alchemy_webhook";
 import { app as authApp } from "./auth";
+import { getBadges } from "./badges";
 import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
 import { getEmotes, getUserEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
-import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { getVoices, synthesize } from "./tts";
-import { getChannelId, getTwitchId, getTwitchLogin } from "./twitch";
+import { getChannelId, getTwitchLogin } from "./twitch";
 
 async function write(
   channelId: string,
@@ -502,6 +503,7 @@ export {
   search,
   getUserEmotes,
   getEmotes,
+  getBadges,
   synthesize,
   getVoices,
   getViewerList,
