@@ -11,11 +11,11 @@ import { getBadges } from "./badges";
 import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
 import { getEmotes, getUserEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
-import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { getVoices, synthesize } from "./tts";
-import { getChannelId, getTwitchLogin } from "./twitch";
+import { getChannelId, getTwitchId, getTwitchLogin } from "./twitch";
 
 async function write(
   channelId: string,
