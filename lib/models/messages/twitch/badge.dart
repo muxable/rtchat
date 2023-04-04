@@ -1,31 +1,18 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:core';
 
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'package:rtchat/models/adapters/chat_state.dart';
 import 'package:rtchat/models/channels.dart';
-
-Future<Map<String, dynamic>> getBadgeSets(Uri uri) async {
-  final response = await http.get(uri);
-  Map<String, dynamic> result = {};
-
-  jsonDecode(response.body)['badge_sets'].forEach((key, badgeSet) {
-    badgeSet['versions'].forEach((version, data) {
-      result["$key/$version"] = data;
-    });
-  });
-
-  return result;
-}
 
 class TwitchBadgeModel extends ChangeNotifier {
   StreamSubscription<void>? _globalBadgeSubscription;
   StreamSubscription<void>? _localBadgeSubscription;
 
-  Map<String, dynamic> localBadgeSets = {};
-  Map<String, dynamic> globalBadgeSets = {};
+  List<TwitchBadgeInfo> localBadgeSets = [];
+  List<TwitchBadgeInfo> globalBadgeSets = [];
   Set<String> _enabled = {};
+  bool _isAllEnabled = false;
 
   set channel(Channel? channel) {
     localBadgeSets.clear();
@@ -33,8 +20,8 @@ class TwitchBadgeModel extends ChangeNotifier {
     _globalBadgeSubscription?.cancel();
     _localBadgeSubscription?.cancel();
 
-    _globalBadgeSubscription = getBadgeSets(
-            Uri.parse("https://badges.twitch.tv/v1/badges/global/display"))
+    _globalBadgeSubscription = ChatStateAdapter.instance
+        .getTwitchBadges()
         .asStream()
         .listen((badgeSets) {
       globalBadgeSets = badgeSets;
@@ -44,8 +31,8 @@ class TwitchBadgeModel extends ChangeNotifier {
       if (channel.provider != "twitch") {
         return;
       }
-      _localBadgeSubscription = getBadgeSets(Uri.parse(
-              "https://badges.twitch.tv/v1/badges/channels/${channel.channelId}/display"))
+      _localBadgeSubscription = ChatStateAdapter.instance
+          .getTwitchBadges(channelId: channel.channelId)
           .asStream()
           .listen((badgeSets) {
         localBadgeSets = badgeSets;
@@ -54,16 +41,17 @@ class TwitchBadgeModel extends ChangeNotifier {
     }
   }
 
-  Map<String, dynamic> get badgeSets {
-    return {...globalBadgeSets, ...localBadgeSets};
+  List<TwitchBadgeInfo> get badgeSets {
+    return [...globalBadgeSets, ...localBadgeSets];
   }
 
   void setAllEnabled(bool enabled) {
     if (enabled) {
-      _enabled =
-          globalBadgeSets.keys.toSet().union(localBadgeSets.keys.toSet());
+      _enabled = badgeSets.map((e) => e.setId).toSet();
+      _isAllEnabled = true;
     } else {
       _enabled.clear();
+      _isAllEnabled = false;
     }
 
     notifyListeners();
@@ -75,17 +63,21 @@ class TwitchBadgeModel extends ChangeNotifier {
     } else {
       _enabled.remove(key);
     }
+    if (_enabled.length == badgeSets.length) {
+      _isAllEnabled = true;
+    } else {
+      _isAllEnabled = false;
+    }
 
     notifyListeners();
   }
 
-  bool isEnabled(String key) => _enabled.contains(key);
+  bool isEnabled(String setId) => _enabled.contains(setId) || _isAllEnabled;
 
   int get badgeCount {
-    return globalBadgeSets.keys
-        .toSet()
-        .union(localBadgeSets.keys.toSet())
-        .length;
+    final globalKeys = globalBadgeSets.map((e) => e.setId).toSet();
+    final localKeys = localBadgeSets.map((e) => e.setId).toSet();
+    return globalKeys.union(localKeys).length;
   }
 
   int get enabledCount => _enabled.length;
