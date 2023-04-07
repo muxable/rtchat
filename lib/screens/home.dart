@@ -19,6 +19,7 @@ import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:wakelock/wakelock.dart';
+import 'dart:math' as math;
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
@@ -59,7 +60,8 @@ class _ResizableWidgetState extends State<ResizableWidget> {
     if (orientation == Orientation.portrait) {
       return Column(children: [
         SizedBox(
-          height: _height.clamp(57, MediaQuery.of(context).size.height - 300),
+          height: _height.clamp(
+              57, math.max(57, MediaQuery.of(context).size.height - 300)),
           child: widget.child,
         ),
         if (widget.resizable)
@@ -70,8 +72,8 @@ class _ResizableWidgetState extends State<ResizableWidget> {
               });
             },
             onVerticalDragEnd: (details) {
-              widget.onResizeHeight(
-                  _height.clamp(57, MediaQuery.of(context).size.height - 300));
+              widget.onResizeHeight(_height.clamp(
+                  57, math.max(57, MediaQuery.of(context).size.height - 300)));
             },
             onVerticalDragUpdate: (details) {
               setState(() {
@@ -92,7 +94,8 @@ class _ResizableWidgetState extends State<ResizableWidget> {
     } else {
       return Row(children: [
         SizedBox(
-          width: _width.clamp(57, MediaQuery.of(context).size.width - 400),
+          width: _width.clamp(
+              57, math.max(57, MediaQuery.of(context).size.width - 400)),
           child: widget.child,
         ),
         if (widget.resizable)
@@ -109,7 +112,10 @@ class _ResizableWidgetState extends State<ResizableWidget> {
                   }
                   ..onEnd = (details) {
                     widget.onResizeWidth(
-                      _width.clamp(57, MediaQuery.of(context).size.width - 400),
+                      _width.clamp(
+                          57,
+                          math.max(
+                              57, MediaQuery.of(context).size.width - 400)),
                     );
                   }
                   ..onUpdate = (details) {
