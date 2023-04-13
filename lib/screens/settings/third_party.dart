@@ -1,5 +1,6 @@
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
@@ -155,6 +156,61 @@ class _StreamlabsWidget extends StatelessWidget {
   }
 }
 
+class _StreamElementsWidget extends StatelessWidget {
+  final String userId;
+
+  const _StreamElementsWidget({Key? key, required this.userId})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Image(image: AssetImage('assets/streamelements.png')),
+      trailing: SizedBox(
+        width: 24,
+        height: 24,
+        child: StreamBuilder(
+          stream:
+              DonationsAdapter.instance.forStreamElementsConfig(userId: userId),
+          builder: (context, snapshot) {
+            return snapshot.data != null
+                ? const Icon(
+                    Icons.check_circle,
+                    color: Colors.green,
+                  )
+                : Container();
+          },
+        ),
+      ),
+      title: const Text("StreamElements"),
+      subtitle: const Text("See your StreamElements donations"),
+      onTap: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        final userModel = Provider.of<UserModel>(context, listen: false);
+        final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+        final provider = userModel.userChannel?.provider;
+        if (provider == null) {
+          messenger.showSnackBar(const SnackBar(
+              content: Text(
+                  "Some strange authentication error occurred. Try signing out, or ask on Discord?")));
+          return;
+        }
+        final result = await FlutterWebAuth.authenticate(
+            url:
+                "https://chat.rtirl.com/auth/streamelements/redirect?token=$idToken&provider=$provider",
+            callbackUrlScheme: "com.rtirl.chat");
+        final token = Uri.parse(result).queryParameters['token'];
+        if (token == null) {
+          messenger.showSnackBar(const SnackBar(
+            content:
+                Text("Hmm, that didn't work. Try again, or ask on Discord?"),
+          ));
+        }
+      },
+    );
+  }
+}
+
 class ThirdPartyScreen extends StatelessWidget {
   const ThirdPartyScreen({Key? key}) : super(key: key);
 
@@ -174,6 +230,8 @@ class ThirdPartyScreen extends StatelessWidget {
                 _RealtimeCashWidget(userId: userId),
                 const Divider(),
                 _StreamlabsWidget(userId: userId),
+                if (kDebugMode) const Divider(),
+                if (kDebugMode) _StreamElementsWidget(userId: userId),
               ],
             );
           },
