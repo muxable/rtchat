@@ -302,6 +302,9 @@ DeltaEvent? _toDeltaEvent(
     case "streamlabs.donation":
       final model = StreamlabsDonationEventModel.fromDocumentData(doc.id, data);
       return AppendDeltaEvent(model);
+    case "streamelements.tip":
+      final model = StreamElementsTipEventModel.fromDocumentData(doc.id, data);
+      return AppendDeltaEvent(model);
     case "realtimecash.donation":
       final model =
           SimpleRealtimeCashDonationEventModel.fromDocumentData(doc.id, data);
