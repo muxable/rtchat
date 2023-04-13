@@ -57,7 +57,7 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
                 text: model.total > 1 ? "subscriptions. " : "subscription. "),
             TextSpan(
                 text: model.cumulativeTotal > 0
-                    ? "They've gifted ${model.cumulativeTotal} months in the channel"
+                    ? "They've gifted ${model.cumulativeTotal} subs in the channel"
                     : ""),
           ],
         ),
@@ -71,6 +71,16 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
 
   const TwitchSubscriptionMessageEventWidget(this.model, {Key? key})
       : super(key: key);
+
+  Color chipBackgroundColor(BuildContext context, String tier) {
+    if (tier == '2000') {
+      return const Color(0xFF9A93A9);
+    } else if (tier == '3000') {
+      return const Color(0xFFC09C39);
+    } else {
+      return Theme.of(context).colorScheme.secondary;
+    }
+  }
 
   Iterable<InlineSpan> _render(
       BuildContext context, StyleModel styleModel, MessageToken token) sync* {
@@ -96,7 +106,9 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
               preferBelow: false,
               child: Image(
                   height: styleModel.fontSize,
-                  image: ResilientNetworkImage(token.url))));
+                  image: ResilientNetworkImage(token.url),
+                  errorBuilder: (context, error, stackTrace) =>
+                      Text(token.code))));
     } else if (token is UserMentionToken) {
       final userModel = Provider.of<UserModel>(context, listen: false);
       final loginChannel = userModel.userChannel?.displayName;
@@ -130,7 +142,7 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 8),
                   child: Chip(
                     label: Text("Tier ${model.tier.replaceAll("000", "")}"),
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    backgroundColor: chipBackgroundColor(context, model.tier),
                   ),
                 ),
               ),

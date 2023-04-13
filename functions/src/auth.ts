@@ -135,7 +135,12 @@ app.get("/auth/twitch/redirect", (req, res) => {
       "channel:read:hype_train",
       "channel:read:subscriptions",
       "channel:read:redemptions",
+      "channel:read:vips",
       "moderation:read",
+      "moderator:manage:banned_users",
+      "moderator:manage:shoutouts",
+      "moderator:read:chatters",
+      "moderator:read:shoutouts",
       "user:read:email",
       "user:read:follows",
     ],
@@ -193,7 +198,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
     displayName: users["data"][0]["display_name"],
     login: users["data"][0]["login"],
     profilePictureUrl: users["data"][0]["profile_image_url"],
-    email: email,
+    email: email || null,
   };
 
   await admin

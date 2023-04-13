@@ -44,6 +44,38 @@ class Viewers {
   }
 }
 
+class BadgeVersion {
+  final String id;
+  final String imageUrl1x;
+  final String imageUrl2x;
+  final String imageUrl4x;
+  final String description;
+  final String title;
+  final String? clickAction;
+  final String? clickUrl;
+
+  BadgeVersion({
+    required this.id,
+    required this.imageUrl1x,
+    required this.imageUrl2x,
+    required this.imageUrl4x,
+    required this.description,
+    required this.title,
+    required this.clickAction,
+    required this.clickUrl,
+  });
+}
+
+class TwitchBadgeInfo {
+  final String setId;
+  final List<BadgeVersion> versions;
+
+  TwitchBadgeInfo({
+    required this.setId,
+    required this.versions,
+  });
+}
+
 class ChatStateAdapter {
   final FirebaseFunctions functions;
 
@@ -64,6 +96,34 @@ class ChatStateAdapter {
         vips: [...(result.data['vips'] ?? [])],
         viewers: [...(result.data['viewers'] ?? [])],
       );
+    });
+  }
+
+  Future<List<TwitchBadgeInfo>> getTwitchBadges({String? channelId}) {
+    return functions
+        .httpsCallable("getBadges")
+        .call({"provider": "twitch", "channelId": channelId}).then((result) {
+      // data is a badge info array
+      if (result.data == null) {
+        return [];
+      }
+      return result.data
+          .map<TwitchBadgeInfo>((badgeInfo) => TwitchBadgeInfo(
+                setId: badgeInfo["set_id"],
+                versions: badgeInfo["versions"]
+                    .map<BadgeVersion>((version) => BadgeVersion(
+                          id: version["id"],
+                          imageUrl1x: version["image_url_1x"],
+                          imageUrl2x: version["image_url_2x"],
+                          imageUrl4x: version["image_url_4x"],
+                          description: version["description"],
+                          title: version["title"],
+                          clickAction: version["click_action"],
+                          clickUrl: version["click_url"],
+                        ))
+                    .toList(),
+              ))
+          .toList();
     });
   }
 }

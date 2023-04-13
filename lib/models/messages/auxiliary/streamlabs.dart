@@ -2,14 +2,12 @@ import 'package:rtchat/models/messages/message.dart';
 
 class StreamlabsDonationEventModel extends MessageModel {
   final String name;
-  final String amount;
   final String formattedAmount;
   final String? message;
   final String currency;
 
   const StreamlabsDonationEventModel(
       {required this.name,
-      required this.amount,
       required this.formattedAmount,
       required this.message,
       required this.currency,
@@ -21,7 +19,6 @@ class StreamlabsDonationEventModel extends MessageModel {
       String messageId, Map<String, dynamic> data) {
     return StreamlabsDonationEventModel(
         name: data['name'],
-        amount: data['amount'],
         formattedAmount: data['formattedAmount'],
         message: data['message'],
         currency: data['currency'],

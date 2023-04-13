@@ -21,6 +21,7 @@ import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/purchases.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
@@ -47,7 +48,7 @@ import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/third_party.dart';
 import 'package:rtchat/screens/settings/tts.dart';
-import 'package:rtchat/screens/settings/tts/cloud_tts.dart';
+import 'package:rtchat/screens/settings/tts/cloud_tts_purchases.dart';
 import 'package:rtchat/screens/settings/tts/languages.dart';
 import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
@@ -77,6 +78,13 @@ void main() async {
       systemNavigationBarColor: Colors.transparent,
     ));
 
+    AudioPlayer.global.setGlobalAudioContext(AudioContextConfig(
+      forceSpeaker: false,
+      duckAudio: false,
+      respectSilence: false,
+      stayAwake: true,
+    ).build());
+
     runApp(App(prefs: prefs));
   }, FirebaseCrashlytics.instance.recordError);
 }
@@ -96,7 +104,6 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   bool _isDiscoModeRunning = false;
   Timer? _discoModeTimer;
-  final _player = AudioCache();
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +143,9 @@ class _AppState extends State<App> {
             final model = MessagesModel.fromJson(
               jsonDecode(widget.prefs.getString("message_config") ?? "{}"),
             );
-            model.onMessagePing = () => _player.play('message-sound.wav');
+            final player = AudioPlayer();
+            model.onMessagePing =
+                () => player.play(AssetSource('message-sound.wav'));
             model.channel =
                 Provider.of<UserModel>(context, listen: false).activeChannel;
             model.tts = Provider.of<TtsModel>(context, listen: false);
@@ -237,6 +246,12 @@ class _AppState extends State<App> {
                   .setString('stream_preview', jsonEncode(model.toJson()));
             });
         }),
+        ChangeNotifierProvider<Purchases>(
+          create: (context) => Purchases(
+            context.read<TtsModel>(),
+          ),
+          lazy: false,
+        ),
       ],
       child: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return MaterialApp(
@@ -281,7 +296,7 @@ class _AppState extends State<App> {
             '/settings/chat-history': (context) => const ChatHistoryScreen(),
             '/settings/text-to-speech': (context) => const TextToSpeechScreen(),
             '/settings/text-to-speech/cloud-tts': (context) =>
-                const CloudTTSScreen(),
+                const CloudTtsPurchasesScreen(),
             '/settings/text-to-speech/languages': (context) =>
                 const LanguagesScreen(),
             '/settings/text-to-speech/voices': (context) =>

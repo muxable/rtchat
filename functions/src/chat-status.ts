@@ -1,64 +1,111 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
-import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { getAppAccessToken, getAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { AccessToken } from "simple-oauth2";
 
-async function getTwitchUserId(channel: string) {
-  // fetch the twitch user id from the database based on login.
-  const doc = await admin
-    .firestore()
-    .collection("profiles")
-    .where("twitch.login", "==", channel)
-    .limit(1)
-    .get();
-  if (doc.empty) {
-    return null;
+type UserData = {
+  user_id: string;
+  user_login: string;
+  user_name: string;
+};
+
+async function findModerators(
+  token: string,
+  twitchBroadcasterId: string,
+  twitchUserIds: string[]
+) {
+  const twitchChannelIds: UserData[] = [];
+  for (let i = 0; i < twitchUserIds.length; i += 100) {
+    const query = twitchUserIds
+      .slice(i, i + 100)
+      .map((id) => "user_id=" + encodeURIComponent(id))
+      .join("&");
+    const response = await fetch(
+      `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${twitchBroadcasterId}&${query}&first=100`,
+      {
+        headers: {
+          "Client-ID": TWITCH_CLIENT_ID,
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const json = await response.json();
+    if (json["data"]) {
+      twitchChannelIds.push(...json["data"]);
+    }
   }
-  return doc.docs[0].data()["twitch"]["id"];
+  return twitchChannelIds;
 }
 
-export const updateChatStatus = functions.pubsub
-  .schedule("* * * * *") // every 1 minute
-  .onRun(async () => {
-    const promises: Promise<any>[] = [];
-    // fetch the active connections from realtime database
-    const connections =
-      (await admin.database().ref("connections").once("value")).val() || {};
-    for (const [provider, channels] of Object.entries(connections)) {
-      for (const channel of Object.keys(channels as any)) {
-        switch (provider) {
-          case "twitch":
-            const promise = fetch(
-              `https://tmi.twitch.tv/group/user/${channel}/chatters`
-            )
-              .then((res) => res.json() as any)
-              .then(async (json) => {
-                return admin
-                  .firestore()
-                  .collection("chat-status")
-                  .add({
-                    provider,
-                    channel,
-                    channelId: `twitch:${await getTwitchUserId(channel)}`,
-                    ...json["chatters"],
-                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                  });
-              });
-            promises.push(promise);
-        }
+async function findVIPs(
+  token: string,
+  twitchBroadcasterId: string,
+  twitchUserIds: string[]
+) {
+  const twitchChannelIds: UserData[] = [];
+  for (let i = 0; i < twitchUserIds.length; i += 100) {
+    const query = twitchUserIds
+      .slice(i, i + 100)
+      .map((id) => "user_id=" + encodeURIComponent(id))
+      .join("&");
+    const response = await fetch(
+      `https://api.twitch.tv/helix/channels/vips?broadcaster_id=${twitchBroadcasterId}&${query}&first=100`,
+      {
+        headers: {
+          "Client-ID": TWITCH_CLIENT_ID,
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
+    const json = await response.json();
+    if (json["data"]) {
+      twitchChannelIds.push(...json["data"]);
     }
+  }
+  return twitchChannelIds;
+}
 
-    await Promise.all(promises);
-  });
+async function findChatters(
+  token: string,
+  twitchBroadcasterId: string,
+  after = ""
+): Promise<UserData[]> {
+  const chatters = await fetch(
+    `https://api.twitch.tv/helix/chat/chatters?broadcaster_id=${twitchBroadcasterId}&moderator_id=${twitchBroadcasterId}&first=1000&after=${after}`,
+    {
+      headers: {
+        "Client-ID": TWITCH_CLIENT_ID,
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  if (chatters.status !== 200) {
+    throw new Error("Failed to fetch chatters");
+  }
+  const json = await chatters.json();
+  if (json["data"]) {
+    const chatters = json["data"];
+    if (json["pagination"]["cursor"]) {
+      chatters.push(
+        ...(await findChatters(
+          token,
+          twitchBroadcasterId,
+          json["pagination"]["cursor"]
+        ))
+      );
+    }
+    return chatters;
+  }
+  return [];
+}
 
 async function twitchLoginsToUserIds(token: AccessToken, logins: string[]) {
   const twitchChannelIds: string[] = [];
   for (let i = 0; i < logins.length; i += 100) {
     const query = logins
       .slice(i, i + 100)
-      .map((id) => "login=" + encodeURIComponent(id.slice(7)))
+      .map((id) => "login=" + encodeURIComponent(id))
       .join("&");
     const response = await fetch(`https://api.twitch.tv/helix/users?${query}`, {
       headers: {
@@ -85,13 +132,18 @@ async function twitchGetFollowerCount(token: AccessToken, channelId: string) {
     }
   );
   const json = await response.json();
-  console.log("twitchGetFollowerCount", channelId, json["total"]);
-  return json["total"] || 0;
+  return json["total"];
 }
 
 async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
   const data: {
-    [channelId: string]: { viewerCount: number; language: string };
+    [channelId: string]: {
+      viewerCount: number;
+      language: string;
+      login: string;
+      displayName: string;
+      onlineAt: Date | null;
+    };
   } = {};
   for (let i = 0; i < channelIds.length; i += 100) {
     const batch = channelIds.slice(i, i + 100);
@@ -99,7 +151,7 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
       .map((channelId) => "user_id=" + encodeURIComponent(channelId))
       .join("&");
     const response = await fetch(
-      `https://api.twitch.tv/helix/streams?${query}`,
+      `https://api.twitch.tv/helix/streams?first=100&${query}`,
       {
         headers: {
           "Client-ID": TWITCH_CLIENT_ID,
@@ -108,11 +160,17 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
       }
     );
     const json = await response.json();
+    if (!json["data"]) {
+      continue;
+    }
     for (const stream of json["data"]) {
       const channelId = stream["user_id"];
+      const displayName = stream["user_name"];
+      const onlineAt = new Date(Date.parse(stream["started_at"]));
       const viewerCount = stream["viewer_count"];
       const language = stream["language"];
-      data[channelId] = { viewerCount, language };
+      const login = stream["user_login"];
+      data[channelId] = { viewerCount, language, login, displayName, onlineAt };
     }
     // find any channels that are not in the response and reissue a request to helix/channels
     const missingChannelIds = batch.filter(
@@ -133,60 +191,169 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
         }
       );
       const json = await response.json();
+      if (!json["data"]) {
+        continue;
+      }
       for (const channel of json["data"]) {
         const channelId = channel["broadcaster_id"];
         const language = channel["broadcaster_language"];
-        data[channelId] = { viewerCount: 0, language };
+        const displayName = channel["broadcaster_name"];
+        const login = channel["broadcaster_login"];
+        data[channelId] = {
+          viewerCount: 0,
+          language,
+          login,
+          displayName,
+          onlineAt: null,
+        };
       }
     }
   }
   return data;
 }
 
-export async function runUpdateFollowerAndViewerCount() {
-  // fetch the channels that have been active in the last 3 days.
-  const snapshot = await admin.firestore().collection("assignments").get();
-  const channels = snapshot.docs
-    .map((doc) => doc.id)
-    .filter((id) => id.startsWith("twitch:"));
-
-  // process twitch channel ids.
-  const token = await getAppAccessToken("twitch");
+export async function twitchGetChatters(
+  twitchBroadcasterId: string,
+  asUserId: string
+) {
+  const token = await getAccessToken(asUserId, "twitch");
   if (!token) {
     throw new functions.https.HttpsError("internal", "auth error");
   }
+  // fetch the chatters for the requested channel.
+  const chatters = await findChatters(token, twitchBroadcasterId);
+  // find the moderators if possible
+  let mods: UserData[] = [];
+  try {
+    mods = await findModerators(
+      token,
+      twitchBroadcasterId,
+      chatters.map((c) => c.user_id)
+    );
+  } catch (e) {
+    console.error(e);
+  }
+  let vips: UserData[] = [];
+  try {
+    vips = await findVIPs(
+      token,
+      twitchBroadcasterId,
+      chatters.map((c) => c.user_id)
+    );
+  } catch (e) {
+    console.error(e);
+  }
+  // remove mods and vips from the list of chatters.
+  const viewers = chatters.filter(
+    (c) =>
+      !mods.some((m) => m.user_id == c.user_id) &&
+      !vips.some((v) => v.user_id == c.user_id)
+  );
+  // for backwards compatibility, return the list of usernames as strings.
+  // and return the full profile as <key>Data.
+  return {
+    viewers: viewers.map((c) => c.user_name),
+    viewersData: viewers,
+    moderators: mods.map((c) => c.user_name),
+    moderatorsData: mods,
+    vips: vips.map((c) => c.user_name),
+    vipsData: vips,
+  };
+}
 
-  // first, convert the channel logins to twitch channel ids.
-  const channelIds = await twitchLoginsToUserIds(token, channels);
-
-  const updateBatch = admin.firestore().batch();
+export async function runUpdateFollowerAndViewerCount(
+  token: AccessToken,
+  channelIds: string[]
+) {
+  let updateBatch = admin.firestore().batch();
+  let batchSize = 0;
 
   // for each batch, fetch the viewer count
   const data = await twitchGetViewerCounts(token, channelIds);
-  for (const [channelId, { viewerCount, language }] of Object.entries(data)) {
+  for (const [
+    channelId,
+    { viewerCount, language, login, displayName, onlineAt },
+  ] of Object.entries(data)) {
+    console.log(
+      "updating",
+      channelId,
+      viewerCount,
+      language,
+      login,
+      displayName,
+      onlineAt
+    );
     updateBatch.set(
       admin.firestore().collection("channels").doc(`twitch:${channelId}`),
-      { viewerCount, language },
+      { viewerCount, language, login, displayName, onlineAt },
       { merge: true }
     );
+    if (++batchSize == 500) {
+      console.log("committing batch");
+      await updateBatch.commit();
+      updateBatch = admin.firestore().batch();
+      batchSize = 0;
+    }
   }
+
+  // shuffle and sample 200 channel ids to reduce the number of requests due to twitch rate limit
+  for (let i = channelIds.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = channelIds[i];
+    channelIds[i] = channelIds[j];
+    channelIds[j] = temp;
+  }
+  channelIds = channelIds.slice(0, 200);
 
   // lastly, fetch the follower count for each channel individually.
-  for (const channelId of channelIds) {
+  const followerCountRequests = channelIds.map((channelId) =>
+    twitchGetFollowerCount(token, channelId)
+  );
+  for (let i = 0; i < channelIds.length; i++) {
+    const channelId = channelIds[i];
+    const followerCount = await followerCountRequests[i];
+    if (!followerCount) {
+      continue;
+    }
+    console.log("updating", channelId, followerCount);
     updateBatch.set(
       admin.firestore().collection("channels").doc(`twitch:${channelId}`),
-      { followerCount: await twitchGetFollowerCount(token, channelId) },
+      { followerCount },
       { merge: true }
     );
+    if (++batchSize == 500) {
+      console.log("committing batch");
+      await updateBatch.commit();
+      updateBatch = admin.firestore().batch();
+      batchSize = 0;
+    }
   }
 
-  // commit the update batch
-  await updateBatch.commit();
+  if (batchSize > 0) {
+    console.log("committing batch");
+    await updateBatch.commit();
+  }
 }
 
 export const updateFollowerAndViewerCount = functions.pubsub
-  .schedule("*/5 * * * *") // every 5 minutes
-  .onRun(runUpdateFollowerAndViewerCount);
+  .schedule("*/4 * * * *") // every 4 minutes
+  .onRun(async () => {
+    // fetch the channels that have been active in the last 3 days.
+    const snapshot = await admin.firestore().collection("assignments").get();
+    const channels = snapshot.docs
+      .map((doc) => doc.id)
+      .filter((id) => id.startsWith("twitch:"))
+      .map((id) => id.slice(7));
+    // process twitch channel ids.
+    const token = await getAppAccessToken("twitch");
+    if (!token) {
+      throw new functions.https.HttpsError("internal", "auth error");
+    }
+
+    // first, convert the channel logins to twitch channel ids.
+    const channelIds = await twitchLoginsToUserIds(token, channels);
+    runUpdateFollowerAndViewerCount(token, channelIds);
+  });
 
 export const getViewerList = functions.https.onCall(
   async (channelId: string, context) => {
@@ -199,39 +366,28 @@ export const getViewerList = functions.https.onCall(
     const [provider, channel] = channelId.split(":");
     switch (provider) {
       case "twitch":
-        const token = await getAppAccessToken(provider);
-        if (!token) {
-          throw new functions.https.HttpsError("internal", "auth error");
+        // twitch's permission scheme is a little annoying here. we need an auth
+        // token that represents the broadcaster, otherwise pretty much all the
+        // calls will fail.
+        //
+        // so, we do this in three steps:
+        // 1. fetch the user id corresponding to the requested channel and its token.
+        //    if this fails, then use the user's token and we will not filter mods/vips.
+        // 2. fetch the chatters for the requested channel.
+        // 3. filter out mods/vips.
+        const profile = await admin
+          .firestore()
+          .collection("profiles")
+          .where("twitch.id", "==", channel)
+          .get();
+        if (!profile.empty) {
+          try {
+            return await twitchGetChatters(channel, profile.docs[0].id);
+          } catch (e) {}
         }
-        // fetch the twitch login from the helix api
-        const profile = await fetch(
-          `https://api.twitch.tv/helix/users?id=${channel}`,
-          {
-            headers: {
-              "Client-ID": TWITCH_CLIENT_ID,
-              Authorization: `Bearer ${token.token.access_token}`,
-            },
-          }
-        );
-        const profileJson = await profile.json();
-        if (!profileJson["data"]?.length) {
-          throw new functions.https.HttpsError(
-            "not-found",
-            "channel not found"
-          );
-        }
-        const login = profileJson["data"][0]["login"];
-        if (!login) {
-          throw new functions.https.HttpsError(
-            "not-found",
-            "channel not found"
-          );
-        }
-        const chatters = await fetch(
-          `https://tmi.twitch.tv/group/user/${login}/chatters`
-        );
-        const chattersJson = await chatters.json();
-        return chattersJson["chatters"];
+        // channel is not in the database, use the authenticated user's token.
+        return await twitchGetChatters(channel, context.auth.uid);
     }
+    throw new functions.https.HttpsError("invalid-argument", "invalid channel");
   }
 );

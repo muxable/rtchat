@@ -16,6 +16,8 @@ import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/messages/twitch/reply.dart';
+import 'package:rtchat/models/messages/twitch/shoutout_create_event.dart';
+import 'package:rtchat/models/messages/twitch/shoutout_receive_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
@@ -39,6 +41,12 @@ class UpdateDeltaEvent extends DeltaEvent {
 
   const UpdateDeltaEvent(this.messageId, DateTime timestamp, this.update)
       : super(timestamp);
+}
+
+class UpdateAllDeltaEvent extends DeltaEvent {
+  final MessageModel Function(MessageModel) update;
+
+  const UpdateAllDeltaEvent(DateTime timestamp, this.update) : super(timestamp);
 }
 
 class ClearDeltaEvent extends DeltaEvent {
@@ -105,17 +113,7 @@ DeltaEvent? _toDeltaEvent(
         if (message is! TwitchMessageModel) {
           return message;
         }
-        return TwitchMessageModel(
-            messageId: message.messageId,
-            author: message.author,
-            message: message.message,
-            reply: message.reply,
-            tags: message.tags,
-            annotations: message.annotations,
-            thirdPartyEmotes: [],
-            timestamp: message.timestamp,
-            deleted: true,
-            channelId: data['channelId']);
+        return message.withDeleted(true);
       });
     case "channel.raid":
       final model = TwitchRaidEventModel(
@@ -132,6 +130,14 @@ DeltaEvent? _toDeltaEvent(
         messageId: doc.id,
         timestamp: data['timestamp'].toDate(),
       );
+    case "userclear":
+      return UpdateAllDeltaEvent(data['timestamp'].toDate(), (message) {
+        if (message is! TwitchMessageModel ||
+            message.author.userId != data['targetUserId']) {
+          return message;
+        }
+        return message.withDeleted(true);
+      });
     case "host":
       if (data['hosterChannelId'] == null) {
         // Since we might have some events saved without this field.
@@ -299,6 +305,14 @@ DeltaEvent? _toDeltaEvent(
     case "realtimecash.donation":
       final model =
           SimpleRealtimeCashDonationEventModel.fromDocumentData(doc.id, data);
+      return AppendDeltaEvent(model);
+    case "channel.shoutout.create":
+      final model =
+          TwitchShoutoutCreateEventModel.fromDocumentData(doc.id, data);
+      return AppendDeltaEvent(model);
+    case "channel.shoutout.receive":
+      final model =
+          TwitchShoutoutReceiveEventModel.fromDocumentData(doc.id, data);
       return AppendDeltaEvent(model);
   }
   return null;

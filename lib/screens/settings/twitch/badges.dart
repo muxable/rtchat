@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 
@@ -13,19 +15,19 @@ class TwitchBadgesScreen extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: Consumer<TwitchBadgeModel>(builder: (context, model, child) {
-          final keys = model.badgeSets.keys.toList()
-            ..sort((a, b) => model.badgeSets[a]["title"]
-                .compareTo(model.badgeSets[b]["title"]));
+          final badges = model.badgeSets
+            ..sort((a, b) =>
+                a.versions.last.title.compareTo(b.versions.last.title));
           return CustomScrollView(slivers: <Widget>[
             SliverAppBar(
                 pinned: true,
                 expandedHeight: 250.0,
-                flexibleSpace: const FlexibleSpaceBar(
-                  title: Text('Twitch badges'),
+                flexibleSpace: FlexibleSpaceBar(
+                  title: Text(AppLocalizations.of(context)!.twitchBadges),
                 ),
                 actions: [
                   Row(children: [
-                    const Text("Select all"),
+                    Text(AppLocalizations.of(context)!.selectAll),
                     Theme(
                       data: theme.copyWith(
                           unselectedWidgetColor: theme.colorScheme.onTertiary),
@@ -46,27 +48,29 @@ class TwitchBadgesScreen extends StatelessWidget {
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  final badgeSet = model.badgeSets[keys[index]];
+                  final badge = badges[index];
+                  final lastVersion = badge.versions.last;
+                  final image =
+                      ResilientNetworkImage(Uri.parse(lastVersion.imageUrl4x));
                   return CheckboxListTile(
-                      secondary: FadeInImage(
+                      secondary: CrossFadeImage(
                           alignment: Alignment.center,
-                          placeholder: MemoryImage(kTransparentImage),
-                          image: ResilientNetworkImage(
-                              Uri.parse(badgeSet["image_url_4x"])),
+                          placeholder: image.placeholderImage,
+                          image: image,
                           height: 36),
-                      title: Text(badgeSet["title"],
+                      title: Text(lastVersion.title,
                           overflow: TextOverflow.ellipsis),
-                      subtitle: badgeSet["description"] == badgeSet["title"] ||
-                              badgeSet["description"].trim().isEmpty
+                      subtitle: lastVersion.description == lastVersion.title ||
+                              lastVersion.description.trim().isEmpty
                           ? null
-                          : Text(badgeSet["description"],
+                          : Text(lastVersion.description,
                               overflow: TextOverflow.ellipsis),
-                      value: model.isEnabled(keys[index]),
+                      value: model.isEnabled(badge.setId),
                       onChanged: (value) {
-                        model.setEnabled(keys[index], value ?? false);
+                        model.setEnabled(badge.setId, value ?? false);
                       });
                 },
-                childCount: keys.length,
+                childCount: badges.length,
               ),
             ),
           ]);

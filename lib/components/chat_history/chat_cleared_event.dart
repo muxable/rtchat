@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/message.dart';
 
 class ChatClearedEventWidget extends StatelessWidget {
@@ -9,8 +9,6 @@ class ChatClearedEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = DateFormat.yMMMMEEEEd().format(model.timestamp);
-    final time = DateFormat.jms().format(model.timestamp);
     return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Container(
@@ -19,7 +17,8 @@ class ChatClearedEventWidget extends StatelessWidget {
           child: Padding(
               padding: const EdgeInsets.all(8),
               child: Text(
-                "Chat cleared at $date, $time",
+                AppLocalizations.of(context)!
+                    .chatCleared(model.timestamp, model.timestamp),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               )),

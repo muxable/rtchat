@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
 
@@ -25,14 +26,24 @@ Future<List<SearchResult>> fastSearch() async {
     final tokens = doc.id.split(":");
     final provider = tokens[0];
     final channelId = tokens[1];
+    String? title;
+    if (data['title'] != null && data['categoryName'] != null) {
+      title = "${data['categoryName']} - ${data['title']}";
+    } else if (data['title'] != null) {
+      title = data['title'];
+    } else if (data['categoryName'] != null) {
+      title = data['categoryName'];
+    }
     return SearchResult(
         channelId: channelId,
         provider: provider,
+        login: data['login'],
         displayName: data['displayName'],
         isOnline: data['onlineAt'] != null,
         imageUrl: Uri.parse(
             "https://rtirl.com/pfp.png?provider=$provider&channelId=$channelId"),
-        title: "${data['categoryName']} - ${data['title']}",
+        title: title,
+        language: data['language'],
         isPromoted: true);
   }).toList();
 }
@@ -40,7 +51,8 @@ Future<List<SearchResult>> fastSearch() async {
 Stream<List<SearchResult>> search(String query, bool isShowOnlyOnline) async* {
   final fast = await fastSearch();
   final fastFiltered = fast.where((result) =>
-      result.displayName.toLowerCase().contains(query.toLowerCase()));
+      result.displayName.toLowerCase().contains(query.toLowerCase()) ||
+      result.login.toLowerCase().contains(query.toLowerCase()));
   final fastRanked = [
     ...fastFiltered.where((element) => element.isOnline),
     ...fastFiltered.where((element) => !element.isOnline)
@@ -51,10 +63,12 @@ Stream<List<SearchResult>> search(String query, bool isShowOnlyOnline) async* {
         .map((data) => SearchResult(
             channelId: data['channelId'],
             provider: data['provider'],
+            login: data['login'],
             displayName: data['displayName'],
             isOnline: data['isOnline'],
             imageUrl: Uri.parse(data['imageUrl']),
             title: data['title'],
+            language: data['language'],
             isPromoted: false))
         .toList();
   });
@@ -69,20 +83,26 @@ final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
 class SearchResult {
   final String channelId;
   final String provider;
+  final String login;
   final String displayName;
   final bool isOnline;
   final Uri imageUrl;
-  final String title;
+  final String? title;
   final bool isPromoted;
+  final String? language;
 
   const SearchResult(
       {required this.channelId,
       required this.provider,
+      required this.login,
       required this.displayName,
       required this.isOnline,
       required this.imageUrl,
       required this.title,
-      required this.isPromoted});
+      required this.isPromoted,
+      required this.language});
+
+  ResilientNetworkImage get image => ResilientNetworkImage(imageUrl);
 }
 
 class ChannelSearchResultsWidget extends StatefulWidget {
@@ -164,11 +184,10 @@ class _ChannelSearchResultsWidgetState
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(24),
-                                  child: FadeInImage(
+                                  child: CrossFadeImage(
                                       placeholder:
-                                          MemoryImage(kTransparentImage),
-                                      image: ResilientNetworkImage(
-                                          result.imageUrl),
+                                          result.image.placeholderImage,
+                                      image: result.image,
                                       height: 48,
                                       width: 48),
                                 ),
@@ -179,7 +198,8 @@ class _ChannelSearchResultsWidgetState
                                         ? Container(
                                             decoration: BoxDecoration(
                                               color: Theme.of(context)
-                                                  .primaryColor,
+                                                  .colorScheme
+                                                  .tertiary,
                                               borderRadius:
                                                   BorderRadius.circular(18.0),
                                             ),
@@ -191,8 +211,18 @@ class _ChannelSearchResultsWidgetState
                                           )
                                         : Container())
                               ])),
-                      title: Text(result.displayName),
-                      subtitle: Text(result.title),
+                      title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(result.displayName),
+                            Text(result.language ?? "??",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                )),
+                          ]),
+                      subtitle:
+                          result.title == null ? null : Text(result.title!),
                       onTap: () {
                         widget.onChannelSelect(Channel(
                           "twitch",

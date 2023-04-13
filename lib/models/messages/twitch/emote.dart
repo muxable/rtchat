@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
 
 Future<List<Emote>> getEmotes(Channel channel) async {
@@ -48,6 +49,8 @@ class Emote {
 
   get uri =>
       Uri.tryParse(imageUrl.startsWith("//") ? "https:$imageUrl" : imageUrl);
+
+  ResilientNetworkImage get image => ResilientNetworkImage(uri);
 
   static Emote fromJson(dynamic json) {
     return Emote(

@@ -1,34 +1,594 @@
 {
-    "sendAMessage": "Send a message...",
-    "@sendAMessage": {
-      "description": "Message input field placeholder text"
-    },
-    "writeSomething": "Write something...",
-    "@writeSomething": {
-      "description": "Message input field placeholder text"
-    },
-    "speakToTheCrowds": "Speak to the crowds...",
-    "@speakToTheCrowds": {
-      "description": "Message input field placeholder text"
-    },
-    "shareYourThoughts": "Share your thoughts...",
-    "@shareYourThoughts": {
-      "description": "Message input field placeholder text"
-    },
-    "saySomethingYouLittleBitch": "Say something, you little bitch...",
-    "@saySomethingYouLittleBitch": {
-      "description": "Message input field placeholder text"
-    },
-    "search": "Search",
-    "@search": {
-      "description": "Placeholder text for search bar"
-    },
-    "searchChannels": "Search",
-    "@searchChannels": {
-      "description": "Header for a page that lets the user search channels"
-    },
-    "raidAChannel": "Raid",
-    "@raidAChannel": {
-      "description": "Header for a page that lets the raid channels"
+  "sendAMessage": "Send a message...",
+  "@sendAMessage": {
+    "description": "Message input field placeholder text"
+  },
+  "writeSomething": "Write something...",
+  "@writeSomething": {
+    "description": "Message input field placeholder text"
+  },
+  "speakToTheCrowds": "Speak to the crowds...",
+  "@speakToTheCrowds": {
+    "description": "Message input field placeholder text"
+  },
+  "shareYourThoughts": "Share your thoughts...",
+  "@shareYourThoughts": {
+    "description": "Message input field placeholder text"
+  },
+  "saySomethingYouLittleBitch": "Say something, you little bitch...",
+  "@saySomethingYouLittleBitch": {
+    "description": "Message input field placeholder text"
+  },
+  "search": "Search",
+  "@search": {
+    "description": "Placeholder text for search bar"
+  },
+  "notSignedIn": "Not signed in",
+  "@notSignedIn": {
+    "description": "Label for unauthenticated user"
+  },
+  "searchChannels": "Search",
+  "@searchChannels": {
+    "description": "Header for a page that lets the user search channels"
+  },
+  "raidAChannel": "Raid",
+  "@raidAChannel": {
+    "description": "Header for a page that lets the raid channels"
+  },
+  "noMessagesEmptyState": "It's quiet in here.",
+  "@noMessagesEmptyState": {
+    "description": "Empty state placeholder when there are no messages"
+  },
+  "newMessageCount": "{count,plural, =0{No new messages} =1{1 new message} other{{count} new messages}}",
+  "@newMessageCount": {
+    "placeholders": {
+      "count": {}
     }
+  },
+  "signInWithTwitch": "Sign in with Twitch",
+  "@signInWithTwitch": {
+    "description": "Button label to allow a user to sign in with Twitch"
+  },
+  "signInError": "An error occurred when signing in. Please try again.",
+  "@signInError": {
+    "description": "Error message that shows when signing in fails"
+  },
+  "continueAsGuest": "Continue as Guest",
+  "@continueAsGuest": {
+    "description": "Button label to allow a user to use the app without signing in"
+  },
+  "signInToSendMessages": "Sign in to send messages",
+  "@signInToSendMessages": {
+    "description": "Text label to indicate that signing in is required to send messages"
+  },
+  "currentViewers": "Current viewers",
+  "@currentViewers": {
+    "description": "Tooltip text for a button that shows the current viewers"
+  },
+  "textToSpeech": "Text to speech",
+  "@textToSpeech": {
+    "description": "Tooltip text for a button that enables text to speech"
+  },
+  "streamPreview": "Stream preview",
+  "@streamPreview": {
+    "description": "Tooltip text for a button that shows the stream preview"
+  },
+  "activityFeed": "Activity feed",
+  "@activityFeed": {
+    "description": "Tooltip text for a button that shows the activity feed"
+  },
+  "streamOnline": "Stream online at {date}, {time}",
+  "@streamOnline": {
+    "description": "Event label to indicate that the stream is online",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMEEEEd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jms"
+      }
+    }
+  },
+  "streamOffline": "Stream offline at {date}, {time}",
+  "@streamOffline": {
+    "description": "Event label to indicate that the stream is offline",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMEEEEd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jms"
+      }
+    }
+  },
+  "chatCleared": "Chat cleared at {date}, {time}",
+  "@chatCleared": {
+    "description": "Event label to indicate that the chat was cleared",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMEEEEd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jms"
+      }
+    }
+  },
+  "configureQuickLinks": "Configure quick links",
+  "@configureQuickLinks": {
+    "description": "Button label that shows the quick links configuration"
+  },
+  "disableRainMode": "Disable rain mode",
+  "@disableRainMode": {
+    "description": "Button label that disables rain mode"
+  },
+  "enableRainMode": "Enable rain mode",
+  "@enableRainMode": {
+    "description": "Button label that enables rain mode"
+  },
+  "disableRainModeSubtitle": "Interaction will be enabled",
+  "@disableRainModeSubtitle": {
+    "description": "Subtitle for the button that disables rain mode, indicating that interaction will be enabled"
+  },
+  "enableRainModeSubtitle": "Interaction will be disabled",
+  "@enableRainModeSubtitle": {
+    "description": "Subtitle for the button that enables rain mode, indicating that interaction will be disabled"
+  },
+  "refreshAudioSources": "Refresh audio sources",
+  "@refreshAudioSources": {
+    "description": "Button label that refreshes the audio sources"
+  },
+  "refreshAudioSourcesCount": "{count,plural, =0{No audio sources refreshed} =1{1 audio source refreshed} other{{count} audio sources refreshed}}",
+  "@refreshAudioSourcesCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Button label that shows the settings"
+  },
+  "signOut": "Sign out",
+  "@signOut": {
+    "description": "Button label that signs the user out"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Button label that cancels an action"
+  },
+  "signOutConfirmation": "Are you sure you want to sign out?",
+  "@signOutConfirmation": {
+    "description": "Confirmation message that shows when the user wants to sign out"
+  },
+  "broadcaster": "Broadcaster",
+  "@broadcaster": {
+    "description": "Label for the broadcaster"
+  },
+  "moderators": "Moderators",
+  "@moderators": {
+    "description": "Label for the moderators"
+  },
+  "viewers": "Viewers",
+  "@viewers": {
+    "description": "Label for the viewers"
+  },
+  "communityVips": "Community VIPs",
+  "@communityVips": {
+    "description": "Label for the community VIPs"
+  },
+  "searchViewers": "Search Viewers",
+  "@searchViewers": {
+    "description": "Header for the search bar that lets the user search viewers"
+  },
+  "reconnecting": "Reconnecting...",
+  "@reconnecting": {
+    "description": "Text label that shows when the app is reconnecting"
+  },
+  "twitchBadges": "Twitch badges",
+  "@twitchBadges": {
+    "description": "Header for the Twitch badges page"
+  },
+  "selectAll": "Select all",
+  "@selectAll": {
+    "description": "Button label that selects all badges"
+  },
+  "quickLinks": "Quick links",
+  "@quickLinks": {
+    "description": "Header for the quick links page"
+  },
+  "swipeToDeleteQuickLinks": "Swipe left or right to delete quick link",
+  "@swipeToDeleteQuickLinks": {
+    "description": "Text label that shows when the user can swipe to delete a quick link"
+  },
+  "quickLinksLabelHint": "Label",
+  "@quickLinksLabelHint": {
+    "description": "Hint text for the quick link label"
+  },
+  "invalidUrlErrorText": "This doesn't look like a valid URL",
+  "@invalidUrlErrorText": {
+    "description": "Error message that shows when the URL is invalid"
+  },
+  "duplicateUrlErrorText": "This link already exists",
+  "@duplicateUrlErrorText": {
+    "description": "Error message that shows when the URL already exists"
+  },
+  "or": "or",
+  "@or": {
+    "description": "Text label that separates two options"
+  },
+  "activityFeed": "Activity feed",
+  "@activityFeed": {
+    "description": "Header for the activity feed settings page"
+  },
+  "clearCookies": "Clear cookies",
+  "@clearCookies": {
+    "description": "Button label that clears the cookies"
+  },
+  "disabled": "Disabled",
+  "@disabled": {
+    "description": "Option label to disable a feature"
+  },
+  "twitchActivityFeed": "Twitch activity feed",
+  "@twitchActivityFeed": {
+    "description": "Option label to use the default Twitch activity feed"
+  },
+  "signInToEnable": "You must be signed in to enable this",
+  "@signInToEnable": {
+    "description": "Error message that shows when the user must be signed in to enable a feature"
+  },
+  "customUrl": "Custom URL",
+  "@customUrl": {
+    "description": "Option label to use a custom URL"
+  },
+  "preview": "Preview",
+  "@preview": {
+    "description": "Section header for the activity feed preview"
+  },
+  "audioSources": "Audio sources",
+  "@audioSources": {
+    "description": "Header for the audio sources page"
+  },
+  "enableOffstreamSwitchTitle": "Enable off-stream (uses more battery)",
+  "@enableOffstreamSwitchTitle": {
+    "description": "Option label to enable the off-stream tile"
+  },
+  "enableOffstreamSwitchEnabledSubtitle": "Audio will also play when you're offline",
+  "@enableOffstreamSwitchEnabledSubtitle": {
+    "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will also play when the user is offline"
+  },
+  "enableOffstreamSwitchDisabledSubtitle": "Audio will only play when you're live",
+  "@enableOffstreamSwitchDisabledSubtitle": {
+    "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will only play when the user is live"
+  },
+  "iosOggWarningTitle": "Hey! Listen!",
+  "@iosOggWarningTitle": {
+    "description": "Title for the warning that shows when the user is on iOS and the audio source is OGG"
+  },
+  "iosOggWarningSubtitle": "iOS doesn't support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won't play.",
+  "@iosOggWarningSubtitle": {
+    "description": "Message for the warning that shows when the user is on iOS and the audio source is OGG"
+  },
+  "url": "URL",
+  "@url": {
+    "description": "Label for the URL"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Header for the settings page"
+  },
+  "activityFeedSubtitle": "Customize your activity feed",
+  "@activityFeedSubtitle": {
+    "description": "Subtitle for the activity feed settings page"
+  },
+  "audioSourcesSubtitle": "Add web sources for alert sounds",
+  "@audioSourcesSubtitle": {
+    "description": "Subtitle for the audio sources page"
+  },
+  "quickLinksSubtitle": "Add shortcuts to commonly-used tools",
+  "@quickLinksSubtitle": {
+    "description": "Subtitle for the quick links page"
+  },
+  "chatHistory": "Chat history",
+  "@chatHistory": {
+    "description": "Header for the chat history page"
+  },
+  "chatHistorySubtitle": "Change the chat appearance",
+  "@chatHistorySubtitle": {
+    "description": "Subtitle for the chat history page"
+  },
+  "textToSpeechSubtitle": "Change text to speech settings",
+  "@textToSpeechSubtitle": {
+    "description": "Subtitle for the text to speech page"
+  },
+  "events": "Events",
+  "@events": {
+    "description": "Header for the events page"
+  },
+  "eventsSubtitle":"Configure Twitch events",
+  "@eventsSubtitle": {
+    "description": "Subtitle for the events page"
+  },
+  "thirdPartyServices": "Third-party services",
+  "@thirdPartyServices": {
+    "description": "Header for the third-party services page"
+  },
+  "thirdPartyServicesSubtitle": "Connect to a third-party service",
+  "@thirdPartyServicesSubtitle": {
+    "description": "Subtitle for the third-party services page"
+  },
+  "followingEvent": "<bold>{displayName}</bold> is following you",
+  "@followingEvent": {
+    "description": "Text label that shows when a user follows the streamer",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "followingEvent2": "<bold>{displayName}</bold> and <bold>{displayNameTwo}</bold> are following you",
+  "@followingEvent2": {
+    "description": "Text label that shows when two users follow the streamer",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "displayNameTwo": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "followingEvent3": "<bold>{displayName}</bold>, <bold>{displayNameTwo}</bold>, and {numOthers} others are following you",
+  "@followingEvent3": {
+    "description": "Text label that shows when three or more users follow the streamer",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "displayNameTwo": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "numOthers": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "unmuteUser": "Unmute {displayName}",
+  "@unmuteUser": {
+    "description": "Unmute option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "muteUser": "Mute {displayName}",
+  "@muteUser": {
+    "description": "Mute option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "timeoutUser": "Timeout {displayName}",
+  "@timeoutUser": {
+    "description": "Timeout option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "banUser": "Ban {displayName}",
+  "@banUser": {
+    "description": "Ban option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "unbanUser": "Unban {displayName}",
+  "@unbanUser": {
+    "description": "Unban option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "viewProfile": "View {displayName}'s profile",
+  "@viewProfile": {
+    "description": "Unban option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "copyMessage": "Copy Message",
+  "@copyMessage": {
+    "description": "Copy option shown when long pressing on a chat message"
+  },
+  "deleteMessage": "Delete Message",
+  "@deleteMessage": {
+    "description": "Delete option shown when long pressing on a chat message"
+  },
+  "longScrollNotification": "You're scrolling kind of far, don't you think?",
+  "@longScrollNotification": {
+    "description": "Notification shown when the user scrolls very far back in the chat history"
+  },
+  "stfu": "stfu",
+  "@stfu": {
+    "description": "Text label for the stfu button"
+  },
+  "globalEmotes": "Global Emotes",
+  "@globalEmotes": {
+    "description": "Text label for the global emotes category header"
+  },
+  "followerCount": "{count,plural, =0{0 followers} =1{1 follower} other{{count} followers}}",
+  "@followerCount": {
+    "description": "Text label for the followers count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "viewerCount": "{count,plural, =0{0 viewers} =1{1 viewer} other{{count} viewers}}",
+  "@viewerCount": {
+    "description": "Text label for the viewers count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "streamPreviewMessage": "Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.",
+  "@streamPreviewMessage": {
+    "description": "Notification shown when the user leaves the stream preview open for a long time"
+  },
+  "okay": "Okay",
+  "@okay": {
+    "description": "Okay button text"
+  },
+  "streamPreviewLoading": "Loading (or stream is offline)...",
+  "@streamPreviewLoading": {
+    "description": "Text label shown when the stream preview is loading"
+  },
+  "copiedToClipboard": "Copied to clipboard",
+  "@copiedToClipboard": {
+    "description": "Notification shown when a message is copied to the clipboard"
+  },
+  "audioSourcesRequirePermissions": "Audio sources require permissions",
+  "@audioSourcesRequirePermissions": {
+    "description": "Alert title prompting the user to grant permissions to use audio sources"
+  },
+  "audioSourcesRequirePermissionsMessage": "Approve RealtimeChat to draw over other apps to use audio sources.",
+  "@audioSourcesRequirePermissionsMessage": {
+    "description": "Alert message prompting the user to grant permissions to use audio sources"
+  },
+  "audioSourcesRemoveButton": "Remove audio sources",
+  "@audioSourcesRemoveButton": {
+    "description": "Button text for removing audio sources"
+  },
+  "audioSourcesOpenSettingsButton": "Open settings",
+  "@audioSourcesOpenSettingsButton": {
+    "description": "Button text for opening settings"
+  },
+  "flashOn": "Flash on",
+  "@flashOn": {
+    "description": "Text label for the camera flash enable button."
+  },
+  "flashOff": "Flash off",
+  "@flashOff": {
+    "description": "Text label for the camera flash disable button."
+  },
+  "durationOneMinute": "1 minute",
+  "@durationOneMinute": {
+    "description": "Text label for a one minute duration"
+  },
+  "durationFifteenMinutes": "15 minutes",
+  "@durationFifteenMinutes": {
+    "description": "Text label for a fifteen minute duration"
+  },
+  "durationOneHour": "1 hour",
+  "@durationOneHour": {
+    "description": "Text label for a one hour duration"
+  },
+  "durationSixHours": "6 hours",
+  "@durationSixHours": {
+    "description": "Text label for a six hour duration"
+  },
+  "durationOneDay": "1 day",
+  "@durationOneDay": {
+    "description": "Text label for a one day duration"
+  },
+  "durationTwoDays": "2 days",
+  "@durationTwoDays": {
+    "description": "Text label for a two day duration"
+  },
+  "durationOneWeek": "1 week",
+  "@durationOneWeek": {
+    "description": "Text label for a one week duration"
+  },
+  "durationOneMonth": "1 month",
+  "@durationOneMonth": {
+    "description": "Text label for a one month duration"
+  },
+  "durationThreeMonths": "3 months",
+  "@durationThreeMonths": {
+    "description": "Text label for a three month duration"
+  },
+  "durationOneYear": "1 year",
+  "@durationOneYear": {
+    "description": "Text label for a one year duration"
+  },
+  "durationForever": "Forever",
+  "@durationForever": {
+    "description": "Text label for a forever duration"
+  },
+  "durationOneMinuteTimeoutPrompt": "Timeout for 1 minute",
+  "@durationOneMinuteTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one minute duration"
+  },
+  "durationFifteenMinutesTimeoutPrompt": "Timeout for 15 minutes",
+  "@durationFifteenMinutesTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a fifteen minute duration"
+  },
+  "durationOneHourTimeoutPrompt": "Timeout for 1 hour",
+  "@durationOneHourTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one hour duration"
+  },
+  "durationSixHoursTimeoutPrompt": "Timeout for 6 hours",
+  "@durationSixHoursTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a six hour duration"
+  },
+  "durationOneDayTimeoutPrompt": "Timeout for 1 day",
+  "@durationOneDayTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one day duration"
+  },
+  "durationTwoDaysTimeoutPrompt": "Timeout for 2 days",
+  "@durationTwoDaysTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a two day duration"
+  },
+  "durationOneWeekTimeoutPrompt": "Timeout for 1 week",
+  "@durationOneWeekTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one week duration"
+  },
+  "durationOneMonthTimeoutPrompt": "Timeout for 1 month",
+  "@durationOneMonthTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one month duration"
+  },
+  "durationThreeMonthsTimeoutPrompt": "Timeout for 3 months",
+  "@durationThreeMonthsTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a three month duration"
+  },
+  "durationOneYearTimeoutPrompt": "Timeout for 1 year",
+  "@durationOneYearTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one year duration"
+  },
+  "durationForeverTimeoutPrompt": "Timeout for Forever",
+  "@durationForeverTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a forever duration"
+  }
 }

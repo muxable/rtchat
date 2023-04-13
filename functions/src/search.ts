@@ -35,10 +35,12 @@ export const search = functions.https.onCall(async (data, context) => {
           return {
             provider: "twitch",
             channelId: channel.user_id,
+            login: channel.user_login,
             displayName: channel.user_name,
             isOnline: channel.type == "live",
             imageUrl: imageUrl,
-            title: `${channel.game_name} - ${channel.title}`,
+            categoryName: channel.game_name,
+            title: channel.title,
             viewerCount: channel.viewer_count,
             language: channel.language,
           };
@@ -67,12 +69,13 @@ export const search = functions.https.onCall(async (data, context) => {
       return {
         provider: "twitch",
         channelId: channel.id,
+        login: channel.broadcaster_login,
         displayName: channel.display_name,
         isOnline: channel.is_live,
         imageUrl: channel.thumbnail_url,
-        title: `${channel.game_name} - ${channel.title}`,
-        viewerCount: channel.viewer_count,
-        language: channel.language,
+        categoryName: channel.game_name,
+        title: channel.title,
+        language: channel.broadcaster_language,
       };
     }),
   ];

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
@@ -18,6 +19,7 @@ import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:wakelock/wakelock.dart';
+import 'dart:math' as math;
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
@@ -58,7 +60,8 @@ class _ResizableWidgetState extends State<ResizableWidget> {
     if (orientation == Orientation.portrait) {
       return Column(children: [
         SizedBox(
-          height: _height.clamp(57, MediaQuery.of(context).size.height - 300),
+          height: _height.clamp(
+              57, math.max(57, MediaQuery.of(context).size.height - 300)),
           child: widget.child,
         ),
         if (widget.resizable)
@@ -69,8 +72,8 @@ class _ResizableWidgetState extends State<ResizableWidget> {
               });
             },
             onVerticalDragEnd: (details) {
-              widget.onResizeHeight(
-                  _height.clamp(57, MediaQuery.of(context).size.height - 300));
+              widget.onResizeHeight(_height.clamp(
+                  57, math.max(57, MediaQuery.of(context).size.height - 300)));
             },
             onVerticalDragUpdate: (details) {
               setState(() {
@@ -91,7 +94,8 @@ class _ResizableWidgetState extends State<ResizableWidget> {
     } else {
       return Row(children: [
         SizedBox(
-          width: _width.clamp(57, MediaQuery.of(context).size.width - 400),
+          width: _width.clamp(
+              57, math.max(57, MediaQuery.of(context).size.width - 400)),
           child: widget.child,
         ),
         if (widget.resizable)
@@ -108,7 +112,10 @@ class _ResizableWidgetState extends State<ResizableWidget> {
                   }
                   ..onEnd = (details) {
                     widget.onResizeWidth(
-                      _width.clamp(57, MediaQuery.of(context).size.width - 400),
+                      _width.clamp(
+                          57,
+                          math.max(
+                              57, MediaQuery.of(context).size.width - 400)),
                     );
                   }
                   ..onUpdate = (details) {
@@ -159,7 +166,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Wakelock.enable();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final model = Provider.of<AudioModel>(context, listen: false);
-      if (model.sources.isNotEmpty && !(await AudioChannel.hasPermission())) {
+      if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
+        return;
+      }
+      if (context.mounted) {
         model.showAudioPermissionDialog(context);
       }
     });
@@ -199,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     icon: Icon(layoutModel.isShowNotifications
                         ? Icons.notifications
                         : Icons.notifications_outlined),
-                    tooltip: 'Activity feed',
+                    tooltip: AppLocalizations.of(context)!.activityFeed,
                     onPressed: () {
                       layoutModel.isShowNotifications =
                           !layoutModel.isShowNotifications;
@@ -211,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     icon: Icon(layoutModel.isShowPreview
                         ? Icons.preview
                         : Icons.preview_outlined),
-                    tooltip: 'Stream preview',
+                    tooltip: AppLocalizations.of(context)!.streamPreview,
                     onPressed: () {
                       layoutModel.isShowPreview = !layoutModel.isShowPreview;
                     },
@@ -222,14 +232,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       icon: Icon(ttsModel.enabled
                           ? Icons.record_voice_over
                           : Icons.voice_over_off),
-                      tooltip: 'Text to speech',
+                      tooltip: AppLocalizations.of(context)!.textToSpeech,
                       onPressed: () {
                         ttsModel.enabled = !ttsModel.enabled;
                       });
                 }),
                 IconButton(
                   icon: const Icon(Icons.people),
-                  tooltip: 'Current viewers',
+                  tooltip: AppLocalizations.of(context)!.currentViewers,
                   onPressed: () {
                     _scaffoldKey.currentState?.openEndDrawer();
                   },
@@ -253,7 +263,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 const Flexible(child: Divider()),
                                 Padding(
                                     padding: const EdgeInsets.all(8),
-                                    child: Text("Sign in to send messages",
+                                    child: Text(
+                                        AppLocalizations.of(context)!
+                                            .signInToSendMessages,
                                         style: Theme.of(context)
                                             .textTheme
                                             .labelLarge)),

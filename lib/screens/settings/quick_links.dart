@@ -1,8 +1,9 @@
+import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:flutter/material.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/quick_links.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
 class QuickLinksScreen extends StatefulWidget {
@@ -59,7 +60,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Quick links")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.quickLinks)),
       body: SafeArea(
         child: Column(children: [
           Expanded(child:
@@ -72,7 +73,8 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                   background: const DismissibleDeleteBackground(),
                   child: Tooltip(
                       triggerMode: TooltipTriggerMode.tap,
-                      message: "Swipe left or right to delete quick link",
+                      message:
+                          AppLocalizations.of(context)!.swipeToDeleteQuickLinks,
                       child: ListTile(
                         key: ValueKey(source),
                         leading:
@@ -120,7 +122,9 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                                   return TextFormField(
                                     controller: _labelEditingController,
                                     decoration: InputDecoration(
-                                      hintText: snapshot.data ?? "Label",
+                                      hintText: snapshot.data ??
+                                          AppLocalizations.of(context)!
+                                              .quickLinksLabelHint,
                                     ),
                                   );
                                 },
@@ -132,34 +136,50 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                                 hintText: "URL",
                                 suffixIcon: IconButton(
                                     icon: const Icon(Icons.qr_code_scanner),
-                                    onPressed: () {
-                                      showModalBottomSheet<void>(
-                                          context: context,
-                                          builder: (context) {
-                                            return MobileScanner(
-                                                allowDuplicates: false,
-                                                onDetect: (barcode, args) {
-                                                  final code = barcode.rawValue;
-                                                  if (code != null) {
-                                                    _textEditingController
-                                                        .text = code;
-                                                  }
-                                                  Navigator.of(context).pop();
-                                                });
-                                          });
+                                    onPressed: () async {
+                                      final messenger =
+                                          ScaffoldMessenger.of(context);
+                                      final result = await BarcodeScanner.scan(
+                                        options: ScanOptions(strings: {
+                                          "cancel":
+                                              AppLocalizations.of(context)!
+                                                  .cancel,
+                                          "flash_on":
+                                              AppLocalizations.of(context)!
+                                                  .flashOn,
+                                          "flash_off":
+                                              AppLocalizations.of(context)!
+                                                  .flashOff,
+                                        }),
+                                      );
+                                      switch (result.type) {
+                                        case ResultType.Barcode:
+                                          _textEditingController.text =
+                                              result.rawContent;
+                                          break;
+                                        case ResultType.Cancelled:
+                                          break;
+                                        case ResultType.Error:
+                                          messenger.showSnackBar(SnackBar(
+                                              content:
+                                                  Text(result.rawContent)));
+                                          break;
+                                      }
                                     })),
                             validator: (value) {
                               if (value == null ||
                                   value.isEmpty ||
                                   Uri.tryParse(value) == null) {
-                                return "This doesn't look like a valid URL.";
+                                return AppLocalizations.of(context)!
+                                    .invalidUrlErrorText;
                               }
                               final quickLinksModel =
                                   Provider.of<QuickLinksModel>(context,
                                       listen: false);
                               if (quickLinksModel.sources.any((s) =>
                                   s.url.toString() == Uri.encodeFull(value))) {
-                                return "This link already exists";
+                                return AppLocalizations.of(context)!
+                                    .duplicateUrlErrorText;
                               }
                               return null;
                             },
