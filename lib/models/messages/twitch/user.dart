@@ -29,7 +29,8 @@ const botList = {
   'wizebot',
   'phantombot',
   'streamelements',
-  'streamelement'
+  'streamelement',
+  'sery_bot'
 };
 
 class TwitchUserModel {
