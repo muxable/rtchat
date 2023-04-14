@@ -6,6 +6,7 @@ import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
 import { AuthorizationCode } from "simple-oauth2";
 import {
+  STREAMELEMENTS_OAUTH_CONFIG,
   STREAMLABS_OAUTH_CONFIG,
   TWITCH_CLIENT_ID,
   TWITCH_OAUTH_CONFIG,
@@ -260,6 +261,48 @@ app.get("/auth/streamlabs/callback", async (req, res) => {
   admin
     .firestore()
     .collection("streamlabs")
+    .doc(uid)
+    .set({ token: JSON.stringify(results.token), channelId }, { merge: true });
+
+  res.redirect("com.rtirl.chat://success?token=1");
+});
+
+app.get("/auth/streamelements/redirect", (req, res) => {
+  req.session.token = req.query.token?.toString();
+  req.session.provider = req.query.provider?.toString();
+  const redirectUri = new AuthorizationCode(
+    STREAMELEMENTS_OAUTH_CONFIG
+  ).authorizeURL({
+    redirect_uri: `${HOST}/auth/streamelements/callback`,
+    scope: ["tips:read"],
+  });
+  res.redirect(redirectUri);
+});
+
+app.get("/auth/streamelements/callback", async (req, res) => {
+  const provider = req.session.provider;
+  const uid = await toUserId(req.session.token);
+  if (!uid || !provider) {
+    res.redirect("com.rtirl.chat://error?message=invalid_token");
+    return;
+  }
+  const results = await new AuthorizationCode(
+    STREAMELEMENTS_OAUTH_CONFIG
+  ).getToken({
+    code: String(req.query.code),
+    redirect_uri: `${HOST}/auth/streamelements/callback`,
+  });
+  const usernameDoc = await admin
+    .firestore()
+    .collection("profiles")
+    .doc(uid)
+    .get();
+
+  const channelId = `${provider}:${usernameDoc.get(provider)["id"]}`;
+
+  admin
+    .firestore()
+    .collection("streamelements")
     .doc(uid)
     .set({ token: JSON.stringify(results.token), channelId }, { merge: true });
 
