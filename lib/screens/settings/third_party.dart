@@ -230,8 +230,8 @@ class ThirdPartyScreen extends StatelessWidget {
                 _RealtimeCashWidget(userId: userId),
                 const Divider(),
                 _StreamlabsWidget(userId: userId),
-                if (kDebugMode) const Divider(),
-                if (kDebugMode) _StreamElementsWidget(userId: userId),
+                const Divider(),
+                _StreamElementsWidget(userId: userId),
               ],
             );
           },
