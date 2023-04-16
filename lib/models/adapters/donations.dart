@@ -8,9 +8,7 @@ class StreamlabsConfig {
 }
 
 class StreamElementsConfig {
-  final String? currency;
-
-  StreamElementsConfig({this.currency});
+  StreamElementsConfig();
 }
 
 class DonationsAdapter {
@@ -53,7 +51,7 @@ class DonationsAdapter {
       if (data == null || data["token"] == null) {
         return null;
       }
-      return StreamElementsConfig(currency: data["currency"]);
+      return StreamElementsConfig();
     });
   }
 }
