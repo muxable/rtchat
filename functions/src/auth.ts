@@ -286,12 +286,29 @@ app.get("/auth/streamelements/callback", async (req, res) => {
     res.redirect("com.rtirl.chat://error?message=invalid_token");
     return;
   }
-  const results = await new AuthorizationCode(
-    STREAMELEMENTS_OAUTH_CONFIG
-  ).getToken({
-    code: String(req.query.code),
-    redirect_uri: `${HOST}/auth/streamelements/callback`,
+  // not sure why simple-oauth2 doesn't work here...
+  const url =
+    STREAMELEMENTS_OAUTH_CONFIG.auth.tokenHost +
+    STREAMELEMENTS_OAUTH_CONFIG.auth.tokenPath;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      client_id: STREAMELEMENTS_OAUTH_CONFIG.client.id,
+      client_secret: STREAMELEMENTS_OAUTH_CONFIG.client.secret,
+      grant_type: "authorization_code",
+      redirect_uri: `https://chat.rtirl.com/auth/streamelements/callback`,
+      code: String(req.query.code),
+    }),
   });
+  if (!response.ok) {
+    res.redirect("com.rtirl.chat://error?message=invalid_token");
+    return;
+  }
+  const json = await response.json();
+  const expiresAt = new Date(+new Date() + json.expires_in * 1000);
   const usernameDoc = await admin
     .firestore()
     .collection("profiles")
@@ -304,7 +321,13 @@ app.get("/auth/streamelements/callback", async (req, res) => {
     .firestore()
     .collection("streamelements")
     .doc(uid)
-    .set({ token: JSON.stringify(results.token), channelId }, { merge: true });
+    .set(
+      {
+        token: JSON.stringify({ ...json, expires_at: expiresAt.toISOString() }),
+        channelId,
+      },
+      { merge: true }
+    );
 
   res.redirect("com.rtirl.chat://success?token=1");
 });
