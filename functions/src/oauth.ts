@@ -54,7 +54,7 @@ export const STREAMELEMENTS_OAUTH_CONFIG = {
     secret: STREAMELEMENTS_CLIENT_SECRET,
   },
   auth: {
-    tokenHost: "https://api.streamelements.com/",
+    tokenHost: "https://api.streamelements.com",
     tokenPath: "/oauth2/token",
     authorizePath: "/oauth2/authorize",
     revokePath: "/oauth2/revoke",
