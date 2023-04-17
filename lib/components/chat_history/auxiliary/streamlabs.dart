@@ -13,21 +13,24 @@ class StreamlabsDonationEventWidget extends StatelessWidget {
     final message = model.message;
     return DecoratedEventWidget.avatar(
       avatar: const AssetImage("assets/streamlabs.png"),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(text: model.name, style: boldStyle),
-              const TextSpan(text: " tipped "),
-              TextSpan(text: model.formattedAmount, style: boldStyle),
-              const TextSpan(text: " on Streamlabs."),
-            ],
-          ),
-        ),
-        if (message != null && message.isNotEmpty)
-          Text.rich(TextSpan(text: message),
-              style: const TextStyle(fontStyle: FontStyle.italic)),
-      ]),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: model.name, style: boldStyle),
+                  const TextSpan(text: " tipped "),
+                  TextSpan(text: model.formattedAmount, style: boldStyle),
+                  const TextSpan(text: " on Streamlabs."),
+                ],
+              ),
+            ),
+            if (message != null && message.isNotEmpty)
+              Text.rich(TextSpan(text: message),
+                  style: const TextStyle(fontStyle: FontStyle.italic)),
+          ]),
     );
   }
 }

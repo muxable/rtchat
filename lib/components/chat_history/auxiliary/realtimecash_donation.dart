@@ -13,25 +13,28 @@ class RealtimeCashDonationEventWidget extends StatelessWidget {
     final boldStyle = Theme.of(context).textTheme.titleSmall;
     return DecoratedEventWidget.avatar(
       avatar: model.image,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text.rich(
-          TextSpan(
-            children: [
-              model.donor != null && model.donor!.isNotEmpty
-                  ? TextSpan(
-                      text: "${model.donor} donated ",
-                    )
-                  : const TextSpan(text: "Anonymous donated "),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text.rich(
               TextSpan(
-                  text: "${model.value.toString()} ${model.currency}. ",
-                  style: boldStyle),
-            ],
-          ),
-        ),
-        if (model.message != null && model.message!.isNotEmpty)
-          Text.rich(TextSpan(text: model.message),
-              style: const TextStyle(fontStyle: FontStyle.italic)),
-      ]),
+                children: [
+                  model.donor != null && model.donor!.isNotEmpty
+                      ? TextSpan(
+                          text: "${model.donor} donated ",
+                        )
+                      : const TextSpan(text: "Anonymous donated "),
+                  TextSpan(
+                      text: "${model.value.toString()} ${model.currency}. ",
+                      style: boldStyle),
+                ],
+              ),
+            ),
+            if (model.message != null && model.message!.isNotEmpty)
+              Text.rich(TextSpan(text: model.message),
+                  style: const TextStyle(fontStyle: FontStyle.italic)),
+          ]),
     );
   }
 }

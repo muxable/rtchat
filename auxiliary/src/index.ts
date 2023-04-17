@@ -1,6 +1,7 @@
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import * as admin from "firebase-admin";
 import { merge } from "rxjs";
+import { streamelements$ } from "./streamelements";
 import { streamlabs$ } from "./streamlabs";
 
 const PROJECT_ID = process.env["PROJECT_ID"] || "rtchat-47692";
@@ -30,7 +31,7 @@ async function main() {
     });
   }
 
-  const subscriber = merge(streamlabs$).subscribe();
+  const subscriber = merge(streamlabs$, streamelements$).subscribe();
   for (const signal in ["SIGINT", "SIGTERM"]) {
     process.on(signal, () => {
       subscriber.unsubscribe();
