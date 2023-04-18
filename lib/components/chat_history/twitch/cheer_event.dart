@@ -25,7 +25,7 @@ class TwitchCheerEventWidget extends StatelessWidget {
         TextSpan(
           children: [
             TextSpan(text: name, style: boldStyle),
-            const TextSpan(text: " gifted you"),
+            const TextSpan(text: " cheered"),
             TextSpan(text: " ${(model.bits)}", style: boldStyle),
             const TextSpan(text: " bits."),
             TextSpan(text: " ${model.cheerMessage}")

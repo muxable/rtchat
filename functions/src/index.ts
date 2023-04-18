@@ -1,20 +1,21 @@
+import fetch from "cross-fetch";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
-import fetch from "cross-fetch";
-import { app as authApp } from "./auth";
-import { getUserEmotes, getEmotes } from "./emotes";
-import { eventsub } from "./eventsub";
-import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
-import { search } from "./search";
-import { subscribe, unsubscribe } from "./subscriptions";
-import { synthesize, getVoices } from "./tts";
-import { getTwitchLogin, getChannelId } from "./twitch";
-import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
 import {
-  setRealTimeCashAddress,
   alchemyWebhook,
   ethAlchemyWebhook,
+  setRealTimeCashAddress,
 } from "./alchemy_webhook";
+import { app as authApp } from "./auth";
+import { getBadges } from "./badges";
+import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
+import { getEmotes, getUserEmotes } from "./emotes";
+import { eventsub } from "./eventsub";
+import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { search } from "./search";
+import { subscribe, unsubscribe } from "./subscriptions";
+import { getVoices, synthesize } from "./tts";
+import { getChannelId, getTwitchId, getTwitchLogin } from "./twitch";
 
 async function write(
   channelId: string,
@@ -105,16 +106,36 @@ export const ban = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const targetChannel = await getTwitchLogin(channelId);
-      if (!targetChannel) {
+      const profile = await admin
+        .firestore()
+        .collection("profiles")
+        .doc(context.auth.uid)
+        .get();
+      if (!profile.exists) {
         return;
       }
-      const response = await write(
-        await getChannelId(context.auth.uid, "twitch"),
-        targetChannel,
-        `/ban ${username}`
+      const moderatorId = profile.get("twitch")?.id;
+      if (!moderatorId) {
+        return;
+      }
+      const token = await getAccessToken(context.auth.uid, "twitch");
+      const response = await fetch(
+        `https://api.twitch.tv/helix/moderation/bans?broadcaster_id=${channelId}&moderator_id=${moderatorId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Client-ID": TWITCH_CLIENT_ID,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: {
+              user_id: await getTwitchId(username),
+            },
+          }),
+        }
       );
-      return response;
+      return await response.json();
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -136,16 +157,31 @@ export const unban = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const targetChannel = await getTwitchLogin(channelId);
-      if (!targetChannel) {
+      const profile = await admin
+        .firestore()
+        .collection("profiles")
+        .doc(context.auth.uid)
+        .get();
+      if (!profile.exists) {
         return;
       }
-      const response = await write(
-        await getChannelId(context.auth.uid, "twitch"),
-        targetChannel,
-        `/unban ${username}`
+      const moderatorId = profile.get("twitch")?.id;
+      if (!moderatorId) {
+        return;
+      }
+      const token = await getAccessToken(context.auth.uid, "twitch");
+      const userId = await getTwitchId(username);
+      const response = await fetch(
+        `https://api.twitch.tv/helix/moderation/bans?broadcaster_id=${channelId}&moderator_id=${moderatorId}&user_id=${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Client-ID": TWITCH_CLIENT_ID,
+          },
+        }
       );
-      return response;
+      return await response.json();
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -169,16 +205,38 @@ export const timeout = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const targetChannel = await getTwitchLogin(channelId);
-      if (!targetChannel) {
+      const profile = await admin
+        .firestore()
+        .collection("profiles")
+        .doc(context.auth.uid)
+        .get();
+      if (!profile.exists) {
         return;
       }
-      const response = await write(
-        await getChannelId(context.auth.uid, "twitch"),
-        targetChannel,
-        `/timeout ${username} ${length} ${reason}`
+      const moderatorId = profile.get("twitch")?.id;
+      if (!moderatorId) {
+        return;
+      }
+      const token = await getAccessToken(context.auth.uid, "twitch");
+      const response = await fetch(
+        `https://api.twitch.tv/helix/moderation/bans?broadcaster_id=${channelId}&moderator_id=${moderatorId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Client-ID": TWITCH_CLIENT_ID,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: {
+              user_id: await getTwitchId(username),
+              duration: length,
+              reason,
+            },
+          }),
+        }
       );
-      return response;
+      return await response.json();
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -445,6 +503,7 @@ export {
   search,
   getUserEmotes,
   getEmotes,
+  getBadges,
   synthesize,
   getVoices,
   getViewerList,

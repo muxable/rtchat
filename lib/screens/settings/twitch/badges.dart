@@ -15,9 +15,9 @@ class TwitchBadgesScreen extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: Consumer<TwitchBadgeModel>(builder: (context, model, child) {
-          final keys = model.badgeSets.keys.toList()
-            ..sort((a, b) => model.badgeSets[a]["title"]
-                .compareTo(model.badgeSets[b]["title"]));
+          final badges = model.badgeSets
+            ..sort((a, b) =>
+                a.versions.last.title.compareTo(b.versions.last.title));
           return CustomScrollView(slivers: <Widget>[
             SliverAppBar(
                 pinned: true,
@@ -48,28 +48,29 @@ class TwitchBadgesScreen extends StatelessWidget {
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  final badgeSet = model.badgeSets[keys[index]];
-                  final image = ResilientNetworkImage(
-                      Uri.parse(badgeSet["image_url_4x"]));
+                  final badge = badges[index];
+                  final lastVersion = badge.versions.last;
+                  final image =
+                      ResilientNetworkImage(Uri.parse(lastVersion.imageUrl4x));
                   return CheckboxListTile(
                       secondary: CrossFadeImage(
                           alignment: Alignment.center,
                           placeholder: image.placeholderImage,
                           image: image,
                           height: 36),
-                      title: Text(badgeSet["title"],
+                      title: Text(lastVersion.title,
                           overflow: TextOverflow.ellipsis),
-                      subtitle: badgeSet["description"] == badgeSet["title"] ||
-                              badgeSet["description"].trim().isEmpty
+                      subtitle: lastVersion.description == lastVersion.title ||
+                              lastVersion.description.trim().isEmpty
                           ? null
-                          : Text(badgeSet["description"],
+                          : Text(lastVersion.description,
                               overflow: TextOverflow.ellipsis),
-                      value: model.isEnabled(keys[index]),
+                      value: model.isEnabled(badge.setId),
                       onChanged: (value) {
-                        model.setEnabled(keys[index], value ?? false);
+                        model.setEnabled(badge.setId, value ?? false);
                       });
                 },
-                childCount: keys.length,
+                childCount: badges.length,
               ),
             ),
           ]);

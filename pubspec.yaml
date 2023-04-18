@@ -12,44 +12,44 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  firebase_core: ^2.4.1
-  firebase_crashlytics: ^3.0.9
-  firebase_auth: ^4.2.5
-  provider: ^6.0.1
+  firebase_core: ^2.9.0
+  firebase_crashlytics: ^3.1.0
+  firebase_auth: ^4.4.1
+  provider: ^6.0.5
   flutter_web_auth: ^0.5.0
-  shared_preferences: ^2.0.5
-  cloud_firestore: ^4.3.1
-  cloud_functions: ^4.0.7
+  shared_preferences: ^2.1.0
+  cloud_firestore: ^4.5.1
+  cloud_functions: ^4.1.0
   cupertino_icons: ^1.0.5
-  flutter_tts: ^3.0.0
-  wakelock: ^0.6.1+1
-  linkify: ^4.0.0
-  url_launcher: ^6.0.3
+  flutter_tts: ^3.6.3
+  wakelock: ^0.6.2
+  linkify: ^4.1.0
+  url_launcher: ^6.1.10
   intl: ^0.17.0
-  http: ^0.13.3
-  package_info_plus: ^3.0.2
-  audioplayers: ^1.2.0
+  http: ^0.13.5
+  package_info_plus: ^3.0.3
+  audioplayers: ^4.0.1
   metadata_fetch: ^0.4.1
-  firebase_analytics: ^10.1.0
-  flutter_keyboard_visibility: ^5.0.3
-  characters: ^1.2.0
+  firebase_analytics: ^10.2.0
+  flutter_keyboard_visibility: ^5.4.0
+  characters: ^1.2.1
   google_fonts: ^4.0.3
   motion_sensors: ^0.1.0
   crypto: ^3.0.2
-  path_provider: ^2.0.10
-  in_app_purchase: ^3.0.4
-  firebase_database: ^10.0.9
-  flutter_markdown: ^0.6.10+2
-  flutter_localized_locales: ^2.0.3
-  webview_flutter: ^4.0.1
-  just_audio: ^0.9.28
+  path_provider: ^2.0.14
+  in_app_purchase: ^3.1.5
+  firebase_database: ^10.1.0
+  flutter_markdown: ^0.6.14
+  flutter_localized_locales: ^2.0.4
+  webview_flutter: ^4.0.7
+  just_audio: ^0.9.32
   sticky_headers: ^0.3.0+2
-  google_mobile_ads: ^2.0.1
-  webview_flutter_android: ^3.1.1
-  webview_flutter_wkwebview: ^3.0.1
+  google_mobile_ads: ^2.3.0
+  webview_flutter_android: ^3.4.4
+  webview_flutter_wkwebview: ^3.2.3
   flutter_custom_tabs: ^1.0.4
   styled_text: ^7.0.0
-  barcode_scan2: ^4.2.3
+  barcode_scan2: ^4.2.4
 
 dev_dependencies:
   flutter_lints: ^2.0.1

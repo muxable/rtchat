@@ -23,6 +23,10 @@
   "@search": {
     "description": "Placeholder text for search bar"
   },
+  "notSignedIn": "Not signed in",
+  "@notSignedIn": {
+    "description": "Label for unauthenticated user"
+  },
   "searchChannels": "Search",
   "@searchChannels": {
     "description": "Header for a page that lets the user search channels"
@@ -498,5 +502,93 @@
   "flashOff": "Flash off",
   "@flashOff": {
     "description": "Text label for the camera flash disable button."
+  },
+  "durationOneMinute": "1 minute",
+  "@durationOneMinute": {
+    "description": "Text label for a one minute duration"
+  },
+  "durationFifteenMinutes": "15 minutes",
+  "@durationFifteenMinutes": {
+    "description": "Text label for a fifteen minute duration"
+  },
+  "durationOneHour": "1 hour",
+  "@durationOneHour": {
+    "description": "Text label for a one hour duration"
+  },
+  "durationSixHours": "6 hours",
+  "@durationSixHours": {
+    "description": "Text label for a six hour duration"
+  },
+  "durationOneDay": "1 day",
+  "@durationOneDay": {
+    "description": "Text label for a one day duration"
+  },
+  "durationTwoDays": "2 days",
+  "@durationTwoDays": {
+    "description": "Text label for a two day duration"
+  },
+  "durationOneWeek": "1 week",
+  "@durationOneWeek": {
+    "description": "Text label for a one week duration"
+  },
+  "durationOneMonth": "1 month",
+  "@durationOneMonth": {
+    "description": "Text label for a one month duration"
+  },
+  "durationThreeMonths": "3 months",
+  "@durationThreeMonths": {
+    "description": "Text label for a three month duration"
+  },
+  "durationOneYear": "1 year",
+  "@durationOneYear": {
+    "description": "Text label for a one year duration"
+  },
+  "durationForever": "Forever",
+  "@durationForever": {
+    "description": "Text label for a forever duration"
+  },
+  "durationOneMinuteTimeoutPrompt": "Timeout for 1 minute",
+  "@durationOneMinuteTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one minute duration"
+  },
+  "durationFifteenMinutesTimeoutPrompt": "Timeout for 15 minutes",
+  "@durationFifteenMinutesTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a fifteen minute duration"
+  },
+  "durationOneHourTimeoutPrompt": "Timeout for 1 hour",
+  "@durationOneHourTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one hour duration"
+  },
+  "durationSixHoursTimeoutPrompt": "Timeout for 6 hours",
+  "@durationSixHoursTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a six hour duration"
+  },
+  "durationOneDayTimeoutPrompt": "Timeout for 1 day",
+  "@durationOneDayTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one day duration"
+  },
+  "durationTwoDaysTimeoutPrompt": "Timeout for 2 days",
+  "@durationTwoDaysTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a two day duration"
+  },
+  "durationOneWeekTimeoutPrompt": "Timeout for 1 week",
+  "@durationOneWeekTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one week duration"
+  },
+  "durationOneMonthTimeoutPrompt": "Timeout for 1 month",
+  "@durationOneMonthTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one month duration"
+  },
+  "durationThreeMonthsTimeoutPrompt": "Timeout for 3 months",
+  "@durationThreeMonthsTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a three month duration"
+  },
+  "durationOneYearTimeoutPrompt": "Timeout for 1 year",
+  "@durationOneYearTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one year duration"
+  },
+  "durationForeverTimeoutPrompt": "Timeout for Forever",
+  "@durationForeverTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a forever duration"
   }
 }

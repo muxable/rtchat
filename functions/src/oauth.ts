@@ -44,6 +44,27 @@ export const STREAMLABS_OAUTH_CONFIG = {
   },
 } as ModuleOptions<"client_id">;
 
+export const STREAMELEMENTS_CLIENT_ID = functions.config().streamelements.id;
+export const STREAMELEMENTS_CLIENT_SECRET =
+  functions.config().streamelements.secret;
+
+export const STREAMELEMENTS_OAUTH_CONFIG = {
+  client: {
+    id: STREAMELEMENTS_CLIENT_ID,
+    secret: STREAMELEMENTS_CLIENT_SECRET,
+  },
+  auth: {
+    tokenHost: "https://api.streamelements.com",
+    tokenPath: "/oauth2/token",
+    authorizePath: "/oauth2/authorize",
+    revokePath: "/oauth2/revoke",
+  },
+  options: {
+    bodyFormat: "json",
+    authorizationMethod: "body",
+  },
+} as ModuleOptions<"client_id">;
+
 export async function getAccessToken(userId: string, provider: string) {
   // fetch the token from the database.
   const ref = admin.firestore().collection("tokens").doc(userId);

@@ -6,6 +6,7 @@ import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
 import { AuthorizationCode } from "simple-oauth2";
 import {
+  STREAMELEMENTS_OAUTH_CONFIG,
   STREAMLABS_OAUTH_CONFIG,
   TWITCH_CLIENT_ID,
   TWITCH_OAUTH_CONFIG,
@@ -137,6 +138,7 @@ app.get("/auth/twitch/redirect", (req, res) => {
       "channel:read:redemptions",
       "channel:read:vips",
       "moderation:read",
+      "moderator:manage:banned_users",
       "moderator:manage:shoutouts",
       "moderator:read:chatters",
       "moderator:read:shoutouts",
@@ -261,6 +263,71 @@ app.get("/auth/streamlabs/callback", async (req, res) => {
     .collection("streamlabs")
     .doc(uid)
     .set({ token: JSON.stringify(results.token), channelId }, { merge: true });
+
+  res.redirect("com.rtirl.chat://success?token=1");
+});
+
+app.get("/auth/streamelements/redirect", (req, res) => {
+  req.session.token = req.query.token?.toString();
+  req.session.provider = req.query.provider?.toString();
+  const redirectUri = new AuthorizationCode(
+    STREAMELEMENTS_OAUTH_CONFIG
+  ).authorizeURL({
+    redirect_uri: `${HOST}/auth/streamelements/callback`,
+    scope: ["tips:read"],
+  });
+  res.redirect(redirectUri);
+});
+
+app.get("/auth/streamelements/callback", async (req, res) => {
+  const provider = req.session.provider;
+  const uid = await toUserId(req.session.token);
+  if (!uid || !provider) {
+    res.redirect("com.rtirl.chat://error?message=invalid_token");
+    return;
+  }
+  // not sure why simple-oauth2 doesn't work here...
+  const url =
+    STREAMELEMENTS_OAUTH_CONFIG.auth.tokenHost +
+    STREAMELEMENTS_OAUTH_CONFIG.auth.tokenPath;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      client_id: STREAMELEMENTS_OAUTH_CONFIG.client.id,
+      client_secret: STREAMELEMENTS_OAUTH_CONFIG.client.secret,
+      grant_type: "authorization_code",
+      redirect_uri: `https://chat.rtirl.com/auth/streamelements/callback`,
+      code: String(req.query.code),
+    }),
+  });
+  if (!response.ok) {
+    res.redirect("com.rtirl.chat://error?message=invalid_token");
+    return;
+  }
+  const json = await response.json();
+  const expiresAt = new Date(+new Date() + json.expires_in * 1000);
+  const usernameDoc = await admin
+    .firestore()
+    .collection("profiles")
+    .doc(uid)
+    .get();
+
+  const channelId = `${provider}:${usernameDoc.get(provider)["id"]}`;
+
+  admin
+    .firestore()
+    .collection("streamelements")
+    .doc(uid)
+    .set(
+      {
+        token: JSON.stringify({ ...json, expires_at: expiresAt.toISOString() }),
+        channelId,
+      },
+      { merge: true }
+    );
 
   res.redirect("com.rtirl.chat://success?token=1");
 });
