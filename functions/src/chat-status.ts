@@ -223,6 +223,13 @@ export async function twitchGetChatters(
   // fetch the chatters for the requested channel.
   const chatters = await findChatters(token, twitchBroadcasterId);
   // find the moderators if possible
+  let broadcaster: UserData[] = []; // this is historically an array by convention
+  try {
+    broadcaster = chatters.filter((c) => c.user_id == twitchBroadcasterId);
+  } catch (e) {
+    console.error(e);
+  }
+  broadcaster.sort((a, b) => a.user_name.localeCompare(b.user_name));
   let mods: UserData[] = [];
   try {
     mods = await findModerators(
@@ -233,6 +240,7 @@ export async function twitchGetChatters(
   } catch (e) {
     console.error(e);
   }
+  mods.sort((a, b) => a.user_name.localeCompare(b.user_name));
   let vips: UserData[] = [];
   try {
     vips = await findVIPs(
@@ -243,15 +251,19 @@ export async function twitchGetChatters(
   } catch (e) {
     console.error(e);
   }
+  vips.sort((a, b) => a.user_name.localeCompare(b.user_name));
   // remove mods and vips from the list of chatters.
   const viewers = chatters.filter(
     (c) =>
+      !broadcaster.some((b) => b.user_id == c.user_id) &&
       !mods.some((m) => m.user_id == c.user_id) &&
       !vips.some((v) => v.user_id == c.user_id)
   );
   // for backwards compatibility, return the list of usernames as strings.
   // and return the full profile as <key>Data.
   return {
+    broadcaster: broadcaster.map((c) => c.user_name),
+    broadcasterData: broadcaster,
     viewers: viewers.map((c) => c.user_name),
     viewersData: viewers,
     moderators: mods.map((c) => c.user_name),
