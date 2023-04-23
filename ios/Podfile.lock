@@ -610,12 +610,12 @@ PODS:
   - BoringSSL-GRPC/Implementation (0.0.24):
     - BoringSSL-GRPC/Interface (= 0.0.24)
   - BoringSSL-GRPC/Interface (0.0.24)
-  - cloud_firestore (4.5.1):
+  - cloud_firestore (4.5.2):
     - Firebase/Firestore (= 10.7.0)
     - firebase_core
     - Flutter
     - nanopb (< 2.30910.0, >= 2.30908.0)
-  - cloud_functions (4.1.0):
+  - cloud_functions (4.1.1):
     - Firebase/Functions (= 10.7.0)
     - firebase_core
     - Flutter
@@ -641,22 +641,22 @@ PODS:
   - Firebase/Functions (10.7.0):
     - Firebase/CoreOnly
     - FirebaseFunctions (~> 10.7.0)
-  - firebase_analytics (10.2.0):
+  - firebase_analytics (10.2.1):
     - Firebase/Analytics (= 10.7.0)
     - firebase_core
     - Flutter
-  - firebase_auth (4.4.1):
+  - firebase_auth (4.4.2):
     - Firebase/Auth (= 10.7.0)
     - firebase_core
     - Flutter
-  - firebase_core (2.9.0):
+  - firebase_core (2.10.0):
     - Firebase/CoreOnly (= 10.7.0)
     - Flutter
-  - firebase_crashlytics (3.1.0):
+  - firebase_crashlytics (3.1.1):
     - Firebase/Crashlytics (= 10.7.0)
     - firebase_core
     - Flutter
-  - firebase_database (10.1.0):
+  - firebase_database (10.1.1):
     - Firebase/Database (= 10.7.0)
     - firebase_core
     - Flutter
@@ -850,7 +850,7 @@ PODS:
     - gRPC-Core/Interface (= 1.44.0)
     - Libuv-gRPC (= 0.0.10)
   - gRPC-Core/Interface (1.44.0)
-  - GTMSessionFetcher/Core (3.1.0)
+  - GTMSessionFetcher/Core (3.1.1)
   - in_app_purchase_storekit (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -1011,14 +1011,14 @@ SPEC CHECKSUMS:
   audioplayers_darwin: 877d9a4d06331c5c374595e46e16453ac7eafa40
   barcode_scan2: 0af2bb63c81b4565aab6cd78278e4c0fa136dbb0
   BoringSSL-GRPC: 3175b25143e648463a56daeaaa499c6cb86dad33
-  cloud_firestore: 996fbe17886e254538f5bc51c1606ee9fb524997
-  cloud_functions: 1013ced10d7b82cc7b4239f86236782fe3b9fc5b
+  cloud_firestore: 48bc9a6ed3d534417f4f5c095c30e9374c1101bc
+  cloud_functions: 0910b8883a53ed2116889cfa9a00179ec69a5003
   Firebase: 0219acf760880eeec8ce479895bd7767466d9f81
-  firebase_analytics: 8954db5c9b63075214fa1b3ad2cdced9646f45a0
-  firebase_auth: 5a84572b7f5315a3aff5b07c62bb0cd5a28cade5
-  firebase_core: d85432877e814811e040e7659f9c82faeab66e04
-  firebase_crashlytics: 4c90334dc536ffa73b92f3e978426a0d1e339c74
-  firebase_database: 7dfac1ef83539a3716784b11f4d72d077c3464c2
+  firebase_analytics: e8e294333de66e5429d4aac365966281b4dbfb7d
+  firebase_auth: 98778cde4127b34d2d006f8bd049d3a8131f37bd
+  firebase_core: 18d44f087248303a4a8f05d0099a000c46e3c77a
+  firebase_crashlytics: 6c15c2f507d82746dd62214964acf56146eab53f
+  firebase_database: 825e72f4f501264771d90a780dc1b3711f892816
   FirebaseAnalytics: f8133442ee6f8512e28ff19e62ce15398bfaeace
   FirebaseAppCheckInterop: 8e907eea79958960a8bd2058e067f31e03a7914b
   FirebaseAuth: dd64c01631df724b09f33e584625775c52f7d71f
@@ -1047,7 +1047,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 9aa0ad5a7bc171f8bae016300bfcfa3fb8425749
   "gRPC-C++": 9675f953ace2b3de7c506039d77be1f2e77a8db2
   gRPC-Core: 943e491cb0d45598b0b0eb9e910c88080369290b
-  GTMSessionFetcher: c9e714f7eec91a55641e2bab9f45fd83a219b882
+  GTMSessionFetcher: e8647203b65cee28c5f73d0f473d096653945e72
   in_app_purchase_storekit: 4fb7ee9e824b1f09107fbfbbce8c4b276366dc43
   just_audio: baa7252489dbcf47a4c7cc9ca663e9661c99aafa
   leveldb-library: f03246171cce0484482ec291f88b6d563699ee06
@@ -1067,4 +1067,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 7368163408c647b7eb699d0d788ba6718e18fb8d
 
-COCOAPODS: 1.12.0
+COCOAPODS: 1.12.1
