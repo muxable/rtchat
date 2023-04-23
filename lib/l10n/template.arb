@@ -117,5 +117,5 @@
   "durationOneMonthTimeoutPrompt": "Timeout for 1 month",
   "durationThreeMonthsTimeoutPrompt": "Timeout for 3 months",
   "durationOneYearTimeoutPrompt": "Timeout for 1 year",
-  "durationForeverTimeoutPrompt": "Timeout for Forever",
+  "durationForeverTimeoutPrompt": "Timeout for Forever"
 }
