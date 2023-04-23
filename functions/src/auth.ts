@@ -128,6 +128,7 @@ app.get("/auth/twitch/redirect", (req, res) => {
       "bits:read",
       "chat:read",
       "chat:edit",
+      "channel:edit:commercial",
       "channel:moderate",
       "channel:manage:broadcast",
       "channel:manage:polls",
