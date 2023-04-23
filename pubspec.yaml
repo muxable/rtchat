@@ -12,14 +12,14 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  firebase_core: ^2.9.0
-  firebase_crashlytics: ^3.1.0
-  firebase_auth: ^4.4.1
+  firebase_core: ^2.10.0
+  firebase_crashlytics: ^3.1.1
+  firebase_auth: ^4.4.2
   provider: ^6.0.5
   flutter_web_auth: ^0.5.0
   shared_preferences: ^2.1.0
-  cloud_firestore: ^4.5.1
-  cloud_functions: ^4.1.0
+  cloud_firestore: ^4.5.2
+  cloud_functions: ^4.1.1
   cupertino_icons: ^1.0.5
   flutter_tts: ^3.6.3
   wakelock: ^0.6.2
@@ -30,7 +30,7 @@ dependencies:
   package_info_plus: ^3.0.3
   audioplayers: ^4.0.1
   metadata_fetch: ^0.4.1
-  firebase_analytics: ^10.2.0
+  firebase_analytics: ^10.2.1
   flutter_keyboard_visibility: ^5.4.0
   characters: ^1.2.1
   google_fonts: ^4.0.3
@@ -38,15 +38,15 @@ dependencies:
   crypto: ^3.0.2
   path_provider: ^2.0.14
   in_app_purchase: ^3.1.5
-  firebase_database: ^10.1.0
+  firebase_database: ^10.1.1
   flutter_markdown: ^0.6.14
   flutter_localized_locales: ^2.0.4
-  webview_flutter: ^4.0.7
+  webview_flutter: ^4.2.0
   just_audio: ^0.9.32
   sticky_headers: ^0.3.0+2
-  google_mobile_ads: ^2.3.0
-  webview_flutter_android: ^3.4.4
-  webview_flutter_wkwebview: ^3.2.3
+  google_mobile_ads: ^2.4.0
+  webview_flutter_android: ^3.6.0
+  webview_flutter_wkwebview: ^3.4.0
   flutter_custom_tabs: ^1.0.4
   styled_text: ^7.0.0
   barcode_scan2: ^4.2.4
