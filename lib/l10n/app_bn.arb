@@ -73,12 +73,12 @@
   "followingEvent": "<bold>{displayName}</bold> te está siguiendo",
   "followingEvent2": "<bold>{displayName}</bold> y <bold>{displayNameTwo}</bold> te están siguiendo",
   "followingEvent3": "<bold>{displayName}</bold>, <bold>{displayNameTwo}</bold>, y {numOthers} otros te están siguiendo",
-  "unmuteUser": "আনমিউট {ব্যবহারকারীর নাম}",
-  "muteUser": "মিউট {ব্যবহারকারীর নাম}",
-  "timeoutUser": "টাইমআউট  {ব্যবহারকারীর নাম}",
-  "banUser": "ব্যান {ব্যবহারকারীর নাম}",
-  "unbanUser": "আনব্যান {ব্যবহারকারীর নাম}",
-  "viewProfile": "প্রোফাইল দেখুন {ব্যবহারকারীর নাম}",
+  "unmuteUser": "আনমিউট {displayName",
+  "muteUser": "মিউট {displayName}",
+  "timeoutUser": "টাইমআউট  {displayName}",
+  "banUser": "ব্যান {displayName}",
+  "unbanUser": "আনব্যান {displayName}",
+  "viewProfile": "প্রোফাইল দেখুন {displayName}",
   "copyMessage": "মেসেজ কপি করুন",
   "deleteMessage": "মেসেজ ডিলিট করুন"
 }
