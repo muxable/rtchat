@@ -309,7 +309,7 @@
   "@events": {
     "description": "Header for the events page"
   },
-  "eventsSubtitle":"Configure Twitch events",
+  "eventsSubtitle": "Configure Twitch events",
   "@eventsSubtitle": {
     "description": "Subtitle for the events page"
   },
