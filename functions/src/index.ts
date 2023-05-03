@@ -9,7 +9,7 @@ import {
 import { app as authApp } from "./auth";
 import { getBadges } from "./badges";
 import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
-import { getEmotes, getUserEmotes } from "./emotes";
+import { getEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
 import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
@@ -456,7 +456,6 @@ export {
   unsubscribe,
   eventsub,
   search,
-  getUserEmotes,
   getEmotes,
   getBadges,
   synthesize,
