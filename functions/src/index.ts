@@ -358,51 +358,6 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
-export const getProfilePicture = functions.https.onRequest(async (req, res) => {
-  const provider = req.query?.provider as string | null;
-  const channelId = req.query?.channelId as string | null;
-  if (!provider || !channelId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId"
-    );
-  }
-
-  switch (provider) {
-    case "twitch":
-      const token = await getAppAccessToken(provider);
-      if (!token) {
-        throw new functions.https.HttpsError("internal", "auth error");
-      }
-      const headers = {
-        Authorization: `Bearer ${token.token["access_token"]}`,
-        "Client-Id": TWITCH_CLIENT_ID,
-      };
-      try {
-        const response = await fetch(
-          `https://api.twitch.tv/helix/users?id=${channelId}`,
-          { headers: headers }
-        );
-        const json = (await response.json()) as any;
-        const imageUrl =
-          json["data"]?.[0]?.["profile_image_url"] ??
-          "https://static-cdn.jtvnw.net/user-default-pictures-uv/ebb84563-db81-4b9c-8940-64ed33ccfc7b-profile_image-300x300.png";
-        const image = await fetch(imageUrl);
-        res.setHeader("Content-Type", "image/png");
-        res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=86400");
-        res.status(200).send(Buffer.from(await image.arrayBuffer()));
-      } catch (err) {
-        console.error(err);
-        throw new functions.https.HttpsError("not-found", "image not found");
-      }
-    default:
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "invalid provider"
-      );
-  }
-});
-
 export const embedRedirect = functions.https.onRequest(async (req, res) => {
   const provider = req.query?.provider as string | null;
   const channelId = req.query?.channelId as string | null;
