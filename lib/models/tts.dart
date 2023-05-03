@@ -10,6 +10,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:rtchat/models/adapters/channels.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
@@ -54,36 +56,31 @@ class TtsModel extends ChangeNotifier {
 
   void update(UserModel model) async {
     if (kDebugMode) {
-      if (model.activeChannel == null) {
+      final channel = model.activeChannel;
+      if (channel == null) {
         _isSupportedLanguage = false;
         _language = Language();
         return;
       }
-      String streamLanguage = await _streamLanguage(
-        provider: model.activeChannel!.provider,
-        channelId: model.activeChannel!.channelId,
-      );
+
+      String? streamLanguage =
+          await ChannelsAdapter.instance.forChannel(channel).map((event) {
+        if (event is TwitchChannelMetadata) {
+          return event.language;
+        }
+        throw "invalid provider";
+      }).first;
+      if (streamLanguage == null) {
+        _isSupportedLanguage = false;
+        _language = Language();
+        return;
+      }
+
       _isSupportedLanguage =
           !(streamLanguage == 'other' || streamLanguage == 'asl');
       language = _isSupportedLanguage ? Language(streamLanguage) : Language();
       notifyListeners();
     }
-  }
-
-  final getStatistics =
-      FirebaseFunctions.instance.httpsCallable("getStatistics");
-
-  Future<String> _streamLanguage(
-      {required String provider, required String channelId}) async {
-    final statistics = await getStatistics({
-      "provider": provider,
-      "channelId": channelId,
-    });
-    switch (provider) {
-      case "twitch":
-        return statistics.data['language'];
-    }
-    throw "invalid provider";
   }
 
   void getVoices() async {

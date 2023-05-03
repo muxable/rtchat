@@ -9,10 +9,12 @@ class ChannelMetadata {
 class TwitchChannelMetadata extends ChannelMetadata {
   final int viewerCount;
   final int followerCount;
+  final String? language;
 
   TwitchChannelMetadata(
       {required this.viewerCount,
       required this.followerCount,
+      this.language,
       required DateTime? onlineAt})
       : super(onlineAt: onlineAt);
 }
@@ -41,7 +43,8 @@ class ChannelsAdapter {
           return TwitchChannelMetadata(
               onlineAt: (data["onlineAt"] as Timestamp?)?.toDate(),
               viewerCount: data["viewerCount"] ?? 0,
-              followerCount: data["followerCount"] ?? 0);
+              followerCount: data["followerCount"] ?? 0,
+              language: data["language"]);
         default:
           return ChannelMetadata(
               onlineAt: (data["onlineAt"] as Timestamp?)?.toDate());
