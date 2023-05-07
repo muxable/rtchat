@@ -78,7 +78,7 @@ void main() async {
       systemNavigationBarColor: Colors.transparent,
     ));
 
-    AudioPlayer.global.setGlobalAudioContext(AudioContextConfig(
+    AudioPlayer.global.setAudioContext(AudioContextConfig(
       forceSpeaker: false,
       duckAudio: false,
       respectSilence: false,
