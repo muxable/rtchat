@@ -11,7 +11,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rtchat/models/adapters/channels.dart';
-import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
