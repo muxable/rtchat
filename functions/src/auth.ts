@@ -140,6 +140,7 @@ app.get("/auth/twitch/redirect", (req, res) => {
       "channel:read:vips",
       "moderation:read",
       "moderator:manage:banned_users",
+      "moderator:manage:chat_messages",
       "moderator:manage:shoutouts",
       "moderator:read:chatters",
       "moderator:read:shoutouts",
