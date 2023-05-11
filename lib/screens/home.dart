@@ -187,179 +187,185 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     return GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-        child: Scaffold(
-          key: _scaffoldKey,
-          drawer: Sidebar(channel: widget.channel),
-          endDrawer: LeftDrawerWidget(channel: widget.channel),
-          drawerEdgeDragWidth: MediaQuery.of(context).size.width * 0.6,
-          onDrawerChanged: (isOpened) =>
-              FocusManager.instance.primaryFocus?.unfocus(),
-          onEndDrawerChanged: (isOpened) =>
-              FocusManager.instance.primaryFocus?.unfocus(),
-          appBar: HeaderBarWidget(
-              onChannelSelect: widget.onChannelSelect,
-              channel: widget.channel,
-              actions: [
-                Consumer2<ActivityFeedModel, LayoutModel>(
-                    builder: (context, activityFeedModel, layoutModel, child) {
-                  if (!activityFeedModel.isEnabled) {
-                    return Container();
-                  }
-                  return IconButton(
-                    icon: Icon(layoutModel.isShowNotifications
-                        ? Icons.notifications
-                        : Icons.notifications_outlined),
-                    tooltip: AppLocalizations.of(context)!.activityFeed,
-                    onPressed: () {
-                      layoutModel.isShowNotifications =
-                          !layoutModel.isShowNotifications;
-                    },
-                  );
-                }),
-                Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-                  return IconButton(
-                    icon: Icon(layoutModel.isShowPreview
-                        ? Icons.preview
-                        : Icons.preview_outlined),
-                    tooltip: AppLocalizations.of(context)!.streamPreview,
-                    onPressed: () {
-                      layoutModel.isShowPreview = !layoutModel.isShowPreview;
-                    },
-                  );
-                }),
-                Consumer<TtsModel>(builder: (context, ttsModel, child) {
-                  return IconButton(
-                      icon: Icon(ttsModel.enabled
-                          ? Icons.record_voice_over
-                          : Icons.voice_over_off),
-                      tooltip: AppLocalizations.of(context)!.textToSpeech,
+        child: Consumer<UserModel>(builder: (context, userModel, child) {
+          return Scaffold(
+            key: _scaffoldKey,
+            drawer: userModel.isSignedIn()
+                ? Sidebar(channel: widget.channel)
+                : null,
+            endDrawer: LeftDrawerWidget(channel: widget.channel),
+            drawerEdgeDragWidth: MediaQuery.of(context).size.width * 0.6,
+            onDrawerChanged: (isOpened) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
+            onEndDrawerChanged: (isOpened) =>
+                FocusManager.instance.primaryFocus?.unfocus(),
+            appBar: HeaderBarWidget(
+                onChannelSelect: widget.onChannelSelect,
+                channel: widget.channel,
+                actions: [
+                  Consumer2<ActivityFeedModel, LayoutModel>(builder:
+                      (context, activityFeedModel, layoutModel, child) {
+                    if (!activityFeedModel.isEnabled) {
+                      return Container();
+                    }
+                    return IconButton(
+                      icon: Icon(layoutModel.isShowNotifications
+                          ? Icons.notifications
+                          : Icons.notifications_outlined),
+                      tooltip: AppLocalizations.of(context)!.activityFeed,
                       onPressed: () {
-                        ttsModel.enabled = !ttsModel.enabled;
-                      });
-                }),
-                IconButton(
-                  icon: const Icon(Icons.people),
-                  tooltip: AppLocalizations.of(context)!.currentViewers,
-                  onPressed: () {
-                    _scaffoldKey.currentState?.openEndDrawer();
-                  },
-                ),
-              ]),
-          body: Container(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: SafeArea(
-              child: Builder(builder: (context) {
-                final chatPanelFooter = Consumer<LayoutModel>(
-                  builder: (context, layoutModel, child) {
-                    return layoutModel.locked ? Container() : child!;
-                  },
-                  child: Consumer<UserModel>(
-                    builder: (context, userModel, child) {
-                      if (!userModel.isSignedIn()) {
-                        return Column(children: [
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Flexible(child: Divider()),
-                                Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: Text(
-                                        AppLocalizations.of(context)!
-                                            .signInToSendMessages,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge)),
-                                const Flexible(child: Divider()),
-                              ]),
-                          const SignInWithTwitch(),
-                        ]);
-                      }
-
-                      return child!;
-                    },
-                    child: MessageInputWidget(
-                      channel: widget.channel,
+                        layoutModel.isShowNotifications =
+                            !layoutModel.isShowNotifications;
+                      },
+                    );
+                  }),
+                  Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+                    return IconButton(
+                      icon: Icon(layoutModel.isShowPreview
+                          ? Icons.preview
+                          : Icons.preview_outlined),
+                      tooltip: AppLocalizations.of(context)!.streamPreview,
+                      onPressed: () {
+                        layoutModel.isShowPreview = !layoutModel.isShowPreview;
+                      },
+                    );
+                  }),
+                  Consumer<TtsModel>(builder: (context, ttsModel, child) {
+                    return IconButton(
+                        icon: Icon(ttsModel.enabled
+                            ? Icons.record_voice_over
+                            : Icons.voice_over_off),
+                        tooltip: AppLocalizations.of(context)!.textToSpeech,
+                        onPressed: () {
+                          ttsModel.enabled = !ttsModel.enabled;
+                        });
+                  }),
+                  if (userModel.isSignedIn())
+                    IconButton(
+                      icon: const Icon(Icons.people),
+                      tooltip: AppLocalizations.of(context)!.currentViewers,
+                      onPressed: () {
+                        _scaffoldKey.currentState?.openEndDrawer();
+                      },
                     ),
-                  ),
-                );
-                if (orientation == Orientation.portrait) {
-                  return Column(
-                      // this allows the column to overflow upwards.
-                      verticalDirection: VerticalDirection.up,
-                      children: [
-                        // reversed direction because of verticalDirection: VerticalDirection.up
-                        chatPanelFooter,
+                ]),
+            body: Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: SafeArea(
+                child: Builder(builder: (context) {
+                  final chatPanelFooter = Consumer<LayoutModel>(
+                    builder: (context, layoutModel, child) {
+                      return layoutModel.locked ? Container() : child!;
+                    },
+                    child: Builder(
+                      builder: (context) {
+                        if (!userModel.isSignedIn()) {
+                          return Column(children: [
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Flexible(child: Divider()),
+                                  Padding(
+                                      padding: const EdgeInsets.all(8),
+                                      child: Text(
+                                          AppLocalizations.of(context)!
+                                              .signInToSendMessages,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge)),
+                                  const Flexible(child: Divider()),
+                                ]),
+                            const SignInWithTwitch(),
+                          ]);
+                        }
+
+                        return MessageInputWidget(
+                          channel: widget.channel,
+                        );
+                      },
+                    ),
+                  );
+                  if (orientation == Orientation.portrait) {
+                    return Column(
+                        // this allows the column to overflow upwards.
+                        verticalDirection: VerticalDirection.up,
+                        children: [
+                          // reversed direction because of verticalDirection: VerticalDirection.up
+                          chatPanelFooter,
+                          Expanded(
+                              child: DiscoWidget(
+                                  isEnabled: widget.isDiscoModeEnabled,
+                                  child: ChatPanelWidget(
+                                      channel: widget.channel))),
+                          Consumer<LayoutModel>(
+                              builder: (context, layoutModel, child) {
+                            if (layoutModel.isShowNotifications) {
+                              return ResizableWidget(
+                                  resizable: !layoutModel.locked,
+                                  height: layoutModel.panelHeight,
+                                  width: layoutModel.panelWidth,
+                                  onResizeHeight: (height) {
+                                    layoutModel.panelHeight = height;
+                                  },
+                                  onResizeWidth: (width) {
+                                    layoutModel.panelWidth = width;
+                                  },
+                                  child: const ActivityFeedPanelWidget());
+                            } else if (layoutModel.isShowPreview) {
+                              return AspectRatio(
+                                  aspectRatio: 16 / 9,
+                                  child:
+                                      StreamPreview(channel: widget.channel));
+                            } else {
+                              return Container();
+                            }
+                          }),
+                        ]);
+                  } else {
+                    // landscape
+                    return Row(children: [
+                      Consumer<LayoutModel>(
+                          builder: (context, layoutModel, child) {
+                        if (!layoutModel.isShowNotifications &&
+                            !layoutModel.isShowPreview) {
+                          return Container();
+                        }
+                        return ResizableWidget(
+                            resizable: !layoutModel.locked,
+                            height: layoutModel.panelHeight,
+                            width: layoutModel.panelWidth,
+                            onResizeHeight: (height) {
+                              layoutModel.panelHeight = height;
+                            },
+                            onResizeWidth: (width) {
+                              layoutModel.panelWidth = width;
+                            },
+                            child: Consumer<LayoutModel>(
+                                builder: (context, layoutModel, child) {
+                              if (layoutModel.isShowNotifications) {
+                                return const ActivityFeedPanelWidget();
+                              } else if (layoutModel.isShowPreview) {
+                                return StreamPreview(channel: widget.channel);
+                              } else {
+                                return Container();
+                              }
+                            }));
+                      }),
+                      Expanded(
+                          child: Column(children: [
                         Expanded(
                             child: DiscoWidget(
                                 isEnabled: widget.isDiscoModeEnabled,
                                 child:
                                     ChatPanelWidget(channel: widget.channel))),
-                        Consumer<LayoutModel>(
-                            builder: (context, layoutModel, child) {
-                          if (layoutModel.isShowNotifications) {
-                            return ResizableWidget(
-                                resizable: !layoutModel.locked,
-                                height: layoutModel.panelHeight,
-                                width: layoutModel.panelWidth,
-                                onResizeHeight: (height) {
-                                  layoutModel.panelHeight = height;
-                                },
-                                onResizeWidth: (width) {
-                                  layoutModel.panelWidth = width;
-                                },
-                                child: const ActivityFeedPanelWidget());
-                          } else if (layoutModel.isShowPreview) {
-                            return AspectRatio(
-                                aspectRatio: 16 / 9,
-                                child: StreamPreview(channel: widget.channel));
-                          } else {
-                            return Container();
-                          }
-                        }),
-                      ]);
-                } else {
-                  // landscape
-                  return Row(children: [
-                    Consumer<LayoutModel>(
-                        builder: (context, layoutModel, child) {
-                      if (!layoutModel.isShowNotifications &&
-                          !layoutModel.isShowPreview) {
-                        return Container();
-                      }
-                      return ResizableWidget(
-                          resizable: !layoutModel.locked,
-                          height: layoutModel.panelHeight,
-                          width: layoutModel.panelWidth,
-                          onResizeHeight: (height) {
-                            layoutModel.panelHeight = height;
-                          },
-                          onResizeWidth: (width) {
-                            layoutModel.panelWidth = width;
-                          },
-                          child: Consumer<LayoutModel>(
-                              builder: (context, layoutModel, child) {
-                            if (layoutModel.isShowNotifications) {
-                              return const ActivityFeedPanelWidget();
-                            } else if (layoutModel.isShowPreview) {
-                              return StreamPreview(channel: widget.channel);
-                            } else {
-                              return Container();
-                            }
-                          }));
-                    }),
-                    Expanded(
-                        child: Column(children: [
-                      Expanded(
-                          child: DiscoWidget(
-                              isEnabled: widget.isDiscoModeEnabled,
-                              child: ChatPanelWidget(channel: widget.channel))),
-                      chatPanelFooter,
-                    ]))
-                  ]);
-                }
-              }),
+                        chatPanelFooter,
+                      ]))
+                    ]);
+                  }
+                }),
+              ),
             ),
-          ),
-        ));
+          );
+        }));
   }
 }

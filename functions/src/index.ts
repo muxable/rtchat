@@ -11,11 +11,11 @@ import { getBadges } from "./badges";
 import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
 import { getEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
-import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { getVoices, synthesize } from "./tts";
-import { getChannelId, getTwitchId, getTwitchLogin } from "./twitch";
+import * as twitch from "./twitch";
 
 async function write(
   channelId: string,
@@ -56,14 +56,17 @@ export const send = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const targetChannel = await getTwitchLogin(channelId);
+      const targetChannel = await twitch.getTwitchLogin(channelId);
       if (!targetChannel) {
         return;
       }
       const ref = data?.id
         ? admin.firestore().collection("actions").doc(String(data?.id))
         : admin.firestore().collection("actions").doc(); // optional idempotency key
-      const senderChannelId = await getChannelId(context.auth.uid, "twitch");
+      const senderChannelId = await twitch.getChannelId(
+        context.auth.uid,
+        "twitch"
+      );
       await admin.firestore().runTransaction(async (transaction) => {
         const doc = await transaction.get(ref);
         if (doc.exists) {
@@ -97,7 +100,8 @@ export const ban = functions.https.onCall(async (data, context) => {
   const provider = data?.provider;
   const channelId = data?.channelId;
   const username = data?.username;
-  if (!provider || !channelId || !username) {
+  const userId = data?.userId;
+  if (!provider || !channelId || (!username && !userId)) {
     throw new functions.https.HttpsError(
       "invalid-argument",
       "missing provider, channelId, username"
@@ -106,36 +110,8 @@ export const ban = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const profile = await admin
-        .firestore()
-        .collection("profiles")
-        .doc(context.auth.uid)
-        .get();
-      if (!profile.exists) {
-        return;
-      }
-      const moderatorId = profile.get("twitch")?.id;
-      if (!moderatorId) {
-        return;
-      }
-      const token = await getAccessToken(context.auth.uid, "twitch");
-      const response = await fetch(
-        `https://api.twitch.tv/helix/moderation/bans?broadcaster_id=${channelId}&moderator_id=${moderatorId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Client-ID": TWITCH_CLIENT_ID,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            data: {
-              user_id: await getTwitchId(username),
-            },
-          }),
-        }
-      );
-      return await response.json();
+      const banUserId = userId ? userId : await twitch.getTwitchId(username);
+      return await twitch.ban(context.auth.uid, channelId, banUserId);
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -148,7 +124,8 @@ export const unban = functions.https.onCall(async (data, context) => {
   const provider = data?.provider;
   const channelId = data?.channelId;
   const username = data?.username;
-  if (!provider || !channelId || !username) {
+  const userId = data?.userId;
+  if (!provider || !channelId || (!username && !userId)) {
     throw new functions.https.HttpsError(
       "invalid-argument",
       "missing provider, channelId, username"
@@ -157,31 +134,8 @@ export const unban = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const profile = await admin
-        .firestore()
-        .collection("profiles")
-        .doc(context.auth.uid)
-        .get();
-      if (!profile.exists) {
-        return;
-      }
-      const moderatorId = profile.get("twitch")?.id;
-      if (!moderatorId) {
-        return;
-      }
-      const token = await getAccessToken(context.auth.uid, "twitch");
-      const userId = await getTwitchId(username);
-      const response = await fetch(
-        `https://api.twitch.tv/helix/moderation/bans?broadcaster_id=${channelId}&moderator_id=${moderatorId}&user_id=${userId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Client-ID": TWITCH_CLIENT_ID,
-          },
-        }
-      );
-      return await response.json();
+      const banUserId = userId ? userId : await twitch.getTwitchId(username);
+      return await twitch.unban(context.auth.uid, channelId, banUserId);
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -194,9 +148,10 @@ export const timeout = functions.https.onCall(async (data, context) => {
   const provider = data?.provider;
   const channelId = data?.channelId;
   const username = data?.username;
+  const userId = data?.userId;
   const length = data?.length;
   const reason = data?.reason;
-  if (!provider || !channelId || !username || !length || !reason) {
+  if (!provider || !channelId || (!username && !userId) || !length || !reason) {
     throw new functions.https.HttpsError(
       "invalid-argument",
       "missing provider, channelId, username, length, reason"
@@ -205,38 +160,14 @@ export const timeout = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const profile = await admin
-        .firestore()
-        .collection("profiles")
-        .doc(context.auth.uid)
-        .get();
-      if (!profile.exists) {
-        return;
-      }
-      const moderatorId = profile.get("twitch")?.id;
-      if (!moderatorId) {
-        return;
-      }
-      const token = await getAccessToken(context.auth.uid, "twitch");
-      const response = await fetch(
-        `https://api.twitch.tv/helix/moderation/bans?broadcaster_id=${channelId}&moderator_id=${moderatorId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Client-ID": TWITCH_CLIENT_ID,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            data: {
-              user_id: await getTwitchId(username),
-              duration: length,
-              reason,
-            },
-          }),
-        }
+      const banUserId = userId ? userId : await twitch.getTwitchId(username);
+      return await twitch.timeout(
+        context.auth.uid,
+        channelId,
+        banUserId,
+        length,
+        reason
       );
-      return await response.json();
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -258,16 +189,7 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const targetChannel = await getTwitchLogin(channelId);
-      if (!targetChannel) {
-        return;
-      }
-      const response = await write(
-        await getChannelId(context.auth.uid, "twitch"),
-        targetChannel,
-        `/delete ${messageId.substring("twitch:".length)}`
-      );
-      return response;
+      return await twitch.unban(context.auth.uid, channelId, messageId);
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -288,12 +210,12 @@ export const clear = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const targetChannel = await getTwitchLogin(channelId);
+      const targetChannel = await twitch.getTwitchLogin(channelId);
       if (!targetChannel) {
         return;
       }
       const response = await write(
-        await getChannelId(context.auth.uid, "twitch"),
+        await twitch.getChannelId(context.auth.uid, "twitch"),
         targetChannel,
         `/clear`
       );
@@ -369,7 +291,7 @@ export const embedRedirect = functions.https.onRequest(async (req, res) => {
   }
   switch (provider) {
     case "twitch":
-      const login = await getTwitchLogin(channelId);
+      const login = await twitch.getTwitchLogin(channelId);
       if (!login) {
         res.status(404).send("channel not found");
         return;

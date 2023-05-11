@@ -43,9 +43,7 @@ class TwitchFollowEventModel extends MessageModel {
           userId: data['event']['user_id'],
           login: data['event']['user_login'],
           displayName: data['event']['user_name'])
-    ],
-    messageId: messageId,
-    timestamp: data['timestamp'].toDate());
+    ], messageId: messageId, timestamp: data['timestamp'].toDate());
   }
 
   static TwitchFollowEventModel merged(List<MessageModel> models) {
