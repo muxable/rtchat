@@ -7,10 +7,10 @@ class DismissibleDeleteBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         color: Colors.red,
-        child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [Icon(Icons.delete), Icon(Icons.delete)])));
+                children: [Icon(Icons.delete), Icon(Icons.delete)])));
   }
 }

@@ -25,6 +25,7 @@ dependencies:
   wakelock: ^0.6.2
   linkify: ^4.1.0
   url_launcher: ^6.1.10
+  intl: ^0.17.0
   http: ^0.13.5
   package_info_plus: ^3.1.2
   audioplayers: ^4.0.1
@@ -51,7 +52,7 @@ dependencies:
   barcode_scan2: ^4.2.4
 
 dependency_overrides:
-  intl: ^0.18.0
+  intl: ^0.18.1
 
 dev_dependencies:
   flutter_lints: ^2.0.1
