@@ -189,16 +189,7 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const targetChannel = await twitch.getTwitchLogin(channelId);
-      if (!targetChannel) {
-        return;
-      }
-      const response = await write(
-        await twitch.getChannelId(context.auth.uid, "twitch"),
-        targetChannel,
-        `/delete ${messageId.substring("twitch:".length)}`
-      );
-      return response;
+      return await twitch.unban(context.auth.uid, channelId, messageId);
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");

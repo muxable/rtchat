@@ -143,3 +143,26 @@ export async function ban(uid: string, broadcasterId: string, userId: string) {
   );
   return await response.json();
 }
+
+export async function deleteMessage(
+  uid: string,
+  broadcasterId: string,
+  messageId: string
+) {
+  const profile = await admin.firestore().collection("profiles").doc(uid).get();
+  if (!profile.exists) {
+    return;
+  }
+  const moderatorId = profile.get("twitch")?.id;
+  if (!moderatorId) {
+    return;
+  }
+  const response = await fetch(
+    `https://api.twitch.tv/helix/moderation/chat?broadcaster_id=${broadcasterId}&moderator_id=${moderatorId}&message_id=${messageId}`,
+    {
+      method: "DELETE",
+      headers: await getHeaders(uid),
+    }
+  );
+  return await response.json();
+}
