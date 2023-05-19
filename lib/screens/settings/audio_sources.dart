@@ -100,7 +100,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                       return Dismissible(
                         key: ValueKey(source),
                         background: const DismissibleDeleteBackground(),
-                        child: CheckboxListTile(
+                        child: CheckboxListTile.adaptive(
                             title: name == null
                                 ? Text(source.url.toString())
                                 : Text(name),
