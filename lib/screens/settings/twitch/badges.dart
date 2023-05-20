@@ -31,7 +31,7 @@ class TwitchBadgesScreen extends StatelessWidget {
                     Theme(
                       data: theme.copyWith(
                           unselectedWidgetColor: theme.colorScheme.onTertiary),
-                      child: Checkbox(
+                      child: Checkbox.adaptive(
                         tristate: true,
                         value: model.enabledCount == 0
                             ? false
@@ -52,7 +52,7 @@ class TwitchBadgesScreen extends StatelessWidget {
                   final lastVersion = badge.versions.last;
                   final image =
                       ResilientNetworkImage(Uri.parse(lastVersion.imageUrl4x));
-                  return CheckboxListTile(
+                  return CheckboxListTile.adaptive(
                       secondary: CrossFadeImage(
                           alignment: Alignment.center,
                           placeholder: image.placeholderImage,
