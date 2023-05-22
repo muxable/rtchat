@@ -190,10 +190,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Consumer<UserModel>(builder: (context, userModel, child) {
           return Scaffold(
             key: _scaffoldKey,
-            drawer: userModel.isSignedIn()
-                ? Sidebar(channel: widget.channel)
+            drawer: Sidebar(channel: widget.channel),
+            endDrawer: userModel.isSignedIn()
+                ? EndDrawerWidget(channel: widget.channel)
                 : null,
-            endDrawer: LeftDrawerWidget(channel: widget.channel),
             drawerEdgeDragWidth: MediaQuery.of(context).size.width * 0.6,
             onDrawerChanged: (isOpened) =>
                 FocusManager.instance.primaryFocus?.unfocus(),
