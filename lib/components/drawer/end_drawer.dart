@@ -5,16 +5,16 @@ import 'package:rtchat/components/drawer/sliver_title.dart';
 import 'package:rtchat/models/adapters/chat_state.dart';
 import 'package:rtchat/models/channels.dart';
 
-class LeftDrawerWidget extends StatefulWidget {
+class EndDrawerWidget extends StatefulWidget {
   final Channel channel;
 
-  const LeftDrawerWidget({required this.channel, Key? key}) : super(key: key);
+  const EndDrawerWidget({required this.channel, Key? key}) : super(key: key);
 
   @override
-  State<LeftDrawerWidget> createState() => LeftDrawerWidgetState();
+  State<EndDrawerWidget> createState() => EndDrawerWidgetState();
 }
 
-class LeftDrawerWidgetState extends State<LeftDrawerWidget> {
+class EndDrawerWidgetState extends State<EndDrawerWidget> {
   String _search = "";
 
   @override
