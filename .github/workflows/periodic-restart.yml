@@ -12,6 +12,9 @@ on:
 jobs:
   restart:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: google-github-actions/auth@v1
         with:
