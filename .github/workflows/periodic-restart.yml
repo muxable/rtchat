@@ -25,9 +25,9 @@ jobs:
 
       - run: |
           INSTANCES=$(gcloud compute instance-groups managed list-instances agent-small-us-west1 --region=us-west1)
-          NUM_HEALTHY_INSTANCES=$(echo $INSTANCES | grep "HEALTHY" | wc -l)
+          NUM_HEALTHY_INSTANCES=$(echo "$INSTANCES" | grep "HEALTHY" | wc -l)
 
-          echo "Instances: $INSTANCES"
+          echo "$INSTANCES"
 
           echo "Number of healthy instances: $NUM_HEALTHY_INSTANCES"
 
@@ -38,7 +38,7 @@ jobs:
           fi
 
           # otherwise, pick an instance at random
-          INSTANCE=$(echo $INSTANCES | tail -n +2 | shuf -n 1 | cut -d ' ' -f 1)
+          INSTANCE=$(echo "$INSTANCES" | tail -n +2 | shuf -n 1 | cut -d ' ' -f 1)
           echo "Restarting instance: $INSTANCE"
 
           # restart the instance
