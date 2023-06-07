@@ -15,77 +15,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  ipa:
-    runs-on: macos-latest
-    env:
-      APP_STORE_CONNECT_ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
-      APP_STORE_CONNECT_KEY_IDENTIFIER: PQPDACRFT7
-      APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-      CERTIFICATE_PRIVATE_KEY: ${{ secrets.APPLE_CERTIFICATE_PRIVATE_KEY }}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v3
-        with:
-          python-version: "3.10"
-      - run: pip install codemagic-cli-tools
-
-      - uses: paulhatch/semantic-version@v4
-        id: semantic
-        with:
-          tag_prefix: ""
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: "stable"
-          architecture: x64
-  
-      - run: |
-          keychain initialize
-          app-store-connect fetch-signing-files $(xcode-project detect-bundle-id) --type IOS_APP_STORE --create
-          keychain add-certificates
-          xcode-project use-profiles --export-options-plist=$RUNNER_TEMP/export_options.plist
-          flutter pub get
-          find . -name "Podfile" -execdir pod install \;
-          flutter build ipa --verbose --release --build-name=${{ steps.semantic.outputs.version }} --build-number=$(date +%Y%m%d%H%M) --export-options-plist=$RUNNER_TEMP/export_options.plist
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: release.ipa
-          path: build/ios/ipa/RealtimeChat.ipa
-          
-      - uses: softprops/action-gh-release@v1
-        if: github.event_name == 'release'
-        with:
-          files: |
-            build/ios/ipa/RealtimeChat.ipa
-          
-  upload:
-    needs: ipa
-    runs-on: macos-latest
-    env:
-      APP_STORE_CONNECT_ISSUER_ID: 863d4663-9217-4c36-9caa-e7b2201ec4f1
-      APP_STORE_CONNECT_KEY_IDENTIFIER: PQPDACRFT7
-      APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-    concurrency: 
-      group: ios-${{ github.ref }}
-    environment:
-      name: ios-${{ github.event_name == 'release' && 'app-store' || 'testflight' }}
-      url: https://apps.apple.com/us/app/realtimechat-for-twitch/id1567720948
-    steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: release.ipa
-
-      - uses: actions/setup-python@v3
-        with:
-          python-version: "3.10"
-      - run: pip install codemagic-cli-tools
-
-      - if: github.event_name != 'release'
-        run: app-store-connect publish --verbose --testflight --max-build-processing-wait 360 --whats-new "New features and minor bug fixes." --expire-build-submitted-for-review
-
-      - if: github.event_name == 'release'
-        run: app-store-connect publish --verbose --app-store --max-build-processing-wait 360 --whats-new "New features and minor bug fixes." --expire-build-submitted-for-review
+  ios:
+    uses: muxable/.github/.github/workflows/flutter-ios.yml@main
+    with:
+      app-id: 1567720948
+    secrets:
+      APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+      APPLE_CERTIFICATE_PRIVATE_KEY: ${{ secrets.APPLE_CERTIFICATE_PRIVATE_KEY }}
