@@ -17,8 +17,11 @@ on:
 jobs:
   ios:
     uses: muxable/.github/.github/workflows/flutter-ios.yml@main
+    concurrency:
+      group: ios-${{ github.ref }}
     with:
-      app-id: 1567720948
+      environment-name: ios-${{ github.event_name == 'release' && 'app-store' || 'testflight' }}
+      environment-url: https://appstoreconnect.apple.com/apps/1567720948/${{ github.event_name == 'release' && 'appstore' || 'testflight' }}
     secrets:
       APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
       APPLE_CERTIFICATE_PRIVATE_KEY: ${{ secrets.APPLE_CERTIFICATE_PRIVATE_KEY }}
