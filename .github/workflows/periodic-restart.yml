@@ -1,0 +1,42 @@
+name: Periodically Restart Agent
+
+# This action periodically restarts the agent.
+# Twitch likes to expire tokens if the agent runs for too long, so every couple of days we restart
+# a random instance to ensure there's always a fresh agent available.
+
+on:
+  schedule:
+    - cron: "0 12 * * 1,3,5" # every Monday, Wednesday, and Friday at noon UTC
+  workflow_dispatch:
+
+jobs:
+  restart:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: "projects/832669896677/locations/global/workloadIdentityPools/github-actions/providers/github-actions"
+          service_account: "github-action-356868763@rtchat-47692.iam.gserviceaccount.com"
+
+      - uses: "google-github-actions/setup-gcloud@v1"
+
+      - run: |
+          INSTANCES=$(gcloud compute instance-groups managed list-instances agent-small-us-west1 --region=us-west1)
+          NUM_HEALTHY_INSTANCES=$(echo $INSTANCES | grep "HEALTHY" | wc -l)
+
+          echo "Instances: $INSTANCES"
+
+          echo "Number of healthy instances: $NUM_HEALTHY_INSTANCES"
+
+          # if there are fewer than three healthy instances, don't do anything
+          if [ "$NUM_HEALTHY_INSTANCES" -lt 3 ]; then
+            echo "Not enough healthy instances, not restarting"
+            exit 0
+          fi
+
+          # otherwise, pick an instance at random
+          INSTANCE=$(echo $INSTANCES | tail -n +2 | shuf -n 1 | cut -d ' ' -f 1)
+          echo "Restarting instance: $INSTANCE"
+
+          # restart the instance
+          gcloud compute instance-groups managed recreate-instances agent-small-us-west1 --region=us-west1 --instances=$INSTANCE
