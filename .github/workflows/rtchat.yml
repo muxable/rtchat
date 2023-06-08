@@ -1,4 +1,4 @@
-name: Rtchat App
+name: RealtimeChat App
 
 on:
   push:
@@ -12,25 +12,21 @@ on:
 
 jobs:
   ios:
-    if: github.event_name != 'release' || endsWith(github.event.release.tag_name, '-rtchat')
     uses: muxable/.github/.github/workflows/flutter-ios.yml@main
     concurrency:
       group: ios-${{ github.ref }}
     with:
-      working-directory: rtchat
-      environment-name: rtchat-ios-${{ github.event_name == 'release' && 'app-store' || 'testflight' }}
+      environment-name: ios-${{ github.event_name == 'release' && 'app-store' || 'testflight' }}
       environment-url: https://appstoreconnect.apple.com/apps/1558493719/${{ github.event_name == 'release' && 'appstore' || 'testflight' }}
     secrets:
       APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
       APPLE_CERTIFICATE_PRIVATE_KEY: ${{ secrets.APPLE_CERTIFICATE_PRIVATE_KEY }}
   android:
-    if: github.event_name != 'release' || endsWith(github.event.release.tag_name, '-rtchat')
     uses: muxable/.github/.github/workflows/flutter-android.yml@main
     concurrency:
       group: android-${{ github.ref }}
     with:
-      working-directory: rtchat
-      environment-name: rtchat-android-${{ github.event_name == 'release' && 'production' || 'internal' }}
+      environment-name: android-${{ github.event_name == 'release' && 'production' || 'internal' }}
       environment-url: https://play.google.com/console/developers/8168733962061318282/app/4972805132160922137/tracks/${{ github.event_name == 'release' && 'production' || 'internal-testing' }}
     secrets:
       UPLOAD_KEYSTORE: ${{ secrets.UPLOAD_KEYSTORE }}
