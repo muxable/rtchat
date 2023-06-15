@@ -57,11 +57,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp();
   await MobileAds.instance.initialize();
+
   final prefs = await SharedPreferences.getInstance();
-  if (kDebugMode) {
-    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
+
+  if (!kDebugMode) {
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
   }
 
   // persistence isn't useful to us since we're using Firestore as an event
@@ -69,24 +76,20 @@ void main() async {
   FirebaseFirestore.instance.settings =
       const Settings(persistenceEnabled: false);
 
-  await runZonedGuarded(() async {
-    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarBrightness: Brightness.dark,
+    systemNavigationBarColor: Colors.transparent,
+  ));
 
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.transparent,
-    ));
+  AudioPlayer.global.setAudioContext(AudioContextConfig(
+    forceSpeaker: false,
+    duckAudio: false,
+    respectSilence: false,
+    stayAwake: true,
+  ).build());
 
-    AudioPlayer.global.setAudioContext(AudioContextConfig(
-      forceSpeaker: false,
-      duckAudio: false,
-      respectSilence: false,
-      stayAwake: true,
-    ).build());
-
-    runApp(App(prefs: prefs));
-  }, FirebaseCrashlytics.instance.recordError);
+  runApp(App(prefs: prefs));
 }
 
 class App extends StatefulWidget {
