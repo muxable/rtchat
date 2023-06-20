@@ -25,7 +25,7 @@ jobs:
       group: android-${{ github.ref }}
     with:
       environment-name: android-${{ github.event_name == 'release' && 'production' || 'internal' }}
-      environment-url: https://play.google.com/console/developers/8168733962061318282/app/4972805132160922137/tracks/${{ github.event_name == 'release' && 'production' || 'internal-testing' }}
+      environment-url: https://play.google.com/console/developers/8168733962061318282/app/4973471021781937122/tracks/${{ github.event_name == 'release' && 'production' || 'internal-testing' }}
     secrets:
       UPLOAD_KEYSTORE: ${{ secrets.UPLOAD_KEYSTORE }}
       UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
