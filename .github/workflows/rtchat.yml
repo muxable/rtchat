@@ -1,0 +1,32 @@
+name: RealtimeChat App
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [released]
+  workflow_dispatch:
+
+jobs:
+  ios:
+    uses: muxable/.github/.github/workflows/flutter-ios.yml@main
+    concurrency:
+      group: ios-${{ github.ref }}
+    with:
+      environment-name: ios-${{ github.event_name == 'release' && 'app-store' || 'testflight' }}
+      environment-url: https://appstoreconnect.apple.com/apps/1567720948/${{ github.event_name == 'release' && 'appstore' || 'testflight' }}
+    secrets:
+      APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+      APPLE_CERTIFICATE_PRIVATE_KEY: ${{ secrets.APPLE_CERTIFICATE_PRIVATE_KEY }}
+  android:
+    uses: muxable/.github/.github/workflows/flutter-android.yml@main
+    concurrency:
+      group: android-${{ github.ref }}
+    with:
+      environment-name: android-${{ github.event_name == 'release' && 'production' || 'internal' }}
+      environment-url: https://play.google.com/console/developers/8168733962061318282/app/4973471021781937122/tracks/${{ github.event_name == 'release' && 'production' || 'internal-testing' }}
+    secrets:
+      UPLOAD_KEYSTORE: ${{ secrets.UPLOAD_KEYSTORE }}
+      UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+      GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
