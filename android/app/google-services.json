@@ -23,6 +23,22 @@
           }
         },
         {
+          "client_id": "832669896677-nmk2hi81mnhdpar2eprn541af25uvvbj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rtirl.chat",
+            "certificate_hash": "6740849a2437953fcf3573b572585f6ee0124bcf"
+          }
+        },
+        {
+          "client_id": "832669896677-u72q0vtmu1sadd3msroqo47a5mj1ec5v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rtirl.chat",
+            "certificate_hash": "ab2109d770e1b4ad8a0d486735875208318f3699"
+          }
+        },
+        {
           "client_id": "832669896677-lcajc2980dn2ddc2adei7u0v3qdqln1p.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -43,12 +59,14 @@
               "client_id": "832669896677-30itsabb94b1i9qd2uoo601tp4d4tlks.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.rtirl.chat"
+                "bundle_id": "com.rtirl.chat",
+                "app_store_id": "1567720948"
               }
             }
           ]
         }
-      }
+      },
+      "admob_app_id": "ca-app-pub-2604378007164700~3747034398"
     }
   ],
   "configuration_version": "1"

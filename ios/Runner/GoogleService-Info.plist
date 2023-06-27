@@ -34,5 +34,7 @@
 	<string>1:832669896677:ios:59504132193d3b4e60290c</string>
 	<key>DATABASE_URL</key>
 	<string>https://rtchat-47692-default-rtdb.firebaseio.com</string>
+	<key>ADMOB_APP_ID</key>
+	<string>ca-app-pub-2604378007164700~3555462703</string>
 </dict>
 </plist>
