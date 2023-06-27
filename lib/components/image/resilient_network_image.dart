@@ -106,8 +106,8 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
   const ResilientNetworkImage(this.uri, {this.scale = 1.0});
 
   @override
-  ImageStreamCompleter loadBuffer(
-      ResilientNetworkImage key, DecoderBufferCallback decode) {
+  ImageStreamCompleter loadImage(
+      ResilientNetworkImage key, ImageDecoderCallback decode) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiFrameImageStreamCompleter(
       chunkEvents: chunkEvents.stream,
@@ -137,7 +137,7 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
   static Future<Codec> _loadAsync(
       ResilientNetworkImage key,
       StreamController<ImageChunkEvent> chunkEvents,
-      DecoderBufferCallback decode) async {
+      ImageDecoderCallback decode) async {
     final temp = await getTemporaryDirectory();
     final cacheFile = File('${temp.path}/${key.hash}');
     final etagFile = File('${temp.path}/${key.hash}.etag');
