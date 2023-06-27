@@ -21,8 +21,8 @@ class PlaceholderImage extends ImageProvider<PlaceholderImage> {
   const PlaceholderImage(this.uri, {this.scale = 1.0});
 
   @override
-  ImageStreamCompleter loadBuffer(
-      PlaceholderImage key, DecoderBufferCallback decode) {
+  ImageStreamCompleter loadImage(
+      PlaceholderImage key, ImageDecoderCallback decode) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiFrameImageStreamCompleter(
       chunkEvents: chunkEvents.stream,
@@ -48,7 +48,7 @@ class PlaceholderImage extends ImageProvider<PlaceholderImage> {
   static Future<Codec> _loadAsync(
       PlaceholderImage key,
       StreamController<ImageChunkEvent> chunkEvents,
-      DecoderBufferCallback decode) async {
+      ImageDecoderCallback decode) async {
     final temp = await getTemporaryDirectory();
     final cacheFile = File('${temp.path}/${key.hash}');
     final etagFile = File('${temp.path}/${key.hash}.etag');
