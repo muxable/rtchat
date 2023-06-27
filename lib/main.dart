@@ -72,11 +72,6 @@ void main() async {
     };
   }
 
-  // persistence isn't useful to us since we're using Firestore as an event
-  // stream and it uses memory/cache space.
-  FirebaseFirestore.instance.settings =
-      const Settings(persistenceEnabled: false);
-
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarBrightness: Brightness.dark,
