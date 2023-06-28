@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -70,6 +71,11 @@ void main() async {
       return true;
     };
   }
+
+  // persistence isn't useful to us since we're using Firestore as an event
+  // stream and it uses memory/cache space.
+  FirebaseFirestore.instance.settings =
+      const Settings(persistenceEnabled: false);
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
