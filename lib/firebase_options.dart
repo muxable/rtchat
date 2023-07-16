@@ -65,8 +65,10 @@ class DefaultFirebaseOptions {
     projectId: 'rtchat-47692',
     databaseURL: 'https://rtchat-47692-default-rtdb.firebaseio.com',
     storageBucket: 'rtchat-47692.appspot.com',
-    androidClientId: '832669896677-bsjr7u9hpn4m7fg2nl0mgb6uvrjudct1.apps.googleusercontent.com',
-    iosClientId: '832669896677-30itsabb94b1i9qd2uoo601tp4d4tlks.apps.googleusercontent.com',
+    androidClientId:
+        '832669896677-bsjr7u9hpn4m7fg2nl0mgb6uvrjudct1.apps.googleusercontent.com',
+    iosClientId:
+        '832669896677-30itsabb94b1i9qd2uoo601tp4d4tlks.apps.googleusercontent.com',
     iosBundleId: 'com.rtirl.chat',
   );
 }
