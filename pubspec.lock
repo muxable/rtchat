@@ -894,10 +894,10 @@ packages:
     dependency: "direct main"
     description:
       name: styled_text
-      sha256: f72928d1ebe8cb149e3b34a689cb1ddca696b808187cf40ac3a0bd183dff379c
+      sha256: fd624172cf629751b4f171dd0ecf9acf02a06df3f8a81bb56c0caa4f1df706c3
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.0"
+    version: "8.1.0"
   synchronized:
     dependency: transitive
     description:
