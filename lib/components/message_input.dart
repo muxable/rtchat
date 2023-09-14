@@ -11,6 +11,7 @@ import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/commands.dart';
+import 'package:rtchat/models/user.dart';
 
 class MessageInputWidget extends StatefulWidget {
   final Channel channel;
@@ -83,13 +84,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     await Future.wait([
       () async {
         try {
-          final error =
-              await ActionsAdapter.instance.send(widget.channel, value);
-          if (error != null) {
-            messenger.showSnackBar(SnackBar(
-              content: Text(error),
-            ));
-          }
+          final userModel = Provider.of<UserModel>(context, listen: false);
+          await userModel.send(widget.channel, value);
         } catch (e) {
           messenger.showSnackBar(SnackBar(
             content: Text(e.toString()),

@@ -132,10 +132,12 @@ class _DrawerHeader extends StatelessWidget {
                                           userChannel == model.activeChannel &&
                                                   userChannel != null
                                               ? (channel) {
-                                                  ActionsAdapter.instance.send(
-                                                    userChannel,
-                                                    "/raid ${channel.displayName}",
-                                                  );
+                                                  final userModel =
+                                                      Provider.of<UserModel>(
+                                                          context,
+                                                          listen: false);
+                                                  userModel.send(userChannel,
+                                                      "/raid ${channel.displayName}");
                                                 }
                                               : null,
                                       controller: controller,
