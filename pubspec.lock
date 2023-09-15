@@ -447,10 +447,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_markdown
-      sha256: d4a1cb250c4e059586af0235f32e02882860a508e189b61f2b31b8810c1e1330
+      sha256: a10979814c5f4ddbe2b6143fba25d927599e21e3ba65b3862995960606fae78f
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.17+2"
+    version: "0.6.17+3"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -460,10 +460,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_tts
-      sha256: "00a7af85ba2b53847028efc175029764240ab980b984eb0eae8386e2c3f7c460"
+      sha256: "23d47e1335c632228b80d9693e2494a834393fff5893b66e8ae494dcce4e9867"
       url: "https://pub.dev"
     source: hosted
-    version: "3.8.2"
+    version: "3.8.3"
   flutter_web_auth:
     dependency: "direct main"
     description:
@@ -577,10 +577,10 @@ packages:
     dependency: "direct main"
     description:
       name: just_audio
-      sha256: "890cd0fc41a1a4530c171e375a2a3fb6a09d84e9d508c5195f40bcff54330327"
+      sha256: "5ed0cd723e17dfd8cd4b0253726221e67f6546841ea4553635cf895061fc335b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.34"
+    version: "0.9.35"
   just_audio_platform_interface:
     dependency: transitive
     description:
