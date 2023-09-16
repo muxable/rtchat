@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/components/drawer/quicklinks_listview.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
+import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
@@ -131,12 +132,10 @@ class _DrawerHeader extends StatelessWidget {
                                           userChannel == model.activeChannel &&
                                                   userChannel != null
                                               ? (channel) {
-                                                  final userModel =
-                                                      Provider.of<UserModel>(
-                                                          context,
-                                                          listen: false);
-                                                  userModel.send(userChannel,
-                                                      "/raid ${channel.displayName}");
+                                                  ActionsAdapter.instance.send(
+                                                    userChannel,
+                                                    "/raid ${channel.displayName}",
+                                                  );
                                                 }
                                               : null,
                                       controller: controller,
