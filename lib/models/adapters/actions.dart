@@ -13,6 +13,15 @@ class ActionsAdapter {
       functions: FirebaseFunctions.instance);
   static ActionsAdapter? _instance;
 
+  Future<void> send(Channel channel, String message) async {
+    final call = functions.httpsCallable('send');
+    await call({
+      "provider": channel.provider,
+      "channelId": channel.channelId,
+      "message": message,
+    });
+  }
+
   Future<void> ban(Channel channel, String username) async {
     final call = functions.httpsCallable('ban');
     await call({
@@ -49,6 +58,19 @@ class ActionsAdapter {
       "provider": channel.provider,
       "channelId": channel.channelId,
       "messageId": messageId,
+    });
+  }
+
+  Future<void> raid(Channel fromChannel, Channel toChannel) async {
+    if (fromChannel.provider != toChannel.provider) {
+      throw ArgumentError(
+          "Cannot raid between channels of different providers");
+    }
+    final call = functions.httpsCallable('raid');
+    await call({
+      "provider": fromChannel.provider,
+      "fromChannelId": fromChannel.channelId,
+      "toChannelId": toChannel.channelId,
     });
   }
 }
