@@ -1072,7 +1072,7 @@ SPEC CHECKSUMS:
   FirebaseSessions: ee59a7811bef4c15f65ef6472f3210faa293f9c8
   FirebaseSharedSwift: 34b11d9e675e14ee55e160cb7645bba30a192d14
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  flutter_custom_tabs: 039f4c6f9e4007558d8f967747c17cf7d2b2b10f
+  flutter_custom_tabs: f8aa300a93d869c0d117c8709a9af39cbd011adc
   flutter_keyboard_visibility: 0339d06371254c3eb25eeb90ba8d17dca8f9c069
   flutter_tts: 0f492aab6accf87059b72354fcb4ba934304771d
   flutter_web_auth: c25208760459cec375a3c39f6a8759165ca0fa4d
