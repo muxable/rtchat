@@ -128,16 +128,19 @@ class _DrawerHeader extends StatelessWidget {
                                       onChannelSelect: (channel) {
                                         model.activeChannel = channel;
                                       },
-                                      onRaid:
-                                          userChannel == model.activeChannel &&
-                                                  userChannel != null
-                                              ? (channel) {
-                                                  ActionsAdapter.instance.send(
-                                                    userChannel,
-                                                    "/raid ${channel.displayName}",
-                                                  );
-                                                }
-                                              : null,
+                                      onRaid: userChannel ==
+                                                  model.activeChannel &&
+                                              userChannel != null
+                                          ? (channel) {
+                                              final activeChannel =
+                                                  model.activeChannel;
+                                              if (activeChannel == null) {
+                                                return;
+                                              }
+                                              ActionsAdapter.instance
+                                                  .raid(activeChannel, channel);
+                                            }
+                                          : null,
                                       controller: controller,
                                     );
                                   },

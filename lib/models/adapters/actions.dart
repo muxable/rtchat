@@ -71,4 +71,17 @@ class ActionsAdapter {
       "messageId": messageId,
     });
   }
+
+  Future<void> raid(Channel fromChannel, Channel toChannel) async {
+    if (fromChannel.provider != toChannel.provider) {
+      throw ArgumentError(
+          "Cannot raid between channels of different providers");
+    }
+    final call = functions.httpsCallable('raid');
+    await call({
+      "provider": fromChannel.provider,
+      "fromChannelId": fromChannel.channelId,
+      "toChannelId": toChannel.channelId,
+    });
+  }
 }

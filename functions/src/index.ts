@@ -11,11 +11,12 @@ import { getBadges } from "./badges";
 import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
 import { getEmotes } from "./emotes";
 import { eventsub } from "./eventsub";
-import { getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
 import { getVoices, synthesize } from "./tts";
 import * as twitch from "./twitch";
+import { WebSocket } from "ws";
 
 async function write(
   channelId: string,
@@ -60,34 +61,26 @@ export const send = functions.https.onCall(async (data, context) => {
       if (!targetChannel) {
         return;
       }
-      const ref = data?.id
-        ? admin.firestore().collection("actions").doc(String(data?.id))
-        : admin.firestore().collection("actions").doc(); // optional idempotency key
-      const senderChannelId = await twitch.getChannelId(
-        context.auth.uid,
-        "twitch"
+      const token = await getAccessToken(context.auth.uid, provider);
+      if (!token) {
+        throw new functions.https.HttpsError("internal", "auth error");
+      }
+      const userChannel = await twitch.getTwitchLogin(
+        await twitch.getChannelId(context.auth.uid, "twitch")
       );
-      await admin.firestore().runTransaction(async (transaction) => {
-        const doc = await transaction.get(ref);
-        if (doc.exists) {
-          return;
-        }
-        transaction.set(ref, {
-          channelId: senderChannelId,
-          targetChannel,
-          message,
-          sentAt: null,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+
+      const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
+
+      // wait for connect
+      await new Promise<void>((resolve) => {
+        ws.on("open", () => resolve());
       });
-      // wait for the message to be sent.
-      return await new Promise<string | null>((resolve) =>
-        ref.onSnapshot((snapshot) => {
-          if (snapshot.get("isComplete")) {
-            resolve(snapshot.get("error") || null);
-          }
-        })
-      );
+
+      ws.send("CAP REQ :twitch.tv/commands");
+      ws.send(`PASS oauth:${token}`);
+      ws.send(`NICK ${userChannel}`);
+      ws.send(`PRIVMSG #${targetChannel} :${message}`);
+      ws.close();
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
