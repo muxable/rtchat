@@ -225,6 +225,26 @@ export const clear = functions.https.onCall(async (data, context) => {
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
+export const raid = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("permission-denied", "missing auth");
+  }
+  const provider = data?.provider;
+  const fromChannelId = data?.fromChannelId;
+  const toChannelId = data?.toChannelId;
+  if (!provider || !fromChannelId || !toChannelId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, fromChannelId, toChannelId"
+    );
+  }
+
+  switch (provider) {
+    case "twitch":
+      return await twitch.raid(context.auth.uid, fromChannelId, toChannelId);
+  }
+});
+
 export const getStatistics = functions.https.onCall(async (data, context) => {
   const provider = data?.provider;
   const channelId = data?.channelId;
