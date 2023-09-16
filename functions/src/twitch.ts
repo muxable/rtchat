@@ -166,3 +166,23 @@ export async function deleteMessage(
   );
   return await response.json();
 }
+
+export async function raid(
+  uid: string,
+  fromBroadcasterId: string,
+  toBroadcasterId: string
+) {
+  const profile = await admin.firestore().collection("profiles").doc(uid).get();
+  if (!profile.exists) {
+    return;
+  }
+
+  const response = await fetch(
+    `https://api.twitch.tv/helix/raids?from_broadcaster_id=${fromBroadcasterId}&to_broadcaster_id=${toBroadcasterId}`,
+    {
+      method: "POST",
+      headers: await getHeaders(uid),
+    }
+  );
+  return await response.json();
+}
