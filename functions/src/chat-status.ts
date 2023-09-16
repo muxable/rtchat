@@ -259,6 +259,7 @@ export async function twitchGetChatters(
       !mods.some((m) => m.user_id == c.user_id) &&
       !vips.some((v) => v.user_id == c.user_id)
   );
+  viewers.sort((a, b) => a.user_name.localeCompare(b.user_name));
   // for backwards compatibility, return the list of usernames as strings.
   // and return the full profile as <key>Data.
   return {
