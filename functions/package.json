@@ -20,7 +20,8 @@
     "express-session": "^1.17.3",
     "firebase-admin": "^11.5.0",
     "firebase-functions": "^3.23.0",
-    "simple-oauth2": "^4.3.0"
+    "simple-oauth2": "^4.3.0",
+    "ws": "^8.14.1"
   },
   "devDependencies": {
     "@types/express-session": "^1.17.5",
