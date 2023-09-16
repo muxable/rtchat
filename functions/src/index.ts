@@ -271,7 +271,7 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
       );
       const viewerJson = (await viewerResponse.json()) as any;
       const followerResponse = await fetch(
-        `https://api.twitch.tv/helix/users/follows?to_id=${channelId}&first=1`,
+        `https://api.twitch.tv/helix/channels/followers?broadcaster_id=${channelId}&first=1`,
         { headers }
       );
       const followerJson = (await followerResponse.json()) as any;

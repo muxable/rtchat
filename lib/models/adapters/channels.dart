@@ -51,4 +51,18 @@ class ChannelsAdapter {
       }
     });
   }
+
+  /// Returns the Twitch login for a given Twitch user ID. This is useful for
+  /// IRC which uses the login instead of the display name.
+  Future<String?> getLogin(Channel channel) async {
+    final doc = await db.collection("channels").doc(channel.toString()).get();
+    if (!doc.exists) {
+      return null;
+    }
+    final data = doc.data();
+    if (data == null) {
+      return null;
+    }
+    return data["login"];
+  }
 }
