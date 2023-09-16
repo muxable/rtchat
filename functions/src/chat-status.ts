@@ -123,7 +123,7 @@ async function twitchLoginsToUserIds(token: AccessToken, logins: string[]) {
 
 async function twitchGetFollowerCount(token: AccessToken, channelId: string) {
   const response = await fetch(
-    `https://api.twitch.tv/helix/users/follows?to_id=${channelId}&first=1`,
+    `https://api.twitch.tv/helix/channels/followers?broadcaster_id=${channelId}&first=1`,
     {
       headers: {
         "Client-ID": TWITCH_CLIENT_ID,

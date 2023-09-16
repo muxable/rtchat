@@ -3,10 +3,10 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
-import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
+import 'package:rtchat/models/user.dart';
 
 class TwitchRaidEventWidget extends StatelessWidget {
   final TwitchRaidEventModel model;
@@ -49,8 +49,9 @@ class TwitchRaidEventWidget extends StatelessWidget {
                       color:
                           Theme.of(context).buttonTheme.colorScheme?.primary))),
               onTap: () {
-                ActionsAdapter.instance
-                    .send(channel, "/shoutout ${model.from.login}");
+                final userModel =
+                    Provider.of<UserModel>(context, listen: false);
+                userModel.send(channel, "/shoutout ${model.from.login}");
               });
         }),
       ]),
