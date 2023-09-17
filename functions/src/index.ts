@@ -87,6 +87,56 @@ export const send = functions.https.onCall(async (data, context) => {
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
+export const sendDoc = functions.firestore
+  .document("actions/{docId}")
+  .onCreate(async (snapshot, context) => {
+    const data = snapshot.data();
+    const userId = data?.userId;
+    const provider = data?.provider;
+    const channelId = data?.channelId;
+    const message = data?.message;
+    if (!userId || !provider || !channelId || !message) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "missing provider, channelId, message"
+      );
+    }
+
+    switch (provider) {
+      case "twitch":
+        const targetChannel = await twitch.getTwitchLogin(channelId);
+        if (!targetChannel) {
+          return;
+        }
+        const token = await getAccessToken(userId, provider);
+        if (!token) {
+          throw new functions.https.HttpsError("internal", "auth error");
+        }
+        const userChannel = await twitch.getTwitchLogin(
+          await twitch.getChannelId(userId, "twitch")
+        );
+
+        const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
+
+        // wait for connect
+        await new Promise<void>((resolve) => {
+          ws.on("open", () => resolve());
+        });
+
+        ws.send("CAP REQ :twitch.tv/commands");
+        ws.send(`PASS oauth:${token}`);
+        ws.send(`NICK ${userChannel}`);
+        ws.send(`PRIVMSG #${targetChannel} :${message}`);
+        ws.close();
+
+        await snapshot.ref.update({
+          sentAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        return;
+    }
+  });
+
 export const ban = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("permission-denied", "missing auth");
