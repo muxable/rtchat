@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
@@ -18,8 +17,6 @@ import (
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 var loggerConfig = &zap.Config{
@@ -60,15 +57,15 @@ var loggerConfig = &zap.Config{
 }
 
 type KeyedMutex struct {
-    mutexes sync.Map // Zero value is empty and ready for use
+	mutexes sync.Map // Zero value is empty and ready for use
 }
 
 func (m *KeyedMutex) Lock(key string) func() {
-    value, _ := m.mutexes.LoadOrStore(key, &sync.Mutex{})
-    mtx := value.(*sync.Mutex)
-    mtx.Lock()
+	value, _ := m.mutexes.LoadOrStore(key, &sync.Mutex{})
+	mtx := value.(*sync.Mutex)
+	mtx.Lock()
 
-    return func() { mtx.Unlock() }
+	return func() { mtx.Unlock() }
 }
 
 func main() {
@@ -109,7 +106,6 @@ func main() {
 
 	// create a new RequestLock
 	subscribeRequests := client.Collection("assignments").Snapshots(context.Background())
-	sendRequests := client.Collection("actions").Where("sentAt", "==", nil).Snapshots(context.Background())
 
 	clients := map[string]io.Closer{}
 	locks := &KeyedMutex{}
@@ -129,7 +125,7 @@ func main() {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
-		w.Write([]byte((72 * time.Hour - time.Since(start)).String()))
+		w.Write([]byte((72*time.Hour - time.Since(start)).String()))
 	}))
 
 	go func() {
@@ -140,91 +136,6 @@ func main() {
 		}
 		if err := http.ListenAndServe(":"+port, nil); err != nil {
 			zap.L().Fatal("failed to start http server", zap.Error(err))
-		}
-	}()
-
-	go func() {
-		for {
-			snapshot, err := sendRequests.Next()
-			if err != nil {
-				zap.L().Error("failed to get send requests", zap.Error(err))
-				return
-			}
-			for _, change := range snapshot.Changes {
-				if change.Kind == firestore.DocumentAdded {
-					var action struct {
-						ChannelId      string
-						Message        string
-						TargetChannel  string
-						ReplyMessageId string
-						CreatedAt	  time.Time
-					}
-					if err := change.Doc.DataTo(&action); err != nil {
-						zap.L().Error("failed to unmarshal action", zap.Error(err))
-						continue
-					}
-					if time.Since(action.CreatedAt) > 5 * time.Minute {
-						zap.L().Warn("action is too old, skipping", zap.Any("action", action))
-						continue
-					}
-					zap.L().Info("new action", zap.Any("action", change.Doc.Data()))
-
-					// get the username from the channel id
-					channel, err := client.Collection("channels").Doc(action.ChannelId).Get(context.Background())
-					if err != nil {
-						zap.L().Error("failed to get channel", zap.Error(err))
-						continue
-					}
-					// TODO: this only works for twitch. we need to support other platforms
-					key := fmt.Sprintf("twitch:%s", channel.Data()["login"])
-
-					unlock := locks.Lock(key)
-					client, ok := clients[key]
-					if !ok {
-						zap.L().Warn("no client found for channel", zap.String("channelId", key))
-						unlock()
-						continue
-					}
-
-					if _, err := change.Doc.Ref.Update(context.Background(), []firestore.Update{
-						{Path: "sentAt", Value: firestore.ServerTimestamp},
-					}, firestore.LastUpdateTime(change.Doc.UpdateTime)); err != nil {
-						if status.Code(err) != codes.FailedPrecondition {
-							zap.L().Error("failed to update action", zap.Error(err))
-						}
-						unlock()
-						continue
-					}
-
-					zap.L().Info("sending message", zap.String("channelId", key), zap.Any("message", change.Doc.Data()), zap.String("targetChannel", action.TargetChannel))
-					switch client := client.(type) {
-					case *handler.AuthenticatedTwitchClient:
-						if action.ReplyMessageId != "" {
-							client.Reply(action.TargetChannel, action.ReplyMessageId, action.Message)
-						} else {
-							client.Say(action.TargetChannel, action.Message)
-						}
-					default:
-						zap.L().Error("unknown client type", zap.String("channelId", action.ChannelId))
-						// revert the action
-						if _, err := change.Doc.Ref.Update(context.Background(), []firestore.Update{
-							{Path: "sentAt", Value: nil},
-						}); err != nil {
-							zap.L().Error("failed to revert action", zap.Error(err))
-						}
-						unlock()
-						continue
-					}
-
-					// set isComplete to true
-					if _, err := change.Doc.Ref.Update(context.Background(), []firestore.Update{
-						{Path: "isComplete", Value: true},
-					}); err != nil {
-						zap.L().Error("failed to update action", zap.Error(err))
-					}
-					unlock()
-				}
-			}
 		}
 	}()
 
