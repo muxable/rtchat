@@ -81,6 +81,7 @@ export const send = functions.https.onCall(async (data, context) => {
       ws.send(`NICK ${userChannel}`);
       ws.send(`PRIVMSG #${targetChannel} :${message}`);
       ws.close();
+      return;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
