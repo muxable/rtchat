@@ -17,6 +17,12 @@ import io.flutter.plugin.common.MethodChannel.Result
 
 class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+        val ttsPlugin = TextToSpeechPlugin(this)
+        val ttsChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "tts_plugin"
+        )
+        ttsChannel.setMethodCallHandler(ttsPlugin)
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "com.rtirl.chat/audio"
@@ -71,7 +77,7 @@ class MainActivity : FlutterActivity() {
 }
 
 
-class TTSPlugin(context: Context) : MethodCallHandler {
+class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     private val context: Context = context
     private val tts: TextToSpeech = TextToSpeech(context) {}
 
