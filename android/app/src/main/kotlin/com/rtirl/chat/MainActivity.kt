@@ -22,7 +22,21 @@ class MainActivity : FlutterActivity() {
             flutterEngine.dartExecutor.binaryMessenger,
             "tts_plugin"
         )
-        ttsChannel.setMethodCallHandler(ttsPlugin)
+        // ttsChannel.setMethodCallHandler(ttsPlugin)
+        ttsChannel.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "speak" -> {
+                    val text = call.argument<String>("text")
+                    if (!text.isNullOrBlank()) {
+                        ttsPlugin.speak(text)
+                        result.success(true)
+                    } else {
+                        result.error("INVALID_ARGUMENT", "Text is empty or null", null)
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "com.rtirl.chat/audio"
@@ -82,16 +96,23 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     private val tts: TextToSpeech = TextToSpeech(context) {}
 
     override fun onMethodCall(call: MethodCall, result: Result) {
-        if (call.method == "speak") {
-            val text = call.argument<String>("text")
-            if (!text.isNullOrBlank()) {
-                tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
-                result.success(true)
-            } else {
-                result.error("INVALID_ARGUMENT", "Text is empty or null", null)
+        when (call.method) {
+            "speak" -> {
+                val text = call.argument<String>("text")
+                if (!text.isNullOrBlank()) {
+                    tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+                    result.success(true)
+                } else {
+                    result.error("INVALID_ARGUMENT", "Text is empty or null", null)
+                }
             }
-        } else {
-            result.notImplemented()
+            else -> result.notImplemented()
+        }
+    }
+
+    fun speak(text: String) {
+        if (!text.isNullOrBlank()) {
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
         }
     }
 }
