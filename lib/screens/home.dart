@@ -18,6 +18,7 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+// import 'package:rtchat/tts_plugin.dart';
 import 'package:wakelock/wakelock.dart';
 import 'dart:math' as math;
 
@@ -237,6 +238,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             : Icons.voice_over_off),
                         tooltip: AppLocalizations.of(context)!.textToSpeech,
                         onPressed: () {
+                          // TODO: need to figure out how to actually
+                          // send the text to this plugin, but manual is working
+                          // TextToSpeechPlugin.speak("Testing this code!");
                           ttsModel.enabled = !ttsModel.enabled;
                         });
                   }),
