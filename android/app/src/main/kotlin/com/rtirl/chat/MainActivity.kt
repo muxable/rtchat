@@ -22,21 +22,7 @@ class MainActivity : FlutterActivity() {
             flutterEngine.dartExecutor.binaryMessenger,
             "tts_plugin"
         )
-        // ttsChannel.setMethodCallHandler(ttsPlugin)
-        ttsChannel.setMethodCallHandler { call, result ->
-            when (call.method) {
-                "speak" -> {
-                    val text = call.argument<String>("text")
-                    if (!text.isNullOrBlank()) {
-                        ttsPlugin.speak(text)
-                        result.success(true)
-                    } else {
-                        result.error("INVALID_ARGUMENT", "Text is empty or null", null)
-                    }
-                }
-                else -> result.notImplemented()
-            }
-        }
+        ttsChannel.setMethodCallHandler(ttsPlugin)
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "com.rtirl.chat/audio"
