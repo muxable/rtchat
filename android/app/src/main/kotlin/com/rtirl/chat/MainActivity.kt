@@ -101,4 +101,8 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
         }
     }
+
+    fun getLanguages() {
+        
+    }
 }
