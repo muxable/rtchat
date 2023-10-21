@@ -21,8 +21,8 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         val ttsPlugin = TextToSpeechPlugin(this)
         val ttsChannel = MethodChannel(
-                flutterEngine.dartExecutor.binaryMessenger,
-                "tts_plugin"
+            flutterEngine.dartExecutor.binaryMessenger,
+            "tts_plugin"
         )
         ttsChannel.setMethodCallHandler(ttsPlugin)
         MethodChannel(
@@ -78,6 +78,7 @@ class MainActivity : FlutterActivity() {
     }
 }
 
+
 class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     private val context: Context = context
     private val tts: TextToSpeech = TextToSpeech(context) {}
@@ -93,11 +94,13 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
                     result.error("INVALID_ARGUMENT", "Text is empty or null", null)
                 }
             }
+
             // TODO: this is working but will comment it out for now
 //            "getLanguages" -> {
 //                getLanguages()
 //                result.success(true)
 //            }
+
             else -> result.notImplemented()
         }
     }

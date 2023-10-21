@@ -11,7 +11,6 @@ class TextToSpeechPlugin {
       // print('Error in TTSPlugin: $e');
     }
   }
-
   static Future<void> getLanguages() async {
     try {
       await _channel.invokeMethod('getLanguages');
