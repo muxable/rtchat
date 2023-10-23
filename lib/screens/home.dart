@@ -242,6 +242,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           // send the text to this plugin, but manual is working
                           // TextToSpeechPlugin.speak("Testing this code!");
                           // TextToSpeechPlugin.getLanguages();
+                          // Map<String, String> languages =
+                          //     await TextToSpeechPlugin.getLanguages();
+                          // print(languages);
                           ttsModel.enabled = !ttsModel.enabled;
                         });
                   }),
