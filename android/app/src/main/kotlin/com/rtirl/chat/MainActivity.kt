@@ -24,15 +24,15 @@ class MainActivity : FlutterActivity() {
         )
         ttsChannel.setMethodCallHandler(ttsPlugin)
         MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            "com.rtirl.chat/audio"
+                flutterEngine.dartExecutor.binaryMessenger,
+                "com.rtirl.chat/audio"
         ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "set" -> {
                     val intent = Intent(this, AudioService::class.java)
                     intent.putStringArrayListExtra(
-                        "urls",
-                        ArrayList(call.argument<List<String>>("urls") ?: listOf())
+                            "urls",
+                            ArrayList(call.argument<List<String>>("urls") ?: listOf())
                     )
                     intent.action = AudioService.ACTION_START_SERVICE
                     startService(intent)
@@ -48,24 +48,24 @@ class MainActivity : FlutterActivity() {
                 }
                 "hasPermission" -> {
                     result.success(
-                        Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
-                                Settings.canDrawOverlays(this)
+                            Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
+                                    Settings.canDrawOverlays(this)
                     )
                 }
                 "requestPermission" -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                        !Settings.canDrawOverlays(this)
+                            !Settings.canDrawOverlays(this)
                     ) {
                         startActivityForResult(
-                            Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:$packageName")
-                            ), 8675309
+                                Intent(
+                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                        Uri.parse("package:$packageName")
+                                ), 8675309
                         )
                     }
                     result.success(
-                        Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
-                                Settings.canDrawOverlays(this)
+                            Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
+                                    Settings.canDrawOverlays(this)
                     )
                 }
                 else -> result.notImplemented()
@@ -92,6 +92,10 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
                     result.error("INVALID_ARGUMENT", "Text is empty or null", null)
                 }
             }
+            "getLanguages" -> {
+                val languageMap = getLanguages()
+                result.success(languageMap)
+            }
             else -> result.notImplemented()
         }
     }
@@ -100,5 +104,16 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
         if (!text.isNullOrBlank()) {
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
         }
+    }
+
+    fun getLanguages(): Map<String, String> {
+        val languageMap = mutableMapOf<String, String>()
+        val locales = tts.availableLanguages
+        for (locale in locales) {
+            val languageCode = locale.language
+            val languageName = locale.displayName
+            languageMap[languageCode] = languageName
+        }
+        return languageMap
     }
 }
