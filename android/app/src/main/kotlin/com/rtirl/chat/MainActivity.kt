@@ -14,8 +14,6 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 
-// import android.util.Log
-
 
 class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
@@ -112,18 +110,15 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     }
 
     fun getLanguages() {
-        Log.d("TTS_PLUGIN", "IN HERE!") // Log the language names
-        val languageList = mutableListOf<String>()
-
-        // Retrieve the list of available languages.
+        val languageMap = mutableMapOf<String, String>()
         val locales = tts.availableLanguages
-
-        // Extract the language names from the available locales.
         for (locale in locales) {
+            val languageCode = locale.language
             val languageName = locale.displayName
-            languageList.add(languageName)
-            Log.d("TTS_PLUGIN", "Available language: $languageName") // Log the language names
+            languageMap[languageCode] = languageName
         }
+
+        return languageMap
     }
 
 }
