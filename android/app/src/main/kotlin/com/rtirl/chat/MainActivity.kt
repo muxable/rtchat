@@ -92,13 +92,10 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
                     result.error("INVALID_ARGUMENT", "Text is empty or null", null)
                 }
             }
-
-            // TODO: this is working but will comment it out for now
-//            "getLanguages" -> {
-//                getLanguages()
-//                result.success(true)
-//            }
-
+            "getLanguages" -> {
+                val languageMap = getLanguages()
+                result.success(languageMap)
+            }
             else -> result.notImplemented()
         }
     }
@@ -109,7 +106,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
         }
     }
 
-    fun getLanguages() {
+    fun getLanguages(): Map<String, String> {
         val languageMap = mutableMapOf<String, String>()
         val locales = tts.availableLanguages
         for (locale in locales) {
@@ -117,8 +114,6 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             val languageName = locale.displayName
             languageMap[languageCode] = languageName
         }
-
         return languageMap
     }
-
 }
