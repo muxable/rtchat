@@ -11,12 +11,17 @@ class TextToSpeechPlugin {
       // print('Error in TTSPlugin: $e');
     }
   }
-  static Future<void> getLanguages() async {
+
+  static Future<Map<String, String>> getLanguages() async {
     try {
-      await _channel.invokeMethod('getLanguages');
+      final Map<dynamic, dynamic> languageMap =
+          await _channel.invokeMethod('getLanguages');
+      // Convert the map from platform-specific types to Dart types
+      return Map<String, String>.from(languageMap);
     } catch (e) {
-      // TODO Handle the error?
-      // print('Error in TTSPlugin: $e');
+      // Handle the error, e.g., log or throw an exception
+      // print('Error in TextToSpeechPlugin.getLanguages: $e');
+      return <String, String>{};
     }
   }
 }
