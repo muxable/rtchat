@@ -102,7 +102,26 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
 
     fun speak(text: String) {
         if (!text.isNullOrBlank()) {
-            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+            val utteranceId = "utteranceIdSpeak"
+            tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(utteranceId: String) {
+                    // Speech has started
+                }
+
+                override fun onDone(utteranceId: String) {
+                    // Speech has completed maybe we can return something here? 
+                }
+
+                override fun onError(utteranceId: String) {
+                    // Speech encountered an error
+                    // Handle errors as needed
+                }
+            })
+
+            // Speak with the specified utteranceId
+            val params = HashMap<String, String>()
+            params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = utteranceId
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, params)
         }
     }
 
