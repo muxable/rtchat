@@ -2,6 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/components/drawer/quicklinks_listview.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
@@ -9,7 +10,9 @@ import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/qr_code.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/screens/settings/qr.dart';
 import 'package:rtchat/urls.dart';
 
 class _DrawerHeader extends StatelessWidget {
@@ -48,18 +51,46 @@ class _DrawerHeader extends StatelessWidget {
                               }
                               Navigator.of(context).pop();
                             },
+                            onLongPress: () {
+                              showGeneralDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  barrierLabel: 'Dialog',
+                                  transitionDuration:
+                                      const Duration(milliseconds: 400),
+                                  pageBuilder: ((context, animation,
+                                      secondaryAnimation) {
+                                    return Consumer<QRModel>(
+                                      builder: (context, qrModel, child) {
+                                        return Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            SizedBox(
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.5,
+                                                child: const QRDisplay())
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  }));
+                            },
                             child: Row(children: [
                               if (userChannel != null)
                                 const SizedBox(width: 16),
                               if (userChannel != null)
                                 ClipRRect(
-                                    borderRadius: BorderRadius.circular(24),
-                                    child: CrossFadeImage(
-                                        placeholder: userChannel
-                                            .profilePicture.placeholderImage,
-                                        image: userChannel.profilePicture,
-                                        height: 36,
-                                        width: 36)),
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: CrossFadeImage(
+                                      placeholder: userChannel
+                                          .profilePicture.placeholderImage,
+                                      image: userChannel.profilePicture,
+                                      height: 36,
+                                      width: 36),
+                                ),
                               const SizedBox(width: 16),
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,

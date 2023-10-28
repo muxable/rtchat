@@ -313,6 +313,14 @@
   "@eventsSubtitle": {
     "description": "Subtitle for the events page"
   },
+  "qr": "QR",
+  "@qr": {
+    "description": "Header for the Qr Page"
+  },
+  "qrSubtitle": "Configure QR",
+  "@qrSubtitle": {
+      "description": "Subtitle for the QR page"
+  }, 
   "thirdPartyServices": "Third-party services",
   "@thirdPartyServices": {
     "description": "Header for the third-party services page"

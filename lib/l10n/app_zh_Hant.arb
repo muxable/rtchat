@@ -68,6 +68,8 @@
   "textToSpeechSubtitle": "變更文字轉語音設定",
   "events": "事件",
   "eventsSubtitle": "設定 Twitch 事件",
+  "qr": "二维码",
+  "qrSubtitle": "設定  二维码",
   "thirdPartyServices": "第三方服務",
   "thirdPartyServicesSubtitle": "連結至第三方服務",
   "followingEvent": "<bold>{displayName}</bold> 追隨了您",

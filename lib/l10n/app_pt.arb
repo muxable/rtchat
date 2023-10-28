@@ -68,6 +68,8 @@
   "textToSpeechSubtitle": "Alterar configurações de text to speech",
   "events": "Eventos",
   "eventsSubtitle": "Configurar eventos do Twitch",
+  "qr": "QR",
+  "qrSubtitle": "Configurar QR",
   "thirdPartyServices": "Serviços terceirizados",
   "thirdPartyServicesSubtitle": "Conecte-se a um serviço de terceiros",
   "followingEvent": "<bold>{displayName}</bold> te seguiu",

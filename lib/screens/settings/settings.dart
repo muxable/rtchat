@@ -75,6 +75,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           ListTile(
+            title: Text(AppLocalizations.of(context)!.qr),
+            subtitle: Text(AppLocalizations.of(context)!.qrSubtitle),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/qr");
+            },
+          ),
+          ListTile(
             title: Text(AppLocalizations.of(context)!.thirdPartyServices),
             subtitle:
                 Text(AppLocalizations.of(context)!.thirdPartyServicesSubtitle),

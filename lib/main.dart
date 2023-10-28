@@ -23,6 +23,7 @@ import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/purchases.dart';
+import 'package:rtchat/models/qr_code.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
@@ -45,6 +46,7 @@ import 'package:rtchat/screens/settings/events/prediction.dart';
 import 'package:rtchat/screens/settings/events/raid.dart';
 import 'package:rtchat/screens/settings/events/raiding.dart';
 import 'package:rtchat/screens/settings/events/subscription.dart';
+import 'package:rtchat/screens/settings/qr.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/third_party.dart';
@@ -193,6 +195,15 @@ class _AppState extends State<App> {
               widget.prefs.setString('style', jsonEncode(model.toJson()));
             });
         }),
+        ChangeNotifierProvider(create: ((context) {
+          final model = QRModel.fromJson(
+              jsonDecode(widget.prefs.getString("qr") ?? "{}"));
+
+          return model
+            ..addListener(() {
+              widget.prefs.setString('qr', jsonEncode(model.toJson()));
+            });
+        })),
         ChangeNotifierProvider(create: (context) {
           final model = CommandsModel.fromJson(
               jsonDecode(widget.prefs.getString("commands") ?? "{}"));
@@ -306,6 +317,7 @@ class _AppState extends State<App> {
             '/settings/text-to-speech/voices': (context) =>
                 const VoicesScreen(),
             '/settings/quick-links': (context) => const QuickLinksScreen(),
+            '/settings/qr': (context) => const QrScreen(),
             '/settings/backup': (context) => const BackupScreen(),
             '/settings/third-party': (context) => const ThirdPartyScreen(),
             '/settings/events': (context) => const EventsScreen(),
