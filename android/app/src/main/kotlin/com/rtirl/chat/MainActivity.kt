@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.os.Build
 import android.provider.Settings
 import androidx.annotation.NonNull
@@ -13,6 +14,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import java.util.UUID
 
 
 class MainActivity : FlutterActivity() {
@@ -100,7 +102,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
         }
     }
 
-    fun speak(text: String) {
+    fun speak(text: String, result: Result) {
         if (!text.isNullOrBlank()) {
             val utteranceId = UUID.randomUUID().toString()
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
