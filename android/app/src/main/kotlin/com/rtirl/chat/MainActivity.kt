@@ -102,14 +102,14 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
 
     fun speak(text: String) {
         if (!text.isNullOrBlank()) {
-            val utteranceId = "utteranceIdSpeak"
+            val utteranceId = UUID.randomUUID().toString()
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String) {
                     // Speech has started
                 }
 
                 override fun onDone(utteranceId: String) {
-                    // Speech has completed maybe we can return something here? 
+                    result.success(true)
                 }
 
                 override fun onError(utteranceId: String) {
