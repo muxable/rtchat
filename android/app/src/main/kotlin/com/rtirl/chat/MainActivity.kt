@@ -88,8 +88,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             "speak" -> {
                 val text = call.argument<String>("text")
                 if (!text.isNullOrBlank()) {
-                    tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
-                    result.success(true)
+                    ttsPlugin.speak(text, result)
                 } else {
                     result.error("INVALID_ARGUMENT", "Text is empty or null", null)
                 }
