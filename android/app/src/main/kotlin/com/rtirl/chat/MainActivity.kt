@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.os.Build
 import android.provider.Settings
 import androidx.annotation.NonNull
@@ -13,6 +14,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import java.util.UUID
 
 
 class MainActivity : FlutterActivity() {
@@ -86,8 +88,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             "speak" -> {
                 val text = call.argument<String>("text")
                 if (!text.isNullOrBlank()) {
-                    tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
-                    result.success(true)
+                    speak(text, result)
                 } else {
                     result.error("INVALID_ARGUMENT", "Text is empty or null", null)
                 }
@@ -100,9 +101,28 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
         }
     }
 
-    fun speak(text: String) {
+    fun speak(text: String, result: Result) {
         if (!text.isNullOrBlank()) {
-            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+            val utteranceId = UUID.randomUUID().toString()
+            tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(utteranceId: String) {
+                    // Speech has started
+                }
+
+                override fun onDone(utteranceId: String) {
+                    result.success(true)
+                }
+
+                override fun onError(utteranceId: String) {
+                    // Speech encountered an error
+                    // Handle errors as needed
+                }
+            })
+
+            // Speak with the specified utteranceId
+            val params = HashMap<String, String>()
+            params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = utteranceId
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, params)
         }
     }
 
