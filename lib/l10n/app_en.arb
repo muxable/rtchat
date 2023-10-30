@@ -315,7 +315,7 @@
   },
   "qr": "QR",
   "@qr": {
-    "description": "Header for the Qr Page"
+    "description": "Header for the QR page"
   },
   "qrSubtitle": "Configure QR",
   "@qrSubtitle": {
