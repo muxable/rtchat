@@ -197,7 +197,7 @@ export async function getFFZEmotes(channelId: string): Promise<Emote[]> {
 }
 
 export async function get7TVEmotes(channelId: string): Promise<Emote[]> {
-  const global = fetch("https://api.7tv.app/v2/emotes/global")
+  const global = fetch("https://7tv.io/v3/emote-sets/global")
     .then((res) => res.json() as any)
     .then((json) =>
       json.map((emote: any) => ({
@@ -209,7 +209,7 @@ export async function get7TVEmotes(channelId: string): Promise<Emote[]> {
       }))
     )
     .catch(() => []);
-  const local = fetch(`https://api.7tv.app/v2/users/${channelId}/emotes`)
+  const local = fetch(`https://7tv.io/v3/users/${channelId}/emotes`)
     .then((res) => res.json() as any)
     .then((json) =>
       json.map((emote: any) => ({
