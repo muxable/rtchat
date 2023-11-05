@@ -209,7 +209,7 @@ export async function get7TVEmotes(channelId: string): Promise<Emote[]> {
       }))
     )
     .catch(() => []);
-  const local = fetch(`https://7tv.io/v3/users/${channelId}/emotes`)
+  const local = fetch(`https://7tv.io/v3/users/twitch/${channelId}`)
     .then((res) => res.json() as any)
     .then((json) =>
       json.map((emote: any) => ({
