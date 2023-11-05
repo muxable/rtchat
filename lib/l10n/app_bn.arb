@@ -68,8 +68,6 @@
   "textToSpeechSubtitle": "টেক্সট টু স্পিচ সেটিংস পরিবর্তন করুন",
   "events": "ইভেন্টস",
   "eventsSubtitle": "টুইচ ইভেন্ট কনফিগার করুন",
-  "qr": "QR",
-  "qrSubtitle": "QR কনফিগার করুন",
   "thirdPartyServices": "থার্ড পার্টি সার্ভিসেস",
   "thirdPartyServicesSubtitle": "থার্ড পার্টি সার্ভিসেসের সাথে কানেক্ট করুন",
   "followingEvent": "<bold>{displayName}</bold> আপনাকে অনুসরন করছে",

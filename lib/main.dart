@@ -46,7 +46,6 @@ import 'package:rtchat/screens/settings/events/prediction.dart';
 import 'package:rtchat/screens/settings/events/raid.dart';
 import 'package:rtchat/screens/settings/events/raiding.dart';
 import 'package:rtchat/screens/settings/events/subscription.dart';
-import 'package:rtchat/screens/settings/qr.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/third_party.dart';
@@ -317,7 +316,6 @@ class _AppState extends State<App> {
             '/settings/text-to-speech/voices': (context) =>
                 const VoicesScreen(),
             '/settings/quick-links': (context) => const QuickLinksScreen(),
-            '/settings/qr': (context) => const QrScreen(),
             '/settings/backup': (context) => const BackupScreen(),
             '/settings/third-party': (context) => const ThirdPartyScreen(),
             '/settings/events': (context) => const EventsScreen(),

@@ -105,7 +105,7 @@ class FlutterLinearGradients {
         "Warm Flame",
         -45.0,
         [
-          const Color(0xFF9A9E),
+          const Color(0x00ff9a9e),
           stringToColor("#fad0c4"),
           stringToColor("#fad0c4")
         ],
