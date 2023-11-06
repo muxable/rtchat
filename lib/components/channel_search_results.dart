@@ -214,7 +214,8 @@ class _ChannelSearchResultsWidgetState
                       title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(result.displayName, overflow: TextOverflow.ellipsis),
+                            Text(result.displayName,
+                                overflow: TextOverflow.ellipsis),
                             Text(result.language ?? "??",
                                 style: const TextStyle(
                                   fontSize: 12,
