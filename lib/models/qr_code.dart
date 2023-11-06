@@ -1,6 +1,6 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:vector_math/vector_math_64.dart' show radians;
 
 final gradientMap = <String, Gradient>{
   "warmFlame": FlutterLinearGradients.warmFlame(),
@@ -17,32 +17,18 @@ final gradientMap = <String, Gradient>{
   "winterNeva": FlutterLinearGradients.winterNeva(),
 };
 
-final gradientList = [
-  "warmFlame",
-  "nightFade",
-  "juicyPeach",
-  "springWarmth",
-  "youngPassion",
-  "sunnyMorning",
-  "ladyLips",
-  "rainyAshville",
-  "frozenDreams",
-  "temptingAzure",
-  "dustyGrass",
-  "winterNeva"
-];
-
 class QRModel extends ChangeNotifier {
   int _currentGradient = 0;
   double _version = 20;
   bool _useProfileImage = false;
 
-  Gradient get currentGradient => gradientMap[gradientList[_currentGradient]]!;
+  Gradient get currentGradient =>
+      gradientMap[gradientMap.keys.toList()[_currentGradient]]!;
   double get version => _version;
   bool get useProfile => _useProfileImage;
 
   void changeGradient() {
-    if (_currentGradient >= gradientList.length - 1) {
+    if (_currentGradient >= gradientMap.keys.length - 1) {
       // reset counter
       _currentGradient = -1;
     }
@@ -243,8 +229,13 @@ LinearGradient create(
       colors: colors,
       stops: stops,
       tileMode: tileMode,
-      transform: GradientRotation(radians(angle)),
+      transform: GradientRotation(toRadians(angle)),
     );
+
+double toRadians(double angle) {
+  const degToRad = pi / 180;
+  return angle * degToRad;
+}
 
 Color _intToColor(int hexNumber) => Color.fromARGB(
     255,
