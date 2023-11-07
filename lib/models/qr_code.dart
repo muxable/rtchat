@@ -78,7 +78,7 @@ class FlutterLinearGradients {
 
   static Gradient warmFlame({TileMode tileMode = TileMode.clamp}) => linear(
         "Warm Flame",
-        -45.0,
+        -pi / 4,
         [
           const Color(0x00ff9a9e),
           const Color(0x00fad0c4),
@@ -90,7 +90,7 @@ class FlutterLinearGradients {
 
   static Gradient nightFade({TileMode tileMode = TileMode.clamp}) => linear(
         "Night Fade",
-        -90.0,
+        -pi / 2,
         [const Color(0x00a18cd1), const Color(0x00fbc2eb)],
         [0.0, 1.0],
         tileMode,
@@ -98,7 +98,7 @@ class FlutterLinearGradients {
 
   static Gradient springWarmth({TileMode tileMode = TileMode.clamp}) => linear(
         "Spring Warmth",
-        -90.0,
+        -pi / 2,
         [
           const Color(0x00fad0c4),
           const Color(0x00fad0c4),
@@ -133,7 +133,7 @@ class FlutterLinearGradients {
 
   static Gradient ladyLips({TileMode tileMode = TileMode.clamp}) => linear(
         "Lady Lips",
-        -90.0,
+        -pi / 2,
         [
           const Color(0x00ff9a9e),
           const Color(0x00fecfef),
@@ -145,7 +145,7 @@ class FlutterLinearGradients {
 
   static Gradient sunnyMorning({TileMode tileMode = TileMode.clamp}) => linear(
         "Sunny Morning",
-        30.0,
+        pi / 6,
         [const Color(0x00f6d365), const Color(0x00fda085)],
         [0.0, 1.0],
         tileMode,
@@ -153,7 +153,7 @@ class FlutterLinearGradients {
 
   static Gradient rainyAshville({TileMode tileMode = TileMode.clamp}) => linear(
         "Rainy Ashville",
-        -90.0,
+        -pi / 2,
         [const Color(0x00fbc2eb), const Color(0x00a6c1ee)],
         [0.0, 1.0],
         tileMode,
@@ -161,7 +161,7 @@ class FlutterLinearGradients {
 
   static Gradient frozenDreams({TileMode tileMode = TileMode.clamp}) => linear(
         "Frozen Dreams",
-        -90.0,
+        -pi / 2,
         [
           const Color(0x00fdcbf1),
           const Color(0x00fdcbf1),
@@ -173,7 +173,7 @@ class FlutterLinearGradients {
 
   static Gradient winterNeva({TileMode tileMode = TileMode.clamp}) => linear(
         "Winter Neva",
-        30.0,
+        pi / 6,
         [const Color(0x00a1c4fd), const Color(0x00c2e9fb)],
         [0.0, 1.0],
         tileMode,
@@ -181,7 +181,7 @@ class FlutterLinearGradients {
 
   static Gradient dustyGrass({TileMode tileMode = TileMode.clamp}) => linear(
         "Dusty Grass",
-        30.0,
+        pi / 6,
         [const Color(0x00d4fc79), const Color(0x0096e6a1)],
         [0.0, 1.0],
         tileMode,
@@ -189,7 +189,7 @@ class FlutterLinearGradients {
 
   static Gradient temptingAzure({TileMode tileMode = TileMode.clamp}) => linear(
         "Tempting Azure",
-        30.0,
+        pi / 6,
         [const Color(0x0084fab0), const Color(0x008fd3f4)],
         [0.0, 1.0],
         tileMode,
