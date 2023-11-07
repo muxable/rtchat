@@ -61,7 +61,6 @@ class QRModel extends ChangeNotifier {
       };
 }
 
-// Code  from https://github.com/JonathanMonga/flutter_gradients
 class FlutterLinearGradients {
   static LinearGradient linear(
     String name,
@@ -77,7 +76,6 @@ class FlutterLinearGradients {
         tileMode,
       );
 
-  /// 1. Warm Flame
   static Gradient warmFlame({TileMode tileMode = TileMode.clamp}) => linear(
         "Warm Flame",
         -45.0,
@@ -90,7 +88,6 @@ class FlutterLinearGradients {
         tileMode,
       );
 
-  /// 2. Night Fade
   static Gradient nightFade({TileMode tileMode = TileMode.clamp}) => linear(
         "Night Fade",
         -90.0,
@@ -99,7 +96,6 @@ class FlutterLinearGradients {
         tileMode,
       );
 
-  /// 3. Spring Warmth
   static Gradient springWarmth({TileMode tileMode = TileMode.clamp}) => linear(
         "Spring Warmth",
         -90.0,
@@ -112,7 +108,6 @@ class FlutterLinearGradients {
         tileMode,
       );
 
-  /// 4. Juicy Peach
   static Gradient juicyPeach({TileMode tileMode = TileMode.clamp}) => linear(
         "Juicy Peach",
         0.0,
@@ -121,7 +116,6 @@ class FlutterLinearGradients {
         tileMode,
       );
 
-  /// 5. Young Passion
   static Gradient youngPassion({TileMode tileMode = TileMode.clamp}) => linear(
         "Young Passion",
         0.0,
@@ -137,7 +131,6 @@ class FlutterLinearGradients {
         tileMode,
       );
 
-  /// 6. Lady Lips
   static Gradient ladyLips({TileMode tileMode = TileMode.clamp}) => linear(
         "Lady Lips",
         -90.0,
@@ -150,7 +143,6 @@ class FlutterLinearGradients {
         tileMode,
       );
 
-  /// 7. Sunny Morning
   static Gradient sunnyMorning({TileMode tileMode = TileMode.clamp}) => linear(
         "Sunny Morning",
         30.0,
@@ -159,7 +151,6 @@ class FlutterLinearGradients {
         tileMode,
       );
 
-  /// 8. Rainy Ashville
   static Gradient rainyAshville({TileMode tileMode = TileMode.clamp}) => linear(
         "Rainy Ashville",
         -90.0,
@@ -168,7 +159,6 @@ class FlutterLinearGradients {
         tileMode,
       );
 
-  /// 9. Frozen Dreams
   static Gradient frozenDreams({TileMode tileMode = TileMode.clamp}) => linear(
         "Frozen Dreams",
         -90.0,
@@ -181,7 +171,6 @@ class FlutterLinearGradients {
         tileMode,
       );
 
-  /// 10. Winter Neva
   static Gradient winterNeva({TileMode tileMode = TileMode.clamp}) => linear(
         "Winter Neva",
         30.0,
@@ -190,7 +179,6 @@ class FlutterLinearGradients {
         tileMode,
       );
 
-  /// 11. Dusty Grass
   static Gradient dustyGrass({TileMode tileMode = TileMode.clamp}) => linear(
         "Dusty Grass",
         30.0,
@@ -199,7 +187,6 @@ class FlutterLinearGradients {
         tileMode,
       );
 
-  /// 12. Tempting Azure
   static Gradient temptingAzure({TileMode tileMode = TileMode.clamp}) => linear(
         "Tempting Azure",
         30.0,
@@ -209,7 +196,6 @@ class FlutterLinearGradients {
       );
 }
 
-/// The method that create a LinearGradient object
 LinearGradient create(
   double angle,
   List<Color> colors,
@@ -227,22 +213,3 @@ double toRadians(double angle) {
   const degToRad = pi / 180;
   return angle * degToRad;
 }
-
-Color _intToColor(int hexNumber) => Color.fromARGB(
-    255,
-    (hexNumber >> 16) & 0xFF,
-    ((hexNumber >> 8) & 0xFF),
-    (hexNumber >> 0) & 0xFF);
-
-//Substring
-String _textSubString(String text) {
-  if (text.length < 6) return "";
-
-  if (text.length == 6) return text;
-
-  return text.substring(1, text.length);
-}
-
-/// String To Material color
-Color stringToColor(String hex) =>
-    _intToColor(int.parse(_textSubString(hex), radix: 16));
