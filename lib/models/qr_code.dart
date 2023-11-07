@@ -28,11 +28,7 @@ class QRModel extends ChangeNotifier {
   bool get useProfile => _useProfileImage;
 
   void changeGradient() {
-    if (_currentGradient >= gradientMap.keys.length - 1) {
-      // reset counter
-      _currentGradient = -1;
-    }
-    _currentGradient += 1;
+    _currentGradient = (_currentGradient + 1) % gradientMap.length;
     notifyListeners();
   }
 
