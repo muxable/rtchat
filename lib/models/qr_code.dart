@@ -33,12 +33,7 @@ class QRModel extends ChangeNotifier {
   }
 
   void toggleProfileImage() {
-    if (_useProfileImage == true) {
-      _useProfileImage = false;
-      notifyListeners();
-      return;
-    }
-    _useProfileImage = true;
+    _useProfileImage = !_useProfileImage;
     notifyListeners();
   }
 
