@@ -47,7 +47,6 @@ dependencies:
   sticky_headers: ^0.3.0+2
   styled_text: ^8.1.0
   url_launcher: ^6.1.14
-  vector_math: ^2.1.4
   wakelock: ^0.6.2
   webview_flutter: ^4.4.1
   webview_flutter_android: ^3.12.0
