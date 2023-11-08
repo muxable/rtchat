@@ -7,8 +7,7 @@ class TextToSpeechPlugin {
     try {
       await _channel.invokeMethod('speak', {'text': text});
     } catch (e) {
-      // TODO Handle the error?
-      // print('Error in TTSPlugin: $e');
+      // Handle the error
     }
   }
 
@@ -16,12 +15,18 @@ class TextToSpeechPlugin {
     try {
       final Map<dynamic, dynamic> languageMap =
           await _channel.invokeMethod('getLanguages');
-      // Convert the map from platform-specific types to Dart types
       return Map<String, String>.from(languageMap);
     } catch (e) {
-      // Handle the error, e.g., log or throw an exception
-      // print('Error in TextToSpeechPlugin.getLanguages: $e');
+      // Handle the error
       return <String, String>{};
+    }
+  }
+
+  static Future<void> stopSpeaking() async {
+    try {
+      await _channel.invokeMethod('stopSpeaking');
+    } catch (e) {
+      // Handle the error
     }
   }
 }
