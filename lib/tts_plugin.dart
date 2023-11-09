@@ -30,3 +30,5 @@ class TextToSpeechPlugin {
     }
   }
 }
+
+class TTSQueue {}
