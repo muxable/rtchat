@@ -56,6 +56,6 @@ class TTSQueue {
     }
 
     // remove this below when we actually use it
-    _queuedText = null;
+    print(_queuedText);
   }
 }
