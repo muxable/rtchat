@@ -54,5 +54,8 @@ class TTSQueue {
       _queuedId = id;
       _queuedText = text;
     }
+
+    // remove this below when we actually use it
+    _queuedText = null;
   }
 }
