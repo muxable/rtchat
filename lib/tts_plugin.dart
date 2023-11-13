@@ -31,4 +31,28 @@ class TextToSpeechPlugin {
   }
 }
 
-class TTSQueue {}
+class TTSQueue {
+  static const MethodChannel _channel = MethodChannel('tts_plugin');
+
+  String? _queuedId;
+  String? _queuedText;
+
+  Future<void> speak(String id, String text) async {
+    if (_queuedId == null) {
+      _queuedId = id;
+      _queuedText = text;
+
+      try {
+        await _channel.invokeMethod('speak', {'text': text});
+      } catch (e) {
+        // handle the error;
+      }
+
+      _queuedId = null;
+      _queuedText = null;
+    } else {
+      _queuedId = id;
+      _queuedText = text;
+    }
+  }
+}
