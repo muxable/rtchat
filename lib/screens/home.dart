@@ -244,19 +244,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         // if (ttsModel.enabled) {
                         //   // Test speak method with a long string
                         //   await TextToSpeechPlugin.speak(
-                        //       "This is a very long string to test the Text-to-Speech functionality. " +
-                        //           "It should be stopped after 1 second.");
+                        //       "This is a very long string to test the Text-to-Speech functionality. ");
 
-                        //   // Test getLanguages method
-                        //   Map<String, String> languages =
-                        //       await TextToSpeechPlugin.getLanguages();
-                        //   print("Supported languages: $languages");
+                        //   await TextToSpeechPlugin.speak(
+                        //       "This is a very long string to test the Text-to-Speech functionality. ");
 
-                        //   // Wait for 1 second
-                        //   await Future.delayed(Duration(seconds: 1));
+                        //   await TextToSpeechPlugin.speak(
+                        //       "This is a very long string to test the Text-to-Speech functionality. ");
 
-                        //   // Test stop method
-                        //   await TextToSpeechPlugin.stopSpeaking();
+                        //   await TextToSpeechPlugin.speak(
+                        //       "This is a very long string to test the Text-to-Speech functionality. ");
+
+                        // // Test getLanguages method
+                        // Map<String, String> languages =
+                        //     await TextToSpeechPlugin.getLanguages();
+                        // print("Supported languages: $languages");
+
+                        // // Wait for 1 second
+                        // await Future.delayed(Duration(seconds: 1));
+
+                        // // Test stop method
+                        // await TextToSpeechPlugin.stopSpeaking();
                         // }
                       },
                     );
