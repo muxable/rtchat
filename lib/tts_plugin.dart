@@ -34,13 +34,23 @@ class TextToSpeechPlugin {
 class TTSQueue {
   static const MethodChannel _channel = MethodChannel('tts_plugin');
 
-  String? _queuedId;
-  String? _queuedText;
+  List<Map<String, String>> _queue = [];
 
   Future<void> speak(String id, String text) async {
-    if (_queuedId == null) {
-      _queuedId = id;
-      _queuedText = text;
+    // Add the speak request to the queue
+    _queue.add({'id': id, 'text': text});
+
+    // If no speak is in progress, start speaking
+    if (_queue.length == 1) {
+      await _speakNext();
+    }
+  }
+
+  Future<void> _speakNext() async {
+    if (_queue.isNotEmpty) {
+      final speakRequest = _queue.first;
+      final id = speakRequest['id'];
+      final text = speakRequest['text'];
 
       try {
         await _channel.invokeMethod('speak', {'text': text});
@@ -48,14 +58,8 @@ class TTSQueue {
         // handle the error;
       }
 
-      _queuedId = null;
-      _queuedText = null;
-    } else {
-      _queuedId = id;
-      _queuedText = text;
+      _queue.removeAt(0);
+      await _speakNext();
     }
-
-    // remove this below when we actually use it
-    print(_queuedText);
   }
 }
