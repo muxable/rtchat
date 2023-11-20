@@ -17,35 +17,32 @@ class QRDisplay extends StatelessWidget {
 
       return Consumer<QRModel>(
         builder: (context, qrModel, child) {
-          return Material(
-            child: GestureDetector(
-              onTap: () {
-                qrModel.changeGradient();
-              },
-              child: Container(
-                height: querySize.height * 0.45,
-                width: querySize.width * 0.9,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(querySize.width * 0.08),
-                  gradient: qrModel.currentGradient,
-                ),
-                child: Column(
-                  children: [
-                    QrImageView(
-                      data: inviteLink,
-                      version: qrModel.version.toInt(),
-                      embeddedImage: userChannel?.profilePicture,
+          return GestureDetector(
+            onTap: () {
+              qrModel.changeGradient();
+            },
+            child: Container(
+              height: querySize.height * 0.48,
+              width: querySize.width * 0.85,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(querySize.width * 0.06),
+                gradient: qrModel.currentGradient,
+              ),
+              child: Column(
+                children: [
+                  QrImageView(
+                    data: inviteLink,
+                    embeddedImage: userChannel?.profilePicture,
+                  ),
+                  Text(
+                    "/${userModel.userChannel?.displayName ?? ""}",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 29,
+                      fontWeight: FontWeight.bold,
                     ),
-                    Text(
-                      "@${userModel.userChannel?.displayName ?? ""}",
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                        fontSize: 29,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  ],
-                ),
+                  )
+                ],
               ),
             ),
           );

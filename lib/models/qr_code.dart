@@ -19,26 +19,14 @@ final gradientMap = <String, Gradient>{
 
 class QRModel extends ChangeNotifier {
   int _currentGradient = 0;
-  double _version = 20;
-  bool _useProfileImage = false;
 
-  Gradient get currentGradient =>
-      gradientMap[gradientMap.keys.toList()[_currentGradient]]!;
-  double get version => _version;
-  bool get useProfile => _useProfileImage;
+  Gradient get currentGradient {
+    var keyName = gradientMap.keys.toList()[_currentGradient];
+    return gradientMap[keyName]!;
+  }
 
   void changeGradient() {
     _currentGradient = (_currentGradient + 1) % gradientMap.length;
-    notifyListeners();
-  }
-
-  void toggleProfileImage() {
-    _useProfileImage = !_useProfileImage;
-    notifyListeners();
-  }
-
-  set size(double updatedVersion) {
-    _version = updatedVersion;
     notifyListeners();
   }
 
@@ -46,170 +34,117 @@ class QRModel extends ChangeNotifier {
     if (json["currentGradient"] != null) {
       _currentGradient = json["currentGradient"];
     }
-    if (json["size"] != null) {
-      _version = json["size"];
-    }
-    if (json["useProfileImage"] != null) {
-      _useProfileImage = json["useProfileImage"];
-    }
   }
 
   Map<String, dynamic> toJson() => {
         "currentGradient": _currentGradient,
-        "size": _version,
-        "useProfileImage": _useProfileImage,
       };
 }
 
 class FlutterLinearGradients {
-  static LinearGradient linear(
-    String name,
-    double angle,
-    List<Color> colors,
-    List<double> stops,
-    TileMode tileMode,
-  ) =>
-      create(
-        angle,
-        colors,
-        stops,
-        tileMode,
+  static Gradient warmFlame({TileMode tileMode = TileMode.clamp}) =>
+      LinearGradient(
+        colors: const [Color(0xffff9a9e), Color(0xfffad0c4)],
+        stops: const [0.0, 0.99, 1.0],
+        tileMode: tileMode,
       );
 
-  static Gradient warmFlame({TileMode tileMode = TileMode.clamp}) => linear(
-        "Warm Flame",
-        -pi / 4,
-        [
-          const Color(0x00ff9a9e),
-          const Color(0x00fad0c4),
-          const Color(0x00fad0c4)
+  static Gradient nightFade({TileMode tileMode = TileMode.clamp}) =>
+      LinearGradient(
+        transform: gradientRotation(-pi / 2),
+        colors: const [Color(0xffa18cd1), Color(0xfffbc2eb)],
+        stops: const [0.0, 1.0],
+        tileMode: tileMode,
+      );
+
+  static Gradient springWarmth({TileMode tileMode = TileMode.clamp}) =>
+      LinearGradient(
+        transform: gradientRotation(-pi / 2),
+        colors: const [Color(0xfffad0c4), Color(0xfffad0c4), Color(0xffffd1ff)],
+        stops: const [0.0, 0.01, 1.0],
+        tileMode: tileMode,
+      );
+
+  static Gradient juicyPeach({TileMode tileMode = TileMode.clamp}) =>
+      LinearGradient(
+        transform: gradientRotation(0.0),
+        colors: const [Color(0xffffecd2), Color(0xfffcb69f)],
+        stops: const [0.0, 1.0],
+        tileMode: tileMode,
+      );
+
+  static Gradient youngPassion({TileMode tileMode = TileMode.clamp}) =>
+      LinearGradient(
+        transform: gradientRotation(0.0),
+        colors: const [
+          Color(0xffff8177),
+          Color(0xffff867a),
+          Color(0xffff8c7f),
+          Color(0xfff99185),
+          Color(0xffcf556c),
+          Color(0xffb12a5b)
         ],
-        [0.0, 0.99, 1.0],
-        tileMode,
+        stops: const [0.0, 0.0, 0.21, 0.52, 0.78, 1.0],
+        tileMode: tileMode,
       );
 
-  static Gradient nightFade({TileMode tileMode = TileMode.clamp}) => linear(
-        "Night Fade",
-        -pi / 2,
-        [const Color(0x00a18cd1), const Color(0x00fbc2eb)],
-        [0.0, 1.0],
-        tileMode,
+  static Gradient ladyLips({TileMode tileMode = TileMode.clamp}) =>
+      LinearGradient(
+        transform: gradientRotation(pi / 2),
+        colors: const [Color(0xffff9a9e), Color(0xfffecfef), Color(0xfffecfef)],
+        stops: const [0.0, 0.99, 1.0],
+        tileMode: tileMode,
       );
 
-  static Gradient springWarmth({TileMode tileMode = TileMode.clamp}) => linear(
-        "Spring Warmth",
-        -pi / 2,
-        [
-          const Color(0x00fad0c4),
-          const Color(0x00fad0c4),
-          const Color(0x00ffd1ff)
-        ],
-        [0.0, 0.01, 1.0],
-        tileMode,
+  static Gradient sunnyMorning({TileMode tileMode = TileMode.clamp}) =>
+      LinearGradient(
+        transform: gradientRotation(pi / 6),
+        colors: const [Color(0xfff6d365), Color(0xfffda085)],
+        stops: const [0.0, 1.0],
+        tileMode: tileMode,
       );
 
-  static Gradient juicyPeach({TileMode tileMode = TileMode.clamp}) => linear(
-        "Juicy Peach",
-        0.0,
-        [const Color(0x00ffecd2), const Color(0x00fcb69f)],
-        [0.0, 1.0],
-        tileMode,
+  static Gradient rainyAshville({TileMode tileMode = TileMode.clamp}) =>
+      LinearGradient(
+        transform: gradientRotation(-pi / 2),
+        colors: const [Color(0xfffbc2eb), Color(0xffa6c1ee)],
+        stops: const [0.0, 1.0],
+        tileMode: tileMode,
       );
 
-  static Gradient youngPassion({TileMode tileMode = TileMode.clamp}) => linear(
-        "Young Passion",
-        0.0,
-        [
-          const Color(0x00ff8177),
-          const Color(0x00ff867a),
-          const Color(0x00ff8c7f),
-          const Color(0x00f99185),
-          const Color(0x00cf556c),
-          const Color(0x00b12a5b)
-        ],
-        [0.0, 0.0, 0.21, 0.52, 0.78, 1.0],
-        tileMode,
+  static Gradient frozenDreams({TileMode tileMode = TileMode.clamp}) =>
+      LinearGradient(
+        transform: gradientRotation(-pi / 2),
+        colors: const [Color(0xfffdcbf1), Color(0xfffdcbf1), Color(0xffe6dee9)],
+        stops: const [0.0, 0.01, 1.0],
+        tileMode: tileMode,
       );
 
-  static Gradient ladyLips({TileMode tileMode = TileMode.clamp}) => linear(
-        "Lady Lips",
-        -pi / 2,
-        [
-          const Color(0x00ff9a9e),
-          const Color(0x00fecfef),
-          const Color(0x00fecfef)
-        ],
-        [0.0, 0.99, 1.0],
-        tileMode,
+  static Gradient winterNeva({TileMode tileMode = TileMode.clamp}) =>
+      LinearGradient(
+        transform: gradientRotation(pi / 6),
+        colors: const [Color(0xffa1c4fd), Color(0xffc2e9fb)],
+        stops: const [0.0, 1.0],
+        tileMode: tileMode,
       );
 
-  static Gradient sunnyMorning({TileMode tileMode = TileMode.clamp}) => linear(
-        "Sunny Morning",
-        pi / 6,
-        [const Color(0x00f6d365), const Color(0x00fda085)],
-        [0.0, 1.0],
-        tileMode,
+  static Gradient dustyGrass({TileMode tileMode = TileMode.clamp}) =>
+      LinearGradient(
+        transform: gradientRotation(pi / 6),
+        colors: const [Color(0xffd4fc79), Color(0xff96e6a1)],
+        stops: const [0.0, 1.0],
+        tileMode: tileMode,
       );
 
-  static Gradient rainyAshville({TileMode tileMode = TileMode.clamp}) => linear(
-        "Rainy Ashville",
-        -pi / 2,
-        [const Color(0x00fbc2eb), const Color(0x00a6c1ee)],
-        [0.0, 1.0],
-        tileMode,
-      );
-
-  static Gradient frozenDreams({TileMode tileMode = TileMode.clamp}) => linear(
-        "Frozen Dreams",
-        -pi / 2,
-        [
-          const Color(0x00fdcbf1),
-          const Color(0x00fdcbf1),
-          const Color(0x00e6dee9)
-        ],
-        [0.0, 0.01, 1.0],
-        tileMode,
-      );
-
-  static Gradient winterNeva({TileMode tileMode = TileMode.clamp}) => linear(
-        "Winter Neva",
-        pi / 6,
-        [const Color(0x00a1c4fd), const Color(0x00c2e9fb)],
-        [0.0, 1.0],
-        tileMode,
-      );
-
-  static Gradient dustyGrass({TileMode tileMode = TileMode.clamp}) => linear(
-        "Dusty Grass",
-        pi / 6,
-        [const Color(0x00d4fc79), const Color(0x0096e6a1)],
-        [0.0, 1.0],
-        tileMode,
-      );
-
-  static Gradient temptingAzure({TileMode tileMode = TileMode.clamp}) => linear(
-        "Tempting Azure",
-        pi / 6,
-        [const Color(0x0084fab0), const Color(0x008fd3f4)],
-        [0.0, 1.0],
-        tileMode,
+  static Gradient temptingAzure({TileMode tileMode = TileMode.clamp}) =>
+      LinearGradient(
+        transform: gradientRotation(pi / 6),
+        colors: const [Color(0xff84fab0), Color(0xff8fd3f4)],
+        stops: const [0.0, 1.0],
+        tileMode: tileMode,
       );
 }
 
-LinearGradient create(
-  double angle,
-  List<Color> colors,
-  List<double> stops,
-  TileMode tileMode,
-) =>
-    LinearGradient(
-      colors: colors,
-      stops: stops,
-      tileMode: tileMode,
-      transform: GradientRotation(toRadians(angle)),
-    );
-
-double toRadians(double angle) {
-  const degToRad = pi / 180;
-  return angle * degToRad;
+GradientRotation gradientRotation(double angle) {
+  return GradientRotation(angle * (pi / 180));
 }

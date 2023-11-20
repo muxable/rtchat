@@ -50,33 +50,6 @@ class _DrawerHeader extends StatelessWidget {
                               }
                               Navigator.of(context).pop();
                             },
-                            onLongPress: () {
-                              showGeneralDialog(
-                                  context: context,
-                                  barrierDismissible: false,
-                                  barrierLabel: 'Dialog',
-                                  transitionDuration:
-                                      const Duration(milliseconds: 400),
-                                  pageBuilder: ((context, animation,
-                                      secondaryAnimation) {
-                                    return Consumer<QRModel>(
-                                      builder: (context, qrModel, child) {
-                                        return Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SizedBox(
-                                                height: MediaQuery.of(context)
-                                                        .size
-                                                        .height *
-                                                    0.5,
-                                                child: const QRDisplay())
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  }));
-                            },
                             child: Row(children: [
                               if (userChannel != null)
                                 const SizedBox(width: 16),
@@ -124,6 +97,31 @@ class _DrawerHeader extends StatelessWidget {
                             .colorScheme
                             .onTertiary
                             .withOpacity(0.1),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: IconButton(
+                          icon: const Icon(Icons.qr_code),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            showModalBottomSheet(
+                                context: context,
+                                builder: (context) {
+                                  return Consumer<QRModel>(
+                                    builder: (context, qrModel, child) {
+                                      return const Column(
+                                        children: [
+                                          Center(child: QRDisplay()),
+                                          SizedBox(
+                                            height: 15,
+                                          )
+                                        ],
+                                      );
+                                    },
+                                  );
+                                });
+                          },
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(8),
