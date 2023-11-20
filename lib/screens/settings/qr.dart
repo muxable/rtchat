@@ -13,7 +13,7 @@ class QRDisplay extends StatelessWidget {
 
     return Consumer<UserModel>(builder: (context, userModel, child) {
       final userChannel = userModel.userChannel;
-      final inviteLink = "https://www.twitch.tv/${userChannel}";
+      final inviteLink = "https://www.twitch.tv/$userChannel";
 
       return Consumer<QRModel>(
         builder: (context, qrModel, child) {
@@ -32,7 +32,8 @@ class QRDisplay extends StatelessWidget {
                 children: [
                   QrImageView(
                     data: inviteLink,
-                    embeddedImage: userChannel?.profilePicture,
+                    // TODO: Find a way to better overlay this image onto the QR code.
+                    // embeddedImage: userChannel?.profilePicture,
                   ),
                   Text(
                     "/${userModel.userChannel?.displayName ?? ""}",
