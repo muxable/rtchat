@@ -97,6 +97,10 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
                 val languageMap = getLanguages()
                 result.success(languageMap)
             }
+            "stopSpeaking" -> {
+                stop()
+                result.success(true)
+            }
             else -> result.notImplemented()
         }
     }
@@ -135,5 +139,11 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             languageMap[languageCode] = languageName
         }
         return languageMap
+    }
+
+    fun stop() {
+        if (tts.isSpeaking) {
+            tts.stop()
+        }
     }
 }

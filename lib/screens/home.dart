@@ -233,20 +233,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   }),
                   Consumer<TtsModel>(builder: (context, ttsModel, child) {
                     return IconButton(
-                        icon: Icon(ttsModel.enabled
-                            ? Icons.record_voice_over
-                            : Icons.voice_over_off),
-                        tooltip: AppLocalizations.of(context)!.textToSpeech,
-                        onPressed: () {
-                          // TODO: need to figure out how to actually
-                          // send the text to this plugin, but manual is working
-                          // TextToSpeechPlugin.speak("Testing this code!");
-                          // TextToSpeechPlugin.getLanguages();
-                          // Map<String, String> languages =
-                          //     await TextToSpeechPlugin.getLanguages();
-                          // print(languages);
-                          ttsModel.enabled = !ttsModel.enabled;
-                        });
+                      icon: Icon(ttsModel.enabled
+                          ? Icons.record_voice_over
+                          : Icons.voice_over_off),
+                      tooltip: AppLocalizations.of(context)!.textToSpeech,
+                      onPressed: () async {
+                        // Toggle the enabled state
+                        ttsModel.enabled = !ttsModel.enabled;
+
+                        // if (ttsModel.enabled) {
+                        //   // Test speak method with a long string
+                        //   await TextToSpeechPlugin.speak(
+                        //       "This is a very long string to test the Text-to-Speech functionality. ");
+
+                        //   await TextToSpeechPlugin.speak(
+                        //       "This is a very long string to test the Text-to-Speech functionality. ");
+
+                        //   await TextToSpeechPlugin.speak(
+                        //       "This is a very long string to test the Text-to-Speech functionality. ");
+
+                        //   await TextToSpeechPlugin.speak(
+                        //       "This is a very long string to test the Text-to-Speech functionality. ");
+
+                        // // Test getLanguages method
+                        // Map<String, String> languages =
+                        //     await TextToSpeechPlugin.getLanguages();
+                        // print("Supported languages: $languages");
+
+                        // // Wait for 1 second
+                        // await Future.delayed(Duration(seconds: 1));
+
+                        // // Test stop method
+                        // await TextToSpeechPlugin.stopSpeaking();
+                        // }
+                      },
+                    );
                   }),
                   if (userModel.isSignedIn())
                     IconButton(
