@@ -34,7 +34,7 @@ class TextToSpeechPlugin {
 class TTSQueue {
   static const MethodChannel _channel = MethodChannel('tts_plugin');
 
-  List<Map<String, String>> _queue = [];
+  final List<Map<String, String>> _queue = [];
 
   Future<void> speak(String id, String text) async {
     // Add the speak request to the queue
