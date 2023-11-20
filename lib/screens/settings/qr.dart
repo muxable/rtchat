@@ -13,7 +13,7 @@ class QRDisplay extends StatelessWidget {
 
     return Consumer<UserModel>(builder: (context, userModel, child) {
       final userChannel = userModel.userChannel;
-      final inviteLink = "https://www.twitch.tv/muxfd${userChannel?.channelId}";
+      final inviteLink = "https://www.twitch.tv/${userChannel}";
 
       return Consumer<QRModel>(
         builder: (context, qrModel, child) {
