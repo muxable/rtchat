@@ -29,6 +29,14 @@ class TextToSpeechPlugin {
       // Handle the error
     }
   }
+
+  static Future<void> clear() async {
+    try {
+      await _channel.invokeMethod('clear');
+    } catch (e) {
+      // Handle the error
+    }
+  }
 }
 
 class TTSQueue {
