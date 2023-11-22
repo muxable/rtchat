@@ -66,4 +66,8 @@ class TTSQueue {
       print(id);
     }
   }
+
+  Future<void> delete(String id) async {
+    _queue.removeWhere((speak) => speak['id'] == id);
+  }
 }
