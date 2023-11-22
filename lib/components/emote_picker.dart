@@ -151,10 +151,10 @@ class EmotePickerWidget extends StatelessWidget {
     final rowNumber =
         MediaQuery.of(context).orientation == Orientation.portrait ? 6 : 4;
 
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) {
         onEmoteSelected(null);
-        return false;
       },
       child: SizedBox(
         height: 48 * rowNumber.toDouble(),
