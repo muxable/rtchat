@@ -70,4 +70,17 @@ class TTSQueue {
   Future<void> delete(String id) async {
     _queue.removeWhere((speak) => speak['id'] == id);
   }
+
+  void clear() {
+    _queue.clear();
+    _stopSpeaking();
+  }
+
+  Future<void> _stopSpeaking() async {
+    try {
+      await _channel.invokeMethod('stopSpeaking');
+    } catch (e) {
+      // handle the error;
+    }
+  }
 }
