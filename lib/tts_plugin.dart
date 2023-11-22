@@ -29,6 +29,14 @@ class TextToSpeechPlugin {
       // Handle the error
     }
   }
+
+  static Future<void> clear() async {
+    try {
+      await _channel.invokeMethod('clear');
+    } catch (e) {
+      // Handle the error
+    }
+  }
 }
 
 class TTSQueue {
@@ -69,5 +77,18 @@ class TTSQueue {
 
   Future<void> delete(String id) async {
     _queue.removeWhere((speak) => speak['id'] == id);
+  }
+
+  void clear() {
+    _queue.clear();
+    _stopSpeaking();
+  }
+
+  Future<void> _stopSpeaking() async {
+    try {
+      await _channel.invokeMethod('stopSpeaking');
+    } catch (e) {
+      // handle the error;
+    }
   }
 }
