@@ -7,7 +7,7 @@ import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
-import 'dart:ui' as ui;
+
 
 final message1 = TwitchMessageModel(
     messageId: "placeholder1",
