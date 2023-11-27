@@ -9,7 +9,9 @@ import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/qr_code.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/screens/settings/qr.dart';
 import 'package:rtchat/urls.dart';
 
 class _DrawerHeader extends StatelessWidget {
@@ -53,13 +55,14 @@ class _DrawerHeader extends StatelessWidget {
                                 const SizedBox(width: 16),
                               if (userChannel != null)
                                 ClipRRect(
-                                    borderRadius: BorderRadius.circular(24),
-                                    child: CrossFadeImage(
-                                        placeholder: userChannel
-                                            .profilePicture.placeholderImage,
-                                        image: userChannel.profilePicture,
-                                        height: 36,
-                                        width: 36)),
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: CrossFadeImage(
+                                      placeholder: userChannel
+                                          .profilePicture.placeholderImage,
+                                      image: userChannel.profilePicture,
+                                      height: 36,
+                                      width: 36),
+                                ),
                               const SizedBox(width: 16),
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -94,6 +97,34 @@ class _DrawerHeader extends StatelessWidget {
                             .colorScheme
                             .onTertiary
                             .withOpacity(0.1),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: IconButton(
+                          icon: const Icon(Icons.qr_code),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            showModalBottomSheet(
+                                context: context,
+                                builder: (context) {
+                                  return Consumer<QRModel>(
+                                    builder: (context, qrModel, child) {
+                                      return Container(
+                                          width: double.infinity,
+                                          padding:
+                                              const EdgeInsets.only(top: 20),
+                                          decoration: BoxDecoration(
+                                              gradient: qrModel.currentGradient,
+                                              borderRadius:
+                                                  const BorderRadius.vertical(
+                                                top: Radius.circular(25.0),
+                                              )),
+                                          child: const QRDisplay());
+                                    },
+                                  );
+                                });
+                          },
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(8),
