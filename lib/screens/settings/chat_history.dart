@@ -8,7 +8,6 @@ import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
 
-
 final message1 = TwitchMessageModel(
     messageId: "placeholder1",
     author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
