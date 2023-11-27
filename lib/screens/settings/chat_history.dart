@@ -89,11 +89,13 @@ class ChatHistoryScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Font size",
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                        fontWeight: FontWeight.bold,
-                      )),
+                  Text(
+                    "Font size",
+                    style: DefaultTextStyle.of(context).style.copyWith(
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
                   Slider.adaptive(
                     value: styleModel.fontSize,
                     min: 12,
@@ -105,10 +107,10 @@ class ChatHistoryScreen extends StatelessWidget {
                     },
                   ),
                   Text("Username contrast boost",
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                        fontWeight: FontWeight.bold,
-                      )),
+                      style: DefaultTextStyle.of(context).style.copyWith(
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontWeight: FontWeight.bold,
+                          )),
                   Slider.adaptive(
                     value: styleModel.lightnessBoost,
                     min: 0.179,
@@ -142,10 +144,10 @@ class ChatHistoryScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text("Compact messages",
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.secondary,
-                    fontWeight: FontWeight.bold,
-                  )),
+                  style: DefaultTextStyle.of(context).style.copyWith(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.bold,
+                      )),
             ),
             RadioListTile(
               title: const Text('Don\'t compact messages'),
@@ -175,10 +177,10 @@ class ChatHistoryScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Announcement pin duration",
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                        fontWeight: FontWeight.bold,
-                      )),
+                      style: DefaultTextStyle.of(context).style.copyWith(
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontWeight: FontWeight.bold,
+                          )),
                   Slider.adaptive(
                     value: messagesModel.announcementPinDuration.inSeconds
                         .toDouble(),
@@ -201,10 +203,10 @@ class ChatHistoryScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Idle message alert duration",
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                        fontWeight: FontWeight.bold,
-                      )),
+                      style: DefaultTextStyle.of(context).style.copyWith(
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontWeight: FontWeight.bold,
+                          )),
                   Text(
                       "If there aren't any messages for this amount of time and a new one comes in, an alert sound will play.",
                       style: TextStyle(
