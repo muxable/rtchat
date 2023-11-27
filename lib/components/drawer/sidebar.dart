@@ -109,14 +109,17 @@ class _DrawerHeader extends StatelessWidget {
                                 builder: (context) {
                                   return Consumer<QRModel>(
                                     builder: (context, qrModel, child) {
-                                      return const Column(
-                                        children: [
-                                          Center(child: QRDisplay()),
-                                          SizedBox(
-                                            height: 15,
-                                          )
-                                        ],
-                                      );
+                                      return Container(
+                                          width: double.infinity,
+                                          padding:
+                                              const EdgeInsets.only(top: 20),
+                                          decoration: BoxDecoration(
+                                              gradient: qrModel.currentGradient,
+                                              borderRadius:
+                                                  const BorderRadius.vertical(
+                                                top: Radius.circular(25.0),
+                                              )),
+                                          child: const QRDisplay());
                                     },
                                   );
                                 });

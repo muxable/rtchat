@@ -44,7 +44,7 @@ class QRModel extends ChangeNotifier {
 class FlutterLinearGradients {
   static Gradient warmFlame({TileMode tileMode = TileMode.clamp}) =>
       LinearGradient(
-        colors: const [Color(0xffff9a9e), Color(0xfffad0c4)],
+        colors: const [Color(0xffff9a9e), Color(0xfffad0c4), Color(0xfffad0c4)],
         stops: const [0.0, 0.99, 1.0],
         tileMode: tileMode,
       );
