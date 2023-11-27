@@ -18,7 +18,7 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-// import 'package:rtchat/tts_plugin.dart';
+import 'package:rtchat/tts_plugin.dart';
 import 'package:wakelock/wakelock.dart';
 import 'dart:math' as math;
 
@@ -240,6 +240,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       onPressed: () async {
                         // Toggle the enabled state
                         ttsModel.enabled = !ttsModel.enabled;
+
+                        if (!ttsModel.enabled) {
+                          await TextToSpeechPlugin.clear();
+                        }
 
                         // if (ttsModel.enabled) {
                         //   // Test speak method with a long string
