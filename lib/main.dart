@@ -23,6 +23,7 @@ import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/purchases.dart';
+import 'package:rtchat/models/qr_code.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
@@ -193,6 +194,15 @@ class _AppState extends State<App> {
               widget.prefs.setString('style', jsonEncode(model.toJson()));
             });
         }),
+        ChangeNotifierProvider(create: ((context) {
+          final model = QRModel.fromJson(
+              jsonDecode(widget.prefs.getString("qr") ?? "{}"));
+
+          return model
+            ..addListener(() {
+              widget.prefs.setString('qr', jsonEncode(model.toJson()));
+            });
+        })),
         ChangeNotifierProvider(create: (context) {
           final model = CommandsModel.fromJson(
               jsonDecode(widget.prefs.getString("commands") ?? "{}"));
