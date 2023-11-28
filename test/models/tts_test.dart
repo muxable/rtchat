@@ -34,10 +34,7 @@ void main() {
     test('SpeakNext removes the first element from the queue', () async {
       ttsQueue.speak('1', 'First message');
       ttsQueue.speak('2', 'Second message');
-      print('Queue after speak: ${ttsQueue.queue}');
       await ttsQueue.speakNext();
-      print('Queue after speak: ${ttsQueue.queue}');
-
       expect(ttsQueue.length, equals(1));
       expect(ttsQueue.peek(), equals({'id': '2', 'text': 'Second message'}));
     });
