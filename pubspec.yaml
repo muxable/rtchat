@@ -53,6 +53,7 @@ dependencies:
   webview_flutter_wkwebview: ^3.9.1
 
 dev_dependencies:
+  mockito: ^5.0.0
   flutter_lints: ^2.0.3
   flutter_test:
     sdk: flutter
