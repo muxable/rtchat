@@ -103,6 +103,7 @@ class Themes {
       ));
 
   static final darkTheme = ThemeData(
+    useMaterial3: false,
     fontFamily: GoogleFonts.poppins().fontFamily,
     canvasColor: Colors.black,
     cardColor: Colors.black,
