@@ -40,23 +40,23 @@ class TextToSpeechPlugin {
 }
 
 class TTSQueue {
-  static const MethodChannel _channel = MethodChannel('tts_plugin');
+  final MethodChannel _channel;
 
-  final List<Map<String, String>> _queue = [];
+  TTSQueue(this._channel);
+
+  final List<Map<String, String>> queue = [];
+
+  bool get isEmpty => queue.isEmpty;
+
+  int get length => queue.length;
 
   Future<void> speak(String id, String text) async {
-    // Add the speak request to the queue
-    _queue.add({'id': id, 'text': text});
-
-    // If no speak is in progress, start speaking
-    if (_queue.length == 1) {
-      await _speakNext();
-    }
+    queue.add({'id': id, 'text': text});
   }
 
-  Future<void> _speakNext() async {
-    if (_queue.isNotEmpty) {
-      final speakRequest = _queue.first;
+  Future<void> speakNext() async {
+    if (queue.isNotEmpty) {
+      final speakRequest = queue.first;
       final id = speakRequest['id'];
       final text = speakRequest['text'];
 
@@ -66,8 +66,7 @@ class TTSQueue {
         // handle the error;
       }
 
-      _queue.removeAt(0);
-      await _speakNext();
+      queue.removeAt(0);
 
       // remove this when we actually use the ID,
       // needed to prevent compile errors
@@ -76,12 +75,12 @@ class TTSQueue {
   }
 
   Future<void> delete(String id) async {
-    _queue.removeWhere((speak) => speak['id'] == id);
+    queue.removeWhere((speak) => speak['id'] == id);
   }
 
-  void clear() {
-    _queue.clear();
-    _stopSpeaking();
+  Future<void> clear() async {
+    queue.clear();
+    await _stopSpeaking();
   }
 
   Future<void> _stopSpeaking() async {
@@ -90,5 +89,9 @@ class TTSQueue {
     } catch (e) {
       // handle the error;
     }
+  }
+
+  Map<String, String>? peek() {
+    return queue.isNotEmpty ? queue.first : null;
   }
 }
