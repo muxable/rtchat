@@ -17,11 +17,12 @@ void main() {
       expect(ttsQueue.isEmpty, isTrue);
     });
 
-    test('Speak adds elements to the queue', () {
+    test('Speak adds elements to the queue', () async {
       ttsQueue.speak('1', 'First message');
       ttsQueue.speak('2', 'Second message');
+      await ttsQueue.speakNext();
       expect(ttsQueue.isEmpty, isFalse);
-      expect(ttsQueue.length, equals(2));
+      expect(ttsQueue.length, equals(1));
     });
 
     test('Speak and clear empties the queue', () async {
