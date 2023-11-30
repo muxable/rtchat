@@ -61,17 +61,23 @@ void main() {
 
     test('Resolving speak from the mocked channel lines up the next message',
         () async {
-      ttsQueue.speak('1', 'First message');
-      ttsQueue.speak('2', 'Second message');
+      var callCount = 0;
+      when(mockedTTSQueue.speak(any, any)).thenAnswer((_) async {
+        callCount++;
+        await Future.delayed(seconds: 1);  // prevent race conditions
+      });
 
-      when(mockedTTSQueue.speak(any, any)).thenAnswer((_) async {});
-
-      await ttsQueue.speakNext();
-      expect(ttsQueue.length, equals(1));
-      expect(ttsQueue.peek(), equals({'id': '2', 'text': 'Second message'}));
-
-      await ttsQueue.speakNext();
-      expect(ttsQueue.isEmpty, isTrue);
+      expect(callCount, 0);
+      const promise1 = ttsQueue.speak('1', 'First message');
+      const promise2 = ttsQueue.speak('2', 'Second message');
+      
+      expect(ttsQueue.length, equals(1));  // pop off immediately
+      await promise1;
+      expect(callCount, 1);
+      expect(ttsQueue.length, equals(1));  // resolve before the next tts speak command has finished
+      await promise2;
+      expect(callCount, 2);
+      expect(ttsQueue.length, equals(0)); 
     });
   });
 }
