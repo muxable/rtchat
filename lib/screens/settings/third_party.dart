@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
@@ -6,7 +8,6 @@ import 'package:rtchat/models/adapters/donations.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/urls.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'dart:typed_data';
 
 const streamlabsCurrencies = [
   [null, "Donation's currency"],
