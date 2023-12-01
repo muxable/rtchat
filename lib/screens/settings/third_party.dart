@@ -1,4 +1,4 @@
-import 'package:barcode_scan2/barcode_scan2.dart';
+// import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/adapters/donations.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/urls.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'dart:typed_data';
 
 const streamlabsCurrencies = [
   [null, "Donation's currency"],
@@ -71,28 +73,40 @@ class _RealtimeCashWidget extends StatelessWidget {
                     hintText: "Wallet address",
                     suffixIcon: IconButton(
                         icon: const Icon(Icons.qr_code_scanner),
-                        onPressed: () async {
-                          final messenger = ScaffoldMessenger.of(context);
-                          final result = await BarcodeScanner.scan(
-                            options: ScanOptions(strings: {
-                              "cancel": AppLocalizations.of(context)!.cancel,
-                              "flash_on": AppLocalizations.of(context)!.flashOn,
-                              "flash_off":
-                                  AppLocalizations.of(context)!.flashOff,
-                            }),
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) {
+                              return MobileScanner(
+                                fit: BoxFit.contain,
+                                controller: MobileScannerController(
+                                  // facing: CameraFacing.back,
+                                  // torchEnabled: false,
+                                  returnImage: true,
+                                ),
+                                onDetect: (capture) {
+                                  final List<Barcode> barcodes =
+                                      capture.barcodes;
+                                  final Uint8List? image = capture.image;
+                                  for (final barcode in barcodes) {
+                                    debugPrint(
+                                        'Barcode found! ${barcode.rawValue}');
+                                  }
+                                  if (image != null) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) =>
+                                          Image(image: MemoryImage(image)),
+                                    );
+                                    Future.delayed(const Duration(seconds: 5),
+                                        () {
+                                      Navigator.pop(context);
+                                    });
+                                  }
+                                },
+                              );
+                            },
                           );
-                          switch (result.type) {
-                            case ResultType.Barcode:
-                              DonationsAdapter.instance.setRealtimeCashAddress(
-                                  address: result.rawContent.toLowerCase());
-                              break;
-                            case ResultType.Cancelled:
-                              break;
-                            case ResultType.Error:
-                              messenger.showSnackBar(
-                                  SnackBar(content: Text(result.rawContent)));
-                              break;
-                          }
                         })),
                 keyboardType: TextInputType.url),
           ),
