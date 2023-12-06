@@ -40,9 +40,7 @@ class TextToSpeechPlugin {
 }
 
 class TTSQueue {
-  final MethodChannel _channel;
-
-  TTSQueue(this._channel);
+  static const MethodChannel _channel = MethodChannel('tts_plugin');
 
   final List<Map<String, String>> queue = [];
 
