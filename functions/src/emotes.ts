@@ -200,24 +200,24 @@ export async function get7TVEmotes(channelId: string): Promise<Emote[]> {
   const global = fetch("https://7tv.io/v3/emote-sets/global")
     .then((res) => res.json() as any)
     .then((json) =>
-      json.map((emote: any) => ({
+      json["emotes"].map((emote: any) => ({
         provider: "7tv",
         category: null,
         id: emote.id,
         code: emote.name,
-        imageUrl: emote.urls.pop()[1],
+        imageUrl: `https://cdn.7tv.app/emote/${emote.id}/4x.webp`,
       }))
     )
     .catch(() => []);
   const local = fetch(`https://7tv.io/v3/users/twitch/${channelId}`)
     .then((res) => res.json() as any)
     .then((json) =>
-      json.map((emote: any) => ({
+      json["emote_set"]["emotes"].map((emote: any) => ({
         provider: "7tv",
         category: null,
         id: emote.id,
         code: emote.name,
-        imageUrl: emote.urls.pop()[1],
+        imageUrl: `https://cdn.7tv.app/emote/${emote.id}/4x.webp`,
       }))
     )
     .catch(() => []);
