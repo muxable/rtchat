@@ -26,6 +26,7 @@ import AVFoundation
                 
                 let utterance = AVSpeechUtterance(string: text)
                 synthesizer.speak(utterance)
+                result(Bool(true))
                 
             case "getLanguages":
                 var languageMap =  Dictionary<String, String>()
