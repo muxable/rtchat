@@ -1,7 +1,7 @@
+import AVFoundation
 import Flutter
 import UIKit
 import WebKit
-import AVFoundation
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -20,8 +20,11 @@ import AVFoundation
 
             switch call.method {
             case "speak":
-                guard let text = args?["text"] as? String, !text.isEmpty else {
-                    return result(FlutterError.init(code: "INVALID_ARGUMENT", message: "Text is empty or null", details: nil))
+                guard let text = args?["text"] as? String, !text.empty  else {
+                    if (text.empty) {
+                        result(Bool(true))
+                    }
+                     result(FlutterError.init(code: "INVALID_ARGUMENT", message: "Text is null", details: nil))
                 }
                 
                 let utterance = AVSpeechUtterance(string: text)
