@@ -20,11 +20,13 @@ import WebKit
 
             switch call.method {
             case "speak":
-                guard let text = args?["text"] as? String, !text.empty  else {
-                    if (text.empty) {
-                        result(Bool(true))
-                    }
-                     result(FlutterError.init(code: "INVALID_ARGUMENT", message: "Text is null", details: nil))
+                guard let text = args?["text"] as? String else {
+                    result(FlutterError.init(code: "INVALID_ARGUMENT", message: "Text is null", details: nil))
+                    return
+                }
+                if (text.empty) {
+                    result(Bool(true))
+                    return
                 }
                 
                 let utterance = AVSpeechUtterance(string: text)
