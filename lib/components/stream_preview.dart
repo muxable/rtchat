@@ -93,6 +93,16 @@ class _StreamPreviewState extends State<StreamPreview> {
       })
       ..setNavigationDelegate(NavigationDelegate(
         onPageFinished: (url) async {
+          
+          
+          String? x = await      _controller.currentUrl();
+          print('================================================================================================================================================================');
+          print(x);
+          if(x?.contains("controls=false")??false){
+          x = x?.replaceAll("controls=false","controls=true");
+          print(x);
+          _controller.loadRequest(Uri.parse(x??""));
+          }
           await _controller.runJavaScript(
               await rootBundle.loadString('assets/twitch-tunnel.js'));
           // wait a second for twitch to catch up.
@@ -159,7 +169,7 @@ class _StreamPreviewState extends State<StreamPreview> {
             ),
           ),
         )
-      else if (_playerState == "Playing")
+      else if (_playerState == "Playing"&&Platform.isIOS)
         Positioned.fill(
           child: GestureDetector(
             onTap: () {
