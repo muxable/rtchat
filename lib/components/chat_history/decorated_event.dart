@@ -45,7 +45,7 @@ class DecoratedEventWidget extends StatelessWidget {
                     // 2. the avatar and text fit if there are two lines
                     // 3. the avatar aligned to top if there are more than two lines
                     return IntrinsicHeight(
-                      child: Row(
+                        child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Align(
@@ -138,11 +138,15 @@ class DecoratedEventWidget extends StatelessWidget {
             key: key, child: child, avatars: avatars, decoration: decoration);
 
   const DecoratedEventWidget.icon(
-      {Key? key, required Widget child, required IconData icon, 
+      {Key? key,
+      required Widget child,
+      required IconData icon,
       EdgeInsets? padding})
-      : this._(key: key, 
-      padding: padding ?? EdgeInsets.zero,
-      child: child, icon: icon);
+      : this._(
+            key: key,
+            padding: padding ?? EdgeInsets.zero,
+            child: child,
+            icon: icon);
 
   const DecoratedEventWidget({
     Key? key,
