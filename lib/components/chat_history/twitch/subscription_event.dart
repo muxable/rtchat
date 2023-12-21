@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
@@ -16,8 +17,10 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
     return DecoratedEventWidget.icon(
       icon: Icons.star,
+      padding: EdgeInsets.zero,
       child: Text.rich(
         TextSpan(
           children: [
@@ -26,7 +29,7 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleSmall),
             TextSpan(
                 text:
-                    " subscribed at Tier ${model.tier.replaceAll("000", "")}."),
+                    " ${localizations!.subscribedToTier} ${model.tier.replaceAll("000", "")}."),
           ],
         ),
       ),
@@ -42,6 +45,7 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final localizations = AppLocalizations.of(context);
     return DecoratedEventWidget.icon(
       icon: Icons.star,
       child: Text.rich(
@@ -52,12 +56,13 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleSmall),
             TextSpan(
                 text:
-                    " gifted ${model.total} Tier ${model.tier.replaceAll("000", "")} "),
+                    " ${localizations!.gifted} ${model.total} ${localizations.tier} ${model.tier.replaceAll("000", "")} "),
             TextSpan(
-                text: model.total > 1 ? "subscriptions. " : "subscription. "),
+                text: model.total > 1 ? "${localizations.subscriptions}. " : 
+                "${localizations.subscription}. "),
             TextSpan(
                 text: model.cumulativeTotal > 0
-                    ? "They've gifted ${model.cumulativeTotal} subs in the channel"
+                    ? "${localizations.haveGifted} ${model.cumulativeTotal} ${localizations.subsInTheChannel}"
                     : ""),
           ],
         ),

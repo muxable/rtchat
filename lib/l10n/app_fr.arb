@@ -79,5 +79,12 @@
   "unbanUser": "débannir {displayName}",
   "viewProfile": "voir le profil de {displayName}",
   "copyMessage": "copier le message",
-  "deleteMessage": "supprimer le message"
+  "deleteMessage": "supprimer le message",
+  "subscribedToTier" : "abonné au niveau",
+  "gifted" : "offert",
+  "tier" : "Niveau",
+  "subscriptions" : "abonnements",
+  "subscription" : "abonnement",
+  "haveGifted" : "Ils ont offert",
+  "subsInTheChannel": "abonnés sur la chaîne"
 }

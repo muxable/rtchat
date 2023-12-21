@@ -80,5 +80,11 @@
   "unbanUser": "আনব্যান {displayName}",
   "viewProfile": "প্রোফাইল দেখুন {displayName}",
   "copyMessage": "মেসেজ কপি করুন",
-  "deleteMessage": "মেসেজ ডিলিট করুন"
+  "deleteMessage": "মেসেজ ডিলিট করুন",
+  "subscribedToTier" : "اشترك في المستوى",
+  "gifted" : "قدم",
+  "subscriptions" : "الاشتراكات",
+  "subscription" : "اشتراك",
+  "haveGifted" : "لقد قدموا",
+   "subsInTheChannel": "الاشتراكات في القناة"
 }
