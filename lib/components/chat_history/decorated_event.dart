@@ -138,8 +138,15 @@ class DecoratedEventWidget extends StatelessWidget {
             key: key, child: child, avatars: avatars, decoration: decoration);
 
   const DecoratedEventWidget.icon(
-      {Key? key, required Widget child, required IconData icon})
-      : this._(key: key, child: child, icon: icon);
+      {Key? key,
+      required Widget child,
+      required IconData icon,
+      EdgeInsets? padding})
+      : this._(
+            key: key,
+            padding: padding ?? EdgeInsets.zero,
+            child: child,
+            icon: icon);
 
   const DecoratedEventWidget({
     Key? key,
