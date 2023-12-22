@@ -15,9 +15,26 @@ class TwitchBadgesScreen extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: Consumer<TwitchBadgeModel>(builder: (context, model, child) {
-          final badges = model.badgeSets
-            ..sort((a, b) =>
-                a.versions.last.title.compareTo(b.versions.last.title));
+        final badges = model.badgeSets;
+          badges.sort((a, b) {
+            // Check if a or b is "Moderator" or "VIP" and prioritize them.
+            const highPriorityBadges = ['Moderator', 'VIP'];
+            var titleA = a.versions.last.title;
+            var titleB = b.versions.last.title;
+            var isAHighPriority = highPriorityBadges.contains(titleA);
+            var isBHighPriority = highPriorityBadges.contains(titleB);
+            
+            if (isAHighPriority && isBHighPriority) {
+              return titleA.compareTo(titleB); // If both are high priority, sort alphabetically.
+            } else if (isAHighPriority) {
+              return -1; // a is high priority, so it comes first.
+            } else if (isBHighPriority) {
+              return 1; // b is high priority, so it comes first.
+            } else {
+              return titleA.compareTo(titleB); // Otherwise, sort alphabetically.
+            }
+          });
+
           return CustomScrollView(slivers: <Widget>[
             SliverAppBar(
                 pinned: true,
