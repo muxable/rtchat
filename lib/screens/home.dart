@@ -19,6 +19,8 @@ import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/tts_plugin.dart';
+// import 'dart:isolate';
+// import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
 import 'package:wakelock/wakelock.dart';
 import 'dart:math' as math;
 
@@ -244,6 +246,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         if (!ttsModel.enabled) {
                           await TextToSpeechPlugin.clear();
                         }
+
+                        // Test the isolate
+                        // if (ttsModel.enabled) {
+                        //   await Isolate.spawn(
+                        //       ttsIsolate.isolateMain, ReceivePort().sendPort);
+                        // }
 
                         // if (ttsModel.enabled) {
                         //   // Test speak method with a long string

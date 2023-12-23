@@ -1,11 +1,14 @@
+import 'dart:async';
+import 'dart:collection';
+
 import 'package:flutter/services.dart';
 
 class TextToSpeechPlugin {
-  static const MethodChannel _channel = MethodChannel('tts_plugin');
+  static const MethodChannel channel = MethodChannel('tts_plugin');
 
   static Future<void> speak(String text) async {
     try {
-      await _channel.invokeMethod('speak', {'text': text});
+      await channel.invokeMethod('speak', {'text': text});
     } catch (e) {
       // Handle the error
     }
@@ -14,7 +17,7 @@ class TextToSpeechPlugin {
   static Future<Map<String, String>> getLanguages() async {
     try {
       final Map<dynamic, dynamic> languageMap =
-          await _channel.invokeMethod('getLanguages');
+          await channel.invokeMethod('getLanguages');
       return Map<String, String>.from(languageMap);
     } catch (e) {
       // Handle the error
@@ -24,7 +27,7 @@ class TextToSpeechPlugin {
 
   static Future<void> stopSpeaking() async {
     try {
-      await _channel.invokeMethod('stopSpeaking');
+      await channel.invokeMethod('stopSpeaking');
     } catch (e) {
       // Handle the error
     }
@@ -32,7 +35,7 @@ class TextToSpeechPlugin {
 
   static Future<void> clear() async {
     try {
-      await _channel.invokeMethod('clear');
+      await channel.invokeMethod('clear');
     } catch (e) {
       // Handle the error
     }
@@ -40,55 +43,50 @@ class TextToSpeechPlugin {
 }
 
 class TTSQueue {
-  static const MethodChannel _channel = MethodChannel('tts_plugin');
+  final queue = Queue<({String id, String text, Completer<void> completer})>();
 
-  final List<Map<String, String>> _queue = [];
+  bool get isEmpty => queue.isEmpty;
+
+  int get length => queue.length;
 
   Future<void> speak(String id, String text) async {
-    // Add the speak request to the queue
-    _queue.add({'id': id, 'text': text});
-
-    // If no speak is in progress, start speaking
-    if (_queue.length == 1) {
-      await _speakNext();
-    }
-  }
-
-  Future<void> _speakNext() async {
-    if (_queue.isNotEmpty) {
-      final speakRequest = _queue.first;
-      final id = speakRequest['id'];
-      final text = speakRequest['text'];
-
-      try {
-        await _channel.invokeMethod('speak', {'text': text});
-      } catch (e) {
-        // handle the error;
+    final completer = Completer<void>();
+    final element = (id: id, text: text, completer: completer);
+    if (queue.isNotEmpty) {
+      final previous = queue.last;
+      queue.addLast(element);
+      await previous.completer.future;
+      if (queue.firstOrNull != element) {
+        throw Exception('Message was deleted');
       }
-
-      _queue.removeAt(0);
-      await _speakNext();
-
-      // remove this when we actually use the ID,
-      // needed to prevent compile errors
-      print(id);
+      await TextToSpeechPlugin.speak(text);
+      completer.complete();
+    } else {
+      queue.addLast(element);
+      await TextToSpeechPlugin.speak(text);
+      completer.complete();
     }
+    queue.remove(element);
   }
 
-  Future<void> delete(String id) async {
-    _queue.removeWhere((speak) => speak['id'] == id);
+  void delete(String id) {
+    queue.removeWhere((speak) => speak.id == id);
   }
 
-  void clear() {
-    _queue.clear();
-    _stopSpeaking();
-  }
-
-  Future<void> _stopSpeaking() async {
+  Future<void> clear() async {
+    queue.clear();
     try {
-      await _channel.invokeMethod('stopSpeaking');
+      await TextToSpeechPlugin.stopSpeaking();
     } catch (e) {
       // handle the error;
     }
+  }
+
+  ({String id, String text})? peek() {
+    final first = queue.firstOrNull;
+    if (first != null) {
+      return (id: first.id, text: first.text);
+    }
+    return null;
   }
 }
