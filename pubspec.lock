@@ -328,8 +328,7 @@ packages:
       sha256: "4920a83b917493b37fd408cbb01c289ef8a422d9ed48982f908a9850290262f9"
       url: "https://pub.dev"
     source: hosted
-
-    version: "0.2.3+12"
+    version: "0.2.3+16"
   flutter:
     dependency: "direct main"
     description: flutter
