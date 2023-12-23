@@ -16,7 +16,7 @@ class TwitchBadgesScreen extends StatelessWidget {
         top: false,
         child: Consumer<TwitchBadgeModel>(builder: (context, model, child) {
         final badges = model.badgeSets;
-          badges.sort((a, b) {
+          badges..sort((a, b) {
             // Check if a or b is "Moderator" or "VIP" and prioritize them.
             const highPriorityBadges = ['Moderator', 'VIP'];
             var titleA = a.versions.last.title;
