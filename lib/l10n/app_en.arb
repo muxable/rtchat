@@ -591,17 +591,17 @@
   "@durationForeverTimeoutPrompt": {
     "descriptionTimeoutPrompt": "Button label to timeout for a forever duration"
   }, 
-  "subscribedToTier" : "subscribed to tier",
-  "@subscribedToTierPrompt" : {
-    "subscribedToTierPrompt" : "Text Box label  to display subscribed to tier"
+  "subscribedAtTier" : "subscribed at tier",
+  "@subscribedAtTierPrompt" : {
+    "subscribedAtTierPrompt" : "Text Box label to display tier subscribed at"
   },
   "gifted" : "gifted",
   "@giftedPrompt" : {
-    "giftedPrompt" : "Text Box label  to display gifted to tier"
+    "giftedPrompt" : "Text Box label to display tier of gifted subscription"
   },
      "tier": "Tier",
   "@tierPrompt": {
-    "tierPrompt": "Text Box label to display tier prompt to tier"
+    "tierPrompt": "Text Box label to display tier of subscription"
   },
   "subscriptions": "subscriptions",
   "@subscriptionsPrompt": {
@@ -611,12 +611,12 @@
   "@subscriptionPrompt": {
     "subscriptionPrompt": "Text Box label to display prompt for a subscription"
   },
-   "haveGifted": "They've gifted",
+   "theyHaveGifted": "They've gifted",
   "@haveGiftedPrompt": {
     "haveGiftedPrompt": "Text Box label to display prompt for 'They've gifted'"
   },
    "subsInTheChannel": "subs in the channel",
   "@subsInTheChannelPrompt": {
-    "subsInTheChannelPrompt": "Text Box label to display prompt for subs in the channel"
+    "subsInTheChannelPrompt": "Text Box label to display prompt for subscriptions gifted in the channel"
   }
 }
