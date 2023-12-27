@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/models/adapters/chat_state.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 
 class TwitchBadgesScreen extends StatelessWidget {
@@ -15,9 +16,8 @@ class TwitchBadgesScreen extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: Consumer<TwitchBadgeModel>(builder: (context, model, child) {
-          final badges = model.badgeSets
-            ..sort((a, b) =>
-                a.versions.last.title.compareTo(b.versions.last.title));
+          final badges = model.badgeSets;
+           badges.sort(badgePriorityComparator);
           return CustomScrollView(slivers: <Widget>[
             SliverAppBar(
                 pinned: true,
@@ -77,5 +77,24 @@ class TwitchBadgesScreen extends StatelessWidget {
         }),
       ),
     );
+  }
+
+  static int badgePriorityComparator(TwitchBadgeInfo a, TwitchBadgeInfo b) {
+    const highPriorityBadges = ['Moderator', 'VIP'];
+    var titleA = a.versions.last.title;
+    var titleB = b.versions.last.title;
+    var isAHighPriority = highPriorityBadges.contains(titleA);
+    var isBHighPriority = highPriorityBadges.contains(titleB);
+
+    if (isAHighPriority && isBHighPriority) {
+      return titleA
+          .compareTo(titleB); // If both are high priority, sort alphabetically.
+    } else if (isAHighPriority) {
+      return -1; // a is high priority, so it comes first.
+    } else if (isBHighPriority) {
+      return 1; // b is high priority, so it comes first.
+    } else {
+      return titleA.compareTo(titleB); // Otherwise, sort alphabetically.
+    }
   }
 }

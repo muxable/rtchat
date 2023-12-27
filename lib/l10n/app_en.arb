@@ -503,13 +503,17 @@
   "@flashOff": {
     "description": "Text label for the camera flash disable button."
   },
+  "durationOneSecond": "1 second",
+  "@durationOneSecond": {
+    "description": "Text label for a one second duration"
+  },
   "durationOneMinute": "1 minute",
   "@durationOneMinute": {
     "description": "Text label for a one minute duration"
   },
-  "durationFifteenMinutes": "15 minutes",
+  "durationTenMinutes": "10 minutes",
   "@durationFifteenMinutes": {
-    "description": "Text label for a fifteen minute duration"
+    "description": "Text label for a ten minute duration"
   },
   "durationOneHour": "1 hour",
   "@durationOneHour": {
@@ -531,29 +535,21 @@
   "@durationOneWeek": {
     "description": "Text label for a one week duration"
   },
-  "durationOneMonth": "1 month",
+  "durationTwoWeeks": "2 weeks",
   "@durationOneMonth": {
-    "description": "Text label for a one month duration"
+    "description": "Text label for a two week duration"
   },
-  "durationThreeMonths": "3 months",
-  "@durationThreeMonths": {
-    "description": "Text label for a three month duration"
-  },
-  "durationOneYear": "1 year",
-  "@durationOneYear": {
-    "description": "Text label for a one year duration"
-  },
-  "durationForever": "Forever",
-  "@durationForever": {
-    "description": "Text label for a forever duration"
+  "durationOneSecondTimeoutPrompt": "Timeout for 1 second",
+  "@durationOneSecondTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a one second duration"
   },
   "durationOneMinuteTimeoutPrompt": "Timeout for 1 minute",
   "@durationOneMinuteTimeoutPrompt": {
     "descriptionTimeoutPrompt": "Button label to timeout for a one minute duration"
   },
-  "durationFifteenMinutesTimeoutPrompt": "Timeout for 15 minutes",
+  "durationTenMinutesTimeoutPrompt": "Timeout for 10 minutes",
   "@durationFifteenMinutesTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a fifteen minute duration"
+    "descriptionTimeoutPrompt": "Button label to timeout for a ten minute duration"
   },
   "durationOneHourTimeoutPrompt": "Timeout for 1 hour",
   "@durationOneHourTimeoutPrompt": {
@@ -575,22 +571,10 @@
   "@durationOneWeekTimeoutPrompt": {
     "descriptionTimeoutPrompt": "Button label to timeout for a one week duration"
   },
-  "durationOneMonthTimeoutPrompt": "Timeout for 1 month",
-  "@durationOneMonthTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a one month duration"
+  "durationTwoWeeksTimeoutPrompt": "Timeout for 2 weeks",
+  "@durationTwoWeeksTimeoutPrompt": {
+    "descriptionTimeoutPrompt": "Button label to timeout for a two week duration"
   },
-  "durationThreeMonthsTimeoutPrompt": "Timeout for 3 months",
-  "@durationThreeMonthsTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a three month duration"
-  },
-  "durationOneYearTimeoutPrompt": "Timeout for 1 year",
-  "@durationOneYearTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a one year duration"
-  },
-  "durationForeverTimeoutPrompt": "Timeout for Forever",
-  "@durationForeverTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a forever duration"
-  }, 
   "sentAt": "Sent at",
   "@sentAtPrompt": {
     "sentAtPrompt": "Text label to show when a message was last sent at"
