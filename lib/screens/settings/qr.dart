@@ -36,11 +36,11 @@ class QRDisplay extends StatelessWidget {
                     data: inviteLink,
                     eyeStyle: const QrEyeStyle(
                       eyeShape: QrEyeShape.square,
-                      color: Color.fromARGB(255, 18, 135, 135),
+                      color: Colors.black,
                     ),
                     dataModuleStyle: const QrDataModuleStyle(
-                      dataModuleShape: QrDataModuleShape.circle,
-                      color: Color(0xff1a5441),
+                      dataModuleShape: QrDataModuleShape.square,
+                      color: Colors.black,
                     ),
                     embeddedImage: userChannel?.profilePicture,
                     embeddedImageStyle: const QrEmbeddedImageStyle(
