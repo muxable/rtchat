@@ -49,7 +49,7 @@ class QRDisplay extends StatelessWidget {
                         // Remove the embeddedImage property
                       ),
                       CircleAvatar(
-                        radius: 30,
+                        radius: 35,
                         backgroundImage: userChannel?.profilePicture,
                       ),
                     ],
