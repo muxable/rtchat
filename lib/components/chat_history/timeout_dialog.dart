@@ -97,7 +97,7 @@ class _TimeoutDialogState extends State<TimeoutDialog> {
             value: _value.toDouble(),
             min: 1,
             max: 9,
-            divisions:9,
+            divisions: 9,
             label: getLabel(context),
             onChanged: (double value) {
               setState(() {
