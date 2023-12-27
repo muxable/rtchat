@@ -18,27 +18,23 @@ class _TimeoutDialogState extends State<TimeoutDialog> {
   String? getLabel(BuildContext context) {
     switch (_value) {
       case 1:
-        return AppLocalizations.of(context)!.durationOneMinute;
+        return AppLocalizations.of(context)!.durationOneSecond;
       case 2:
-        return AppLocalizations.of(context)!.durationFifteenMinutes;
+        return AppLocalizations.of(context)!.durationOneMinute;
       case 3:
-        return AppLocalizations.of(context)!.durationOneHour;
+        return AppLocalizations.of(context)!.durationTenMinutes;
       case 4:
-        return AppLocalizations.of(context)!.durationSixHours;
+        return AppLocalizations.of(context)!.durationOneHour;
       case 5:
-        return AppLocalizations.of(context)!.durationOneDay;
+        return AppLocalizations.of(context)!.durationSixHours;
       case 6:
-        return AppLocalizations.of(context)!.durationTwoDays;
+        return AppLocalizations.of(context)!.durationOneDay;
       case 7:
-        return AppLocalizations.of(context)!.durationOneWeek;
+        return AppLocalizations.of(context)!.durationTwoDays;
       case 8:
-        return AppLocalizations.of(context)!.durationOneMonth;
+        return AppLocalizations.of(context)!.durationOneWeek;
       case 9:
-        return AppLocalizations.of(context)!.durationThreeMonths;
-      case 10:
-        return AppLocalizations.of(context)!.durationOneYear;
-      case 11:
-        return AppLocalizations.of(context)!.durationForever;
+        return AppLocalizations.of(context)!.durationTwoWeeks;
     }
     return null;
   }
@@ -46,28 +42,23 @@ class _TimeoutDialogState extends State<TimeoutDialog> {
   String getPrompt(BuildContext context) {
     switch (_value) {
       case 1:
-        return AppLocalizations.of(context)!.durationOneMinuteTimeoutPrompt;
+        return AppLocalizations.of(context)!.durationOneSecondTimeoutPrompt;
       case 2:
-        return AppLocalizations.of(context)!
-            .durationFifteenMinutesTimeoutPrompt;
+        return AppLocalizations.of(context)!.durationOneMinuteTimeoutPrompt;
       case 3:
-        return AppLocalizations.of(context)!.durationOneHourTimeoutPrompt;
+        return AppLocalizations.of(context)!.durationTenMinutesTimeoutPrompt;
       case 4:
-        return AppLocalizations.of(context)!.durationSixHoursTimeoutPrompt;
+        return AppLocalizations.of(context)!.durationOneHourTimeoutPrompt;
       case 5:
-        return AppLocalizations.of(context)!.durationOneDayTimeoutPrompt;
+        return AppLocalizations.of(context)!.durationSixHoursTimeoutPrompt;
       case 6:
-        return AppLocalizations.of(context)!.durationTwoDaysTimeoutPrompt;
+        return AppLocalizations.of(context)!.durationOneDayTimeoutPrompt;
       case 7:
-        return AppLocalizations.of(context)!.durationOneWeekTimeoutPrompt;
+        return AppLocalizations.of(context)!.durationTwoDaysTimeoutPrompt;
       case 8:
-        return AppLocalizations.of(context)!.durationOneMonthTimeoutPrompt;
+        return AppLocalizations.of(context)!.durationOneWeekTimeoutPrompt;
       case 9:
-        return AppLocalizations.of(context)!.durationThreeMonthsTimeoutPrompt;
-      case 10:
-        return AppLocalizations.of(context)!.durationOneYearTimeoutPrompt;
-      case 11:
-        return AppLocalizations.of(context)!.durationForeverTimeoutPrompt;
+        return AppLocalizations.of(context)!.durationTwoWeeksTimeoutPrompt;
     }
     return "";
   }
@@ -75,27 +66,23 @@ class _TimeoutDialogState extends State<TimeoutDialog> {
   Duration get _duration {
     switch (_value) {
       case 1:
-        return const Duration(minutes: 1);
+        return const Duration(seconds: 1);
       case 2:
-        return const Duration(minutes: 15);
+        return const Duration(minutes: 1);
       case 3:
-        return const Duration(hours: 1);
+        return const Duration(minutes: 10);
       case 4:
-        return const Duration(hours: 6);
+        return const Duration(hours: 1);
       case 5:
-        return const Duration(days: 1);
+        return const Duration(hours: 6);
       case 6:
-        return const Duration(days: 2);
+        return const Duration(days: 1);
       case 7:
-        return const Duration(days: 7);
+        return const Duration(days: 2);
       case 8:
-        return const Duration(days: 30);
+        return const Duration(days: 7);
       case 9:
-        return const Duration(days: 90);
-      case 10:
-        return const Duration(days: 365);
-      case 11:
-        return const Duration(days: 100 * 365);
+        return const Duration(days: 14);
     }
     return const Duration(days: 100 * 365);
   }
@@ -109,8 +96,8 @@ class _TimeoutDialogState extends State<TimeoutDialog> {
           child: Slider(
             value: _value.toDouble(),
             min: 1,
-            max: 11,
-            divisions: 11,
+            max: 9,
+            divisions:9,
             label: getLabel(context),
             onChanged: (double value) {
               setState(() {
