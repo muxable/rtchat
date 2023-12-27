@@ -117,5 +117,6 @@
   "durationOneMonthTimeoutPrompt": "封鎖1個月",
   "durationThreeMonthsTimeoutPrompt": "封鎖3個月",
   "durationOneYearTimeoutPrompt": "封鎖1年",
-  "durationForeverTimeoutPrompt": "永遠封鎖"
+  "durationForeverTimeoutPrompt": "永遠封鎖",
+  "sentAt": "发送于 :"
 }

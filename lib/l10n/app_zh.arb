@@ -108,5 +108,6 @@
   "chatCleared": "{date}, {time}删除聊天记录",
   "enableRainModeSubtitle": "交互功能会被禁用",
   "enableRainMode": "启用下雨模式",
-  "disableRainMode": "关闭下雨模式"
+  "disableRainMode": "关闭下雨模式",
+  "sentAt": "發送於"
 }

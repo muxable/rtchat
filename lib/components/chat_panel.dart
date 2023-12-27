@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/chat_history/separator.dart';
@@ -82,6 +83,21 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
   @override
   Widget build(BuildContext context) {
     return widget.builder(context);
+  }
+}
+
+String formatDuration(DateTime timestamp) {
+  final now = DateTime.now();
+  final difference = now.difference(timestamp);
+
+  if (difference.inMinutes < 1) {
+    return 'now';
+  } else if (difference.inMinutes < 60) {
+    return '${difference.inMinutes} minutes ago';
+  } else if (difference.inHours < 24) {
+    return '${difference.inHours} hours ago';
+  } else {
+    return DateFormat('dd/MM/yyyy').format(timestamp);
   }
 }
 
@@ -221,6 +237,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
   var _atBottom = true;
   var _refreshPending = false;
   var _showScrollNotification = true;
+  bool _showTimeForLastMessage = false;
 
   @override
   void initState() {
@@ -391,8 +408,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                                 }
                               }
                             }
-                            final messageWidget = ChatHistoryMessage(
+                            Widget messageWidget = ChatHistoryMessage(
                                 message: message, channel: widget.channel);
+                            final isLastMessage = index == messages.length - 1;
                             final showSeparator = messagesModel.separators
                                 .contains(messages.length - index - 1);
                             // only show separators after the first 50.
@@ -404,6 +422,43 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                                       widget.channel, message.timestamp),
                                   messageWidget
                                 ],
+                              );
+                            }
+                            if (isLastMessage) {
+                              messageWidget = GestureDetector(
+                                onHorizontalDragEnd: (details) {
+                                  // When the user swipes on the last message, we toggle the visibility of the time.
+                                  setState(() {
+                                    _showTimeForLastMessage = true;
+                                  });
+                                },
+                                onTap: () {
+                                  //hide the duratrion when someone taps on the message
+
+                                  setState(() {
+                                    _showTimeForLastMessage = false;
+                                  });
+                                },
+                                child: Stack(
+                                  alignment: Alignment.centerRight,
+                                  children: [
+                                    messageWidget,
+                                    Positioned(
+                                      right: 8.0,
+                                      child: AnimatedOpacity(
+                                        opacity:
+                                            _showTimeForLastMessage ? 1.0 : 0.0,
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        child: Text(
+                                          formatDuration(message.timestamp),
+                                          style: const TextStyle(
+                                              color: Colors.grey),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               );
                             }
                             return messageWidget;

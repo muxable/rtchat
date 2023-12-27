@@ -117,5 +117,6 @@
   "durationOneMonthTimeoutPrompt": "Timeout de 1 mês",
   "durationThreeMonthsTimeoutPrompt": "Timeout de 3 meses",
   "durationOneYearTimeoutPrompt": "Timeout de 1 ano",
-  "durationForeverTimeoutPrompt": "Timeout para Sempre"
+  "durationForeverTimeoutPrompt": "Timeout para Sempre",
+  "sentAt": "enviado às "
 }

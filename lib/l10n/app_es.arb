@@ -116,5 +116,6 @@
   "durationOneMonthTimeoutPrompt": "Suspender por 1 mes",
   "durationThreeMonthsTimeoutPrompt": "Suspender por 3 meses",
   "durationOneYearTimeoutPrompt": "Suspender por 1 año",
-  "durationForeverTimeoutPrompt": "Suspender para siempre"
+  "durationForeverTimeoutPrompt": "Suspender para siempre",
+  "sentAt": "enviado a las "
 }

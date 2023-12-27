@@ -80,5 +80,6 @@
   "unbanUser": "{displayName} entsperren",
   "viewProfile": "{displayName} Profil anschauen",
   "copyMessage": "Nachricht kopieren",
-  "deleteMessage": "Nachricht löschen"
+  "deleteMessage": "Nachricht löschen",
+  "sentAt": "Gesendet um"
 }

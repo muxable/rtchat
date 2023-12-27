@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/ad.dart';
 import 'package:rtchat/components/chat_history/auxiliary/realtimecash_donation.dart';
@@ -95,6 +96,12 @@ class ChatHistoryMessage extends StatelessWidget {
                             primary: false,
                             children: [
                               if (kDebugMode) Text("DEBUG: id=${m.messageId}"),
+                              ListTile(
+                                leading:
+                                    const Icon(Icons.timer, color: Colors.grey),
+                                title: Text(
+                                    '${AppLocalizations.of(context)!.sentAt} : ${formatDuration(message.timestamp)}'),
+                              ),
                               Consumer<TtsModel>(
                                   builder: (context, ttsModel, child) {
                                 if (ttsModel.isMuted(m.author)) {
@@ -306,6 +313,21 @@ class ChatHistoryMessage extends StatelessWidget {
       return TwitchShoutoutReceiveEventWidget(m);
     } else {
       throw AssertionError("invalid message type $m");
+    }
+  }
+
+  String formatDuration(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inMinutes < 1) {
+      return 'now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} minutes ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} hours ago';
+    } else {
+      return DateFormat('yyyy-mm-dd').format(timestamp);
     }
   }
 }
