@@ -29,7 +29,7 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleSmall),
             TextSpan(
                 text:
-                    " ${localizations!.subscribedToTier} ${model.tier.replaceAll("000", "")}."),
+                    " ${localizations!.subscribedAtTier} ${model.tier.replaceAll("000", "")}."),
           ],
         ),
       ),
@@ -62,7 +62,7 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
                 "${localizations.subscription}. "),
             TextSpan(
                 text: model.cumulativeTotal > 0
-                    ? "${localizations.haveGifted} ${model.cumulativeTotal} ${localizations.subsInTheChannel}"
+                    ? "${localizations.theyHaveGifted} ${model.cumulativeTotal} ${localizations.subsInTheChannel}"
                     : ""),
           ],
         ),
