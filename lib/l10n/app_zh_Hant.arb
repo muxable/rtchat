@@ -117,12 +117,5 @@
   "durationOneMonthTimeoutPrompt": "封鎖1個月",
   "durationThreeMonthsTimeoutPrompt": "封鎖3個月",
   "durationOneYearTimeoutPrompt": "封鎖1年",
-  "durationForeverTimeoutPrompt": "永遠封鎖",
-  "subscribedToTier" : "订阅等级",
-  "gifted" : "赠送了",
-  "tier": "等級",
-  "subscriptions": "訂閱",
-  "subscription": "訂閱",
-  "haveGifted": "他們贈送了",
-  "subsInTheChannel": "频道中的订阅"
+  "durationForeverTimeoutPrompt": "永遠封鎖"
 }

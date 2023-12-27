@@ -117,12 +117,5 @@
   "durationOneMonthTimeoutPrompt": "Timeout de 1 mês",
   "durationThreeMonthsTimeoutPrompt": "Timeout de 3 meses",
   "durationOneYearTimeoutPrompt": "Timeout de 1 ano",
-  "durationForeverTimeoutPrompt": "Timeout para Sempre",
-  "subscribedToTier" : "inscrito no nível",
-  "gifted" : "presenteou",
-  "tier"  : "Nível",
-  "subscriptions" : "inscrições",
-  "subscription" : "inscrição",
-  "haveGifted" : "Eles presentearam",
-  "subsInTheChannel": "inscrições no canal"
+  "durationForeverTimeoutPrompt": "Timeout para Sempre"
 }

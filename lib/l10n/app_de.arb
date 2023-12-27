@@ -80,12 +80,5 @@
   "unbanUser": "{displayName} entsperren",
   "viewProfile": "{displayName} Profil anschauen",
   "copyMessage": "Nachricht kopieren",
-  "deleteMessage": "Nachricht löschen",
-  "subscribedToTier" : "abonniert auf Stufe",
-  "gifted" : "geschenkt",
-  "tier" : "Stufe",
-  "subscriptions" : "Abonnements",
-  "subscription" : "Abonnement",
-  "haveGifted" : "Sie haben geschenkt",
-  "subsInTheChannel": "Abos im Kanal"
+  "deleteMessage": "Nachricht löschen"
 }

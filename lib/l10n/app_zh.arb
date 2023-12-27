@@ -108,11 +108,5 @@
   "chatCleared": "{date}, {time}删除聊天记录",
   "enableRainModeSubtitle": "交互功能会被禁用",
   "enableRainMode": "启用下雨模式",
-  "disableRainMode": "关闭下雨模式",
-  "subscribedToTier" : "訂閱等級",
-  "gifted" : "贈送了","tier": "等级",
-  "subscriptions": "订阅",
-  "subscription": "订阅",
-  "haveGifted": "他们赠送了",
-  "subsInTheChannel": "频道中的订阅"
+  "disableRainMode": "关闭下雨模式"
 }
