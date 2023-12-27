@@ -16,7 +16,8 @@ class TwitchBadgesScreen extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: Consumer<TwitchBadgeModel>(builder: (context, model, child) {
-           final sortedBadges = _sortBadges(model.badgeSets);
+          final badges = model.badgeSets;
+           badges.sort(badgePriorityComparator);
           return CustomScrollView(slivers: <Widget>[
             SliverAppBar(
                 pinned: true,
@@ -47,7 +48,7 @@ class TwitchBadgesScreen extends StatelessWidget {
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  final badge = sortedBadges[index];
+                  final badge = badges[index];
                   final lastVersion = badge.versions.last;
                   final image =
                       ResilientNetworkImage(Uri.parse(lastVersion.imageUrl4x));
@@ -69,7 +70,7 @@ class TwitchBadgesScreen extends StatelessWidget {
                         model.setEnabled(badge.setId, value ?? false);
                       });
                 },
-                childCount: sortedBadges.length,
+                childCount: badges.length,
               ),
             ),
           ]);
@@ -77,25 +78,23 @@ class TwitchBadgesScreen extends StatelessWidget {
       ),
     );
   }
-   static List<TwitchBadgeInfo> _sortBadges(List<TwitchBadgeInfo> badges) {
-    const highPriorityBadges = ['Moderator', 'VIP'];
-    List<TwitchBadgeInfo> sortedBadgeSets = List<TwitchBadgeInfo>.from(badges)
-      ..sort((a, b) {
-        var titleA = a.versions.last.title;
-        var titleB = b.versions.last.title;
-        var isAHighPriority = highPriorityBadges.contains(titleA);
-        var isBHighPriority = highPriorityBadges.contains(titleB);
 
-        if (isAHighPriority && isBHighPriority) {
-          return titleA.compareTo(titleB); // If both are high priority, sort alphabetically.
-        } else if (isAHighPriority) {
-          return -1; // a is high priority, so it comes first.
-        } else if (isBHighPriority) {
-          return 1; // b is high priority, so it comes first.
-        } else {
-          return titleA.compareTo(titleB); // Otherwise, sort alphabetically.
-        }
-      });
-    return sortedBadgeSets;
+  static int badgePriorityComparator(TwitchBadgeInfo a, TwitchBadgeInfo b) {
+    const highPriorityBadges = ['Moderator', 'VIP'];
+    var titleA = a.versions.last.title;
+    var titleB = b.versions.last.title;
+    var isAHighPriority = highPriorityBadges.contains(titleA);
+    var isBHighPriority = highPriorityBadges.contains(titleB);
+
+    if (isAHighPriority && isBHighPriority) {
+      return titleA
+          .compareTo(titleB); // If both are high priority, sort alphabetically.
+    } else if (isAHighPriority) {
+      return -1; // a is high priority, so it comes first.
+    } else if (isBHighPriority) {
+      return 1; // b is high priority, so it comes first.
+    } else {
+      return titleA.compareTo(titleB); // Otherwise, sort alphabetically.
+    }
   }
 }
