@@ -24,7 +24,7 @@ import WebKit
                     result(FlutterError.init(code: "INVALID_ARGUMENT", message: "Text is null", details: nil))
                     return
                 }
-                if (text.empty) {
+                if (text.isEmpty) {
                     result(Bool(true))
                     return
                 }
