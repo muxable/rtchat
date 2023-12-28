@@ -80,7 +80,7 @@
   "viewProfile": "voir le profil de {displayName}",
   "copyMessage": "copier le message",
   "deleteMessage": "supprimer le message",
-  "longScrollNotification": "Vous défilez un peu loin, vous ne trouvez pas ?",
+  "longScrollNotification": "Vous défilez un peu loin, vous ne trouvez pas?",
   "stfu": "stfu",
   "globalEmotes": "Emoticônes globales",
   "followerCount": "{count,plural, =0{0 suiveurs} =1{1 suiveur} other{{count} suiveurs}}",
