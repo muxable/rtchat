@@ -100,7 +100,7 @@ class ChatHistoryMessage extends StatelessWidget {
                                 leading:
                                     const Icon(Icons.timer, color: Colors.grey),
                                 title: Text(
-                                    '${AppLocalizations.of(context)!.sentAt} : ${formatDuration(message.timestamp)}'),
+                                    '${AppLocalizations.of(context)!.sentAt}: ${formatDuration(message.timestamp)}'),
                               ),
                               Consumer<TtsModel>(
                                   builder: (context, ttsModel, child) {
