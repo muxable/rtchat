@@ -253,16 +253,16 @@
   "@audioSources": {
     "description": "Header for the audio sources page"
   },
-  "enableOffstreamSwitchTitle": "Enable off-stream (uses more battery)",
-  "@enableOffstreamSwitchTitle": {
+  "enableOffStreamSwitchTitle": "Enable off-stream (uses more battery)",
+  "@enableOffStreamSwitchTitle": {
     "description": "Option label to enable the off-stream tile"
   },
-  "enableOffstreamSwitchEnabledSubtitle": "Audio will also play when you're offline",
-  "@enableOffstreamSwitchEnabledSubtitle": {
+  "enableOffStreamSwitchEnabledSubtitle": "Audio will also play when you're offline",
+  "@enableOffStreamSwitchEnabledSubtitle": {
     "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will also play when the user is offline"
   },
-  "enableOffstreamSwitchDisabledSubtitle": "Audio will only play when you're live",
-  "@enableOffstreamSwitchDisabledSubtitle": {
+  "enableOffStreamSwitchDisabledSubtitle": "Audio will only play when you're live",
+  "@enableOffStreamSwitchDisabledSubtitle": {
     "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will only play when the user is live"
   },
   "iosOggWarningTitle": "Hey! Listen!",
