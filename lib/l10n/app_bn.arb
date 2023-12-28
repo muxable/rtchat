@@ -81,7 +81,7 @@
   "copyMessage": "মেসেজ কপি করুন",
   "deleteMessage": "মেসেজ ডিলিট করুন",
   "longScrollNotification": "আপনি অনেক দূরে স্ক্রোল করছেন, আপনি কি মনে করেন না?",
-  "stfu": "stfu",
+  "stfu": "চুপ করুন",
   "globalEmotes": "গ্লোবাল ইমোটস",
   "followerCount": "{count,plural, =0{0 অনুসারী} =1{1 অনুগামী} other{{count} অনুসারী}}",
   "viewerCount": "{count,plural, =0{0 দর্শক} =1{1 দর্শক} other{{count} দর্শক}}",
