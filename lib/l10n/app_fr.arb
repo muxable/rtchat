@@ -93,7 +93,7 @@
   "audioSourcesRequirePermissionsMessage": "Approuver RealtimeChat pour qu'il ait la priorité sur les autres applications pour l'utilisation des sources audio.",
   "audioSourcesRemoveButton": "Supprimer les sources audio",
   "audioSourcesOpenSettingsButton": "Ouvrir les paramètres",
-  "flashOn": "Flash On",
+  "flashOn": "Flash allumé",
   "flashOff": "Flash désactivé",
   "durationOneSecond": "1 seconde",
   "durationOneMinute": "1 minute",
