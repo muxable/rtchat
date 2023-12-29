@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
@@ -246,10 +247,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         }
 
                         // Test the isolate
-                        // if (ttsModel.enabled) {
-                        //   await Isolate.spawn(
-                        //       ttsIsolate.isolateMain, ReceivePort().sendPort);
-                        // }
+                        if (ttsModel.enabled) {
+                           FlutterBackgroundService().invoke("startTts");
+                        }
 
                         // if (ttsModel.enabled) {
                         //   // Test speak method with a long string
