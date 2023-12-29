@@ -21,17 +21,15 @@ class PinnableMessageScrollView extends ScrollView {
   final int count;
 
   const PinnableMessageScrollView({
-    Key? key,
-    ScrollController? controller,
+    super.key,
+    super.controller,
     required this.vsync,
     required this.isPinnedBuilder,
     required this.itemBuilder,
     required this.findChildIndexCallback,
     required this.count,
   }) : super(
-          key: key,
           reverse: true,
-          controller: controller,
         );
 
   @override

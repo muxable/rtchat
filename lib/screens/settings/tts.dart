@@ -10,7 +10,7 @@ import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/bytes_audio_source.dart';
 
 class TextToSpeechScreen extends StatelessWidget {
-  const TextToSpeechScreen({Key? key}) : super(key: key);
+  const TextToSpeechScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

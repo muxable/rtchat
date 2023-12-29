@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class SliverTitleWidget extends StatelessWidget {
   final String title;
-  const SliverTitleWidget({Key? key, required this.title}) : super(key: key);
+  const SliverTitleWidget({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {

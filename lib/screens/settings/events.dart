@@ -23,7 +23,7 @@ import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
 class EventsScreen extends StatelessWidget {
-  const EventsScreen({Key? key}) : super(key: key);
+  const EventsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -296,12 +296,12 @@ class EventConfigListTile extends StatelessWidget {
   final Widget child;
 
   const EventConfigListTile({
-    Key? key,
+    super.key,
     required this.title,
     required this.subtitle,
     required this.routeName,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

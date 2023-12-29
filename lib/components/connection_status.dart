@@ -6,7 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class ConnectionStatusWidget extends StatelessWidget {
   final _delay = const Duration(seconds: 5);
 
-  const ConnectionStatusWidget({Key? key}) : super(key: key);
+  const ConnectionStatusWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

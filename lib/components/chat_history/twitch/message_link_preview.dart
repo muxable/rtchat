@@ -27,8 +27,7 @@ Future<TwitchClipData> fetchClipData(String url) async {
 class TwitchMessageLinkPreviewWidget extends StatefulWidget {
   final String url;
 
-  const TwitchMessageLinkPreviewWidget({required this.url, Key? key})
-      : super(key: key);
+  const TwitchMessageLinkPreviewWidget({required this.url, super.key});
 
   @override
   State<TwitchMessageLinkPreviewWidget> createState() =>

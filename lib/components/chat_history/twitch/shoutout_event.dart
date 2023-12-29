@@ -6,8 +6,7 @@ import 'package:rtchat/models/messages/twitch/shoutout_receive_event.dart';
 class TwitchShoutoutCreateEventWidget extends StatelessWidget {
   final TwitchShoutoutCreateEventModel model;
 
-  const TwitchShoutoutCreateEventWidget(this.model, {Key? key})
-      : super(key: key);
+  const TwitchShoutoutCreateEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +40,7 @@ class TwitchShoutoutCreateEventWidget extends StatelessWidget {
 class TwitchShoutoutReceiveEventWidget extends StatelessWidget {
   final TwitchShoutoutReceiveEventModel model;
 
-  const TwitchShoutoutReceiveEventWidget(this.model, {Key? key})
-      : super(key: key);
+  const TwitchShoutoutReceiveEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

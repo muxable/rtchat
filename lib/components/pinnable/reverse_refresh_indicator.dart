@@ -112,7 +112,7 @@ class ReverseRefreshIndicator extends StatefulWidget {
   /// An empty string may be passed to avoid having anything read by screen reading software.
   /// The [semanticsValue] may be used to specify progress on the widget.
   const ReverseRefreshIndicator({
-    Key? key,
+    super.key,
     required this.child,
     this.displacement = 40.0,
     this.edgeOffset = 0.0,
@@ -124,7 +124,7 @@ class ReverseRefreshIndicator extends StatefulWidget {
     this.semanticsValue,
     this.strokeWidth = RefreshProgressIndicator.defaultStrokeWidth,
     this.triggerMode = RefreshIndicatorTriggerMode.onEdge,
-  }) : super(key: key);
+  });
 
   /// The widget below this widget in the tree.
   ///

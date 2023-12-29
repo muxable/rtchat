@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class PollEventScreen extends StatelessWidget {
-  const PollEventScreen({Key? key}) : super(key: key);
+  const PollEventScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
