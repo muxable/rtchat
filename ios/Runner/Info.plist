@@ -4,9 +4,7 @@
 <dict>
     <key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>com.rtirl.chat</string>
-	</array>
-	<string>dev.flutter.background.refresh</string>
+		<string>dev.flutter.background.refresh</string>
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
