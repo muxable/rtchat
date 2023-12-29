@@ -8,7 +8,7 @@ import 'package:rtchat/models/user.dart';
 class AdMessageWidget extends StatefulWidget {
   final AdMessageModel model;
 
-  const AdMessageWidget(this.model, {Key? key}) : super(key: key);
+  const AdMessageWidget(this.model, {super.key});
 
   @override
   State<AdMessageWidget> createState() => _AdMessageWidgetState();

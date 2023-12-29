@@ -14,7 +14,7 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class StreamPreview extends StatefulWidget {
-  const StreamPreview({Key? key, required this.channel}) : super(key: key);
+  const StreamPreview({super.key, required this.channel});
 
   final Channel channel;
 

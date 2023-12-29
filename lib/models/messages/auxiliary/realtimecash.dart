@@ -16,9 +16,8 @@ class SimpleRealtimeCashDonationEventModel extends MessageModel {
       required this.hash,
       required this.donor,
       required this.message,
-      required String messageId,
-      required DateTime timestamp})
-      : super(messageId: messageId, timestamp: timestamp);
+      required super.messageId,
+      required super.timestamp});
 
   static SimpleRealtimeCashDonationEventModel fromDocumentData(
       String messageId, Map<String, dynamic> data) {

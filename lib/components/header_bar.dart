@@ -11,8 +11,7 @@ class _DurationWidget extends StatelessWidget {
   final DateTime from;
   final TextStyle? style;
 
-  const _DurationWidget({Key? key, this.style, required this.from})
-      : super(key: key);
+  const _DurationWidget({this.style, required this.from});
 
   static String formatDuration(Duration d) {
     var seconds = d.inSeconds;
@@ -59,12 +58,11 @@ class HeaderBarWidget extends StatefulWidget implements PreferredSizeWidget {
   final void Function(Channel) onChannelSelect;
 
   const HeaderBarWidget(
-      {Key? key,
+      {super.key,
       required this.channel,
       this.actions,
       required this.onChannelSelect})
-      : preferredSize = const Size.fromHeight(kToolbarHeight),
-        super(key: key);
+      : preferredSize = const Size.fromHeight(kToolbarHeight);
 
   @override
   final Size preferredSize; // default is 56.0

@@ -6,11 +6,11 @@ class PinnableMessageSliver extends SingleChildRenderObjectWidget {
   final TickerProvider vsync;
 
   const PinnableMessageSliver({
-    Key? key,
+    super.key,
     required this.vsync,
     required this.pinned,
-    required Widget child,
-  }) : super(key: key, child: child);
+    required Widget super.child,
+  });
 
   @override
   RenderPinnableMessageSliver createRenderObject(BuildContext context) {
@@ -31,10 +31,9 @@ class RenderPinnableMessageSliver extends RenderSliverToBoxAdapter {
   bool _pinned;
 
   RenderPinnableMessageSliver(
-      {required TickerProvider vsync, required bool pinned, RenderBox? child})
+      {required TickerProvider vsync, required bool pinned, super.child})
       : _vsync = vsync,
-        _pinned = pinned,
-        super(child: child) {
+        _pinned = pinned {
     _controller = AnimationController(
         vsync: vsync,
         value: pinned ? 1.0 : 0.0,

@@ -8,7 +8,7 @@ import 'package:rtchat/models/user.dart';
 class TwitchRaidingEventWidget extends StatelessWidget {
   final TwitchRaidingEventModel model;
 
-  const TwitchRaidingEventWidget(this.model, {Key? key}) : super(key: key);
+  const TwitchRaidingEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

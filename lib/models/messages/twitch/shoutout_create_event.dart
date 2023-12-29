@@ -24,14 +24,13 @@ class TwitchShoutoutCreateEventModel extends MessageModel {
   final int viewerCount;
 
   const TwitchShoutoutCreateEventModel(
-      {required DateTime timestamp,
-      required String messageId,
+      {required super.timestamp,
+      required super.messageId,
       required this.fromBroadcasterUserId,
       required this.fromBroadcasterUserName,
       required this.toBroadcasterUserId,
       required this.toBroadcasterUserName,
-      required this.viewerCount})
-      : super(messageId: messageId, timestamp: timestamp);
+      required this.viewerCount});
 
   static TwitchShoutoutCreateEventModel fromDocumentData(
       String messageId, Map<String, dynamic> data) {

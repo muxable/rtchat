@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class BackupScreen extends StatefulWidget {
-  const BackupScreen({Key? key}) : super(key: key);
+  const BackupScreen({super.key});
 
   @override
   State<BackupScreen> createState() => _BackupScreenState();

@@ -60,7 +60,7 @@ const contributors = [
 class TwitchMessageWidget extends StatelessWidget {
   final TwitchMessageModel model;
 
-  const TwitchMessageWidget(this.model, {Key? key}) : super(key: key);
+  const TwitchMessageWidget(this.model, {super.key});
 
   Color get color {
     final color = model.tags['color'] ?? "";
@@ -283,7 +283,7 @@ class TwitchMessageWidget extends StatelessWidget {
                     ...children,
                     ...tokens.expand((token) {
                       return _render(context, styleModel, token);
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),

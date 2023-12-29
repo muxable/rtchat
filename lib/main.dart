@@ -102,7 +102,7 @@ class App extends StatefulWidget {
   static final observer =
       FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
 
-  const App({Key? key, required this.prefs}) : super(key: key);
+  const App({super.key, required this.prefs});
 
   @override
   State<App> createState() => _AppState();

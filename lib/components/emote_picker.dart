@@ -7,11 +7,11 @@ import 'package:sticky_headers/sticky_headers/widget.dart';
 
 class EmotesList extends StatelessWidget {
   const EmotesList({
-    Key? key,
+    super.key,
     required this.emotes,
     required this.onEmoteSelected,
     required this.channel,
-  }) : super(key: key);
+  });
 
   final List<Emote> emotes;
   final Function(Emote) onEmoteSelected;
@@ -79,11 +79,10 @@ class EmotesList extends StatelessWidget {
 
 class _TabbedEmotePickerWidget extends StatelessWidget {
   const _TabbedEmotePickerWidget({
-    Key? key,
     required this.emotes,
     required this.onEmoteSelected,
     required this.channel,
-  }) : super(key: key);
+  });
 
   final List<Emote> emotes;
   final Function(Emote) onEmoteSelected;
@@ -143,8 +142,7 @@ class EmotePickerWidget extends StatelessWidget {
   final Channel channel;
 
   const EmotePickerWidget(
-      {Key? key, required this.onEmoteSelected, required this.channel})
-      : super(key: key);
+      {super.key, required this.onEmoteSelected, required this.channel});
 
   @override
   Widget build(BuildContext context) {
