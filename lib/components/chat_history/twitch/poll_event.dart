@@ -19,7 +19,7 @@ List<Widget> getPollsWidget(TwitchPollEventModel model) {
 class TwitchPollEventWidget extends StatelessWidget {
   final TwitchPollEventModel model;
 
-  const TwitchPollEventWidget(this.model, {Key? key}) : super(key: key);
+  const TwitchPollEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

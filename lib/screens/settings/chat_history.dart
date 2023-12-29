@@ -61,7 +61,7 @@ final message3 = TwitchMessageModel(
     channelId: 'placeholder');
 
 class ChatHistoryScreen extends StatelessWidget {
-  const ChatHistoryScreen({Key? key}) : super(key: key);
+  const ChatHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

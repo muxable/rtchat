@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class PredictionEventScreen extends StatelessWidget {
-  const PredictionEventScreen({Key? key}) : super(key: key);
+  const PredictionEventScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class RaidingEventScreen extends StatelessWidget {
-  const RaidingEventScreen({Key? key}) : super(key: key);
+  const RaidingEventScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

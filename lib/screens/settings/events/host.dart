@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class HostEventScreen extends StatelessWidget {
-  const HostEventScreen({Key? key}) : super(key: key);
+  const HostEventScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

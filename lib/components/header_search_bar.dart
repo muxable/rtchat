@@ -4,8 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class HeaderSearchBar extends StatelessWidget {
   final void Function(String) onFilterBySearchBarText;
 
-  const HeaderSearchBar({Key? key, required this.onFilterBySearchBarText})
-      : super(key: key);
+  const HeaderSearchBar({super.key, required this.onFilterBySearchBarText});
 
   @override
   Widget build(BuildContext context) {

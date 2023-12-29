@@ -4,8 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class SliverSearchBarWidget extends StatelessWidget {
   final void Function(String) onFilterBySearchBarText;
 
-  const SliverSearchBarWidget({Key? key, required this.onFilterBySearchBarText})
-      : super(key: key);
+  const SliverSearchBarWidget({super.key, required this.onFilterBySearchBarText});
 
   @override
   Widget build(BuildContext context) {

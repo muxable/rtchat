@@ -5,7 +5,7 @@ import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
 class StreamElementsTipEventWidget extends StatelessWidget {
   final StreamElementsTipEventModel model;
 
-  const StreamElementsTipEventWidget(this.model, {Key? key}) : super(key: key);
+  const StreamElementsTipEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

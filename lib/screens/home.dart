@@ -33,14 +33,13 @@ class ResizableWidget extends StatefulWidget {
   final Widget child;
 
   const ResizableWidget(
-      {Key? key,
+      {super.key,
       required this.resizable,
       required this.height,
       required this.width,
       required this.onResizeHeight,
       required this.onResizeWidth,
-      required this.child})
-      : super(key: key);
+      required this.child});
 
   @override
   State<ResizableWidget> createState() => _ResizableWidgetState();
@@ -153,8 +152,7 @@ class HomeScreen extends StatefulWidget {
       {required this.isDiscoModeEnabled,
       required this.channel,
       required this.onChannelSelect,
-      Key? key})
-      : super(key: key);
+      super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
