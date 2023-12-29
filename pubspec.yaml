@@ -24,6 +24,7 @@ dependencies:
   firebase_core: ^2.17.0
   firebase_crashlytics: ^3.3.7
   firebase_database: ^10.2.7
+  flutter_background_service: ^5.0.5
   flutter_custom_tabs: ^1.2.1
   flutter_keyboard_visibility: ^5.4.1
   flutter_localized_locales: ^2.0.5
