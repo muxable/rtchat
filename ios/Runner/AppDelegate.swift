@@ -9,6 +9,11 @@ import WebKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: SwiftFlutterBackgroundServicePlugin.taskIdentifier, using: nil) { task in
+            // This task is cast with processing request (BGProcessingTask)
+            SwiftFlutterBackgroundServicePlugin().handleProcessing(task: task as! BGProcessingTask)
+        }
 
         SwiftFlutterBackgroundServicePlugin.taskIdentifier = "your.custom.task.identifier"
 
