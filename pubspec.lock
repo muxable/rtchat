@@ -688,10 +688,11 @@ packages:
   motion_sensors:
     dependency: "direct main"
     description:
-      name: motion_sensors
-      sha256: "4e2734a76cd6da633013bcdc68a9efe9fbbcff906e6d6c45040932edda3fa5d6"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: master
+      resolved-ref: "6dafc3639b3e96460fabc639768a60b431b53610"
+      url: "https://github.com/zesage/motion_sensors.git"
+    source: git
     version: "0.1.0"
   nested:
     dependency: transitive
