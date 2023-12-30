@@ -9,6 +9,9 @@ import WebKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+
+        SwiftFlutterBackgroundServicePlugin.taskIdentifier = "your.custom.task.identifier"
+
         var views = [String: WKWebView]()
 
         let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
