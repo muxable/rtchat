@@ -56,6 +56,7 @@ import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
+
 //import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
 
 void main() async {
@@ -151,6 +152,7 @@ class _AppState extends State<App> {
             final model = MessagesModel.fromJson(jsonDecode(widget.prefs
                 .getString("message_config", defaultValue: '{}')
                 .getValue()));
+
             // Additional initialization logic if needed
             final player = AudioPlayer();
             model.onMessagePing =
@@ -158,6 +160,7 @@ class _AppState extends State<App> {
             model.channel =
                 Provider.of<UserModel>(context, listen: false).activeChannel;
             model.tts = Provider.of<TtsModel>(context, listen: false);
+
             return model
               ..addListener(() {
                 if (model.isLive && model.messages.isNotEmpty) {
@@ -208,8 +211,9 @@ class _AppState extends State<App> {
             });
         }),
         ChangeNotifierProvider(create: (context) {
-          final model = CommandsModel.fromJson(jsonDecode(
-              widget.prefs.getString("commands", defaultValue: '{}').getValue()));
+          final model = CommandsModel.fromJson(jsonDecode(widget.prefs
+              .getString("commands", defaultValue: '{}')
+              .getValue()));
           return model
             ..addListener(() {
               widget.prefs.setString("commands", jsonEncode(model.toJson()));
@@ -244,8 +248,9 @@ class _AppState extends State<App> {
         ),
         ChangeNotifierProxyProvider<UserModel, AudioModel>(
           create: (context) {
-            final model = AudioModel.fromJson(jsonDecode(
-                widget.prefs.getString("audio", defaultValue: '{}').getValue()));
+            final model = AudioModel.fromJson(jsonDecode(widget.prefs
+                .getString("audio", defaultValue: '{}')
+                .getValue()));
             return model
               ..addListener(() {
                 widget.prefs.setString('audio', jsonEncode(model.toJson()));
@@ -259,8 +264,9 @@ class _AppState extends State<App> {
         ),
         ChangeNotifierProxyProvider<UserModel, AudioModel>(
           create: (context) {
-            final model = AudioModel.fromJson(jsonDecode(
-                widget.prefs.getString("audio", defaultValue: '{}').getValue()));
+            final model = AudioModel.fromJson(jsonDecode(widget.prefs
+                .getString("audio", defaultValue: '{}')
+                .getValue()));
             return model
               ..addListener(() {
                 widget.prefs.setString('audio', jsonEncode(model.toJson()));
@@ -272,6 +278,16 @@ class _AppState extends State<App> {
           },
           lazy: false,
         ),
+        ChangeNotifierProvider<StreamPreviewModel>(create: (context) {
+          final model = StreamPreviewModel.fromJson(jsonDecode(widget.prefs
+              .getString("stream_preview", defaultValue: '')
+              .getValue()));
+          return model
+            ..addListener(() {
+              widget.prefs
+                  .setString('stream_preview', jsonEncode(model.toJson()));
+            });
+        }),
         ChangeNotifierProvider<Purchases>(
           create: (context) => Purchases(
             context.read<TtsModel>(),

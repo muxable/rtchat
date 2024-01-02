@@ -250,7 +250,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         // Test the isolate
                         if (ttsModel.enabled) {
                           FlutterBackgroundService().invoke("startTts");
-                          FlutterBackgroundService().invoke('initSharedPreference');
+                          FlutterBackgroundService()
+                              .invoke('initSharedPreference');
                         }
 
                         // if (ttsModel.enabled) {

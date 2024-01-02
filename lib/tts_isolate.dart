@@ -62,16 +62,12 @@ void onStart(ServiceInstance service) async {
   });
 
   service.on('initSharedPreference').listen((event) async {
+    final prefs = await StreamingSharedPreferences.instance;
 
-  final prefs = await StreamingSharedPreferences.instance;
-
-  // Listen to changes in 'tts_channel'
-   prefs.getString('tts_channel', defaultValue: '').listen((pref) {
-    // This block will be called every time 'tts_channel' changes
-    debugPrint("tts_channel changed to: $pref");
-    
-   
-   });
-
+    // Listen to changes in 'tts_channel'
+    prefs.getString('tts_channel', defaultValue: '').listen((pref) {
+      // This block will be called every time 'tts_channel' changes
+      debugPrint("tts_channel changed to: $pref");
+    });
   });
 }
