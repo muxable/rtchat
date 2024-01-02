@@ -59,6 +59,5 @@ class SystemMessageModel extends MessageModel {
 }
 
 class ChatClearedEventModel extends MessageModel {
-  ChatClearedEventModel(
-      {required super.messageId, required super.timestamp});
+  ChatClearedEventModel({required super.messageId, required super.timestamp});
 }

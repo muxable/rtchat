@@ -17,7 +17,7 @@ class TwitchBadgesScreen extends StatelessWidget {
         top: false,
         child: Consumer<TwitchBadgeModel>(builder: (context, model, child) {
           final badges = model.badgeSets;
-           badges.sort(badgePriorityComparator);
+          badges.sort(badgePriorityComparator);
           return CustomScrollView(slivers: <Widget>[
             SliverAppBar(
                 pinned: true,
