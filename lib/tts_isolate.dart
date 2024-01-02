@@ -29,7 +29,6 @@ void initializeService(SendPort sendPort) async {
       onForeground: (ServiceInstance service) {
         // Send a message to the main isolate
         sendPort.send("Background service started");
-
         // Perform background tasks here...
         onStart(service);
       },
@@ -52,7 +51,6 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 void onStart(ServiceInstance service) async {
   // Only available for flutter 3.0.0 and later
   DartPluginRegistrant.ensureInitialized();
-
   WidgetsFlutterBinding.ensureInitialized();
 
   service.on('stopService').listen((event) {
