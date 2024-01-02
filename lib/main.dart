@@ -262,22 +262,6 @@ class _AppState extends State<App> {
           },
           lazy: false,
         ),
-        ChangeNotifierProxyProvider<UserModel, AudioModel>(
-          create: (context) {
-            final model = AudioModel.fromJson(jsonDecode(widget.prefs
-                .getString("audio", defaultValue: '{}')
-                .getValue()));
-            return model
-              ..addListener(() {
-                widget.prefs.setString('audio', jsonEncode(model.toJson()));
-              });
-          },
-          update: (context, userModel, model) {
-            model!.hostChannel = userModel.userChannel;
-            return model;
-          },
-          lazy: false,
-        ),
         ChangeNotifierProvider<StreamPreviewModel>(create: (context) {
           final model = StreamPreviewModel.fromJson(jsonDecode(widget.prefs
               .getString("stream_preview", defaultValue: '')
