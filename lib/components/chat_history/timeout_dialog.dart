@@ -5,7 +5,8 @@ class TimeoutDialog extends StatefulWidget {
   final String title;
   final void Function(Duration) onPressed;
 
-  const TimeoutDialog({super.key, required this.title, required this.onPressed});
+  const TimeoutDialog(
+      {super.key, required this.title, required this.onPressed});
 
   @override
   State<TimeoutDialog> createState() => _TimeoutDialogState();

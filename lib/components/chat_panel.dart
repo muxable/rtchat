@@ -166,9 +166,7 @@ class _ScrollToBottomWidget extends StatelessWidget {
   final Widget? child;
 
   const _ScrollToBottomWidget(
-      {required this.show,
-      required this.onPressed,
-      required this.child});
+      {required this.show, required this.onPressed, required this.child});
 
   @override
   Widget build(BuildContext context) {

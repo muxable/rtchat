@@ -11,14 +11,12 @@ class PinnableMessageViewport extends Viewport {
     super.crossAxisDirection,
     super.anchor,
     required super.offset,
-    center,
+    super.center,
     super.cacheExtent,
     super.cacheExtentStyle,
     super.clipBehavior,
     super.slivers,
-  }) : super(
-          center: center,
-        );
+  });
 
   @override
   RenderPinnableMessageViewport createRenderObject(BuildContext context) {
