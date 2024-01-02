@@ -55,6 +55,7 @@ dependencies:
   webview_flutter: ^4.4.1
   webview_flutter_android: ^3.13.1
   webview_flutter_wkwebview: ^3.10.0
+  streaming_shared_preferences: ^2.0.0
 
 dev_dependencies:
   flutter_lints: ^3.0.1
