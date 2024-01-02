@@ -11,9 +11,8 @@ class StreamElementsTipEventModel extends MessageModel {
       required this.formattedAmount,
       required this.message,
       required this.currency,
-      required String messageId,
-      required DateTime timestamp})
-      : super(messageId: messageId, timestamp: timestamp);
+      required super.messageId,
+      required super.timestamp});
 
   static StreamElementsTipEventModel fromDocumentData(
       String messageId, Map<String, dynamic> data) {

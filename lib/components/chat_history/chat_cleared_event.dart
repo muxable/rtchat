@@ -5,7 +5,7 @@ import 'package:rtchat/models/messages/message.dart';
 class ChatClearedEventWidget extends StatelessWidget {
   final ChatClearedEventModel model;
 
-  const ChatClearedEventWidget(this.model, {Key? key}) : super(key: key);
+  const ChatClearedEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

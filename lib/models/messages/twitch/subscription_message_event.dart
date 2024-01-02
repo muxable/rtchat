@@ -34,16 +34,15 @@ class TwitchSubscriptionMessageEventModel extends MessageModel {
   final String text;
 
   const TwitchSubscriptionMessageEventModel(
-      {required DateTime timestamp,
-      required String messageId,
+      {required super.timestamp,
+      required super.messageId,
       required this.subscriberUserName,
       required this.tier,
       required this.cumulativeMonths,
       required this.durationMonths,
       required this.streakMonths,
       required this.emotes,
-      required this.text})
-      : super(messageId: messageId, timestamp: timestamp);
+      required this.text});
 
   String emotesToString() {
     return emotes.map((e) => '${e.id}:${e.begin}-${e.end}').join('/');

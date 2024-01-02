@@ -15,8 +15,7 @@ class TwitchChannelMetadata extends ChannelMetadata {
       {required this.viewerCount,
       required this.followerCount,
       this.language,
-      required DateTime? onlineAt})
-      : super(onlineAt: onlineAt);
+      required super.onlineAt});
 }
 
 class ChannelsAdapter {

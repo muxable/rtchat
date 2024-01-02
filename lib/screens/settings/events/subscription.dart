@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class SubscriptionEventScreen extends StatelessWidget {
-  const SubscriptionEventScreen({Key? key}) : super(key: key);
+  const SubscriptionEventScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

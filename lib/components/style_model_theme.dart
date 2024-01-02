@@ -7,7 +7,7 @@ import 'package:rtchat/models/style.dart';
 class StyleModelTheme extends StatelessWidget {
   final Widget child;
 
-  const StyleModelTheme({required this.child, Key? key}) : super(key: key);
+  const StyleModelTheme({required this.child, super.key});
 
   @override
   Widget build(BuildContext context) {

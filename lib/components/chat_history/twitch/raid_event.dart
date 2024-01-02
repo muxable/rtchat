@@ -14,8 +14,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
 
   final NumberFormat _formatter = NumberFormat.decimalPattern();
 
-  TwitchRaidEventWidget(this.model, {Key? key, required this.channel})
-      : super(key: key);
+  TwitchRaidEventWidget(this.model, {super.key, required this.channel});
 
   @override
   Widget build(BuildContext context) {
