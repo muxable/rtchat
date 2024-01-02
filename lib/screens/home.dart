@@ -246,13 +246,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           await TextToSpeechPlugin.clear();
                           FlutterBackgroundService().invoke("stopService");
                         }
-
+                       // TODO: get this into production when it's ready
                         // Test the isolate
-                        if (ttsModel.enabled) {
-                          FlutterBackgroundService().invoke("startTts");
-                          FlutterBackgroundService()
-                              .invoke('initSharedPreference');
-                        }
+                        // if (ttsModel.enabled) {
+                        //   FlutterBackgroundService().invoke("startTts");
+                        //   FlutterBackgroundService()
+                        //       .invoke('initSharedPreference');
+                        // }
 
                         // if (ttsModel.enabled) {
                         //   // Test speak method with a long string
