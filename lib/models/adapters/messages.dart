@@ -47,7 +47,7 @@ class UpdateDeltaEvent extends DeltaEvent {
 class UpdateAllDeltaEvent extends DeltaEvent {
   final MessageModel Function(MessageModel) update;
 
-  const UpdateAllDeltaEvent(DateTime timestamp, this.update) : super(timestamp);
+  const UpdateAllDeltaEvent(super.timestamp, this.update);
 }
 
 class ClearDeltaEvent extends DeltaEvent {
@@ -62,7 +62,7 @@ class ClearDeltaEvent extends DeltaEvent {
 // this is a sentinel event to indicate that the messages that follow are
 // live messages.
 class LiveStateDeltaEvent extends DeltaEvent {
-  const LiveStateDeltaEvent(DateTime timestamp) : super(timestamp);
+  const LiveStateDeltaEvent(super.timestamp);
 }
 
 DeltaEvent? _toDeltaEvent(

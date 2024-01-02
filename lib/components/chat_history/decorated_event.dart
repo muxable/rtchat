@@ -13,14 +13,13 @@ class DecoratedEventWidget extends StatelessWidget {
   final EdgeInsets padding;
 
   const DecoratedEventWidget._(
-      {Key? key,
+      {super.key,
       required this.child,
       this.avatars = const [],
       this.icon,
       this.accentColor,
       this.padding = const EdgeInsets.fromLTRB(12, 4, 16, 4),
-      this.decoration = const BoxDecoration()})
-      : super(key: key);
+      this.decoration = const BoxDecoration()});
 
   @override
   Widget build(BuildContext context) {

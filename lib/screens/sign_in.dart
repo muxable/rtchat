@@ -9,7 +9,7 @@ import 'package:rtchat/models/user.dart';
 final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
 
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({Key? key}) : super(key: key);
+  const SignInScreen({super.key});
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();

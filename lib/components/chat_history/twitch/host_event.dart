@@ -9,7 +9,7 @@ class TwitchHostEventWidget extends StatelessWidget {
 
   final NumberFormat _formatter = NumberFormat.decimalPattern();
 
-  TwitchHostEventWidget(this.model, {Key? key}) : super(key: key);
+  TwitchHostEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -5,7 +5,7 @@ import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/language.dart';
 
 class LanguagesScreen extends StatefulWidget {
-  const LanguagesScreen({Key? key}) : super(key: key);
+  const LanguagesScreen({super.key});
 
   @override
   State<LanguagesScreen> createState() => LanguagesScreenState();

@@ -7,11 +7,10 @@ class TwitchSubscriptionGiftEventModel extends MessageModel {
   final int cumulativeTotal;
 
   const TwitchSubscriptionGiftEventModel(
-      {required DateTime timestamp,
-      required String messageId,
+      {required super.timestamp,
+      required super.messageId,
       required this.gifterUserName,
       required this.tier,
       required this.total,
-      required this.cumulativeTotal})
-      : super(messageId: messageId, timestamp: timestamp);
+      required this.cumulativeTotal});
 }

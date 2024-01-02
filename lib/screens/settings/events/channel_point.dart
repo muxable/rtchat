@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class ChannelPointRedemptionEventScreen extends StatelessWidget {
-  const ChannelPointRedemptionEventScreen({Key? key}) : super(key: key);
+  const ChannelPointRedemptionEventScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

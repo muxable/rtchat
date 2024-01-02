@@ -25,13 +25,12 @@ class TwitchRaidingEventModel extends MessageModel {
   final bool isSuccessful;
 
   const TwitchRaidingEventModel(
-      {required DateTime timestamp,
-      required String messageId,
+      {required super.timestamp,
+      required super.messageId,
       required this.duration,
       required this.targetUser,
       this.isComplete = false,
-      this.isSuccessful = false})
-      : super(messageId: messageId, timestamp: timestamp);
+      this.isSuccessful = false});
 
   static TwitchRaidingEventModel fromDocumentData(Map<String, dynamic> data) {
     return TwitchRaidingEventModel(

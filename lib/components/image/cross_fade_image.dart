@@ -3,7 +3,7 @@ import 'package:rtchat/components/image/resilient_network_image.dart';
 
 class CrossFadeImage extends StatelessWidget {
   const CrossFadeImage({
-    Key? key,
+    super.key,
     this.placeholder,
     this.placeholderErrorBuilder,
     required this.image,
@@ -15,7 +15,7 @@ class CrossFadeImage extends StatelessWidget {
     this.alignment = Alignment.topCenter,
     this.repeat = ImageRepeat.noRepeat,
     this.matchTextDirection = false,
-  }) : super(key: key);
+  });
 
   final ImageProvider? placeholder;
 

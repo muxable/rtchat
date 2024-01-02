@@ -7,7 +7,7 @@ import 'package:rtchat/models/user.dart';
 import 'package:rtchat/product_list.dart';
 
 class CloudTtsPurchasesScreen extends StatelessWidget {
-  const CloudTtsPurchasesScreen({Key? key}) : super(key: key);
+  const CloudTtsPurchasesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,7 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
 }
 
 class _ProductPage extends StatelessWidget {
-  const _ProductPage({Key? key}) : super(key: key);
+  const _ProductPage();
 
   @override
   Widget build(BuildContext context) {
