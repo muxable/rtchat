@@ -55,9 +55,8 @@ import 'package:rtchat/screens/settings/tts/languages.dart';
 import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
-import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
-
-//import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
+import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:rtchat/tts_isolate.dart' as tts_isolate;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,7 +65,7 @@ void main() async {
   await MobileAds.instance.initialize();
   //wait ttsIsolate.initializeService();
 
-  final prefs = await StreamingSharedPreferences.instance;
+  final prefs = await SharedPreferences.getInstance();
 
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
@@ -94,11 +93,13 @@ void main() async {
     stayAwake: true,
   ).build());
 
+  // tts_isolate.initializeService();
+
   runApp(App(prefs: prefs));
 }
 
 class App extends StatefulWidget {
-  final StreamingSharedPreferences prefs;
+  final SharedPreferences prefs;
 
   static final observer =
       FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
@@ -119,9 +120,8 @@ class _AppState extends State<App> {
       providers: [
         ChangeNotifierProvider(create: (context) => UserModel()),
         ChangeNotifierProvider(create: (context) {
-          final model = ActivityFeedModel.fromJson(jsonDecode(widget.prefs
-              .getString("activity_feed", defaultValue: '{}')
-              .getValue()));
+          final model = ActivityFeedModel.fromJson(
+              jsonDecode(widget.prefs.getString("activity_feed") ?? "{}"));
           return model
             ..addListener(() {
               widget.prefs
@@ -129,8 +129,8 @@ class _AppState extends State<App> {
             });
         }),
         ChangeNotifierProvider(create: (context) {
-          final model = LayoutModel.fromJson(jsonDecode(
-              widget.prefs.getString("layout", defaultValue: '').getValue()));
+          final model = LayoutModel.fromJson(
+              jsonDecode(widget.prefs.getString("layout") ?? "{}"));
           return model
             ..addListener(() {
               widget.prefs.setString('layout', jsonEncode(model.toJson()));
@@ -138,8 +138,8 @@ class _AppState extends State<App> {
         }),
         ChangeNotifierProxyProvider<UserModel, TtsModel>(
           create: (context) {
-            final model = TtsModel.fromJson(jsonDecode(
-                widget.prefs.getString("tts", defaultValue: '{}').getValue()));
+            final model = TtsModel.fromJson(
+                jsonDecode(widget.prefs.getString("tts") ?? "{}"));
             return model
               ..addListener(() {
                 widget.prefs.setString('tts', jsonEncode(model.toJson()));
@@ -149,18 +149,15 @@ class _AppState extends State<App> {
         ),
         ChangeNotifierProxyProvider2<UserModel, TtsModel, MessagesModel>(
           create: (context) {
-            final model = MessagesModel.fromJson(jsonDecode(widget.prefs
-                .getString("message_config", defaultValue: '{}')
-                .getValue()));
-
-            // Additional initialization logic if needed
+            final model = MessagesModel.fromJson(
+              jsonDecode(widget.prefs.getString("message_config") ?? "{}"),
+            );
             final player = AudioPlayer();
             model.onMessagePing =
                 () => player.play(AssetSource('message-sound.wav'));
             model.channel =
                 Provider.of<UserModel>(context, listen: false).activeChannel;
             model.tts = Provider.of<TtsModel>(context, listen: false);
-
             return model
               ..addListener(() {
                 if (model.isLive && model.messages.isNotEmpty) {
@@ -186,44 +183,41 @@ class _AppState extends State<App> {
           lazy: false,
         ),
         ChangeNotifierProvider(create: (context) {
-          final model = QuickLinksModel.fromJson(jsonDecode(widget.prefs
-              .getString("quick_links", defaultValue: '{}')
-              .getValue()));
+          final model = QuickLinksModel.fromJson(
+              jsonDecode(widget.prefs.getString("quick_links") ?? "{}"));
           return model
             ..addListener(() {
               widget.prefs.setString('quick_links', jsonEncode(model.toJson()));
             });
         }),
         ChangeNotifierProvider(create: (context) {
-          final model = StyleModel.fromJson(jsonDecode(
-              widget.prefs.getString("style", defaultValue: '{}').getValue()));
+          final model = StyleModel.fromJson(
+              jsonDecode(widget.prefs.getString("style") ?? "{}"));
           return model
             ..addListener(() {
               widget.prefs.setString('style', jsonEncode(model.toJson()));
             });
         }),
-        ChangeNotifierProvider(create: (context) {
-          final model = QRModel.fromJson(jsonDecode(
-              widget.prefs.getString("qr", defaultValue: '{}').getValue()));
+        ChangeNotifierProvider(create: ((context) {
+          final model = QRModel.fromJson(
+              jsonDecode(widget.prefs.getString("qr") ?? "{}"));
+
           return model
             ..addListener(() {
               widget.prefs.setString('qr', jsonEncode(model.toJson()));
             });
-        }),
+        })),
         ChangeNotifierProvider(create: (context) {
-          final model = CommandsModel.fromJson(jsonDecode(widget.prefs
-              .getString("commands", defaultValue: '{}')
-              .getValue()));
+          final model = CommandsModel.fromJson(
+              jsonDecode(widget.prefs.getString("commands") ?? "{}"));
           return model
             ..addListener(() {
               widget.prefs.setString("commands", jsonEncode(model.toJson()));
             });
         }),
         ChangeNotifierProvider(create: (context) {
-          final model = EventSubConfigurationModel.fromJson(jsonDecode(widget
-              .prefs
-              .getString("event_sub_configs", defaultValue: '{}')
-              .getValue()));
+          final model = EventSubConfigurationModel.fromJson(
+              jsonDecode(widget.prefs.getString("event_sub_configs") ?? "{}"));
           return model
             ..addListener(() {
               widget.prefs
@@ -231,41 +225,39 @@ class _AppState extends State<App> {
             });
         }),
         ChangeNotifierProxyProvider<UserModel, TwitchBadgeModel>(
-          create: (context) {
-            final model = TwitchBadgeModel.fromJson(jsonDecode(widget.prefs
-                .getString("twitch_badge", defaultValue: '{}')
-                .getValue()));
-            return model
-              ..addListener(() {
-                widget.prefs
-                    .setString('twitch_badge', jsonEncode(model.toJson()));
-              });
-          },
-          update: (context, userModel, model) {
-            model!.channel = userModel.activeChannel;
-            return model;
-          },
-        ),
+            create: (context) {
+          final model = TwitchBadgeModel.fromJson(
+              jsonDecode(widget.prefs.getString("twitch_badge") ?? "{}"));
+          model.channel =
+              Provider.of<UserModel>(context, listen: false).activeChannel;
+          return model
+            ..addListener(() {
+              widget.prefs
+                  .setString('twitch_badge', jsonEncode(model.toJson()));
+            });
+        }, update: (context, userModel, model) {
+          model!.channel = userModel.activeChannel;
+          return model;
+        }),
         ChangeNotifierProxyProvider<UserModel, AudioModel>(
-          create: (context) {
-            final model = AudioModel.fromJson(jsonDecode(widget.prefs
-                .getString("audio", defaultValue: '{}')
-                .getValue()));
-            return model
-              ..addListener(() {
-                widget.prefs.setString('audio', jsonEncode(model.toJson()));
-              });
-          },
-          update: (context, userModel, model) {
-            model!.hostChannel = userModel.userChannel;
-            return model;
-          },
-          lazy: false,
-        ),
+            create: (context) {
+              final model = AudioModel.fromJson(
+                  jsonDecode(widget.prefs.getString("audio") ?? "{}"));
+              model.hostChannel =
+                  Provider.of<UserModel>(context, listen: false).userChannel;
+              return model
+                ..addListener(() {
+                  widget.prefs.setString('audio', jsonEncode(model.toJson()));
+                });
+            },
+            update: (context, userModel, model) {
+              model!.hostChannel = userModel.userChannel;
+              return model;
+            },
+            lazy: false),
         ChangeNotifierProvider<StreamPreviewModel>(create: (context) {
-          final model = StreamPreviewModel.fromJson(jsonDecode(widget.prefs
-              .getString("stream_preview", defaultValue: '')
-              .getValue()));
+          final model = StreamPreviewModel.fromJson(
+              jsonDecode(widget.prefs.getString("stream_preview") ?? "{}"));
           return model
             ..addListener(() {
               widget.prefs

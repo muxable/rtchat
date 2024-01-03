@@ -6,18 +6,16 @@ import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 @pragma("vm:entry-point")
 void isolateMain(SendPort sendPort) {
-  initializeService(sendPort);
+  print("Hello from the isolate");
+  sendPort.send("Isolate message");
 }
 
-void initializeService(SendPort sendPort) async {
+void initializeService() async {
   final service = FlutterBackgroundService();
 
   await service.configure(
     androidConfiguration: AndroidConfiguration(
       onStart: (ServiceInstance service) {
-        // Send a message to the main isolate
-        sendPort.send("Background service started");
-
         // Perform background tasks here...
         onStart(service);
       },
@@ -28,7 +26,7 @@ void initializeService(SendPort sendPort) async {
       autoStart: true,
       onForeground: (ServiceInstance service) {
         // Send a message to the main isolate
-        sendPort.send("Background service started");
+
         // Perform background tasks here...
         onStart(service);
       },
@@ -51,6 +49,7 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 void onStart(ServiceInstance service) async {
   // Only available for flutter 3.0.0 and later
   DartPluginRegistrant.ensureInitialized();
+
   WidgetsFlutterBinding.ensureInitialized();
 
   service.on('stopService').listen((event) {
@@ -65,7 +64,7 @@ void onStart(ServiceInstance service) async {
     final prefs = await StreamingSharedPreferences.instance;
 
     // Listen to changes in 'tts_channel'
-    prefs.getString('tts_channel', defaultValue: '').listen((pref) {
+    prefs.getString('tts_channel', defaultValue: '{}').listen((pref) {
       // This block will be called every time 'tts_channel' changes
       debugPrint("tts_channel changed to: $pref");
     });
