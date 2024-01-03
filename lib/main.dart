@@ -56,12 +56,14 @@ import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:rtchat/tts_isolate.dart' as tts_isolate;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
+  //wait ttsIsolate.initializeService();
 
   final prefs = await SharedPreferences.getInstance();
 
@@ -85,12 +87,11 @@ void main() async {
   ));
 
   AudioPlayer.global.setAudioContext(AudioContextConfig(
-    forceSpeaker: false,
     duckAudio: false,
     respectSilence: false,
     stayAwake: true,
   ).build());
-
+  // tts_isolate.initializeService();
   runApp(App(prefs: prefs));
 }
 

@@ -642,7 +642,7 @@ PODS:
   - BoringSSL-GRPC/Implementation (0.0.24):
     - BoringSSL-GRPC/Interface (= 0.0.24)
   - BoringSSL-GRPC/Interface (0.0.24)
-  - cloud_firestore (4.13.5):
+  - cloud_firestore (4.13.6):
     - Firebase/Firestore (= 10.18.0)
     - firebase_core
     - Flutter
@@ -677,7 +677,7 @@ PODS:
     - Firebase/Analytics (= 10.18.0)
     - firebase_core
     - Flutter
-  - firebase_auth (4.15.2):
+  - firebase_auth (4.15.3):
     - Firebase/Auth (= 10.18.0)
     - firebase_core
     - Flutter
@@ -783,6 +783,8 @@ PODS:
     - PromisesSwift (~> 2.1)
   - FirebaseSharedSwift (10.19.0)
   - Flutter (1.0.0)
+  - flutter_background_service_ios (0.0.3):
+    - Flutter
   - flutter_custom_tabs (0.0.1):
     - Flutter
   - flutter_keyboard_visibility (0.0.1):
@@ -791,12 +793,12 @@ PODS:
     - Flutter
   - flutter_web_auth (0.5.0):
     - Flutter
-  - Google-Mobile-Ads-SDK (10.9.0):
+  - Google-Mobile-Ads-SDK (10.11.0):
     - GoogleAppMeasurement (< 11.0, >= 7.0)
     - GoogleUserMessagingPlatform (>= 1.1)
   - google_mobile_ads (1.0.0):
     - Flutter
-    - Google-Mobile-Ads-SDK (~> 10.9.0)
+    - Google-Mobile-Ads-SDK (~> 10.11.0)
     - webview_flutter_wkwebview
   - GoogleAppMeasurement (10.18.0):
     - GoogleAppMeasurement/AdIdSupport (= 10.18.0)
@@ -950,6 +952,7 @@ DEPENDENCIES:
   - firebase_crashlytics (from `.symlinks/plugins/firebase_crashlytics/ios`)
   - firebase_database (from `.symlinks/plugins/firebase_database/ios`)
   - Flutter (from `Flutter`)
+  - flutter_background_service_ios (from `.symlinks/plugins/flutter_background_service_ios/ios`)
   - flutter_custom_tabs (from `.symlinks/plugins/flutter_custom_tabs/ios`)
   - flutter_keyboard_visibility (from `.symlinks/plugins/flutter_keyboard_visibility/ios`)
   - flutter_tts (from `.symlinks/plugins/flutter_tts/ios`)
@@ -1025,6 +1028,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_database/ios"
   Flutter:
     :path: Flutter
+  flutter_background_service_ios:
+    :path: ".symlinks/plugins/flutter_background_service_ios/ios"
   flutter_custom_tabs:
     :path: ".symlinks/plugins/flutter_custom_tabs/ios"
   flutter_keyboard_visibility:
@@ -1060,11 +1065,11 @@ SPEC CHECKSUMS:
   audioplayers_darwin: 877d9a4d06331c5c374595e46e16453ac7eafa40
   barcode_scan2: 0af2bb63c81b4565aab6cd78278e4c0fa136dbb0
   BoringSSL-GRPC: 3175b25143e648463a56daeaaa499c6cb86dad33
-  cloud_firestore: d2707a9ead952efd2a89e82347e46dc4b9c32e8d
+  cloud_firestore: c29d4c2e96fe31374d9dab458a99d7a488d3a735
   cloud_functions: 8a6f73ee01574ce51bd4d027dbbce520c43a2996
   Firebase: 414ad272f8d02dfbf12662a9d43f4bba9bec2a06
   firebase_analytics: 88c111412070acc2b05c1734151f58824f3db657
-  firebase_auth: 0099901926d85bda1688f6e451755b413c16154d
+  firebase_auth: df44e14f8a93e8a9869d91695bd3f8e53d2c9f5a
   firebase_core: 0af4a2b24f62071f9bf283691c0ee41556dcb3f5
   firebase_crashlytics: 55714f63ae0973c54b3a721c451ae5f815086c1f
   firebase_database: 46962668fb03fb9396c791c6da151b376426ff3a
@@ -1085,12 +1090,13 @@ SPEC CHECKSUMS:
   FirebaseSessions: e5f4caa188dc8bc6142abc974355be75b042215e
   FirebaseSharedSwift: f34eeb7d3ea87a34497629b6ca41657beadef76a
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  flutter_background_service_ios: e30e0d3ee69e4cee66272d0c78eacd48c2e94aac
   flutter_custom_tabs: f8aa300a93d869c0d117c8709a9af39cbd011adc
   flutter_keyboard_visibility: 0339d06371254c3eb25eeb90ba8d17dca8f9c069
   flutter_tts: 0f492aab6accf87059b72354fcb4ba934304771d
   flutter_web_auth: c25208760459cec375a3c39f6a8759165ca0fa4d
-  Google-Mobile-Ads-SDK: e81e8b009a182dc8dd14951782efdbb30a5e4510
-  google_mobile_ads: 035df0d095e1a196b52e3c91534d0718d3dacf98
+  Google-Mobile-Ads-SDK: 58b4fda3f9758fc1ed210aa5cf7777b5eb55d47e
+  google_mobile_ads: 511febb4768edc860ee455a9e201ff52de385908
   GoogleAppMeasurement: 70ce9aa438cff1cfb31ea3e660bcc67734cb716e
   GoogleDataTransport: 57c22343ab29bc686febbf7cbb13bad167c2d8fe
   GoogleUserMessagingPlatform: dce302b8f1b84d6e945812ee7a15c3f65a102cbf
