@@ -49,7 +49,6 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 void onStart(ServiceInstance service) async {
   // Only available for flutter 3.0.0 and later
   DartPluginRegistrant.ensureInitialized();
-
   WidgetsFlutterBinding.ensureInitialized();
 
   service.on('stopService').listen((event) {
