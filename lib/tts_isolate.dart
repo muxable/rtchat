@@ -1,5 +1,6 @@
 import 'dart:isolate';
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
@@ -26,13 +27,11 @@ void initializeService() async {
       autoStart: true,
       onForeground: (ServiceInstance service) {
         // Send a message to the main isolate
-
         // Perform background tasks here...
         onStart(service);
       },
     ),
   );
-
   // Start the background service
   service.startService();
 }
@@ -61,7 +60,6 @@ void onStart(ServiceInstance service) async {
 
   service.on('initSharedPreference').listen((event) async {
     final prefs = await StreamingSharedPreferences.instance;
-
     // Listen to changes in 'tts_channel'
     prefs.getString('tts_channel', defaultValue: '{}').listen((pref) {
       // This block will be called every time 'tts_channel' changes
