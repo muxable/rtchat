@@ -92,9 +92,7 @@ void main() async {
     respectSilence: false,
     stayAwake: true,
   ).build());
-
   // tts_isolate.initializeService();
-
   runApp(App(prefs: prefs));
 }
 
