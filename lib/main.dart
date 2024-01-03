@@ -87,7 +87,6 @@ void main() async {
   ));
 
   AudioPlayer.global.setAudioContext(AudioContextConfig(
-    forceSpeaker: false,
     duckAudio: false,
     respectSilence: false,
     stayAwake: true,
