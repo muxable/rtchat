@@ -10,7 +10,7 @@ import WebKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        SwiftFlutterBackgroundServicePlugin.taskIdentifier = "your.custom.task.identifier"
+        SwiftFlutterBackgroundServicePlugin.taskIdentifier = "com.rtirl.chat.tts"
 
         var views = [String: WKWebView]()
 
