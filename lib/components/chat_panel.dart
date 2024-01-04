@@ -29,8 +29,7 @@ class RebuildableWidget extends StatefulWidget {
   final Set<DateTime> rebuildAt;
 
   const RebuildableWidget(
-      {Key? key, required this.builder, required this.rebuildAt})
-      : super(key: key);
+      {super.key, required this.builder, required this.rebuildAt});
 
   @override
   State<RebuildableWidget> createState() => _RebuildableWidgetState();
@@ -167,11 +166,7 @@ class _ScrollToBottomWidget extends StatelessWidget {
   final Widget? child;
 
   const _ScrollToBottomWidget(
-      {Key? key,
-      required this.show,
-      required this.onPressed,
-      required this.child})
-      : super(key: key);
+      {required this.show, required this.onPressed, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -202,7 +197,7 @@ class _ScrollToBottomWidget extends StatelessWidget {
 class ChatPanelWidget extends StatefulWidget {
   final Channel channel;
 
-  const ChatPanelWidget({required this.channel, Key? key}) : super(key: key);
+  const ChatPanelWidget({required this.channel, super.key});
 
   @override
   State<ChatPanelWidget> createState() => _ChatPanelWidgetState();

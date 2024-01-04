@@ -13,7 +13,7 @@ Uri getCorrespondingImageUrl(int bits) {
 class TwitchCheerEventWidget extends StatelessWidget {
   final TwitchCheerEventModel model;
 
-  const TwitchCheerEventWidget(this.model, {Key? key}) : super(key: key);
+  const TwitchCheerEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

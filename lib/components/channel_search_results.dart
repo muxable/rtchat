@@ -112,12 +112,11 @@ class ChannelSearchResultsWidget extends StatefulWidget {
   final ScrollController? controller;
 
   const ChannelSearchResultsWidget(
-      {Key? key,
+      {super.key,
       required this.query,
       required this.onChannelSelect,
       required this.isShowOnlyOnline,
-      this.controller})
-      : super(key: key);
+      this.controller});
 
   @override
   State<ChannelSearchResultsWidget> createState() =>

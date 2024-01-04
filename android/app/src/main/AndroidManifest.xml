@@ -75,5 +75,9 @@
             android:name=".AudioService"
             android:enabled="true"
             android:foregroundServiceType="mediaPlayback" />
+
+        <service
+            android:name="id.flutter.flutter_background_service.BackgroundService"
+            android:foregroundServiceType="mediaPlayback"/>
     </application>
 </manifest>

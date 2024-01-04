@@ -5,8 +5,7 @@ import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 class RealtimeCashDonationEventWidget extends StatelessWidget {
   final SimpleRealtimeCashDonationEventModel model;
 
-  const RealtimeCashDonationEventWidget(this.model, {Key? key})
-      : super(key: key);
+  const RealtimeCashDonationEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -15,7 +15,7 @@ import 'package:rtchat/models/commands.dart';
 class MessageInputWidget extends StatefulWidget {
   final Channel channel;
 
-  const MessageInputWidget({Key? key, required this.channel}) : super(key: key);
+  const MessageInputWidget({super.key, required this.channel});
 
   @override
   State<MessageInputWidget> createState() => _MessageInputWidgetState();

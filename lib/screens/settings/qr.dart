@@ -32,20 +32,27 @@ class QRDisplay extends StatelessWidget {
                     borderRadius: BorderRadius.circular(querySize.width * 0.06),
                     color: Colors.white,
                   ),
-                  child: QrImageView(
-                    data: inviteLink,
-                    eyeStyle: const QrEyeStyle(
-                      eyeShape: QrEyeShape.square,
-                      color: Color.fromARGB(255, 18, 135, 135),
-                    ),
-                    dataModuleStyle: const QrDataModuleStyle(
-                      dataModuleShape: QrDataModuleShape.circle,
-                      color: Color(0xff1a5441),
-                    ),
-                    embeddedImage: userChannel?.profilePicture,
-                    embeddedImageStyle: const QrEmbeddedImageStyle(
-                      size: Size(60, 60),
-                    ),
+                  child: Stack(
+                    alignment: Alignment
+                        .center, // This centers the CircleAvatar in the middle of the Stack
+                    children: [
+                      QrImageView(
+                        data: inviteLink,
+                        eyeStyle: const QrEyeStyle(
+                          eyeShape: QrEyeShape.square,
+                          color: Colors.black,
+                        ),
+                        dataModuleStyle: const QrDataModuleStyle(
+                          dataModuleShape: QrDataModuleShape.square,
+                          color: Colors.black,
+                        ),
+                        // Remove the embeddedImage property
+                      ),
+                      CircleAvatar(
+                        radius: 35,
+                        backgroundImage: userChannel?.profilePicture,
+                      ),
+                    ],
                   ),
                 ),
                 Padding(

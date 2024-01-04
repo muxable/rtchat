@@ -144,7 +144,7 @@ import 'package:rtchat/models/channels.dart';
 class EndDrawerWidget extends StatefulWidget {
   final Channel channel;
 
-  const EndDrawerWidget({required this.channel, Key? key}) : super(key: key);
+  const EndDrawerWidget({required this.channel, super.key});
 
   @override
   State<EndDrawerWidget> createState() => EndDrawerWidgetState();

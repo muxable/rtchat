@@ -10,8 +10,7 @@ class ChannelSearchBottomSheetWidget extends StatefulWidget {
   final void Function(Channel)? onRaid;
 
   const ChannelSearchBottomSheetWidget(
-      {Key? key, this.controller, required this.onChannelSelect, this.onRaid})
-      : super(key: key);
+      {super.key, this.controller, required this.onChannelSelect, this.onRaid});
 
   @override
   State<ChannelSearchBottomSheetWidget> createState() =>
