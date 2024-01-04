@@ -14,7 +14,7 @@ import 'package:rtchat/models/user.dart';
 enum ActivityFeedType { disabled, standard, custom }
 
 class ActivityFeedScreen extends StatefulWidget {
-  const ActivityFeedScreen({Key? key}) : super(key: key);
+  const ActivityFeedScreen({super.key});
 
   @override
   State<ActivityFeedScreen> createState() => _ActivityFeedScreenState();

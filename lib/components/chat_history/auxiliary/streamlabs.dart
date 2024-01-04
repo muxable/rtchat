@@ -5,7 +5,7 @@ import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
 class StreamlabsDonationEventWidget extends StatelessWidget {
   final StreamlabsDonationEventModel model;
 
-  const StreamlabsDonationEventWidget(this.model, {Key? key}) : super(key: key);
+  const StreamlabsDonationEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

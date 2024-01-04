@@ -10,7 +10,7 @@ import 'package:styled_text/styled_text.dart';
 class TwitchFollowEventWidget extends StatelessWidget {
   final TwitchFollowEventModel model;
 
-  const TwitchFollowEventWidget(this.model, {Key? key}) : super(key: key);
+  const TwitchFollowEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

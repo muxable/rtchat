@@ -5,8 +5,7 @@ import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dar
 class TwitchChannelPointRedemptionEventWidget extends StatelessWidget {
   final TwitchChannelPointRedemptionEventModel model;
 
-  const TwitchChannelPointRedemptionEventWidget(this.model, {Key? key})
-      : super(key: key);
+  const TwitchChannelPointRedemptionEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

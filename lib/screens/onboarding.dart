@@ -11,8 +11,7 @@ final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
 class OnboardingScreen extends StatelessWidget {
   final void Function(Channel) onChannelSelect;
 
-  const OnboardingScreen({Key? key, required this.onChannelSelect})
-      : super(key: key);
+  const OnboardingScreen({super.key, required this.onChannelSelect});
 
   @override
   Widget build(BuildContext context) {
@@ -49,8 +48,7 @@ class OnboardingScreen extends StatelessWidget {
 class LoginOptionsWidget extends StatefulWidget {
   final void Function(Channel) onChannelSelect;
 
-  const LoginOptionsWidget({Key? key, required this.onChannelSelect})
-      : super(key: key);
+  const LoginOptionsWidget({super.key, required this.onChannelSelect});
 
   @override
   State<LoginOptionsWidget> createState() => _LoginOptionsWidgetState();

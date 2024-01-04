@@ -11,7 +11,7 @@ import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
 class AudioSourcesScreen extends StatefulWidget {
-  const AudioSourcesScreen({Key? key}) : super(key: key);
+  const AudioSourcesScreen({super.key});
 
   @override
   State<AudioSourcesScreen> createState() => _AudioSourcesScreenState();

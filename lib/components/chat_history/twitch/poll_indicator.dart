@@ -11,12 +11,11 @@ class PollChoiceWidget extends StatelessWidget {
   final int maxVotes;
   final int totalVotes;
   const PollChoiceWidget(
-      {Key? key,
+      {super.key,
       required this.data,
       required this.isCompleted,
       required this.maxVotes,
-      required this.totalVotes})
-      : super(key: key);
+      required this.totalVotes});
 
   @override
   Widget build(BuildContext context) {

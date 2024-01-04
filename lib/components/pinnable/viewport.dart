@@ -6,28 +6,17 @@ import 'package:rtchat/components/chat_history/sliver.dart';
 
 class PinnableMessageViewport extends Viewport {
   PinnableMessageViewport({
-    Key? key,
-    AxisDirection axisDirection = AxisDirection.down,
-    AxisDirection? crossAxisDirection,
-    double anchor = 0.0,
-    required ViewportOffset offset,
-    center,
-    double? cacheExtent,
-    CacheExtentStyle cacheExtentStyle = CacheExtentStyle.pixel,
-    Clip clipBehavior = Clip.hardEdge,
-    List<Widget> slivers = const <Widget>[],
-  }) : super(
-          key: key,
-          axisDirection: axisDirection,
-          crossAxisDirection: crossAxisDirection,
-          anchor: anchor,
-          offset: offset,
-          center: center,
-          cacheExtent: cacheExtent,
-          cacheExtentStyle: cacheExtentStyle,
-          clipBehavior: clipBehavior,
-          slivers: slivers,
-        );
+    super.key,
+    super.axisDirection,
+    super.crossAxisDirection,
+    super.anchor,
+    required super.offset,
+    super.center,
+    super.cacheExtent,
+    super.cacheExtentStyle,
+    super.clipBehavior,
+    super.slivers,
+  });
 
   @override
   RenderPinnableMessageViewport createRenderObject(BuildContext context) {
@@ -62,21 +51,14 @@ class RenderPinnableMessageViewport extends RenderViewport {
   double cumulativeOffset = 0.0;
 
   RenderPinnableMessageViewport({
-    AxisDirection axisDirection = AxisDirection.down,
-    required AxisDirection crossAxisDirection,
-    required ViewportOffset offset,
+    super.axisDirection,
+    required super.crossAxisDirection,
+    required super.offset,
     double anchor = 0.0,
-    double? cacheExtent,
-    CacheExtentStyle cacheExtentStyle = CacheExtentStyle.pixel,
-    Clip clipBehavior = Clip.hardEdge,
-  }) : super(
-          axisDirection: axisDirection,
-          crossAxisDirection: crossAxisDirection,
-          offset: offset,
-          cacheExtent: cacheExtent,
-          cacheExtentStyle: cacheExtentStyle,
-          clipBehavior: clipBehavior,
-        );
+    super.cacheExtent,
+    super.cacheExtentStyle,
+    super.clipBehavior,
+  });
 
   @override
   double layoutChildSequence({

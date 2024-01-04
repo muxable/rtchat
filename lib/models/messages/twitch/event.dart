@@ -8,11 +8,10 @@ class TwitchRaidEventModel extends MessageModel {
   final int viewers;
 
   const TwitchRaidEventModel(
-      {required DateTime timestamp,
-      required String messageId,
+      {required super.timestamp,
+      required super.messageId,
       required this.from,
-      required this.viewers})
-      : super(messageId: messageId, timestamp: timestamp);
+      required this.viewers});
 }
 
 class TwitchHostEventModel extends MessageModel {
@@ -20,11 +19,10 @@ class TwitchHostEventModel extends MessageModel {
   final int viewers;
 
   const TwitchHostEventModel(
-      {required DateTime timestamp,
-      required String messageId,
+      {required super.timestamp,
+      required super.messageId,
       required this.from,
-      required this.viewers})
-      : super(messageId: messageId, timestamp: timestamp);
+      required this.viewers});
 }
 
 class TwitchFollowEventModel extends MessageModel {
@@ -32,9 +30,9 @@ class TwitchFollowEventModel extends MessageModel {
 
   const TwitchFollowEventModel({
     required this.followers,
-    required String messageId,
-    required DateTime timestamp,
-  }) : super(messageId: messageId, timestamp: timestamp);
+    required super.messageId,
+    required super.timestamp,
+  });
 
   static TwitchFollowEventModel fromDocumentData(
       String messageId, Map<String, dynamic> data) {
@@ -68,9 +66,9 @@ class TwitchCheerEventModel extends MessageModel {
     required this.isAnonymous,
     required this.cheerMessage,
     required this.giverName,
-    required String messageId,
-    required DateTime timestamp,
-  }) : super(messageId: messageId, timestamp: timestamp);
+    required super.messageId,
+    required super.timestamp,
+  });
 }
 
 class PollChoiceModel {
@@ -103,9 +101,9 @@ class TwitchPollEventModel extends MessageModel {
     required this.startTimestamp,
     required this.endTimestamp,
     required this.status,
-    required String messageId,
-    required DateTime timestamp,
-  }) : super(messageId: messageId, timestamp: timestamp);
+    required super.messageId,
+    required super.timestamp,
+  });
 
   static TwitchPollEventModel fromDocumentData(Map<String, dynamic>? data) {
     final m = TwitchPollEventModel(

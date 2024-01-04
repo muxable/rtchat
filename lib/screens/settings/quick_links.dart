@@ -9,7 +9,7 @@ import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
 class QuickLinksScreen extends StatefulWidget {
-  const QuickLinksScreen({Key? key}) : super(key: key);
+  const QuickLinksScreen({super.key});
 
   @override
   State<QuickLinksScreen> createState() => _QuickLinksScreenState();

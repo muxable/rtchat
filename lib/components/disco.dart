@@ -16,8 +16,7 @@ class DiscoWidget extends StatelessWidget {
   final Widget child;
   final bool isEnabled;
 
-  const DiscoWidget({required this.child, required this.isEnabled, Key? key})
-      : super(key: key);
+  const DiscoWidget({required this.child, required this.isEnabled, super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -38,7 +38,7 @@ const streamlabsCurrencies = [
 class _RealtimeCashWidget extends StatelessWidget {
   final String userId;
 
-  const _RealtimeCashWidget({Key? key, required this.userId}) : super(key: key);
+  const _RealtimeCashWidget({required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +118,7 @@ class _RealtimeCashWidget extends StatelessWidget {
 class _StreamlabsWidget extends StatelessWidget {
   final String userId;
 
-  const _StreamlabsWidget({Key? key, required this.userId}) : super(key: key);
+  const _StreamlabsWidget({required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -171,8 +171,7 @@ class _StreamlabsWidget extends StatelessWidget {
 class _StreamElementsWidget extends StatelessWidget {
   final String userId;
 
-  const _StreamElementsWidget({Key? key, required this.userId})
-      : super(key: key);
+  const _StreamElementsWidget({required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +223,7 @@ class _StreamElementsWidget extends StatelessWidget {
 }
 
 class ThirdPartyScreen extends StatelessWidget {
-  const ThirdPartyScreen({Key? key}) : super(key: key);
+  const ThirdPartyScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
