@@ -46,6 +46,7 @@ class TtsModel extends ChangeNotifier {
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
+  final bool _useNewTTs = kDebugMode;
 
   @override
   void dispose() {
@@ -164,6 +165,8 @@ class TtsModel extends ChangeNotifier {
   Language get language {
     return _language;
   }
+
+  bool get useNewTts => _useNewTTs;
 
   set language(Language language) {
     _language = language;
