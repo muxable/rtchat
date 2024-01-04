@@ -9,7 +9,7 @@ import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 @pragma("vm:entry-point")
 void isolateMain(SendPort sendPort) {
-  print("Hello from the isolate");
+  // print("Hello from the isolate");
   sendPort.send("Isolate message");
 }
 
@@ -55,10 +55,12 @@ void onStart(ServiceInstance service) async {
   await Firebase.initializeApp();
 
   service.on('stopService').listen((event) {
+    // print("Stopping this service right now");
     service.stopSelf();
   });
 
   service.on('startTts').listen((event) async {
+    // print("Starting this service right now");
     await Isolate.spawn(isolateMain, ReceivePort().sendPort);
   });
 
@@ -68,7 +70,7 @@ void onStart(ServiceInstance service) async {
       debugPrint("tts_channel changed to: $channel");
       if (channel.isNotEmpty && channel != "{}") {
         // Fetch messages from Firestore
-        var messages = await fetchMessagesFromFirestore(channel);
+        // var messages = await fetchMessagesFromFirestore(channel);
         // Process messages as needed
       }
     });
