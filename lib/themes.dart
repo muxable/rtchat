@@ -53,7 +53,11 @@ class Themes {
       inputDecorationTheme: const InputDecorationTheme(
         fillColor: lightTextFieldColor,
       ),
-      appBarTheme: const AppBarTheme(color: detailColor),
+      appBarTheme: const AppBarTheme(
+          color: detailColor,
+          iconTheme: IconThemeData(
+            color: Colors.white,
+          )),
       tabBarTheme: const TabBarTheme(labelColor: lightAccentColor),
       checkboxTheme: CheckboxThemeData(
         fillColor: MaterialStateProperty.resolveWith<Color?>(
@@ -108,8 +112,10 @@ class Themes {
     canvasColor: Colors.black,
     cardColor: Colors.black,
     appBarTheme: const AppBarTheme(
-      color: detailColor,
-    ),
+        color: detailColor,
+        iconTheme: IconThemeData(
+          color: Colors.white,
+        )),
     colorScheme: ColorScheme.fromSwatch(
       primarySwatch: primarySwatch,
       brightness: Brightness.dark,
