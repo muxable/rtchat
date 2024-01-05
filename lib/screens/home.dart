@@ -244,13 +244,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         // Toggle the enabled state
                         ttsModel.enabled = !ttsModel.enabled;
 
+                        final streamPrefs =
+                            await StreamingSharedPreferences.instance;
+
                         if (!ttsModel.enabled) {
                           await TextToSpeechPlugin.clear();
+                          await streamPrefs.remove('tts_channel');
+
                           // FlutterBackgroundService().invoke("stopService");
                         }
 
-                        final streamPrefs =
-                            await StreamingSharedPreferences.instance;
                         streamPrefs.setString(
                             "tts_channel", '${userModel.activeChannel}');
 
