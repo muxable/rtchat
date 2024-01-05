@@ -101,7 +101,7 @@ class _DrawerHeader extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: IconButton(
-                          icon: const Icon(Icons.qr_code, color: Colors.white),
+                          icon: const Icon(Icons.qr_code),
                           onPressed: () {
                             Navigator.of(context).pop();
                             showModalBottomSheet(
