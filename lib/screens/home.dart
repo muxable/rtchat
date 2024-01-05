@@ -212,11 +212,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       return Container();
                     }
                     return IconButton(
-                      icon: Icon(
-                          layoutModel.isShowNotifications
-                              ? Icons.notifications
-                              : Icons.notifications_outlined,
-                          color: Colors.white),
+                      icon: Icon(layoutModel.isShowNotifications
+                          ? Icons.notifications
+                          : Icons.notifications_outlined),
                       tooltip: AppLocalizations.of(context)!.activityFeed,
                       onPressed: () {
                         layoutModel.isShowNotifications =
@@ -226,11 +224,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   }),
                   Consumer<LayoutModel>(builder: (context, layoutModel, child) {
                     return IconButton(
-                      icon: Icon(
-                          layoutModel.isShowPreview
-                              ? Icons.preview
-                              : Icons.preview_outlined,
-                          color: Colors.white),
+                      icon: Icon(layoutModel.isShowPreview
+                          ? Icons.preview
+                          : Icons.preview_outlined),
                       tooltip: AppLocalizations.of(context)!.streamPreview,
                       onPressed: () {
                         layoutModel.isShowPreview = !layoutModel.isShowPreview;
@@ -239,12 +235,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   }),
                   Consumer<TtsModel>(builder: (context, ttsModel, child) {
                     return IconButton(
-                      icon: Icon(
-                        ttsModel.enabled
-                            ? Icons.record_voice_over
-                            : Icons.voice_over_off,
-                        color: Colors.white,
-                      ),
+                      icon: Icon(ttsModel.enabled
+                          ? Icons.record_voice_over
+                          : Icons.voice_over_off),
                       tooltip: AppLocalizations.of(context)!.textToSpeech,
                       onPressed: () async {
                         // Toggle the enabled state
@@ -292,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   }),
                   if (userModel.isSignedIn())
                     IconButton(
-                      icon: const Icon(Icons.people, color: Colors.white),
+                      icon: const Icon(Icons.people),
                       tooltip: AppLocalizations.of(context)!.currentViewers,
                       onPressed: () {
                         _scaffoldKey.currentState?.openEndDrawer();
