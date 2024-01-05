@@ -18,20 +18,13 @@ void initializeService() async {
 
   await service.configure(
     androidConfiguration: AndroidConfiguration(
-      onStart: (ServiceInstance service) {
-        // Perform background tasks here...
-        onStart(service);
-      },
+      onStart: onStart,
       autoStart: true,
       isForegroundMode: true,
     ),
     iosConfiguration: IosConfiguration(
       autoStart: true,
-      onForeground: (ServiceInstance service) {
-        // Send a message to the main isolate
-        // Perform background tasks here...
-        onStart(service);
-      },
+      onForeground: onStart,
     ),
   );
   // Start the background service
@@ -71,6 +64,7 @@ void onStart(ServiceInstance service) async {
       if (channel.isNotEmpty && channel != "{}") {
         // Fetch messages from Firestore
         // var messages = await fetchMessagesFromFirestore(channel);
+        // print('MESSAGES HERE $messages');
         // Process messages as needed
       }
     });
