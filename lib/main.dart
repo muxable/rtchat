@@ -63,7 +63,7 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
-  //wait ttsIsolate.initializeService();
+  // tts_isolate.initializeService();
 
   final prefs = await SharedPreferences.getInstance();
 
