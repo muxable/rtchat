@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
+import 'package:rtchat/tts_plugin.dart';
 
 @pragma("vm:entry-point")
 void isolateMain(SendPort sendPort) {
@@ -62,25 +63,44 @@ void onStart(ServiceInstance service) async {
     prefs.getString('tts_channel', defaultValue: '{}').listen((channel) async {
       debugPrint("tts_channel changed to: $channel");
       if (channel.isNotEmpty && channel != "{}") {
-        // Fetch messages from Firestore
-        // var messages = await fetchMessagesFromFirestore(channel);
-        // print('MESSAGES HERE $messages');
-        // Process messages as needed
+        listenForNewMessages(channel);
       }
     });
   });
 }
 
-Future<List<dynamic>> fetchMessagesFromFirestore(String channelId) async {
-  List<dynamic> messages = [];
+void listenForNewMessages(String channelId) {
+  // Listen to changes in Firestore and process messages
+  FirebaseFirestore.instance
+      .collection('channels')
+      .where('channelId', isEqualTo: channelId)
+      .snapshots()
+      .listen((QuerySnapshot<Map<String, dynamic>> snapshot) {
+    for (var change in snapshot.docChanges) {
+      if (change.type == DocumentChangeType.added) {
+        // Process the added message and vocalize it
+        var message = change.doc.data();
+        vocalizeMessage(message);
+      }
+    }
+  });
+}
 
-  var collection = FirebaseFirestore.instance.collection('channels');
-  var querySnapshot =
-      await collection.where('channelId', isEqualTo: channelId).get();
-
-  for (var doc in querySnapshot.docs) {
-    var message = doc.data();
-    messages.add(message);
+void vocalizeMessage(Map<String, dynamic>? message) {
+  if (message == null) {
+    // print("Received a null message");
+    return;
   }
-  return messages;
+
+  var textToSpeak = message['text'] as String?;
+
+  if (textToSpeak != null) {
+    try {
+      TextToSpeechPlugin.speak(textToSpeak);
+    } catch (e) {
+      // print("Error during TTS processing: $e");
+    }
+  } else {
+    // print("Received a message with null or missing 'text' field");
+  }
 }
