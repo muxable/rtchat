@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
@@ -47,8 +46,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   var _emoteIndex = Random().nextInt(_emotes.length);
   final _textSeed = Random().nextDouble();
   final List<String> _pendingSend = [];
-  String _sharedText = '';
-
 
   @override
   void initState() {
@@ -75,11 +72,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   /// Handles any shared data we may receive.
   void _handleSharedData(String sharedData) {
-
     debugPrint('Shared data received: $sharedData');
     setState(() {
       _textEditingController.text = sharedData;
-      
     });
   }
 
