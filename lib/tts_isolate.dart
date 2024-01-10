@@ -82,23 +82,6 @@ void onStart(ServiceInstance service) async {
   });
 }
 
-void listenForNewMessages(String channelId) {
-  // Listen to changes in Firestore and process messages
-  FirebaseFirestore.instance
-      .collection('channels')
-      .where('channelId', isEqualTo: channelId)
-      .snapshots()
-      .listen((QuerySnapshot<Map<String, dynamic>> snapshot) {
-    for (var change in snapshot.docChanges) {
-      if (change.type == DocumentChangeType.added) {
-        // Process the added message and vocalize it
-        var message = change.doc.data();
-        vocalizeMessage(message);
-      }
-    }
-  });
-}
-
 void vocalizeMessage(Map<String, dynamic>? message) {
   if (message == null) {
     // print("Received a null message");
