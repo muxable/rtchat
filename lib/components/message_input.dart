@@ -47,6 +47,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   var _emoteIndex = Random().nextInt(_emotes.length);
   final _textSeed = Random().nextDouble();
   final List<String> _pendingSend = [];
+  String _sharedText = '';
 
 
   @override
