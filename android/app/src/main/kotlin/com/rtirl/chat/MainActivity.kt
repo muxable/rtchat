@@ -15,9 +15,21 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import java.util.UUID
+import android.os.Bundle
 
 
 class MainActivity : FlutterActivity() {
+
+    private var sharedData: String = ""
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    
+         handleIntent()
+    }
+  
+
+
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         val ttsPlugin = TextToSpeechPlugin(this)
         val ttsChannel = MethodChannel(
@@ -74,8 +86,28 @@ class MainActivity : FlutterActivity() {
             }
         }
 
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "com.rtirl.chat/share"
+        ).setMethodCallHandler { call, result ->
+            if (call.method == "getSharedData") {
+                result.success(sharedData)
+                sharedData = ""
+            }
+        }
+
         super.configureFlutterEngine(flutterEngine)
     }
+
+    private fun handleIntent() {
+        // Handle the received text share intent
+        if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
+            intent.getStringExtra(Intent.EXTRA_TEXT)?.let { intentData ->
+                sharedData = intentData
+            }
+        }
+    }
+
 }
 
 
