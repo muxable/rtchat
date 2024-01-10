@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
+import 'package:stream_transform/stream_transform.dart';
 import 'package:rtchat/tts_plugin.dart';
 
 @pragma("vm:entry-point")
@@ -60,10 +61,22 @@ void onStart(ServiceInstance service) async {
 
   service.on('initSharedPreference').listen((event) async {
     final prefs = await StreamingSharedPreferences.instance;
-    prefs.getString('tts_channel', defaultValue: '{}').listen((channel) async {
-      debugPrint("tts_channel changed to: $channel");
+
+    prefs.getString('tts_channel', defaultValue: '{}').switchMap((channel) {
       if (channel.isNotEmpty && channel != "{}") {
-        listenForNewMessages(channel);
+        return FirebaseFirestore.instance
+            .collection('channels')
+            .where('channelId', isEqualTo: channel)
+            .snapshots();
+      } else {
+        return Stream.empty();
+      }
+    }).listen((snapshot) {
+      for (var change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.added) {
+          var message = change.doc.data();
+          vocalizeMessage(message);
+        }
       }
     });
   });
