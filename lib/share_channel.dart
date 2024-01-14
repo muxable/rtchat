@@ -4,7 +4,7 @@ class ShareChannel {
   void Function(String)? onDataReceived;
 
   ShareChannel() {
-     // If sharing causes the app to be resumed, we'll check to see if we received any shared data
+     // If sharing resumes the app we will check to see if we received any shared data
     SystemChannels.lifecycle.setMessageHandler((msg) async {
       if (msg?.contains("resumed") ?? false) {
         getSharedText().then((String data) {
