@@ -24,11 +24,8 @@ class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    
          handleIntent()
     }
-  
-
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         val ttsPlugin = TextToSpeechPlugin(this)
@@ -107,7 +104,6 @@ class MainActivity : FlutterActivity() {
             }
         }
     }
-
 }
 
 
