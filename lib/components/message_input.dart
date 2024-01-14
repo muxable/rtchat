@@ -60,24 +60,19 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     });
 
      ShareChannel()
-      // Register a callback so that we handle shared data if it arrives while the
-      // app is running
+      // Register a callback to handle any shared data while app is running
       ..onDataReceived = _handleSharedData
-
-      // Check to see if there is any shared data already, meaning that the app
-      // was launched via sharing.
+      // Check to see if there is any shared data already via sharing
       ..getSharedText().then(_handleSharedData);
   }
 
-
-  /// Handles any shared data we may receive.
+  // Handles any shared data we may receive.
   void _handleSharedData(String sharedData) {
     debugPrint('Shared data received: $sharedData');
     setState(() {
       _textEditingController.text = sharedData;
     });
   }
-
 
   @override
   void dispose() {
