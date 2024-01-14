@@ -46,7 +46,6 @@ class QRDisplay extends StatelessWidget {
                           dataModuleShape: QrDataModuleShape.square,
                           color: Colors.black,
                         ),
-                        
                       ),
                       CircleAvatar(
                         radius: 35,
