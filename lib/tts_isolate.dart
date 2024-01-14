@@ -71,7 +71,7 @@ void onStart(ServiceInstance service) async {
                 .where('channelId', isEqualTo: channel)
                 .snapshots();
           } else {
-            return Stream.empty();
+            return const Stream.empty();
           }
         })
         .switchMap((snapshot) => Stream.fromIterable(snapshot.docChanges))
