@@ -4,8 +4,7 @@ class ShareChannel {
   void Function(String)? onDataReceived;
 
   ShareChannel() {
-     // If sharing causes the app to be resumed, we'll check to see if we got any
-    // shared data
+     // If sharing causes the app to be resumed, we'll check to see if we received any shared data
     SystemChannels.lifecycle.setMessageHandler((msg) async {
       if (msg?.contains("resumed") ?? false) {
         getSharedText().then((String data) {
@@ -13,7 +12,6 @@ class ShareChannel {
           if (data.isEmpty) {
             return;
           }
-
           // We got something! Inform our listener.
           onDataReceived?.call(data);
         });
@@ -23,9 +21,7 @@ class ShareChannel {
   }
   
   static const _channel = MethodChannel('com.rtirl.chat/share');
-
    Future<String> getSharedText() async {
     return await _channel.invokeMethod<String>('getSharedData') ?? '';
   }
-
 }
