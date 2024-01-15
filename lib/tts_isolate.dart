@@ -60,11 +60,11 @@ void onStart(ServiceInstance service) async {
           return Stream.empty();
         }
       })
-      .switchMap((snapshot) => Stream.fromIterable(snapshot.docChanges))
       .listen((change) {
-        if (change.type == DocumentChangeType.added) {
-          var message = change.doc.data();
-          vocalizeMessage(message);
+        for (final change in snapshot.docChanges) {
+          if (change.type == DocumentChangeType.added) {
+            vocalizeMessage(change.doc.data());
+          }
         }
       });
 
