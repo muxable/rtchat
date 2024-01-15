@@ -48,25 +48,22 @@ void onStart(ServiceInstance service) async {
   await Firebase.initializeApp();
 
   final prefs = await StreamingSharedPreferences.instance;
-  prefs
-      .getString('tts_channel', defaultValue: '{}')
-      .switchMap((channel) {
-        if (channel.isNotEmpty && channel != "{}") {
-          return FirebaseFirestore.instance
-              .collection('channels')
-              .where('channelId', isEqualTo: channel)
-              .snapshots();
-        } else {
-          return Stream.empty();
-        }
-      })
-      .listen((change) {
-        for (final change in snapshot.docChanges) {
-          if (change.type == DocumentChangeType.added) {
-            vocalizeMessage(change.doc.data());
-          }
-        }
-      });
+  prefs.getString('tts_channel', defaultValue: '{}').switchMap((channel) {
+    if (channel.isNotEmpty && channel != "{}") {
+      return FirebaseFirestore.instance
+          .collection('channels')
+          .where('channelId', isEqualTo: channel)
+          .snapshots();
+    } else {
+      return const Stream.empty();
+    }
+  }).listen((change) {
+    for (final change in snapshot.docChanges) {
+      if (change.type == DocumentChangeType.added) {
+        vocalizeMessage(change.doc.data());
+      }
+    }
+  });
 
   // Handle other service events
   service.on('stopService').listen((event) {
