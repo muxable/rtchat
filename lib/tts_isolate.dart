@@ -45,10 +45,30 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Firebase
   await Firebase.initializeApp();
 
+  final prefs = await StreamingSharedPreferences.instance;
+  prefs
+      .getString('tts_channel', defaultValue: '{}')
+      .switchMap((channel) {
+        if (channel.isNotEmpty && channel != "{}") {
+          return FirebaseFirestore.instance
+              .collection('channels')
+              .where('channelId', isEqualTo: channel)
+              .snapshots();
+        } else {
+          return Stream.empty();
+        }
+      })
+      .switchMap((snapshot) => Stream.fromIterable(snapshot.docChanges))
+      .listen((change) {
+        if (change.type == DocumentChangeType.added) {
+          var message = change.doc.data();
+          vocalizeMessage(message);
+        }
+      });
+
+  // Handle other service events
   service.on('stopService').listen((event) {
     // print("Stopping this service right now");
     service.stopSelf();
@@ -57,30 +77,6 @@ void onStart(ServiceInstance service) async {
   service.on('startTts').listen((event) async {
     // print("Starting this service right now");
     await Isolate.spawn(isolateMain, ReceivePort().sendPort);
-  });
-
-  service.on('initSharedPreference').listen((event) async {
-    final prefs = await StreamingSharedPreferences.instance;
-
-    prefs
-        .getString('tts_channel', defaultValue: '{}')
-        .switchMap((channel) {
-          if (channel.isNotEmpty && channel != "{}") {
-            return FirebaseFirestore.instance
-                .collection('channels')
-                .where('channelId', isEqualTo: channel)
-                .snapshots();
-          } else {
-            return const Stream.empty();
-          }
-        })
-        .switchMap((snapshot) => Stream.fromIterable(snapshot.docChanges))
-        .listen((change) {
-          if (change.type == DocumentChangeType.added) {
-            var message = change.doc.data();
-            vocalizeMessage(message);
-          }
-        });
   });
 }
 
