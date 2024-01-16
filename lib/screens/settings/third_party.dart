@@ -1,8 +1,8 @@
-import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/adapters/donations.dart';
 import 'package:rtchat/models/user.dart';
@@ -37,7 +37,13 @@ const streamlabsCurrencies = [
 class _RealtimeCashWidget extends StatelessWidget {
   final String userId;
 
-  const _RealtimeCashWidget({required this.userId});
+  final _scanController = MobileScannerController(
+    // facing: CameraFacing.back,
+    // torchEnabled: false,
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
+
+  _RealtimeCashWidget({required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -71,28 +77,49 @@ class _RealtimeCashWidget extends StatelessWidget {
                     hintText: "Wallet address",
                     suffixIcon: IconButton(
                         icon: const Icon(Icons.qr_code_scanner),
-                        onPressed: () async {
+                        onPressed: () {
                           final messenger = ScaffoldMessenger.of(context);
-                          final result = await BarcodeScanner.scan(
-                            options: ScanOptions(strings: {
-                              "cancel": AppLocalizations.of(context)!.cancel,
-                              "flash_on": AppLocalizations.of(context)!.flashOn,
-                              "flash_off":
-                                  AppLocalizations.of(context)!.flashOff,
-                            }),
+
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (ctx) {
+                              return MobileScanner(
+                                fit: BoxFit.contain,
+                                controller: _scanController,
+                                onDetect: (capture) {
+                                  final List<Barcode> barcodes =
+                                      capture.barcodes;
+
+                                  if (barcodes.isEmpty) {
+                                    messenger.showSnackBar(SnackBar(
+                                        content: Text(
+                                            AppLocalizations.of(context)!
+                                                .invalidUrlErrorText)));
+                                  }
+
+                                  final barcode = barcodes.first;
+
+                                  if (barcode.rawValue == null ||
+                                      barcode.rawValue!.isEmpty) {
+                                    messenger.showSnackBar(SnackBar(
+                                        content: Text(
+                                            AppLocalizations.of(context)!
+                                                .invalidUrlErrorText)));
+
+                                    Navigator.pop(ctx);
+                                  }
+
+                                  DonationsAdapter.instance
+                                      .setRealtimeCashAddress(
+                                          address: barcode.rawBytes
+                                              .toString()
+                                              .toLowerCase());
+
+                                  Navigator.pop(ctx);
+                                },
+                              );
+                            },
                           );
-                          switch (result.type) {
-                            case ResultType.Barcode:
-                              DonationsAdapter.instance.setRealtimeCashAddress(
-                                  address: result.rawContent.toLowerCase());
-                              break;
-                            case ResultType.Cancelled:
-                              break;
-                            case ResultType.Error:
-                              messenger.showSnackBar(
-                                  SnackBar(content: Text(result.rawContent)));
-                              break;
-                          }
                         })),
                 keyboardType: TextInputType.url),
           ),
