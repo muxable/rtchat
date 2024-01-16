@@ -39,7 +39,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
   final _labelEditingController = TextEditingController();
   String _activeIcon = "view_list";
   String _url = "";
-  final MobileScannerController _scanController = MobileScannerController(
+  final _scanController = MobileScannerController(
     // facing: CameraFacing.back,
     // torchEnabled: false,
     detectionSpeed: DetectionSpeed.noDuplicates,

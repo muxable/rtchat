@@ -37,7 +37,7 @@ const streamlabsCurrencies = [
 class _RealtimeCashWidget extends StatelessWidget {
   final String userId;
 
-  final MobileScannerController _scanController = MobileScannerController(
+  final _scanController = MobileScannerController(
     // facing: CameraFacing.back,
     // torchEnabled: false,
     detectionSpeed: DetectionSpeed.noDuplicates,
