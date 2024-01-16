@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
@@ -8,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/adapters/donations.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/urls.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const streamlabsCurrencies = [
   [null, "Donation's currency"],
@@ -38,7 +37,13 @@ const streamlabsCurrencies = [
 class _RealtimeCashWidget extends StatelessWidget {
   final String userId;
 
-  const _RealtimeCashWidget({required this.userId});
+  final MobileScannerController _scanController = MobileScannerController(
+    // facing: CameraFacing.back,
+    // torchEnabled: false,
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
+
+  _RealtimeCashWidget({required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -73,35 +78,44 @@ class _RealtimeCashWidget extends StatelessWidget {
                     suffixIcon: IconButton(
                         icon: const Icon(Icons.qr_code_scanner),
                         onPressed: () {
+                          final messenger = ScaffoldMessenger.of(context);
+
                           showModalBottomSheet(
                             context: context,
-                            builder: (context) {
+                            builder: (ctx) {
                               return MobileScanner(
                                 fit: BoxFit.contain,
-                                controller: MobileScannerController(
-                                  // facing: CameraFacing.back,
-                                  // torchEnabled: false,
-                                  returnImage: true,
-                                ),
+                                controller: _scanController,
                                 onDetect: (capture) {
                                   final List<Barcode> barcodes =
                                       capture.barcodes;
-                                  final Uint8List? image = capture.image;
-                                  for (final barcode in barcodes) {
-                                    debugPrint(
-                                        'Barcode found! ${barcode.rawValue}');
+
+                                  if (barcodes.isEmpty) {
+                                    messenger.showSnackBar(SnackBar(
+                                        content: Text(
+                                            AppLocalizations.of(context)!
+                                                .invalidUrlErrorText)));
                                   }
-                                  if (image != null) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) =>
-                                          Image(image: MemoryImage(image)),
-                                    );
-                                    Future.delayed(const Duration(seconds: 5),
-                                        () {
-                                      Navigator.pop(context);
-                                    });
+
+                                  final barcode = barcodes.first;
+
+                                  if (barcode.rawValue == null ||
+                                      barcode.rawValue!.isEmpty) {
+                                    messenger.showSnackBar(SnackBar(
+                                        content: Text(
+                                            AppLocalizations.of(context)!
+                                                .invalidUrlErrorText)));
+
+                                    Navigator.pop(ctx);
                                   }
+
+                                  DonationsAdapter.instance
+                                      .setRealtimeCashAddress(
+                                          address: barcode.rawBytes
+                                              .toString()
+                                              .toLowerCase());
+
+                                  Navigator.pop(ctx);
                                 },
                               );
                             },

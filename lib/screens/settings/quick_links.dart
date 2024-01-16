@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
@@ -41,6 +39,11 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
   final _labelEditingController = TextEditingController();
   String _activeIcon = "view_list";
   String _url = "";
+  final MobileScannerController _scanController = MobileScannerController(
+    // facing: CameraFacing.back,
+    // torchEnabled: false,
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
 
   @override
   void initState() {
@@ -139,38 +142,42 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                                 suffixIcon: IconButton(
                                     icon: const Icon(Icons.qr_code_scanner),
                                     onPressed: () {
+                                      final messenger =
+                                          ScaffoldMessenger.of(context);
+
                                       showModalBottomSheet(
                                         context: context,
-                                        builder: (context) {
+                                        builder: (ctx) {
                                           return MobileScanner(
                                             fit: BoxFit.contain,
-                                            controller: MobileScannerController(
-                                              // facing: CameraFacing.back,
-                                              // torchEnabled: false,
-                                              returnImage: true,
-                                            ),
+                                            controller: _scanController,
                                             onDetect: (capture) {
                                               final List<Barcode> barcodes =
                                                   capture.barcodes;
-                                              final Uint8List? image =
-                                                  capture.image;
-                                              for (final barcode in barcodes) {
-                                                debugPrint(
-                                                    'Barcode found! ${barcode.rawValue}');
+
+                                              if (barcodes.isEmpty) {
+                                                messenger.showSnackBar(SnackBar(
+                                                    content: Text(AppLocalizations
+                                                            .of(context)!
+                                                        .invalidUrlErrorText)));
                                               }
-                                              if (image != null) {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (context) => Image(
-                                                      image:
-                                                          MemoryImage(image)),
-                                                );
-                                                Future.delayed(
-                                                    const Duration(seconds: 5),
-                                                    () {
-                                                  Navigator.pop(context);
-                                                });
+
+                                              final barcode = barcodes.first;
+
+                                              if (barcode.rawValue == null ||
+                                                  barcode.rawValue!.isEmpty) {
+                                                messenger.showSnackBar(SnackBar(
+                                                    content: Text(AppLocalizations
+                                                            .of(context)!
+                                                        .invalidUrlErrorText)));
+
+                                                Navigator.pop(ctx);
                                               }
+
+                                              _textEditingController.text =
+                                                  '${barcode.rawValue}';
+
+                                              Navigator.pop(ctx);
                                             },
                                           );
                                         },
