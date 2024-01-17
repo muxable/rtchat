@@ -45,6 +45,7 @@
   "invalidUrlErrorText": "Este no parece ser un enlace válido",
   "duplicateUrlErrorText": "Este enlace ya existe",
   "or": "o",
+  "activityFeed": "Feed de actividades",
   "clearCookies": "Limpiar cookies",
   "disabled": "Desactivado",
   "twitchActivityFeed": "Feed de actividades de Twitch",
@@ -113,5 +114,5 @@
   "durationTwoDaysTimeoutPrompt": "Suspender por 2 días",
   "durationOneWeekTimeoutPrompt": "Suspender por 1 semana",
   "durationTwoWeeksTimeoutPrompt": "Suspender por 2 semanas",
-  "sentAt": "enviado a las"
+  "sentAt": "Enviado a las"
 }

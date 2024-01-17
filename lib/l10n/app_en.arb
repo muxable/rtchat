@@ -576,7 +576,7 @@
     "descriptionTimeoutPrompt": "Button label to timeout for a two week duration"
   },
   "sentAt": "Sent at",
-  "@sentAtPrompt": {
-    "sentAtPrompt": "Text label to show when a message was last sent at"
+  "@sentAt": {
+    "sentAt": "Text label to show when a message was last sent at"
   }
 }
