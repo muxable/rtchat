@@ -7,7 +7,7 @@ import 'package:rtchat/models/adapters/chat_state.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 
 class TwitchBadgesScreen extends StatelessWidget {
-  const TwitchBadgesScreen({Key? key}) : super(key: key);
+  const TwitchBadgesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

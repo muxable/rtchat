@@ -32,14 +32,13 @@ class TwitchChannelPointRedemptionEventModel extends MessageModel {
   final String? userInput;
 
   const TwitchChannelPointRedemptionEventModel(
-      {required DateTime timestamp,
-      required String messageId,
+      {required super.timestamp,
+      required super.messageId,
       required this.redeemerUsername,
       required this.status,
       required this.rewardName,
       required this.rewardCost,
-      required this.userInput})
-      : super(messageId: messageId, timestamp: timestamp);
+      required this.userInput});
 
   static TwitchChannelPointRedemptionEventModel fromDocumentData(
       Map<String, dynamic> data) {

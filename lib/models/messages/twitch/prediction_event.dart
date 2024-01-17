@@ -20,14 +20,13 @@ class TwitchPredictionEventModel extends MessageModel {
   final List<TwitchPredictionOutcomeModel> outcomes;
 
   const TwitchPredictionEventModel(
-      {required DateTime timestamp,
-      required String messageId,
+      {required super.timestamp,
+      required super.messageId,
       required this.title,
       this.status,
       this.winningOutcomeId,
       required this.endTime,
-      required this.outcomes})
-      : super(messageId: messageId, timestamp: timestamp);
+      required this.outcomes});
 
   static TwitchPredictionEventModel fromDocumentData(
       Map<String, dynamic> data) {

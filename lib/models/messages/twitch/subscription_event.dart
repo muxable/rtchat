@@ -6,10 +6,9 @@ class TwitchSubscriptionEventModel extends MessageModel {
   final String tier;
 
   const TwitchSubscriptionEventModel(
-      {required DateTime timestamp,
-      required String messageId,
+      {required super.timestamp,
+      required super.messageId,
       required this.subscriberUserName,
       required this.isGift,
-      required this.tier})
-      : super(messageId: messageId, timestamp: timestamp);
+      required this.tier});
 }

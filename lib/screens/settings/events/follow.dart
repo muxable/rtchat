@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class FollowEventScreen extends StatelessWidget {
-  const FollowEventScreen({Key? key}) : super(key: key);
+  const FollowEventScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

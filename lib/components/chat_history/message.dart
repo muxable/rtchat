@@ -52,8 +52,7 @@ class ChatHistoryMessage extends StatelessWidget {
   final Channel channel;
 
   const ChatHistoryMessage(
-      {Key? key, required this.message, required this.channel})
-      : super(key: key);
+      {super.key, required this.message, required this.channel});
 
   @override
   Widget build(BuildContext context) {

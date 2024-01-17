@@ -15,7 +15,7 @@ import 'package:rtchat/screens/settings/qr.dart';
 import 'package:rtchat/urls.dart';
 
 class _DrawerHeader extends StatelessWidget {
-  const _DrawerHeader({Key? key}) : super(key: key);
+  const _DrawerHeader();
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +101,7 @@ class _DrawerHeader extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: IconButton(
-                          icon: const Icon(Icons.qr_code),
+                          icon: const Icon(Icons.qr_code, color: Colors.white),
                           onPressed: () {
                             Navigator.of(context).pop();
                             showModalBottomSheet(
@@ -194,7 +194,7 @@ class _DrawerHeader extends StatelessWidget {
 class Sidebar extends StatefulWidget {
   final Channel channel;
 
-  const Sidebar({required this.channel, Key? key}) : super(key: key);
+  const Sidebar({required this.channel, super.key});
 
   @override
   State<Sidebar> createState() => _SidebarState();

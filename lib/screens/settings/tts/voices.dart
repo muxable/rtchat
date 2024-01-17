@@ -8,7 +8,7 @@ import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/bytes_audio_source.dart';
 
 class VoicesScreen extends StatelessWidget {
-  const VoicesScreen({Key? key}) : super(key: key);
+  const VoicesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

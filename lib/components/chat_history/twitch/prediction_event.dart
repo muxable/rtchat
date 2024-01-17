@@ -7,7 +7,7 @@ import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 class TwitchPredictionEventWidget extends StatelessWidget {
   final TwitchPredictionEventModel model;
 
-  const TwitchPredictionEventWidget(this.model, {Key? key}) : super(key: key);
+  const TwitchPredictionEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class TwitchPredictionEventWidget extends StatelessWidget {
                     outcome: outcome,
                     isWinner: isWinner,
                     totalPoints: model.totalPoints);
-              }).toList(),
+              }),
             ],
           ))
         : Container();
@@ -36,11 +36,9 @@ class TwitchPredictionEventWidget extends StatelessWidget {
 
 class _TwitchOutcomeWidget extends StatelessWidget {
   const _TwitchOutcomeWidget(
-      {Key? key,
-      required this.outcome,
+      {required this.outcome,
       required this.isWinner,
-      required this.totalPoints})
-      : super(key: key);
+      required this.totalPoints});
   final TwitchPredictionOutcomeModel outcome;
   final bool isWinner;
   final int totalPoints;

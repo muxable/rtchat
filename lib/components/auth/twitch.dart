@@ -15,10 +15,10 @@ class SignInWithTwitch extends StatelessWidget {
   final void Function()? onComplete;
 
   const SignInWithTwitch({
-    Key? key,
+    super.key,
     this.onStart,
     this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

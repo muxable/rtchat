@@ -5,7 +5,7 @@ import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 class TwitchHypeTrainEventWidget extends StatelessWidget {
   final TwitchHypeTrainEventModel model;
 
-  const TwitchHypeTrainEventWidget(this.model, {Key? key}) : super(key: key);
+  const TwitchHypeTrainEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

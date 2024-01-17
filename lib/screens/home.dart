@@ -1,6 +1,12 @@
+// import 'dart:isolate';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+// import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
+import 'package:wakelock/wakelock.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
 import 'package:rtchat/components/auth/twitch.dart';
@@ -18,11 +24,8 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:rtchat/tts_plugin.dart';
-// import 'dart:isolate';
 // import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
-import 'package:wakelock/wakelock.dart';
-import 'dart:math' as math;
+import 'package:rtchat/tts_plugin.dart';
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
@@ -33,14 +36,13 @@ class ResizableWidget extends StatefulWidget {
   final Widget child;
 
   const ResizableWidget(
-      {Key? key,
+      {super.key,
       required this.resizable,
       required this.height,
       required this.width,
       required this.onResizeHeight,
       required this.onResizeWidth,
-      required this.child})
-      : super(key: key);
+      required this.child});
 
   @override
   State<ResizableWidget> createState() => _ResizableWidgetState();
@@ -153,8 +155,7 @@ class HomeScreen extends StatefulWidget {
       {required this.isDiscoModeEnabled,
       required this.channel,
       required this.onChannelSelect,
-      Key? key})
-      : super(key: key);
+      super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -243,14 +244,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         // Toggle the enabled state
                         ttsModel.enabled = !ttsModel.enabled;
 
+                        final streamPrefs =
+                            await StreamingSharedPreferences.instance;
+
                         if (!ttsModel.enabled) {
                           await TextToSpeechPlugin.clear();
+                          await streamPrefs.remove('tts_channel');
+
+                          // FlutterBackgroundService().invoke("stopService");
                         }
 
+                        streamPrefs.setString(
+                            "tts_channel", '${userModel.activeChannel}');
+
+                        // TODO: get this into production when it's ready
                         // Test the isolate
                         // if (ttsModel.enabled) {
-                        //   await Isolate.spawn(
-                        //       ttsIsolate.isolateMain, ReceivePort().sendPort);
+                        //   FlutterBackgroundService().invoke("startTts");
+                        //   FlutterBackgroundService()
+                        //       .invoke('initSharedPreference');
                         // }
 
                         // if (ttsModel.enabled) {

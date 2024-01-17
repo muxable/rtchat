@@ -11,8 +11,8 @@ class TwitchHypeTrainEventModel extends MessageModel {
   final DateTime endTimestamp;
 
   const TwitchHypeTrainEventModel(
-      {required DateTime timestamp,
-      required String messageId,
+      {required super.timestamp,
+      required super.messageId,
       required this.level,
       required this.progress,
       required this.goal,
@@ -20,8 +20,7 @@ class TwitchHypeTrainEventModel extends MessageModel {
       required this.startTimestamp,
       required this.endTimestamp,
       this.isSuccessful = false,
-      this.hasEnded = false})
-      : super(messageId: messageId, timestamp: timestamp);
+      this.hasEnded = false});
 
   static TwitchHypeTrainEventModel fromDocumentData(Map<String, dynamic> data) {
     return TwitchHypeTrainEventModel(
