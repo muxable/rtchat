@@ -1,16 +1,16 @@
 import 'dart:io';
 
-import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
 class AudioSourcesScreen extends StatefulWidget {
-  const AudioSourcesScreen({Key? key}) : super(key: key);
+  const AudioSourcesScreen({super.key});
 
   @override
   State<AudioSourcesScreen> createState() => _AudioSourcesScreenState();
@@ -20,6 +20,11 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textEditingController = TextEditingController();
   late final AudioModel _audioModel;
+  final _scanController = MobileScannerController(
+    // facing: CameraFacing.back,
+    // torchEnabled: false,
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
 
   @override
   void initState() {
@@ -131,35 +136,47 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                                 hintText: AppLocalizations.of(context)!.url,
                                 suffixIcon: IconButton(
                                     icon: const Icon(Icons.qr_code_scanner),
-                                    onPressed: () async {
+                                    onPressed: () {
                                       final messenger =
                                           ScaffoldMessenger.of(context);
-                                      final result = await BarcodeScanner.scan(
-                                        options: ScanOptions(strings: {
-                                          "cancel":
-                                              AppLocalizations.of(context)!
-                                                  .cancel,
-                                          "flash_on":
-                                              AppLocalizations.of(context)!
-                                                  .flashOn,
-                                          "flash_off":
-                                              AppLocalizations.of(context)!
-                                                  .flashOff,
-                                        }),
+
+                                      showModalBottomSheet(
+                                        context: context,
+                                        builder: (ctx) {
+                                          return MobileScanner(
+                                            fit: BoxFit.contain,
+                                            controller: _scanController,
+                                            onDetect: (capture) {
+                                              final List<Barcode> barcodes =
+                                                  capture.barcodes;
+
+                                              if (barcodes.isEmpty) {
+                                                messenger.showSnackBar(SnackBar(
+                                                    content: Text(AppLocalizations
+                                                            .of(context)!
+                                                        .invalidUrlErrorText)));
+                                              }
+
+                                              final barcode = barcodes.first;
+
+                                              if (barcode.rawValue == null ||
+                                                  barcode.rawValue!.isEmpty) {
+                                                messenger.showSnackBar(SnackBar(
+                                                    content: Text(AppLocalizations
+                                                            .of(context)!
+                                                        .invalidUrlErrorText)));
+
+                                                Navigator.pop(ctx);
+                                              }
+
+                                              _textEditingController.text =
+                                                  '${barcode.rawValue}';
+
+                                              Navigator.pop(ctx);
+                                            },
+                                          );
+                                        },
                                       );
-                                      switch (result.type) {
-                                        case ResultType.Barcode:
-                                          _textEditingController.text =
-                                              result.rawContent;
-                                          break;
-                                        case ResultType.Cancelled:
-                                          break;
-                                        case ResultType.Error:
-                                          messenger.showSnackBar(SnackBar(
-                                              content:
-                                                  Text(result.rawContent)));
-                                          break;
-                                      }
                                     })),
                             validator: (value) {
                               if (value == null ||

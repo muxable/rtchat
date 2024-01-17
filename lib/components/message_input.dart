@@ -11,11 +11,12 @@ import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/commands.dart';
+import 'package:rtchat/share_channel.dart';
 
 class MessageInputWidget extends StatefulWidget {
   final Channel channel;
 
-  const MessageInputWidget({Key? key, required this.channel}) : super(key: key);
+  const MessageInputWidget({super.key, required this.channel});
 
   @override
   State<MessageInputWidget> createState() => _MessageInputWidgetState();
@@ -56,6 +57,20 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       setState(() {
         _isKeyboardVisible = visible;
       });
+    });
+
+     ShareChannel()
+      // Register a callback to handle any shared data while app is running
+      ..onDataReceived = _handleSharedData
+      // Check to see if there is any shared data already via sharing
+      ..getSharedText().then(_handleSharedData);
+  }
+
+  // Handles any shared data we may receive.
+  void _handleSharedData(String sharedData) {
+    debugPrint('Shared data received: $sharedData');
+    setState(() {
+      _textEditingController.text = sharedData;
     });
   }
 

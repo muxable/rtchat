@@ -9,7 +9,7 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class ActivityFeedPanelWidget extends StatefulWidget {
-  const ActivityFeedPanelWidget({Key? key}) : super(key: key);
+  const ActivityFeedPanelWidget({super.key});
 
   @override
   State<ActivityFeedPanelWidget> createState() =>

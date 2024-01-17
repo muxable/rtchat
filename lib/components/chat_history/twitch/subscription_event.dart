@@ -13,7 +13,7 @@ import 'package:rtchat/models/user.dart';
 class TwitchSubscriptionEventWidget extends StatelessWidget {
   final TwitchSubscriptionEventModel model;
 
-  const TwitchSubscriptionEventWidget(this.model, {Key? key}) : super(key: key);
+  const TwitchSubscriptionEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +40,7 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
 class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
   final TwitchSubscriptionGiftEventModel model;
 
-  const TwitchSubscriptionGiftEventWidget(this.model, {Key? key})
-      : super(key: key);
+  const TwitchSubscriptionGiftEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -74,8 +73,7 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
 class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
   final TwitchSubscriptionMessageEventModel model;
 
-  const TwitchSubscriptionMessageEventWidget(this.model, {Key? key})
-      : super(key: key);
+  const TwitchSubscriptionMessageEventWidget(this.model, {super.key});
 
   Color chipBackgroundColor(BuildContext context, String tier) {
     if (tier == '2000') {

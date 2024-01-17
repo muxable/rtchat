@@ -5,7 +5,7 @@ import 'package:rtchat/models/messages/message.dart';
 class StreamStateEventWidget extends StatelessWidget {
   final StreamStateEventModel model;
 
-  const StreamStateEventWidget(this.model, {Key? key}) : super(key: key);
+  const StreamStateEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {

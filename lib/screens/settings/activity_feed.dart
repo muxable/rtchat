@@ -2,19 +2,19 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/models/activity_feed.dart';
-import 'package:rtchat/models/layout.dart';
-import 'package:rtchat/models/user.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+import 'package:rtchat/models/activity_feed.dart';
+import 'package:rtchat/models/layout.dart';
+import 'package:rtchat/models/user.dart';
 
 enum ActivityFeedType { disabled, standard, custom }
 
 class ActivityFeedScreen extends StatefulWidget {
-  const ActivityFeedScreen({Key? key}) : super(key: key);
+  const ActivityFeedScreen({super.key});
 
   @override
   State<ActivityFeedScreen> createState() => _ActivityFeedScreenState();
@@ -25,6 +25,11 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   late final WebViewController _controller;
   var _showControls = true;
   final _formKey = GlobalKey<FormState>();
+  final MobileScannerController _scanController = MobileScannerController(
+    // facing: CameraFacing.back,
+    // torchEnabled: false,
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
 
   @override
   void initState() {
@@ -141,32 +146,49 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                       decoration: InputDecoration(
                           hintText: AppLocalizations.of(context)!.customUrl,
                           suffixIcon: IconButton(
-                              icon: const Icon(Icons.qr_code_scanner),
-                              onPressed: () async {
-                                final messenger = ScaffoldMessenger.of(context);
-                                final result = await BarcodeScanner.scan(
-                                  options: ScanOptions(strings: {
-                                    "cancel":
-                                        AppLocalizations.of(context)!.cancel,
-                                    "flash_on":
-                                        AppLocalizations.of(context)!.flashOn,
-                                    "flash_off":
-                                        AppLocalizations.of(context)!.flashOff,
-                                  }),
-                                );
-                                switch (result.type) {
-                                  case ResultType.Barcode:
-                                    _textEditingController.text =
-                                        result.rawContent;
-                                    break;
-                                  case ResultType.Cancelled:
-                                    break;
-                                  case ResultType.Error:
-                                    messenger.showSnackBar(SnackBar(
-                                        content: Text(result.rawContent)));
-                                    break;
-                                }
-                              }),
+                            icon: const Icon(Icons.qr_code_scanner),
+                            onPressed: () {
+                              final messenger = ScaffoldMessenger.of(context);
+
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (ctx) {
+                                  return MobileScanner(
+                                    fit: BoxFit.contain,
+                                    controller: _scanController,
+                                    onDetect: (capture) {
+                                      final List<Barcode> barcodes =
+                                          capture.barcodes;
+
+                                      if (barcodes.isEmpty) {
+                                        messenger.showSnackBar(SnackBar(
+                                            content: Text(
+                                                AppLocalizations.of(context)!
+                                                    .invalidUrlErrorText)));
+                                      }
+
+                                      final barcode = barcodes.first;
+
+                                      if (barcode.rawValue == null ||
+                                          barcode.rawValue!.isEmpty) {
+                                        messenger.showSnackBar(SnackBar(
+                                            content: Text(
+                                                AppLocalizations.of(context)!
+                                                    .invalidUrlErrorText)));
+
+                                        Navigator.pop(ctx);
+                                      }
+
+                                      _textEditingController.text =
+                                          '${barcode.rawValue}';
+
+                                      Navigator.pop(ctx);
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                          ),
                           errorText:
                               Uri.tryParse(activityFeedModel.customUrl) == null
                                   ? "That's not a valid URL"

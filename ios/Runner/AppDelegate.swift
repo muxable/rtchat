@@ -1,5 +1,6 @@
 import AVFoundation
 import Flutter
+import flutter_background_service_ios
 import UIKit
 import WebKit
 
@@ -9,6 +10,8 @@ import WebKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        SwiftFlutterBackgroundServicePlugin.taskIdentifier = "com.rtirl.chat.tts"
+
         var views = [String: WKWebView]()
 
         let controller: FlutterViewController = window?.rootViewController as! FlutterViewController

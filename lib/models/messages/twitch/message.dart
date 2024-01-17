@@ -232,17 +232,16 @@ class TwitchMessageModel extends MessageModel {
   final String channelId;
 
   TwitchMessageModel(
-      {required String messageId,
+      {required super.messageId,
       required this.author,
       required this.message,
       this.reply,
       required this.tags,
       required this.annotations,
       required this.thirdPartyEmotes,
-      required DateTime timestamp,
+      required super.timestamp,
       required this.deleted,
-      required this.channelId})
-      : super(messageId: messageId, timestamp: timestamp);
+      required this.channelId});
 
   List<BadgeData> get badges =>
       _badges ??= parseBadges(tags['badges-raw'] ?? "");

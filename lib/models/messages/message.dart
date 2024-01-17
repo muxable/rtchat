@@ -44,10 +44,9 @@ class StreamStateEventModel extends MessageModel {
   final bool isOnline;
 
   const StreamStateEventModel(
-      {required String messageId,
+      {required super.messageId,
       required this.isOnline,
-      required DateTime timestamp})
-      : super(messageId: messageId, timestamp: timestamp);
+      required super.timestamp});
 }
 
 class SystemMessageModel extends MessageModel {
@@ -60,7 +59,5 @@ class SystemMessageModel extends MessageModel {
 }
 
 class ChatClearedEventModel extends MessageModel {
-  ChatClearedEventModel(
-      {required String messageId, required DateTime timestamp})
-      : super(messageId: messageId, timestamp: timestamp);
+  ChatClearedEventModel({required super.messageId, required super.timestamp});
 }

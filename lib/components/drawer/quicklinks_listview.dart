@@ -8,7 +8,7 @@ import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/urls.dart';
 
 class QuicklinksListView extends StatelessWidget {
-  const QuicklinksListView({Key? key}) : super(key: key);
+  const QuicklinksListView({super.key});
 
   Future<String> retrieveName(QuickLinkSource link) async {
     final metadata = await MetadataFetch.extract(link.url.toString());

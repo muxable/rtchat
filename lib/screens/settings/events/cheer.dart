@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class CheerEventScreen extends StatelessWidget {
-  const CheerEventScreen({Key? key}) : super(key: key);
+  const CheerEventScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

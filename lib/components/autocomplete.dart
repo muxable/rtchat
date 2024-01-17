@@ -38,11 +38,10 @@ class AutocompleteWidget extends StatefulWidget {
   final Channel channel;
 
   const AutocompleteWidget(
-      {Key? key,
+      {super.key,
       required this.controller,
       required this.onSend,
-      required this.channel})
-      : super(key: key);
+      required this.channel});
 
   @override
   State<AutocompleteWidget> createState() => _AutocompleteWidgetState();
