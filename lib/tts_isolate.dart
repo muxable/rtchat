@@ -57,7 +57,7 @@ void onStart(ServiceInstance service) async {
     } else {
       return const Stream.empty();
     }
-  }).listen((change) {
+  }).listen((snapshot) {
     for (final change in snapshot.docChanges) {
       if (change.type == DocumentChangeType.added) {
         vocalizeMessage(change.doc.data());
