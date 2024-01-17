@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
@@ -243,10 +244,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         // Toggle the enabled state
                         ttsModel.enabled = !ttsModel.enabled;
 
+                        final streamPrefs =
+                            await StreamingSharedPreferences.instance;
+
                         if (!ttsModel.enabled) {
                           await TextToSpeechPlugin.clear();
+                          await streamPrefs.remove('tts_channel');
+
                           // FlutterBackgroundService().invoke("stopService");
                         }
+
+                        streamPrefs.setString(
+                            "tts_channel", '${userModel.activeChannel}');
+
                         // TODO: get this into production when it's ready
                         // Test the isolate
                         // if (ttsModel.enabled) {
