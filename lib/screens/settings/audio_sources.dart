@@ -22,7 +22,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textEditingController = TextEditingController();
   late final AudioModel _audioModel;
-  final MobileScannerController _scanController = MobileScannerController(
+  MobileScannerController _scanController = MobileScannerController(
     // facing: CameraFacing.back,
     // torchEnabled: false,
     detectionSpeed: DetectionSpeed.noDuplicates,
@@ -249,7 +249,16 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                                             ],
                                           );
                                         },
-                                      );
+                                      ).then((value) {
+                                        _scanController.dispose();
+
+                                        //re initialize controller
+                                        _scanController =
+                                            MobileScannerController(
+                                          detectionSpeed:
+                                              DetectionSpeed.noDuplicates,
+                                        );
+                                      });
                                     })),
                             validator: (value) {
                               if (value == null ||

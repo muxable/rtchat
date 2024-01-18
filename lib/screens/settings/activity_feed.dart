@@ -26,7 +26,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   late final WebViewController _controller;
   var _showControls = true;
   final _formKey = GlobalKey<FormState>();
-  final MobileScannerController _scanController = MobileScannerController(
+  MobileScannerController _scanController = MobileScannerController(
     // facing: CameraFacing.back,
     // torchEnabled: false,
     detectionSpeed: DetectionSpeed.noDuplicates,
@@ -250,7 +250,14 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                                     ],
                                   );
                                 },
-                              );
+                              ).then((value) {
+                                _scanController.dispose();
+
+                                //re initialize controller
+                                _scanController = MobileScannerController(
+                                  detectionSpeed: DetectionSpeed.noDuplicates,
+                                );
+                              });
                             },
                           ),
                           errorText:

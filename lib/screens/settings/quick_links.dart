@@ -41,7 +41,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
   final _labelEditingController = TextEditingController();
   String _activeIcon = "view_list";
   String _url = "";
-  final MobileScannerController _scanController = MobileScannerController(
+  MobileScannerController _scanController = MobileScannerController(
     // facing: CameraFacing.back,
     // torchEnabled: false,
     detectionSpeed: DetectionSpeed.noDuplicates,
@@ -254,7 +254,16 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                                             ],
                                           );
                                         },
-                                      );
+                                      ).then((value) {
+                                        _scanController.dispose();
+
+                                        //re initialize controller
+                                        _scanController =
+                                            MobileScannerController(
+                                          detectionSpeed:
+                                              DetectionSpeed.noDuplicates,
+                                        );
+                                      });
                                     })),
                             validator: (value) {
                               if (value == null ||
