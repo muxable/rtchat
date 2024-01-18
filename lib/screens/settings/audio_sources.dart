@@ -147,10 +147,8 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                                         context: context,
                                         builder: (ctx) {
                                           return Stack(
-                                            fit: StackFit.expand,
                                             children: [
                                               MobileScanner(
-                                                fit: BoxFit.contain,
                                                 errorBuilder:
                                                     (context, error, child) {
                                                   return ScannerErrorWidget(
@@ -205,6 +203,23 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                                                     const Color iconColor =
                                                         Colors.white;
 
+                                                    Icon? icon;
+
+                                                    switch (value) {
+                                                      case TorchState.on:
+                                                        icon = const Icon(
+                                                          Icons.flash_off,
+                                                          color: iconColor,
+                                                        );
+                                                        break;
+                                                      case TorchState.off:
+                                                        icon = const Icon(
+                                                          Icons.flash_on,
+                                                          color: iconColor,
+                                                        );
+                                                        break;
+                                                    }
+
                                                     return Row(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -222,14 +237,10 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                                                           ),
                                                         ),
                                                         IconButton(
-                                                          onPressed: () =>
-                                                              _scanController
-                                                                  .toggleTorch(),
-                                                          icon: const Icon(
-                                                            Icons.flash_on,
-                                                            color: iconColor,
-                                                          ),
-                                                        ),
+                                                            onPressed: () =>
+                                                                _scanController
+                                                                    .toggleTorch(),
+                                                            icon: icon),
                                                       ],
                                                     );
                                                   },
