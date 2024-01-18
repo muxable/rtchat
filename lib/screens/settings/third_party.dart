@@ -4,9 +4,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/scanner_error_widget.dart';
 import 'package:rtchat/models/adapters/donations.dart';
 import 'package:rtchat/models/user.dart';
-import '../../components/scanner_error_widget.dart';
 import 'package:rtchat/urls.dart';
 
 const streamlabsCurrencies = [
@@ -35,21 +35,27 @@ const streamlabsCurrencies = [
   ['USD', 'US Dollar']
 ];
 
-class _RealtimeCashWidget extends StatelessWidget {
+class _RealtimeCashWidget extends StatefulWidget {
   final String userId;
 
+  const _RealtimeCashWidget({required this.userId});
+
+  @override
+  State<_RealtimeCashWidget> createState() => _RealtimeCashWidgetState();
+}
+
+class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
   var _scanController = MobileScannerController(
     // facing: CameraFacing.back,
     // torchEnabled: false,
     detectionSpeed: DetectionSpeed.noDuplicates,
   );
 
-  _RealtimeCashWidget({required this.userId});
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<String?>(
-      stream: DonationsAdapter.instance.forRealtimeChatAddress(userId: userId),
+      stream: DonationsAdapter.instance
+          .forRealtimeChatAddress(userId: widget.userId),
       builder: (context, snapshot) {
         return Column(children: [
           ListTile(
