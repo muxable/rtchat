@@ -55,6 +55,7 @@ class Themes {
       ),
       appBarTheme: const AppBarTheme(
           color: detailColor,
+          titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
           iconTheme: IconThemeData(
             color: Colors.white,
           )),
@@ -113,6 +114,7 @@ class Themes {
     cardColor: Colors.black,
     appBarTheme: const AppBarTheme(
         color: detailColor,
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
         iconTheme: IconThemeData(
           color: Colors.white,
         )),
