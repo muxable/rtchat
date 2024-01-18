@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/scanner_error_widget.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
@@ -151,39 +152,91 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                               final messenger = ScaffoldMessenger.of(context);
 
                               showModalBottomSheet(
+                                isScrollControlled: true,
                                 context: context,
                                 builder: (ctx) {
-                                  return MobileScanner(
-                                    fit: BoxFit.contain,
-                                    controller: _scanController,
-                                    onDetect: (capture) {
-                                      final List<Barcode> barcodes =
-                                          capture.barcodes;
+                                  return Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      MobileScanner(
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (context, error, child) {
+                                          return ScannerErrorWidget(
+                                              error: error);
+                                        },
+                                        controller: _scanController,
+                                        onDetect: (capture) {
+                                          final List<Barcode> barcodes =
+                                              capture.barcodes;
 
-                                      if (barcodes.isEmpty) {
-                                        messenger.showSnackBar(SnackBar(
-                                            content: Text(
-                                                AppLocalizations.of(context)!
-                                                    .invalidUrlErrorText)));
-                                      }
+                                          if (barcodes.isEmpty) {
+                                            messenger.showSnackBar(SnackBar(
+                                                content: Text(
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .invalidUrlErrorText)));
+                                          }
 
-                                      final barcode = barcodes.first;
+                                          final barcode = barcodes.first;
 
-                                      if (barcode.rawValue == null ||
-                                          barcode.rawValue!.isEmpty) {
-                                        messenger.showSnackBar(SnackBar(
-                                            content: Text(
-                                                AppLocalizations.of(context)!
-                                                    .invalidUrlErrorText)));
+                                          if (barcode.rawValue == null ||
+                                              barcode.rawValue!.isEmpty) {
+                                            messenger.showSnackBar(SnackBar(
+                                                content: Text(
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .invalidUrlErrorText)));
 
-                                        Navigator.pop(ctx);
-                                      }
+                                            Navigator.pop(ctx);
+                                          }
 
-                                      _textEditingController.text =
-                                          '${barcode.rawValue}';
+                                          _textEditingController.text =
+                                              '${barcode.rawValue}';
 
-                                      Navigator.pop(ctx);
-                                    },
+                                          Navigator.pop(ctx);
+                                        },
+                                      ),
+                                      Positioned(
+                                        top: 50,
+                                        left: 0,
+                                        right: 0,
+                                        child:
+                                            ValueListenableBuilder<TorchState>(
+                                          valueListenable:
+                                              _scanController.torchState,
+                                          builder: (context, value, child) {
+                                            const Color iconColor =
+                                                Colors.white;
+
+                                            return Row(
+                                              mainAxisSize: MainAxisSize.max,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                IconButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(ctx),
+                                                  icon: const Icon(
+                                                    Icons.close,
+                                                    color: iconColor,
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  onPressed: () =>
+                                                      _scanController
+                                                          .toggleTorch(),
+                                                  icon: const Icon(
+                                                    Icons.flash_on,
+                                                    color: iconColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
                                   );
                                 },
                               );

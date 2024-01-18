@@ -9,6 +9,8 @@ import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
+import '../../components/scanner_error_widget.dart';
+
 class AudioSourcesScreen extends StatefulWidget {
   const AudioSourcesScreen({super.key});
 
@@ -20,7 +22,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textEditingController = TextEditingController();
   late final AudioModel _audioModel;
-  final _scanController = MobileScannerController(
+  final MobileScannerController _scanController = MobileScannerController(
     // facing: CameraFacing.back,
     // torchEnabled: false,
     detectionSpeed: DetectionSpeed.noDuplicates,
@@ -141,39 +143,99 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                                           ScaffoldMessenger.of(context);
 
                                       showModalBottomSheet(
+                                        isScrollControlled: true,
                                         context: context,
                                         builder: (ctx) {
-                                          return MobileScanner(
-                                            fit: BoxFit.contain,
-                                            controller: _scanController,
-                                            onDetect: (capture) {
-                                              final List<Barcode> barcodes =
-                                                  capture.barcodes;
+                                          return Stack(
+                                            fit: StackFit.expand,
+                                            children: [
+                                              MobileScanner(
+                                                fit: BoxFit.contain,
+                                                errorBuilder:
+                                                    (context, error, child) {
+                                                  return ScannerErrorWidget(
+                                                      error: error);
+                                                },
+                                                controller: _scanController,
+                                                onDetect: (capture) {
+                                                  final List<Barcode> barcodes =
+                                                      capture.barcodes;
 
-                                              if (barcodes.isEmpty) {
-                                                messenger.showSnackBar(SnackBar(
-                                                    content: Text(AppLocalizations
-                                                            .of(context)!
-                                                        .invalidUrlErrorText)));
-                                              }
+                                                  if (barcodes.isEmpty) {
+                                                    messenger.showSnackBar(SnackBar(
+                                                        content: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .invalidUrlErrorText)));
+                                                  }
 
-                                              final barcode = barcodes.first;
+                                                  final barcode =
+                                                      barcodes.first;
 
-                                              if (barcode.rawValue == null ||
-                                                  barcode.rawValue!.isEmpty) {
-                                                messenger.showSnackBar(SnackBar(
-                                                    content: Text(AppLocalizations
-                                                            .of(context)!
-                                                        .invalidUrlErrorText)));
+                                                  if (barcode.rawValue ==
+                                                          null ||
+                                                      barcode
+                                                          .rawValue!.isEmpty) {
+                                                    messenger.showSnackBar(SnackBar(
+                                                        content: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .invalidUrlErrorText)));
 
-                                                Navigator.pop(ctx);
-                                              }
+                                                    Navigator.pop(ctx);
+                                                  }
 
-                                              _textEditingController.text =
-                                                  '${barcode.rawValue}';
+                                                  _textEditingController.text =
+                                                      '${barcode.rawValue}';
 
-                                              Navigator.pop(ctx);
-                                            },
+                                                  Navigator.pop(ctx);
+                                                },
+                                              ),
+                                              Positioned(
+                                                top: 50,
+                                                left: 0,
+                                                right: 0,
+                                                child: ValueListenableBuilder<
+                                                    TorchState>(
+                                                  valueListenable:
+                                                      _scanController
+                                                          .torchState,
+                                                  builder:
+                                                      (context, value, child) {
+                                                    const Color iconColor =
+                                                        Colors.white;
+
+                                                    return Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        IconButton(
+                                                          onPressed: () =>
+                                                              Navigator.pop(
+                                                                  ctx),
+                                                          icon: const Icon(
+                                                            Icons.close,
+                                                            color: iconColor,
+                                                          ),
+                                                        ),
+                                                        IconButton(
+                                                          onPressed: () =>
+                                                              _scanController
+                                                                  .toggleTorch(),
+                                                          icon: const Icon(
+                                                            Icons.flash_on,
+                                                            color: iconColor,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ],
                                           );
                                         },
                                       );
