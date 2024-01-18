@@ -114,5 +114,5 @@
   "durationTwoDaysTimeoutPrompt": "封鎖2天",
   "durationOneWeekTimeoutPrompt": "封鎖1週",
   "durationTwoWeeksTimeoutPrompt": "封鎖2週",
-  "sentAt": "发送于 :"
+  "sentAt": "发送于"
 }
