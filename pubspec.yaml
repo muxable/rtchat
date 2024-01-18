@@ -54,7 +54,6 @@ dependencies:
   url_launcher: ^6.2.2
   wakelock: ^0.6.2
   webview_flutter: ^4.4.1
-  fluttertoast: ^8.2.4
   webview_flutter_android: ^3.13.1
   webview_flutter_wkwebview: ^3.10.0
 
