@@ -144,13 +144,14 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      child: SingleChildScrollView (
+      child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           // render pending sends
           ..._pendingSend.map((e) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-                child:
-                    Text(e, style: const TextStyle(fontStyle: FontStyle.italic)),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                child: Text(e,
+                    style: const TextStyle(fontStyle: FontStyle.italic)),
               )),
           if (_isKeyboardVisible)
             AutocompleteWidget(
@@ -175,7 +176,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                     textAlignVertical: TextAlignVertical.center,
                     decoration: InputDecoration(
                         prefixIcon: Material(
-                          color: Theme.of(context).inputDecorationTheme.fillColor,
+                          color:
+                              Theme.of(context).inputDecorationTheme.fillColor,
                           borderRadius: BorderRadius.circular(24),
                           child: IconButton(
                               color: Theme.of(context).colorScheme.onSurface,
@@ -203,7 +205,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                                       ))),
                         ),
                         suffixIcon: Material(
-                          color: Theme.of(context).inputDecorationTheme.fillColor,
+                          color:
+                              Theme.of(context).inputDecorationTheme.fillColor,
                           borderRadius: BorderRadius.circular(24),
                           child: IconButton(
                             icon: const Icon(Icons.send_rounded),
