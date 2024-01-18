@@ -49,7 +49,6 @@ dependencies:
   path_provider: ^2.1.1
   provider: ^6.1.1
   qr_flutter: ^4.1.0
-  shared_preferences: ^2.2.2
   streaming_shared_preferences: ^2.0.0
   sticky_headers: ^0.3.0+2
   styled_text: ^8.1.0
