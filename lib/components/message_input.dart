@@ -59,7 +59,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       });
     });
 
-     ShareChannel()
+    ShareChannel()
       // Register a callback to handle any shared data while app is running
       ..onDataReceived = _handleSharedData
       // Check to see if there is any shared data already via sharing
