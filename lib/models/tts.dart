@@ -277,6 +277,13 @@ class TtsModel extends ChangeNotifier {
     if (!enabled && !force) {
       return;
     }
+
+    if (model is StreamStateEventModel) {
+      if (!model.isOnline) {
+        enabled = false;
+        return;
+      }
+    }
     // we have to manage our own queue here because queueing is not supported on ios.
 
     if (model is TwitchMessageModel) {
