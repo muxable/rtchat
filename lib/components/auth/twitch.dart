@@ -26,9 +26,10 @@ class SignInWithTwitch extends StatelessWidget {
       style: ButtonStyle(
         backgroundColor: MaterialStateProperty.all(const Color(0xFF6441A5)),
       ),
-      child: Text(AppLocalizations.of(context)!.signInWithTwitch, style: const TextStyle(
-        color: Colors.white,
-      )),
+      child: Text(AppLocalizations.of(context)!.signInWithTwitch,
+          style: const TextStyle(
+            color: Colors.white,
+          )),
       onPressed: () async {
         final user = Provider.of<UserModel>(context, listen: false);
         final scaffoldMessenger = ScaffoldMessenger.of(context);
