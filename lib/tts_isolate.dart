@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui';
 
@@ -5,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_background_service_android/flutter_background_service_android.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:rtchat/tts_plugin.dart';
@@ -18,12 +21,35 @@ void isolateMain(SendPort sendPort) {
 void initializeService() async {
   final service = FlutterBackgroundService();
 
+  // this will be used as notification channel id
+  const notificationChannelId = 'my_foreground';
+
+// this will be used for notification id, So you can update your custom notification with this id.
+  const notificationId = 888;
+
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    notificationChannelId, // id
+    'MY FOREGROUND SERVICE', // title
+    description:
+        'This channel is used for important notifications.', // description
+    importance: Importance.low, // importance must be at low or higher level
+  );
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
   await service.configure(
     androidConfiguration: AndroidConfiguration(
-      onStart: onStart,
-      autoStart: true,
-      isForegroundMode: true,
-    ),
+        onStart: onStart,
+        autoStart: true,
+        isForegroundMode: true,
+        notificationChannelId: notificationChannelId,
+        foregroundServiceNotificationId: notificationId),
     iosConfiguration: IosConfiguration(
       autoStart: true,
       onForeground: onStart,
@@ -46,6 +72,58 @@ void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  await flutterLocalNotificationsPlugin.initialize(
+      const InitializationSettings(
+          android: AndroidInitializationSettings('notification_icon')),
+      onDidReceiveBackgroundNotificationResponse: (payload) async {
+    if (payload.actionId == "DISABLE_TTS") {
+      TextToSpeechPlugin.stopSpeaking();
+    }
+  });
+
+  if (service is AndroidServiceInstance) {
+    service.on('setAsForeground').listen((event) {
+      service.setAsForegroundService();
+    });
+
+    service.on('setAsBackground').listen((event) {
+      service.setAsBackgroundService();
+    });
+  }
+
+  service.on('stopService').listen((event) {
+    service.stopSelf();
+  });
+
+  //bring to foreground
+  Timer.periodic(const Duration(seconds: 1), (timer) async {
+    if (service is AndroidServiceInstance) {
+      if (await service.isForegroundService()) {
+        flutterLocalNotificationsPlugin.show(
+            888,
+            'rtchat',
+            'disableTTS',
+            const NotificationDetails(
+              android: AndroidNotificationDetails(
+                  'my_foreground', 'MY FOREGROUND SERVICE',
+                  icon: 'notification_icon',
+                  ongoing: true,
+                  actions: <AndroidNotificationAction>[
+                    AndroidNotificationAction(
+                      "DISABLE_TTS",
+                      'Action 1',
+                      icon: DrawableResourceAndroidBitmap('voiceover'),
+                      contextual: true,
+                    ),
+                  ]),
+            ));
+      }
+    }
+  });
 
   final prefs = await StreamingSharedPreferences.instance;
   prefs.getString('tts_channel', defaultValue: '{}').switchMap((channel) {
