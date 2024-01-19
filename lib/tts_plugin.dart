@@ -43,7 +43,10 @@ class TextToSpeechPlugin {
 }
 
 class TTSQueue {
-  final queue = Queue<({String id, String text, Completer<void> completer})>();
+  final Queue<({String id, String text, Completer<void> completer})> queue =
+      Queue();
+  bool isUsernameReadingEnabled = true;
+  bool isTTSDisabled = false;
 
   bool get isEmpty => queue.isEmpty;
 
@@ -52,29 +55,49 @@ class TTSQueue {
   Future<void> speak(String id, String text) async {
     final completer = Completer<void>();
     final element = (id: id, text: text, completer: completer);
-    if (queue.isNotEmpty) {
-      final previous = queue.last;
-      queue.addLast(element);
-      await previous.completer.future;
-      if (queue.firstOrNull != element) {
-        throw Exception('Message was deleted');
+
+    // Logic to manage TTS and username reading based on queue size
+    manageTTSState();
+
+    if (isTTSDisabled) {
+      if (queue.length == 1) {
+        // Only read the TTS disabled message once
+        await TextToSpeechPlugin.speak(
+            "There are too many messages. TTS Disabled");
       }
-      await TextToSpeechPlugin.speak(text);
       completer.complete();
     } else {
-      queue.addLast(element);
-      await TextToSpeechPlugin.speak(text);
-      completer.complete();
+      if (queue.isNotEmpty) {
+        final previous = queue.last;
+        queue.addLast(element);
+        await previous.completer.future;
+        if (queue.firstOrNull != element) {
+          throw Exception('Message was deleted');
+        }
+        final message = isUsernameReadingEnabled ? text : removeUsername(text);
+        await TextToSpeechPlugin.speak(message);
+        completer.complete();
+      } else {
+        queue.addLast(element);
+        final message = isUsernameReadingEnabled ? text : removeUsername(text);
+        await TextToSpeechPlugin.speak(message);
+        completer.complete();
+      }
     }
+
     queue.remove(element);
+    manageTTSState(); // Re-check the state in case the queue is now empty
   }
 
   void delete(String id) {
     queue.removeWhere((speak) => speak.id == id);
+    manageTTSState();
   }
 
   Future<void> clear() async {
     queue.clear();
+    isUsernameReadingEnabled = true;
+    isTTSDisabled = false;
     try {
       await TextToSpeechPlugin.stopSpeaking();
     } catch (e) {
@@ -88,5 +111,24 @@ class TTSQueue {
       return (id: first.id, text: first.text);
     }
     return null;
+  }
+
+  void manageTTSState() {
+    if (queue.length > 20) {
+      isUsernameReadingEnabled = false;
+      isTTSDisabled = true;
+    } else if (queue.length > 10) {
+      isUsernameReadingEnabled = false;
+    } else if (queue.isEmpty) {
+      isUsernameReadingEnabled = true;
+      isTTSDisabled = false;
+    }
+  }
+
+  String removeUsername(String text) {
+    int usernameEndIndex = text.indexOf(':');
+    return usernameEndIndex != -1
+        ? text.substring(usernameEndIndex + 1).trim()
+        : text;
   }
 }
