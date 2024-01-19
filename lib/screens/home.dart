@@ -351,31 +351,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     isEnabled: widget.isDiscoModeEnabled,
                                     child: ChatPanelWidget(
                                         channel: widget.channel))),
-                            Expanded(
-                              child: Consumer<LayoutModel>(
-                                  builder: (context, layoutModel, child) {
-                                if (layoutModel.isShowNotifications) {
-                                  return ResizableWidget(
-                                      resizable: !layoutModel.locked,
-                                      height: layoutModel.panelHeight,
-                                      width: layoutModel.panelWidth,
-                                      onResizeHeight: (height) {
-                                        layoutModel.panelHeight = height;
-                                      },
-                                      onResizeWidth: (width) {
-                                        layoutModel.panelWidth = width;
-                                      },
-                                      child: const ActivityFeedPanelWidget());
-                                } else if (layoutModel.isShowPreview) {
-                                  return AspectRatio(
-                                      aspectRatio: 16 / 9,
-                                      child: StreamPreview(
-                                          channel: widget.channel));
-                                } else {
-                                  return Container();
-                                }
-                              }),
-                            ),
+                            Consumer<LayoutModel>(
+                                builder: (context, layoutModel, child) {
+                              if (layoutModel.isShowNotifications) {
+                                return ResizableWidget(
+                                    resizable: !layoutModel.locked,
+                                    height: layoutModel.panelHeight,
+                                    width: layoutModel.panelWidth,
+                                    onResizeHeight: (height) {
+                                      layoutModel.panelHeight = height;
+                                    },
+                                    onResizeWidth: (width) {
+                                      layoutModel.panelWidth = width;
+                                    },
+                                    child: const ActivityFeedPanelWidget());
+                              } else if (layoutModel.isShowPreview) {
+                                return AspectRatio(
+                                    aspectRatio: 16 / 9,
+                                    child:
+                                        StreamPreview(channel: widget.channel));
+                              } else {
+                                return Container();
+                              }
+                            }),
                           ]);
                     });
                   } else {
