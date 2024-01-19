@@ -46,7 +46,6 @@ class QRDisplay extends StatelessWidget {
                           dataModuleShape: QrDataModuleShape.square,
                           color: Colors.black,
                         ),
-                        // Remove the embeddedImage property
                       ),
                       CircleAvatar(
                         radius: 35,
