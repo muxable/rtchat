@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/services.dart';
+import 'package:rtchat/models/tts.dart';
 
 class TextToSpeechPlugin {
   static const MethodChannel channel = MethodChannel('tts_plugin');
@@ -114,9 +115,11 @@ class TTSQueue {
   }
 
   void manageTTSState() {
+    TtsModel? tts;
     if (queue.length > 20) {
       isUsernameReadingEnabled = false;
       isTTSDisabled = true;
+      tts?.enabled = false;
     } else if (queue.length > 10) {
       isUsernameReadingEnabled = false;
     } else if (queue.isEmpty) {
