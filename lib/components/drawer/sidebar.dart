@@ -212,6 +212,56 @@ class _SidebarState extends State<Sidebar> {
 
       const Divider(),
 
+      //raid
+      Consumer<UserModel>(builder: (context, model, child) {
+        return ListTile(
+          leading: const Icon(Icons.connect_without_contact),
+          title: Text(AppLocalizations.of(context)!.raidAChannel),
+          onTap: () {
+            Navigator.of(context).pop();
+            showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              builder: (context) {
+                return DraggableScrollableSheet(
+                  initialChildSize: 0.8,
+                  maxChildSize: 0.9,
+                  expand: false,
+                  builder: (context, controller) {
+                    final model =
+                        Provider.of<UserModel>(context, listen: false);
+                    final userChannel = model.userChannel;
+                    return ChannelSearchBottomSheetWidget(
+                      isRaid: true,
+                      onChannelSelect: (channel) {
+                        model.activeChannel = channel;
+                      },
+                      onRaid: userChannel == model.activeChannel &&
+                              userChannel != null
+                          ? (channel) {
+                              final activeChannel = model.activeChannel;
+                              if (activeChannel == null) {
+                                return;
+                              }
+                              ActionsAdapter.instance
+                                  .raid(activeChannel, channel);
+                            }
+                          : null,
+                      controller: controller,
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      }),
+
+      const Divider(),
+
       // setting
       Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         if (!layoutModel.locked) {
