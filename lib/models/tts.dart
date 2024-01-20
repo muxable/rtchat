@@ -278,14 +278,6 @@ class TtsModel extends ChangeNotifier {
       return;
     }
 
-    if (model is StreamStateEventModel) {
-      if (!model.isOnline) {
-        enabled = false;
-        return;
-      }
-    }
-    // we have to manage our own queue here because queueing is not supported on ios.
-
     if (model is TwitchMessageModel) {
       if (_mutedUsers.any((user) =>
           user.displayName?.toLowerCase() ==

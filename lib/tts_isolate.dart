@@ -83,6 +83,16 @@ void vocalizeMessage(Map<String, dynamic>? message) {
     return;
   }
 
+  //check if message model is StreamStateEventModel
+  if (message.containsKey('isOnline')) {
+    bool isOnline = message['isOnline'] as bool;
+
+    if (!isOnline) {
+      TextToSpeechPlugin.stopSpeaking();
+      return;
+    }
+  }
+
   var textToSpeak = message['text'] as String?;
 
   if (textToSpeak != null) {
