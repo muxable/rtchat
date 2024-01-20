@@ -99,32 +99,6 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  //bring to foreground
-  Timer.periodic(const Duration(seconds: 1), (timer) async {
-    if (service is AndroidServiceInstance) {
-      if (await service.isForegroundService()) {
-        flutterLocalNotificationsPlugin.show(
-            888,
-            'rtchat',
-            'disableTTS',
-            const NotificationDetails(
-              android: AndroidNotificationDetails(
-                  'my_foreground', 'MY FOREGROUND SERVICE',
-                  icon: 'notification_icon',
-                  ongoing: true,
-                  actions: <AndroidNotificationAction>[
-                    AndroidNotificationAction(
-                      "DISABLE_TTS",
-                      'Action 1',
-                      icon: DrawableResourceAndroidBitmap('voiceover'),
-                      contextual: true,
-                    ),
-                  ]),
-            ));
-      }
-    }
-  });
-
   final prefs = await StreamingSharedPreferences.instance;
   prefs.getString('tts_channel', defaultValue: '{}').switchMap((channel) {
     if (channel.isNotEmpty && channel != "{}") {
@@ -146,13 +120,44 @@ void onStart(ServiceInstance service) async {
   // Handle other service events
   service.on('stopService').listen((event) {
     // print("Stopping this service right now");
+    TextToSpeechPlugin.stopSpeaking();
     service.stopSelf();
   });
 
   service.on('startTts').listen((event) async {
     // print("Starting this service right now");
     await Isolate.spawn(isolateMain, ReceivePort().sendPort);
+
+    //bring service to foreground
+    bringServiceToForeground(service, flutterLocalNotificationsPlugin);
   });
+}
+
+void bringServiceToForeground(ServiceInstance service,
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
+  if (service is AndroidServiceInstance) {
+    if (!await service.isForegroundService()) {
+      flutterLocalNotificationsPlugin.show(
+          888,
+          'rtchat',
+          'disableTTS',
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+                'my_foreground', 'MY FOREGROUND SERVICE',
+                icon: 'notification_icon',
+                ongoing: true,
+                actions: <AndroidNotificationAction>[
+                  AndroidNotificationAction(
+                    "DISABLE_TTS",
+                    'Disable TTS',
+                    icon: DrawableResourceAndroidBitmap('voiceover'),
+                    contextual: true,
+                  ),
+                ]),
+          ));
+      service.setAsForegroundService();
+    }
+  }
 }
 
 void vocalizeMessage(Map<String, dynamic>? message) {
