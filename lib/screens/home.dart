@@ -26,7 +26,7 @@ import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 // import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
-import 'package:rtchat/tts_plugin.dart';
+// import 'package:rtchat/tts_plugin.dart';
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
