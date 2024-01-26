@@ -8,9 +8,14 @@ class ChannelSearchBottomSheetWidget extends StatefulWidget {
   final ScrollController? controller;
   final void Function(Channel) onChannelSelect;
   final void Function(Channel)? onRaid;
+  final bool? isRaid;
 
   const ChannelSearchBottomSheetWidget(
-      {super.key, this.controller, required this.onChannelSelect, this.onRaid});
+      {super.key,
+      this.controller,
+      required this.onChannelSelect,
+      this.onRaid,
+      this.isRaid});
 
   @override
   State<ChannelSearchBottomSheetWidget> createState() =>
@@ -22,6 +27,12 @@ class _ChannelSearchBottomSheetWidgetState
   final _searchController = TextEditingController();
   var _value = "";
   var _raid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _raid = widget.isRaid ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
