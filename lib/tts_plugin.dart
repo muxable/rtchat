@@ -52,12 +52,9 @@ class TTSQueue {
 
   bool get readUserName => queue.length <= 10;
 
-  StreamingSharedPreferences? preferences;
-
   Future<void> speak(String id, String text) async {
     final completer = Completer<void>();
     final element = (id: id, text: text, completer: completer);
-    preferences = await StreamingSharedPreferences.instance;
 
     if (queue.isNotEmpty) {
       if (queue.length > 20) {
@@ -65,7 +62,7 @@ class TTSQueue {
         queue.clear();
         await TextToSpeechPlugin.speak(
             "There are too many messages. TTS Disabled");
-        preferences!.setString('tts_channel', '{}');
+
         return;
       }
 
