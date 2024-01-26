@@ -75,6 +75,13 @@ void onStart(ServiceInstance service) async {
     // print("Starting this service right now");
     await Isolate.spawn(isolateMain, ReceivePort().sendPort);
   });
+
+  service.on('disableTts').listen((event) {
+    // print("Stopping this service right now");
+    TextToSpeechPlugin.stopSpeaking();
+
+    prefs.remove('tts_channel');
+  });
 }
 
 void vocalizeMessage(Map<String, dynamic>? message) {

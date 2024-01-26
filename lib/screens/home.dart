@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
+import 'package:thermal/thermal.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
@@ -164,6 +165,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  final _thermal = Thermal();
+
   @override
   void initState() {
     super.initState();
@@ -175,8 +178,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
       if (context.mounted) {
         model.showAudioPermissionDialog(context);
+        initializeThermal();
       }
     });
+  }
+
+  void initializeThermal() async {
+    _thermal.onBatteryTemperatureChanged.listen((double temperature) {
+      if (temperature > 45) {
+        Provider.of<LayoutModel>(context, listen: false).isShowPreview = false;
+
+        _disableTTS();
+      }
+    });
+
+    _thermal.onThermalStatusChanged.listen((ThermalStatus state) {
+      if (Provider.of<LayoutModel>(context, listen: false).isShowPreview) {
+        // Show warning message
+        _showThermalWarning();
+      }
+    });
+  }
+
+  void _showThermalWarning() {
+    final snackBar = SnackBar(
+      content: Text(AppLocalizations.of(context)?.streamPreviewMessage ?? ''),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void _disableTTS() async {
+    final ttsModel = Provider.of<TtsModel>(context, listen: false);
+    ttsModel.enabled = false;
+
+    // FlutterBackgroundService().invoke("disableTts");
   }
 
   @override

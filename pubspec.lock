@@ -971,6 +971,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.1"
+  thermal:
+    dependency: "direct main"
+    description:
+      name: thermal
+      sha256: a825d9545d6ddcb78ce9a764b21f30e1f0f756b81a1513fcf6b3bc4bb0b6f4da
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.4"
   typed_data:
     dependency: transitive
     description:
