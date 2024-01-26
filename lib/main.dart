@@ -73,7 +73,7 @@ void main() async {
         channelKey: 'tts_notifications_key',
         channelName: 'tts_notifications_channel',
         channelDescription: 'Channel to handle tts notifications',
-        defaultColor: Color(0xFF9D50DD),
+        defaultColor: const Color(0xFF9D50DD),
         ledColor: Colors.white,
         enableVibration: false,
         enableLights: false,
