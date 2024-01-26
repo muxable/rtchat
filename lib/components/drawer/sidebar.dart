@@ -212,6 +212,48 @@ class _SidebarState extends State<Sidebar> {
 
       const Divider(),
 
+      // setting
+      Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+        if (!layoutModel.locked) {
+          return ListTile(
+            leading: const Icon(Icons.thunderstorm),
+            title: Text(AppLocalizations.of(context)!.enableRainMode),
+            subtitle:
+                Text(AppLocalizations.of(context)!.enableRainModeSubtitle),
+            onTap: () async {
+              layoutModel.locked = !layoutModel.locked;
+              Navigator.pop(context);
+            },
+          );
+        }
+
+        return ListTile(
+          leading: const Icon(Icons.thunderstorm),
+          title: Text(AppLocalizations.of(context)!.disableRainMode),
+          subtitle: Text(AppLocalizations.of(context)!.disableRainModeSubtitle),
+          onTap: () async {
+            layoutModel.locked = !layoutModel.locked;
+            Navigator.pop(context);
+          },
+        );
+      }),
+      Consumer<AudioModel>(builder: (context, audioModel, child) {
+        if (audioModel.sources.isEmpty) {
+          return Container();
+        }
+        return ListTile(
+          leading: const Icon(Icons.cached_outlined),
+          title: Text(AppLocalizations.of(context)!.refreshAudioSources),
+          onTap: () async {
+            final count = await audioModel.refreshAllSources();
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(AppLocalizations.of(context)!
+                    .refreshAudioSourcesCount(count))));
+          },
+        );
+      }),
+
       //raid
       Consumer<UserModel>(builder: (context, model, child) {
         return ListTile(
@@ -260,48 +302,6 @@ class _SidebarState extends State<Sidebar> {
         );
       }),
 
-      const Divider(),
-
-      // setting
-      Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-        if (!layoutModel.locked) {
-          return ListTile(
-            leading: const Icon(Icons.thunderstorm),
-            title: Text(AppLocalizations.of(context)!.enableRainMode),
-            subtitle:
-                Text(AppLocalizations.of(context)!.enableRainModeSubtitle),
-            onTap: () async {
-              layoutModel.locked = !layoutModel.locked;
-              Navigator.pop(context);
-            },
-          );
-        }
-        return ListTile(
-          leading: const Icon(Icons.thunderstorm),
-          title: Text(AppLocalizations.of(context)!.disableRainMode),
-          subtitle: Text(AppLocalizations.of(context)!.disableRainModeSubtitle),
-          onTap: () async {
-            layoutModel.locked = !layoutModel.locked;
-            Navigator.pop(context);
-          },
-        );
-      }),
-      Consumer<AudioModel>(builder: (context, audioModel, child) {
-        if (audioModel.sources.isEmpty) {
-          return Container();
-        }
-        return ListTile(
-          leading: const Icon(Icons.cached_outlined),
-          title: Text(AppLocalizations.of(context)!.refreshAudioSources),
-          onTap: () async {
-            final count = await audioModel.refreshAllSources();
-            if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(AppLocalizations.of(context)!
-                    .refreshAudioSourcesCount(count))));
-          },
-        );
-      }),
       ListTile(
         leading: const Icon(Icons.build_outlined),
         title: Text(AppLocalizations.of(context)!.settings),
