@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/services.dart';
-import 'package:rtchat/models/tts.dart';
+import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 class TextToSpeechPlugin {
   static const MethodChannel channel = MethodChannel('tts_plugin');
@@ -44,61 +44,53 @@ class TextToSpeechPlugin {
 }
 
 class TTSQueue {
-  final Queue<({String id, String text, Completer<void> completer})> queue =
-      Queue();
-  bool isUsernameReadingEnabled = true;
-  bool isTTSDisabled = false;
+  final queue = Queue<({String id, String text, Completer<void> completer})>();
 
   bool get isEmpty => queue.isEmpty;
 
   int get length => queue.length;
 
+  bool get readUserName => queue.length <= 10;
+
+  StreamingSharedPreferences? preferences;
+
   Future<void> speak(String id, String text) async {
     final completer = Completer<void>();
     final element = (id: id, text: text, completer: completer);
+    preferences = await StreamingSharedPreferences.instance;
 
-    // Logic to manage TTS and username reading based on queue size
-    manageTTSState();
-
-    if (isTTSDisabled) {
-      if (queue.length == 1) {
-        // Only read the TTS disabled message once
+    if (queue.isNotEmpty) {
+      if (queue.length > 20) {
+        // Disable TTS and read a specific message
+        queue.clear();
         await TextToSpeechPlugin.speak(
             "There are too many messages. TTS Disabled");
+        preferences!.setString('tts_channel', '{}');
+        return;
       }
+
+      final previous = queue.last;
+      queue.addLast(element);
+      await previous.completer.future;
+      if (queue.firstOrNull != element) {
+        throw Exception('Message was deleted');
+      }
+      await TextToSpeechPlugin.speak(text);
       completer.complete();
     } else {
-      if (queue.isNotEmpty) {
-        final previous = queue.last;
-        queue.addLast(element);
-        await previous.completer.future;
-        if (queue.firstOrNull != element) {
-          throw Exception('Message was deleted');
-        }
-        final message = isUsernameReadingEnabled ? text : removeUsername(text);
-        await TextToSpeechPlugin.speak(message);
-        completer.complete();
-      } else {
-        queue.addLast(element);
-        final message = isUsernameReadingEnabled ? text : removeUsername(text);
-        await TextToSpeechPlugin.speak(message);
-        completer.complete();
-      }
+      queue.addLast(element);
+      await TextToSpeechPlugin.speak(text);
+      completer.complete();
     }
-
     queue.remove(element);
-    manageTTSState(); // Re-check the state in case the queue is now empty
   }
 
   void delete(String id) {
     queue.removeWhere((speak) => speak.id == id);
-    manageTTSState();
   }
 
   Future<void> clear() async {
     queue.clear();
-    isUsernameReadingEnabled = true;
-    isTTSDisabled = false;
     try {
       await TextToSpeechPlugin.stopSpeaking();
     } catch (e) {
@@ -112,26 +104,5 @@ class TTSQueue {
       return (id: first.id, text: first.text);
     }
     return null;
-  }
-
-  void manageTTSState() {
-    TtsModel? tts;
-    if (queue.length > 20) {
-      isUsernameReadingEnabled = false;
-      isTTSDisabled = true;
-      tts?.enabled = false;
-    } else if (queue.length > 10) {
-      isUsernameReadingEnabled = false;
-    } else if (queue.isEmpty) {
-      isUsernameReadingEnabled = true;
-      isTTSDisabled = false;
-    }
-  }
-
-  String removeUsername(String text) {
-    int usernameEndIndex = text.indexOf(':');
-    return usernameEndIndex != -1
-        ? text.substring(usernameEndIndex + 1).trim()
-        : text;
   }
 }

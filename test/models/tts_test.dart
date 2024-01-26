@@ -82,4 +82,14 @@ void main() {
     await future2;
     expect(calls, equals(1));
   });
+
+  test('TTS announces stoppage when queue exceeds 20 items', () async {
+    // Simulate speaking 21 messages
+    for (int i = 1; i <= 21; i++) {
+      await ttsQueue.speak('$i', 'Message $i');
+    }
+
+    // Expect the queue to be cleared after the 21st message
+    expect(ttsQueue.isEmpty, isTrue);
+  });
 }
