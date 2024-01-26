@@ -1,6 +1,8 @@
+import 'dart:async';
 // import 'dart:isolate';
 import 'dart:math' as math;
 
+import 'package:battery_plus/battery_plus.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -163,6 +165,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final Battery _battery = Battery();
+
+  BatteryState? _batteryState;
+  StreamSubscription<BatteryState>? _batteryStateSubscription;
 
   @override
   void initState() {
@@ -175,6 +181,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
       if (context.mounted) {
         model.showAudioPermissionDialog(context);
+        _battery.batteryState.then(_updateBatteryState);
+        _batteryStateSubscription =
+            _battery.onBatteryStateChanged.listen(_updateBatteryState);
       }
     });
   }
@@ -183,6 +192,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void dispose() {
     Wakelock.disable();
     super.dispose();
+
+    _batteryStateSubscription?.cancel();
+  }
+
+  void _updateBatteryState(BatteryState state) {
+    if (_batteryState == state) return;
+    setState(() {
+      _batteryState = state;
+    });
+    checkAndHandleBatteryLevel();
+  }
+
+  Future<void> checkAndHandleBatteryLevel() async {
+    final int batteryLevel = await _battery.batteryLevel;
+    final bool isCharging = _batteryState == BatteryState.charging;
+
+    if (batteryLevel < 5 && !isCharging) {
+      // TODO: Enable when ready for prod
+      // FlutterBackgroundService().invoke("disableTTS");
+    }
   }
 
   @override

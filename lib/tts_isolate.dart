@@ -65,6 +65,11 @@ void onStart(ServiceInstance service) async {
     }
   });
 
+  service.on('disableTts').listen((event) async {
+    await TextToSpeechPlugin.stopSpeaking();
+    await prefs.remove('tts_channel');
+  });
+
   // Handle other service events
   service.on('stopService').listen((event) {
     // print("Stopping this service right now");
