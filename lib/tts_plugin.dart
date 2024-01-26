@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/services.dart';
-import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 class TextToSpeechPlugin {
   static const MethodChannel channel = MethodChannel('tts_plugin');
