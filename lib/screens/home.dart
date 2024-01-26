@@ -1,6 +1,8 @@
+import 'dart:async';
 // import 'dart:isolate';
 import 'dart:math' as math;
 
+import 'package:battery_plus/battery_plus.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -163,6 +165,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final Battery _battery = Battery();
+  BatteryState? _batteryState;
+  StreamSubscription<BatteryState>? _batteryStateSubscription;
 
   @override
   void initState() {
@@ -175,6 +180,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
       if (context.mounted) {
         model.showAudioPermissionDialog(context);
+        _battery.batteryState.then(_updateBatteryState);
+        _batteryStateSubscription =
+            _battery.onBatteryStateChanged.listen(_updateBatteryState);
       }
     });
   }
@@ -183,6 +191,44 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void dispose() {
     Wakelock.disable();
     super.dispose();
+    _batteryStateSubscription?.cancel();
+  }
+
+  void _updateBatteryState(BatteryState state) async {
+    if (_batteryState == state) return;
+
+    final int batteryLevel = await _battery.batteryLevel;
+    final bool isCharging = state == BatteryState.charging;
+    final layoutModel = Provider.of<LayoutModel>(context, listen: false);
+    final bool isBatterySavingMode = await _battery.isInBatterySaveMode;
+
+    setState(() {
+      _batteryState = state;
+    });
+
+    if (layoutModel.isShowPreview &&
+        batteryLevel < 20 &&
+        !isCharging &&
+        !isBatterySavingMode) {
+      _showBatteryWarning();
+    }
+
+    if (batteryLevel < 5) {
+      disableStreamPreview();
+    }
+  }
+
+  void _showBatteryWarning() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text(
+        AppLocalizations.of(context)!.streamPreviewMessage,
+      )),
+    );
+  }
+
+  void disableStreamPreview() {
+    Provider.of<LayoutModel>(context, listen: false).isShowPreview = false;
   }
 
   @override
