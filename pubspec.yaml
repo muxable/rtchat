@@ -18,7 +18,7 @@ dependencies:
   cloud_functions: ^4.5.8
   crypto: ^3.0.3
   cupertino_icons: ^1.0.6
-  device_info_plus: ^9.1.1
+  device_info_plus: any
   firebase_analytics: ^10.7.4
   firebase_auth: ^4.15.3
   firebase_core: ^2.24.2
