@@ -164,7 +164,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-
   final _thermal = Thermal();
 
   @override
@@ -194,7 +193,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     _thermal.onThermalStatusChanged.listen((ThermalStatus state) {
       if (Provider.of<LayoutModel>(context, listen: false).isShowPreview) {
-        // Show warning message
         _showThermalWarning();
       }
     });
