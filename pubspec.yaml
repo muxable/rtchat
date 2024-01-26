@@ -18,6 +18,7 @@ dependencies:
   cloud_functions: ^4.5.8
   crypto: ^3.0.3
   cupertino_icons: ^1.0.6
+  device_info_plus: ^9.1.1
   firebase_analytics: ^10.7.4
   firebase_auth: ^4.15.3
   firebase_core: ^2.24.2
@@ -28,7 +29,7 @@ dependencies:
   flutter_custom_tabs: ^1.2.1
   flutter_keyboard_visibility: ^6.0.0
   flutter_localized_locales: ^2.0.5
-  flutter_local_notifications: ^16.3.0
+  flutter_local_notifications: ^16.3.2
   flutter_markdown: ^0.6.18
   flutter_tts: ^3.8.5
   flutter_web_auth: ^0.5.0

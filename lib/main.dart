@@ -57,14 +57,14 @@ import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
-// import 'package:rtchat/tts_isolate.dart' as tts_isolate;
+import 'package:rtchat/tts_isolate.dart' as tts_isolate;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
-  // tts_isolate.initializeService();
+  tts_isolate.initializeService();
 
   final prefs = await StreamingSharedPreferences.instance;
 

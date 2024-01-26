@@ -2,6 +2,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 // import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -163,6 +164,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  late StreamingSharedPreferences streamPrefs;
+  String ttsChannel = '';
+  bool isTTsActive = false;
 
   @override
   void initState() {
@@ -176,6 +180,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (context.mounted) {
         model.showAudioPermissionDialog(context);
       }
+    });
+    initSharedPreference();
+  }
+
+  initSharedPreference() async {
+    streamPrefs = await StreamingSharedPreferences.instance;
+    streamPrefs.getString('tts_channel', defaultValue: '{}').listen((value) {
+      setState(() {
+        ttsChannel = value;
+        isTTsActive = value.isEmpty || value == "{}" ? false : true;
+      });
     });
   }
 
@@ -236,35 +251,36 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   }),
                   Consumer<TtsModel>(builder: (context, ttsModel, child) {
                     return IconButton(
-                      icon: Icon(ttsModel.enabled
+                      icon: Icon(isTTsActive
                           ? Icons.record_voice_over
                           : Icons.voice_over_off),
                       tooltip: AppLocalizations.of(context)!.textToSpeech,
                       onPressed: () async {
-                        // Toggle the enabled state
-                        ttsModel.enabled = !ttsModel.enabled;
+                        if (!isTTsActive) {
+                          ttsModel.enabled = true;
 
-                        final streamPrefs =
-                            await StreamingSharedPreferences.instance;
+                          FlutterBackgroundService().invoke("setAsForeground");
+                          FlutterBackgroundService().invoke("startTts");
+                          FlutterBackgroundService()
+                              .invoke('initSharedPreference');
 
-                        if (!ttsModel.enabled) {
-                          await TextToSpeechPlugin.clear();
-                          await streamPrefs.remove('tts_channel');
-
-                          // FlutterBackgroundService().invoke("stopService");
+                          setState(() {
+                            streamPrefs.setString('tts_channel',
+                                userModel.activeChannel.toString());
+                          });
                         }
-
-                        streamPrefs.setString(
-                            "tts_channel", '${userModel.activeChannel}');
 
                         // TODO: get this into production when it's ready
                         // Test the isolate
-                        // if (ttsModel.enabled) {
-                        //   FlutterBackgroundService().invoke("startTts");
-                        //   FlutterBackgroundService()
-                        //       .invoke('initSharedPreference');
-                        //  FlutterBackgroundService().invoke('setAsForeground');
-                        // }
+                        if (isTTsActive) {
+                          ttsModel.enabled = false;
+
+                          streamPrefs.setString("tts_channel", '{}');
+
+                          FlutterBackgroundService().invoke("setAsBackground");
+
+                          debugPrint("Stopping the service");
+                        }
 
                         // if (ttsModel.enabled) {
                         //   // Test speak method with a long string
