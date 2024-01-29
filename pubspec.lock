@@ -672,12 +672,11 @@ packages:
   mobile_scanner:
     dependency: "direct main"
     description:
-      path: "."
-      ref: master
-      resolved-ref: fbd1595495dc58c5837fd94c0ebeddb339ffa405
-      url: "https://github.com/juliansteenbakker/mobile_scanner.git"
-    source: git
-    version: "3.5.6"
+      name: mobile_scanner
+      sha256: "1b60b8f9d4ce0cb0e7d7bc223c955d083a0737bee66fa1fcfe5de48225e0d5b3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.5.7"
   motion_sensors:
     dependency: "direct main"
     description:
