@@ -24,20 +24,27 @@ class DiscoWidget extends StatelessWidget {
       selector: (context, model) => model.isDiscoModeAvailable,
       builder: (context, isDiscoModeAvailable, child) {
         if (isEnabled && isDiscoModeAvailable) {
-          return StreamBuilder<int>(
-              stream:
-                  Stream.periodic(const Duration(milliseconds: 150), (x) => x),
-              builder: (context, snapshot) {
-                final index = (snapshot.data ?? 0);
-                final color = index % 2 != 0
-                    ? Colors.white
-                    : discoModeColors[(index ~/ 2) % discoModeColors.length];
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 50),
-                  color: color,
-                  child: child,
-                );
-              });
+          return Stack(
+            children: [
+              child!,
+              StreamBuilder<int>(
+                  stream: Stream.periodic(
+                      const Duration(milliseconds: 150), (x) => x),
+                  builder: (context, snapshot) {
+                    final index = (snapshot.data ?? 0);
+                    final color = index % 2 != 0
+                        ? Colors.white
+                        : discoModeColors[
+                            (index ~/ 2) % discoModeColors.length];
+                    return Positioned.fill(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 50),
+                        color: color,
+                      ),
+                    );
+                  }),
+            ],
+          );
         }
         return child!;
       },
