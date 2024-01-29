@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:rtchat/tts_plugin.dart';
@@ -18,19 +19,24 @@ void isolateMain(SendPort sendPort) {
 void initializeService() async {
   final service = FlutterBackgroundService();
 
+  // this will be used as notification channel id
+  const notificationChannelId = 'my_foreground';
+
+  // this will be used for notification id, So you can update your custom notification with this id.
+  const notificationId = 888;
+
   await service.configure(
     androidConfiguration: AndroidConfiguration(
-      onStart: onStart,
-      autoStart: true,
-      isForegroundMode: true,
-    ),
+        onStart: onStart,
+        autoStart: true,
+        isForegroundMode: false,
+        notificationChannelId: notificationChannelId,
+        foregroundServiceNotificationId: notificationId),
     iosConfiguration: IosConfiguration(
       autoStart: true,
       onForeground: onStart,
     ),
   );
-  // Start the background service
-  service.startService();
 }
 
 @pragma('vm:entry-point')
@@ -46,6 +52,27 @@ void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  if (service is AndroidServiceInstance) {
+    service.on('setAsForeground').listen((event) async {
+      service.setAsForegroundService();
+      // Setting up the notification at the very beginning
+    });
+
+    service.on('setAsBackground').listen((event) {
+      service.setAsBackgroundService();
+    });
+  }
+
+  // Handle other service events
+  service.on('stopService').listen((event) {
+    // print("Stopping this service right now");
+    TextToSpeechPlugin.stopSpeaking();
+  });
+
+  service.on('startTts').listen((event) async {
+    await Isolate.spawn(isolateMain, ReceivePort().sendPort);
+  });
 
   final prefs = await StreamingSharedPreferences.instance;
   prefs.getString('tts_channel', defaultValue: '{}').switchMap((channel) {
@@ -65,19 +92,26 @@ void onStart(ServiceInstance service) async {
     }
   });
 
-  // Handle other service events
-  service.on('stopService').listen((event) {
-    // print("Stopping this service right now");
-    service.stopSelf();
-  });
+  /// you can see this log in logcat
+  debugPrint('FLUTTER BACKGROUND SERVICE: ${DateTime.now()}');
 
-  service.on('startTts').listen((event) async {
-    // print("Starting this service right now");
-    await Isolate.spawn(isolateMain, ReceivePort().sendPort);
-  });
+  // test using external plugin
+  service.invoke(
+    'update',
+    {
+      "current_date": DateTime.now().toIso8601String(),
+    },
+  );
 }
 
-void vocalizeMessage(Map<String, dynamic>? message) {
+Future<void> resetTTS() async {
+  TextToSpeechPlugin.stopSpeaking();
+  final prefs = await StreamingSharedPreferences.instance;
+  prefs.setString('tts_channel', '{}');
+}
+
+void vocalizeMessage(Map<String, dynamic>? message) async {
+  StreamingSharedPreferences prefs = await StreamingSharedPreferences.instance;
   if (message == null) {
     // print("Received a null message");
     return;
@@ -85,13 +119,20 @@ void vocalizeMessage(Map<String, dynamic>? message) {
 
   var textToSpeak = message['text'] as String?;
 
+  var isOnline = message['isOnline'] as bool? ?? false;
+
+  if (!isOnline) {
+    debugPrint("Received a message from an offline user");
+    TextToSpeechPlugin.stopSpeaking();
+    prefs.remove('tts_channel');
+  }
   if (textToSpeak != null) {
     try {
       TextToSpeechPlugin.speak(textToSpeak);
     } catch (e) {
-      // print("Error during TTS processing: $e");
+      debugPrint("Error during TTS processing: $e");
     }
   } else {
-    // print("Received a message with null or missing 'text' field");
+    debugPrint("Received a message with null or missing 'text' field");
   }
 }
