@@ -251,7 +251,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         if (!ttsModel.enabled) {
                           await TextToSpeechPlugin.clear();
                           await streamPrefs.remove('tts_channel');
-                          FlutterBackgroundService().invoke("stopService");
                           AwesomeNotifications().dismiss(6853027);
                         }
 
@@ -259,6 +258,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             "tts_channel", '${userModel.activeChannel}');
 
                         if (ttsModel.enabled) {
+                          FlutterBackgroundService().invoke('setAsForeground');
                           FlutterBackgroundService().invoke("startTts");
                           AwesomeNotifications().createNotification(
                             content: NotificationContent(
