@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -55,16 +56,30 @@ import 'package:rtchat/screens/settings/tts/languages.dart';
 import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
+import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
-
-// import 'package:rtchat/tts_isolate.dart' as tts_isolate;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
-  // tts_isolate.initializeService();
+  ttsIsolate.initializeService();
+
+  AwesomeNotifications().initialize(
+    "resource://drawable/notification_icon",
+    [
+      NotificationChannel(
+        channelKey: 'tts_notifications_key',
+        channelName: 'tts_notifications_channel',
+        channelDescription: 'Channel to handle tts notifications',
+        defaultColor: const Color(0xFF9D50DD),
+        ledColor: Colors.white,
+        enableVibration: false,
+        enableLights: false,
+      )
+    ],
+  );
 
   final prefs = await StreamingSharedPreferences.instance;
 
@@ -92,7 +107,6 @@ void main() async {
     respectSilence: false,
     stayAwake: true,
   ).build());
-  // tts_isolate.initializeService();
   runApp(App(prefs: prefs));
 }
 
