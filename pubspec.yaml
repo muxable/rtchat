@@ -52,7 +52,7 @@ dependencies:
   sticky_headers: ^0.3.0+2
   styled_text: ^8.1.0
   stream_transform: ^2.1.0
-  thermal: ^1.1.4
+  thermal: ^1.1.5
   url_launcher: ^6.2.2
   wakelock: ^0.6.2
   webview_flutter: ^4.4.1

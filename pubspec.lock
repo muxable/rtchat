@@ -983,10 +983,10 @@ packages:
     dependency: "direct main"
     description:
       name: thermal
-      sha256: a825d9545d6ddcb78ce9a764b21f30e1f0f756b81a1513fcf6b3bc4bb0b6f4da
+      sha256: "1b65a235d7f52729adf10cdc2f7338ebbefd97b3a5363095c287e3ef27548524"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.4"
+    version: "1.1.5"
   typed_data:
     dependency: transitive
     description:
