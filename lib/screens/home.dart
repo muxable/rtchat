@@ -164,6 +164,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  late StreamingSharedPreferences streamPrefs;
+  String ttsChannel = '';
+  bool isTTsActive = false;
 
   @override
   void initState() {
@@ -177,6 +180,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (context.mounted) {
         model.showAudioPermissionDialog(context);
       }
+    });
+    initSharedPreference();
+  }
+
+  initSharedPreference() async {
+    streamPrefs = await StreamingSharedPreferences.instance;
+    streamPrefs.getString('tts_channel', defaultValue: '{}').listen((value) {
+      setState(() {
+        ttsChannel = value;
+        isTTsActive = value.isEmpty || value == "{}" ? false : true;
+      });
     });
   }
 
@@ -237,42 +251,49 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   }),
                   Consumer<TtsModel>(builder: (context, ttsModel, child) {
                     return IconButton(
-                      icon: Icon(ttsModel.enabled
-                          ? Icons.record_voice_over
-                          : Icons.voice_over_off),
-                      tooltip: AppLocalizations.of(context)!.textToSpeech,
-                      onPressed: () async {
-                        // Toggle the enabled state
-                        ttsModel.enabled = !ttsModel.enabled;
+                        icon: Icon(isTTsActive
+                            ? Icons.record_voice_over
+                            : Icons.voice_over_off),
+                        tooltip: AppLocalizations.of(context)!.textToSpeech,
+                        onPressed: () async {
+                          // Toggle the enabled state
 
-                        final streamPrefs =
-                            await StreamingSharedPreferences.instance;
+                          if (!isTTsActive) {
+                            ttsModel.enabled = true;
 
-                        if (!ttsModel.enabled) {
-                          await TextToSpeechPlugin.clear();
-                          await streamPrefs.remove('tts_channel');
-                          AwesomeNotifications().dismiss(6853027);
-                        }
+                            FlutterBackgroundService()
+                                .invoke('setAsForeground');
+                            FlutterBackgroundService().invoke("startTts");
+                            AwesomeNotifications().createNotification(
+                              content: NotificationContent(
+                                id: 6853027,
+                                channelKey: 'tts_notifications_key',
+                                title: 'Text-to-speech is enabled',
+                                body: null,
+                                locked: true,
+                                autoDismissible: false,
+                              ),
+                            );
 
-                        streamPrefs.setString(
-                            "tts_channel", '${userModel.activeChannel}');
+                            setState(() {
+                              streamPrefs.setString('tts_channel',
+                                  userModel.activeChannel.toString());
+                            });
+                          }
 
-                        if (ttsModel.enabled) {
-                          FlutterBackgroundService().invoke('setAsForeground');
-                          FlutterBackgroundService().invoke("startTts");
-                          AwesomeNotifications().createNotification(
-                            content: NotificationContent(
-                              id: 6853027,
-                              channelKey: 'tts_notifications_key',
-                              title: 'Text-to-speech is enabled',
-                              body: null,
-                              locked: true,
-                              autoDismissible: false,
-                            ),
-                          );
-                        }
-                      },
-                    );
+                          if (isTTsActive) {
+                            ttsModel.enabled = false;
+
+                            await TextToSpeechPlugin.clear();
+
+                            AwesomeNotifications().dismiss(6853027);
+                            debugPrint("Stopping the service");
+
+                            setState(() {
+                              streamPrefs.remove('tts_channel');
+                            });
+                          }
+                        });
                   }),
                   if (userModel.isSignedIn())
                     IconButton(
