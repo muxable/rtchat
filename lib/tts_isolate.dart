@@ -65,7 +65,7 @@ void onStart(ServiceInstance service) async {
   }
 
   // Handle other service events
-  service.on('stopService').listen((event) {
+  service.on('stopTts').listen((event) {
     // print("Stopping this service right now");
     TextToSpeechPlugin.stopSpeaking();
   });

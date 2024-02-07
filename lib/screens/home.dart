@@ -1,3 +1,4 @@
+import 'dart:async';
 // import 'dart:isolate';
 import 'dart:math' as math;
 
@@ -26,7 +27,6 @@ import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 // import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:rtchat/tts_plugin.dart';
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
@@ -166,8 +166,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   late StreamingSharedPreferences streamPrefs;
   String ttsChannel = '';
-  bool isTTsActive = false;
-
+  bool isTtsActive = false;
+  StreamSubscription<String>?
+      _prefsSubscription;
   @override
   void initState() {
     super.initState();
@@ -184,18 +185,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     initSharedPreference();
   }
 
-  initSharedPreference() async {
+  void initSharedPreference() async {
     streamPrefs = await StreamingSharedPreferences.instance;
-    streamPrefs.getString('tts_channel', defaultValue: '{}').listen((value) {
-      setState(() {
-        ttsChannel = value;
-        isTTsActive = value.isEmpty || value == "{}" ? false : true;
-      });
+    _prefsSubscription = streamPrefs
+        .getString('tts_channel', defaultValue: '{}')
+        .listen(updateTtsChannelState);
+  }
+
+  void updateTtsChannelState(String value) {
+    setState(() {
+      ttsChannel = value;
+      isTtsActive = value.isNotEmpty && value != "{}";
     });
   }
 
   @override
   void dispose() {
+    _prefsSubscription?.cancel();
     Wakelock.disable();
     super.dispose();
   }
@@ -251,16 +257,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   }),
                   Consumer<TtsModel>(builder: (context, ttsModel, child) {
                     return IconButton(
-                        icon: Icon(isTTsActive
+                        icon: Icon(isTtsActive
                             ? Icons.record_voice_over
                             : Icons.voice_over_off),
                         tooltip: AppLocalizations.of(context)!.textToSpeech,
                         onPressed: () async {
                           // Toggle the enabled state
 
-                          if (!isTTsActive) {
-                            ttsModel.enabled = true;
-
+                          if (!isTtsActive) {
                             FlutterBackgroundService()
                                 .invoke('setAsForeground');
                             FlutterBackgroundService().invoke("startTts");
@@ -281,10 +285,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             });
                           }
 
-                          if (isTTsActive) {
-                            ttsModel.enabled = false;
-
-                            await TextToSpeechPlugin.clear();
+                          if (isTtsActive) {
+                            FlutterBackgroundService().invoke('stopTts');
 
                             AwesomeNotifications().dismiss(6853027);
                             debugPrint("Stopping the service");
