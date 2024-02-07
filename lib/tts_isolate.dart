@@ -130,7 +130,7 @@ void vocalizeMessage(Map<String, dynamic>? message) async {
     try {
       TextToSpeechPlugin.speak(textToSpeak);
     } catch (e) {
-      debugPrint("Error during TTS processing: $e");
+      debugPrint("Error during tts processing: $e");
     }
   } else {
     debugPrint("Received a message with null or missing 'text' field");
