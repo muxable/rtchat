@@ -2,7 +2,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-// import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
@@ -25,6 +25,7 @@ import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 // import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:rtchat/tts_plugin.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -250,46 +251,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         if (!ttsModel.enabled) {
                           await TextToSpeechPlugin.clear();
                           await streamPrefs.remove('tts_channel');
-
-                          // FlutterBackgroundService().invoke("stopService");
+                          AwesomeNotifications().dismiss(6853027);
                         }
 
                         streamPrefs.setString(
                             "tts_channel", '${userModel.activeChannel}');
 
-                        // TODO: get this into production when it's ready
-                        // Test the isolate
-                        // if (ttsModel.enabled) {
-                        //   FlutterBackgroundService().invoke("startTts");
-                        //   FlutterBackgroundService()
-                        //       .invoke('initSharedPreference');
-                        // }
-
-                        // if (ttsModel.enabled) {
-                        //   // Test speak method with a long string
-                        //   await TextToSpeechPlugin.speak(
-                        //       "This is a very long string to test the Text-to-Speech functionality. ");
-
-                        //   await TextToSpeechPlugin.speak(
-                        //       "This is a very long string to test the Text-to-Speech functionality. ");
-
-                        //   await TextToSpeechPlugin.speak(
-                        //       "This is a very long string to test the Text-to-Speech functionality. ");
-
-                        //   await TextToSpeechPlugin.speak(
-                        //       "This is a very long string to test the Text-to-Speech functionality. ");
-
-                        // // Test getLanguages method
-                        // Map<String, String> languages =
-                        //     await TextToSpeechPlugin.getLanguages();
-                        // print("Supported languages: $languages");
-
-                        // // Wait for 1 second
-                        // await Future.delayed(Duration(seconds: 1));
-
-                        // // Test stop method
-                        // await TextToSpeechPlugin.stopSpeaking();
-                        // }
+                        if (ttsModel.enabled) {
+                          FlutterBackgroundService().invoke('setAsForeground');
+                          FlutterBackgroundService().invoke("startTts");
+                          AwesomeNotifications().createNotification(
+                            content: NotificationContent(
+                              id: 6853027,
+                              channelKey: 'tts_notifications_key',
+                              title: 'Text-to-speech is enabled',
+                              body: null,
+                              locked: true,
+                              autoDismissible: false,
+                            ),
+                          );
+                        }
                       },
                     );
                   }),
