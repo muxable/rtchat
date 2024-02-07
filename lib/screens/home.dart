@@ -320,41 +320,89 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   );
                   if (orientation == Orientation.portrait) {
-                    return Column(
-                        // this allows the column to overflow upwards.
-                        verticalDirection: VerticalDirection.up,
-                        children: [
-                          // reversed direction because of verticalDirection: VerticalDirection.up
-                          chatPanelFooter,
-                          Expanded(
-                              child: DiscoWidget(
-                                  isEnabled: widget.isDiscoModeEnabled,
-                                  child: ChatPanelWidget(
-                                      channel: widget.channel))),
-                          Consumer<LayoutModel>(
-                              builder: (context, layoutModel, child) {
-                            if (layoutModel.isShowNotifications) {
-                              return ResizableWidget(
-                                  resizable: !layoutModel.locked,
-                                  height: layoutModel.panelHeight,
-                                  width: layoutModel.panelWidth,
-                                  onResizeHeight: (height) {
-                                    layoutModel.panelHeight = height;
-                                  },
-                                  onResizeWidth: (width) {
-                                    layoutModel.panelWidth = width;
-                                  },
-                                  child: const ActivityFeedPanelWidget());
-                            } else if (layoutModel.isShowPreview) {
-                              return AspectRatio(
-                                  aspectRatio: 16 / 9,
-                                  child:
-                                      StreamPreview(channel: widget.channel));
-                            } else {
-                              return Container();
-                            }
-                          }),
-                        ]);
+                    return LayoutBuilder(builder: (context, constraints) {
+                      return Consumer<LayoutModel>(
+                          builder: (context, layoutModel, child) {
+                            return !layoutModel.isShowPreview
+                                ? Column(
+                                verticalDirection: VerticalDirection.up,
+                                children: [
+                                  // reversed direction because of verticalDirection: VerticalDirection.up
+                                  chatPanelFooter,
+
+                                  Expanded(
+                                      child: DiscoWidget(
+                                          isEnabled: widget.isDiscoModeEnabled,
+                                          child: ChatPanelWidget(
+                                              channel: widget.channel))),
+
+                                  Consumer<LayoutModel>(
+                                      builder: (context, layoutModel, child) {
+                                        if (layoutModel.isShowNotifications) {
+                                          return ResizableWidget(
+                                              resizable: !layoutModel.locked,
+                                              height: layoutModel.panelHeight,
+                                              width: layoutModel.panelWidth,
+                                              onResizeHeight: (height) {
+                                                layoutModel.panelHeight = height;
+                                              },
+                                              onResizeWidth: (width) {
+                                                layoutModel.panelWidth = width;
+                                              },
+                                              child:
+                                              const ActivityFeedPanelWidget());
+                                        } else if (layoutModel.isShowPreview) {
+                                          return AspectRatio(
+                                              aspectRatio: 16 / 9,
+                                              child: StreamPreview(
+                                                  channel: widget.channel));
+                                        } else {
+                                          return Container();
+                                        }
+                                      }),
+                                ])
+                                : Column(
+                                verticalDirection: VerticalDirection.up,
+                                children: [
+                                  // reversed direction because of verticalDirection: VerticalDirection.up
+                                  chatPanelFooter,
+
+                                  Expanded(
+                                      child: DiscoWidget(
+                                          isEnabled: widget.isDiscoModeEnabled,
+                                          child: ChatPanelWidget(
+                                              channel: widget.channel))),
+
+                                  Expanded(
+                                    child: Consumer<LayoutModel>(
+                                        builder: (context, layoutModel, child) {
+                                          if (layoutModel.isShowNotifications) {
+                                            return ResizableWidget(
+                                                resizable: !layoutModel.locked,
+                                                height: layoutModel.panelHeight,
+                                                width: layoutModel.panelWidth,
+                                                onResizeHeight: (height) {
+                                                  layoutModel.panelHeight = height;
+                                                },
+                                                onResizeWidth: (width) {
+                                                  layoutModel.panelWidth = width;
+                                                },
+                                                child:
+                                                const ActivityFeedPanelWidget());
+                                          } else if (layoutModel.isShowPreview) {
+                                            return AspectRatio(
+                                                aspectRatio: 16 / 9,
+                                                child: StreamPreview(
+                                                    channel: widget.channel));
+                                          } else {
+                                            return Container();
+                                          }
+                                        }),
+                                  ),
+                                ]);
+                          }
+                      );
+                    });
                   } else {
                     // landscape
                     return Row(children: [

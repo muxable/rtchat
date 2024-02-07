@@ -158,25 +158,28 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
       case _AutocompleteMode.mention:
         final username = text.split(" ").last.substring(1);
         return Consumer<MessagesModel>(builder: (context, model, child) {
-          return Row(
-            children: model.authors
-                .where((element) => element.login
-                    .toLowerCase()
-                    .contains(username.toLowerCase()))
-                .map((viewer) {
-              return TextButton(
-                child: Text("@$viewer"),
-                onPressed: () {
-                  widget.controller.text = "${text.substring(
-                    0,
-                    text.length - username.length - 1,
-                  )}@$viewer ";
-                  // move cursor position
-                  widget.controller.selection = TextSelection.fromPosition(
-                      TextPosition(offset: widget.controller.text.length));
-                },
-              );
-            }).toList(),
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: model.authors
+                  .where((element) => element.login
+                      .toLowerCase()
+                      .contains(username.toLowerCase()))
+                  .map((viewer) {
+                return TextButton(
+                  child: Text("@$viewer"),
+                  onPressed: () {
+                    widget.controller.text = "${text.substring(
+                      0,
+                      text.length - username.length - 1,
+                    )}@$viewer ";
+                    // move cursor position
+                    widget.controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: widget.controller.text.length));
+                  },
+                );
+              }).toList(),
+            ),
           );
         });
     }
