@@ -165,8 +165,16 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   late StreamingSharedPreferences streamPrefs;
-  String ttsChannel = '';
-  bool isTtsActive = false;
+
+  String? _ttsChannel;
+  String? get ttsChannel => _ttsChannel;
+  set ttsChannel(String? value) {
+    _ttsChannel = value;
+  }
+
+  bool get isTtsActive =>
+      _ttsChannel?.isNotEmpty != false && _ttsChannel != "{}";
+
   StreamSubscription<String>? _prefsSubscription;
   @override
   void initState() {
@@ -193,8 +201,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void updateTtsChannelState(String value) {
     setState(() {
-      ttsChannel = value;
-      isTtsActive = value.isNotEmpty && value != "{}";
+      _ttsChannel = value;
     });
   }
 
@@ -282,6 +289,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               streamPrefs.setString('tts_channel',
                                   userModel.activeChannel.toString());
                             });
+                            debugPrint("Starting the service");
                           }
 
                           if (isTtsActive) {
