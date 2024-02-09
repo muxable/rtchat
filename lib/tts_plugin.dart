@@ -77,6 +77,7 @@ class TTSQueue {
     queue.clear();
     try {
       await TextToSpeechPlugin.stopSpeaking();
+      await TextToSpeechPlugin.clear();
     } catch (e) {
       // handle the error;
     }
