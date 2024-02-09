@@ -324,7 +324,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     return Consumer<LayoutModel>(
                         builder: (context, layoutModel, child) {
                       return Column(
-
                           verticalDirection: VerticalDirection.up,
                           children: [
                             // reversed direction because of verticalDirection: VerticalDirection.up
