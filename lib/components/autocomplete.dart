@@ -88,7 +88,6 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
           builder: (context, snapshot) {
             final lastToken = text.split(" ").last;
             if (!snapshot.hasData || lastToken.isEmpty) {
-
               return Container();
             }
             return Row(
@@ -107,8 +106,9 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
                           text.length - lastToken.length,
                         )}${emote.code} ";
                         // move cursor position
-                        widget.controller.selection = TextSelection.fromPosition(
-                            TextPosition(offset: widget.controller.text.length));
+                        widget.controller.selection =
+                            TextSelection.fromPosition(TextPosition(
+                                offset: widget.controller.text.length));
                       },
                       splashRadius: 24,
                       icon: Image(image: ResilientNetworkImage(emote.uri))),
