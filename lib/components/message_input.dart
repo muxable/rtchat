@@ -144,7 +144,10 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
         // render pending sends
         ..._pendingSend.map((e) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
@@ -152,10 +155,12 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                   Text(e, style: const TextStyle(fontStyle: FontStyle.italic)),
             )),
         if (_isKeyboardVisible)
-          AutocompleteWidget(
-            controller: _textEditingController,
-            onSend: sendMessage,
-            channel: widget.channel,
+          Flexible(
+            child: AutocompleteWidget(
+              controller: _textEditingController,
+              onSend: sendMessage,
+              channel: widget.channel,
+            ),
           ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -163,7 +168,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             decoration: BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(24)),
                 color: Theme.of(context).inputDecorationTheme.fillColor),
-            child: Row(children: [
+            child: Row(
+                children: [
               Expanded(
                 child: TextField(
                   focusNode: _chatInputFocusNode,
