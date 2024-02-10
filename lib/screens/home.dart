@@ -1,4 +1,3 @@
-// import 'dart:isolate';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -23,7 +22,6 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-// import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
 import 'package:awesome_notifications/awesome_notifications.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -244,16 +242,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ttsModel.enabled = !ttsModel.enabled;
 
                         if (!ttsModel.enabled) {
-                          FlutterBackgroundService().invoke('stopTts', {
-                            "toggle": false,
+                          FlutterBackgroundService().invoke('setTtsChannel', {
+                            "channel": null,
                           });
 
                           AwesomeNotifications().dismiss(6853027);
                         }
 
                         if (ttsModel.enabled) {
-                          FlutterBackgroundService().invoke("startTts", {
-                            "toggle": true,
+                          FlutterBackgroundService().invoke("setTtsChannel", {
                             "channel": userModel.activeChannel?.toJson(),
                           });
                           AwesomeNotifications().createNotification(
