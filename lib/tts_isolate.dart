@@ -9,6 +9,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:rtchat/tts_plugin.dart';
 
 final ttsQueue = TTSQueue();
+final DateTime ttsTimeStampListener = DateTime.now();
 StreamSubscription? messagesSubscription;
 StreamSubscription? channelSubscription;
 
@@ -61,7 +62,7 @@ void onStart(ServiceInstance service) async {
         await ttsQueue.clear();
         messagesSubscription?.cancel();
       } else {
-        var channelData = args["channel"];
+        final channelData = args["channel"];
         var ttsCurrentChannel =
             "${channelData['provider']}:${channelData['channelId']}";
         messagesSubscription?.cancel();
@@ -69,17 +70,15 @@ void onStart(ServiceInstance service) async {
             .collection('channels')
             .doc(ttsCurrentChannel)
             .collection('messages')
+            .where('timestamp', isGreaterThan: ttsTimeStampListener)
             .orderBy('timestamp', descending: true)
             .limit(1)
             .snapshots()
             .listen((latestMessage) async {
           if (latestMessage.docs.isNotEmpty) {
-            final timestamp = latestMessage.docs[0]['timestamp'];
-            final userId = latestMessage.docs[0]['author']["userId"];
-            final uniqueId = '$timestamp-$userId';
             final textToSpeak = latestMessage.docs[0]['message'] as String?;
             if (textToSpeak != null) {
-              await ttsQueue.speak(uniqueId, textToSpeak);
+              await ttsQueue.speak(latestMessage.docs[0].id, textToSpeak);
             }
           }
         });
