@@ -1,11 +1,9 @@
-// import 'dart:isolate';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
@@ -24,9 +22,7 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-// import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:rtchat/tts_plugin.dart';
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
@@ -245,21 +241,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         // Toggle the enabled state
                         ttsModel.enabled = !ttsModel.enabled;
 
-                        final streamPrefs =
-                            await StreamingSharedPreferences.instance;
-
                         if (!ttsModel.enabled) {
-                          await TextToSpeechPlugin.clear();
-                          await streamPrefs.remove('tts_channel');
+                          FlutterBackgroundService().invoke('setTtsChannel', {
+                            "channel": null,
+                          });
+
                           AwesomeNotifications().dismiss(6853027);
                         }
 
-                        streamPrefs.setString(
-                            "tts_channel", '${userModel.activeChannel}');
-
                         if (ttsModel.enabled) {
-                          FlutterBackgroundService().invoke('setAsForeground');
-                          FlutterBackgroundService().invoke("startTts");
+                          FlutterBackgroundService().invoke("setTtsChannel", {
+                            "channel": userModel.activeChannel?.toJson(),
+                          });
                           AwesomeNotifications().createNotification(
                             content: NotificationContent(
                               id: 6853027,
