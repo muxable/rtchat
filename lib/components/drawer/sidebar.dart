@@ -41,55 +41,55 @@ class _DrawerHeader extends StatelessWidget {
                       Expanded(
                         child: Consumer<UserModel>(
                             builder: (context, model, child) {
-                          final userChannel = model.userChannel;
-                          return InkWell(
-                            borderRadius: BorderRadius.circular(10.0),
-                            onTap: () {
-                              if (model.activeChannel != userChannel) {
-                                model.activeChannel = userChannel;
-                              }
-                              Navigator.of(context).pop();
-                            },
-                            child: Row(children: [
-                              if (userChannel != null)
-                                const SizedBox(width: 16),
-                              if (userChannel != null)
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(24),
-                                  child: CrossFadeImage(
-                                      placeholder: userChannel
-                                          .profilePicture.placeholderImage,
-                                      image: userChannel.profilePicture,
-                                      height: 36,
-                                      width: 36),
-                                ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                        userChannel?.displayName ??
-                                            AppLocalizations.of(context)!
-                                                .notSignedIn,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge
-                                            ?.copyWith(color: Colors.white)),
-                                    const SizedBox(height: 8),
-                                    Text("twitch.tv",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(color: Colors.white)),
-                                  ],
-                                ),
-                              ),
-                            ]),
-                          );
-                        }),
+                              final userChannel = model.userChannel;
+                              return InkWell(
+                                borderRadius: BorderRadius.circular(10.0),
+                                onTap: () {
+                                  if (model.activeChannel != userChannel) {
+                                    model.activeChannel = userChannel;
+                                  }
+                                  Navigator.of(context).pop();
+                                },
+                                child: Row(children: [
+                                  if (userChannel != null)
+                                    const SizedBox(width: 16),
+                                  if (userChannel != null)
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(24),
+                                      child: CrossFadeImage(
+                                          placeholder: userChannel
+                                              .profilePicture.placeholderImage,
+                                          image: userChannel.profilePicture,
+                                          height: 36,
+                                          width: 36),
+                                    ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                            userChannel?.displayName ??
+                                                AppLocalizations.of(context)!
+                                                    .notSignedIn,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyLarge
+                                                ?.copyWith(color: Colors.white)),
+                                        const SizedBox(height: 8),
+                                        Text("twitch.tv",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.copyWith(color: Colors.white)),
+                                      ],
+                                    ),
+                                  ),
+                                ]),
+                              );
+                            }),
                       ),
                       VerticalDivider(
                         width: 4,
@@ -115,11 +115,11 @@ class _DrawerHeader extends StatelessWidget {
                                       return Container(
                                           width: double.infinity,
                                           padding:
-                                              const EdgeInsets.only(top: 20),
+                                          const EdgeInsets.only(top: 20),
                                           decoration: BoxDecoration(
                                               gradient: qrModel.currentGradient,
                                               borderRadius:
-                                                  const BorderRadius.vertical(
+                                              const BorderRadius.vertical(
                                                 top: Radius.circular(25.0),
                                               )),
                                           child: const QRDisplay());
@@ -163,17 +163,17 @@ class _DrawerHeader extends StatelessWidget {
                                         model.activeChannel = channel;
                                       },
                                       onRaid: userChannel ==
-                                                  model.activeChannel &&
-                                              userChannel != null
+                                          model.activeChannel &&
+                                          userChannel != null
                                           ? (channel) {
-                                              final activeChannel =
-                                                  model.activeChannel;
-                                              if (activeChannel == null) {
-                                                return;
-                                              }
-                                              ActionsAdapter.instance
-                                                  .raid(activeChannel, channel);
-                                            }
+                                        final activeChannel =
+                                            model.activeChannel;
+                                        if (activeChannel == null) {
+                                          return;
+                                        }
+                                        ActionsAdapter.instance
+                                            .raid(activeChannel, channel);
+                                      }
                                           : null,
                                       controller: controller,
                                     );
@@ -222,7 +222,7 @@ class _SidebarState extends State<Sidebar> {
             leading: const Icon(Icons.thunderstorm),
             title: Text(AppLocalizations.of(context)!.enableRainMode),
             subtitle:
-                Text(AppLocalizations.of(context)!.enableRainModeSubtitle),
+            Text(AppLocalizations.of(context)!.enableRainModeSubtitle),
             onTap: () async {
               layoutModel.locked = !layoutModel.locked;
               Navigator.pop(context);
@@ -277,7 +277,7 @@ class _SidebarState extends State<Sidebar> {
                   expand: false,
                   builder: (context, controller) {
                     final model =
-                        Provider.of<UserModel>(context, listen: false);
+                    Provider.of<UserModel>(context, listen: false);
                     final userChannel = model.userChannel;
                     return ChannelSearchBottomSheetWidget(
                       isRaid: true,
@@ -285,15 +285,15 @@ class _SidebarState extends State<Sidebar> {
                         model.activeChannel = channel;
                       },
                       onRaid: userChannel == model.activeChannel &&
-                              userChannel != null
+                          userChannel != null
                           ? (channel) {
-                              final activeChannel = model.activeChannel;
-                              if (activeChannel == null) {
-                                return;
-                              }
-                              ActionsAdapter.instance
-                                  .raid(activeChannel, channel);
-                            }
+                        final activeChannel = model.activeChannel;
+                        if (activeChannel == null) {
+                          return;
+                        }
+                        ActionsAdapter.instance
+                            .raid(activeChannel, channel);
+                      }
                           : null,
                       controller: controller,
                     );
@@ -327,7 +327,7 @@ class _SidebarState extends State<Sidebar> {
                 return AlertDialog(
                   title: Text(AppLocalizations.of(context)!.signOut),
                   content:
-                      Text(AppLocalizations.of(context)!.signOutConfirmation),
+                  Text(AppLocalizations.of(context)!.signOutConfirmation),
                   actions: [
                     TextButton(
                       child: Text(AppLocalizations.of(context)!.cancel),

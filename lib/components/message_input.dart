@@ -54,15 +54,15 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     // Subscribe to keyboard visibility changes.
     keyboardSubscription =
         keyboardVisibilityController.onChange.listen((visible) {
-      setState(() {
-        _isKeyboardVisible = visible;
-      });
-    });
+          setState(() {
+            _isKeyboardVisible = visible;
+          });
+        });
 
     ShareChannel()
-      // Register a callback to handle any shared data while app is running
+    // Register a callback to handle any shared data while app is running
       ..onDataReceived = _handleSharedData
-      // Check to see if there is any shared data already via sharing
+    // Check to see if there is any shared data already via sharing
       ..getSharedText().then(_handleSharedData);
   }
 
@@ -96,10 +96,10 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     });
     var done = false;
     await Future.wait([
-      () async {
+          () async {
         try {
           final error =
-              await ActionsAdapter.instance.send(widget.channel, value);
+          await ActionsAdapter.instance.send(widget.channel, value);
           if (error != null) {
             messenger.showSnackBar(SnackBar(
               content: Text(error),
@@ -115,7 +115,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
           _pendingSend.remove(value);
         });
       }(),
-      () async {
+          () async {
         await Future.delayed(const Duration(seconds: 1));
         if (!done) {
           setState(() {
@@ -137,7 +137,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             return;
           }
           _textEditingController.text =
-              "${_textEditingController.text} ${emote.code}";
+          "${_textEditingController.text} ${emote.code}";
         });
   }
 
@@ -148,114 +148,121 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-        // render pending sends
-        ..._pendingSend.map((e) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-              child:
-                  Text(e, style: const TextStyle(fontStyle: FontStyle.italic)),
+            // render pending sends
+            ..._pendingSend.map((e) => Padding(
+              padding:
+              const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+              child: Text(e,
+                  style: const TextStyle(fontStyle: FontStyle.italic)),
             )),
-        if (_isKeyboardVisible)
-          Flexible(
-            child: AutocompleteWidget(
-              controller: _textEditingController,
-              onSend: sendMessage,
-              channel: widget.channel,
-            ),
-          ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Container(
-            decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(24)),
-                color: Theme.of(context).inputDecorationTheme.fillColor),
-            child: Row(
-                children: [
-              Expanded(
-                child: TextField(
-                  focusNode: _chatInputFocusNode,
+            if (_isKeyboardVisible)
+              Flexible(
+                child: AutocompleteWidget(
                   controller: _textEditingController,
-                  textInputAction: TextInputAction.send,
-                  maxLines: 6,
-                  minLines: 1,
-                  textAlignVertical: TextAlignVertical.center,
-                  decoration: InputDecoration(
-                      prefixIcon: Material(
-                        color: Theme.of(context).inputDecorationTheme.fillColor,
-                        borderRadius: BorderRadius.circular(24),
-                        child: IconButton(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            onPressed: () {
-                              if (_isEmotePickerVisible) {
-                                setState(() => _isEmotePickerVisible = false);
-                                _chatInputFocusNode.requestFocus();
-                              } else {
-                                _chatInputFocusNode.unfocus();
-                                setState(() {
-                                  _isEmotePickerVisible = true;
-                                  _emoteIndex =
-                                      Random().nextInt(_emotes.length);
-                                });
-                              }
-                            },
-                            splashRadius: 24,
-                            icon: _isEmotePickerVisible
-                                ? const Icon(Icons.keyboard_rounded)
-                                : ColorFiltered(
+                  onSend: sendMessage,
+                  channel: widget.channel,
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Container(
+                decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(24)),
+                    color: Theme.of(context).inputDecorationTheme.fillColor),
+                child: Row(children: [
+                  Expanded(
+                    child: TextField(
+                      focusNode: _chatInputFocusNode,
+                      controller: _textEditingController,
+                      textInputAction: TextInputAction.send,
+                      maxLines: 6,
+                      minLines: 1,
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: InputDecoration(
+                          prefixIcon: Material(
+                            color: Theme.of(context)
+                                .inputDecorationTheme
+                                .fillColor,
+                            borderRadius: BorderRadius.circular(24),
+                            child: IconButton(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                onPressed: () {
+                                  if (_isEmotePickerVisible) {
+                                    setState(
+                                            () => _isEmotePickerVisible = false);
+                                    _chatInputFocusNode.requestFocus();
+                                  } else {
+                                    _chatInputFocusNode.unfocus();
+                                    setState(() {
+                                      _isEmotePickerVisible = true;
+                                      _emoteIndex =
+                                          Random().nextInt(_emotes.length);
+                                    });
+                                  }
+                                },
+                                splashRadius: 24,
+                                icon: _isEmotePickerVisible
+                                    ? const Icon(Icons.keyboard_rounded)
+                                    : ColorFiltered(
                                     colorFilter: _greyscale,
                                     child: Image(
                                       image: ResilientNetworkImage(
                                           Uri.parse(_emotes[_emoteIndex])),
                                     ))),
-                      ),
-                      suffixIcon: Material(
-                        color: Theme.of(context).inputDecorationTheme.fillColor,
-                        borderRadius: BorderRadius.circular(24),
-                        child: IconButton(
-                          icon: const Icon(Icons.send_rounded),
-                          color: Theme.of(context).colorScheme.primary,
-                          splashRadius: 24,
-                          onPressed: () =>
-                              sendMessage(_textEditingController.text),
-                        ),
-                      ),
-                      border: InputBorder.none,
-                      hintText: () {
-                        final l10n = AppLocalizations.of(context)!;
-                        if (_textSeed < 0.5) {
-                          return l10n.sendAMessage;
-                        } else if (_textSeed < 0.9) {
-                          return l10n.writeSomething;
-                        } else if (_textSeed < 0.99) {
-                          return l10n.speakToTheCrowds;
-                        } else if (_textSeed < 0.999) {
-                          return l10n.shareYourThoughts;
+                          ),
+                          suffixIcon: Material(
+                            color: Theme.of(context)
+                                .inputDecorationTheme
+                                .fillColor,
+                            borderRadius: BorderRadius.circular(24),
+                            child: IconButton(
+                              icon: const Icon(Icons.send_rounded),
+                              color: Theme.of(context).colorScheme.primary,
+                              splashRadius: 24,
+                              onPressed: () =>
+                                  sendMessage(_textEditingController.text),
+                            ),
+                          ),
+                          border: InputBorder.none,
+                          hintText: () {
+                            final l10n = AppLocalizations.of(context)!;
+                            if (_textSeed < 0.5) {
+                              return l10n.sendAMessage;
+                            } else if (_textSeed < 0.9) {
+                              return l10n.writeSomething;
+                            } else if (_textSeed < 0.99) {
+                              return l10n.speakToTheCrowds;
+                            } else if (_textSeed < 0.999) {
+                              return l10n.shareYourThoughts;
+                            }
+                            return l10n.saySomethingYouLittleBitch;
+                          }()),
+                      onChanged: (text) {
+                        final filtered = text.replaceAll('\n', ' ');
+                        if (filtered == text) {
+                          return;
                         }
-                        return l10n.saySomethingYouLittleBitch;
-                      }()),
-                  onChanged: (text) {
-                    final filtered = text.replaceAll('\n', ' ');
-                    if (filtered == text) {
-                      return;
-                    }
-                    setState(() {
-                      _textEditingController.value = TextEditingValue(
-                          text: filtered,
-                          selection: TextSelection.fromPosition(TextPosition(
-                              offset: _textEditingController.text.length)));
-                    });
-                  },
-                  onSubmitted: sendMessage,
-                  onTap: () {
-                    setState(() => _isEmotePickerVisible = false);
-                    _chatInputFocusNode.requestFocus();
-                  },
-                ),
+                        setState(() {
+                          _textEditingController.value = TextEditingValue(
+                              text: filtered,
+                              selection: TextSelection.fromPosition(
+                                  TextPosition(
+                                      offset:
+                                      _textEditingController.text.length)));
+                        });
+                      },
+                      onSubmitted: sendMessage,
+                      onTap: () {
+                        setState(() => _isEmotePickerVisible = false);
+                        _chatInputFocusNode.requestFocus();
+                      },
+                    ),
+                  ),
+                ]),
               ),
-            ]),
-          ),
-        ),
-        _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
-      ]),
+            ),
+            _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
+          ]),
     );
   }
 }
