@@ -54,15 +54,15 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     // Subscribe to keyboard visibility changes.
     keyboardSubscription =
         keyboardVisibilityController.onChange.listen((visible) {
-          setState(() {
-            _isKeyboardVisible = visible;
-          });
-        });
+      setState(() {
+        _isKeyboardVisible = visible;
+      });
+    });
 
     ShareChannel()
-    // Register a callback to handle any shared data while app is running
+      // Register a callback to handle any shared data while app is running
       ..onDataReceived = _handleSharedData
-    // Check to see if there is any shared data already via sharing
+      // Check to see if there is any shared data already via sharing
       ..getSharedText().then(_handleSharedData);
   }
 
@@ -96,10 +96,10 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     });
     var done = false;
     await Future.wait([
-          () async {
+      () async {
         try {
           final error =
-          await ActionsAdapter.instance.send(widget.channel, value);
+              await ActionsAdapter.instance.send(widget.channel, value);
           if (error != null) {
             messenger.showSnackBar(SnackBar(
               content: Text(error),
@@ -115,7 +115,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
           _pendingSend.remove(value);
         });
       }(),
-          () async {
+      () async {
         await Future.delayed(const Duration(seconds: 1));
         if (!done) {
           setState(() {
@@ -137,7 +137,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             return;
           }
           _textEditingController.text =
-          "${_textEditingController.text} ${emote.code}";
+              "${_textEditingController.text} ${emote.code}";
         });
   }
 
@@ -150,11 +150,11 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
           children: [
             // render pending sends
             ..._pendingSend.map((e) => Padding(
-              padding:
-              const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-              child: Text(e,
-                  style: const TextStyle(fontStyle: FontStyle.italic)),
-            )),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                  child: Text(e,
+                      style: const TextStyle(fontStyle: FontStyle.italic)),
+                )),
             if (_isKeyboardVisible)
               Flexible(
                 child: AutocompleteWidget(
@@ -189,7 +189,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                                 onPressed: () {
                                   if (_isEmotePickerVisible) {
                                     setState(
-                                            () => _isEmotePickerVisible = false);
+                                        () => _isEmotePickerVisible = false);
                                     _chatInputFocusNode.requestFocus();
                                   } else {
                                     _chatInputFocusNode.unfocus();
@@ -204,11 +204,11 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                                 icon: _isEmotePickerVisible
                                     ? const Icon(Icons.keyboard_rounded)
                                     : ColorFiltered(
-                                    colorFilter: _greyscale,
-                                    child: Image(
-                                      image: ResilientNetworkImage(
-                                          Uri.parse(_emotes[_emoteIndex])),
-                                    ))),
+                                        colorFilter: _greyscale,
+                                        child: Image(
+                                          image: ResilientNetworkImage(
+                                              Uri.parse(_emotes[_emoteIndex])),
+                                        ))),
                           ),
                           suffixIcon: Material(
                             color: Theme.of(context)
@@ -248,7 +248,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                               selection: TextSelection.fromPosition(
                                   TextPosition(
                                       offset:
-                                      _textEditingController.text.length)));
+                                          _textEditingController.text.length)));
                         });
                       },
                       onSubmitted: sendMessage,

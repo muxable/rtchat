@@ -39,9 +39,9 @@ class AutocompleteWidget extends StatefulWidget {
 
   const AutocompleteWidget(
       {super.key,
-        required this.controller,
-        required this.onSend,
-        required this.channel});
+      required this.controller,
+      required this.onSend,
+      required this.channel});
 
   @override
   State<AutocompleteWidget> createState() => _AutocompleteWidgetState();
@@ -93,8 +93,8 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
             return Row(
               children: (snapshot.data as List<Emote>)
                   .where((emote) => emote.code
-                  .toLowerCase()
-                  .startsWith(lastToken.toLowerCase()))
+                      .toLowerCase()
+                      .startsWith(lastToken.toLowerCase()))
                   .take(MediaQuery.of(context).size.width ~/ 48)
                   .map((emote) {
                 return Expanded(
@@ -125,7 +125,7 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             children: ChatMode.values
                 .where((element) =>
-                element.title.toLowerCase().startsWith(text.toLowerCase()))
+                    element.title.toLowerCase().startsWith(text.toLowerCase()))
                 .map((e) {
               return ListTile(
                 title: Text(e.title),
@@ -147,7 +147,7 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
                   return Wrap(
                     children: model.commandList
                         .where((element) =>
-                        element.command.startsWith(commandPrefix))
+                            element.command.startsWith(commandPrefix))
                         .map((command) {
                       return TextButton(
                         child: Text(command.command),
@@ -166,8 +166,8 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
             child: Row(
               children: model.authors
                   .where((element) => element.login
-                  .toLowerCase()
-                  .contains(username.toLowerCase()))
+                      .toLowerCase()
+                      .contains(username.toLowerCase()))
                   .map((viewer) {
                 return TextButton(
                   child: Text("@$viewer"),
