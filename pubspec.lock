@@ -89,6 +89,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.0"
+  awesome_notifications:
+    dependency: "direct main"
+    description:
+      name: awesome_notifications
+      sha256: "65f730f9c0e73a346039ef746384bcff1773f9f03821b859705a7ab8db977b23"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.2"
   boolean_selector:
     dependency: transitive
     description:
@@ -343,7 +351,7 @@ packages:
     source: hosted
     version: "5.0.5"
   flutter_background_service_android:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_background_service_android
       sha256: "30863ebafd8214b8e76d5e5c9f27887dc5cc303fcf3e89f71534f621fc486782"
@@ -537,10 +545,10 @@ packages:
     dependency: "direct main"
     description:
       name: in_app_purchase
-      sha256: bdda02b5b11b56d5e29c7f0c57c433db3452b0c8ce1c37cbfcf1de52946efd9f
+      sha256: def70fbaa2a274f4d835677459f6f7afc5469de912438f86076e51cbd4cbd5b4
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.11"
+    version: "3.1.13"
   in_app_purchase_android:
     dependency: transitive
     description:
@@ -722,10 +730,10 @@ packages:
     dependency: "direct main"
     description:
       name: path_provider
-      sha256: a1aa8aaa2542a6bc57e381f132af822420216c80d4781f7aa085ca3229208aaa
+      sha256: b27217933eeeba8ff24845c34003b003b2b22151de3c908d0e679e8fe1aa078b
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.1"
+    version: "2.1.2"
   path_provider_android:
     dependency: transitive
     description:
@@ -983,10 +991,10 @@ packages:
     dependency: "direct main"
     description:
       name: url_launcher
-      sha256: e9aa5ea75c84cf46b3db4eea212523591211c3cf2e13099ee4ec147f54201c86
+      sha256: c512655380d241a337521703af62d2c122bf7b77a46ff7dd750092aa9433499c
       url: "https://pub.dev"
     source: hosted
-    version: "6.2.2"
+    version: "6.2.4"
   url_launcher_android:
     dependency: transitive
     description:
@@ -1111,34 +1119,34 @@ packages:
     dependency: "direct main"
     description:
       name: webview_flutter
-      sha256: "42393b4492e629aa3a88618530a4a00de8bb46e50e7b3993fedbfdc5352f0dbf"
+      sha256: d81b68e88cc353e546afb93fb38958e3717282c5ac6e5d3be4a4aef9fc3c1413
       url: "https://pub.dev"
     source: hosted
-    version: "4.4.2"
+    version: "4.5.0"
   webview_flutter_android:
     dependency: "direct main"
     description:
       name: webview_flutter_android
-      sha256: b54c89fe14a6d26a2a46e24880da0441cdd2bf1f6d01a5b3e1d39558feb1de0b
+      sha256: "4ea3c4e1b8ed590162b15b8a61b41b1ef3ff179a314627c16ce40c086d94b8af"
       url: "https://pub.dev"
     source: hosted
-    version: "3.13.1"
+    version: "3.14.0"
   webview_flutter_platform_interface:
     dependency: transitive
     description:
       name: webview_flutter_platform_interface
-      sha256: "68e86162aa8fc646ae859e1585995c096c95fc2476881fa0c4a8d10f56013a5a"
+      sha256: d937581d6e558908d7ae3dc1989c4f87b786891ab47bb9df7de548a151779d8d
       url: "https://pub.dev"
     source: hosted
-    version: "2.8.0"
+    version: "2.10.0"
   webview_flutter_wkwebview:
     dependency: "direct main"
     description:
       name: webview_flutter_wkwebview
-      sha256: eebfabfa8a115b535b52031b8b26f7a4b58ceceab378bc9db8762b0fb46f7b5d
+      sha256: b99ca8d8bae9c6b43d568218691aa537fb0aeae1d7d34eadf112a6aa36d26506
       url: "https://pub.dev"
     source: hosted
-    version: "3.10.0"
+    version: "3.11.0"
   win32:
     dependency: transitive
     description:
@@ -1164,5 +1172,5 @@ packages:
     source: hosted
     version: "1.1.1"
 sdks:
-  dart: ">=3.2.0 <4.0.0"
-  flutter: ">=3.16.0"
+  dart: ">=3.2.3 <4.0.0"
+  flutter: ">=3.16.6"
