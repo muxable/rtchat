@@ -302,6 +302,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                 ]),
             body: Container(
+              height: MediaQuery.of(context).size.height,
               color: Theme.of(context).scaffoldBackgroundColor,
               child: SafeArea(
                 child: Builder(builder: (context) {
