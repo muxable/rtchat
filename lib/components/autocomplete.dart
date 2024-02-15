@@ -97,19 +97,22 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
                       .startsWith(lastToken.toLowerCase()))
                   .take(MediaQuery.of(context).size.width ~/ 48)
                   .map((emote) {
-                return IconButton(
-                    tooltip: emote.code,
-                    onPressed: () {
-                      widget.controller.text = "${text.substring(
-                        0,
-                        text.length - lastToken.length,
-                      )}${emote.code} ";
-                      // move cursor position
-                      widget.controller.selection = TextSelection.fromPosition(
-                          TextPosition(offset: widget.controller.text.length));
-                    },
-                    splashRadius: 24,
-                    icon: Image(image: ResilientNetworkImage(emote.uri)));
+                return Expanded(
+                  child: IconButton(
+                      tooltip: emote.code,
+                      onPressed: () {
+                        widget.controller.text = "${text.substring(
+                          0,
+                          text.length - lastToken.length,
+                        )}${emote.code} ";
+                        // move cursor position
+                        widget.controller.selection =
+                            TextSelection.fromPosition(TextPosition(
+                                offset: widget.controller.text.length));
+                      },
+                      splashRadius: 24,
+                      icon: Image(image: ResilientNetworkImage(emote.uri))),
+                );
               }).toList(),
             );
           },
