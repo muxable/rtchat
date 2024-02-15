@@ -6,10 +6,10 @@ import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
-import 'package:rtchat/models/audio.dart';
+import 'package:rtchat/models/audio.dart'
+import 'package:rtchat/components/scanner_error.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
-
-import '../../components/scanner_error_widget.dart';
+import 'package:rtchat/screens/settings/scanner_settings.dart';
 
 class AudioSourcesScreen extends StatefulWidget {
   const AudioSourcesScreen({super.key});
@@ -190,62 +190,11 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                                                 },
                                               ),
                                               Positioned(
-                                                top: 50,
-                                                left: 0,
-                                                right: 0,
-                                                child: ValueListenableBuilder<
-                                                    TorchState>(
-                                                  valueListenable:
-                                                      _scanController
-                                                          .torchState,
-                                                  builder:
-                                                      (context, value, child) {
-                                                    const Color iconColor =
-                                                        Colors.white;
-
-                                                    Icon? icon;
-
-                                                    switch (value) {
-                                                      case TorchState.on:
-                                                        icon = const Icon(
-                                                          Icons.flash_off,
-                                                          color: iconColor,
-                                                        );
-                                                        break;
-                                                      case TorchState.off:
-                                                        icon = const Icon(
-                                                          Icons.flash_on,
-                                                          color: iconColor,
-                                                        );
-                                                        break;
-                                                    }
-
-                                                    return Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        IconButton(
-                                                          onPressed: () =>
-                                                              Navigator.pop(
-                                                                  ctx),
-                                                          icon: const Icon(
-                                                            Icons.close,
-                                                            color: iconColor,
-                                                          ),
-                                                        ),
-                                                        IconButton(
-                                                            onPressed: () =>
-                                                                _scanController
-                                                                    .toggleTorch(),
-                                                            icon: icon),
-                                                      ],
-                                                    );
-                                                  },
-                                                ),
-                                              ),
+                                                  top: 50,
+                                                  left: 0,
+                                                  right: 0,
+                                                  child: scannerSettings(
+                                                      ctx, _scanController)),
                                             ],
                                           );
                                         },

@@ -3,10 +3,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/scanner_error.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
-
-import '../../components/scanner_error_widget.dart';
 
 class QuickLinksScreen extends StatefulWidget {
   const QuickLinksScreen({super.key});
