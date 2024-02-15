@@ -160,18 +160,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  late StreamingSharedPreferences streamPrefs;
 
-  String? _ttsChannel;
-  String? get ttsChannel => _ttsChannel;
-  set ttsChannel(String? value) {
-    _ttsChannel = value;
-  }
-
-  bool get isTtsActive =>
-      _ttsChannel?.isNotEmpty != false && _ttsChannel != "{}";
-
-  StreamSubscription<String>? _prefsSubscription;
   @override
   void initState() {
     super.initState();
@@ -185,25 +174,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         model.showAudioPermissionDialog(context);
       }
     });
-    initSharedPreference();
-  }
-
-  void initSharedPreference() async {
-    streamPrefs = await StreamingSharedPreferences.instance;
-    _prefsSubscription = streamPrefs
-        .getString('tts_channel', defaultValue: '{}')
-        .listen(updateTtsChannelState);
-  }
-
-  void updateTtsChannelState(String value) {
-    setState(() {
-      _ttsChannel = value;
-    });
   }
 
   @override
   void dispose() {
-    _prefsSubscription?.cancel();
     Wakelock.disable();
     super.dispose();
   }
@@ -259,12 +233,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   }),
                   Consumer<TtsModel>(builder: (context, ttsModel, child) {
                     return IconButton(
-                        icon: Icon(isTtsActive
-                            ? Icons.record_voice_over
-                            : Icons.voice_over_off),
-                        tooltip: AppLocalizations.of(context)!.textToSpeech,
-                        onPressed: () async {
-                          // Toggle the enabled state
+                      icon: Icon(ttsModel.enabled
+                          ? Icons.record_voice_over
+                          : Icons.voice_over_off),
+                      tooltip: AppLocalizations.of(context)!.textToSpeech,
+                      onPressed: () async {
+                        // Toggle the enabled state
+                        ttsModel.enabled = !ttsModel.enabled;
 
                         if (!ttsModel.enabled) {
                           FlutterBackgroundService().invoke('setTtsChannel', {
@@ -302,7 +277,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                 ]),
             body: Container(
-              height: MediaQuery.of(context).size.height,
               color: Theme.of(context).scaffoldBackgroundColor,
               child: SafeArea(
                 child: Builder(builder: (context) {
@@ -339,43 +313,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   );
                   if (orientation == Orientation.portrait) {
-                    return LayoutBuilder(builder: (context, constraints) {
-                      return Column(
-                          // this allows the column to overflow upwards.
-                          verticalDirection: VerticalDirection.up,
-                          children: [
-                            // reversed direction because of verticalDirection: VerticalDirection.up
-                            chatPanelFooter,
-                            Expanded(
-                                child: DiscoWidget(
-                                    isEnabled: widget.isDiscoModeEnabled,
-                                    child: ChatPanelWidget(
-                                        channel: widget.channel))),
-                            Consumer<LayoutModel>(
-                                builder: (context, layoutModel, child) {
-                              if (layoutModel.isShowNotifications) {
-                                return ResizableWidget(
-                                    resizable: !layoutModel.locked,
-                                    height: layoutModel.panelHeight,
-                                    width: layoutModel.panelWidth,
-                                    onResizeHeight: (height) {
-                                      layoutModel.panelHeight = height;
-                                    },
-                                    onResizeWidth: (width) {
-                                      layoutModel.panelWidth = width;
-                                    },
-                                    child: const ActivityFeedPanelWidget());
-                              } else if (layoutModel.isShowPreview) {
-                                return AspectRatio(
-                                    aspectRatio: 16 / 9,
-                                    child:
-                                        StreamPreview(channel: widget.channel));
-                              } else {
-                                return Container();
-                              }
-                            }),
-                          ]);
-                    });
+                    return Column(
+                        // this allows the column to overflow upwards.
+                        verticalDirection: VerticalDirection.up,
+                        children: [
+                          // reversed direction because of verticalDirection: VerticalDirection.up
+                          chatPanelFooter,
+                          Expanded(
+                              child: DiscoWidget(
+                                  isEnabled: widget.isDiscoModeEnabled,
+                                  child: ChatPanelWidget(
+                                      channel: widget.channel))),
+                          Consumer<LayoutModel>(
+                              builder: (context, layoutModel, child) {
+                            if (layoutModel.isShowNotifications) {
+                              return ResizableWidget(
+                                  resizable: !layoutModel.locked,
+                                  height: layoutModel.panelHeight,
+                                  width: layoutModel.panelWidth,
+                                  onResizeHeight: (height) {
+                                    layoutModel.panelHeight = height;
+                                  },
+                                  onResizeWidth: (width) {
+                                    layoutModel.panelWidth = width;
+                                  },
+                                  child: const ActivityFeedPanelWidget());
+                            } else if (layoutModel.isShowPreview) {
+                              return AspectRatio(
+                                  aspectRatio: 16 / 9,
+                                  child:
+                                      StreamPreview(channel: widget.channel));
+                            } else {
+                              return Container();
+                            }
+                          }),
+                        ]);
                   } else {
                     // landscape
                     return Row(children: [
