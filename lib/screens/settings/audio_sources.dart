@@ -43,23 +43,20 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
 
   void add() async {
     if (_formKey.currentState!.validate()) {
-      // fetch the title for the page.
       final url = _textEditingController.text;
       final metadata = await MetadataFetch.extract(url);
 
       if (!mounted) return;
-      final localContext = context;
-      final model = Provider.of<AudioModel>(localContext, listen: false);
+      final model = Provider.of<AudioModel>(context, listen: false);
       if (!await AudioChannel.hasPermission()) {
-        if (mounted) {
-          await model.showAudioPermissionDialog(context);
-        }
+        if (!mounted) return;
+        await model.showAudioPermissionDialog(context);
       }
       await model
           .addSource(AudioSource(metadata?.title, Uri.parse(url), false));
 
-      _textEditingController.clear();
       if (!mounted) return;
+      _textEditingController.clear();
       FocusScope.of(context).unfocus();
     }
   }
