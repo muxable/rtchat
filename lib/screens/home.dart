@@ -160,19 +160,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   void initState() {
     super.initState();
     Wakelock.enable();
-    final localContext = context;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final model = Provider.of<AudioModel>(localContext, listen: false);
+      if (!mounted) return;
+      final model = Provider.of<AudioModel>(context, listen: false);
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
       if (mounted) {
-        model.showAudioPermissionDialog(localContext);
+        model.showAudioPermissionDialog(context);
       }
     });
   }
