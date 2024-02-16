@@ -249,11 +249,10 @@ class _SidebarState extends State<Sidebar> {
           leading: const Icon(Icons.cached_outlined),
           title: Text(AppLocalizations.of(context)!.refreshAudioSources),
           onTap: () async {
-            final localContext = context;
             final count = await audioModel.refreshAllSources();
             if (!mounted) return;
-            ScaffoldMessenger.of(localContext).showSnackBar(SnackBar(
-                content: Text(AppLocalizations.of(localContext)!
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(AppLocalizations.of(context)!
                     .refreshAudioSourcesCount(count))));
           },
         );
@@ -323,25 +322,25 @@ class _SidebarState extends State<Sidebar> {
           iconColor: Colors.redAccent,
           title: Text(AppLocalizations.of(context)!.signOut),
           onTap: () async {
-            final localContext = context;
             await showDialog(
-              context: localContext,
-              builder: (context) {
+              context: context,
+              builder: (BuildContext dialogContext) {
                 return AlertDialog(
-                  title: Text(AppLocalizations.of(context)!.signOut),
-                  content:
-                      Text(AppLocalizations.of(context)!.signOutConfirmation),
+                  title: Text(AppLocalizations.of(dialogContext)!.signOut),
+                  content: Text(
+                      AppLocalizations.of(dialogContext)!.signOutConfirmation),
                   actions: [
                     TextButton(
-                      child: Text(AppLocalizations.of(context)!.cancel),
+                      child: Text(AppLocalizations.of(dialogContext)!.cancel),
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        Navigator.of(dialogContext).pop();
                       },
                     ),
                     TextButton(
-                      child: Text(AppLocalizations.of(context)!.signOut),
+                      child: Text(AppLocalizations.of(dialogContext)!.signOut),
                       onPressed: () async {
-                        await Provider.of<UserModel>(context, listen: false)
+                        await Provider.of<UserModel>(dialogContext,
+                                listen: false)
                             .signOut();
                         if (!mounted) return;
                         Navigator.of(context).pop();
