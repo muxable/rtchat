@@ -56,7 +56,7 @@ import 'package:rtchat/screens/settings/tts/languages.dart';
 import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
-import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
+import 'package:rtchat/tts_isolate.dart' as tts_isolate;
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 void main() async {
@@ -64,7 +64,7 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
-  ttsIsolate.initializeService();
+  tts_isolate.initializeService();
 
   AwesomeNotifications().initialize(
     "resource://drawable/notification_icon",

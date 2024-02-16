@@ -48,9 +48,10 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
       final metadata = await MetadataFetch.extract(url);
 
       if (!mounted) return;
-      final model = Provider.of<AudioModel>(context, listen: false);
+      final localContext = context;
+      final model = Provider.of<AudioModel>(localContext, listen: false);
       if (!await AudioChannel.hasPermission()) {
-        if (context.mounted) {
+        if (mounted) {
           await model.showAudioPermissionDialog(context);
         }
       }

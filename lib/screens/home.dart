@@ -165,13 +165,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     Wakelock.enable();
+    final localContext = context;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final model = Provider.of<AudioModel>(context, listen: false);
+      final model = Provider.of<AudioModel>(localContext, listen: false);
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
-      if (context.mounted) {
-        model.showAudioPermissionDialog(context);
+      if (mounted) {
+        model.showAudioPermissionDialog(localContext);
       }
     });
   }

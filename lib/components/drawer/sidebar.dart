@@ -240,6 +240,7 @@ class _SidebarState extends State<Sidebar> {
           },
         );
       }),
+
       Consumer<AudioModel>(builder: (context, audioModel, child) {
         if (audioModel.sources.isEmpty) {
           return Container();
@@ -248,10 +249,11 @@ class _SidebarState extends State<Sidebar> {
           leading: const Icon(Icons.cached_outlined),
           title: Text(AppLocalizations.of(context)!.refreshAudioSources),
           onTap: () async {
+            final localContext = context;
             final count = await audioModel.refreshAllSources();
             if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(AppLocalizations.of(context)!
+            ScaffoldMessenger.of(localContext).showSnackBar(SnackBar(
+                content: Text(AppLocalizations.of(localContext)!
                     .refreshAudioSourcesCount(count))));
           },
         );
@@ -321,8 +323,9 @@ class _SidebarState extends State<Sidebar> {
           iconColor: Colors.redAccent,
           title: Text(AppLocalizations.of(context)!.signOut),
           onTap: () async {
+            final localContext = context;
             await showDialog(
-              context: context,
+              context: localContext,
               builder: (context) {
                 return AlertDialog(
                   title: Text(AppLocalizations.of(context)!.signOut),
@@ -341,7 +344,7 @@ class _SidebarState extends State<Sidebar> {
                         await Provider.of<UserModel>(context, listen: false)
                             .signOut();
                         if (!mounted) return;
-                        Navigator.of(context).pop();
+                        Navigator.of(localContext).pop();
                       },
                     ),
                   ],
