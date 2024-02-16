@@ -199,8 +199,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                                         top: 50,
                                         left: 0,
                                         right: 0,
-                                        child:
-                                        scannerSettings(context, _scanController),
+                                        child: scannerSettings(
+                                            context, _scanController),
                                       ),
                                     ],
                                   );
