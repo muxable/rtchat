@@ -344,7 +344,7 @@ class _SidebarState extends State<Sidebar> {
                         await Provider.of<UserModel>(context, listen: false)
                             .signOut();
                         if (!mounted) return;
-                        Navigator.of(localContext).pop();
+                        Navigator.of(context).pop();
                       },
                     ),
                   ],
