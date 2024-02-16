@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/scanner_error.dart';
+import 'package:rtchat/screens/settings/scanner_settings.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
@@ -199,53 +200,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                                         left: 0,
                                         right: 0,
                                         child:
-                                            ValueListenableBuilder<TorchState>(
-                                          valueListenable:
-                                              _scanController.torchState,
-                                          builder: (context, value, child) {
-                                            const Color iconColor =
-                                                Colors.white;
-
-                                            Icon? icon;
-
-                                            switch (value) {
-                                              case TorchState.on:
-                                                icon = const Icon(
-                                                  Icons.flash_off,
-                                                  color: iconColor,
-                                                );
-                                                break;
-                                              case TorchState.off:
-                                                icon = const Icon(
-                                                  Icons.flash_on,
-                                                  color: iconColor,
-                                                );
-                                                break;
-                                            }
-
-                                            return Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                IconButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(ctx),
-                                                  icon: const Icon(
-                                                    Icons.close,
-                                                    color: iconColor,
-                                                  ),
-                                                ),
-                                                IconButton(
-                                                    onPressed: () =>
-                                                        _scanController
-                                                            .toggleTorch(),
-                                                    icon: icon),
-                                              ],
-                                            );
-                                          },
-                                        ),
+                                        scannerSettings(context, _scanController),
                                       ),
                                     ],
                                   );
