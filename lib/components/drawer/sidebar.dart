@@ -249,9 +249,10 @@ class _SidebarState extends State<Sidebar> {
           leading: const Icon(Icons.cached_outlined),
           title: Text(AppLocalizations.of(context)!.refreshAudioSources),
           onTap: () async {
+            final scaffoldMessenger = ScaffoldMessenger.of(context);
             final count = await audioModel.refreshAllSources();
             if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            scaffoldMessenger.showSnackBar(SnackBar(
                 content: Text(AppLocalizations.of(context)!
                     .refreshAudioSourcesCount(count))));
           },
@@ -339,11 +340,12 @@ class _SidebarState extends State<Sidebar> {
                     TextButton(
                       child: Text(AppLocalizations.of(dialogContext)!.signOut),
                       onPressed: () async {
+                        final navigator = Navigator.of(context);
                         await Provider.of<UserModel>(dialogContext,
                                 listen: false)
                             .signOut();
                         if (!mounted) return;
-                        Navigator.of(context).pop();
+                        navigator.pop();
                       },
                     ),
                   ],
