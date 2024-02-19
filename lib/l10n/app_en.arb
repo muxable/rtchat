@@ -574,5 +574,9 @@
   "durationTwoWeeksTimeoutPrompt": "Timeout for 2 weeks",
   "@durationTwoWeeksTimeoutPrompt": {
     "descriptionTimeoutPrompt": "Button label to timeout for a two week duration"
+  },
+  "errorFetchingViewerList": "Error: we couldn't fetch the viewer list for this channel",
+  "@errorFetchingViewerList": {
+      "descriptionErrorFetchingViewerList": "Error message if unable to fetch list"
   }
 }

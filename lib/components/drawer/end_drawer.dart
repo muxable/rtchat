@@ -20,6 +20,7 @@ class EndDrawerWidget extends StatefulWidget {
 class EndDrawerWidgetState extends State<EndDrawerWidget> {
   String _search = "";
   Viewers? _viewers;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -32,18 +33,34 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
       final viewers = await ChatStateAdapter.instance
           .getViewers(channelId: widget.channel.toString());
       if (!mounted) return;
-      setState(() => _viewers = viewers);
+      setState(() {
+        _viewers = viewers;
+        _isLoading = false;
+      });
     } catch (e) {
       widget.onError(e.toString());
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      _showTemporaryError();
     }
+  }
+
+  void _showTemporaryError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.errorFetchingViewerList),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Check if viewers data is available and build UI accordingly
-    if (_viewers == null) {
-      // Show loading or empty state
+    if (_isLoading) {
       return const CircularProgressIndicator();
+    } else if (_viewers == null) {
+      return const SizedBox();
     }
 
     final filtered = _viewers!.query(_search);
