@@ -64,25 +64,28 @@ class _DrawerHeader extends StatelessWidget {
                                       width: 36),
                                 ),
                               const SizedBox(width: 16),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                      userChannel?.displayName ??
-                                          AppLocalizations.of(context)!
-                                              .notSignedIn,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge
-                                          ?.copyWith(color: Colors.white)),
-                                  const SizedBox(height: 8),
-                                  Text("twitch.tv",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(color: Colors.white)),
-                                ],
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        userChannel?.displayName ??
+                                            AppLocalizations.of(context)!
+                                                .notSignedIn,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(color: Colors.white)),
+                                    const SizedBox(height: 8),
+                                    Text("twitch.tv",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(color: Colors.white)),
+                                  ],
+                                ),
                               ),
                             ]),
                           );
@@ -226,6 +229,7 @@ class _SidebarState extends State<Sidebar> {
             },
           );
         }
+
         return ListTile(
           leading: const Icon(Icons.thunderstorm),
           title: Text(AppLocalizations.of(context)!.disableRainMode),
@@ -252,6 +256,55 @@ class _SidebarState extends State<Sidebar> {
           },
         );
       }),
+
+      //raid
+      Consumer<UserModel>(builder: (context, model, child) {
+        return ListTile(
+          leading: const Icon(Icons.connect_without_contact),
+          title: Text(AppLocalizations.of(context)!.raidAChannel),
+          onTap: () {
+            Navigator.of(context).pop();
+            showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              builder: (context) {
+                return DraggableScrollableSheet(
+                  initialChildSize: 0.8,
+                  maxChildSize: 0.9,
+                  expand: false,
+                  builder: (context, controller) {
+                    final model =
+                        Provider.of<UserModel>(context, listen: false);
+                    final userChannel = model.userChannel;
+                    return ChannelSearchBottomSheetWidget(
+                      isRaid: true,
+                      onChannelSelect: (channel) {
+                        model.activeChannel = channel;
+                      },
+                      onRaid: userChannel == model.activeChannel &&
+                              userChannel != null
+                          ? (channel) {
+                              final activeChannel = model.activeChannel;
+                              if (activeChannel == null) {
+                                return;
+                              }
+                              ActionsAdapter.instance
+                                  .raid(activeChannel, channel);
+                            }
+                          : null,
+                      controller: controller,
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      }),
+
       ListTile(
         leading: const Icon(Icons.build_outlined),
         title: Text(AppLocalizations.of(context)!.settings),
