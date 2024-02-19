@@ -31,6 +31,7 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
     try {
       final viewers = await ChatStateAdapter.instance
           .getViewers(channelId: widget.channel.toString());
+      if (!mounted) return;
       setState(() => _viewers = viewers);
     } catch (e) {
       widget.onError(e.toString());
