@@ -3,6 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 class ScannerSettings extends StatelessWidget {
   const ScannerSettings({super.key, required this.scanController});
+
   final MobileScannerController scanController;
 
   @override
@@ -12,22 +13,6 @@ class ScannerSettings extends StatelessWidget {
       builder: (context, value, child) {
         const Color iconColor = Colors.white;
 
-        Icon? icon;
-
-        switch (value) {
-          case TorchState.on:
-            icon = const Icon(
-              Icons.flash_off,
-              color: iconColor,
-            );
-            break;
-          case TorchState.off:
-            icon = const Icon(
-              Icons.flash_on,
-              color: iconColor,
-            );
-            break;
-        }
 
         return Row(
           mainAxisSize: MainAxisSize.max,
@@ -41,7 +26,12 @@ class ScannerSettings extends StatelessWidget {
               ),
             ),
             IconButton(
-                onPressed: () => scanController.toggleTorch(), icon: icon),
+              onPressed: () => scanController.toggleTorch(),
+              icon: Icon(
+                value == TorchState.on ? Icons.flash_off : Icons.flash_on,
+                color: iconColor,
+              ),
+            ),
           ],
         );
       },
