@@ -5,6 +5,7 @@ import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/scanner_error.dart';
+import 'package:rtchat/components/scanner_settings.dart';
 import 'package:rtchat/models/adapters/donations.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/urls.dart';
@@ -131,54 +132,12 @@ class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
                                     },
                                   ),
                                   Positioned(
-                                    top: 50,
-                                    left: 0,
-                                    right: 0,
-                                    child: ValueListenableBuilder<TorchState>(
-                                      valueListenable:
-                                          _scanController.torchState,
-                                      builder: (context, value, child) {
-                                        const Color iconColor = Colors.white;
-
-                                        Icon? icon;
-
-                                        switch (value) {
-                                          case TorchState.on:
-                                            icon = const Icon(
-                                              Icons.flash_off,
-                                              color: iconColor,
-                                            );
-                                            break;
-                                          case TorchState.off:
-                                            icon = const Icon(
-                                              Icons.flash_on,
-                                              color: iconColor,
-                                            );
-                                            break;
-                                        }
-
-                                        return Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            IconButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(ctx),
-                                              icon: const Icon(
-                                                Icons.close,
-                                                color: iconColor,
-                                              ),
-                                            ),
-                                            IconButton(
-                                                onPressed: () => _scanController
-                                                    .toggleTorch(),
-                                                icon: icon),
-                                          ],
-                                        );
-                                      },
-                                    ),
-                                  ),
+                                      top: 50,
+                                      left: 0,
+                                      right: 0,
+                                      child: ScannerSettings(
+                                        scanController: _scanController,
+                                      )),
                                 ],
                               );
                             },
