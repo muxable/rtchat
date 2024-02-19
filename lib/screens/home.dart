@@ -195,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             endDrawer: userModel.isSignedIn()
                 ? EndDrawerWidget(
                     channel: widget.channel,
-                    onError: (String errorMessage) {
+                    onError: (errorMessage) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text('Error: $errorMessage'),
                         duration: const Duration(seconds: 5),
