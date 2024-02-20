@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:collection';
-
 import 'package:flutter/services.dart';
 
 class TextToSpeechPlugin {
-  static const MethodChannel channel = MethodChannel('tts_plugin');
+  static const MethodChannel channel = MethodChannel('ttsPlugin');
 
   static Future<void> speak(String text) async {
     try {
@@ -46,25 +45,22 @@ class TTSQueue {
   final queue = Queue<({String id, String text, Completer<void> completer})>();
 
   bool get isEmpty => queue.isEmpty;
-
   int get length => queue.length;
-
   bool get readUserName => queue.length <= 10;
 
   Future<void> speak(String id, String text) async {
     final completer = Completer<void>();
     final element = (id: id, text: text, completer: completer);
-
+    await TextToSpeechPlugin.speak(text);
     if (queue.isNotEmpty) {
       if (queue.length > 20) {
         // Disable TTS and read a specific message
         queue.clear();
+        await clear();
         await TextToSpeechPlugin.speak(
             "There are too many messages. TTS Disabled");
-
         return;
       }
-
       final previous = queue.last;
       queue.addLast(element);
       await previous.completer.future;
@@ -72,13 +68,11 @@ class TTSQueue {
         throw Exception('Message was deleted');
       }
       await TextToSpeechPlugin.speak(text);
-      completer.complete();
     } else {
       queue.addLast(element);
       await TextToSpeechPlugin.speak(text);
-      completer.complete();
     }
-    queue.remove(element);
+    completer.complete();
   }
 
   void delete(String id) {
