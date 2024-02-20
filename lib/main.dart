@@ -62,7 +62,6 @@ import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // const MethodChannel _ = MethodChannel('tts_plugin');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
   tts_isolate.initializeService();
