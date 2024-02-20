@@ -56,12 +56,13 @@ import 'package:rtchat/screens/settings/tts/languages.dart';
 import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
+// import 'package:rtchat/tts_plugin.dart';
 import 'package:rtchat/tts_isolate.dart' as tts_isolate;
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  // const MethodChannel _ = MethodChannel('tts_plugin');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
   tts_isolate.initializeService();
