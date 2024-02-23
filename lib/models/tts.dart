@@ -315,47 +315,6 @@ class TtsModel extends ChangeNotifier {
 
     _activeMessage = model;
 
-    // if ((_isEnabled || model is SystemMessageModel) &&
-    //     _pending.contains(model.messageId)) {
-    //   // TODO: replace with subscription logic
-    //   if (!_isCloudTtsEnabled) {
-    //     try {
-    //       await _tts.setSpeechRate(_speed);
-    //       await _tts.setPitch(_pitch);
-    //       await _tts.awaitSpeakCompletion(true);
-    //       await _tts.speak(vocalization);
-    //     } catch (e, st) {
-    //       FirebaseCrashlytics.instance.recordError(e, st);
-    //     }
-    //   } else {
-    //     String? voice;
-    //     double? pitch;
-    //     if (model is TwitchMessageModel) {
-    //       if (isRandomVoiceEnabled) {
-    //         final name = model.author.displayName;
-    //         final hash = BigInt.parse(
-    //             sha1.convert(utf8.encode(name!)).toString(),
-    //             radix: 16);
-    //         voice = voices[hash.remainder(BigInt.from(voices.length)).toInt()];
-    //         pitch = hash.remainder(BigInt.from(21)).toInt() / 5 - 2;
-    //       } else {
-    //         voice = _voice[_language.languageCode];
-    //         pitch = _pitch * 4 - 2;
-    //       }
-    //     }
-    //     final response =
-    //         await FirebaseFunctions.instance.httpsCallable("synthesize")({
-    //       "voice": voice ?? "en-US-WaveNet-F",
-    //       "text": vocalization,
-    //       "rate": _speed * 1.5 + 0.5,
-    //       "pitch": pitch ?? 0,
-    //     });
-    //     final bytes = const Base64Decoder().convert(response.data);
-    //     await audioPlayer.setAudioSource(BytesAudioSource(bytes));
-    //     await audioPlayer.play();
-    //     await Future.delayed(audioPlayer.duration ?? const Duration());
-    //   }
-    // }
 
     _activeMessage = null;
 
