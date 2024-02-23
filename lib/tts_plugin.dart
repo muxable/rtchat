@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:collection';
 import 'package:flutter/services.dart';
 
+import 'package:rtchat/main.dart';
+
 class TextToSpeechPlugin {
   static const MethodChannel channel = MethodChannel('ttsPlugin');
 
@@ -42,58 +44,61 @@ class TextToSpeechPlugin {
 }
 
 class TTSQueue {
-  final queue = Queue<({String id, String text, Completer<void> completer})>();
+  final Queue<TTSQueueElement> queue = Queue<TTSQueueElement>();
 
   bool get isEmpty => queue.isEmpty;
   int get length => queue.length;
-  bool get readUserName => queue.length <= 10;
 
   Future<void> speak(String id, String text) async {
     final completer = Completer<void>();
-    final element = (id: id, text: text, completer: completer);
-    await TextToSpeechPlugin.speak(text);
-    if (queue.isNotEmpty) {
-      if (queue.length > 20) {
-        // Disable TTS and read a specific message
-        queue.clear();
-        await clear();
-        await TextToSpeechPlugin.speak(
-            "There are too many messages. TTS Disabled");
-        return;
-      }
-      final previous = queue.last;
-      queue.addLast(element);
-      await previous.completer.future;
-      if (queue.firstOrNull != element) {
-        throw Exception('Message was deleted');
-      }
-      await TextToSpeechPlugin.speak(text);
-    } else {
-      queue.addLast(element);
-      await TextToSpeechPlugin.speak(text);
+    final element = TTSQueueElement(id: id, text: text, completer: completer);
+
+    if (queue.length >= 20 && !readUserName) {
+      queue.clear();
+      await clear();
+      updateChannelSubscription("");
+      await TextToSpeechPlugin.speak(
+          "There are too many messages. Text to speech disabled");
+      return;
     }
-    completer.complete();
+
+    queue.addLast(element);
+
+    if (queue.length == 1) {
+      await _processQueue();
+    }
+  }
+
+  bool get readUserName => queue.length < 10;
+
+  Future<void> _processQueue() async {
+    while (queue.isNotEmpty) {
+      final element = queue.first;
+      await TextToSpeechPlugin.speak(element.text);
+      element.completer.complete();
+      queue.removeFirst();
+    }
   }
 
   void delete(String id) {
-    queue.removeWhere((speak) => speak.id == id);
+    queue.removeWhere((element) => element.id == id);
   }
 
   Future<void> clear() async {
+    await TextToSpeechPlugin.clear();
     queue.clear();
-    try {
-      await TextToSpeechPlugin.stopSpeaking();
-      await TextToSpeechPlugin.clear();
-    } catch (e) {
-      // handle the error;
-    }
   }
 
-  ({String id, String text})? peek() {
-    final first = queue.firstOrNull;
-    if (first != null) {
-      return (id: first.id, text: first.text);
-    }
-    return null;
+  TTSQueueElement? peek() {
+    return queue.isNotEmpty ? queue.first : null;
   }
+}
+
+class TTSQueueElement {
+  final String id;
+  final String text;
+  final Completer<void> completer;
+
+  TTSQueueElement(
+      {required this.id, required this.text, required this.completer});
 }
