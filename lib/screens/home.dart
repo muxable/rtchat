@@ -253,13 +253,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         if (!ttsModel.enabled) {
                           updateChannelSubscription("");
                           await TextToSpeechPlugin.speak(
-                              "Disabled text to speech");
+                              "Text to speech disabled");
                           AwesomeNotifications().dismiss(6853027);
-                        }
-
-                        if (ttsModel.enabled) {
+                        } else {
                           await TextToSpeechPlugin.speak(
-                              "Enabled text to speech");
+                              "Text to speech enabled");
                           updateChannelSubscription(
                               "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
                           AwesomeNotifications().createNotification(
