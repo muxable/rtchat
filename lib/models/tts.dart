@@ -1,32 +1,21 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:crypto/crypto.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
-import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/user.dart';
 
 class TtsModel extends ChangeNotifier {
   var _isCloudTtsEnabled = false;
-  final _tts = FlutterTts()
-    ..setSharedInstance(true)
-    ..setIosAudioCategory(
-        IosTextToSpeechAudioCategory.playback,
-        [IosTextToSpeechAudioCategoryOptions.mixWithOthers],
-        IosTextToSpeechAudioMode.voicePrompt);
 
   final audioPlayer = AudioPlayer();
   Future<void> _previousUtterance = Future.value();
@@ -44,7 +33,7 @@ class TtsModel extends ChangeNotifier {
   var _isEnabled = false;
   final Set<TwitchUserModel> _mutedUsers = {};
   // this is used to ignore messages in the past.
-  var _lastMessageTime = DateTime.now();
+  // var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
   final bool _useNewTTs = kDebugMode;
 
@@ -148,9 +137,6 @@ class TtsModel extends ChangeNotifier {
       return;
     }
     _isEnabled = value;
-    if (value) {
-      _lastMessageTime = DateTime.now();
-    }
     say(
         SystemMessageModel(
             text: "Text to speech ${value ? "enabled" : "disabled"}"),
@@ -314,7 +300,6 @@ class TtsModel extends ChangeNotifier {
     await previous;
 
     _activeMessage = model;
-
 
     _activeMessage = null;
 
