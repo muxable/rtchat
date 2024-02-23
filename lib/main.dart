@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -56,15 +57,24 @@ import 'package:rtchat/screens/settings/tts/languages.dart';
 import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
-// import 'package:rtchat/tts_plugin.dart';
 import 'package:rtchat/tts_isolate.dart' as tts_isolate;
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
+
+void updateChannelSubscription(String? data) {
+  if (data != null) {
+    channelStreamController.add(data);
+  }
+}
+
+StreamController<String> channelStreamController =
+    StreamController<String>.broadcast();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
-  tts_isolate.initializeService();
+  await tts_isolate.isolateMain(
+      ReceivePort().sendPort, channelStreamController);
 
   AwesomeNotifications().initialize(
     "resource://drawable/notification_icon",
