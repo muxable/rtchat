@@ -290,12 +290,6 @@ class TtsModel extends ChangeNotifier {
     }
 
     // make sure the message is in the future.
-    // if (model is SystemMessageModel) {
-    //   if (model.timestamp.isBefore(_lastMessageTime)) {
-    //     return;
-    //   }
-    //   _lastMessageTime = model.timestamp;
-    // }
 
     final activeMessage = _activeMessage;
     var includeAuthorPrelude = true;
