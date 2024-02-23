@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock/wakelock.dart';
@@ -16,12 +15,14 @@ import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
+import 'package:rtchat/main.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/tts_plugin.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -249,19 +250,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       onPressed: () async {
                         // Toggle the enabled state
                         ttsModel.enabled = !ttsModel.enabled;
-
                         if (!ttsModel.enabled) {
-                          FlutterBackgroundService().invoke('setTtsChannel', {
-                            "channel": null,
-                          });
-
+                          updateChannelSubscription("");
+                          await TextToSpeechPlugin.speak(
+                              "Disabled text to speech");
                           AwesomeNotifications().dismiss(6853027);
                         }
 
                         if (ttsModel.enabled) {
-                          FlutterBackgroundService().invoke("setTtsChannel", {
-                            "channel": userModel.activeChannel?.toJson(),
-                          });
+                          await TextToSpeechPlugin.speak(
+                              "Enabled text to speech");
+                          updateChannelSubscription(
+                              "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
                           AwesomeNotifications().createNotification(
                             content: NotificationContent(
                               id: 6853027,
