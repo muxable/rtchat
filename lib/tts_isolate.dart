@@ -25,7 +25,6 @@ Future<void> isolateMain(
       await ttsQueue.clear();
       messagesSubscription?.cancel();
     } else {
-      debugPrint("CURRENT TWITCH CHANNEL $currentChannel");
       messagesSubscription?.cancel();
       messagesSubscription = FirebaseFirestore.instance
           .collection('channels')
