@@ -21,7 +21,6 @@ Future<void> isolateMain(
 
   // Listen for changes to the stream
   channelSubscription = channelStream.stream.listen((currentChannel) async {
-    debugPrint("VALUE HERE $currentChannel");
     if (currentChannel.isEmpty) {
       await ttsQueue.clear();
       messagesSubscription?.cancel();
