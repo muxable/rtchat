@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:awesome_notifications/awesome_notifications.dart';
+// import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -64,22 +64,22 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
-  ttsIsolate.initializeService();
+  // ttsIsolate.initializeService();
 
-  AwesomeNotifications().initialize(
-    "resource://drawable/notification_icon",
-    [
-      NotificationChannel(
-        channelKey: 'tts_notifications_key',
-        channelName: 'tts_notifications_channel',
-        channelDescription: 'Channel to handle tts notifications',
-        defaultColor: const Color(0xFF9D50DD),
-        ledColor: Colors.white,
-        enableVibration: false,
-        enableLights: false,
-      )
-    ],
-  );
+  // AwesomeNotifications().initialize(
+  //   "resource://drawable/notification_icon",
+  //   [
+  //     NotificationChannel(
+  //       channelKey: 'tts_notifications_key',
+  //       channelName: 'tts_notifications_channel',
+  //       channelDescription: 'Channel to handle tts notifications',
+  //       defaultColor: const Color(0xFF9D50DD),
+  //       ledColor: Colors.white,
+  //       enableVibration: false,
+  //       enableLights: false,
+  //     )
+  //   ],
+  // );
 
   final prefs = await StreamingSharedPreferences.instance;
 

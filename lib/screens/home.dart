@@ -22,7 +22,7 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:awesome_notifications/awesome_notifications.dart';
+// import 'package:awesome_notifications/awesome_notifications.dart';
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
@@ -254,23 +254,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             "channel": null,
                           });
 
-                          AwesomeNotifications().dismiss(6853027);
+                          // AwesomeNotifications().dismiss(6853027);
                         }
 
                         if (ttsModel.enabled) {
                           FlutterBackgroundService().invoke("setTtsChannel", {
                             "channel": userModel.activeChannel?.toJson(),
                           });
-                          AwesomeNotifications().createNotification(
-                            content: NotificationContent(
-                              id: 6853027,
-                              channelKey: 'tts_notifications_key',
-                              title: 'Text-to-speech is enabled',
-                              body: null,
-                              locked: true,
-                              autoDismissible: false,
-                            ),
-                          );
+                          // AwesomeNotifications().createNotification(
+                          //   content: NotificationContent(
+                          //     id: 6853027,
+                          //     channelKey: 'tts_notifications_key',
+                          //     title: 'Text-to-speech is enabled',
+                          //     body: null,
+                          //     locked: true,
+                          //     autoDismissible: false,
+                          //   ),
+                          // );
                         }
                       },
                     );
