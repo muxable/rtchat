@@ -81,15 +81,6 @@ class TTSQueue {
 
   bool get readUserName => queue.length < 10;
 
-  Future<void> _processQueue() async {
-    while (queue.isNotEmpty) {
-      final element = queue.first;
-      await TextToSpeechPlugin.speak(element.text);
-      element.completer.complete();
-      queue.removeFirst();
-    }
-  }
-
   void delete(String id) {
     if (queue.isNotEmpty && queue.first.id != id) {
       queue.removeWhere((element) => element.id == id);
