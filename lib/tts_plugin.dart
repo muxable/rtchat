@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:collection';
 import 'package:flutter/services.dart';
 
-import 'package:rtchat/main.dart';
-
 class TextToSpeechPlugin {
   static const MethodChannel channel = MethodChannel('ttsPlugin');
 
@@ -53,20 +51,21 @@ class TTSQueue {
     final completer = Completer<void>();
     final element = TTSQueueElement(id: id, text: text, completer: completer);
 
-    if (queue.length >= 20 && !readUserName) {
-      queue.clear();
-      await clear();
-      updateChannelSubscription("");
-      await TextToSpeechPlugin.speak(
-          "There are too many messages. Text to speech disabled");
-      return;
+    if (queue.isNotEmpty) {
+      final previous = queue.last;
+      queue.addLast(element);
+      await previous.completer.future;
+      if (queue.firstOrNull != element) {
+        throw Exception('Message was deleted');
+      }
+      await TextToSpeechPlugin.speak(text);
+      completer.complete();
+    } else {
+      queue.addLast(element);
+      await TextToSpeechPlugin.speak(text);
+      completer.complete();
     }
-
-    queue.addLast(element);
-
-    if (queue.length == 1) {
-      await _processQueue();
-    }
+    queue.remove(element);
   }
 
   bool get readUserName => queue.length < 10;
@@ -81,7 +80,9 @@ class TTSQueue {
   }
 
   void delete(String id) {
-    queue.removeWhere((element) => element.id == id);
+    if (queue.isNotEmpty && queue.first.id != id) {
+      queue.removeWhere((element) => element.id == id);
+    }
   }
 
   Future<void> clear() async {

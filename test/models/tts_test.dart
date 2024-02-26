@@ -55,14 +55,12 @@ void main() {
     expect(calls, equals(1));
   });
 
-  test('Delete doesn\'t delete oof the front of the queue', () async {
+  test('Delete doesn\'t delete element if at the front of the queue', () async {
     final future1 = ttsQueue.speak('1', 'First message');
     final future2 = ttsQueue.speak('2', 'Second message');
-
     ttsQueue.delete('1');
-
-    expect(ttsQueue.length, equals(1));
-    expect(ttsQueue.peek()!.id, equals('2'));
+    expect(ttsQueue.length, equals(2));
+    expect(ttsQueue.peek()!.id, equals('1'));
     await future1;
     await future2;
   });
