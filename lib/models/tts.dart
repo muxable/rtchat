@@ -32,8 +32,6 @@ class TtsModel extends ChangeNotifier {
   var _pitch = 1.0;
   var _isEnabled = false;
   final Set<TwitchUserModel> _mutedUsers = {};
-  // this is used to ignore messages in the past.
-  // var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
   final bool _useNewTTs = kDebugMode;
 
