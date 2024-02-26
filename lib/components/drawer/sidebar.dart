@@ -325,24 +325,23 @@ class _SidebarState extends State<Sidebar> {
           onTap: () async {
             await showDialog(
               context: context,
-              builder: (BuildContext dialogContext) {
+              builder: (context) {
                 return AlertDialog(
-                  title: Text(AppLocalizations.of(dialogContext)!.signOut),
-                  content: Text(
-                      AppLocalizations.of(dialogContext)!.signOutConfirmation),
+                  title: Text(AppLocalizations.of(context)!.signOut),
+                  content:
+                      Text(AppLocalizations.of(context)!.signOutConfirmation),
                   actions: [
                     TextButton(
-                      child: Text(AppLocalizations.of(dialogContext)!.cancel),
+                      child: Text(AppLocalizations.of(context)!.cancel),
                       onPressed: () {
-                        Navigator.of(dialogContext).pop();
+                        Navigator.of(context).pop();
                       },
                     ),
                     TextButton(
-                      child: Text(AppLocalizations.of(dialogContext)!.signOut),
+                      child: Text(AppLocalizations.of(context)!.signOut),
                       onPressed: () async {
                         final navigator = Navigator.of(context);
-                        await Provider.of<UserModel>(dialogContext,
-                                listen: false)
+                        await Provider.of<UserModel>(context, listen: false)
                             .signOut();
                         if (!mounted) return;
                         navigator.pop();
