@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:collection';
 import 'package:flutter/services.dart';
 
+import 'package:rtchat/main.dart';
+
 class TextToSpeechPlugin {
   static const MethodChannel channel = MethodChannel('ttsPlugin');
 
@@ -50,6 +52,15 @@ class TTSQueue {
   Future<void> speak(String id, String text) async {
     final completer = Completer<void>();
     final element = TTSQueueElement(id: id, text: text, completer: completer);
+
+    if (queue.length >= 20 && !readUserName) {
+      queue.clear();
+      await clear();
+      updateChannelSubscription("");
+      await TextToSpeechPlugin.speak(
+          "There are too many messages. Text to speech disabled");
+      return;
+    }
 
     if (queue.isNotEmpty) {
       final previous = queue.last;
