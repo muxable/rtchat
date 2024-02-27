@@ -78,8 +78,8 @@ class MainActivity : FlutterActivity() {
 
         ttsChannel.setMethodCallHandler(ttsPlugin)
         MethodChannel(
-                flutterEngine.dartExecutor.binaryMessenger,
-                "com.rtirl.chat/audio"
+            flutterEngine.dartExecutor.binaryMessenger,
+            "com.rtirl.chat/share"
         ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "set" -> {
