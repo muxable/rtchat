@@ -79,7 +79,7 @@ class MainActivity : FlutterActivity() {
         ttsChannel.setMethodCallHandler(ttsPlugin)
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
-            "com.rtirl.chat/share"
+            "com.rtirl.chat/audio"
         ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "set" -> {
@@ -127,8 +127,8 @@ class MainActivity : FlutterActivity() {
         }
 
         MethodChannel(
-                flutterEngine.dartExecutor.binaryMessenger,
-                "com.rtirl.chat/share"
+            flutterEngine.dartExecutor.binaryMessenger,
+            "com.rtirl.chat/share"
         ).setMethodCallHandler { call, result ->
             if (call.method == "getSharedData") {
                 result.success(sharedData)
