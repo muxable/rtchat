@@ -277,7 +277,6 @@ class TtsModel extends ChangeNotifier {
     if (!enabled && !force) {
       return;
     }
-    // we have to manage our own queue here because queueing is not supported on ios.
 
     if (model is TwitchMessageModel) {
       if (_mutedUsers.any((user) =>

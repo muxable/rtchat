@@ -49,20 +49,10 @@ class TTSQueue {
 
   int get length => queue.length;
 
-  bool get readUserName => queue.length <= 10;
-
   Future<void> speak(String id, String text) async {
     final completer = Completer<void>();
     final element = (id: id, text: text, completer: completer);
     if (queue.isNotEmpty) {
-      if (queue.length > 20) {
-        // Disable TTS and read a specific message
-        queue.clear();
-        await TextToSpeechPlugin.speak(
-            "There are too many messages. TTS Disabled");
-        return;
-      }
-
       final previous = queue.last;
       queue.addLast(element);
       await previous.completer.future;

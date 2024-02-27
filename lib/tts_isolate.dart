@@ -1,14 +1,12 @@
-import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'package:rtchat/tts_plugin.dart';
@@ -20,42 +18,21 @@ void isolateMain(SendPort sendPort) {
 }
 
 void initializeService() async {
+  debugPrint('initializeService called');
+
   final service = FlutterBackgroundService();
 
   // this will be used as notification channel id
   const notificationChannelId = 'my_foreground';
 
-// this will be used for notification id, So you can update your custom notification with this id.
+  // this will be used for notification id, So you can update your custom notification with this id.
   const notificationId = 888;
-
-  const AndroidNotificationChannel channel = AndroidNotificationChannel(
-    notificationChannelId, // id
-    'MY FOREGROUND SERVICE', // title
-    description:
-        'This channel is used for important notifications.', // description
-    importance: Importance.low, // importance must be at low or higher level
-  );
-
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-
-  await flutterLocalNotificationsPlugin.initialize(
-      const InitializationSettings(
-        android: AndroidInitializationSettings('notification_icon'),
-      ),
-      onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
-      onDidReceiveNotificationResponse: backgroundHandler);
-
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
 
   await service.configure(
     androidConfiguration: AndroidConfiguration(
         onStart: onStart,
         autoStart: true,
-        isForegroundMode: true,
+        isForegroundMode: false,
         notificationChannelId: notificationChannelId,
         foregroundServiceNotificationId: notificationId),
     iosConfiguration: IosConfiguration(
@@ -74,55 +51,17 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 }
 
 @pragma('vm:entry-point')
-void notificationTapBackground(NotificationResponse notificationResponse) {
-  // ignore: avoid_print
-  print('notification(${notificationResponse.id}) action tapped: '
-      '${notificationResponse.actionId} with'
-      ' payload: ${notificationResponse.payload}');
-  if (notificationResponse.input?.isNotEmpty ?? false) {
-    // ignore: avoid_print
-    print(
-        'notification action tapped with input: ${notificationResponse.input}');
-  }
-
-  if (notificationResponse.actionId == "DISABLE_TTS") {
-    resetTTS();
-    FlutterBackgroundService().invoke('setAsBackground');
-  }
-}
-
-@pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  debugPrint('onStart called');
 
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) async {
       service.setAsForegroundService();
-
       // Setting up the notification at the very beginning
-      await flutterLocalNotificationsPlugin.show(
-          888,
-          'Text-to-Speech is enabled',
-          '',
-          const NotificationDetails(
-            android: AndroidNotificationDetails(
-                'my_foreground', 'MY FOREGROUND SERVICE',
-                icon: 'notification_icon',
-                ongoing: false,
-                actions: <AndroidNotificationAction>[
-                  AndroidNotificationAction(
-                    "DISABLE_TTS",
-                    'Disable TTS',
-                    icon: DrawableResourceAndroidBitmap('voiceover'),
-                    contextual: true,
-                  ),
-                ]),
-          ));
     });
 
     service.on('setAsBackground').listen((event) {
@@ -131,13 +70,26 @@ void onStart(ServiceInstance service) async {
   }
 
   // Handle other service events
-  service.on('stopService').listen((event) {
-    // print("Stopping this service right now");
+  service.on('stopTts').listen((event) {
     TextToSpeechPlugin.stopSpeaking();
+
+    try {
+      const platform = MethodChannel('tts_notifications');
+      platform.invokeMethod('dismissNotification');
+    } catch (e) {
+      debugPrint("Error during notification processing: $e");
+    }
   });
 
   service.on('startTts').listen((event) async {
     await Isolate.spawn(isolateMain, ReceivePort().sendPort);
+
+    try {
+      const platform = MethodChannel('tts_notifications');
+      await platform.invokeMethod('showNotification');
+    } on PlatformException catch (e) {
+      debugPrint("Error during notification processing: $e");
+    }
   });
 
   final prefs = await StreamingSharedPreferences.instance;
@@ -162,23 +114,10 @@ void onStart(ServiceInstance service) async {
   debugPrint('FLUTTER BACKGROUND SERVICE: ${DateTime.now()}');
 
   // test using external plugin
-  final deviceInfo = DeviceInfoPlugin();
-  String? device;
-  if (Platform.isAndroid) {
-    final androidInfo = await deviceInfo.androidInfo;
-    device = androidInfo.model;
-  }
-
-  if (Platform.isIOS) {
-    final iosInfo = await deviceInfo.iosInfo;
-    device = iosInfo.model;
-  }
-
   service.invoke(
     'update',
     {
       "current_date": DateTime.now().toIso8601String(),
-      "device": device,
     },
   );
 }
@@ -189,18 +128,10 @@ Future<void> resetTTS() async {
   prefs.setString('tts_channel', '{}');
 }
 
-Future<void> backgroundHandler(NotificationResponse response) async {
-  // Handle background notification
-  debugPrint("Received notification response: ${response.actionId}");
+void vocalizeMessage(Map<String, dynamic>? message) async {
+  debugPrint('vocalizeMessage called');
 
-  if (response.actionId == "DISABLE_TTS") {
-    debugPrint("Disabling TTS");
-    resetTTS();
-    FlutterBackgroundService().invoke('setAsBackground');
-  }
-}
-
-void vocalizeMessage(Map<String, dynamic>? message) {
+  StreamingSharedPreferences prefs = await StreamingSharedPreferences.instance;
   if (message == null) {
     // print("Received a null message");
     return;
@@ -208,13 +139,20 @@ void vocalizeMessage(Map<String, dynamic>? message) {
 
   var textToSpeak = message['text'] as String?;
 
+  var isOnline = message['isOnline'] as bool? ?? false;
+
+  if (!isOnline) {
+    debugPrint("Received a message from an offline user");
+    TextToSpeechPlugin.stopSpeaking();
+    prefs.remove('tts_channel');
+  }
   if (textToSpeak != null) {
     try {
       TextToSpeechPlugin.speak(textToSpeak);
     } catch (e) {
-      // print("Error during TTS processing: $e");
+      debugPrint("Error during tts processing: $e");
     }
   } else {
-    // print("Received a message with null or missing 'text' field");
+    debugPrint("Received a message with null or missing 'text' field");
   }
 }
