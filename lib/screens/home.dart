@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/tts_plugin.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:rtchat/audio_channel.dart';
@@ -19,6 +20,7 @@ import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
+import 'package:rtchat/main.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -172,11 +174,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     Wakelock.enable();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       final model = Provider.of<AudioModel>(context, listen: false);
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
-      if (context.mounted) {
+      if (mounted) {
         model.showAudioPermissionDialog(context);
       }
     });

@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.rtirl.chat.R
@@ -15,6 +16,7 @@ import com.rtirl.chat.R
 class NotificationService : Service() {
 
     private var notificationManager: NotificationManager? = null
+    private lateinit var tts: TextToSpeech
 
     companion object {
         const val CHANNEL_ID = "ForegroundServiceChannel"
@@ -31,6 +33,7 @@ class NotificationService : Service() {
 
         createNotificationChannel()
 
+        tts = TextToSpeech(this) {}
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -39,9 +42,12 @@ class NotificationService : Service() {
             "dismissNotification" -> {
                 val notificationId = intent.getIntExtra("id", 0)
                 dismissNotification(notificationId)
+                if (tts.isSpeaking) {
+                    tts.stop()
+                    Log.d("TTS", "Stopped speaking")
+                }
             }
             else -> {
-                // Your existing code to show the notification...
 
                 val notificationIntent = Intent(this, MainActivity::class.java)
                 val pendingIntent = PendingIntent.getActivity(
@@ -49,12 +55,21 @@ class NotificationService : Service() {
                         0, notificationIntent, 0
                 )
 
+                val disableIntent = Intent(this, NotificationService::class.java).apply {
+                    putExtra("action", "disableTTS")
+                }
+                val disablePendingIntent: PendingIntent =
+                        PendingIntent.getService(this, 0, disableIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT or
+                                        PendingIntent.FLAG_IMMUTABLE)
+                                        
                 val notification = NotificationCompat.Builder(this, CHANNEL_ID)
                         .setContentTitle("Text-to-speech is enabled")
                         .setContentText("")
                         .setSmallIcon(R.drawable.notification_icon)
                         .setContentIntent(pendingIntent)
-                        .build()
+                        .addAction(R.drawable.text_to_speech, "Disable TTS", disablePendingIntent)
+                .build()
 
                 startForeground(NOTIFICATION_ID, notification)
 
@@ -100,7 +115,6 @@ class NotificationService : Service() {
                         "tts_notifications_key",
                         NotificationManager.IMPORTANCE_DEFAULT
                 )
-
 
                 notificationManager?.createNotificationChannel(serviceChannel)
             }

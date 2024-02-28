@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui';
 
@@ -8,13 +9,47 @@ import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
-import 'package:stream_transform/stream_transform.dart';
+
 import 'package:rtchat/tts_plugin.dart';
 
+final DateTime ttsTimeStampListener = DateTime.now();
+StreamSubscription? messagesSubscription;
+StreamSubscription? channelSubscription;
+
 @pragma("vm:entry-point")
-void isolateMain(SendPort sendPort) {
+void isolateMain(
+    SendPort sendPort, StreamController<String> channelStream) async {
   // print("Hello from the isolate");
-  sendPort.send("Isolate message");
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  final ttsQueue = TTSQueue();
+
+  initializeService();
+  // Listen for changes to the stream
+  channelSubscription = channelStream.stream.listen((currentChannel) async {
+    if (currentChannel.isEmpty) {
+      await ttsQueue.clear();
+      messagesSubscription?.cancel();
+    } else {
+      messagesSubscription?.cancel();
+      messagesSubscription = FirebaseFirestore.instance
+          .collection('channels')
+          .doc(currentChannel)
+          .collection('messages')
+          .where('timestamp', isGreaterThan: ttsTimeStampListener)
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .snapshots()
+          .listen((latestMessage) async {
+        if (latestMessage.docs.isNotEmpty) {
+          final textToSpeak = latestMessage.docs[0]['message'] as String?;
+          if (textToSpeak != null) {
+            await ttsQueue.speak(latestMessage.docs[0].id, textToSpeak);
+          }
+        }
+      });
+    }
+  });
 }
 
 void initializeService() async {
@@ -82,8 +117,6 @@ void onStart(ServiceInstance service) async {
   });
 
   service.on('startTts').listen((event) async {
-    await Isolate.spawn(isolateMain, ReceivePort().sendPort);
-
     try {
       const platform = MethodChannel('tts_notifications');
       await platform.invokeMethod('showNotification');
@@ -91,68 +124,10 @@ void onStart(ServiceInstance service) async {
       debugPrint("Error during notification processing: $e");
     }
   });
-
-  final prefs = await StreamingSharedPreferences.instance;
-  prefs.getString('tts_channel', defaultValue: '{}').switchMap((channel) {
-    if (channel.isNotEmpty && channel != "{}") {
-      return FirebaseFirestore.instance
-          .collection('channels')
-          .where('channelId', isEqualTo: channel)
-          .snapshots();
-    } else {
-      return const Stream.empty();
-    }
-  }).listen((snapshot) {
-    for (final change in snapshot.docChanges) {
-      if (change.type == DocumentChangeType.added) {
-        vocalizeMessage(change.doc.data());
-      }
-    }
-  });
-
-  /// you can see this log in logcat
-  debugPrint('FLUTTER BACKGROUND SERVICE: ${DateTime.now()}');
-
-  // test using external plugin
-  service.invoke(
-    'update',
-    {
-      "current_date": DateTime.now().toIso8601String(),
-    },
-  );
 }
 
 Future<void> resetTTS() async {
   TextToSpeechPlugin.stopSpeaking();
   final prefs = await StreamingSharedPreferences.instance;
   prefs.setString('tts_channel', '{}');
-}
-
-void vocalizeMessage(Map<String, dynamic>? message) async {
-  debugPrint('vocalizeMessage called');
-
-  StreamingSharedPreferences prefs = await StreamingSharedPreferences.instance;
-  if (message == null) {
-    // print("Received a null message");
-    return;
-  }
-
-  var textToSpeak = message['text'] as String?;
-
-  var isOnline = message['isOnline'] as bool? ?? false;
-
-  if (!isOnline) {
-    debugPrint("Received a message from an offline user");
-    TextToSpeechPlugin.stopSpeaking();
-    prefs.remove('tts_channel');
-  }
-  if (textToSpeak != null) {
-    try {
-      TextToSpeechPlugin.speak(textToSpeak);
-    } catch (e) {
-      debugPrint("Error during tts processing: $e");
-    }
-  } else {
-    debugPrint("Received a message with null or missing 'text' field");
-  }
 }
