@@ -13,7 +13,6 @@ class ScannerSettings extends StatelessWidget {
       builder: (context, value, child) {
         const Color iconColor = Colors.white;
 
-
         return Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
