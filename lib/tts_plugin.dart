@@ -90,11 +90,6 @@ class TTSQueue {
   Future<void> clear() async {
     await TextToSpeechPlugin.clear();
     queue.clear();
-    try {
-      await TextToSpeechPlugin.stopSpeaking();
-    } catch (e) {
-      // handle the error;
-    }
   }
 
   TTSQueueElement? peek() {

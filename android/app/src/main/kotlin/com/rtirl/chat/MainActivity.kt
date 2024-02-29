@@ -46,7 +46,7 @@ class MainActivity : FlutterActivity() {
         val ttsPlugin = TextToSpeechPlugin(this)
         val ttsChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
-            "tts_plugin"
+            "ttsPlugin"
         )
 
         val notificationChannel = MethodChannel(

@@ -64,25 +64,28 @@ class _DrawerHeader extends StatelessWidget {
                                       width: 36),
                                 ),
                               const SizedBox(width: 16),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                      userChannel?.displayName ??
-                                          AppLocalizations.of(context)!
-                                              .notSignedIn,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge
-                                          ?.copyWith(color: Colors.white)),
-                                  const SizedBox(height: 8),
-                                  Text("twitch.tv",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(color: Colors.white)),
-                                ],
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        userChannel?.displayName ??
+                                            AppLocalizations.of(context)!
+                                                .notSignedIn,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(color: Colors.white)),
+                                    const SizedBox(height: 8),
+                                    Text("twitch.tv",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(color: Colors.white)),
+                                  ],
+                                ),
                               ),
                             ]),
                           );

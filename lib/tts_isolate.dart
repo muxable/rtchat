@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
-
 import 'package:rtchat/tts_plugin.dart';
 
 final DateTime ttsTimeStampListener = DateTime.now();
@@ -85,11 +84,13 @@ Future<bool> onIosBackground(ServiceInstance service) async {
   return true;
 }
 
-@pragma('vm:entry-point')
-void onStart(ServiceInstance service) async {
+@pragma("vm:entry-point")
+Future<void> isolateMain(
+    SendPort sendPort, StreamController<String> channelStream) async {
   DartPluginRegistrant.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  final ttsQueue = TTSQueue();
 
   debugPrint('onStart called');
 

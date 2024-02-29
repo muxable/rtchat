@@ -20,6 +20,7 @@ import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
+import 'package:rtchat/main.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -217,7 +218,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             key: _scaffoldKey,
             drawer: Sidebar(channel: widget.channel),
             endDrawer: userModel.isSignedIn()
-                ? EndDrawerWidget(channel: widget.channel)
+                ? EndDrawerWidget(
+                    channel: widget.channel,
+                    onError: (errorMessage) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('Error: $errorMessage'),
+                        duration: const Duration(seconds: 5),
+                      ));
+                    },
+                  )
                 : null,
             drawerEdgeDragWidth: MediaQuery.of(context).size.width * 0.6,
             onDrawerChanged: (isOpened) =>
@@ -307,6 +316,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                 ]),
             body: Container(
+              height: MediaQuery.of(context).size.height,
               color: Theme.of(context).scaffoldBackgroundColor,
               child: SafeArea(
                 child: Builder(builder: (context) {
