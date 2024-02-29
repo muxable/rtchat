@@ -20,7 +20,6 @@ import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
-import 'package:rtchat/main.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -266,6 +265,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           // Toggle the enabled state
 
                           if (!isTtsActive) {
+                            FlutterBackgroundService().invoke("startTts");
+
+                            setState(() {
+                              streamPrefs.setString('tts_channel',
+                                  userModel.activeChannel.toString());
+                            });
+                          }
+
+                          if (isTtsActive) {
+                            FlutterBackgroundService().invoke('stopTts');
+
+                            FlutterBackgroundService()
+                                .invoke('setAsForeground');
                             FlutterBackgroundService().invoke("startTts");
 
                             setState(() {
