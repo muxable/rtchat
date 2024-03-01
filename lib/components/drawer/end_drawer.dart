@@ -50,7 +50,7 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
   void _showTemporaryError() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppLocalizations.of(context)!.couldNotFetchViewers),
+        content: Text(AppLocalizations.of(context)!.errorFetchingViewerList),
         duration: const Duration(seconds: 5),
       ),
     );
