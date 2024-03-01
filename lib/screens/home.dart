@@ -161,11 +161,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  late StreamingSharedPreferences streamPrefs;
-  String ttsChannel = '';
-  bool isTtsActive = false;
-  StreamSubscription<String>?
-      _prefsSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -180,26 +176,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         model.showAudioPermissionDialog(context);
       }
     });
-    initSharedPreference();
-  }
-
-  void initSharedPreference() async {
-    streamPrefs = await StreamingSharedPreferences.instance;
-    _prefsSubscription = streamPrefs
-        .getString('tts_channel', defaultValue: '{}')
-        .listen(updateTtsChannelState);
-  }
-
-  void updateTtsChannelState(String value) {
-    setState(() {
-      ttsChannel = value;
-      isTtsActive = value.isNotEmpty && value != "{}";
-    });
   }
 
   @override
   void dispose() {
-    _prefsSubscription?.cancel();
     Wakelock.disable();
     super.dispose();
   }
@@ -348,11 +328,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           children: [
                             // reversed direction because of verticalDirection: VerticalDirection.up
                             chatPanelFooter,
+
                             Expanded(
                                 child: DiscoWidget(
                                     isEnabled: widget.isDiscoModeEnabled,
                                     child: ChatPanelWidget(
                                         channel: widget.channel))),
+
                             Consumer<LayoutModel>(
                                 builder: (context, layoutModel, child) {
                               if (layoutModel.isShowNotifications) {
