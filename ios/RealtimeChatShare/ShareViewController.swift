@@ -1,10 +1,3 @@
-//
-//  ShareViewController.swift
-//  RealtimeChatShare
-//
-//  Created by Nemi Shah on 29/02/24.
-//
-
 import UIKit
 
 class ShareViewController: UIViewController {
