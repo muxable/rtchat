@@ -499,6 +499,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                               .newMessageCount(dropped),
                           textAlign: TextAlign.center,
                           maxLines: 1,
+                          style: const TextStyle(color: Colors.white),
                         )),
             ),
           ]);

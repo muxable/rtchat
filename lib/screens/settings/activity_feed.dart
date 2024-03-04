@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+import 'package:rtchat/components/scanner_error.dart';
+import 'package:rtchat/components/scanner_settings.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 enum ActivityFeedType { disabled, standard, custom }
 
@@ -25,7 +27,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   late final WebViewController _controller;
   var _showControls = true;
   final _formKey = GlobalKey<FormState>();
-  final MobileScannerController _scanController = MobileScannerController(
+  MobileScannerController _scanController = MobileScannerController(
     // facing: CameraFacing.back,
     // torchEnabled: false,
     detectionSpeed: DetectionSpeed.noDuplicates,
@@ -151,42 +153,66 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                               final messenger = ScaffoldMessenger.of(context);
 
                               showModalBottomSheet(
+                                isScrollControlled: true,
                                 context: context,
                                 builder: (ctx) {
-                                  return MobileScanner(
-                                    fit: BoxFit.contain,
-                                    controller: _scanController,
-                                    onDetect: (capture) {
-                                      final List<Barcode> barcodes =
-                                          capture.barcodes;
+                                  return Stack(
+                                    children: [
+                                      MobileScanner(
+                                        errorBuilder: (context, error, child) {
+                                          return ScannerErrorWidget(
+                                              error: error);
+                                        },
+                                        controller: _scanController,
+                                        onDetect: (capture) {
+                                          final List<Barcode> barcodes =
+                                              capture.barcodes;
 
-                                      if (barcodes.isEmpty) {
-                                        messenger.showSnackBar(SnackBar(
-                                            content: Text(
-                                                AppLocalizations.of(context)!
-                                                    .invalidUrlErrorText)));
-                                      }
+                                          if (barcodes.isEmpty) {
+                                            messenger.showSnackBar(SnackBar(
+                                                content: Text(
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .invalidUrlErrorText)));
+                                          }
 
-                                      final barcode = barcodes.first;
+                                          final barcode = barcodes.first;
 
-                                      if (barcode.rawValue == null ||
-                                          barcode.rawValue!.isEmpty) {
-                                        messenger.showSnackBar(SnackBar(
-                                            content: Text(
-                                                AppLocalizations.of(context)!
-                                                    .invalidUrlErrorText)));
+                                          if (barcode.rawValue == null ||
+                                              barcode.rawValue!.isEmpty) {
+                                            messenger.showSnackBar(SnackBar(
+                                                content: Text(
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .invalidUrlErrorText)));
 
-                                        Navigator.pop(ctx);
-                                      }
+                                            Navigator.pop(ctx);
+                                          }
 
-                                      _textEditingController.text =
-                                          '${barcode.rawValue}';
+                                          _textEditingController.text =
+                                              '${barcode.rawValue}';
 
-                                      Navigator.pop(ctx);
-                                    },
+                                          Navigator.pop(ctx);
+                                        },
+                                      ),
+                                      Positioned(
+                                        top: 50,
+                                        left: 0,
+                                        right: 0,
+                                        child: ScannerSettings(
+                                            scanController: _scanController),
+                                      ),
+                                    ],
                                   );
                                 },
-                              );
+                              ).then((value) {
+                                _scanController.dispose();
+
+                                //re initialize controller
+                                _scanController = MobileScannerController(
+                                  detectionSpeed: DetectionSpeed.noDuplicates,
+                                );
+                              });
                             },
                           ),
                           errorText:
