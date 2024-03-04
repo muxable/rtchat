@@ -84,13 +84,11 @@ Future<bool> onIosBackground(ServiceInstance service) async {
   return true;
 }
 
-@pragma("vm:entry-point")
-Future<void> isolateMain(
-    SendPort sendPort, StreamController<String> channelStream) async {
+@pragma('vm:entry-point')
+void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  final ttsQueue = TTSQueue();
 
   debugPrint('onStart called');
 
