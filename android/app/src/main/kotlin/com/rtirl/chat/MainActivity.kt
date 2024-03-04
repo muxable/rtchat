@@ -213,7 +213,6 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     }
 
 
-
     private fun dismissTTSNotification() {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(1) // Use the same ID used to show the notification
