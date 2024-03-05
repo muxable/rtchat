@@ -39,17 +39,20 @@ Future<void> isolateMain(
           final message = latestMessage.docs[0];
           if (message.data().containsKey('type')) {
             final type = message['type'] as String?;
-            if (type == "message") {
-              final textToSpeak = message['message'] as String?;
-              if (textToSpeak != null) {
-                await ttsQueue.speak(message.id, textToSpeak);
-              }
-            } else if (type == "stream.offline") {
-              await ttsQueue.clear();
-              await ttsQueue.speak(
-                  message.id, "Stream went offline, disabling text to speech");
-              await ttsQueue.disableTts();
-              messagesSubscription?.cancel();
+            switch (type) {
+              case "message":
+                final textToSpeak = message['message'] as String?;
+                if (textToSpeak != null) {
+                  await ttsQueue.speak(message.id, textToSpeak);
+                }
+                break;
+              case "stream.offline":
+                await ttsQueue.clear();
+                await ttsQueue.speak(message.id,
+                    "Stream went offline, disabling text to speech");
+                await ttsQueue.disableTts();
+                messagesSubscription?.cancel();
+                break;
             }
           }
         }
