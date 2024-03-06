@@ -157,10 +157,6 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     private val context: Context = context
     private val tts: TextToSpeech = TextToSpeechSingleton.getInstance(context)
 
-    companion object {
-        private const val CHANNEL_ID = "tts_channel"
-        private const val NOTIFICATION_ID = 6853027
-    }
 
     companion object {
         private const val CHANNEL_ID = "tts_channel"
