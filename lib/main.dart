@@ -72,8 +72,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
-
-  tts_isolate.isolateMain(ReceivePort().sendPort, channelStreamController);
+  await tts_isolate.isolateMain(
+      ReceivePort().sendPort, channelStreamController);
 
   final prefs = await StreamingSharedPreferences.instance;
 

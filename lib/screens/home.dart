@@ -1,12 +1,8 @@
-import 'dart:async';
-// import 'dart:isolate';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
@@ -19,13 +15,15 @@ import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
+import 'package:rtchat/main.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-// import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
+import 'package:rtchat/notifications_plugin.dart';
+import 'package:rtchat/tts_plugin.dart';
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
@@ -163,10 +161,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  late StreamingSharedPreferences streamPrefs;
-  String ttsChannel = '';
-  bool isTtsActive = false;
-  StreamSubscription<String>? _prefsSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -181,26 +176,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         model.showAudioPermissionDialog(context);
       }
     });
-    initSharedPreference();
-  }
-
-  void initSharedPreference() async {
-    streamPrefs = await StreamingSharedPreferences.instance;
-    _prefsSubscription = streamPrefs
-        .getString('tts_channel', defaultValue: '{}')
-        .listen(updateTtsChannelState);
-  }
-
-  void updateTtsChannelState(String value) {
-    setState(() {
-      ttsChannel = value;
-      isTtsActive = value.isNotEmpty && value != "{}";
-    });
   }
 
   @override
   void dispose() {
-    _prefsSubscription?.cancel();
     Wakelock.disable();
     super.dispose();
   }
@@ -264,45 +243,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   }),
                   Consumer<TtsModel>(builder: (context, ttsModel, child) {
                     return IconButton(
-                        icon: Icon(isTtsActive
-                            ? Icons.record_voice_over
-                            : Icons.voice_over_off),
-                        tooltip: AppLocalizations.of(context)!.textToSpeech,
-                        onPressed: () async {
-                          // Toggle the enabled state
-
-                          if (!isTtsActive) {
-                            FlutterBackgroundService().invoke("startTts");
-
-                            setState(() {
-                              streamPrefs.setString('tts_channel',
-                                  userModel.activeChannel.toString());
-                            });
-                          }
-
-                          if (isTtsActive) {
-                            FlutterBackgroundService().invoke('stopTts');
-
-                            FlutterBackgroundService()
-                                .invoke('setAsForeground');
-                            FlutterBackgroundService().invoke("startTts");
-
-                            setState(() {
-                              streamPrefs.setString('tts_channel',
-                                  userModel.activeChannel.toString());
-                            });
-                          }
-
-                          if (isTtsActive) {
-                            FlutterBackgroundService().invoke('stopTts');
-
-                            debugPrint("Stopping the service");
-
-                            setState(() {
-                              streamPrefs.remove('tts_channel');
-                            });
-                          }
-                        });
+                      icon: Icon(ttsModel.enabled
+                          ? Icons.record_voice_over
+                          : Icons.voice_over_off),
+                      tooltip: AppLocalizations.of(context)!.textToSpeech,
+                      onPressed: () async {
+                        // Toggle the enabled state
+                        ttsModel.enabled = !ttsModel.enabled;
+                        if (!ttsModel.enabled) {
+                          updateChannelSubscription("");
+                          await TextToSpeechPlugin.speak(
+                              "Text to speech disabled");
+                          NotificationsPlugin.dismissNotification();
+                        } else {
+                          await TextToSpeechPlugin.speak(
+                              "Text to speech enabled");
+                          updateChannelSubscription(
+                              "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+                          NotificationsPlugin.showNotification();
+                        }
+                      },
+                    );
                   }),
                   if (userModel.isSignedIn())
                     IconButton(
@@ -351,18 +312,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   );
                   if (orientation == Orientation.portrait) {
-                    return LayoutBuilder(builder: (context, constraints) {
+                    return Consumer<LayoutModel>(
+                        builder: (context, layoutModel, child) {
                       return Column(
-                          // this allows the column to overflow upwards.
                           verticalDirection: VerticalDirection.up,
                           children: [
                             // reversed direction because of verticalDirection: VerticalDirection.up
                             chatPanelFooter,
+
                             Expanded(
                                 child: DiscoWidget(
                                     isEnabled: widget.isDiscoModeEnabled,
                                     child: ChatPanelWidget(
                                         channel: widget.channel))),
+
                             Consumer<LayoutModel>(
                                 builder: (context, layoutModel, child) {
                               if (layoutModel.isShowNotifications) {

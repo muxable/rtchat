@@ -8,117 +8,83 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
-import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.rtirl.chat.DisableTTSReceiver
 import com.rtirl.chat.R
 
 class NotificationService : Service() {
-
-    private var notificationManager: NotificationManager? = null
-    private lateinit var tts: TextToSpeech
-
     companion object {
-        const val CHANNEL_ID = "ForegroundServiceChannel"
+        const val CHANNEL_ID = "NotificationServiceChannel"
         const val NOTIFICATION_ID = 6853027
+        const val CHANNEL_NAME  = "Text-to-Speech Notification"
+        const val CHANNEL_DESCRIPTION = "Text-to-speech is enabled"
     }
 
     override fun onCreate() {
         super.onCreate()
-
-        Log.d("NotificationService", "onCreate called")
-
-
-        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
         createNotificationChannel()
-
-        tts = TextToSpeech(this) {}
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("NotificationService", "onStartCommand called")
         when (intent?.getStringExtra("action")) {
-            "dismissNotification" -> {
-                val notificationId = intent.getIntExtra("id", 0)
-                dismissNotification(notificationId)
-                if (tts.isSpeaking) {
-                    tts.stop()
-                    Log.d("TTS", "Stopped speaking")
-                }
+            "showNotification" -> {
+                showNotification()
             }
-            else -> {
-
-                val notificationIntent = Intent(this, MainActivity::class.java)
-                val pendingIntent = PendingIntent.getActivity(
-                        this,
-                        0, notificationIntent, 0
-                )
-
-                val disableIntent = Intent(this, NotificationService::class.java).apply {
-                    putExtra("action", "disableTTS")
-                }
-                val disablePendingIntent: PendingIntent =
-                        PendingIntent.getService(this, 0, disableIntent,
-                                PendingIntent.FLAG_UPDATE_CURRENT or
-                                        PendingIntent.FLAG_IMMUTABLE)
-                                        
-                val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setContentTitle("Text-to-speech is enabled")
-                        .setContentText("")
-                        .setSmallIcon(R.drawable.notification_icon)
-                        .setContentIntent(pendingIntent)
-                        .addAction(R.drawable.text_to_speech, "Disable TTS", disablePendingIntent)
-                .build()
-
-                startForeground(NOTIFICATION_ID, notification)
-
-                Log.d("NotificationService", "startForeground called")
-
-
-                // Do heavy work on a background thread
-                // stopSelf();
+            "dismissNotification" -> {
+                dismissNotification(NOTIFICATION_ID)
             }
         }
-
-
         return START_NOT_STICKY
     }
 
-    private fun dismissNotification(id: Int) {
-        notificationManager?.cancel(id)
+    private fun showNotification() {
+
+        Log.d("NotificationService", "showNotification called")
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        
+        val disableIntent = Intent(this, DisableTTSReceiver::class.java).apply {
+            action = "com.rtirl.chat.ACTION_DISABLE_TTS"
+        }
+        val disablePendingIntent: PendingIntent =
+            PendingIntent.getBroadcast(this, 0, disableIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        
+        
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Text-to-Speech Notification")
+            .setContentText("Text-to-speech is enabled")
+            .setSmallIcon(R.drawable.notification_icon)
+            .addAction(R.drawable.text_to_speech, "Disable TTS", disablePendingIntent)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+
+    private fun dismissNotification(notificationId: Int) {
+        Log.d("NotificationService", "dismissNotification called")
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(notificationId)
     }
 
     override fun onBind(intent: Intent): IBinder? {
-        // Used only in case of bound services.
+        // This service is not bound to any component
         return null
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        stopForeground(true)
-
-        Log.d("NotificationService", "onDestroy called")
-
-        dismissNotification(NOTIFICATION_ID)
-    }
-
     private fun createNotificationChannel() {
-
-        Log.d("NotificationService", "createNotificationChannel called")
-
-        if(notificationManager?.getNotificationChannel(CHANNEL_ID) == null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val serviceChannel = NotificationChannel(
-                        CHANNEL_ID,
-                        "tts_notifications_key",
-                        NotificationManager.IMPORTANCE_DEFAULT
-                )
-
-                notificationManager?.createNotificationChannel(serviceChannel)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = CHANNEL_NAME
+            val descriptionText = CHANNEL_DESCRIPTION
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
             }
+            // Register the channel with the system
+            val notificationManager: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
-
     }
 }

@@ -58,6 +58,8 @@ class MainActivity : FlutterActivity() {
 
             Log.d("NotificationService", "startForeground called");
 
+            Log.d("Notification called", call.method);
+
            when(call.method) {
                "dismissNotification" -> {
                    val notificationId = NOTIFICATION_ID
@@ -69,6 +71,7 @@ class MainActivity : FlutterActivity() {
                }
                "showNotification" -> {
                    val intent = Intent(this, NotificationService::class.java)
+                   intent.putExtra("action", "showNotification")
                    startService(intent)
                    result.success(true)
                }
@@ -152,7 +155,7 @@ class MainActivity : FlutterActivity() {
 
 class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     private val context: Context = context
-    private val tts: TextToSpeech = TextToSpeech(context) {}
+    private val tts: TextToSpeech = TextToSpeechSingleton.getInstance(context)
 
     companion object {
         private const val CHANNEL_ID = "tts_channel"
@@ -211,6 +214,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, params)
         }
     }
+
 
 
     private fun dismissTTSNotification() {
