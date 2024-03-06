@@ -162,6 +162,10 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
         private const val NOTIFICATION_ID = 6853027
     }
 
+    companion object {
+        private const val CHANNEL_ID = "tts_channel"
+        private const val NOTIFICATION_ID = 6853027
+    }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
 
@@ -194,6 +198,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String) {
                     // Speech has started
+                    showTTSNotification()
                 }
 
                 override fun onDone(utteranceId: String) {
@@ -215,6 +220,29 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
         }
     }
 
+    private fun showTTSNotification() {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val notificationBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setContentTitle("TTS Enabled")
+                .setContentText("Speaking now...")
+                .setSmallIcon(R.drawable.notification_icon) // Ensure you have this icon in your drawable resources
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                    CHANNEL_ID,
+                    "TTS Notifications",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "TTS service notifications"
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
+    }
 
 
     private fun dismissTTSNotification() {

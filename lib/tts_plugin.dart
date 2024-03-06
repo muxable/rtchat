@@ -56,7 +56,7 @@ class TTSQueue {
     if (queue.length >= 20 && !readUserName) {
       queue.clear();
       await clear();
-      updateChannelSubscription("");
+      await disableTts();
       await TextToSpeechPlugin.speak(
           "There are too many messages. Text to speech disabled");
       return;
@@ -94,6 +94,10 @@ class TTSQueue {
 
   TTSQueueElement? peek() {
     return queue.isNotEmpty ? queue.first : null;
+  }
+
+  Future<void> disableTts() async {
+    updateChannelSubscription("");
   }
 }
 
