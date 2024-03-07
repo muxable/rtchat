@@ -22,7 +22,6 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:rtchat/notifications_plugin.dart';
 import 'package:rtchat/tts_plugin.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -255,7 +254,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             updateChannelSubscription("");
                             await TextToSpeechPlugin.speak(
                                 "Text to speech disabled");
-                            AwesomeNotifications().dismiss(6853027);
                           } else {
                             channelStreamController.stream
                                 .listen((currentChannel) {
@@ -269,16 +267,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 "Text to speech enabled");
                             updateChannelSubscription(
                                 "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
-                            AwesomeNotifications().createNotification(
-                              content: NotificationContent(
-                                id: 6853027,
-                                channelKey: 'tts_notifications_key',
-                                title: 'Text-to-speech is enabled',
-                                body: null,
-                                locked: true,
-                                autoDismissible: false,
-                              ),
-                            );
                           }
                         },
                       );
