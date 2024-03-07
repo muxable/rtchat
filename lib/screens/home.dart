@@ -254,6 +254,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             updateChannelSubscription("");
                             await TextToSpeechPlugin.speak(
                                 "Text to speech disabled");
+                            await TextToSpeechPlugin.disableTTS();
                           } else {
                             channelStreamController.stream
                                 .listen((currentChannel) {
