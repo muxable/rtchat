@@ -22,6 +22,7 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/notifications_plugin.dart';
 import 'package:rtchat/tts_plugin.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -239,40 +240,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       },
                     );
                   }),
-                  Consumer<TtsModel>(
-                    builder: (context, ttsModel, child) {
-                      return IconButton(
-                        icon: Icon(ttsModel.enabled
-                            ? Icons.record_voice_over
-                            : Icons.voice_over_off),
-                        tooltip: AppLocalizations.of(context)!.textToSpeech,
-                        onPressed: () async {
-                          setState(() {
-                            ttsModel.enabled = !ttsModel.enabled;
-                          });
-                          if (!ttsModel.enabled) {
-                            updateChannelSubscription("");
-                            await TextToSpeechPlugin.speak(
-                                "Text to speech disabled");
-                            await TextToSpeechPlugin.disableTTS();
-                          } else {
-                            channelStreamController.stream
-                                .listen((currentChannel) {
-                              if (currentChannel.isEmpty) {
-                                setState(() {
-                                  ttsModel.enabled = false;
-                                });
-                              }
-                            });
-                            await TextToSpeechPlugin.speak(
-                                "Text to speech enabled");
-                            updateChannelSubscription(
-                                "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
-                          }
-                        },
-                      );
-                    },
-                  ),
+                  Consumer<TtsModel>(builder: (context, ttsModel, child) {
+                    return IconButton(
+                      icon: Icon(ttsModel.enabled
+                          ? Icons.record_voice_over
+                          : Icons.voice_over_off),
+                      tooltip: AppLocalizations.of(context)!.textToSpeech,
+                      onPressed: () async {
+                        // Toggle the enabled state
+                        ttsModel.enabled = !ttsModel.enabled;
+                        if (!ttsModel.enabled) {
+                          updateChannelSubscription("");
+                          await TextToSpeechPlugin.speak(
+                              "Text to speech disabled");
+                          NotificationsPlugin.dismissNotification();
+                          TextToSpeechPlugin.disableTTS();
+                        } else {
+                          await TextToSpeechPlugin.speak(
+                              "Text to speech enabled");
+                          updateChannelSubscription(
+                              "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+                          NotificationsPlugin.showNotification();
+                        }
+                      },
+                    );
+                  }),
                   if (userModel.isSignedIn())
                     IconButton(
                       icon: const Icon(Icons.people),

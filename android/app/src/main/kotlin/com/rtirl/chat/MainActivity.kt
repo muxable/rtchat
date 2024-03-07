@@ -165,7 +165,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
 
     override fun onMethodCall(call: MethodCall, result: Result) {
 
-        Log.d("NotificationService", "startForeground called")
+        Log.d("TextToSpeechPlugin", call.method)
 
         when (call.method) {
             "speak" -> {
@@ -185,9 +185,9 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
                 result.success(true)
             }
             "disableTTS" -> {
-                disableTTS()
+                tts.stop()
                 result.success(true)
-            }            
+            }
             else -> result.notImplemented()
         }
     }
@@ -203,12 +203,13 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
 
                 override fun onDone(utteranceId: String) {
                     result.success(true)
+                    dismissTTSNotification()
                 }
 
                 override fun onError(utteranceId: String) {
                     // Speech encountered an error
                     // Handle errors as needed
-                    // dismissTTSNotification() not 100% sure if this is needed? 
+                    dismissTTSNotification()
                 }
             })
 
@@ -227,8 +228,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
                 .setContentText("Speaking now...")
                 .setSmallIcon(R.drawable.notification_icon) // Ensure you have this icon in your drawable resources
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(false)
-                .setOngoing(true)
+                .setAutoCancel(true)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -246,7 +246,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
 
     private fun dismissTTSNotification() {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(NOTIFICATION_ID)
+        notificationManager.cancel(1) // Use the same ID used to show the notification
     }
 
     fun getLanguages(): Map<String, String> {
@@ -259,11 +259,6 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
         }
         return languageMap
     }
-
-    fun disableTTS() {
-        stop()
-        dismissTTSNotification()
-    }    
 
     fun stop() {
         if (tts.isSpeaking) {

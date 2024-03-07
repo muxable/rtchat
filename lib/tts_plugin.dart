@@ -15,6 +15,14 @@ class TextToSpeechPlugin {
     }
   }
 
+  static Future<void> disableTTS() async {
+    try {
+      await channel.invokeMethod('disableTTS');
+    } catch (e) {
+      // Handle the error
+    }
+  }
+
   static Future<Map<String, String>> getLanguages() async {
     try {
       final Map<dynamic, dynamic> languageMap =
@@ -37,14 +45,6 @@ class TextToSpeechPlugin {
   static Future<void> clear() async {
     try {
       await channel.invokeMethod('clear');
-    } catch (e) {
-      // Handle the error
-    }
-  }
-
-  static Future<void> disableTTS() async {
-    try {
-      await channel.invokeMethod('disableTTS');
     } catch (e) {
       // Handle the error
     }
