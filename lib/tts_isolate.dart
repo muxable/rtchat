@@ -61,7 +61,7 @@ Future<void> isolateMain(
                   finalMessage = isPreludeMuted
                       ? textToSpeak
                       : (userName != null
-                          ? '$userName $textToSpeak'
+                          ? '$userName said $textToSpeak'
                           : textToSpeak);
                   await ttsQueue.speak(message.id, finalMessage);
                 }
