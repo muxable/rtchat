@@ -75,12 +75,12 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
               children: [
                 SwitchListTile.adaptive(
                   title: Text(
-                      AppLocalizations.of(context)!.enableOffstreamSwitchTitle),
+                      AppLocalizations.of(context)!.enableOffStreamSwitchTitle),
                   subtitle: model.isAlwaysEnabled
                       ? Text(AppLocalizations.of(context)!
-                          .enableOffstreamSwitchEnabledSubtitle)
+                          .enableOffStreamSwitchEnabledSubtitle)
                       : Text(AppLocalizations.of(context)!
-                          .enableOffstreamSwitchDisabledSubtitle),
+                          .enableOffStreamSwitchDisabledSubtitle),
                   value: model.isAlwaysEnabled,
                   onChanged: (value) {
                     model.isAlwaysEnabled = value;

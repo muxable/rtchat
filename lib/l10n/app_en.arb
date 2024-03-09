@@ -253,16 +253,16 @@
   "@audioSources": {
     "description": "Header for the audio sources page"
   },
-  "enableOffstreamSwitchTitle": "Enable off-stream (uses more battery)",
-  "@enableOffstreamSwitchTitle": {
+  "enableOffStreamSwitchTitle": "Enable off-stream (uses more battery)",
+  "@enableOffStreamSwitchTitle": {
     "description": "Option label to enable the off-stream tile"
   },
-  "enableOffstreamSwitchEnabledSubtitle": "Audio will also play when you're offline",
-  "@enableOffstreamSwitchEnabledSubtitle": {
+  "enableOffStreamSwitchEnabledSubtitle": "Audio will also play when you're offline",
+  "@enableOffStreamSwitchEnabledSubtitle": {
     "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will also play when the user is offline"
   },
-  "enableOffstreamSwitchDisabledSubtitle": "Audio will only play when you're live",
-  "@enableOffstreamSwitchDisabledSubtitle": {
+  "enableOffStreamSwitchDisabledSubtitle": "Audio will only play when you're live",
+  "@enableOffStreamSwitchDisabledSubtitle": {
     "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will only play when the user is live"
   },
   "iosOggWarningTitle": "Hey! Listen!",
@@ -574,5 +574,33 @@
   "durationTwoWeeksTimeoutPrompt": "Timeout for 2 weeks",
   "@durationTwoWeeksTimeoutPrompt": {
     "descriptionTimeoutPrompt": "Button label to timeout for a two week duration"
+  },
+  "subscribedAtTier" : "subscribed at tier",
+  "@subscribedAtTierPrompt" : {
+    "subscribedAtTierPrompt" : "Text Box label to display tier subscribed at"
+  },
+  "gifted" : "gifted",
+  "@giftedPrompt" : {
+    "giftedPrompt" : "Text Box label to display tier of gifted subscription"
+  },
+     "tier": "Tier",
+  "@tierPrompt": {
+    "tierPrompt": "Text Box label to display tier of subscription"
+  },
+  "subscriptions": "subscriptions",
+  "@subscriptionsPrompt": {
+    "subscriptionsPrompt": "Text Box label to display prompt for subscriptions"
+  },
+  "subscription": "subscription",
+  "@subscriptionPrompt": {
+    "subscriptionPrompt": "Text Box label to display prompt for a subscription"
+  },
+   "theyHaveGifted": "They've gifted",
+  "@haveGiftedPrompt": {
+    "haveGiftedPrompt": "Text Box label to display prompt for 'They've gifted'"
+  },
+   "subsInTheChannel": "subs in the channel",
+  "@subsInTheChannelPrompt": {
+    "subsInTheChannelPrompt": "Text Box label to display prompt for subscriptions gifted in the channel"
   }
 }
