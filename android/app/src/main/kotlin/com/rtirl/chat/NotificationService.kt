@@ -13,6 +13,7 @@ import androidx.core.app.NotificationCompat
 import com.rtirl.chat.DisableTTSReceiver
 import com.rtirl.chat.R
 
+
 class NotificationService : Service() {
     companion object {
         const val CHANNEL_ID = "NotificationServiceChannel"
@@ -59,6 +60,8 @@ class NotificationService : Service() {
             .setContentIntent(pendingIntent)
             .build()
 
+        startForeground(NOTIFICATION_ID, notification)
+
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
@@ -67,6 +70,9 @@ class NotificationService : Service() {
         Log.d("NotificationService", "dismissNotification called")
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(notificationId)
+
+        stopForeground(true)
+        
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -87,4 +93,4 @@ class NotificationService : Service() {
             notificationManager.createNotificationChannel(channel)
         }
     }
-}
+} 

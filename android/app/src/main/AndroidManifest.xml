@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
 
     <queries>
         <intent>
@@ -89,6 +90,7 @@
 
        <service
         android:name=".NotificationService"
+        android:foregroundServiceType="dataSync|mediaPlayback"
         android:exported="false">
        </service>
 
@@ -98,5 +100,6 @@
         <action android:name="com.rtirl.chat.ACTION_DISABLE_TTS"/>
     </intent-filter>
     </receiver>
+
     </application>
 </manifest>

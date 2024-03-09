@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
-import 'package:flutter/services.dart';
 
+import 'package:flutter/services.dart';
 import 'package:rtchat/main.dart';
-import 'package:rtchat/notifications_plugin.dart';
 
 class TextToSpeechPlugin {
   static const MethodChannel channel = MethodChannel('ttsPlugin');
@@ -68,7 +67,6 @@ class TTSQueue {
       await disableTts();
       await TextToSpeechPlugin.speak(
           "There are too many messages. Text to speech disabled");
-      NotificationsPlugin.dismissNotification();
       return;
     }
 
