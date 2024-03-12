@@ -8,7 +8,6 @@ import android.speech.tts.TextToSpeech
 import android.util.Log
 import com.rtirl.chat.TextToSpeechSingleton
 
-
 class DisableTTSReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {

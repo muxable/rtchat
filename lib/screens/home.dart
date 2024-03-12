@@ -22,6 +22,7 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/notifications_plugin.dart';
 import 'package:rtchat/tts_plugin.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -259,6 +260,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               "Text to speech enabled");
                           updateChannelSubscription(
                               "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+
+                          NotificationsPlugin.showNotification();
                         }
                       },
                     );
