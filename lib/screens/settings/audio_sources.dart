@@ -52,15 +52,14 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
       if (!mounted) return;
       final model = Provider.of<AudioModel>(context, listen: false);
       if (!await AudioChannel.hasPermission()) {
-        if (context.mounted) {
-          await model.showAudioPermissionDialog(context);
-        }
+        if (!mounted) return;
+        await model.showAudioPermissionDialog(context);
       }
       await model
           .addSource(AudioSource(metadata?.title, Uri.parse(url), false));
 
-      _textEditingController.clear();
       if (!mounted) return;
+      _textEditingController.clear();
       FocusScope.of(context).unfocus();
     }
   }

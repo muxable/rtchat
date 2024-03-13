@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock/wakelock.dart';
@@ -16,12 +15,14 @@ import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
+import 'package:rtchat/main.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/tts_plugin.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -166,11 +167,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     Wakelock.enable();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       final model = Provider.of<AudioModel>(context, listen: false);
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
-      if (context.mounted) {
+      if (mounted) {
         model.showAudioPermissionDialog(context);
       }
     });
@@ -239,42 +241,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       },
                     );
                   }),
-                  Consumer<TtsModel>(builder: (context, ttsModel, child) {
-                    return IconButton(
-                      icon: Icon(ttsModel.enabled
-                          ? Icons.record_voice_over
-                          : Icons.voice_over_off),
-                      tooltip: AppLocalizations.of(context)!.textToSpeech,
-                      onPressed: () async {
-                        // Toggle the enabled state
-                        ttsModel.enabled = !ttsModel.enabled;
-
-                        if (!ttsModel.enabled) {
-                          FlutterBackgroundService().invoke('setTtsChannel', {
-                            "channel": null,
+                  Consumer<TtsModel>(
+                    builder: (context, ttsModel, child) {
+                      return IconButton(
+                        icon: Icon(ttsModel.enabled
+                            ? Icons.record_voice_over
+                            : Icons.voice_over_off),
+                        tooltip: AppLocalizations.of(context)!.textToSpeech,
+                        onPressed: () async {
+                          setState(() {
+                            ttsModel.enabled = !ttsModel.enabled;
                           });
-
-                          AwesomeNotifications().dismiss(6853027);
-                        }
-
-                        if (ttsModel.enabled) {
-                          FlutterBackgroundService().invoke("setTtsChannel", {
-                            "channel": userModel.activeChannel?.toJson(),
-                          });
-                          AwesomeNotifications().createNotification(
-                            content: NotificationContent(
-                              id: 6853027,
-                              channelKey: 'tts_notifications_key',
-                              title: 'Text-to-speech is enabled',
-                              body: null,
-                              locked: true,
-                              autoDismissible: false,
-                            ),
-                          );
-                        }
-                      },
-                    );
-                  }),
+                          if (!ttsModel.enabled) {
+                            updateChannelSubscription("");
+                            await TextToSpeechPlugin.speak(
+                                "Text to speech disabled");
+                            AwesomeNotifications().dismiss(6853027);
+                          } else {
+                            channelStreamController.stream
+                                .listen((currentChannel) {
+                              if (currentChannel.isEmpty) {
+                                setState(() {
+                                  ttsModel.enabled = false;
+                                });
+                              }
+                            });
+                            await TextToSpeechPlugin.speak(
+                                "Text to speech enabled");
+                            updateChannelSubscription(
+                                "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+                            AwesomeNotifications().createNotification(
+                              content: NotificationContent(
+                                id: 6853027,
+                                channelKey: 'tts_notifications_key',
+                                title: 'Text-to-speech is enabled',
+                                body: null,
+                                locked: true,
+                                autoDismissible: false,
+                              ),
+                            );
+                          }
+                        },
+                      );
+                    },
+                  ),
                   if (userModel.isSignedIn())
                     IconButton(
                       icon: const Icon(Icons.people),
