@@ -198,7 +198,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String) {
                     // Speech has started
-                   
+                    showTTSNotification()
                 }
 
                 override fun onDone(utteranceId: String) {
@@ -219,6 +219,14 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, params)
         }
     }
+
+    private fun showTTSNotification() {
+        Log.d("NotificationService", "showNotification called")
+        val intent = Intent(context, NotificationService::class.java)
+        intent.putExtra("action", "showNotification")
+        context.startService(intent)
+    }
+
 
     private fun dismissTTSNotification(result: Result) {
                    val notificationId = NOTIFICATION_ID
