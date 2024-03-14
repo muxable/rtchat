@@ -203,7 +203,6 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
 
                 override fun onDone(utteranceId: String) {
                     result.success(true)
-                    dismissTTSNotification(result)
                 }
 
                 override fun onError(utteranceId: String) {
