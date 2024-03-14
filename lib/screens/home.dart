@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock/wakelock.dart';
@@ -21,7 +22,7 @@ import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
-import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/user.dart'
 import 'package:rtchat/notifications_plugin.dart';
 import 'package:rtchat/tts_plugin.dart';
 
@@ -168,11 +169,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       final model = Provider.of<AudioModel>(context, listen: false);
+      final ttsModel = Provider.of<TtsModel>(context, listen: false);
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
       if (mounted) {
         model.showAudioPermissionDialog(context);
+        NotificationsPlugin.listenToTTs(ttsModel);
       }
     });
   }
