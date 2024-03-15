@@ -62,10 +62,9 @@ class MainActivity : FlutterActivity() {
 
            when(call.method) {
                "dismissNotification" -> {
-                   val notificationId = NOTIFICATION_ID
                    val intent = Intent(this, NotificationService::class.java)
                    intent.putExtra("action", "dismissNotification")
-                   intent.putExtra("id", notificationId)
+                   intent.putExtra("id", NOTIFICATION_ID)
                    startService(intent)
                    result.success(true)
                }
@@ -157,7 +156,6 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     private val context: Context = context
     private val tts: TextToSpeech = TextToSpeechSingleton.getInstance(context)
 
-
     companion object {
         private const val CHANNEL_ID = "tts_channel"
         private const val NOTIFICATION_ID = 6853027
@@ -182,10 +180,6 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             }
             "stopSpeaking" -> {
                 stop()
-                result.success(true)
-            }
-            "disableTTS" -> {
-                dismissTTSNotification(result)
                 result.success(true)
             }
             else -> result.notImplemented()
