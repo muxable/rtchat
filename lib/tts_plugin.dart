@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:flutter/services.dart';
 import 'package:rtchat/main.dart';
+import 'package:rtchat/notifications_plugin.dart';
 
 class TextToSpeechPlugin {
   static const MethodChannel channel = MethodChannel('ttsPlugin');
@@ -10,14 +11,6 @@ class TextToSpeechPlugin {
   static Future<void> speak(String text) async {
     try {
       await channel.invokeMethod('speak', {'text': text});
-    } catch (e) {
-      // Handle the error
-    }
-  }
-
-  static Future<void> disableTTS() async {
-    try {
-      await channel.invokeMethod('disableTTS');
     } catch (e) {
       // Handle the error
     }
@@ -65,8 +58,10 @@ class TTSQueue {
       queue.clear();
       await clear();
       await disableTts();
+      await TextToSpeechPlugin.stopSpeaking();
       await TextToSpeechPlugin.speak(
           "There are too many messages. Text to speech disabled");
+      NotificationsPlugin.cancelNotification();
       return;
     }
 
