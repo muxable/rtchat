@@ -8,10 +8,7 @@ import 'package:rtchat/models/channels.dart';
 class EndDrawerWidget extends StatefulWidget {
   final Channel channel;
 
-  final Function(String) onError;
-
-  const EndDrawerWidget(
-      {required this.channel, super.key, required this.onError});
+  const EndDrawerWidget({required this.channel, super.key});
 
   @override
   State<EndDrawerWidget> createState() => EndDrawerWidgetState();
@@ -20,6 +17,8 @@ class EndDrawerWidget extends StatefulWidget {
 class EndDrawerWidgetState extends State<EndDrawerWidget> {
   String _search = "";
   Viewers? _viewers;
+  bool _isLoading = true;
+  bool _isError = false;
 
   @override
   void initState() {
@@ -32,16 +31,41 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
       final viewers = await ChatStateAdapter.instance
           .getViewers(channelId: widget.channel.toString());
       if (!mounted) return;
-      setState(() => _viewers = viewers);
+      setState(() {
+        _viewers = viewers;
+        _isLoading = false;
+      });
     } catch (e) {
-      widget.onError(e.toString());
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _isError = true;
+      });
+      _showTemporaryError();
     }
+  }
+
+  void _showTemporaryError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.errorFetchingViewerList),
+        duration: const Duration(seconds: 5),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const CircularProgressIndicator();
+    }
     // Check if viewers data is available and build UI accordingly
-    if (_viewers == null) {
+    if (_viewers == null || _isError) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      });
       // Show loading or empty state
       return const CircularProgressIndicator();
     }
