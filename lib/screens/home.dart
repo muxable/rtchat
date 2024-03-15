@@ -251,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             updateChannelSubscription("");
                             await TextToSpeechPlugin.speak(
                                 "Text to speech disabled");
-                            await TextToSpeechPlugin.stopSpeaking();
+                            await TextToSpeechPlugin.disableTTS();
                             NotificationsPlugin.cancelNotification();
                           } else {
                             channelStreamController.stream
@@ -266,6 +266,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 "Text to speech enabled");
                             updateChannelSubscription(
                                 "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+                            NotificationsPlugin.showNotification();
                           }
                         },
                       );

@@ -35,6 +35,14 @@ class TextToSpeechPlugin {
     }
   }
 
+  static Future<void> disableTTS() async {
+    try {
+      await channel.invokeMethod('disableTTS');
+    } catch (e) {
+      // Handle the error
+    }
+  }
+
   static Future<void> clear() async {
     try {
       await channel.invokeMethod('clear');
