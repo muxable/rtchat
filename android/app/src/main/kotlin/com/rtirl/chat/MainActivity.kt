@@ -212,7 +212,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, params)
         }
     }
-    
+
     private fun showTTSNotification() {
         Log.d("NotificationService", "showNotification called")
         val intent = Intent(context, NotificationService::class.java)
@@ -226,6 +226,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
                    intent.putExtra("action", "dismissNotification")
                    intent.putExtra("id", notificationId)
                    context.startService(intent)
+                   tts.stop()
                    result.success(true)
     }
 

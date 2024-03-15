@@ -55,7 +55,6 @@ class NotificationService : Service() {
             .setSmallIcon(R.drawable.notification_icon)
             .addAction(R.drawable.text_to_speech, "Disable TTS", disablePendingIntent)
             .setContentIntent(pendingIntent)
-            .setSilent(true)
             .build()
 
         startForeground(NOTIFICATION_ID, notification)
