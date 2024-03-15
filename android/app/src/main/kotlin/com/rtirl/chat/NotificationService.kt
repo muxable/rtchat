@@ -44,14 +44,11 @@ class NotificationService : Service() {
         Log.d("NotificationService", "showNotification called")
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        
         val disableIntent = Intent(this, DisableTTSReceiver::class.java).apply {
             action = "com.rtirl.chat.ACTION_DISABLE_TTS"
         }
         val disablePendingIntent: PendingIntent =
             PendingIntent.getBroadcast(this, 0, disableIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        
-        
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Text-to-Speech Notification")
             .setContentText("Text-to-speech is enabled")
@@ -73,7 +70,6 @@ class NotificationService : Service() {
         notificationManager.cancel(notificationId)
 
         stopForeground(true)
-        
     }
 
     override fun onBind(intent: Intent): IBinder? {
