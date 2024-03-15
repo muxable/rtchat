@@ -242,32 +242,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       },
                     );
                   }),
-                  Consumer<TtsModel>(builder: (context, ttsModel, child) {
-                    return IconButton(
-                      icon: Icon(ttsModel.enabled
-                          ? Icons.record_voice_over
-                          : Icons.voice_over_off),
-                      tooltip: AppLocalizations.of(context)!.textToSpeech,
-                      onPressed: () async {
-                        // Toggle the enabled state
-                        ttsModel.enabled = !ttsModel.enabled;
-                        if (!ttsModel.enabled) {
-                          updateChannelSubscription("");
-                          await TextToSpeechPlugin.speak(
-                              "Text to speech disabled");
-
-                          TextToSpeechPlugin.disableTTS();
-                        } else {
-                          await TextToSpeechPlugin.speak(
-                              "Text to speech enabled");
-                          updateChannelSubscription(
-                              "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
-
-                          NotificationsPlugin.showNotification();
-                        }
-                      },
-                    );
-                  }),
+                  Consumer<TtsModel>(
+                    builder: (context, ttsModel, child) {
+                      return IconButton(
+                        icon: Icon(ttsModel.enabled
+                            ? Icons.record_voice_over
+                            : Icons.voice_over_off),
+                        tooltip: AppLocalizations.of(context)!.textToSpeech,
+                        onPressed: () async {
+                          setState(() {
+                            ttsModel.enabled = !ttsModel.enabled;
+                          });
+                          if (!ttsModel.enabled) {
+                            updateChannelSubscription("");
+                            await TextToSpeechPlugin.speak(
+                                "Text to speech disabled");
+                            await TextToSpeechPlugin.stopSpeaking();
+                            NotificationsPlugin.cancelNotification();
+                          } else {
+                            channelStreamController.stream
+                                .listen((currentChannel) {
+                              if (currentChannel.isEmpty) {
+                                setState(() {
+                                  ttsModel.enabled = false;
+                                });
+                              }
+                            });
+                            await TextToSpeechPlugin.speak(
+                                "Text to speech enabled");
+                            updateChannelSubscription(
+                                "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+                          }
+                        },
+                      );
+                    },
+                  ),
                   if (userModel.isSignedIn())
                     IconButton(
                       icon: const Icon(Icons.people),
