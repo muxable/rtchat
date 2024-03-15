@@ -8,10 +8,7 @@ import 'package:rtchat/models/channels.dart';
 class EndDrawerWidget extends StatefulWidget {
   final Channel channel;
 
-  final Function(String) onError;
-
-  const EndDrawerWidget(
-      {required this.channel, super.key, required this.onError});
+  const EndDrawerWidget({required this.channel, super.key});
 
   @override
   State<EndDrawerWidget> createState() => EndDrawerWidgetState();
@@ -21,6 +18,7 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
   String _search = "";
   Viewers? _viewers;
   bool _isLoading = true;
+  bool _isError = false;
 
   @override
   void initState() {
@@ -38,10 +36,10 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
         _isLoading = false;
       });
     } catch (e) {
-      widget.onError(e.toString());
       if (!mounted) return;
       setState(() {
         _isLoading = false;
+        _isError = true;
       });
       _showTemporaryError();
     }
@@ -60,8 +58,16 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const CircularProgressIndicator();
-    } else if (_viewers == null) {
-      return const SizedBox();
+    }
+    // Check if viewers data is available and build UI accordingly
+    if (_viewers == null || _isError) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      });
+      // Show loading or empty state
+      return const CircularProgressIndicator();
     }
 
     final filtered = _viewers!.query(_search);
