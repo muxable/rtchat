@@ -36,6 +36,7 @@ Future<void> isolateMain(
           .snapshots()
           .listen((latestMessage) async {
         if (latestMessage.docs.isNotEmpty) {
+          // TODO: fix type check here, bring up to speed with other branch
           final textToSpeak = latestMessage.docs[0]['message'] as String?;
           if (textToSpeak != null) {
             await ttsQueue.speak(latestMessage.docs[0].id, textToSpeak);
