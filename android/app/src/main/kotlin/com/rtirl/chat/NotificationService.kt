@@ -35,8 +35,21 @@ class NotificationService : Service() {
             "dismissNotification" -> {
                 dismissNotification(NOTIFICATION_ID)
             }
+            "ttsDisabled" -> {
+                Log.d("NotificationService", "Handling ttsDisabled action")
+                notifyFlutterTTSDisabled()
+            }
         }
         return START_NOT_STICKY
+    }
+
+    private fun notifyFlutterTTSDisabled() {
+
+        Log.d("NotificationService", "notifyFlutterTTSDisabled called")
+       
+        MainActivity.methodChannel?.invokeMethod("disableTTs", null)
+
+        stopForeground(true)
     }
 
     private fun showNotification() {

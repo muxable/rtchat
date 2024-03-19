@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/tts_plugin.dart';
 
 class NotificationsPlugin {
   static const MethodChannel _channel = MethodChannel('tts_notifications');
@@ -16,13 +17,19 @@ class NotificationsPlugin {
 
   static Future<void> listenToTTs(TtsModel model) async {
     try {
+      debugPrint("Listening to TTS");
+
       _channel.setMethodCallHandler((call) async {
         if (call.method == "disableTTs") {
+          debugPrint("Disabling TTS");
+
           model.enabled = false;
+
+          TextToSpeechPlugin.speak('Text to speech disabled');
         }
       });
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint("Error listening to TTS : $e");
     }
   }
 

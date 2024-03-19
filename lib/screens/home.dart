@@ -166,14 +166,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     Wakelock.enable();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      debugPrint("Post frame callback executed");
       if (!mounted) return;
+      debugPrint("Post frame callback post executed");
       final model = Provider.of<AudioModel>(context, listen: false);
       final ttsModel = Provider.of<TtsModel>(context, listen: false);
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
       if (mounted) {
+        debugPrint("Conditions passed");
         model.showAudioPermissionDialog(context);
+
+        debugPrint("Directly calling listenToTTs");
         NotificationsPlugin.listenToTTs(ttsModel);
       }
     });

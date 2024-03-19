@@ -27,6 +27,7 @@ class MainActivity : FlutterActivity() {
     private var sharedData: String = ""
 
     companion object {
+        var methodChannel: MethodChannel? = null
 
         const val NOTIFICATION_ID = 6853027
     }
@@ -53,6 +54,8 @@ class MainActivity : FlutterActivity() {
                 flutterEngine.dartExecutor.binaryMessenger,
                 "tts_notifications"
         )
+
+        methodChannel = notificationChannel
 
         notificationChannel.setMethodCallHandler { call, result ->
 
@@ -179,7 +182,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
                 result.success(languageMap)
             }
             "disableTTS" -> {
-                dismissTTSNotification(result)           
+                dismissTTSNotification(result)
             }
             "stopSpeaking" -> {
                 stop()
@@ -194,6 +197,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             val utteranceId = UUID.randomUUID().toString()
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String) {
+                 
                 }
 
                 override fun onDone(utteranceId: String) {
@@ -220,7 +224,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
                    intent.putExtra("action", "dismissNotification")
                    intent.putExtra("id", notificationId)
                    context.startService(intent)
-                   tts.stop()
+                   stop()
                    result.success(true)
     }
 

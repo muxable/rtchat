@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import com.rtirl.chat.TextToSpeechSingleton
+import com.rtirl.chat.NotificationService
 
 
 class DisableTTSReceiver : BroadcastReceiver() {
@@ -22,14 +23,13 @@ class DisableTTSReceiver : BroadcastReceiver() {
             Log.d("DisableTTSReceiver", "Text-to-speech notification is disabled")
 
             // Stop the foreground service
-            val serviceIntent = Intent(context, NotificationService::class.java)
-            context.stopService(serviceIntent)
-
-            TextToSpeechSingleton.getInstance(context).apply {
-                speak("Text-to-speech is disabled", TextToSpeech.QUEUE_FLUSH, null, null)
-                stop()
-                shutdown() // This will also nullify the tts instance within the singleton
+            val serviceIntent = Intent(context, NotificationService::class.java).apply {
+                putExtra("action", "ttsDisabled") // Notify the service of the action
             }
+
+            context.startService(serviceIntent) // Note: starting, not stopping
+
+            Log.d("DisableTTSReceiver", "Service start intent sent with action ttsDisabled")
         }
     }
 }
