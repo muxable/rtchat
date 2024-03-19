@@ -158,7 +158,7 @@ class MainActivity : FlutterActivity() {
 
 class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     private val context: Context = context
-    private val tts: TextToSpeech = TextToSpeechSingleton.getInstance(context)
+    private val tts: TextToSpeech = TextToSpeech(context) {}
 
     companion object {
         private const val CHANNEL_ID = "tts_channel"

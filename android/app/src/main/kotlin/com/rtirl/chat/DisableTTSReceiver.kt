@@ -4,9 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.app.NotificationManager
-import android.speech.tts.TextToSpeech
 import android.util.Log
-import com.rtirl.chat.TextToSpeechSingleton
 import com.rtirl.chat.NotificationService
 
 
