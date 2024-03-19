@@ -22,8 +22,6 @@ class NotificationsPlugin {
 
       _channel.setMethodCallHandler((call) async {
         if (call.method == "disableTTs") {
-          debugPrint("Disabling TTS");
-
           model.enabled = false;
 
           updateChannelSubscription("");

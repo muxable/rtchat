@@ -271,6 +271,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             updateChannelSubscription(
                                 "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
                             NotificationsPlugin.showNotification();
+                            NotificationsPlugin.listenToTTs(ttsModel);
                           }
                         },
                       );
