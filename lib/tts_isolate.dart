@@ -36,24 +36,10 @@ Future<void> isolateMain(
           .snapshots()
           .listen((latestMessage) async {
         if (latestMessage.docs.isNotEmpty) {
-          final message = latestMessage.docs[0];
-          if (message.data().containsKey('type')) {
-            final type = message['type'] as String?;
-            switch (type) {
-              case "message":
-                final textToSpeak = message['message'] as String?;
-                if (textToSpeak != null) {
-                  await ttsQueue.speak(message.id, textToSpeak);
-                }
-                break;
-              case "stream.offline":
-                await ttsQueue.clear();
-                await ttsQueue.speak(message.id,
-                    "Stream went offline, disabling text to speech");
-                await ttsQueue.disableTts();
-                messagesSubscription?.cancel();
-                break;
-            }
+          // TODO: fix type check here, bring up to speed with other branch
+          final textToSpeak = latestMessage.docs[0]['message'] as String?;
+          if (textToSpeak != null) {
+            await ttsQueue.speak(latestMessage.docs[0].id, textToSpeak);
           }
         }
       });
