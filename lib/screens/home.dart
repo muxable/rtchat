@@ -171,9 +171,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       debugPrint("Post frame callback post executed");
       final model = Provider.of<AudioModel>(context, listen: false);
       final ttsModel = Provider.of<TtsModel>(context, listen: false);
-      if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
-        return;
-      }
+      // if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
+      //   return;
+      // }
       if (mounted) {
         debugPrint("Conditions passed");
         model.showAudioPermissionDialog(context);

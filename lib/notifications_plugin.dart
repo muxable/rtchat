@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:rtchat/main.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/tts_plugin.dart';
 
@@ -25,7 +26,9 @@ class NotificationsPlugin {
 
           model.enabled = false;
 
-          TextToSpeechPlugin.speak('Text to speech disabled');
+          updateChannelSubscription("");
+          await TextToSpeechPlugin.speak("Text to speech disabled");
+          await TextToSpeechPlugin.disableTTS();
         }
       });
     } catch (e) {

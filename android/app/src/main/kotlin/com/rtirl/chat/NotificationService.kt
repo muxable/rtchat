@@ -48,7 +48,7 @@ class NotificationService : Service() {
         Log.d("NotificationService", "notifyFlutterTTSDisabled called")
        
         MainActivity.methodChannel?.invokeMethod("disableTTs", null)
-
+        
         stopForeground(true)
     }
 

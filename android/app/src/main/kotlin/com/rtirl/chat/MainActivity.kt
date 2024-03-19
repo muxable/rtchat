@@ -27,6 +27,7 @@ class MainActivity : FlutterActivity() {
     private var sharedData: String = ""
 
     companion object {
+
         var methodChannel: MethodChannel? = null
 
         const val NOTIFICATION_ID = 6853027
@@ -197,7 +198,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             val utteranceId = UUID.randomUUID().toString()
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String) {
-                 
+                   
                 }
 
                 override fun onDone(utteranceId: String) {
