@@ -29,4 +29,12 @@ class Channel {
   ResilientNetworkImage get profilePicture {
     return ResilientNetworkImage(profilePictureUrl);
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'provider': provider,
+      'channelId': channelId,
+      'displayName': displayName,
+    };
+  }
 }

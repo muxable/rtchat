@@ -16,42 +16,86 @@ class EndDrawerWidget extends StatefulWidget {
 
 class EndDrawerWidgetState extends State<EndDrawerWidget> {
   String _search = "";
+  Viewers? _viewers;
+  bool _isLoading = true;
+  bool _isError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadViewers();
+  }
+
+  void _loadViewers() async {
+    try {
+      final viewers = await ChatStateAdapter.instance
+          .getViewers(channelId: widget.channel.toString());
+      if (!mounted) return;
+      setState(() {
+        _viewers = viewers;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _isError = true;
+      });
+      _showTemporaryError();
+    }
+  }
+
+  void _showTemporaryError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.errorFetchingViewerList),
+        duration: const Duration(seconds: 5),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const CircularProgressIndicator();
+    }
+    // Check if viewers data is available and build UI accordingly
+    if (_viewers == null || _isError) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      });
+      // Show loading or empty state
+      return const CircularProgressIndicator();
+    }
+
+    final filtered = _viewers!.query(_search);
+
     return Container(
-      color: Theme.of(context).canvasColor,
-      child: FutureBuilder<Viewers>(
-        future: ChatStateAdapter.instance
-            .getViewers(channelId: widget.channel.toString()),
-        builder: (context, snapshot) {
-          final viewers = snapshot.data;
-          if (viewers == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final filtered = viewers.query(_search);
-          return SafeArea(
+        color: Theme.of(context).canvasColor,
+        child: SafeArea(
             top: false,
             child: CustomScrollView(
               slivers: [
                 SliverPadding(
                   padding: const EdgeInsets.only(top: 24),
                   sliver: SliverAppBar(
-                      actions: const [SizedBox()],
-                      //disable the drawer icon that appears on the right of the app bar
-                      centerTitle: false,
-                      title: Padding(
-                        padding: const EdgeInsets.only(left: 16),
-                        child: Text(
-                          AppLocalizations.of(context)!.searchViewers,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
+                    actions: const [SizedBox()],
+                    centerTitle: false,
+                    title: Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: Text(
+                        AppLocalizations.of(context)!.searchViewers,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
-                      backgroundColor: Colors.transparent,
-                      automaticallyImplyLeading: false),
+                    ),
+                    backgroundColor: Colors.transparent,
+                    automaticallyImplyLeading: false,
+                  ),
                 ),
                 SliverSearchBarWidget(
                   onFilterBySearchBarText: (value) =>
@@ -126,10 +170,6 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
                   ),
                 ],
               ],
-            ),
-          );
-        },
-      ),
-    );
+            )));
   }
 }

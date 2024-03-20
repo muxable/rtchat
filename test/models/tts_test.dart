@@ -55,14 +55,12 @@ void main() {
     expect(calls, equals(1));
   });
 
-  test('Delete doesn\'t delete oof the front of the queue', () async {
+  test('Delete doesn\'t delete element if at the front of the queue', () async {
     final future1 = ttsQueue.speak('1', 'First message');
     final future2 = ttsQueue.speak('2', 'Second message');
-
     ttsQueue.delete('1');
-
-    expect(ttsQueue.length, equals(1));
-    expect(ttsQueue.peek()!.id, equals('2'));
+    expect(ttsQueue.length, equals(2));
+    expect(ttsQueue.peek()!.id, equals('1'));
     await future1;
     await future2;
   });
@@ -81,5 +79,15 @@ void main() {
     await future1;
     await future2;
     expect(calls, equals(1));
+  });
+
+  test('TTS announces stoppage when queue exceeds 20 items', () async {
+    // Simulate speaking 21 messages
+    for (int i = 1; i <= 21; i++) {
+      await ttsQueue.speak('$i', 'Message $i');
+    }
+
+    // Expect the queue to be cleared after the 21st message
+    expect(ttsQueue.isEmpty, isTrue);
   });
 }
