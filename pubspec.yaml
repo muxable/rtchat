@@ -13,7 +13,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   audioplayers: ^5.2.1
-  awesome_notifications: ^0.8.2
   characters: ^1.3.0
   cloud_firestore: ^4.13.6
   cloud_functions: ^4.5.8
@@ -24,8 +23,6 @@ dependencies:
   firebase_core: ^2.24.2
   firebase_crashlytics: ^3.4.8
   firebase_database: ^10.3.8
-  flutter_background_service: ^5.0.5
-  flutter_background_service_android: ^6.2.2
   flutter_custom_tabs: ^1.2.1
   flutter_keyboard_visibility: ^6.0.0
   flutter_localized_locales: ^2.0.5
@@ -34,7 +31,7 @@ dependencies:
   flutter_web_auth: ^0.5.0
   google_fonts: ^4.0.4
   google_mobile_ads: ^4.0.0
-  in_app_purchase: ^3.1.11
+  in_app_purchase: ^3.1.13
   intl: ^0.18.1
   just_audio: ^0.9.36
   linkify: ^5.0.0
@@ -45,7 +42,7 @@ dependencies:
       url: https://github.com/zesage/motion_sensors.git
       ref: master
   package_info_plus: ^3.1.2
-  path_provider: ^2.1.1
+  path_provider: ^2.1.2
   provider: ^6.1.1
   qr_flutter: ^4.1.0
   streaming_shared_preferences: ^2.0.0
@@ -53,11 +50,11 @@ dependencies:
   styled_text: ^8.1.0
   stream_transform: ^2.1.0
   thermal: ^1.1.5
-  url_launcher: ^6.2.2
+  url_launcher: ^6.2.4
   wakelock: ^0.6.2
-  webview_flutter: ^4.4.1
-  webview_flutter_android: ^3.13.1
-  webview_flutter_wkwebview: ^3.10.0
+  webview_flutter: ^4.5.0
+  webview_flutter_android: ^3.14.0
+  webview_flutter_wkwebview: ^3.11.0
 
 dev_dependencies:
   flutter_lints: ^3.0.1
