@@ -186,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         model.showAudioPermissionDialog(context);
         debugPrint("Directly calling listenToTTs");
         NotificationsPlugin.listenToTTs(ttsModel);
-         _battery.batteryState.then(_updateBatteryState);
+        _battery.batteryState.then(_updateBatteryState);
         _batteryStateSubscription =
             _battery.onBatteryStateChanged.listen(_updateBatteryState);
       }
@@ -207,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final int batteryLevel = await _battery.batteryLevel;
     final bool isCharging = state == BatteryState.charging;
 
-    if(!mounted) {
+    if (!mounted) {
       return;
     }
 
