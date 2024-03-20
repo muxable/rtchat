@@ -64,25 +64,28 @@ class _DrawerHeader extends StatelessWidget {
                                       width: 36),
                                 ),
                               const SizedBox(width: 16),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                      userChannel?.displayName ??
-                                          AppLocalizations.of(context)!
-                                              .notSignedIn,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge
-                                          ?.copyWith(color: Colors.white)),
-                                  const SizedBox(height: 8),
-                                  Text("twitch.tv",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(color: Colors.white)),
-                                ],
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        userChannel?.displayName ??
+                                            AppLocalizations.of(context)!
+                                                .notSignedIn,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(color: Colors.white)),
+                                    const SizedBox(height: 8),
+                                    Text("twitch.tv",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(color: Colors.white)),
+                                  ],
+                                ),
                               ),
                             ]),
                           );
@@ -237,6 +240,7 @@ class _SidebarState extends State<Sidebar> {
           },
         );
       }),
+
       Consumer<AudioModel>(builder: (context, audioModel, child) {
         if (audioModel.sources.isEmpty) {
           return Container();
@@ -245,9 +249,10 @@ class _SidebarState extends State<Sidebar> {
           leading: const Icon(Icons.cached_outlined),
           title: Text(AppLocalizations.of(context)!.refreshAudioSources),
           onTap: () async {
+            final scaffoldMessenger = ScaffoldMessenger.of(context);
             final count = await audioModel.refreshAllSources();
             if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            scaffoldMessenger.showSnackBar(SnackBar(
                 content: Text(AppLocalizations.of(context)!
                     .refreshAudioSourcesCount(count))));
           },
@@ -335,10 +340,11 @@ class _SidebarState extends State<Sidebar> {
                     TextButton(
                       child: Text(AppLocalizations.of(context)!.signOut),
                       onPressed: () async {
+                        final navigator = Navigator.of(context);
                         await Provider.of<UserModel>(context, listen: false)
                             .signOut();
                         if (!mounted) return;
-                        Navigator.of(context).pop();
+                        navigator.pop();
                       },
                     ),
                   ],

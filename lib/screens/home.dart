@@ -1,13 +1,10 @@
 import 'dart:async';
-// import 'dart:isolate';
 import 'dart:math' as math;
 
 import 'package:battery_plus/battery_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
@@ -20,14 +17,14 @@ import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
+import 'package:rtchat/main.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-// import 'package:rtchat/tts_isolate.dart' as ttsIsolate;
-import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:rtchat/notifications_plugin.dart';
 import 'package:rtchat/tts_plugin.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -166,6 +163,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   final Battery _battery = Battery();
 
   BatteryState? _batteryState;
@@ -176,25 +174,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     Wakelock.enable();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      debugPrint("Post frame callback executed");
+      if (!mounted) return;
+      debugPrint("Post frame callback post executed");
       final model = Provider.of<AudioModel>(context, listen: false);
+      final ttsModel = Provider.of<TtsModel>(context, listen: false);
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
-      if (context.mounted) {
+      if (mounted) {
+        debugPrint("Conditions passed");
         model.showAudioPermissionDialog(context);
+        debugPrint("Directly calling listenToTTs");
+        NotificationsPlugin.listenToTTs(ttsModel);
+
         _battery.batteryState.then(_updateBatteryState);
         _batteryStateSubscription =
             _battery.onBatteryStateChanged.listen(_updateBatteryState);
+
+        checkAndHandleBatteryLevel(ttsModel);
       }
     });
-  }
-
-  @override
-  void dispose() {
-    Wakelock.disable();
-    super.dispose();
-
-    _batteryStateSubscription?.cancel();
   }
 
   void _updateBatteryState(BatteryState state) {
@@ -202,16 +202,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     setState(() {
       _batteryState = state;
     });
-    checkAndHandleBatteryLevel();
   }
 
-  Future<void> checkAndHandleBatteryLevel() async {
+  Future<void> checkAndHandleBatteryLevel(TtsModel model) async {
     final int batteryLevel = await _battery.batteryLevel;
     final bool isCharging = _batteryState == BatteryState.charging;
 
     if (batteryLevel < 5 && !isCharging) {
-      // TODO: Enable when ready for prod
-      // FlutterBackgroundService().invoke("disableTTS");
+      if (model.enabled) {
+        model.enabled = false;
+        updateChannelSubscription("");
+        await TextToSpeechPlugin.speak("Text to speech disabled");
+        await TextToSpeechPlugin.disableTTS();
+        NotificationsPlugin.cancelNotification();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    Wakelock.disable();
+    super.dispose();
+
+    if (_batteryStateSubscription != null) {
+      _batteryStateSubscription!.cancel();
     }
   }
 
@@ -226,7 +240,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             key: _scaffoldKey,
             drawer: Sidebar(channel: widget.channel),
             endDrawer: userModel.isSignedIn()
-                ? EndDrawerWidget(channel: widget.channel)
+                ? EndDrawerWidget(
+                    channel: widget.channel,
+                  )
                 : null,
             drawerEdgeDragWidth: MediaQuery.of(context).size.width * 0.6,
             onDrawerChanged: (isOpened) =>
@@ -264,45 +280,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       },
                     );
                   }),
-                  Consumer<TtsModel>(builder: (context, ttsModel, child) {
-                    return IconButton(
-                      icon: Icon(ttsModel.enabled
-                          ? Icons.record_voice_over
-                          : Icons.voice_over_off),
-                      tooltip: AppLocalizations.of(context)!.textToSpeech,
-                      onPressed: () async {
-                        // Toggle the enabled state
-                        ttsModel.enabled = !ttsModel.enabled;
-
-                        final streamPrefs =
-                            await StreamingSharedPreferences.instance;
-
-                        if (!ttsModel.enabled) {
-                          await TextToSpeechPlugin.clear();
-                          await streamPrefs.remove('tts_channel');
-                          AwesomeNotifications().dismiss(6853027);
-                        }
-
-                        streamPrefs.setString(
-                            "tts_channel", '${userModel.activeChannel}');
-
-                        if (ttsModel.enabled) {
-                          FlutterBackgroundService().invoke('setAsForeground');
-                          FlutterBackgroundService().invoke("startTts");
-                          AwesomeNotifications().createNotification(
-                            content: NotificationContent(
-                              id: 6853027,
-                              channelKey: 'tts_notifications_key',
-                              title: 'Text-to-speech is enabled',
-                              body: null,
-                              locked: true,
-                              autoDismissible: false,
-                            ),
-                          );
-                        }
-                      },
-                    );
-                  }),
+                  Consumer<TtsModel>(
+                    builder: (context, ttsModel, child) {
+                      return IconButton(
+                        icon: Icon(ttsModel.enabled
+                            ? Icons.record_voice_over
+                            : Icons.voice_over_off),
+                        tooltip: AppLocalizations.of(context)!.textToSpeech,
+                        onPressed: () async {
+                          setState(() {
+                            ttsModel.enabled = !ttsModel.enabled;
+                          });
+                          if (!ttsModel.enabled) {
+                            updateChannelSubscription("");
+                            await TextToSpeechPlugin.speak(
+                                "Text to speech disabled");
+                            await TextToSpeechPlugin.disableTTS();
+                            NotificationsPlugin.cancelNotification();
+                          } else {
+                            channelStreamController.stream
+                                .listen((currentChannel) {
+                              if (currentChannel.isEmpty) {
+                                setState(() {
+                                  ttsModel.enabled = false;
+                                });
+                              }
+                            });
+                            await TextToSpeechPlugin.speak(
+                                "Text to speech enabled");
+                            updateChannelSubscription(
+                                "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+                            NotificationsPlugin.showNotification();
+                            NotificationsPlugin.listenToTTs(ttsModel);
+                          }
+                        },
+                      );
+                    },
+                  ),
                   if (userModel.isSignedIn())
                     IconButton(
                       icon: const Icon(Icons.people),
@@ -313,6 +327,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                 ]),
             body: Container(
+              height: MediaQuery.of(context).size.height,
               color: Theme.of(context).scaffoldBackgroundColor,
               child: SafeArea(
                 child: Builder(builder: (context) {
@@ -349,41 +364,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   );
                   if (orientation == Orientation.portrait) {
-                    return Column(
-                        // this allows the column to overflow upwards.
-                        verticalDirection: VerticalDirection.up,
-                        children: [
-                          // reversed direction because of verticalDirection: VerticalDirection.up
-                          chatPanelFooter,
-                          Expanded(
-                              child: DiscoWidget(
-                                  isEnabled: widget.isDiscoModeEnabled,
-                                  child: ChatPanelWidget(
-                                      channel: widget.channel))),
-                          Consumer<LayoutModel>(
-                              builder: (context, layoutModel, child) {
-                            if (layoutModel.isShowNotifications) {
-                              return ResizableWidget(
-                                  resizable: !layoutModel.locked,
-                                  height: layoutModel.panelHeight,
-                                  width: layoutModel.panelWidth,
-                                  onResizeHeight: (height) {
-                                    layoutModel.panelHeight = height;
-                                  },
-                                  onResizeWidth: (width) {
-                                    layoutModel.panelWidth = width;
-                                  },
-                                  child: const ActivityFeedPanelWidget());
-                            } else if (layoutModel.isShowPreview) {
-                              return AspectRatio(
-                                  aspectRatio: 16 / 9,
-                                  child:
-                                      StreamPreview(channel: widget.channel));
-                            } else {
-                              return Container();
-                            }
-                          }),
-                        ]);
+                    return Consumer<LayoutModel>(
+                        builder: (context, layoutModel, child) {
+                      return Column(
+                          verticalDirection: VerticalDirection.up,
+                          children: [
+                            // reversed direction because of verticalDirection: VerticalDirection.up
+                            chatPanelFooter,
+
+                            Expanded(
+                                child: DiscoWidget(
+                                    isEnabled: widget.isDiscoModeEnabled,
+                                    child: ChatPanelWidget(
+                                        channel: widget.channel))),
+
+                            Consumer<LayoutModel>(
+                                builder: (context, layoutModel, child) {
+                              if (layoutModel.isShowNotifications) {
+                                return ResizableWidget(
+                                    resizable: !layoutModel.locked,
+                                    height: layoutModel.panelHeight,
+                                    width: layoutModel.panelWidth,
+                                    onResizeHeight: (height) {
+                                      layoutModel.panelHeight = height;
+                                    },
+                                    onResizeWidth: (width) {
+                                      layoutModel.panelWidth = width;
+                                    },
+                                    child: const ActivityFeedPanelWidget());
+                              } else if (layoutModel.isShowPreview) {
+                                return AspectRatio(
+                                    aspectRatio: 16 / 9,
+                                    child:
+                                        StreamPreview(channel: widget.channel));
+                              } else {
+                                return Container();
+                              }
+                            }),
+                          ]);
+                    });
                   } else {
                     // landscape
                     return Row(children: [
