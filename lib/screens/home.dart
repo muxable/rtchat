@@ -174,15 +174,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
       NotificationsPlugin.listenToTTs(ttsModel);
 
-
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
       if (mounted) {
         debugPrint("Conditions passed");
         model.showAudioPermissionDialog(context);
-       
-        
       }
     });
   }
