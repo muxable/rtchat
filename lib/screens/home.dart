@@ -179,20 +179,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       debugPrint("Post frame callback post executed");
       final model = Provider.of<AudioModel>(context, listen: false);
       final ttsModel = Provider.of<TtsModel>(context, listen: false);
-      // TODO: not sure if this is needed, but code doesn't run with it here atm
-      // if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
-      //   return;
-      // }
-      if (mounted) {
-        debugPrint("Conditions passed");
-        model.showAudioPermissionDialog(context);
-        debugPrint("Directly calling listenToTTs");
-        NotificationsPlugin.listenToTTs(ttsModel);
 
-        _batteryStateSubscription =
-            _battery.onBatteryStateChanged.listen((BatteryState state) {
-          checkAndHandleBatteryLevel(ttsModel);
-        });
+      debugPrint("Directly calling listenToTTs");
+      NotificationsPlugin.listenToTTs(ttsModel);
+
+      _batteryStateSubscription =
+          _battery.onBatteryStateChanged.listen((BatteryState state) {
+        checkAndHandleBatteryLevel(ttsModel);
+      });
+
+      if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
+        return;
+      }
+
+      if (mounted) {
+        model.showAudioPermissionDialog(context);
       }
     });
   }
