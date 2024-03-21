@@ -83,7 +83,9 @@ Future<void> isolateMain(
                   messageModel,
                   includeAuthorPrelude: !isPreludeMuted,
                 );
-                await ttsQueue.speak(message.id, finalMessage);
+                if (finalMessage.isNotEmpty) {
+                  await ttsQueue.speak(message.id, finalMessage);
+                }
                 break;
               case "stream.offline":
                 await ttsQueue.clear();
