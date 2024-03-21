@@ -356,4 +356,6 @@ class TtsModel extends ChangeNotifier {
         "voice": _voice,
         'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
       };
+
+  TtsModel.emptyConstructor();
 }
