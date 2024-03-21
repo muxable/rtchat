@@ -36,6 +36,28 @@ Future<void> isolateMain(
     isPreludeMuted = ttsMap['isPreludeMuted'];
   });
 
+  TwitchMessageModel createMessageModelFromData(
+      String messageId, Map<String, dynamic> messageData, DateTime timestamp) {
+    return TwitchMessageModel(
+      messageId: messageId,
+      author: TwitchUserModel(
+        userId: messageData['tags']['user-id'],
+        login: messageData['author']['displayName'],
+      ),
+      message: messageData['message'],
+      tags: messageData['tags'],
+      annotations: const TwitchMessageAnnotationsModel(
+        isAction: false,
+        isFirstTimeChatter: false,
+        announcement: TwitchMessageAnnouncementModel(Colors.black),
+      ),
+      thirdPartyEmotes: [],
+      timestamp: timestamp,
+      deleted: false,
+      channelId: messageData['channelId'],
+    );
+  }
+
   // Listen for changes to the stream
   channelSubscription = channelStream.stream.listen((currentChannel) async {
     if (currentChannel.isEmpty) {
@@ -52,33 +74,19 @@ Future<void> isolateMain(
           .limit(1)
           .snapshots()
           .listen((latestMessage) async {
-        if (latestMessage.docs.isNotEmpty) {
-          final message = latestMessage.docs[0];
-          if (message.data().containsKey('type')) {
-            final type = message['type'] as String?;
+        final docs = latestMessage.docs;
+        if (docs.isNotEmpty) {
+          final message = docs.first;
+          final messageData = message.data();
+          if (messageData.containsKey('type')) {
+            final type = messageData['type'] as String?;
             switch (type) {
               case "message":
                 final timestamp =
-                    (message['timestamp'] as Timestamp?)?.toDate() ??
+                    (messageData['timestamp'] as Timestamp?)?.toDate() ??
                         DateTime.now();
-                const announceModel = TwitchMessageAnnotationsModel(
-                    isAction: false,
-                    isFirstTimeChatter: false,
-                    announcement: TwitchMessageAnnouncementModel(Colors.black));
-                final messageModel = TwitchMessageModel(
-                    messageId: message.id,
-                    author: TwitchUserModel(
-                        userId: message['tags']['user-id'],
-                        login: message['author']['displayName']),
-                    message: message['message'],
-                    tags: message['tags'],
-                    annotations: announceModel,
-                    // not 100% sure about third part emotes
-                    thirdPartyEmotes: [],
-                    timestamp: timestamp,
-                    // couldn't find where to get this at
-                    deleted: false,
-                    channelId: message['channelId']);
+                final messageModel = createMessageModelFromData(
+                    message.id, messageData, timestamp);
                 final finalMessage = ttsModel.getVocalization(
                   messageModel,
                   includeAuthorPrelude: !isPreludeMuted,
@@ -89,8 +97,10 @@ Future<void> isolateMain(
                 break;
               case "stream.offline":
                 await ttsQueue.clear();
-                await ttsQueue.speak(message.id,
-                    "Stream went offline, disabling text to speech");
+                await ttsQueue.speak(
+                  message.id,
+                  "Stream went offline, disabling text to speech",
+                );
                 await ttsQueue.disableTts();
                 messagesSubscription?.cancel();
                 break;
