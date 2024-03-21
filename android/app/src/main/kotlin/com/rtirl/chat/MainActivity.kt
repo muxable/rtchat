@@ -219,13 +219,13 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     }
 
     private fun dismissTTSNotification(result: Result) {
-                   val notificationId = NOTIFICATION_ID
-                   val intent = Intent(context, NotificationService::class.java)
-                   intent.putExtra("action", "dismissNotification")
-                   intent.putExtra("id", notificationId)
-                   context.startService(intent)
-                   stop()
-                   result.success(true)
+        val notificationId = NOTIFICATION_ID
+        val intent = Intent(context, NotificationService::class.java)
+        intent.putExtra("action", "dismissNotification")
+        intent.putExtra("id", notificationId)
+        context.startService(intent)
+        stop()
+        result.success(true)
     }
 
     fun getLanguages(): Map<String, String> {             

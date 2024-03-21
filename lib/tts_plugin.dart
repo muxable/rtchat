@@ -109,6 +109,7 @@ class TTSQueue {
 
   Future<void> disableTts() async {
     updateChannelSubscription("");
+    TextToSpeechPlugin.disableTTS();
   }
 }
 
