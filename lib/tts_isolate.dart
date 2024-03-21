@@ -6,6 +6,9 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/tts_plugin.dart';
 
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
@@ -18,7 +21,8 @@ StreamSubscription? channelSubscription;
 Future<void> isolateMain(
     SendPort sendPort,
     StreamController<String> channelStream,
-    StreamingSharedPreferences prefs) async {
+    StreamingSharedPreferences prefs,
+    TtsModel ttsModel) async {
   DartPluginRegistrant.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -54,17 +58,32 @@ Future<void> isolateMain(
             final type = message['type'] as String?;
             switch (type) {
               case "message":
-                final textToSpeak = message['message'] as String?;
-                String finalMessage = '';
-                if (textToSpeak != null) {
-                  final userName = message['author']['displayName'] as String?;
-                  finalMessage = isPreludeMuted
-                      ? textToSpeak
-                      : (userName != null
-                          ? '$userName said $textToSpeak'
-                          : textToSpeak);
-                  await ttsQueue.speak(message.id, finalMessage);
-                }
+                final timestamp =
+                    (message['timestamp'] as Timestamp?)?.toDate() ??
+                        DateTime.now();
+                const announceModel = TwitchMessageAnnotationsModel(
+                    isAction: false,
+                    isFirstTimeChatter: false,
+                    announcement: TwitchMessageAnnouncementModel(Colors.black));
+                final messageModel = TwitchMessageModel(
+                    messageId: message.id,
+                    author: TwitchUserModel(
+                        userId: message['tags']['user-id'],
+                        login: message['author']['displayName']),
+                    message: message['message'],
+                    tags: message['tags'],
+                    annotations: announceModel,
+                    // not 100% sure about third part emotes
+                    thirdPartyEmotes: [],
+                    timestamp: timestamp,
+                    // couldn't find where to get this at
+                    deleted: false,
+                    channelId: message['channelId']);
+                final finalMessage = ttsModel.getVocalization(
+                  messageModel,
+                  includeAuthorPrelude: !isPreludeMuted,
+                );
+                await ttsQueue.speak(message.id, finalMessage);
                 break;
               case "stream.offline":
                 await ttsQueue.clear();
