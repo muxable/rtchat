@@ -171,14 +171,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       debugPrint("Post frame callback post executed");
       final model = Provider.of<AudioModel>(context, listen: false);
       final ttsModel = Provider.of<TtsModel>(context, listen: false);
+
+      NotificationsPlugin.listenToTTs(ttsModel);
+
+
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
       if (mounted) {
         debugPrint("Conditions passed");
         model.showAudioPermissionDialog(context);
-        debugPrint("Directly calling listenToTTs");
-        NotificationsPlugin.listenToTTs(ttsModel);
+       
+        
       }
     });
   }
