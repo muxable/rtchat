@@ -7,8 +7,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/messages/twitch/reply.dart';
 import 'package:rtchat/tts_plugin.dart';
 
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
@@ -38,28 +41,6 @@ Future<void> isolateMain(
         ttsModel.pitch, ttsModel.speed);
   });
 
-  TwitchMessageModel createMessageModelFromData(
-      String messageId, Map<String, dynamic> messageData, DateTime timestamp) {
-    return TwitchMessageModel(
-      messageId: messageId,
-      author: TwitchUserModel(
-        userId: messageData['tags']['user-id'],
-        login: messageData['author']['displayName'],
-      ),
-      message: messageData['message'],
-      tags: messageData['tags'],
-      annotations: const TwitchMessageAnnotationsModel(
-        isAction: false,
-        isFirstTimeChatter: false,
-        announcement: TwitchMessageAnnouncementModel(Colors.black),
-      ),
-      thirdPartyEmotes: [],
-      timestamp: timestamp,
-      deleted: false,
-      channelId: messageData['channelId'],
-    );
-  }
-
   // Listen for changes to the stream
   channelSubscription = channelStream.stream.listen((currentChannel) async {
     if (currentChannel.isEmpty) {
@@ -84,11 +65,34 @@ Future<void> isolateMain(
             final type = messageData['type'] as String?;
             switch (type) {
               case "message":
-                final timestamp =
-                    (messageData['timestamp'] as Timestamp?)?.toDate() ??
-                        DateTime.now();
-                final messageModel = createMessageModelFromData(
-                    message.id, messageData, timestamp);
+                final messageModel = TwitchMessageModel(
+                    messageId: message.id,
+                    author: TwitchUserModel(
+                      userId: messageData['tags']['user-id'],
+                      login: messageData['author']['displayName'],
+                    ),
+                    message: messageData['message'],
+                    reply: messageData['reply'] != null
+                        ? TwitchMessageReplyModel(
+                            messageId: messageData['reply']['messageId'],
+                            message: messageData['reply']['message'],
+                            author: TwitchUserModel(
+                              userId: messageData['reply']['userId'],
+                              displayName: messageData['reply']['displayName'],
+                              login: messageData['reply']['userLogin'],
+                            ),
+                          )
+                        : null,
+                    tags: messageData['tags'],
+                    annotations: TwitchMessageAnnotationsModel.fromMap(
+                        messageData['annotations']),
+                    thirdPartyEmotes: await getEmotes(Channel(
+                        "twitch",
+                        messageData['channelId'],
+                        messageData['author']['displayName'])),
+                    timestamp: messageData['timestamp'].toDate(),
+                    deleted: false,
+                    channelId: messageData['channelId']);
                 final finalMessage = ttsModel.getVocalization(
                   messageModel,
                   includeAuthorPrelude: !ttsModel.isPreludeMuted,
