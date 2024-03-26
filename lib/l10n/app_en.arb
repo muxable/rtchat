@@ -578,5 +578,9 @@
   "sentAt": "Sent at",
   "@sentAt": {
     "sentAt": "Text label to show when a message was last sent at"
+  },
+  "errorFetchingViewerList": "We couldn't fetch the viewer list for this channel",
+  "@errorFetchingViewerList": {
+      "descriptionErrorFetchingViewerList": "Error message if unable to fetch list"
   }
 }

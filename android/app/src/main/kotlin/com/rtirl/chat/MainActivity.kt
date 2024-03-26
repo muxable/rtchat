@@ -16,15 +16,32 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import java.util.UUID
 import android.os.Bundle
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.util.Log
+import androidx.core.app.NotificationCompat
 
 
 class MainActivity : FlutterActivity() {
 
     private var sharedData: String = ""
 
+    companion object {
+
+        var methodChannel: MethodChannel? = null
+
+        const val NOTIFICATION_ID = 6853027
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-         handleIntent()
+        super.onCreate(savedInstanceState)
+        handleIntent()
+        startNotificationService()
+    }
+
+    private fun startNotificationService() {
+        val intent = Intent(this, NotificationService::class.java)
+        startService(intent)
     }
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
@@ -33,10 +50,42 @@ class MainActivity : FlutterActivity() {
             flutterEngine.dartExecutor.binaryMessenger,
             "ttsPlugin"
         )
+
+        val notificationChannel = MethodChannel(
+                flutterEngine.dartExecutor.binaryMessenger,
+                "tts_notifications"
+        )
+
+        methodChannel = notificationChannel
+
+        notificationChannel.setMethodCallHandler { call, result ->
+
+            Log.d("NotificationService", "startForeground called");
+
+            Log.d("Notification called", call.method);
+
+           when(call.method) {
+               "dismissNotification" -> {
+                   val intent = Intent(this, NotificationService::class.java)
+                   intent.putExtra("action", "dismissNotification")
+                   intent.putExtra("id", NOTIFICATION_ID)
+                   startService(intent)
+                   result.success(true)
+               }
+               "showNotification" -> {
+                   val intent = Intent(this, NotificationService::class.java)
+                   intent.putExtra("action", "showNotification")
+                   startService(intent)
+                   result.success(true)
+               }
+               else -> result.notImplemented()
+           }
+        }
+
         ttsChannel.setMethodCallHandler(ttsPlugin)
         MethodChannel(
-                flutterEngine.dartExecutor.binaryMessenger,
-                "com.rtirl.chat/audio"
+            flutterEngine.dartExecutor.binaryMessenger,
+            "com.rtirl.chat/audio"
         ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "set" -> {
@@ -111,7 +160,14 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     private val context: Context = context
     private val tts: TextToSpeech = TextToSpeech(context) {}
 
+    companion object {
+        private const val NOTIFICATION_ID = 6853027
+    }
+
     override fun onMethodCall(call: MethodCall, result: Result) {
+
+        Log.d("TextToSpeechPlugin", call.method)
+
         when (call.method) {
             "speak" -> {
                 val text = call.argument<String>("text")
@@ -124,6 +180,9 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             "getLanguages" -> {
                 val languageMap = getLanguages()
                 result.success(languageMap)
+            }
+            "disableTTS" -> {
+                dismissTTSNotification(result)
             }
             "stopSpeaking" -> {
                 stop()
@@ -138,7 +197,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             val utteranceId = UUID.randomUUID().toString()
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String) {
-                    // Speech has started
+                   
                 }
 
                 override fun onDone(utteranceId: String) {
@@ -148,6 +207,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
                 override fun onError(utteranceId: String) {
                     // Speech encountered an error
                     // Handle errors as needed
+                    dismissTTSNotification(result)
                 }
             })
 
@@ -158,7 +218,17 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
         }
     }
 
-    fun getLanguages(): Map<String, String> {
+    private fun dismissTTSNotification(result: Result) {
+        val notificationId = NOTIFICATION_ID
+        val intent = Intent(context, NotificationService::class.java)
+        intent.putExtra("action", "dismissNotification")
+        intent.putExtra("id", notificationId)
+        context.startService(intent)
+        stop()
+        result.success(true)
+    }
+
+    fun getLanguages(): Map<String, String> {             
         val languageMap = mutableMapOf<String, String>()
         val locales = tts.availableLanguages
         for (locale in locales) {
@@ -172,6 +242,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     fun stop() {
         if (tts.isSpeaking) {
             tts.stop()
+            Log.d("TTS", "Stopped speaking")
         }
     }
 }

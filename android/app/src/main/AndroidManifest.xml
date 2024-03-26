@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <queries>
         <intent>
@@ -84,5 +87,19 @@
         <service
             android:name="id.flutter.flutter_background_service.BackgroundService"
             android:foregroundServiceType="mediaPlayback"/>
+
+       <service
+        android:name=".NotificationService"
+        android:foregroundServiceType="dataSync|mediaPlayback"
+        android:exported="false">
+       </service>
+
+    <receiver android:name=".DisableTTSReceiver"
+    android:exported="false"> <!-- Set to false if not intended for public use -->
+    <intent-filter>
+        <action android:name="com.rtirl.chat.ACTION_DISABLE_TTS"/>
+    </intent-filter>
+    </receiver>
+
     </application>
 </manifest>

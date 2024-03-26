@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -73,25 +72,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
-  await tts_isolate.isolateMain(
-      ReceivePort().sendPort, channelStreamController);
-
-  AwesomeNotifications().initialize(
-    "resource://drawable/notification_icon",
-    [
-      NotificationChannel(
-        channelKey: 'tts_notifications_key',
-        channelName: 'tts_notifications_channel',
-        channelDescription: 'Channel to handle tts notifications',
-        defaultColor: const Color(0xFF9D50DD),
-        ledColor: Colors.white,
-        enableVibration: false,
-        enableLights: false,
-      )
-    ],
-  );
-
   final prefs = await StreamingSharedPreferences.instance;
+  await tts_isolate.isolateMain(
+      ReceivePort().sendPort, channelStreamController, prefs);
 
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
