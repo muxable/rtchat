@@ -183,21 +183,11 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setRandomVoiceEnabled(bool value) {
-    _isRandomVoiceEnabled = value;
-    notifyListeners();
-  }
-
   bool get isBotMuted {
     return _isBotMuted;
   }
 
   set isBotMuted(bool value) {
-    _isBotMuted = value;
-    notifyListeners();
-  }
-
-  void setBotMuted(bool value) {
     _isBotMuted = value;
     notifyListeners();
   }
@@ -211,21 +201,11 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setEmoteMuted(bool value) {
-    _isEmoteMuted = value;
-    notifyListeners();
-  }
-
   bool get isPreludeMuted {
     return _isPreludeMuted;
   }
 
   set isPreludeMuted(bool value) {
-    _isPreludeMuted = value;
-    notifyListeners();
-  }
-
-  void setPreludeMuted(bool value) {
     _isPreludeMuted = value;
     notifyListeners();
   }
@@ -251,21 +231,11 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setSpeed(double value) {
-    _speed = value;
-    notifyListeners();
-  }
-
   double get pitch {
     return _pitch;
   }
 
   set pitch(double value) {
-    _pitch = value;
-    notifyListeners();
-  }
-
-  void setPitch(double value) {
     _pitch = value;
     notifyListeners();
   }
@@ -342,7 +312,12 @@ class TtsModel extends ChangeNotifier {
     _pending.clear();
   }
 
-  TtsModel.fromJson(Map<String, dynamic> json) {
+  void updateFromJson(Map<String, dynamic> json) {
+    _updateFromJsonInternal(json);
+    notifyListeners();
+  }
+
+  void _updateFromJsonInternal(Map<String, dynamic> json) {
     if (json['isBotMuted'] != null) {
       _isBotMuted = json['isBotMuted'];
     }
@@ -373,6 +348,10 @@ class TtsModel extends ChangeNotifier {
         _mutedUsers.add(TwitchUserModel.fromJson(user));
       }
     }
+  }
+
+  TtsModel.fromJson(Map<String, dynamic> json) {
+    _updateFromJsonInternal(json);
   }
 
   Map<String, dynamic> toJson() => {
