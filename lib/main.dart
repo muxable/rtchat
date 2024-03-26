@@ -73,9 +73,8 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
   final prefs = await StreamingSharedPreferences.instance;
-  final ttsModel = TtsModel.emptyConstructor();
   await tts_isolate.isolateMain(
-      ReceivePort().sendPort, channelStreamController, prefs, ttsModel);
+      ReceivePort().sendPort, channelStreamController, prefs);
 
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
