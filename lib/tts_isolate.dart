@@ -33,20 +33,9 @@ Future<void> isolateMain(
   // listen for changes to the tts preferences and update the isolates ttsModel
   final ttsPrefs = prefs.getString('tts', defaultValue: '{}');
   ttsPrefs.listen((value) async {
-    final Map<String, dynamic> ttsMap = jsonDecode(value);
-    ttsModel.setBotMuted(ttsMap['isBotMuted']);
-    ttsModel.setEmoteMuted(ttsMap['isEmoteMuted']);
-    ttsModel.setPreludeMuted(ttsMap['isPreludeMuted']);
-    ttsModel.setRandomVoiceEnabled(ttsMap['isRandomVoiceEnabled']);
-    // TODO: figure out language setting? (ttsMap['language'])
-    ttsModel.setPitch(ttsMap['pitch']);
-    ttsModel.setSpeed(ttsMap['speed']);
-    // TODO: figure out voice setting? (ttsMap['voice'])
-    // TODO: figure out muted users? (ttsMap['mutedUsers'])
-
-    // Update native code changes as needed
+    ttsModel.updateFromJson(jsonDecode(value));
     await TextToSpeechPlugin.updateTTSPreferences(
-        ttsMap['pitch'], ttsMap['speed']);
+        ttsModel.pitch, ttsModel.speed);
   });
 
   TwitchMessageModel createMessageModelFromData(
