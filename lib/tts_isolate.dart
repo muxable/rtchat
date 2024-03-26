@@ -21,19 +21,32 @@ StreamSubscription? channelSubscription;
 Future<void> isolateMain(
     SendPort sendPort,
     StreamController<String> channelStream,
-    StreamingSharedPreferences prefs,
-    TtsModel ttsModel) async {
+    StreamingSharedPreferences prefs) async {
   DartPluginRegistrant.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   final ttsQueue = TTSQueue();
 
-  // listen for changes to the tts preferences
-  bool isPreludeMuted = false;
+  final ttsModel = TtsModel.fromJson(
+      jsonDecode(prefs.getString("tts", defaultValue: '{}').getValue()));
+
+  // listen for changes to the tts preferences and update the isolates ttsModel
   final ttsPrefs = prefs.getString('tts', defaultValue: '{}');
-  ttsPrefs.listen((value) {
+  ttsPrefs.listen((value) async {
     final Map<String, dynamic> ttsMap = jsonDecode(value);
-    isPreludeMuted = ttsMap['isPreludeMuted'];
+    ttsModel.setBotMuted(ttsMap['isBotMuted']);
+    ttsModel.setEmoteMuted(ttsMap['isEmoteMuted']);
+    ttsModel.setPreludeMuted(ttsMap['isPreludeMuted']);
+    ttsModel.setRandomVoiceEnabled(ttsMap['isRandomVoiceEnabled']);
+    // TODO: figure out language setting? (ttsMap['language'])
+    ttsModel.setPitch(ttsMap['pitch']);
+    ttsModel.setSpeed(ttsMap['speed']);
+    // TODO: figure out voice setting? (ttsMap['voice'])
+    // TODO: figure out muted users? (ttsMap['mutedUsers'])
+
+    // Update native code changes as needed
+    await TextToSpeechPlugin.updateTTSPreferences(
+        ttsMap['pitch'], ttsMap['speed']);
   });
 
   TwitchMessageModel createMessageModelFromData(
@@ -89,7 +102,7 @@ Future<void> isolateMain(
                     message.id, messageData, timestamp);
                 final finalMessage = ttsModel.getVocalization(
                   messageModel,
-                  includeAuthorPrelude: !isPreludeMuted,
+                  includeAuthorPrelude: !ttsModel.isPreludeMuted,
                 );
                 if (finalMessage.isNotEmpty) {
                   await ttsQueue.speak(message.id, finalMessage);
