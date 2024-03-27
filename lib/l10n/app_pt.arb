@@ -113,5 +113,6 @@
   "durationOneDayTimeoutPrompt": "Timeout de 1 dia",
   "durationTwoDaysTimeoutPrompt": "Timeout de 2 dias",
   "durationOneWeekTimeoutPrompt": "Timeout de 1 semana",
-  "durationTwoWeeksTimeoutPrompt": "Timeout de 2 semanas"
+  "durationTwoWeeksTimeoutPrompt": "Timeout de 2 semanas",
+  "sentAt": "Enviado às"
 }

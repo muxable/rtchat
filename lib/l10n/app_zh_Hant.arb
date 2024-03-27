@@ -113,5 +113,6 @@
   "durationOneDayTimeoutPrompt": "封鎖1天",
   "durationTwoDaysTimeoutPrompt": "封鎖2天",
   "durationOneWeekTimeoutPrompt": "封鎖1週",
-  "durationTwoWeeksTimeoutPrompt": "封鎖2週"
+  "durationTwoWeeksTimeoutPrompt": "封鎖2週",
+  "sentAt": "发送于"
 }
