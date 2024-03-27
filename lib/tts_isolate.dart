@@ -87,7 +87,7 @@ Future<void> isolateMain(
                     annotations: TwitchMessageAnnotationsModel.fromMap(
                         messageData['annotations']),
                     thirdPartyEmotes: await getEmotes(Channel(
-                        "twitch",
+                        messageData['channelId'].toString().split(":")[0],
                         messageData['channelId'],
                         messageData['author']['displayName'])),
                     timestamp: messageData['timestamp'].toDate(),
