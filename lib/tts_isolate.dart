@@ -7,8 +7,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/models/tts.dart';
-import 'package:rtchat/models/channels.dart';
-import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/messages/twitch/reply.dart';
@@ -86,10 +84,7 @@ Future<void> isolateMain(
                     tags: messageData['tags'],
                     annotations: TwitchMessageAnnotationsModel.fromMap(
                         messageData['annotations']),
-                    thirdPartyEmotes: await getEmotes(Channel(
-                        messageData['channelId'].toString().split(":")[0],
-                        messageData['channelId'],
-                        messageData['author']['displayName'])),
+                    thirdPartyEmotes: [],
                     timestamp: messageData['timestamp'].toDate(),
                     deleted: false,
                     channelId: messageData['channelId']);
