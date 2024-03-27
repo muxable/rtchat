@@ -3,7 +3,6 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-
 import 'package:rtchat/main.dart';
 import 'package:rtchat/notifications_plugin.dart';
 
