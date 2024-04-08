@@ -46,7 +46,6 @@
   "invalidUrlErrorText": "Dieser Link scheint ungültig zu sein.",
   "duplicateUrlErrorText": "Dieser Link existiert schon",
   "or": "oder",
-  "activityFeed": "Aktivitäts-Feed",
   "clearCookies": "cookies löschen",
   "disabled": "deaktiviert",
   "twitchActivityFeed": "Twitch Aktivitäts-Feed",
@@ -113,6 +112,5 @@
   "durationOneDayTimeoutPrompt": "Timeout für 1 tag",
   "durationTwoDaysTimeoutPrompt": "Timeout für 2 tage",
   "durationOneWeekTimeoutPrompt": "Timeout für 1 woche",
-  "durationTwoWeeksTimeoutPrompt": "Timeout für 2 wochen",
-  "sentAt": "Gesendet um"
+  "durationTwoWeeksTimeoutPrompt": "Timeout für 2 wochen"
 }

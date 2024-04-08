@@ -46,7 +46,6 @@
   "invalidUrlErrorText": "这看起来不像是有效的网址",
   "duplicateUrlErrorText": "此链接已存在",
   "or": "或者",
-  "activityFeed": "活动提要",
   "clearCookies": "清除Cookies",
   "disabled": "禁用",
   "twitchActivityFeed": "Twitch活动提要",
@@ -113,6 +112,5 @@
   "durationOneDayTimeoutPrompt": "暂停1天",
   "durationTwoDaysTimeoutPrompt": "暂停2天",
   "durationOneWeekTimeoutPrompt": "暂停1周",
-  "durationTwoWeeksTimeoutPrompt": "暂停2周",
-  "sentAt": "發送於"
+  "durationTwoWeeksTimeoutPrompt": "暂停2周"
 }

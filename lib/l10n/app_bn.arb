@@ -46,7 +46,6 @@
   "invalidUrlErrorText": "অবৈধ URL এর ত্রুটি টেক্সট",
   "duplicateUrlErrorText": "ডুপ্লিকেট URL ত্রুটি টেক্সট",
   "or": "অথবা",
-  "activityFeed": "অ্যাক্টিভিটি ফিড",
   "clearCookies": "কুকিজ ক্লিয়ার করুন",
   "disabled": "অক্ষম",
   "twitchActivityFeed": "টুইচ এর একটিভিটি ফিড",
@@ -113,6 +112,5 @@
   "durationOneDayTimeoutPrompt": "1 দিনের জন্য সময়সীমা",
   "durationTwoDaysTimeoutPrompt": "2 দিনের জন্য সময়সীমা",
   "durationOneWeekTimeoutPrompt": "1 সপ্তাহের জন্য সময়সীমা",
-  "durationTwoWeeksTimeoutPrompt": "2 সপ্তাহের জন্য সময়সীমা",
-  "sentAt": "এ পাঠানো হয়েছে"
+  "durationTwoWeeksTimeoutPrompt": "2 সপ্তাহের জন্য সময়সীমা"
 }

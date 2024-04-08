@@ -41,7 +41,6 @@
   "invalidUrlErrorText": "Dit ziet er niet uit als een geldige URL",
   "duplicateUrlErrorText": "Deze link bestaat all",
   "or": "of",
-  "activityFeed": "Activiteitenfeed",
   "clearCookies": "Cookies ",
   "newMessageCount": "{count,plural, =0{Geen nieuwe berichten} =1{1 nieuw bericht} other{{count} nieuwe berichten}}",
   "streamOnline": "Stream online op {date}, {time}",
@@ -113,6 +112,5 @@
   "durationOneDayTimeoutPrompt": "Time-out voor 1 dag",
   "durationTwoDaysTimeoutPrompt": "Time-out voor 2 dagen",
   "durationOneWeekTimeoutPrompt": "Time-out voor 1 week",
-  "durationTwoWeeksTimeoutPrompt": "Time-out voor 2 weken",
-  "sentAt": "Verzonden op"
+  "durationTwoWeeksTimeoutPrompt": "Time-out voor 2 weken"
 }

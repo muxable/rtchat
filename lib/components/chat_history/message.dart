@@ -81,6 +81,37 @@ class ChatHistoryMessage extends StatelessWidget {
           return child;
         }
 
+        String getLabel(int value) {
+          switch (value) {
+            case 1:
+              return AppLocalizations.of(context)!.durationOneSecond;
+            case 2:
+              return AppLocalizations.of(context)!.durationOneMinute;
+            case 3:
+              return AppLocalizations.of(context)!.durationTenMinutes;
+            case 4:
+              return AppLocalizations.of(context)!.durationOneHour;
+            case 5:
+              return AppLocalizations.of(context)!.durationSixHours;
+            case 6:
+              return AppLocalizations.of(context)!.durationOneDay;
+            case 7:
+              return AppLocalizations.of(context)!.durationTwoDays;
+            case 8:
+              return AppLocalizations.of(context)!.durationOneWeek;
+            case 9:
+              return AppLocalizations.of(context)!.durationTwoWeeks;
+          }
+          return "";
+        }
+
+        String formatDuration(DateTime timestamp) {
+          final now = DateTime.now();
+          final difference = now.difference(timestamp);
+
+          return getLabel(difference.inSeconds);
+        }
+
         return Material(
           child: InkWell(
               onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -99,7 +130,7 @@ class ChatHistoryMessage extends StatelessWidget {
                                 leading:
                                     const Icon(Icons.timer, color: Colors.grey),
                                 title: Text(
-                                    '${AppLocalizations.of(context)!.sentAt}: ${formatDuration(message.timestamp)}'),
+                                    '${AppLocalizations.of(context)!.sentMesssageExpose} ${formatDuration(message.timestamp)} ${AppLocalizations.of(context)!.agoMesssageText}'),
                               ),
                               Consumer<TtsModel>(
                                   builder: (context, ttsModel, child) {
@@ -312,21 +343,6 @@ class ChatHistoryMessage extends StatelessWidget {
       return TwitchShoutoutReceiveEventWidget(m);
     } else {
       throw AssertionError("invalid message type $m");
-    }
-  }
-
-  String formatDuration(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inMinutes < 1) {
-      return 'now';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes} minutes ago';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours} hours ago';
-    } else {
-      return DateFormat('yyyy-mm-dd').format(timestamp);
     }
   }
 }

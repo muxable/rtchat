@@ -443,6 +443,14 @@
   "@globalEmotes": {
     "description": "Text label for the global emotes category header"
   },
+  "sentMesssageExpose" : "Sent",
+  "@sentMesssageExpose": {
+    "description": "Text label for the sent message expose"
+  },
+  "agoMesssageText" : "Ago",
+  "@agoMesssageText": {
+    "description": "Text label for the ago message text"
+  },
   "followerCount": "{count,plural, =0{0 followers} =1{1 follower} other{{count} followers}}",
   "@followerCount": {
     "description": "Text label for the followers count",
@@ -574,10 +582,6 @@
   "durationTwoWeeksTimeoutPrompt": "Timeout for 2 weeks",
   "@durationTwoWeeksTimeoutPrompt": {
     "descriptionTimeoutPrompt": "Button label to timeout for a two week duration"
-  },
-  "sentAt": "Sent at",
-  "@sentAt": {
-    "sentAt": "Text label to show when a message was last sent at"
   },
   "errorFetchingViewerList": "We couldn't fetch the viewer list for this channel",
   "@errorFetchingViewerList": {
