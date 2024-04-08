@@ -37,12 +37,12 @@ Future<List<Emote>> getEmotes(Channel channel) async {
     } catch (e) {
       if (i == 2) {
         FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
-        return [];
       } else {
         await Future.delayed(const Duration(seconds: 1));
       }
     }
   }
+  return [];
 }
 
 class Emote {
