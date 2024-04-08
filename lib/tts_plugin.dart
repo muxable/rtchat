@@ -1,16 +1,28 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:rtchat/main.dart';
+import 'package:rtchat/notifications_plugin.dart';
 
 class TextToSpeechPlugin {
-  static const MethodChannel channel = MethodChannel('tts_plugin');
+  static const MethodChannel channel = MethodChannel('ttsPlugin');
+
+  static Future<void> updateTTSPreferences(double pitch, double speed) async {
+    try {
+      await channel.invokeMethod(
+          'updateTTSPreferences', {'pitch': pitch, 'speed': speed});
+    } catch (e) {
+      debugPrint("updateTTSPreferences error: $e");
+    }
+  }
 
   static Future<void> speak(String text) async {
     try {
       await channel.invokeMethod('speak', {'text': text});
     } catch (e) {
-      // Handle the error
+      debugPrint("speak error: $e");
     }
   }
 
@@ -20,7 +32,7 @@ class TextToSpeechPlugin {
           await channel.invokeMethod('getLanguages');
       return Map<String, String>.from(languageMap);
     } catch (e) {
-      // Handle the error
+      debugPrint("getLanguages error: $e");
       return <String, String>{};
     }
   }
@@ -29,7 +41,15 @@ class TextToSpeechPlugin {
     try {
       await channel.invokeMethod('stopSpeaking');
     } catch (e) {
-      // Handle the error
+      debugPrint("stopSpeaking error: $e");
+    }
+  }
+
+  static Future<void> disableTTS() async {
+    try {
+      await channel.invokeMethod('disableTTS');
+    } catch (e) {
+      debugPrint("disableTTS error: $e");
     }
   }
 
@@ -37,21 +57,32 @@ class TextToSpeechPlugin {
     try {
       await channel.invokeMethod('clear');
     } catch (e) {
-      // Handle the error
+      debugPrint("clear error: $e");
     }
   }
 }
 
 class TTSQueue {
-  final queue = Queue<({String id, String text, Completer<void> completer})>();
+  final Queue<TTSQueueElement> queue = Queue<TTSQueueElement>();
 
   bool get isEmpty => queue.isEmpty;
-
   int get length => queue.length;
 
   Future<void> speak(String id, String text) async {
     final completer = Completer<void>();
-    final element = (id: id, text: text, completer: completer);
+    final element = TTSQueueElement(id: id, text: text, completer: completer);
+
+    if (queue.length >= 20 && !readUserName) {
+      queue.clear();
+      await clear();
+      await disableTts();
+      await TextToSpeechPlugin.stopSpeaking();
+      await TextToSpeechPlugin.speak(
+          "There are too many messages. Text to speech disabled");
+      NotificationsPlugin.cancelNotification();
+      return;
+    }
+
     if (queue.isNotEmpty) {
       final previous = queue.last;
       queue.addLast(element);
@@ -69,25 +100,34 @@ class TTSQueue {
     queue.remove(element);
   }
 
+  bool get readUserName => queue.length < 10;
+
   void delete(String id) {
-    queue.removeWhere((speak) => speak.id == id);
+    if (queue.isNotEmpty && queue.first.id != id) {
+      queue.removeWhere((element) => element.id == id);
+    }
   }
 
   Future<void> clear() async {
+    await TextToSpeechPlugin.clear();
     queue.clear();
-    try {
-      await TextToSpeechPlugin.stopSpeaking();
-      await TextToSpeechPlugin.clear();
-    } catch (e) {
-      // handle the error;
-    }
   }
 
-  ({String id, String text})? peek() {
-    final first = queue.firstOrNull;
-    if (first != null) {
-      return (id: first.id, text: first.text);
-    }
-    return null;
+  TTSQueueElement? peek() {
+    return queue.isNotEmpty ? queue.first : null;
   }
+
+  Future<void> disableTts() async {
+    updateChannelSubscription("");
+    TextToSpeechPlugin.disableTTS();
+  }
+}
+
+class TTSQueueElement {
+  final String id;
+  final String text;
+  final Completer<void> completer;
+
+  TTSQueueElement(
+      {required this.id, required this.text, required this.completer});
 }

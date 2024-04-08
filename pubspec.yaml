@@ -13,7 +13,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   audioplayers: ^5.2.1
-  awesome_notifications: ^0.8.2
   characters: ^1.3.0
   cloud_firestore: ^4.13.6
   cloud_functions: ^4.5.8
@@ -24,8 +23,6 @@ dependencies:
   firebase_core: ^2.24.2
   firebase_crashlytics: ^3.4.8
   firebase_database: ^10.3.8
-  flutter_background_service: ^5.0.5
-  flutter_background_service_android: ^6.2.2
   flutter_custom_tabs: ^1.2.1
   flutter_keyboard_visibility: ^6.0.0
   flutter_localized_locales: ^2.0.5

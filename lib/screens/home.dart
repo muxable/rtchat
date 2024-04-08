@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock/wakelock.dart';
@@ -16,13 +15,15 @@ import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
+import 'package:rtchat/main.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:rtchat/notifications_plugin.dart';
+import 'package:rtchat/tts_plugin.dart';
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
@@ -160,17 +161,24 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   void initState() {
     super.initState();
     Wakelock.enable();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      debugPrint("Post frame callback executed");
+      if (!mounted) return;
+      debugPrint("Post frame callback post executed");
       final model = Provider.of<AudioModel>(context, listen: false);
+      final ttsModel = Provider.of<TtsModel>(context, listen: false);
+
+      NotificationsPlugin.listenToTTs(ttsModel);
+
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
-      if (context.mounted) {
+      if (mounted) {
+        debugPrint("Conditions passed");
         model.showAudioPermissionDialog(context);
       }
     });
@@ -193,7 +201,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             key: _scaffoldKey,
             drawer: Sidebar(channel: widget.channel),
             endDrawer: userModel.isSignedIn()
-                ? EndDrawerWidget(channel: widget.channel)
+                ? EndDrawerWidget(
+                    channel: widget.channel,
+                  )
                 : null,
             drawerEdgeDragWidth: MediaQuery.of(context).size.width * 0.6,
             onDrawerChanged: (isOpened) =>
@@ -231,42 +241,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       },
                     );
                   }),
-                  Consumer<TtsModel>(builder: (context, ttsModel, child) {
-                    return IconButton(
-                      icon: Icon(ttsModel.enabled
-                          ? Icons.record_voice_over
-                          : Icons.voice_over_off),
-                      tooltip: AppLocalizations.of(context)!.textToSpeech,
-                      onPressed: () async {
-                        // Toggle the enabled state
-                        ttsModel.enabled = !ttsModel.enabled;
-
-                        if (!ttsModel.enabled) {
-                          FlutterBackgroundService().invoke('setTtsChannel', {
-                            "channel": null,
+                  Consumer<TtsModel>(
+                    builder: (context, ttsModel, child) {
+                      return IconButton(
+                        icon: Icon(ttsModel.enabled
+                            ? Icons.record_voice_over
+                            : Icons.voice_over_off),
+                        tooltip: AppLocalizations.of(context)!.textToSpeech,
+                        onPressed: () async {
+                          setState(() {
+                            ttsModel.enabled = !ttsModel.enabled;
                           });
-
-                          AwesomeNotifications().dismiss(6853027);
-                        }
-
-                        if (ttsModel.enabled) {
-                          FlutterBackgroundService().invoke("setTtsChannel", {
-                            "channel": userModel.activeChannel?.toJson(),
-                          });
-                          AwesomeNotifications().createNotification(
-                            content: NotificationContent(
-                              id: 6853027,
-                              channelKey: 'tts_notifications_key',
-                              title: 'Text-to-speech is enabled',
-                              body: null,
-                              locked: true,
-                              autoDismissible: false,
-                            ),
-                          );
-                        }
-                      },
-                    );
-                  }),
+                          if (!ttsModel.enabled) {
+                            updateChannelSubscription("");
+                            await TextToSpeechPlugin.speak(
+                                "Text to speech disabled");
+                            await TextToSpeechPlugin.disableTTS();
+                            NotificationsPlugin.cancelNotification();
+                          } else {
+                            channelStreamController.stream
+                                .listen((currentChannel) {
+                              if (currentChannel.isEmpty) {
+                                setState(() {
+                                  ttsModel.enabled = false;
+                                });
+                              }
+                            });
+                            await TextToSpeechPlugin.speak(
+                                "Text to speech enabled");
+                            updateChannelSubscription(
+                                "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+                            NotificationsPlugin.showNotification();
+                            NotificationsPlugin.listenToTTs(ttsModel);
+                          }
+                        },
+                      );
+                    },
+                  ),
                   if (userModel.isSignedIn())
                     IconButton(
                       icon: const Icon(Icons.people),
