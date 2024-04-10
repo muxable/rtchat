@@ -80,28 +80,27 @@ class ChatHistoryMessage extends StatelessWidget {
           return child;
         }
 
-        String getLabel(int value) {
-          switch (value) {
-            case 1:
-              return AppLocalizations.of(context)!.durationOneSecond;
-            case 2:
-              return AppLocalizations.of(context)!.durationOneMinute;
-            case 3:
-              return AppLocalizations.of(context)!.durationTenMinutes;
-            case 4:
-              return AppLocalizations.of(context)!.durationOneHour;
-            case 5:
-              return AppLocalizations.of(context)!.durationSixHours;
-            case 6:
-              return AppLocalizations.of(context)!.durationOneDay;
-            case 7:
-              return AppLocalizations.of(context)!.durationTwoDays;
-            case 8:
-              return AppLocalizations.of(context)!.durationOneWeek;
-            case 9:
-              return AppLocalizations.of(context)!.durationTwoWeeks;
+        String getLabel(int seconds) {
+          if (seconds < 60) {
+            return AppLocalizations.of(context)!.justNow;
+          } else if (seconds < 3600) {
+            int minutes = seconds ~/ 60;
+            return "$minutes ${AppLocalizations.of(context)?.minutes} ${AppLocalizations.of(context)?.agoMesssageText}"; // Customize with i18n if necessary
+          } else if (seconds < 86400) {
+            // Less than 1 day
+            int hours = seconds ~/ 3600;
+            return "$hours ${AppLocalizations.of(context)?.hours} ${AppLocalizations.of(context)?.agoMesssageText}"; // Customize with i18n if necessary
+          } else if (seconds < 604800) {
+            // Less than 1 week
+            int days = seconds ~/ 86400;
+            return "$days ${AppLocalizations.of(context)?.days} ${AppLocalizations.of(context)?.agoMesssageText}"; // Customize with i18n if necessary
+          } else if (seconds < 1209600) {
+            // Less than 2 weeks
+            return AppLocalizations.of(context)!.lastWeek;
+          } else {
+            int weeks = seconds ~/ 604800;
+            return "$weeks ${AppLocalizations.of(context)?.weeks} ${AppLocalizations.of(context)?.agoMesssageText}"; // Customize with i18n if necessary
           }
-          return "";
         }
 
         String formatDuration(DateTime timestamp) {
