@@ -120,7 +120,7 @@ const HOST =
 
 app.get("/auth/twitch/redirect", (req, res) => {
   const state = req.session.state || crypto.randomBytes(20).toString("hex");
-  req.session.companion = req.query.companion.toString();
+  req.session.companion = req.query.companion?.toString();
   req.session.state = state.toString();
   const redirectUri = new AuthorizationCode(TWITCH_OAUTH_CONFIG).authorizeURL({
     redirect_uri: `${HOST}/auth/twitch/callback`,
