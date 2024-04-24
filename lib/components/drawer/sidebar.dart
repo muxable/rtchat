@@ -251,7 +251,7 @@ class _SidebarState extends State<Sidebar> {
           onTap: () async {
             final scaffoldMessenger = ScaffoldMessenger.of(context);
             final count = await audioModel.refreshAllSources();
-            if (!mounted) return;
+            if (!context.mounted) return;
             scaffoldMessenger.showSnackBar(SnackBar(
                 content: Text(AppLocalizations.of(context)!
                     .refreshAudioSourcesCount(count))));
