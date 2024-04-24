@@ -35,7 +35,6 @@ class _DrawerHeader extends StatelessWidget {
                           child: Padding(
                               padding: const EdgeInsets.all(12),
                               child: Image.asset("assets/muxable.png")))),
-                  const Divider(),
                   Row(
                     children: [
                       Expanded(
@@ -70,16 +69,18 @@ class _DrawerHeader extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                        userChannel?.displayName ??
-                                            AppLocalizations.of(context)!
-                                                .notSignedIn,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge
-                                            ?.copyWith(color: Colors.white)),
+                                      userChannel?.displayName ??
+                                          AppLocalizations.of(context)!
+                                              .notSignedIn,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(color: Colors.white),
+                                    ),
                                     const SizedBox(height: 8),
                                     Text("twitch.tv",
+                                        overflow: TextOverflow.ellipsis,
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyMedium
@@ -221,8 +222,8 @@ class _SidebarState extends State<Sidebar> {
           return ListTile(
             leading: const Icon(Icons.thunderstorm),
             title: Text(AppLocalizations.of(context)!.enableRainMode),
-            subtitle:
-                Text(AppLocalizations.of(context)!.enableRainModeSubtitle),
+            subtitle: Text(AppLocalizations.of(context)!.enableRainModeSubtitle,
+                overflow: TextOverflow.ellipsis),
             onTap: () async {
               layoutModel.locked = !layoutModel.locked;
               Navigator.pop(context);
@@ -233,7 +234,8 @@ class _SidebarState extends State<Sidebar> {
         return ListTile(
           leading: const Icon(Icons.thunderstorm),
           title: Text(AppLocalizations.of(context)!.disableRainMode),
-          subtitle: Text(AppLocalizations.of(context)!.disableRainModeSubtitle),
+          subtitle: Text(AppLocalizations.of(context)!.disableRainModeSubtitle,
+              overflow: TextOverflow.ellipsis),
           onTap: () async {
             layoutModel.locked = !layoutModel.locked;
             Navigator.pop(context);
@@ -251,7 +253,7 @@ class _SidebarState extends State<Sidebar> {
           onTap: () async {
             final scaffoldMessenger = ScaffoldMessenger.of(context);
             final count = await audioModel.refreshAllSources();
-            if (!mounted) return;
+            if (!context.mounted) return;
             scaffoldMessenger.showSnackBar(SnackBar(
                 content: Text(AppLocalizations.of(context)!
                     .refreshAudioSourcesCount(count))));
@@ -366,12 +368,16 @@ class _SidebarState extends State<Sidebar> {
             Expanded(child: Builder(builder: (context) {
               final orientation = MediaQuery.of(context).orientation;
               if (orientation == Orientation.portrait) {
-                return Column(children: [
-                  Expanded(
-                      child: ListView(
-                          padding: EdgeInsets.zero,
-                          children: const [QuicklinksListView()])),
-                  ...tiles
+                return CustomScrollView(shrinkWrap: true, slivers: [
+                  SliverToBoxAdapter(
+                    child: const QuicklinksListView(),
+                  ),
+                  SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: tiles,
+                      ))
                 ]);
               } else {
                 return ListView(
