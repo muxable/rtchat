@@ -369,8 +369,8 @@ class _SidebarState extends State<Sidebar> {
               final orientation = MediaQuery.of(context).orientation;
               if (orientation == Orientation.portrait) {
                 return CustomScrollView(shrinkWrap: true, slivers: [
-                  SliverToBoxAdapter(
-                    child: const QuicklinksListView(),
+                  const SliverToBoxAdapter(
+                    child: QuicklinksListView(),
                   ),
                   SliverFillRemaining(
                       hasScrollBody: false,
