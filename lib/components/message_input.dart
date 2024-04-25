@@ -224,6 +224,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                             ),
                           ),
                           border: InputBorder.none,
+                          hintMaxLines: 1,
                           hintText: () {
                             final l10n = AppLocalizations.of(context)!;
                             if (_textSeed < 0.5) {
