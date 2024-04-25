@@ -25,9 +25,11 @@ class _CompanionAuthWidgetState extends State<CompanionAuthWidget> {
     super.initState();
     ProfilesAdapter.instance
         .getCompanionAuthToken(sessionUuid: sessionUuid)
-        .then((token) {
+        .then((token) async {
       final user = Provider.of<UserModel>(context, listen: false);
-      return user.signIn(token);
+      await user.signIn(token);
+      if (!mounted){ return;}
+      Navigator.of(context).pop();
     });
   }
 
