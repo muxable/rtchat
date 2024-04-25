@@ -106,6 +106,7 @@ app.use(
 
 declare module "express-session" {
   interface Session {
+    companion?: string;
     state?: string;
     token?: string;
     provider?: string;
@@ -119,6 +120,7 @@ const HOST =
 
 app.get("/auth/twitch/redirect", (req, res) => {
   const state = req.session.state || crypto.randomBytes(20).toString("hex");
+  req.session.companion = req.query.companion?.toString();
   req.session.state = state.toString();
   const redirectUri = new AuthorizationCode(TWITCH_OAUTH_CONFIG).authorizeURL({
     redirect_uri: `${HOST}/auth/twitch/callback`,
@@ -213,7 +215,16 @@ app.get("/auth/twitch/callback", async (req, res) => {
 
   const token = await admin.auth().createCustomToken(firebaseUserId);
 
-  res.redirect("com.rtirl.chat://success?token=" + encodeURIComponent(token));
+  if (req.session.companion) {
+    await admin
+      .firestore()
+      .collection("companion-tokens")
+      .doc(req.session.companion)
+      .set({ token }, { merge: true });
+    res.send("Logged in successfully.");
+  } else {
+    res.redirect("com.rtirl.chat://success?token=" + encodeURIComponent(token));
+  }
 });
 
 app.get("/auth/streamlabs/redirect", (req, res) => {

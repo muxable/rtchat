@@ -178,6 +178,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       debugPrint("Post frame callback post executed");
       final model = Provider.of<AudioModel>(context, listen: false);
       final ttsModel = Provider.of<TtsModel>(context, listen: false);
+
+      NotificationsPlugin.listenToTTs(ttsModel);
+
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
@@ -245,7 +248,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final orientation = MediaQuery.of(context).orientation;
+    final mediaQuery = MediaQuery.of(context);
+    final orientation = mediaQuery.orientation;
+    final width = mediaQuery.size.width;
 
     return GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -283,17 +288,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       },
                     );
                   }),
-                  Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-                    return IconButton(
-                      icon: Icon(layoutModel.isShowPreview
-                          ? Icons.preview
-                          : Icons.preview_outlined),
-                      tooltip: AppLocalizations.of(context)!.streamPreview,
-                      onPressed: () {
-                        layoutModel.isShowPreview = !layoutModel.isShowPreview;
-                      },
-                    );
-                  }),
+                  if (width > 400)
+                    Consumer<LayoutModel>(
+                        builder: (context, layoutModel, child) {
+                      return IconButton(
+                        icon: Icon(layoutModel.isShowPreview
+                            ? Icons.preview
+                            : Icons.preview_outlined),
+                        tooltip: AppLocalizations.of(context)!.streamPreview,
+                        onPressed: () {
+                          layoutModel.isShowPreview =
+                              !layoutModel.isShowPreview;
+                        },
+                      );
+                    }),
                   Consumer<TtsModel>(
                     builder: (context, ttsModel, child) {
                       return IconButton(
@@ -331,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       );
                     },
                   ),
-                  if (userModel.isSignedIn())
+                  if (userModel.isSignedIn() && width > 400)
                     IconButton(
                       icon: const Icon(Icons.people),
                       tooltip: AppLocalizations.of(context)!.currentViewers,
@@ -367,7 +375,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               .labelLarge)),
                                   const Flexible(child: Divider()),
                                 ]),
-                            const SignInWithTwitch(),
+                            SignInWithTwitch(),
                           ]);
                         }
 

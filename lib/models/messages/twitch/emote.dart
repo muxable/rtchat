@@ -3,6 +3,7 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
@@ -19,17 +20,29 @@ Future<List<Emote>> getEmotes(Channel channel) async {
     }
   }
 
-  final response = await FirebaseFunctions.instance.httpsCallable("getEmotes")({
-    "provider": channel.provider,
-    "channelId": channel.channelId,
-  });
-  final json = jsonEncode(response.data);
-  await cacheFile.create(recursive: true);
-  await cacheFile.writeAsString(json);
+  for (int i = 0; i < 3; i++) {
+    try {
+      final response =
+          await FirebaseFunctions.instance.httpsCallable("getEmotes")({
+        "provider": channel.provider,
+        "channelId": channel.channelId,
+      });
+      final json = jsonEncode(response.data);
+      await cacheFile.create(recursive: true);
+      await cacheFile.writeAsString(json);
 
-  return (response.data as List)
-      .map((individualEmote) => Emote.fromJson(individualEmote))
-      .toList();
+      return (response.data as List)
+          .map((individualEmote) => Emote.fromJson(individualEmote))
+          .toList();
+    } catch (e) {
+      if (i == 2) {
+        FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
+      } else {
+        await Future.delayed(const Duration(seconds: 1));
+      }
+    }
+  }
+  return [];
 }
 
 class Emote {

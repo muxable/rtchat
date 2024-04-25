@@ -169,6 +169,13 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
         Log.d("TextToSpeechPlugin", call.method)
 
         when (call.method) {
+            "updateTTSPreferences" -> {
+                val pitch = call.argument<Double?>("pitch")
+                val speed = call.argument<Double?>("speed")
+                if (pitch != null && speed != null) {
+                    updateTTSPreferences(pitch.toFloat(), speed.toFloat())
+                }
+            }
             "speak" -> {
                 val text = call.argument<String>("text")
                 if (!text.isNullOrBlank()) {
@@ -190,6 +197,11 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             }
             else -> result.notImplemented()
         }
+    }
+
+    fun updateTTSPreferences(pitch: Float, speed: Float) {
+        tts.setPitch(pitch)
+        tts.setSpeechRate(speed)
     }
 
     fun speak(text: String, result: Result) {
@@ -219,13 +231,13 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     }
 
     private fun dismissTTSNotification(result: Result) {
-                   val notificationId = NOTIFICATION_ID
-                   val intent = Intent(context, NotificationService::class.java)
-                   intent.putExtra("action", "dismissNotification")
-                   intent.putExtra("id", notificationId)
-                   context.startService(intent)
-                   stop()
-                   result.success(true)
+        val notificationId = NOTIFICATION_ID
+        val intent = Intent(context, NotificationService::class.java)
+        intent.putExtra("action", "dismissNotification")
+        intent.putExtra("id", notificationId)
+        context.startService(intent)
+        stop()
+        result.success(true)
     }
 
     fun getLanguages(): Map<String, String> {             
