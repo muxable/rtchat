@@ -14,15 +14,8 @@ Widget _iconWithText(IconData icon, String text) {
   ]);
 }
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  int _versionTapCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -237,32 +230,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       applicationLegalese: '\u{a9} 2024 Muxable',
                     );
                   },
-                  // aboutBoxChildren: [
-                  //   const SizedBox(height: 24),
-                  //   InkWell(
-                  //       child: const Text(
-                  //         'Seems legit',
-                  //         textAlign: TextAlign.center,
-                  //       ),
-                  //       onTap: () {
-                  //         setState(() {
-                  //           if (++_versionTapCount == 6) {
-                  //             _versionTapCount = 0;
-                  //             final model = Provider.of<StyleModel>(context,
-                  //                 listen: false);
-                  //             model.isDiscoModeAvailable =
-                  //                 !model.isDiscoModeAvailable;
-                  //             ScaffoldMessenger.of(context).showSnackBar(
-                  //                 SnackBar(
-                  //                     content: model.isDiscoModeAvailable
-                  //                         ? const Text(
-                  //                             "🕺 Disco mode enabled! :D")
-                  //                         : const Text(
-                  //                             "🕺 Disco mode disabled D:")));
-                  //           }
-                  //         });
-                  //       })
-                  // ],
+                  onLongPress: () {
+                    final model =
+                        Provider.of<StyleModel>(context, listen: false);
+                    model.isDiscoModeAvailable = !model.isDiscoModeAvailable;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: model.isDiscoModeAvailable
+                            ? const Text("🕺 Disco mode enabled! :D")
+                            : const Text("🕺 Disco mode disabled D:")));
+                  },
                 );
               })
         ]);
