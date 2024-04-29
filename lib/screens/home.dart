@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:wakelock/wakelock.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
 import 'package:rtchat/components/auth/twitch.dart';
@@ -25,6 +24,7 @@ import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/notifications_plugin.dart';
 import 'package:rtchat/tts_plugin.dart';
+import 'package:wakelock/wakelock.dart';
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
@@ -255,8 +255,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             : Icons.voice_over_off),
                         tooltip: AppLocalizations.of(context)!.textToSpeech,
                         onPressed: () async {
-                          ttsModel.enabled = !ttsModel.enabled;
-                          if (false) {
+                          if (!kDebugMode) {
+                            ttsModel.enabled = !ttsModel.enabled;
+                          } else {
                             if (!ttsModel.enabled) {
                               updateChannelSubscription("");
                               await TextToSpeechPlugin.speak(
