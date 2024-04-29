@@ -70,8 +70,11 @@ class EmotesList extends StatelessWidget {
                         onPressed: () => onEmoteSelected(emote),
                         splashRadius: 24,
                         icon: CrossFadeImage(
-                            placeholder: emote.image.placeholderImage,
-                            image: emote.image)));
+                          placeholder: emote.image.placeholderImage,
+                          image: emote.image,
+                          width: 36,
+                          height: 36,
+                        )));
               }).toList(),
             )),
           );
