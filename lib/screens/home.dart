@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -254,30 +255,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             : Icons.voice_over_off),
                         tooltip: AppLocalizations.of(context)!.textToSpeech,
                         onPressed: () async {
-                          setState(() {
-                            ttsModel.enabled = !ttsModel.enabled;
-                          });
-                          if (!ttsModel.enabled) {
-                            updateChannelSubscription("");
-                            await TextToSpeechPlugin.speak(
-                                "Text to speech disabled");
-                            await TextToSpeechPlugin.disableTTS();
-                            NotificationsPlugin.cancelNotification();
-                          } else {
-                            channelStreamController.stream
-                                .listen((currentChannel) {
-                              if (currentChannel.isEmpty) {
-                                setState(() {
-                                  ttsModel.enabled = false;
-                                });
-                              }
-                            });
-                            await TextToSpeechPlugin.speak(
-                                "Text to speech enabled");
-                            updateChannelSubscription(
-                                "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
-                            NotificationsPlugin.showNotification();
-                            NotificationsPlugin.listenToTTs(ttsModel);
+                          ttsModel.enabled = !ttsModel.enabled;
+                          if (false) {
+                            if (!ttsModel.enabled) {
+                              updateChannelSubscription("");
+                              await TextToSpeechPlugin.speak(
+                                  "Text to speech disabled");
+                              await TextToSpeechPlugin.disableTTS();
+                              NotificationsPlugin.cancelNotification();
+                            } else {
+                              channelStreamController.stream
+                                  .listen((currentChannel) {
+                                if (currentChannel.isEmpty) {
+                                  setState(() {
+                                    ttsModel.enabled = false;
+                                  });
+                                }
+                              });
+                              await TextToSpeechPlugin.speak(
+                                  "Text to speech enabled");
+                              updateChannelSubscription(
+                                  "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+                              NotificationsPlugin.showNotification();
+                              NotificationsPlugin.listenToTTs(ttsModel);
+                            }
                           }
                         },
                       );
