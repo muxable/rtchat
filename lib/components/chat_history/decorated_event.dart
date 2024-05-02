@@ -140,12 +140,8 @@ class DecoratedEventWidget extends StatelessWidget {
       {Key? key,
       required Widget child,
       required IconData icon,
-      EdgeInsets? padding})
-      : this._(
-            key: key,
-            padding: padding ?? EdgeInsets.zero,
-            child: child,
-            icon: icon);
+      EdgeInsets padding = const EdgeInsets.fromLTRB(12, 4, 16, 4)})
+      : this._(key: key, padding: padding, child: child, icon: icon);
 
   const DecoratedEventWidget({
     Key? key,
