@@ -8,7 +8,6 @@ import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/auth/companion_auth.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:uuid/uuid.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
@@ -17,7 +16,7 @@ class SignInWithTwitch extends StatelessWidget {
   final void Function()? onStart;
   final void Function()? onComplete;
 
-  SignInWithTwitch({
+  const SignInWithTwitch({
     super.key,
     this.onStart,
     this.onComplete,
