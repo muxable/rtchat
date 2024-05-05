@@ -68,7 +68,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   // Handles any shared data we may receive.
   void _handleSharedData(String sharedData) {
-    debugPrint('Shared data received: $sharedData');
     setState(() {
       _textEditingController.text = sharedData;
     });
@@ -206,6 +205,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                                     : ColorFiltered(
                                         colorFilter: _greyscale,
                                         child: Image(
+                                          width: 24,
+                                          height: 24,
                                           image: ResilientNetworkImage(
                                               Uri.parse(_emotes[_emoteIndex])),
                                         ))),

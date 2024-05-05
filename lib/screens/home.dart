@@ -1,11 +1,9 @@
-import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:battery_plus/battery_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:wakelock/wakelock.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
 import 'package:rtchat/components/auth/twitch.dart';
@@ -26,6 +24,7 @@ import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/notifications_plugin.dart';
 import 'package:rtchat/tts_plugin.dart';
+import 'package:wakelock/wakelock.dart';
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
@@ -163,11 +162,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  final Battery _battery = Battery();
-  BatteryState? _batteryState;
-  StreamSubscription<BatteryState>? _batteryStateSubscription;
-
   @override
   void initState() {
     super.initState();
@@ -187,11 +181,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (mounted) {
         debugPrint("Conditions passed");
         model.showAudioPermissionDialog(context);
-        debugPrint("Directly calling listenToTTs");
-        NotificationsPlugin.listenToTTs(ttsModel);
-        _battery.batteryState.then(_updateBatteryState);
-        _batteryStateSubscription =
-            _battery.onBatteryStateChanged.listen(_updateBatteryState);
       }
     });
   }
@@ -200,50 +189,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void dispose() {
     Wakelock.disable();
     super.dispose();
-
-    _batteryStateSubscription?.cancel();
-  }
-
-  void _updateBatteryState(BatteryState state) async {
-    if (_batteryState == state) return;
-
-    final int batteryLevel = await _battery.batteryLevel;
-    final bool isCharging = state == BatteryState.charging;
-
-    if (!mounted) {
-      return;
-    }
-
-    final layoutModel = Provider.of<LayoutModel>(context, listen: false);
-    final bool isBatterySavingMode = await _battery.isInBatterySaveMode;
-
-    setState(() {
-      _batteryState = state;
-    });
-
-    if (layoutModel.isShowPreview &&
-        batteryLevel < 20 &&
-        !isCharging &&
-        !isBatterySavingMode) {
-      _showBatteryWarning();
-    }
-
-    if (batteryLevel < 5) {
-      disableStreamPreview();
-    }
-  }
-
-  void _showBatteryWarning() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(
-        AppLocalizations.of(context)!.streamPreviewMessage,
-      )),
-    );
-  }
-
-  void disableStreamPreview() {
-    Provider.of<LayoutModel>(context, listen: false).isShowPreview = false;
   }
 
   @override
@@ -310,30 +255,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             : Icons.voice_over_off),
                         tooltip: AppLocalizations.of(context)!.textToSpeech,
                         onPressed: () async {
-                          setState(() {
+                          if (!kDebugMode) {
                             ttsModel.enabled = !ttsModel.enabled;
-                          });
-                          if (!ttsModel.enabled) {
-                            updateChannelSubscription("");
-                            await TextToSpeechPlugin.speak(
-                                "Text to speech disabled");
-                            await TextToSpeechPlugin.disableTTS();
-                            NotificationsPlugin.cancelNotification();
                           } else {
-                            channelStreamController.stream
-                                .listen((currentChannel) {
-                              if (currentChannel.isEmpty) {
-                                setState(() {
-                                  ttsModel.enabled = false;
-                                });
-                              }
-                            });
-                            await TextToSpeechPlugin.speak(
-                                "Text to speech enabled");
-                            updateChannelSubscription(
-                                "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
-                            NotificationsPlugin.showNotification();
-                            NotificationsPlugin.listenToTTs(ttsModel);
+                            if (!ttsModel.enabled) {
+                              updateChannelSubscription("");
+                              await TextToSpeechPlugin.speak(
+                                  "Text to speech disabled");
+                              await TextToSpeechPlugin.disableTTS();
+                              NotificationsPlugin.cancelNotification();
+                            } else {
+                              channelStreamController.stream
+                                  .listen((currentChannel) {
+                                if (currentChannel.isEmpty) {
+                                  setState(() {
+                                    ttsModel.enabled = false;
+                                  });
+                                }
+                              });
+                              await TextToSpeechPlugin.speak(
+                                  "Text to speech enabled");
+                              updateChannelSubscription(
+                                  "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+                              NotificationsPlugin.showNotification();
+                              NotificationsPlugin.listenToTTs(ttsModel);
+                            }
                           }
                         },
                       );

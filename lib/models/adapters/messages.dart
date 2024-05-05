@@ -334,10 +334,21 @@ class MessagesAdapter {
 
   Future<void> subscribe(Channel channel) async {
     final subscribe = functions.httpsCallable('subscribe');
-    await subscribe({
-      "provider": channel.provider,
-      "channelId": channel.channelId,
-    });
+    for (var i = 0; i < 3; i++) {
+      try {
+        await subscribe({
+          "provider": channel.provider,
+          "channelId": channel.channelId,
+        });
+        return;
+      } catch (e, st) {
+        if (i == 2) {
+          FirebaseCrashlytics.instance.recordError(e, st, fatal: false);
+        } else {
+          await Future.delayed(const Duration(seconds: 1));
+        }
+      }
+    }
   }
 
   Future<List<DeltaEvent>> forChannelHistory(

@@ -102,34 +102,42 @@ class _DrawerHeader extends StatelessWidget {
                             .onTertiary
                             .withOpacity(0.1),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: IconButton(
-                          icon: const Icon(Icons.qr_code, color: Colors.white),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            showModalBottomSheet(
-                                context: context,
-                                builder: (context) {
-                                  return Consumer<QRModel>(
-                                    builder: (context, qrModel, child) {
-                                      return Container(
-                                          width: double.infinity,
-                                          padding:
-                                              const EdgeInsets.only(top: 20),
-                                          decoration: BoxDecoration(
-                                              gradient: qrModel.currentGradient,
-                                              borderRadius:
-                                                  const BorderRadius.vertical(
-                                                top: Radius.circular(25.0),
-                                              )),
-                                          child: const QRDisplay());
-                                    },
-                                  );
-                                });
-                          },
-                        ),
-                      ),
+                      Consumer<UserModel>(builder: (context, model, child) {
+                        final userChannel = model.userChannel;
+                        if (userChannel == null) {
+                          return Container();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: IconButton(
+                            icon:
+                                const Icon(Icons.qr_code, color: Colors.white),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              showModalBottomSheet(
+                                  context: context,
+                                  builder: (context) {
+                                    return Consumer<QRModel>(
+                                      builder: (context, qrModel, child) {
+                                        return Container(
+                                            width: double.infinity,
+                                            padding:
+                                                const EdgeInsets.only(top: 20),
+                                            decoration: BoxDecoration(
+                                                gradient:
+                                                    qrModel.currentGradient,
+                                                borderRadius:
+                                                    const BorderRadius.vertical(
+                                                  top: Radius.circular(25.0),
+                                                )),
+                                            child: const QRDisplay());
+                                      },
+                                    );
+                                  });
+                            },
+                          ),
+                        );
+                      }),
                       Padding(
                         padding: const EdgeInsets.all(8),
                         child: IconButton(
