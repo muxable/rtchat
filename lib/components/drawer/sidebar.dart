@@ -19,177 +19,185 @@ class _DrawerHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Theme.of(context).colorScheme.tertiary,
-      child: SafeArea(
-        child: SizedBox(
-          height: 146,
-          child: DrawerHeader(
-              padding: EdgeInsets.zero,
-              child: Column(
+    return SizedBox(
+      height: 146,
+      child: DrawerHeader(
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: () => openUrl(Uri.parse("https://muxable.com")),
+                child: SizedBox(
+                  height: 50,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Consumer<LayoutModel>(
+                      builder: (context, value, child) {
+                        return ColorFiltered(
+                            colorFilter: value.themeMode == ThemeMode.light
+                                ? const ColorFilter.matrix(<double>[
+                                    -1.0, 0.0, 0.0, 0.0, 255.0, //
+                                    0.0, -1.0, 0.0, 0.0, 255.0, //
+                                    0.0, 0.0, -1.0, 0.0, 255.0, //
+                                    0.0, 0.0, 0.0, 1.0, 0.0, //
+                                  ])
+                                : const ColorFilter.matrix(<double>[
+                                    1.0, 0.0, 0.0, 0.0, 0.0, //
+                                    0.0, 1.0, 0.0, 0.0, 0.0, //
+                                    0.0, 0.0, 1.0, 0.0, 0.0, //
+                                    0.0, 0.0, 0.0, 1.0, 0.0, //
+                                  ]),
+                            child: Image.asset("assets/muxable.png"));
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              Row(
                 children: [
-                  GestureDetector(
-                      onTap: () => openUrl(Uri.parse("https://muxable.com")),
-                      child: SizedBox(
-                          height: 50,
-                          child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Image.asset("assets/muxable.png")))),
-                  const Divider(),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Consumer<UserModel>(
-                            builder: (context, model, child) {
-                          final userChannel = model.userChannel;
-                          return InkWell(
-                            borderRadius: BorderRadius.circular(10.0),
-                            onTap: () {
-                              if (model.activeChannel != userChannel) {
-                                model.activeChannel = userChannel;
-                              }
-                              Navigator.of(context).pop();
-                            },
-                            child: Row(children: [
-                              if (userChannel != null)
-                                const SizedBox(width: 16),
-                              if (userChannel != null)
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(24),
-                                  child: CrossFadeImage(
-                                      placeholder: userChannel
-                                          .profilePicture.placeholderImage,
-                                      image: userChannel.profilePicture,
-                                      height: 36,
-                                      width: 36),
+                  Expanded(
+                    child:
+                        Consumer<UserModel>(builder: (context, model, child) {
+                      final userChannel = model.userChannel;
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(10.0),
+                        onTap: () {
+                          if (model.activeChannel != userChannel) {
+                            model.activeChannel = userChannel;
+                          }
+                          Navigator.of(context).pop();
+                        },
+                        child: Row(children: [
+                          if (userChannel != null) const SizedBox(width: 16),
+                          if (userChannel != null)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(24),
+                              child: CrossFadeImage(
+                                  placeholder: userChannel
+                                      .profilePicture.placeholderImage,
+                                  image: userChannel.profilePicture,
+                                  height: 36,
+                                  width: 36),
+                            ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  userChannel?.displayName ??
+                                      AppLocalizations.of(context)!.notSignedIn,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.bodyLarge,
                                 ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                        userChannel?.displayName ??
-                                            AppLocalizations.of(context)!
-                                                .notSignedIn,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge
-                                            ?.copyWith(color: Colors.white)),
-                                    const SizedBox(height: 8),
-                                    Text("twitch.tv",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(color: Colors.white)),
-                                  ],
-                                ),
-                              ),
-                            ]),
-                          );
-                        }),
-                      ),
-                      VerticalDivider(
-                        width: 4,
-                        thickness: 2,
-                        indent: 8,
-                        endIndent: 8,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onTertiary
-                            .withOpacity(0.1),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: IconButton(
-                          icon: const Icon(Icons.qr_code, color: Colors.white),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            showModalBottomSheet(
-                                context: context,
-                                builder: (context) {
-                                  return Consumer<QRModel>(
-                                    builder: (context, qrModel, child) {
-                                      return Container(
-                                          width: double.infinity,
-                                          padding:
-                                              const EdgeInsets.only(top: 20),
-                                          decoration: BoxDecoration(
-                                              gradient: qrModel.currentGradient,
-                                              borderRadius:
-                                                  const BorderRadius.vertical(
-                                                top: Radius.circular(25.0),
-                                              )),
-                                          child: const QRDisplay());
-                                    },
-                                  );
-                                });
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: IconButton(
-                          icon: const Icon(Icons.search),
-                          iconSize: 32,
-                          splashRadius: 24,
-                          tooltip: AppLocalizations.of(context)!.searchChannels,
-                          color: Theme.of(context).colorScheme.onTertiary,
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            FirebaseAnalytics.instance.logEvent(
-                                name: 'search_channels', parameters: null);
-                            showModalBottomSheet<void>(
+                                const SizedBox(height: 8),
+                                Text("twitch.tv",
+                                    overflow: TextOverflow.ellipsis,
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium),
+                              ],
+                            ),
+                          ),
+                        ]),
+                      );
+                    }),
+                  ),
+                  const VerticalDivider(
+                    width: 4,
+                    thickness: 2,
+                    indent: 8,
+                    endIndent: 8,
+                  ),
+                  Consumer<UserModel>(builder: (context, model, child) {
+                    final userChannel = model.userChannel;
+                    if (userChannel == null) {
+                      return Container();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: IconButton(
+                        icon: const Icon(Icons.qr_code),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          showModalBottomSheet(
                               context: context,
-                              isScrollControlled: true,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(16)),
-                              ),
                               builder: (context) {
-                                return DraggableScrollableSheet(
-                                  initialChildSize: 0.8,
-                                  maxChildSize: 0.9,
-                                  expand: false,
-                                  builder: (context, controller) {
-                                    final model = Provider.of<UserModel>(
-                                        context,
-                                        listen: false);
-                                    final userChannel = model.userChannel;
-                                    return ChannelSearchBottomSheetWidget(
-                                      onChannelSelect: (channel) {
-                                        model.activeChannel = channel;
-                                      },
-                                      onRaid: userChannel ==
-                                                  model.activeChannel &&
-                                              userChannel != null
-                                          ? (channel) {
-                                              final activeChannel =
-                                                  model.activeChannel;
-                                              if (activeChannel == null) {
-                                                return;
-                                              }
-                                              ActionsAdapter.instance
-                                                  .raid(activeChannel, channel);
-                                            }
-                                          : null,
-                                      controller: controller,
-                                    );
+                                return Consumer<QRModel>(
+                                  builder: (context, qrModel, child) {
+                                    return Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.only(top: 20),
+                                        decoration: BoxDecoration(
+                                            gradient: qrModel.currentGradient,
+                                            borderRadius:
+                                                const BorderRadius.vertical(
+                                              top: Radius.circular(25.0),
+                                            )),
+                                        child: const QRDisplay());
                                   },
+                                );
+                              });
+                        },
+                      ),
+                    );
+                  }),
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: IconButton(
+                      icon: const Icon(Icons.search),
+                      iconSize: 32,
+                      splashRadius: 24,
+                      tooltip: AppLocalizations.of(context)!.searchChannels,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        FirebaseAnalytics.instance.logEvent(
+                            name: 'search_channels', parameters: null);
+                        showModalBottomSheet<void>(
+                          context: context,
+                          isScrollControlled: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(16)),
+                          ),
+                          builder: (context) {
+                            return DraggableScrollableSheet(
+                              initialChildSize: 0.8,
+                              maxChildSize: 0.9,
+                              expand: false,
+                              builder: (context, controller) {
+                                final model = Provider.of<UserModel>(context,
+                                    listen: false);
+                                final userChannel = model.userChannel;
+                                return ChannelSearchBottomSheetWidget(
+                                  onChannelSelect: (channel) {
+                                    model.activeChannel = channel;
+                                  },
+                                  onRaid: userChannel == model.activeChannel &&
+                                          userChannel != null
+                                      ? (channel) {
+                                          final activeChannel =
+                                              model.activeChannel;
+                                          if (activeChannel == null) {
+                                            return;
+                                          }
+                                          ActionsAdapter.instance
+                                              .raid(activeChannel, channel);
+                                        }
+                                      : null,
+                                  controller: controller,
                                 );
                               },
                             );
                           },
-                        ),
-                      ),
-                    ],
+                        );
+                      },
+                    ),
                   ),
                 ],
-              )),
-        ),
-      ),
+              ),
+            ],
+          )),
     );
   }
 }
@@ -221,8 +229,8 @@ class _SidebarState extends State<Sidebar> {
           return ListTile(
             leading: const Icon(Icons.thunderstorm),
             title: Text(AppLocalizations.of(context)!.enableRainMode),
-            subtitle:
-                Text(AppLocalizations.of(context)!.enableRainModeSubtitle),
+            subtitle: Text(AppLocalizations.of(context)!.enableRainModeSubtitle,
+                overflow: TextOverflow.ellipsis),
             onTap: () async {
               layoutModel.locked = !layoutModel.locked;
               Navigator.pop(context);
@@ -233,7 +241,8 @@ class _SidebarState extends State<Sidebar> {
         return ListTile(
           leading: const Icon(Icons.thunderstorm),
           title: Text(AppLocalizations.of(context)!.disableRainMode),
-          subtitle: Text(AppLocalizations.of(context)!.disableRainModeSubtitle),
+          subtitle: Text(AppLocalizations.of(context)!.disableRainModeSubtitle,
+              overflow: TextOverflow.ellipsis),
           onTap: () async {
             layoutModel.locked = !layoutModel.locked;
             Navigator.pop(context);
@@ -251,7 +260,7 @@ class _SidebarState extends State<Sidebar> {
           onTap: () async {
             final scaffoldMessenger = ScaffoldMessenger.of(context);
             final count = await audioModel.refreshAllSources();
-            if (!mounted) return;
+            if (!context.mounted) return;
             scaffoldMessenger.showSnackBar(SnackBar(
                 content: Text(AppLocalizations.of(context)!
                     .refreshAudioSourcesCount(count))));
@@ -357,7 +366,6 @@ class _SidebarState extends State<Sidebar> {
     ];
     return Drawer(
       child: SafeArea(
-        top: false,
         child: Column(
           children: [
             const _DrawerHeader(),
@@ -366,12 +374,16 @@ class _SidebarState extends State<Sidebar> {
             Expanded(child: Builder(builder: (context) {
               final orientation = MediaQuery.of(context).orientation;
               if (orientation == Orientation.portrait) {
-                return Column(children: [
-                  Expanded(
-                      child: ListView(
-                          padding: EdgeInsets.zero,
-                          children: const [QuicklinksListView()])),
-                  ...tiles
+                return CustomScrollView(shrinkWrap: true, slivers: [
+                  const SliverToBoxAdapter(
+                    child: QuicklinksListView(),
+                  ),
+                  SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: tiles,
+                      ))
                 ]);
               } else {
                 return ListView(
