@@ -7,9 +7,11 @@ import 'package:uuid/uuid.dart';
 
 class CompanionAuthWidget extends StatefulWidget {
   final String provider;
+  final bool isTooOld;
 
   const CompanionAuthWidget({
     super.key,
+    required this.isTooOld,
     required this.provider,
   });
 
@@ -28,7 +30,9 @@ class _CompanionAuthWidgetState extends State<CompanionAuthWidget> {
         .then((token) async {
       final user = Provider.of<UserModel>(context, listen: false);
       await user.signIn(token);
-      if (!mounted){ return;}
+      if (!mounted) {
+        return;
+      }
       Navigator.of(context).pop();
     });
   }
@@ -43,9 +47,11 @@ class _CompanionAuthWidgetState extends State<CompanionAuthWidget> {
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(children: [
-              const Text(
-                "Your browser is too old to support signing in directly. "
-                "Scan this QR code with your phone to sign in on another device.",
+              Text(
+                widget.isTooOld
+                    ? "Your browser is too old to support signing in directly. "
+                        "Scan this QR code with your phone to sign in on another device."
+                    : "Scan this QR code with your phone to sign in on another device.",
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
