@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:wakelock/wakelock.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
 import 'package:rtchat/components/auth/twitch.dart';
@@ -24,6 +24,7 @@ import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/notifications_plugin.dart';
 import 'package:rtchat/tts_plugin.dart';
+import 'package:wakelock/wakelock.dart';
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
@@ -254,30 +255,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             : Icons.voice_over_off),
                         tooltip: AppLocalizations.of(context)!.textToSpeech,
                         onPressed: () async {
-                          setState(() {
+                          if (!kDebugMode) {
                             ttsModel.enabled = !ttsModel.enabled;
-                          });
-                          if (!ttsModel.enabled) {
-                            updateChannelSubscription("");
-                            await TextToSpeechPlugin.speak(
-                                "Text to speech disabled");
-                            await TextToSpeechPlugin.disableTTS();
-                            NotificationsPlugin.cancelNotification();
                           } else {
-                            channelStreamController.stream
-                                .listen((currentChannel) {
-                              if (currentChannel.isEmpty) {
-                                setState(() {
-                                  ttsModel.enabled = false;
-                                });
-                              }
-                            });
-                            await TextToSpeechPlugin.speak(
-                                "Text to speech enabled");
-                            updateChannelSubscription(
-                                "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
-                            NotificationsPlugin.showNotification();
-                            NotificationsPlugin.listenToTTs(ttsModel);
+                            if (!ttsModel.enabled) {
+                              updateChannelSubscription("");
+                              await TextToSpeechPlugin.speak(
+                                  "Text to speech disabled");
+                              await TextToSpeechPlugin.disableTTS();
+                              NotificationsPlugin.cancelNotification();
+                            } else {
+                              channelStreamController.stream
+                                  .listen((currentChannel) {
+                                if (currentChannel.isEmpty) {
+                                  setState(() {
+                                    ttsModel.enabled = false;
+                                  });
+                                }
+                              });
+                              await TextToSpeechPlugin.speak(
+                                  "Text to speech enabled");
+                              updateChannelSubscription(
+                                  "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+                              NotificationsPlugin.showNotification();
+                              NotificationsPlugin.listenToTTs(ttsModel);
+                            }
                           }
                         },
                       );
@@ -319,7 +321,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               .labelLarge)),
                                   const Flexible(child: Divider()),
                                 ]),
-                            SignInWithTwitch(),
+                            const SignInWithTwitch(),
                           ]);
                         }
 

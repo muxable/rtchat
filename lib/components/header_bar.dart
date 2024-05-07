@@ -108,61 +108,54 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                 builder: (context, snapshot) {
                   final data = snapshot.data;
                   return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Text("/${widget.channel.displayName}",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium!
-                                  .copyWith(color: Colors.white),
-                              overflow: TextOverflow.fade)),
-                      Row(children: [
-                        if (_locked)
-                          const Padding(
-                              padding: EdgeInsets.only(right: 4),
-                              child: Icon(Icons.lock_outline, size: 12)),
-                        Expanded(
-                          child: Consumer<LayoutModel>(
-                              builder: (context, layoutModel, child) {
-                            final style = Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(color: Colors.white);
-                            if (data == null) {
-                              return Text("...", style: style);
-                            }
-                            final texts = <Widget>[];
-                            if (layoutModel.isStatsVisible) {
-                              if (data is TwitchChannelMetadata) {
-                                if (data.onlineAt == null) {
-                                  texts.add(Text(
-                                      AppLocalizations.of(context)!
-                                          .followerCount(data.followerCount),
-                                      style: style));
-                                } else {
-                                  texts.add(Text(
-                                      AppLocalizations.of(context)!
-                                          .viewerCount(data.viewerCount),
-                                      style: style));
-                                }
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Text("/${widget.channel.displayName}",
+                                style: Theme.of(context).textTheme.titleMedium,
+                                overflow: TextOverflow.fade)),
+                        Consumer<LayoutModel>(
+                            builder: (context, layoutModel, child) {
+                          final style = Theme.of(context).textTheme.bodyMedium;
+                          if (data == null) {
+                            return Text("...", style: style);
+                          }
+                          final texts = <Widget>[];
+                          if (layoutModel.isStatsVisible) {
+                            if (data is TwitchChannelMetadata) {
+                              if (data.onlineAt == null) {
+                                texts.add(Text(
+                                    AppLocalizations.of(context)!
+                                        .followerCount(data.followerCount),
+                                    style: style));
+                              } else {
+                                texts.add(Text(
+                                    AppLocalizations.of(context)!
+                                        .viewerCount(data.viewerCount),
+                                    style: style));
                               }
                             }
-                            if (data.onlineAt != null) {
-                              texts.add(_DurationWidget(
-                                  from: data.onlineAt!, style: style));
-                            }
-                            if (texts.isEmpty) {
-                              return Container();
-                            }
-                            return texts[_iteration % texts.length];
-                          }),
-                        ),
-                      ]),
-                    ],
-                  );
+                          }
+                          if (data.onlineAt != null) {
+                            texts.add(_DurationWidget(
+                                from: data.onlineAt!, style: style));
+                          }
+                          if (texts.isEmpty) {
+                            return Container();
+                          }
+                          return Row(children: [
+                            if (_locked)
+                              const Padding(
+                                  padding: EdgeInsets.only(right: 4),
+                                  child: Icon(Icons.lock_outline, size: 12)),
+                            Expanded(
+                              child: texts[_iteration % texts.length],
+                            )
+                          ]);
+                        }),
+                      ]);
                 })),
         actions: widget.actions);
   }

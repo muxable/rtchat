@@ -68,7 +68,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   // Handles any shared data we may receive.
   void _handleSharedData(String sharedData) {
-    debugPrint('Shared data received: $sharedData');
     setState(() {
       _textEditingController.text = sharedData;
     });
@@ -168,98 +167,80 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
               child: Container(
                 decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all(Radius.circular(24)),
-                    color: Theme.of(context).inputDecorationTheme.fillColor),
-                child: Row(children: [
-                  Expanded(
-                    child: TextField(
-                      focusNode: _chatInputFocusNode,
-                      controller: _textEditingController,
-                      textInputAction: TextInputAction.send,
-                      maxLines: 6,
-                      minLines: 1,
-                      textAlignVertical: TextAlignVertical.center,
-                      decoration: InputDecoration(
-                          prefixIcon: Material(
-                            color: Theme.of(context)
-                                .inputDecorationTheme
-                                .fillColor,
-                            borderRadius: BorderRadius.circular(24),
-                            child: IconButton(
-                                color: Theme.of(context).colorScheme.onSurface,
-                                onPressed: () {
-                                  if (_isEmotePickerVisible) {
-                                    setState(
-                                        () => _isEmotePickerVisible = false);
-                                    _chatInputFocusNode.requestFocus();
-                                  } else {
-                                    _chatInputFocusNode.unfocus();
-                                    setState(() {
-                                      _isEmotePickerVisible = true;
-                                      _emoteIndex =
-                                          Random().nextInt(_emotes.length);
-                                    });
-                                  }
-                                },
-                                splashRadius: 24,
-                                icon: _isEmotePickerVisible
-                                    ? const Icon(Icons.keyboard_rounded)
-                                    : ColorFiltered(
-                                        colorFilter: _greyscale,
-                                        child: Image(
-                                          image: ResilientNetworkImage(
-                                              Uri.parse(_emotes[_emoteIndex])),
-                                        ))),
-                          ),
-                          suffixIcon: Material(
-                            color: Theme.of(context)
-                                .inputDecorationTheme
-                                .fillColor,
-                            borderRadius: BorderRadius.circular(24),
-                            child: IconButton(
-                              icon: const Icon(Icons.send_rounded),
-                              color: Theme.of(context).colorScheme.primary,
-                              splashRadius: 24,
-                              onPressed: () =>
-                                  sendMessage(_textEditingController.text),
-                            ),
-                          ),
-                          border: InputBorder.none,
-                          hintMaxLines: 1,
-                          hintText: () {
-                            final l10n = AppLocalizations.of(context)!;
-                            if (_textSeed < 0.5) {
-                              return l10n.sendAMessage;
-                            } else if (_textSeed < 0.9) {
-                              return l10n.writeSomething;
-                            } else if (_textSeed < 0.99) {
-                              return l10n.speakToTheCrowds;
-                            } else if (_textSeed < 0.999) {
-                              return l10n.shareYourThoughts;
-                            }
-                            return l10n.saySomethingYouLittleBitch;
-                          }()),
-                      onChanged: (text) {
-                        final filtered = text.replaceAll('\n', ' ');
-                        if (filtered == text) {
-                          return;
+                    color: Theme.of(context).splashColor),
+                child: TextField(
+                  focusNode: _chatInputFocusNode,
+                  controller: _textEditingController,
+                  textInputAction: TextInputAction.send,
+                  maxLines: 6,
+                  minLines: 1,
+                  textAlignVertical: TextAlignVertical.center,
+                  decoration: InputDecoration(
+                      prefixIcon: IconButton(
+                        onPressed: () {
+                          if (_isEmotePickerVisible) {
+                            setState(() => _isEmotePickerVisible = false);
+                            _chatInputFocusNode.requestFocus();
+                          } else {
+                            _chatInputFocusNode.unfocus();
+                            setState(() {
+                              _isEmotePickerVisible = true;
+                              _emoteIndex = Random().nextInt(_emotes.length);
+                            });
+                          }
+                        },
+                        splashRadius: 24,
+                        icon: _isEmotePickerVisible
+                            ? const Icon(Icons.keyboard_rounded)
+                            : ColorFiltered(
+                                colorFilter: _greyscale,
+                                child: Image(
+                                  width: 24,
+                                  height: 24,
+                                  image: ResilientNetworkImage(
+                                      Uri.parse(_emotes[_emoteIndex])),
+                                )),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.send_rounded),
+                        color: Theme.of(context).colorScheme.primary,
+                        splashRadius: 24,
+                        onPressed: () =>
+                            sendMessage(_textEditingController.text),
+                      ),
+                      border: InputBorder.none,
+                      hintMaxLines: 1,
+                      hintText: () {
+                        final l10n = AppLocalizations.of(context)!;
+                        if (_textSeed < 0.5) {
+                          return l10n.sendAMessage;
+                        } else if (_textSeed < 0.9) {
+                          return l10n.writeSomething;
+                        } else if (_textSeed < 0.99) {
+                          return l10n.speakToTheCrowds;
+                        } else if (_textSeed < 0.999) {
+                          return l10n.shareYourThoughts;
                         }
-                        setState(() {
-                          _textEditingController.value = TextEditingValue(
-                              text: filtered,
-                              selection: TextSelection.fromPosition(
-                                  TextPosition(
-                                      offset:
-                                          _textEditingController.text.length)));
-                        });
-                      },
-                      onSubmitted: sendMessage,
-                      onTap: () {
-                        setState(() => _isEmotePickerVisible = false);
-                        _chatInputFocusNode.requestFocus();
-                      },
-                    ),
-                  ),
-                ]),
+                        return l10n.saySomethingYouLittleBitch;
+                      }()),
+                  onChanged: (text) {
+                    final filtered = text.replaceAll('\n', ' ');
+                    if (filtered == text) {
+                      return;
+                    }
+                    setState(() {
+                      _textEditingController.value = TextEditingValue(
+                          text: filtered,
+                          selection: TextSelection.fromPosition(TextPosition(
+                              offset: _textEditingController.text.length)));
+                    });
+                  },
+                  onSubmitted: sendMessage,
+                  onTap: () {
+                    setState(() => _isEmotePickerVisible = false);
+                    _chatInputFocusNode.requestFocus();
+                  },
+                ),
               ),
             ),
             _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
