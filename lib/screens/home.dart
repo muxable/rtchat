@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +26,7 @@ import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/notifications_plugin.dart';
 import 'package:rtchat/tts_plugin.dart';
+import 'package:wakelock/wakelock.dart';
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;
@@ -176,6 +178,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final model = Provider.of<AudioModel>(context, listen: false);
       final ttsModel = Provider.of<TtsModel>(context, listen: false);
       final layoutModel = Provider.of<LayoutModel>(context, listen: false);
+
+      NotificationsPlugin.listenToTTs(ttsModel);
+
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
@@ -224,7 +229,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final orientation = MediaQuery.of(context).orientation;
+    final mediaQuery = MediaQuery.of(context);
+    final orientation = mediaQuery.orientation;
+    final width = mediaQuery.size.width;
 
     return GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -262,17 +269,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       },
                     );
                   }),
-                  Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-                    return IconButton(
-                      icon: Icon(layoutModel.isShowPreview
-                          ? Icons.preview
-                          : Icons.preview_outlined),
-                      tooltip: AppLocalizations.of(context)!.streamPreview,
-                      onPressed: () {
-                        layoutModel.isShowPreview = !layoutModel.isShowPreview;
-                      },
-                    );
-                  }),
+                  if (width > 400)
+                    Consumer<LayoutModel>(
+                        builder: (context, layoutModel, child) {
+                      return IconButton(
+                        icon: Icon(layoutModel.isShowPreview
+                            ? Icons.preview
+                            : Icons.preview_outlined),
+                        tooltip: AppLocalizations.of(context)!.streamPreview,
+                        onPressed: () {
+                          layoutModel.isShowPreview =
+                              !layoutModel.isShowPreview;
+                        },
+                      );
+                    }),
                   Consumer<TtsModel>(
                     builder: (context, ttsModel, child) {
                       return IconButton(
@@ -281,36 +291,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             : Icons.voice_over_off),
                         tooltip: AppLocalizations.of(context)!.textToSpeech,
                         onPressed: () async {
-                          setState(() {
+                          if (!kDebugMode) {
                             ttsModel.enabled = !ttsModel.enabled;
-                          });
-                          if (!ttsModel.enabled) {
-                            updateChannelSubscription("");
-                            await TextToSpeechPlugin.speak(
-                                "Text to speech disabled");
-                            await TextToSpeechPlugin.disableTTS();
-                            NotificationsPlugin.cancelNotification();
                           } else {
-                            channelStreamController.stream
-                                .listen((currentChannel) {
-                              if (currentChannel.isEmpty) {
-                                setState(() {
-                                  ttsModel.enabled = false;
-                                });
-                              }
-                            });
-                            await TextToSpeechPlugin.speak(
-                                "Text to speech enabled");
-                            updateChannelSubscription(
-                                "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
-                            NotificationsPlugin.showNotification();
-                            NotificationsPlugin.listenToTTs(ttsModel);
+                            if (!ttsModel.enabled) {
+                              updateChannelSubscription("");
+                              await TextToSpeechPlugin.speak(
+                                  "Text to speech disabled");
+                              await TextToSpeechPlugin.disableTTS();
+                              NotificationsPlugin.cancelNotification();
+                            } else {
+                              channelStreamController.stream
+                                  .listen((currentChannel) {
+                                if (currentChannel.isEmpty) {
+                                  setState(() {
+                                    ttsModel.enabled = false;
+                                  });
+                                }
+                              });
+                              await TextToSpeechPlugin.speak(
+                                  "Text to speech enabled");
+                              updateChannelSubscription(
+                                  "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+                              NotificationsPlugin.showNotification();
+                              NotificationsPlugin.listenToTTs(ttsModel);
+                            }
                           }
                         },
                       );
                     },
                   ),
-                  if (userModel.isSignedIn())
+                  if (userModel.isSignedIn() && width > 400)
                     IconButton(
                       icon: const Icon(Icons.people),
                       tooltip: AppLocalizations.of(context)!.currentViewers,

@@ -55,6 +55,7 @@ dependencies:
   webview_flutter: ^4.5.0
   webview_flutter_android: ^3.14.0
   webview_flutter_wkwebview: ^3.11.0
+  uuid: ^4.4.0
 
 dev_dependencies:
   flutter_lints: ^3.0.1

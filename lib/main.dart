@@ -72,10 +72,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
-  await tts_isolate.isolateMain(
-      ReceivePort().sendPort, channelStreamController);
-
   final prefs = await StreamingSharedPreferences.instance;
+  await tts_isolate.isolateMain(
+      ReceivePort().sendPort, channelStreamController, prefs);
 
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
