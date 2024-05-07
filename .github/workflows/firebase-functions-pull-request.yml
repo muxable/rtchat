@@ -1,10 +1,6 @@
 name: Check Firebase Functions build
 on:
   pull_request:
-    paths:
-      - "functions/**"
-    branches:
-      - main
 
 jobs:
   build:

@@ -6,6 +6,10 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/messages/twitch/reply.dart';
 import 'package:rtchat/tts_plugin.dart';
 
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
@@ -24,12 +28,15 @@ Future<void> isolateMain(
   await Firebase.initializeApp();
   final ttsQueue = TTSQueue();
 
-  // listen for changes to the tts preferences
-  bool isPreludeMuted = false;
+  final ttsModel = TtsModel.fromJson(
+      jsonDecode(prefs.getString("tts", defaultValue: '{}').getValue()));
+
+  // listen for changes to the tts preferences and update the isolates ttsModel
   final ttsPrefs = prefs.getString('tts', defaultValue: '{}');
-  ttsPrefs.listen((value) {
-    final Map<String, dynamic> ttsMap = jsonDecode(value);
-    isPreludeMuted = ttsMap['isPreludeMuted'];
+  ttsPrefs.listen((value) async {
+    ttsModel.updateFromJson(jsonDecode(value));
+    await TextToSpeechPlugin.updateTTSPreferences(
+        ttsModel.pitch, ttsModel.speed);
   });
 
   // Listen for changes to the stream
@@ -48,28 +55,53 @@ Future<void> isolateMain(
           .limit(1)
           .snapshots()
           .listen((latestMessage) async {
-        if (latestMessage.docs.isNotEmpty) {
-          final message = latestMessage.docs[0];
-          if (message.data().containsKey('type')) {
-            final type = message['type'] as String?;
+        final docs = latestMessage.docs;
+        if (docs.isNotEmpty) {
+          final message = docs.first;
+          final messageData = message.data();
+          if (messageData.containsKey('type')) {
+            final type = messageData['type'] as String?;
             switch (type) {
               case "message":
-                final textToSpeak = message['message'] as String?;
-                String finalMessage = '';
-                if (textToSpeak != null) {
-                  final userName = message['author']['displayName'] as String?;
-                  finalMessage = isPreludeMuted
-                      ? textToSpeak
-                      : (userName != null
-                          ? '$userName said $textToSpeak'
-                          : textToSpeak);
+                final messageModel = TwitchMessageModel(
+                    messageId: message.id,
+                    author: TwitchUserModel(
+                      userId: messageData['tags']['user-id'],
+                      login: messageData['author']['displayName'],
+                    ),
+                    message: messageData['message'],
+                    reply: messageData['reply'] != null
+                        ? TwitchMessageReplyModel(
+                            messageId: messageData['reply']['messageId'],
+                            message: messageData['reply']['message'],
+                            author: TwitchUserModel(
+                              userId: messageData['reply']['userId'],
+                              displayName: messageData['reply']['displayName'],
+                              login: messageData['reply']['userLogin'],
+                            ),
+                          )
+                        : null,
+                    tags: messageData['tags'],
+                    annotations: TwitchMessageAnnotationsModel.fromMap(
+                        messageData['annotations']),
+                    thirdPartyEmotes: [],
+                    timestamp: messageData['timestamp'].toDate(),
+                    deleted: false,
+                    channelId: messageData['channelId']);
+                final finalMessage = ttsModel.getVocalization(
+                  messageModel,
+                  includeAuthorPrelude: !ttsModel.isPreludeMuted,
+                );
+                if (finalMessage.isNotEmpty) {
                   await ttsQueue.speak(message.id, finalMessage);
                 }
                 break;
               case "stream.offline":
                 await ttsQueue.clear();
-                await ttsQueue.speak(message.id,
-                    "Stream went offline, disabling text to speech");
+                await ttsQueue.speak(
+                  message.id,
+                  "Stream went offline, disabling text to speech",
+                );
                 await ttsQueue.disableTts();
                 messagesSubscription?.cancel();
                 break;
