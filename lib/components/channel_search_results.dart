@@ -215,11 +215,10 @@ class _ChannelSearchResultsWidgetState
                           children: [
                             Text(result.displayName,
                                 overflow: TextOverflow.ellipsis),
-                            Text(result.language ?? "??",
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                )),
+                            Text(
+                              result.language ?? "??",
+                              style: Theme.of(context).textTheme.labelSmall,
+                            ),
                           ]),
                       subtitle:
                           result.title == null ? null : Text(result.title!),
