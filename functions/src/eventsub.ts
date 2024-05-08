@@ -140,7 +140,7 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
     const type = req.body?.subscription?.type as EventsubType;
     const version = req.body?.subscription?.version as string;
 
-    if (type === EventSubType.ChannelFollow && version === "1") {
+    if (type === EventsubType.ChannelFollow && version === "1") {
       console.log("rejecting channel.follow v1");
       return;
     }
