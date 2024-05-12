@@ -138,6 +138,12 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
     return;
   } else if (status === "enabled") {
     const type = req.body?.subscription?.type as EventsubType;
+    const version = req.body?.subscription?.version as string;
+
+    if (type === EventsubType.ChannelFollow && version === "1") {
+      console.log("rejecting channel.follow v1");
+      return;
+    }
 
     const channelId = `twitch:${
       req.body.event["broadcaster_user_id"] ??
