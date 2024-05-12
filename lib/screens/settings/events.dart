@@ -20,6 +20,8 @@ import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 
 class EventsScreen extends StatelessWidget {
@@ -69,6 +71,33 @@ class EventsScreen extends StatelessWidget {
                   isGift: false,
                   subscriberUserName: 'muxfd',
                   tier: '1000',
+                )))),
+            Padding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                child: StyleModelTheme(
+                    child: TwitchSubscriptionGiftEventWidget(
+                        TwitchSubscriptionGiftEventModel(
+                  messageId: '',
+                  timestamp: DateTime.now(),
+                  tier: '2000',
+                  gifterUserName: 'muxfd',
+                  total: 10,
+                  cumulativeTotal: 20,
+                )))),
+            Padding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                child: StyleModelTheme(
+                    child: TwitchSubscriptionMessageEventWidget(
+                        TwitchSubscriptionMessageEventModel(
+                  messageId: '',
+                  timestamp: DateTime.now(),
+                  subscriberUserName: 'muxfd',
+                  tier: '3000',
+                  cumulativeMonths: 10,
+                  durationMonths: 10,
+                  streakMonths: 10,
+                  emotes: [],
+                  text: 'Thanks for the stream!',
                 )))),
             EventConfigListTile(
               title: const Text('Subscribe event config'),
