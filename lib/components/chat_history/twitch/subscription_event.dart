@@ -35,7 +35,7 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
             TextSpan(
                 text: model.subscriberUserName,
                 style: Theme.of(context).textTheme.titleSmall),
-            const TextSpan(text: " subscribed "),
+            const TextSpan(text: " subscribed at "),
             TextSpan(
               text: "Tier ${model.tier.replaceAll("000", "")}",
               style: textTheme?.copyWith(color: tierColor(context, model.tier)),
@@ -142,7 +142,7 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
               TextSpan(
                   text: model.subscriberUserName,
                   style: Theme.of(context).textTheme.titleSmall),
-              const TextSpan(text: " subscribed "),
+              const TextSpan(text: " subscribed at "),
               TextSpan(
                 text: "Tier ${model.tier.replaceAll("000", "")}",
                 style:
