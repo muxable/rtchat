@@ -233,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       },
                     );
                   }),
-                  if (width > 400)
+                  if (width > 256)
                     Consumer<LayoutModel>(
                         builder: (context, layoutModel, child) {
                       return IconButton(
@@ -285,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       );
                     },
                   ),
-                  if (userModel.isSignedIn() && width > 400)
+                  if (userModel.isSignedIn() && width > 256)
                     IconButton(
                       icon: const Icon(Icons.people),
                       tooltip: AppLocalizations.of(context)!.currentViewers,
