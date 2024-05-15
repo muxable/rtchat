@@ -116,9 +116,9 @@ class TextToSpeechScreen extends StatelessWidget {
                                       color: Theme.of(context).dividerColor),
                                 ).copyWith(
                                   foregroundColor:
-                                      MaterialStateProperty.resolveWith<Color>(
-                                    (Set<MaterialState> states) =>
-                                        states.contains(MaterialState.disabled)
+                                      WidgetStateProperty.resolveWith<Color>(
+                                    (Set<WidgetState> states) =>
+                                        states.contains(WidgetState.disabled)
                                             ? Theme.of(context)
                                                 .colorScheme
                                                 .onSurface
