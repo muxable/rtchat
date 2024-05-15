@@ -6,7 +6,7 @@ class Themes {
     colorScheme: ColorScheme.fromSeed(
       seedColor: const Color(0xFF009FDF),
       tertiary: const Color(0xFF1D1D1F),
-      background: Colors.white,
+      surface: Colors.white,
       brightness: Brightness.light,
     ),
   );
@@ -16,7 +16,7 @@ class Themes {
     colorScheme: ColorScheme.fromSeed(
       seedColor: const Color(0xFF009FDF),
       tertiary: const Color(0xFF1D1D1F),
-      background: Colors.black,
+      surface: Colors.black,
       brightness: Brightness.dark,
     ),
   );
