@@ -31,7 +31,6 @@ class TwitchRaidEventWidget extends StatelessWidget {
               TextSpan(
                   text: _formatter.format(model.viewers),
                   style: Theme.of(context).textTheme.titleSmall),
-              const TextSpan(text: "."),
             ],
           )),
         ),
