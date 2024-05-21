@@ -11,8 +11,11 @@ class QRDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     final querySize = MediaQuery.of(context).size;
 
+    final isLandScape = querySize.width > querySize.height;
+
     return Consumer<UserModel>(builder: (context, userModel, child) {
       final userChannel = userModel.userChannel;
+
       final inviteLink =
           "https://www.twitch.tv/${userModel.userChannel?.displayName ?? ""}";
 
@@ -22,51 +25,56 @@ class QRDisplay extends StatelessWidget {
             onTap: () {
               qrModel.changeGradient();
             },
-            child: Column(
-              children: [
-                Container(
-                  height: querySize.height * 0.42,
-                  width: querySize.width * 0.85,
-                  padding: EdgeInsets.only(top: querySize.height * 0.01),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(querySize.width * 0.06),
-                    color: Colors.white,
-                  ),
-                  child: Stack(
-                    alignment: Alignment
-                        .center, // This centers the CircleAvatar in the middle of the Stack
-                    children: [
-                      QrImageView(
-                        data: inviteLink,
-                        eyeStyle: const QrEyeStyle(
-                          eyeShape: QrEyeShape.square,
-                          color: Colors.black,
-                        ),
-                        dataModuleStyle: const QrDataModuleStyle(
-                          dataModuleShape: QrDataModuleShape.square,
-                          color: Colors.black,
-                        ),
-                      ),
-                      CircleAvatar(
-                        radius: 35,
-                        backgroundImage: userChannel?.profilePicture,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: querySize.height * 0.01),
-                  child: Text(
-                    "/${userModel.userChannel?.displayName ?? ""}",
-                    overflow: TextOverflow.fade,
-                    style: const TextStyle(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    height: isLandScape
+                        ? querySize.height * 0.52
+                        : querySize.height * 0.42,
+                    width: querySize.width * 0.85,
+                    padding: EdgeInsets.only(top: querySize.height * 0.01),
+                    decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.circular(querySize.width * 0.06),
                       color: Colors.white,
-                      fontSize: 29,
-                      fontWeight: FontWeight.bold,
+                    ),
+                    child: Stack(
+                      alignment: Alignment
+                          .center, // This centers the CircleAvatar in the middle of the Stack
+                      children: [
+                        QrImageView(
+                          data: inviteLink,
+                          eyeStyle: const QrEyeStyle(
+                            eyeShape: QrEyeShape.square,
+                            color: Colors.black,
+                          ),
+                          dataModuleStyle: const QrDataModuleStyle(
+                            dataModuleShape: QrDataModuleShape.square,
+                            color: Colors.black,
+                          ),
+                        ),
+                        CircleAvatar(
+                          radius: isLandScape ? 20 : 35,
+                          backgroundImage: userChannel?.profilePicture,
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: EdgeInsets.only(top: querySize.height * 0.01),
+                    child: Text(
+                      "/${userModel.userChannel?.displayName ?? ""}",
+                      overflow: TextOverflow.fade,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 29,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
