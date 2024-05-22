@@ -55,7 +55,7 @@ class QRDisplay extends StatelessWidget {
                           ),
                         ),
                         CircleAvatar(
-                          radius: isLandScape ? 20 : 35,
+                          radius: isLandScape ? 20 : 30,
                           backgroundImage: userChannel?.profilePicture,
                         ),
                       ],
