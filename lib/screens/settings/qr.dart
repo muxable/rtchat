@@ -25,56 +25,58 @@ class QRDisplay extends StatelessWidget {
             onTap: () {
               qrModel.changeGradient();
             },
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                    height: isLandScape
-                        ? querySize.height * 0.52
-                        : querySize.height * 0.42,
-                    width: querySize.width * 0.85,
-                    padding: EdgeInsets.only(top: querySize.height * 0.01),
-                    decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.circular(querySize.width * 0.06),
-                      color: Colors.white,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Container(
+                    padding: EdgeInsets.only(
+                      top: querySize.height * 0.03,
                     ),
-                    child: Stack(
-                      alignment: Alignment
-                          .center, // This centers the CircleAvatar in the middle of the Stack
-                      children: [
-                        QrImageView(
-                          data: inviteLink,
-                          eyeStyle: const QrEyeStyle(
-                            eyeShape: QrEyeShape.square,
-                            color: Colors.black,
-                          ),
-                          dataModuleStyle: const QrDataModuleStyle(
-                            dataModuleShape: QrDataModuleShape.square,
-                            color: Colors.black,
-                          ),
-                        ),
-                        CircleAvatar(
-                          radius: isLandScape ? 20 : 30,
-                          backgroundImage: userChannel?.profilePicture,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: querySize.height * 0.01),
-                    child: Text(
-                      "/${userModel.userChannel?.displayName ?? ""}",
-                      overflow: TextOverflow.fade,
-                      style: const TextStyle(
+                    child: Container(
+                      padding: EdgeInsets.only(
+                        top: querySize.height * 0.02,
+                      ),
+                      decoration: BoxDecoration(
                         color: Colors.white,
-                        fontSize: 29,
-                        fontWeight: FontWeight.bold,
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          QrImageView(
+                            data: inviteLink,
+                            eyeStyle: const QrEyeStyle(
+                              eyeShape: QrEyeShape.square,
+                              color: Colors.black,
+                            ),
+                            dataModuleStyle: const QrDataModuleStyle(
+                              dataModuleShape: QrDataModuleShape.square,
+                              color: Colors.black,
+                            ),
+                          ),
+                          CircleAvatar(
+                            radius: isLandScape ? 25 : 30,
+                            backgroundImage: userChannel?.profilePicture,
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: querySize.height * 0.01),
+                  child: Text(
+                    "/${userModel.userChannel?.displayName ?? ""}",
+                    overflow: TextOverflow.fade,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 29,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         },

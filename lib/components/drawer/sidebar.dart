@@ -131,8 +131,12 @@ class _DrawerHeader extends StatelessWidget {
                                 child: Consumer<QRModel>(
                                   builder: (context, qrModel, child) {
                                     return Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.only(top: 20),
+                                      width: MediaQuery.of(context)
+                                                  .orientation ==
+                                              Orientation.landscape
+                                          ? MediaQuery.of(context).size.width *
+                                              0.01
+                                          : double.infinity,
                                       decoration: BoxDecoration(
                                         gradient: qrModel.currentGradient,
                                         borderRadius:
