@@ -95,11 +95,16 @@ void main() async {
     systemNavigationBarColor: Colors.transparent,
   ));
 
-  AudioPlayer.global.setAudioContext(AudioContextConfig(
-    duckAudio: false,
-    respectSilence: false,
-    stayAwake: true,
-  ).build());
+  AudioPlayer.global.setAudioContext(AudioContext(
+    android: const AudioContextAndroid(
+      contentType: AndroidContentType.sonification,
+      usageType: AndroidUsageType.assistanceSonification,
+      audioFocus: AndroidAudioFocus.none,
+    ),
+    iOS: AudioContextIOS(
+      category: AVAudioSessionCategory.ambient,
+    ),
+  ));
   runApp(App(prefs: prefs));
 }
 
