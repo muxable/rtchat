@@ -40,6 +40,7 @@ class MainActivity : FlutterActivity(), AudioManager.OnAudioFocusChangeListener 
     private lateinit var focusRequest: AudioFocusRequest
     private val handler = Handler(Looper.getMainLooper())
     private var playbackDelayed = false
+    private var wasDucking = false 
 
     companion object {
         var methodChannel: MethodChannel? = null
@@ -52,7 +53,7 @@ class MainActivity : FlutterActivity(), AudioManager.OnAudioFocusChangeListener 
         startNotificationService()
 
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
+        focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK).run {
             setAudioAttributes(audioAttributes)
             setAcceptsDelayedFocusGain(true)
             setOnAudioFocusChangeListener(this@MainActivity, handler)
@@ -68,14 +69,27 @@ class MainActivity : FlutterActivity(), AudioManager.OnAudioFocusChangeListener 
     override fun onAudioFocusChange(focusChange: Int) {
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
+               
+                if (wasDucking) {
+                    methodChannel?.invokeMethod("audioVolume", 1.0) 
+                    wasDucking = false 
+                }
                 if (playbackDelayed) {
                     playbackDelayed = false
+                   
                 }
             }
-            AudioManager.AUDIOFOCUS_LOSS,
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                // Handle audio focus loss
+              
+                methodChannel?.invokeMethod("audioVolume", 0.3) 
+                wasDucking = true
+            }
+            AudioManager.AUDIOFOCUS_LOSS, 
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> { 
+              
+                if (!wasDucking) {
+                    
+                }
             }
         }
     }
@@ -100,11 +114,6 @@ class MainActivity : FlutterActivity(), AudioManager.OnAudioFocusChangeListener 
         methodChannel = notificationChannel
 
         notificationChannel.setMethodCallHandler { call, result ->
-
-            Log.d("NotificationService", "startForeground called");
-
-            Log.d("Notification called", call.method);
-
             when (call.method) {
                 "dismissNotification" -> {
                     val intent = Intent(this, NotificationService::class.java)
@@ -124,11 +133,7 @@ class MainActivity : FlutterActivity(), AudioManager.OnAudioFocusChangeListener 
         }
 
         volumeChannel.setMethodCallHandler { call, result ->
-
-            Log.d("Volume called", call.method);
-
             when (call.method) {
-
                 "tts_on" -> {
                     val res = audioManager.requestAudioFocus(focusRequest)
                     when (res) {
@@ -146,7 +151,6 @@ class MainActivity : FlutterActivity(), AudioManager.OnAudioFocusChangeListener 
                 "tts_off" -> {
                     audioManager.abandonAudioFocusRequest(focusRequest)
                     methodChannel?.invokeMethod("audioFocus", "lost")
-
                 }
                 else -> result.notImplemented()
             }
@@ -285,7 +289,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
                 override fun onDone(utteranceId: String) {
                     result.success(true)
                 }
-
+                
                 override fun onError(utteranceId: String) {
                     // Speech encountered an error
                     // Handle errors as needed
