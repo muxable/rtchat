@@ -155,9 +155,8 @@ class TtsModel extends ChangeNotifier {
     }
     if (value) {
       VolumePlugin.reduceVolumeOnTtsStart();
-    } else {
-      VolumePlugin.increaseVolumeOnTtsStop();
     }
+
     say(
         SystemMessageModel(
             text: "Text to speech ${value ? "enabled" : "disabled"}"),
@@ -364,6 +363,9 @@ class TtsModel extends ChangeNotifier {
         await audioPlayer.setAudioSource(BytesAudioSource(bytes));
         await audioPlayer.play();
         await Future.delayed(audioPlayer.duration ?? const Duration());
+        if (_pending.isEmpty) {
+          VolumePlugin.increaseVolumeOnTtsStop();
+        }
       }
     }
 
@@ -375,10 +377,14 @@ class TtsModel extends ChangeNotifier {
 
   void unsay(String messageId) {
     _pending.remove(messageId);
+    if (_pending.isEmpty) {
+      VolumePlugin.increaseVolumeOnTtsStop();
+    }
   }
 
   void stop() {
     _pending.clear();
+    VolumePlugin.increaseVolumeOnTtsStop();
   }
 
   void updateFromJson(Map<String, dynamic> json) {
