@@ -88,6 +88,10 @@ Future<void> isolateMain(
                     timestamp: messageData['timestamp'].toDate(),
                     deleted: false,
                     channelId: messageData['channelId']);
+                // Check if the message is from a bot and if bot messages should be muted
+                if (ttsModel.isBotMuted && messageModel.author.isBot) {
+                  return; // Skip vocalization for bot messages
+                }
                 final finalMessage = ttsModel.getVocalization(
                   messageModel,
                   includeAuthorPrelude: !ttsModel.isPreludeMuted,
