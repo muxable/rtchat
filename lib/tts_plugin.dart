@@ -18,9 +18,9 @@ class TextToSpeechPlugin {
     }
   }
 
-  static Future<void> speak(String text) async {
+  static Future<void> speak(String text, {double? speed, double? volume}) async {
     try {
-      await channel.invokeMethod('speak', {'text': text});
+      await channel.invokeMethod('speak', {'text': text, 'speed': speed, 'volume': volume});
     } catch (e) {
       debugPrint("speak error: $e");
     }

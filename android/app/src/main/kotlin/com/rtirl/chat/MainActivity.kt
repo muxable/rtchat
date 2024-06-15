@@ -178,8 +178,10 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             }
             "speak" -> {
                 val text = call.argument<String>("text")
+                val speed = call.argument<Double?>("speed")
+                val volume = call.argument<Double?>("volume")
                 if (!text.isNullOrBlank()) {
-                    speak(text, result)
+                    speak(text, speed?.toFloat(), volume?.toFloat(), result)
                 } else {
                     result.error("INVALID_ARGUMENT", "Text is empty or null", null)
                 }
@@ -204,7 +206,7 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
         tts.setSpeechRate(speed)
     }
 
-    fun speak(text: String, result: Result) {
+    fun speak(text: String, speed: Float?, volume: Float?, result: Result) {
         if (!text.isNullOrBlank()) {
             val utteranceId = UUID.randomUUID().toString()
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
@@ -226,6 +228,12 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             // Speak with the specified utteranceId
             val params = HashMap<String, String>()
             params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = utteranceId
+            if (speed != null) {
+                tts.setSpeechRate(speed)
+            }
+            if (volume != null) {
+                tts.setVolume(volume)
+            }
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, params)
         }
     }
