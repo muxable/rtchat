@@ -18,9 +18,11 @@ class TextToSpeechPlugin {
     }
   }
 
-  static Future<void> speak(String text, {double? speed, double? volume}) async {
+  static Future<void> speak(String text,
+      {double? speed, double? volume}) async {
     try {
-      await channel.invokeMethod('speak', {'text': text, 'speed': speed, 'volume': volume});
+      await channel.invokeMethod(
+          'speak', {'text': text, 'speed': speed, 'volume': volume});
     } catch (e) {
       debugPrint("speak error: $e");
     }
@@ -68,7 +70,8 @@ class TTSQueue {
   bool get isEmpty => queue.isEmpty;
   int get length => queue.length;
 
-  Future<void> speak(String id, String text) async {
+  Future<void> speak(String id, String text,
+      {double? speed, double? volume}) async {
     final completer = Completer<void>();
     final element = TTSQueueElement(id: id, text: text, completer: completer);
 

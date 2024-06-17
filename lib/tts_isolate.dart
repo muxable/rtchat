@@ -98,7 +98,8 @@ Future<void> isolateMain(
                 );
                 if (finalMessage.isNotEmpty) {
                   // Pass the speech rate and volume values to the TTS engine before vocalizing.
-                  await ttsQueue.speak(message.id, finalMessage, ttsModel.speed, ttsModel.volume);
+                  await ttsQueue.speak(message.id, finalMessage,
+                      speed: ttsModel.speed, volume: ttsModel.pitch);
                 }
                 break;
               case "stream.offline":
