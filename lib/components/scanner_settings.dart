@@ -10,25 +10,26 @@ class ScannerSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     const Color iconColor = Colors.white;
     return Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(
-                Icons.close,
-                color: iconColor,
-              ),
-            ),
-            IconButton(
-              onPressed: () => scanController.toggleTorch(),
-              icon: Icon(
-                scanController.value.torchState == TorchState.on ? 
-                Icons.flash_off : Icons.flash_on,
-                color: iconColor,
-              ),
-            ),
-          ],
-        );
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(
+            Icons.close,
+            color: iconColor,
+          ),
+        ),
+        IconButton(
+          onPressed: () => scanController.toggleTorch(),
+          icon: Icon(
+            scanController.value.torchState == TorchState.on
+                ? Icons.flash_off
+                : Icons.flash_on,
+            color: iconColor,
+          ),
+        ),
+      ],
+    );
   }
 }
