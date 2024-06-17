@@ -36,7 +36,7 @@ dependencies:
   just_audio: ^0.9.36
   linkify: ^5.0.0
   metadata_fetch: ^0.4.1
-  mobile_scanner: ^3.5.7
+  mobile_scanner: ^5.0.2
   motion_sensors:
     git: 
       url: https://github.com/zesage/motion_sensors.git

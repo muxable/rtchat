@@ -8,12 +8,8 @@ class ScannerSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<TorchState>(
-      valueListenable: scanController.torchState,
-      builder: (context, value, child) {
-        const Color iconColor = Colors.white;
-
-        return Row(
+    const Color iconColor = Colors.white;
+    return Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -27,13 +23,12 @@ class ScannerSettings extends StatelessWidget {
             IconButton(
               onPressed: () => scanController.toggleTorch(),
               icon: Icon(
-                value == TorchState.on ? Icons.flash_off : Icons.flash_on,
+                scanController.value.torchState == TorchState.on ? 
+                Icons.flash_off : Icons.flash_on,
                 color: iconColor,
               ),
             ),
           ],
         );
-      },
-    );
   }
 }
