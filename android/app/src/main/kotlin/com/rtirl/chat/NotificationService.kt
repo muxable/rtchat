@@ -13,7 +13,6 @@ import androidx.core.app.NotificationCompat
 import com.rtirl.chat.DisableTTSReceiver
 import com.rtirl.chat.R
 
-
 class NotificationService : Service() {
     companion object {
         const val CHANNEL_ID = "NotificationServiceChannel"
@@ -102,4 +101,4 @@ class NotificationService : Service() {
             notificationManager.createNotificationChannel(channel)
         }
     }
-} 
+}

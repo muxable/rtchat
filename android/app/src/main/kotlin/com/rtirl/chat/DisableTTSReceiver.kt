@@ -1,12 +1,11 @@
 package com.rtirl.chat
 
+import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.app.NotificationManager
 import android.util.Log
 import com.rtirl.chat.NotificationService
-
 
 class DisableTTSReceiver : BroadcastReceiver() {
 

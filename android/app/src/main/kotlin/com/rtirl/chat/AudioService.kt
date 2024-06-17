@@ -1,8 +1,8 @@
 package com.rtirl.chat
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
@@ -168,5 +168,4 @@ class AudioService : Service() {
             START_NOT_STICKY
         }
     }
-
 }
