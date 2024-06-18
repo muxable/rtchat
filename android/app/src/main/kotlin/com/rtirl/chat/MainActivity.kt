@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -158,6 +159,7 @@ class MainActivity : FlutterActivity() {
 class TextToSpeechPlugin(context: Context) : MethodCallHandler {
     private val context: Context = context
     private val tts: TextToSpeech = TextToSpeech(context) {}
+    private val audioManager: AudioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
     companion object {
         private const val NOTIFICATION_ID = 6853027
@@ -210,7 +212,10 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             val utteranceId = UUID.randomUUID().toString()
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String) {
-                   
+                    // Lower the media volume if volume is specified
+                    if (volume != null) {
+                        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * volume).toInt(), 0)
+                    }
                 }
 
                 override fun onDone(utteranceId: String) {
@@ -229,9 +234,6 @@ class TextToSpeechPlugin(context: Context) : MethodCallHandler {
             params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = utteranceId
             if (speed != null) {
                 tts.setSpeechRate(speed)
-            }
-            if (volume != null) {
-                tts.setVolume(volume)
             }
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, params)
         }
