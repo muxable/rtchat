@@ -512,7 +512,7 @@
     "description": "Text label for a one minute duration"
   },
   "durationTenMinutes": "10 minutes",
-  "@durationFifteenMinutes": {
+  "@durationTenMinutes": {
     "description": "Text label for a ten minute duration"
   },
   "durationOneHour": "1 hour",
@@ -536,47 +536,131 @@
     "description": "Text label for a one week duration"
   },
   "durationTwoWeeks": "2 weeks",
-  "@durationOneMonth": {
+  "@durationTwoWeeks": {
     "description": "Text label for a two week duration"
   },
   "durationOneSecondTimeoutPrompt": "Timeout for 1 second",
   "@durationOneSecondTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a one second duration"
+    "description": "Button label to timeout for a one second duration"
   },
   "durationOneMinuteTimeoutPrompt": "Timeout for 1 minute",
   "@durationOneMinuteTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a one minute duration"
+    "description": "Button label to timeout for a one minute duration"
   },
   "durationTenMinutesTimeoutPrompt": "Timeout for 10 minutes",
-  "@durationFifteenMinutesTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a ten minute duration"
+  "@durationTenMinutesTimeoutPrompt": {
+    "description": "Button label to timeout for a ten minute duration"
   },
   "durationOneHourTimeoutPrompt": "Timeout for 1 hour",
   "@durationOneHourTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a one hour duration"
+    "description": "Button label to timeout for a one hour duration"
   },
   "durationSixHoursTimeoutPrompt": "Timeout for 6 hours",
   "@durationSixHoursTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a six hour duration"
+    "description": "Button label to timeout for a six hour duration"
   },
   "durationOneDayTimeoutPrompt": "Timeout for 1 day",
   "@durationOneDayTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a one day duration"
+    "description": "Button label to timeout for a one day duration"
   },
   "durationTwoDaysTimeoutPrompt": "Timeout for 2 days",
   "@durationTwoDaysTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a two day duration"
+    "description": "Button label to timeout for a two day duration"
   },
   "durationOneWeekTimeoutPrompt": "Timeout for 1 week",
   "@durationOneWeekTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a one week duration"
+    "description": "Button label to timeout for a one week duration"
   },
   "durationTwoWeeksTimeoutPrompt": "Timeout for 2 weeks",
   "@durationTwoWeeksTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a two week duration"
+    "description": "Button label to timeout for a two week duration"
   },
   "errorFetchingViewerList": "We couldn't fetch the viewer list for this channel",
   "@errorFetchingViewerList": {
-      "descriptionErrorFetchingViewerList": "Error message if unable to fetch list"
+      "description": "Error message if unable to fetch list"
+  },
+  "eventsTitle": "Events",
+  "@eventsTitle": {
+    "description": "Title for the events settings screen"
+  },
+  "followEventConfigTitle": "Follow Event",
+  "@followEventConfigTitle": {
+    "description": "Title for the follow event configuration"
+  },
+  "customizeYourFollowEvent": "Customize your follow event",
+  "@customizeYourFollowEvent": {
+    "description": "Subtitle for the follow event configuration"
+  },
+  "subscribeEventConfigTitle": "Subscribe Event",
+  "@subscribeEventConfigTitle": {
+    "description": "Title for the subscribe event configuration"
+  },
+  "customizeYourSubscriptionEvent": "Customize your subscription event",
+  "@customizeYourSubscriptionEvent": {
+    "description": "Subtitle for the subscribe event configuration"
+  },
+  "cheerEventConfigTitle": "Cheer Event",
+  "@cheerEventConfigTitle": {
+    "description": "Title for the cheer event configuration"
+  },
+  "customizeYourCheerEvent": "Customize your cheer event",
+  "@customizeYourCheerEvent": {
+    "description": "Subtitle for the cheer event configuration"
+  },
+  "raidEventConfigTitle": "Raid Event",
+  "@raidEventConfigTitle": {
+    "description": "Title for the raid event configuration"
+  },
+  "customizeYourRaidEvent": "Customize your raid event",
+  "@customizeYourRaidEvent": {
+    "description": "Subtitle for the raid event configuration"
+  },
+  "hostEventConfigTitle": "Host Event",
+  "@hostEventConfigTitle": {
+    "description": "Title for the host event configuration"
+  },
+  "customizeYourHostEvent": "Customize your host event",
+  "@customizeYourHostEvent": {
+    "description": "Subtitle for the host event configuration"
+  },
+  "hypetrainEventConfigTitle": "Hypetrain Event",
+  "@hypetrainEventConfigTitle": {
+    "description": "Title for the hypetrain event configuration"
+  },
+  "customizeYourHypetrainEvent": "Customize your hypetrain event",
+  "@customizeYourHypetrainEvent": {
+    "description": "Subtitle for the hypetrain event configuration"
+  },
+  "pollEventConfigTitle": "Poll Event",
+  "@pollEventConfigTitle": {
+    "description": "Title for the poll event configuration"
+  },
+  "customizeYourPollEvent": "Customize your poll event",
+  "@customizeYourPollEvent": {
+    "description": "Subtitle for the poll event configuration"
+  },
+  "predictionEventConfigTitle": "Prediction Event",
+  "@predictionEventConfigTitle": {
+    "description": "Title for the prediction event configuration"
+  },
+  "customizeYourPredictionEvent": "Customize your prediction event",
+  "@customizeYourPredictionEvent": {
+    "description": "Subtitle for the prediction event configuration"
+  },
+  "channelPointRedemptionEventConfigTitle": "Channel Point Redemption Event",
+  "@channelPointRedemptionEventConfigTitle": {
+    "description": "Title for the channel point redemption event configuration"
+  },
+  "customizeYourChannelPointRedemptionEvent": "Customize your channel point redemption event",
+  "@customizeYourChannelPointRedemptionEvent": {
+    "description": "Subtitle for the channel point redemption event configuration"
+  },
+  "outgoingRaidEventConfigTitle": "Outgoing Raid Event",
+  "@outgoingRaidEventConfigTitle": {
+    "description": "Title for the outgoing raid event configuration"
+  },
+  "customizeYourOutgoingRaidEvent": "Customize your outgoing raid event",
+  "@customizeYourOutgoingRaidEvent": {
+    "description": "Subtitle for the outgoing raid event configuration"
   }
 }
