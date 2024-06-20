@@ -126,12 +126,16 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
         ),
         if (model.text.isNotEmpty)
           Consumer<StyleModel>(builder: (context, styleModel, child) {
-            return StyledText(
-              text: '<b>${model.subscriberUserName}</b>: ${model.text}',
-              tags: {
-                'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
-              },
-              style: Theme.of(context).textTheme.titleSmall,
+            return Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: model.subscriberUserName, style: textTheme),
+                  const TextSpan(text: ": "),
+                  ...model.tokenize().expand((token) {
+                    return _render(context, styleModel, token);
+                  }),
+                ],
+              ),
             );
           }),
       ]),
