@@ -13,12 +13,12 @@ import androidx.core.app.NotificationCompat
 import com.rtirl.chat.DisableTTSReceiver
 import com.rtirl.chat.R
 
-
 class NotificationService : Service() {
+
     companion object {
         const val CHANNEL_ID = "NotificationServiceChannel"
         const val NOTIFICATION_ID = 6853027
-        const val CHANNEL_NAME  = "Text-to-Speech Notification"
+        const val CHANNEL_NAME = "Text-to-Speech Notification"
         const val CHANNEL_DESCRIPTION = "Text-to-speech is enabled"
     }
 
@@ -36,25 +36,23 @@ class NotificationService : Service() {
                 dismissNotification(NOTIFICATION_ID)
             }
             "ttsDisabled" -> {
-                Log.d("NotificationService", "Handling ttsDisabled action")
                 notifyFlutterTTSDisabled()
+            }
+            else -> {
+                // If no action specified, start the service in the foreground with a default notification
+                showNotification()
             }
         }
         return START_NOT_STICKY
     }
 
     private fun notifyFlutterTTSDisabled() {
-
-        Log.d("NotificationService", "notifyFlutterTTSDisabled called")
-       
         MainActivity.methodChannel?.invokeMethod("disableTTs", null)
-        
         stopForeground(true)
+        stopSelf()
     }
 
     private fun showNotification() {
-
-        Log.d("NotificationService", "showNotification called")
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val disableIntent = Intent(this, DisableTTSReceiver::class.java).apply {
@@ -71,21 +69,16 @@ class NotificationService : Service() {
             .build()
 
         startForeground(NOTIFICATION_ID, notification)
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
     private fun dismissNotification(notificationId: Int) {
-        Log.d("NotificationService", "dismissNotification called")
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(notificationId)
-
         stopForeground(true)
+        stopSelf()
     }
 
     override fun onBind(intent: Intent): IBinder? {
-        // This service is not bound to any component
         return null
     }
 
@@ -97,9 +90,8 @@ class NotificationService : Service() {
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
             }
-            // Register the channel with the system
             val notificationManager: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
-} 
+}
