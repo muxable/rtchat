@@ -662,5 +662,67 @@
   "customizeYourOutgoingRaidEvent": "Customize your outgoing raid event",
   "@customizeYourOutgoingRaidEvent": {
     "description": "Subtitle for the outgoing raid event configuration"
+  },
+  "raidEventMessage": "<bold>{displayName}</bold> is raiding with <bold>{viewerCount}</bold> viewers!",
+  "@raidEventMessage": {
+    "description": "Message displayed when a raid event occurs",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "viewerCount": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "shoutout": "Shoutout",
+  "@shoutout": {
+    "description": "Button text for the shoutout action in a raid event"
+  },
+  "raidingEventRaiding": "<bold>{displayName}</bold> is raiding...",
+  "@raidingEventRaiding": {
+    "description": "Message displayed when a raiding event is in progress",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "raidingEventTimeRemaining": "Time remaining: {seconds}s",
+  "@raidingEventTimeRemaining": {
+    "description": "Message displaying the time remaining for a raiding event",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "raidingEventRaided": "<bold>{displayName}</bold> has raided!",
+  "@raidingEventRaided": {
+    "description": "Message displayed when a raiding event has completed successfully",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "raidingEventJoin": "Join",
+  "@raidingEventJoin": {
+    "description": "Button text to join the raid in a raiding event"
+  },
+  "raidingEventCanceled": "<bold>{displayName}</bold>'s raid was canceled.",
+  "@raidingEventCanceled": {
+    "description": "Message displayed when a raiding event is canceled",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
   }
 }
