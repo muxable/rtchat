@@ -14,8 +14,6 @@ class TwitchRaidEventWidget extends StatelessWidget {
   final TwitchRaidEventModel model;
   final Channel channel;
 
-  final NumberFormat _formatter = NumberFormat.decimalPattern();
-
   TwitchRaidEventWidget(this.model, {super.key, required this.channel});
 
   @override
@@ -25,7 +23,8 @@ class TwitchRaidEventWidget extends StatelessWidget {
       child: Row(children: [
         Expanded(
           child: StyledText(
-            text: AppLocalizations.of(context)!.raidEventMessage(model.from.displayName, _formatter.format(model.viewers)) ?? '',
+            text: AppLocalizations.of(context)!
+                .raidEventMessage(model.from.displayName ?? "", model.viewers),
             tags: {
               'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
             },

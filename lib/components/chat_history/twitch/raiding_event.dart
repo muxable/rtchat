@@ -37,16 +37,21 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                   child: Row(children: [
                     Expanded(
                       child: StyledText(
-                        text: AppLocalizations.of(context)!.raidingEventRaiding(model.targetUser.displayName) ?? '',
+                        text: AppLocalizations.of(context)!.raidingEventRaiding(
+                            model.targetUser.displayName ?? ''),
                         tags: {
-                          'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+                          'b': StyledTextTag(
+                              style: Theme.of(context).textTheme.titleSmall),
                         },
                       ),
                     ),
                     Text.rich(TextSpan(
                         text: remaining.isNegative
-                            ? AppLocalizations.of(context)!.raidingEventTimeRemaining(0)!
-                            : AppLocalizations.of(context)!.raidingEventTimeRemaining(remaining.inSeconds + 1)!,
+                            ? AppLocalizations.of(context)!
+                                .raidingEventTimeRemaining(0)
+                            : AppLocalizations.of(context)!
+                                .raidingEventTimeRemaining(
+                                    remaining.inSeconds + 1),
                         style: Theme.of(context).textTheme.titleSmall))
                   ])),
             ]);
@@ -58,9 +63,11 @@ class TwitchRaidingEventWidget extends StatelessWidget {
               child: Row(children: [
                 Expanded(
                   child: StyledText(
-                    text: AppLocalizations.of(context)!.raidingEventRaided(model.targetUser.displayName) ?? '',
+                    text: AppLocalizations.of(context)!
+                        .raidingEventRaided(model.targetUser.displayName ?? ''),
                     tags: {
-                      'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+                      'b': StyledTextTag(
+                          style: Theme.of(context).textTheme.titleSmall),
                     },
                   ),
                 ),
@@ -80,7 +87,8 @@ class TwitchRaidingEventWidget extends StatelessWidget {
       return DecoratedEventWidget.avatar(
           avatar: ResilientNetworkImage(model.targetUser.profilePictureUrl),
           child: StyledText(
-            text: AppLocalizations.of(context)!.raidingEventCanceled(model.targetUser.displayName) ?? '',
+            text: AppLocalizations.of(context)!
+                .raidingEventCanceled(model.targetUser.displayName ?? ''),
             tags: {
               'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
             },
