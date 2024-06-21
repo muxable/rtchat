@@ -7,6 +7,7 @@ import 'package:rtchat/components/chat_history/twitch/host_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
+import 'package:styled_text/styled_text.dart';
 
 void main() {
   AutomatedTestWidgetsFlutterBinding();
@@ -23,8 +24,9 @@ void main() {
     await tester.pumpWidget(buildWidget(model));
 
     final findText = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText &&
-        widget.text.toPlainText() == "automux is hosting with a party of 10");
+        widget is StyledText &&
+        widget.text.toPlainText() ==
+            "<b>automux</b> is hosting with a party of <b>10</b>");
 
     expect(findText, findsOneWidget);
   });
