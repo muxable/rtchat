@@ -7,7 +7,6 @@ import 'package:rtchat/components/chat_history/twitch/host_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:styled_text/styled_text.dart';
 
 import '../../l10n.dart';
 

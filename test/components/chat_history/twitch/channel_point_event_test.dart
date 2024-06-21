@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:styled_text/styled_text.dart';
 
 import '../../l10n.dart';
 
