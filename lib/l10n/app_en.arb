@@ -321,7 +321,7 @@
   "@thirdPartyServicesSubtitle": {
     "description": "Subtitle for the third-party services page"
   },
-  "followingEvent": "<bold>{displayName}</bold> is following you",
+  "followingEvent": "<b>{displayName}</b> is following you",
   "@followingEvent": {
     "description": "Text label that shows when a user follows the streamer",
     "placeholders": {
@@ -331,7 +331,7 @@
       }
     }
   },
-  "followingEvent2": "<bold>{displayName}</bold> and <bold>{displayNameTwo}</bold> are following you",
+  "followingEvent2": "<b>{displayName}</b> and <b>{displayNameTwo}</b> are following you",
   "@followingEvent2": {
     "description": "Text label that shows when two users follow the streamer",
     "placeholders": {
@@ -345,7 +345,7 @@
       }
     }
   },
-  "followingEvent3": "<bold>{displayName}</bold>, <bold>{displayNameTwo}</bold>, and {numOthers} others are following you",
+  "followingEvent3": "<b>{displayName}</b>, <b>{displayNameTwo}</b>, and {numOthers} others are following you",
   "@followingEvent3": {
     "description": "Text label that shows when three or more users follow the streamer",
     "placeholders": {
@@ -663,7 +663,7 @@
   "@customizeYourOutgoingRaidEvent": {
     "description": "Subtitle for the outgoing raid event configuration"
   },
-  "raidEventMessage": "<bold>{displayName}</bold> is raiding with <bold>{viewerCount}</bold> viewers!",
+  "raidEventMessage": "<b>{displayName}</b> is raiding with <b>{viewerCount}</b> viewers!",
   "@raidEventMessage": {
     "description": "Message displayed when a raid event occurs",
     "placeholders": {
@@ -681,7 +681,7 @@
   "@shoutout": {
     "description": "Button text for the shoutout action in a raid event"
   },
-  "raidingEventRaiding": "<bold>{displayName}</bold> is raiding...",
+  "raidingEventRaiding": "<b>{displayName}</b> is raiding...",
   "@raidingEventRaiding": {
     "description": "Message displayed when a raiding event is in progress",
     "placeholders": {
@@ -701,7 +701,7 @@
       }
     }
   },
-  "raidingEventRaided": "<bold>{displayName}</bold> has raided!",
+  "raidingEventRaided": "<b>{displayName}</b> has raided!",
   "@raidingEventRaided": {
     "description": "Message displayed when a raiding event has completed successfully",
     "placeholders": {
@@ -715,7 +715,7 @@
   "@raidingEventJoin": {
     "description": "Button text to join the raid in a raiding event"
   },
-  "raidingEventCanceled": "<bold>{displayName}</bold>'s raid was canceled.",
+  "raidingEventCanceled": "<b>{displayName}</b>'s raid was canceled.",
   "@raidingEventCanceled": {
     "description": "Message displayed when a raiding event is canceled",
     "placeholders": {
@@ -725,7 +725,7 @@
       }
     }
   },
-  "subscriptionEvent": "<bold>{subscriberUserName}</bold> has subscribed at Tier {tier}!",
+  "subscriptionEvent": "<b>{subscriberUserName}</b> has subscribed at Tier {tier}!",
   "@subscriptionEvent": {
     "description": "Message displayed when a subscription event occurs",
     "placeholders": {
@@ -739,7 +739,7 @@
       }
     }
   },
-  "subscriptionGiftEvent": "<bold>{gifterUserName}</bold> has gifted {total} Tier {tier} subs, totaling {cumulativeTotal}!",
+  "subscriptionGiftEvent": "<b>{gifterUserName}</b> has gifted {total} Tier {tier} subs, totaling {cumulativeTotal}!",
   "@subscriptionGiftEvent": {
     "description": "Message displayed when a subscription gift event occurs",
     "placeholders": {
@@ -761,7 +761,7 @@
       }
     }
   },
-  "subscriptionMessageEvent": "<bold>{subscriberUserName}</bold> has subscribed for {cumulativeMonths} months at Tier {tier}!",
+  "subscriptionMessageEvent": "<b>{subscriberUserName}</b> has subscribed for {cumulativeMonths} months at Tier {tier}!",
   "@subscriptionMessageEvent": {
     "description": "Message displayed when a subscription message event occurs",
     "placeholders": {
