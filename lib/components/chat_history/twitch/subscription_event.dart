@@ -31,11 +31,15 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
     return DecoratedEventWidget.icon(
       icon: Icons.star,
       child: StyledText(
-        text: AppLocalizations.of(context)!.subscriptionEvent(model.subscriberUserName, model.tier.replaceAll("000", "")),
+        text: AppLocalizations.of(context)!.subscriptionEvent(
+            model.subscriberUserName, model.tier.replaceAll("000", "")),
         tags: {
           'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
         },
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(color: tierColor(context, model.tier)),
+        style: Theme.of(context)
+            .textTheme
+            .titleSmall
+            ?.copyWith(color: tierColor(context, model.tier)),
       ),
     );
   }
@@ -51,11 +55,18 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
     return DecoratedEventWidget.icon(
       icon: Icons.redeem,
       child: StyledText(
-        text: AppLocalizations.of(context)!.subscriptionGiftEvent(model.gifterUserName, model.total.toString(), model.tier.replaceAll("000", ""), model.cumulativeTotal.toString()),
+        text: AppLocalizations.of(context)!.subscriptionGiftEvent(
+            model.gifterUserName,
+            model.total,
+            model.tier.replaceAll("000", ""),
+            model.cumulativeTotal),
         tags: {
           'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
         },
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(color: tierColor(context, model.tier)),
+        style: Theme.of(context)
+            .textTheme
+            .titleSmall
+            ?.copyWith(color: tierColor(context, model.tier)),
       ),
     );
   }
@@ -119,11 +130,18 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
       icon: Icons.star,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         StyledText(
-          text: AppLocalizations.of(context)!.subscriptionMessageEvent(model.subscriberUserName, model.tier.replaceAll("000", ""), model.cumulativeMonths.toString()),
+          text: AppLocalizations.of(context)!.subscriptionMessageEvent(
+            model.subscriberUserName,
+            model.cumulativeMonths,
+            model.tier.replaceAll("000", ""),
+          ),
           tags: {
             'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
           },
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(color: tierColor(context, model.tier)),
+          style: Theme.of(context)
+              .textTheme
+              .titleSmall
+              ?.copyWith(color: tierColor(context, model.tier)),
         ),
         if (model.text.isNotEmpty)
           Consumer<StyleModel>(builder: (context, styleModel, child) {
