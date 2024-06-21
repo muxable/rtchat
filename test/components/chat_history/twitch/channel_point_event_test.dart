@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/style.dart';
+import 'package:styled_text/styled_text.dart';
 
 void main() {
   testWidgets(
@@ -19,10 +20,11 @@ void main() {
         userInput: null);
     await tester.pumpWidget(buildWidget(model));
 
-    final findText = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText &&
-        widget.text.toPlainText() ==
-            'automux redeemed Sprint for 100 points. ');
+    final findText = find.byWidgetPredicate((Widget widget) {
+      return widget is StyledText &&
+          widget.text ==
+              '<b>automux</b> redeemed <b>Sprint</b> for 100 points. ';
+    });
 
     final findIcon = find.byIcon(Icons.done);
 
@@ -43,10 +45,11 @@ void main() {
         userInput: "user input Kappa");
     await tester.pumpWidget(buildWidget(model));
 
-    final findText = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText &&
-        widget.text.toPlainText() ==
-            'automux redeemed WaTeER for 350 points. user input Kappa');
+    final findText = find.byWidgetPredicate((Widget widget) {
+      return widget is StyledText &&
+          widget.text ==
+              '<b>automux</b> redeemed <b>WaTeER</b> for 350 points. user input Kappa';
+    });
 
     final findIcon = find.byIcon(Icons.timer);
 
