@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
+import 'package:styled_text/styled_text.dart';
 
 class RealtimeCashDonationEventWidget extends StatelessWidget {
   final SimpleRealtimeCashDonationEventModel model;
@@ -9,29 +10,22 @@ class RealtimeCashDonationEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final boldStyle = Theme.of(context).textTheme.titleSmall;
     return DecoratedEventWidget.avatar(
       avatar: model.image,
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text.rich(
-              TextSpan(
-                children: [
-                  model.donor != null && model.donor!.isNotEmpty
-                      ? TextSpan(
-                          text: "${model.donor} donated ",
-                        )
-                      : const TextSpan(text: "Anonymous donated "),
-                  TextSpan(
-                      text: "${model.value.toString()} ${model.currency}. ",
-                      style: boldStyle),
-                ],
-              ),
+            StyledText(
+              text: model.donor != null && model.donor!.isNotEmpty
+                  ? '<b>${model.donor}</b> donated <b>${model.value.toString()} ${model.currency}</b>. '
+                  : 'Anonymous donated <b>${model.value.toString()} ${model.currency}</b>. ',
+              tags: {
+                'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+              },
             ),
             if (model.message != null && model.message!.isNotEmpty)
-              Text.rich(TextSpan(text: model.message),
+              Text(model.message!,
                   style: const TextStyle(fontStyle: FontStyle.italic)),
           ]),
     );
