@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
+import 'package:styled_text/styled_text.dart';
 
 class TwitchHypeTrainEventWidget extends StatelessWidget {
   final TwitchHypeTrainEventModel model;
@@ -13,29 +14,23 @@ class TwitchHypeTrainEventWidget extends StatelessWidget {
       icon: Icons.train,
       child: Builder(builder: (context) {
         if (model.hasEnded) {
-          return Text.rich(
-            TextSpan(children: [
-              const TextSpan(text: "Hype Train level "),
-              TextSpan(
-                  text: model.level.toString(),
+          return StyledText(
+            text: 'Hype Train level <b>${model.level}</b> ' +
+                (model.isSuccessful ? 'succeeded! ' : 'was not successful. '),
+            tags: {
+              'b': StyledTextTag(
                   style: Theme.of(context).textTheme.titleSmall),
-              model.isSuccessful
-                  ? const TextSpan(text: " succeeded! ")
-                  : const TextSpan(text: " was not successful. "),
-            ]),
+            },
           );
         } else {
-          return Text.rich(TextSpan(
-            children: [
-              const TextSpan(text: "Hype Train level "),
-              TextSpan(
-                  text: model.level.toString(),
+          return StyledText(
+            text: 'Hype Train level <b>${model.level}</b> in progress! ' +
+                '${(model.progress * 100) ~/ model.goal}% completed!',
+            tags: {
+              'b': StyledTextTag(
                   style: Theme.of(context).textTheme.titleSmall),
-              const TextSpan(text: " in progress! "),
-              TextSpan(
-                  text: "${(model.progress * 100) ~/ model.goal}% completed!"),
-            ],
-          ));
+            },
+          );
         }
       }),
     );
