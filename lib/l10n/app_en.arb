@@ -623,11 +623,11 @@
   "@customizeYourHostEvent": {
     "description": "Subtitle for the host event configuration"
   },
-  "hypetrainEventConfigTitle": "Hypetrain Event",
+  "hypetrainEventConfigTitle": "Hype Train Event",
   "@hypetrainEventConfigTitle": {
     "description": "Title for the hypetrain event configuration"
   },
-  "customizeYourHypetrainEvent": "Customize your hypetrain event",
+  "customizeYourHypetrainEvent": "Customize your hype train event",
   "@customizeYourHypetrainEvent": {
     "description": "Subtitle for the hypetrain event configuration"
   },
@@ -681,7 +681,7 @@
   "@shoutout": {
     "description": "Button text for the shoutout action in a raid event"
   },
-  "raidingEventRaiding": "<b>{displayName}</b> is raiding...",
+  "raidingEventRaiding": "Raiding <b>{displayName}</b>...",
   "@raidingEventRaiding": {
     "description": "Message displayed when a raiding event is in progress",
     "placeholders": {
@@ -691,7 +691,7 @@
       }
     }
   },
-  "raidingEventTimeRemaining": "Time remaining: {seconds}s",
+  "raidingEventTimeRemaining": "{seconds}s",
   "@raidingEventTimeRemaining": {
     "description": "Message displaying the time remaining for a raiding event",
     "placeholders": {
@@ -779,7 +779,7 @@
       }
     }
   },
-  "realtimeCashDonationWithDonor": "<b>{donor}</b> donated <b>{value} {currency}</b>",
+  "realtimeCashDonationWithDonor": "<b>{donor}</b> donated <b>{value} {currency}</b>.",
   "@realtimeCashDonationWithDonor": {
     "description": "Message displayed when a RealtimeCash donation is made with a donor name",
     "placeholders": {
@@ -797,7 +797,7 @@
       }
     }
   },
-  "realtimeCashDonationAnonymous": "An anonymous user donated <b>{value} {currency}</b>",
+  "realtimeCashDonationAnonymous": "An anonymous user donated <b>{value} {currency}</b>.",
   "@realtimeCashDonationAnonymous": {
     "description": "Message displayed when a RealtimeCash donation is made anonymously",
     "placeholders": {
@@ -811,7 +811,7 @@
       }
     }
   },
-  "streamElementsTipEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b>",
+  "streamElementsTipEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b>.",
   "@streamElementsTipEventMessage": {
     "description": "Message displayed when a StreamElements tip event occurs",
     "placeholders": {
@@ -825,7 +825,7 @@
       }
     }
   },
-  "streamlabsDonationEventMessage": "<b>{name}</b> donated <b>{formattedAmount}</b>",
+  "streamlabsDonationEventMessage": "<b>{name}</b> donated <b>{formattedAmount}</b>.",
   "@streamlabsDonationEventMessage": {
     "description": "Message displayed when a Streamlabs donation event occurs",
     "placeholders": {
@@ -839,7 +839,7 @@
       }
     }
   },
-  "channelPointRedemptionWithUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points with message: <b>{userInput}</b>",
+  "channelPointRedemptionWithUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points. <b>{userInput}</b>",
   "@channelPointRedemptionWithUserInput": {
     "description": "Message displayed when a channel point redemption event occurs with user input",
     "placeholders": {
@@ -852,7 +852,8 @@
         "example": "Highlight My Message"
       },
       "rewardCost": {
-        "type": "String",
+        "type": "int",
+        "format": "decimalPattern",
         "example": "100"
       },
       "userInput": {
@@ -861,7 +862,7 @@
       }
     }
   },
-  "channelPointRedemptionWithoutUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points",
+  "channelPointRedemptionWithoutUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points.",
   "@channelPointRedemptionWithoutUserInput": {
     "description": "Message displayed when a channel point redemption event occurs without user input",
     "placeholders": {
@@ -874,12 +875,13 @@
         "example": "Highlight My Message"
       },
       "rewardCost": {
-        "type": "String",
+        "type": "int",
+        "format": "decimalPattern",
         "example": "100"
       }
     }
   },
-  "cheerEventMessage": "<b>{name}</b> cheered <b>{bits}</b> bits with message: <b>{cheerMessage}</b>",
+  "cheerEventMessage": "<b>{name}</b> cheered <b>{bits}</b> bits. <b>{cheerMessage}</b>",
   "@cheerEventMessage": {
     "description": "Message displayed when a cheer event occurs",
     "placeholders": {
@@ -915,7 +917,7 @@
       }
     }
   },
-  "hypeTrainEventProgress": "Hype Train is at level <b>{level}</b> with <b>{progressPercent}%</b> progress",
+  "hypeTrainEventProgress": "Hype Train is at level <b>{level}</b> with <b>{progressPercent}%</b> progress.",
   "@hypeTrainEventProgress": {
     "description": "Message displayed when a hype train event is in progress",
     "placeholders": {
@@ -929,7 +931,7 @@
       }
     }
   },
-  "hypeTrainEventEndedSuccessful": "Hype Train ended at level <b>{level}</b> and was <b>successful</b>",
+  "hypeTrainEventEndedSuccessful": "Hype Train ended at level <b>{level}</b> and was <b>successful</b>.",
   "@hypeTrainEventEndedSuccessful": {
     "description": "Message displayed when a hype train event ends successfully",
     "placeholders": {
@@ -940,7 +942,7 @@
       }
     }
   },
-  "hypeTrainEventEndedUnsuccessful": "Hype Train ended at level <b>{level}</b> and was <b>not successful</b>",
+  "hypeTrainEventEndedUnsuccessful": "Hype Train ended at level <b>{level}</b> and was <b>not successful</b>.",
   "@hypeTrainEventEndedUnsuccessful": {
     "description": "Message displayed when a hype train event ends unsuccessfully",
     "placeholders": {

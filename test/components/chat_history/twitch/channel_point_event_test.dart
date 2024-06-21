@@ -6,6 +6,8 @@ import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dar
 import 'package:rtchat/models/style.dart';
 import 'package:styled_text/styled_text.dart';
 
+import '../../l10n.dart';
+
 void main() {
   testWidgets(
       'fulfilled channel point redemption should have done icon and message',
@@ -20,10 +22,12 @@ void main() {
         userInput: null);
     await tester.pumpWidget(buildWidget(model));
 
+    await tester.pumpAndSettle();
+
     final findText = find.byWidgetPredicate((Widget widget) {
-      return widget is StyledText &&
-          widget.text ==
-              '<b>automux</b> redeemed <b>Sprint</b> for 100 points. ';
+      return widget is RichText &&
+          widget.text.toPlainText() ==
+              'automux redeemed Sprint for 100 points.';
     });
 
     final findIcon = find.byIcon(Icons.done);
@@ -45,10 +49,12 @@ void main() {
         userInput: "user input Kappa");
     await tester.pumpWidget(buildWidget(model));
 
+    await tester.pumpAndSettle();
+
     final findText = find.byWidgetPredicate((Widget widget) {
-      return widget is StyledText &&
-          widget.text ==
-              '<b>automux</b> redeemed <b>WaTeER</b> for 350 points. user input Kappa';
+      return widget is RichText &&
+          widget.text.toPlainText() ==
+              'automux redeemed WaTeER for 350 points. user input Kappa';
     });
 
     final findIcon = find.byIcon(Icons.timer);
@@ -58,9 +64,9 @@ void main() {
   });
 }
 
-ChangeNotifierProvider<StyleModel> buildWidget(
-    TwitchChannelPointRedemptionEventModel model) {
-  return ChangeNotifierProvider<StyleModel>.value(
+Widget buildWidget(TwitchChannelPointRedemptionEventModel model) {
+  return TestLocalizations(
+      child: ChangeNotifierProvider<StyleModel>.value(
     value: StyleModel.fromJson({
       "fontSize": 20.0,
       "lightnessBoost": 0.179,
@@ -71,5 +77,5 @@ ChangeNotifierProvider<StyleModel> buildWidget(
         child: MediaQuery(
             data: const MediaQueryData(),
             child: TwitchChannelPointRedemptionEventWidget(model))),
-  );
+  ));
 }
