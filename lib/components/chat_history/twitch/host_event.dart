@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:styled_text/styled_text.dart';
 
 class TwitchHostEventWidget extends StatelessWidget {
   final TwitchHostEventModel model;
-
-  final NumberFormat _formatter = NumberFormat.decimalPattern();
 
   TwitchHostEventWidget(this.model, {super.key});
 
@@ -15,17 +13,12 @@ class TwitchHostEventWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedEventWidget.avatar(
       avatar: ResilientNetworkImage(model.from.profilePictureUrl),
-      child: Text.rich(TextSpan(
-        children: [
-          TextSpan(
-              text: model.from.displayName,
-              style: Theme.of(context).textTheme.titleSmall),
-          const TextSpan(text: " is hosting with a party of "),
-          TextSpan(
-              text: _formatter.format(model.viewers),
-              style: Theme.of(context).textTheme.titleSmall),
-        ],
-      )),
+      child: StyledText(
+        text: '<b>${model.from.displayName}</b> is hosting with a party of <b>${model.viewers}</b>',
+        tags: {
+          'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+        },
+      ),
     );
   }
 }
