@@ -897,6 +897,10 @@
       }
     }
   },
+  "anonymous": "Anonymous",
+  "@anonymous": {
+    "description": "Username of an anonymous user"
+  },
   "hostEventMessage": "<b>{fromDisplayName}</b> is hosting you with <b>{viewers}</b> viewers!",
   "@hostEventMessage": {
     "description": "Message displayed when a host event occurs",
@@ -925,17 +929,25 @@
       }
     }
   },
-  "hypeTrainEventEnded": "Hype Train ended at level <b>{level}</b> and was <b>{result}</b>",
-  "@hypeTrainEventEnded": {
-    "description": "Message displayed when a hype train event ends",
+  "hypeTrainEventEndedSuccessful": "Hype Train ended at level <b>{level}</b> and was <b>successful</b>",
+  "@hypeTrainEventEndedSuccessful": {
+    "description": "Message displayed when a hype train event ends successfully",
     "placeholders": {
       "level": {
-        "type": "String",
+        "type": "int",
+        "format": "decimalPattern",
         "example": "3"
-      },
-      "result": {
-        "type": "String",
-        "example": "successful"
+      }
+    }
+  },
+  "hypeTrainEventEndedUnsuccessful": "Hype Train ended at level <b>{level}</b> and was <b>not successful</b>",
+  "@hypeTrainEventEndedUnsuccessful": {
+    "description": "Message displayed when a hype train event ends unsuccessfully",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
       }
     }
   }

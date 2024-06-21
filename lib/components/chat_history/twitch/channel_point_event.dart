@@ -11,13 +11,18 @@ class TwitchChannelPointRedemptionEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return DecoratedEventWidget.icon(
       icon: model.icon,
       child: StyledText(
         text: model.userInput != null
-            ? loc.channelPointRedemptionWithUserInput(model.redeemerUsername, model.rewardName, model.rewardCost.toString(), model.userInput!)
-            : loc.channelPointRedemptionWithoutUserInput(model.redeemerUsername, model.rewardName, model.rewardCost.toString()),
+            ? AppLocalizations.of(context)!.channelPointRedemptionWithUserInput(
+                model.redeemerUsername,
+                model.rewardName,
+                model.rewardCost.toString(),
+                model.userInput!)
+            : AppLocalizations.of(context)!
+                .channelPointRedemptionWithoutUserInput(model.redeemerUsername,
+                    model.rewardName, model.rewardCost.toString()),
         tags: {
           'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
         },

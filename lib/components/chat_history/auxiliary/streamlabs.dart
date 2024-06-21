@@ -11,7 +11,6 @@ class StreamlabsDonationEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return DecoratedEventWidget.avatar(
       avatar: const AssetImage("assets/streamlabs.png"),
       child: Column(
@@ -19,7 +18,9 @@ class StreamlabsDonationEventWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             StyledText(
-              text: loc.streamlabsDonationEventMessage(model.name, model.formattedAmount),
+              text: AppLocalizations.of(context)!
+                  .streamlabsDonationEventMessage(
+                      model.name, model.formattedAmount),
               tags: {
                 'b': StyledTextTag(
                     style: Theme.of(context).textTheme.titleSmall),

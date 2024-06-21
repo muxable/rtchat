@@ -11,7 +11,6 @@ class StreamElementsTipEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return DecoratedEventWidget.avatar(
       avatar: const AssetImage("assets/streamelements.png"),
       child: Column(
@@ -19,7 +18,8 @@ class StreamElementsTipEventWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             StyledText(
-              text: loc.streamElementsTipEventMessage(model.name, model.formattedAmount),
+              text: AppLocalizations.of(context)!.streamElementsTipEventMessage(
+                  model.name, model.formattedAmount),
               tags: {
                 'b': StyledTextTag(
                     style: Theme.of(context).textTheme.titleSmall),

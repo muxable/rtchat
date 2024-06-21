@@ -11,20 +11,25 @@ class TwitchHypeTrainEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return DecoratedEventWidget.icon(
       icon: Icons.train,
       child: Builder(builder: (context) {
         if (model.hasEnded) {
           return StyledText(
-            text: loc.hypeTrainEventEnded(model.level.toString(), model.isSuccessful ? loc.successful : loc.notSuccessful),
+            text: model.isSuccessful
+                ? AppLocalizations.of(context)!
+                    .hypeTrainEventEndedSuccessful(model.level)
+                : AppLocalizations.of(context)!
+                    .hypeTrainEventEndedUnsuccessful(model.level),
             tags: {
               'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
             },
           );
         } else {
           return StyledText(
-            text: loc.hypeTrainEventProgress(model.level.toString(), ((model.progress * 100) ~/ model.goal).toString()),
+            text: AppLocalizations.of(context)!.hypeTrainEventProgress(
+                model.level.toString(),
+                ((model.progress * 100) ~/ model.goal).toString()),
             tags: {
               'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
             },

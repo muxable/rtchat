@@ -11,7 +11,6 @@ class RealtimeCashDonationEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return DecoratedEventWidget.avatar(
       avatar: model.image,
       child: Column(
@@ -20,8 +19,10 @@ class RealtimeCashDonationEventWidget extends StatelessWidget {
           children: [
             StyledText(
               text: model.donor != null && model.donor!.isNotEmpty
-                  ? loc.realtimeCashDonationWithDonor(model.donor!, model.value.toString(), model.currency)
-                  : loc.realtimeCashDonationAnonymous(model.value.toString(), model.currency),
+                  ? AppLocalizations.of(context)!.realtimeCashDonationWithDonor(
+                      model.donor!, model.value.toString(), model.currency)
+                  : AppLocalizations.of(context)!.realtimeCashDonationAnonymous(
+                      model.value.toString(), model.currency),
               tags: {
                 'b': StyledTextTag(
                     style: Theme.of(context).textTheme.titleSmall),

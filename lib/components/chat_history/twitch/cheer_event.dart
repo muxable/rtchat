@@ -19,12 +19,14 @@ class TwitchCheerEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-    final name = model.isAnonymous ? loc.anonymous : model.giverName;
+    final name = model.isAnonymous
+        ? AppLocalizations.of(context)!.anonymous
+        : model.giverName ?? AppLocalizations.of(context)!.anonymous;
     return DecoratedEventWidget.avatar(
       avatar: ResilientNetworkImage(getCorrespondingImageUrl(model.bits)),
       child: StyledText(
-        text: loc.cheerEventMessage(name, model.bits, model.cheerMessage),
+        text: AppLocalizations.of(context)!
+            .cheerEventMessage(name, model.bits, model.cheerMessage),
         tags: {
           'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
         },

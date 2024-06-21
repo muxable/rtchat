@@ -12,11 +12,12 @@ class TwitchHostEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return DecoratedEventWidget.avatar(
       avatar: ResilientNetworkImage(model.from.profilePictureUrl),
       child: StyledText(
-        text: loc.hostEventMessage(model.from.displayName, model.viewers.toString()),
+        text: AppLocalizations.of(context)!.hostEventMessage(
+            model.from.displayName ?? AppLocalizations.of(context)!.anonymous,
+            model.viewers),
         tags: {
           'b': StyledTextTag(
               style: Theme.of(context)
