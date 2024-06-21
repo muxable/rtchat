@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
@@ -13,9 +13,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
   final TwitchRaidEventModel model;
   final Channel channel;
 
-  final NumberFormat _formatter = NumberFormat.decimalPattern();
-
-  TwitchRaidEventWidget(this.model, {super.key, required this.channel});
+  const TwitchRaidEventWidget(this.model, {super.key, required this.channel});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +22,8 @@ class TwitchRaidEventWidget extends StatelessWidget {
       child: Row(children: [
         Expanded(
           child: StyledText(
-            text: '<b>${model.from.displayName}</b> is raiding with a party of ${_formatter.format(model.viewers)}',
+            text: AppLocalizations.of(context)!
+                .raidEventMessage(model.from.displayName ?? "", model.viewers),
             tags: {
               'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
             },
@@ -38,7 +37,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
           }
           return GestureDetector(
               child: Text.rich(TextSpan(
-                  text: "Shoutout",
+                  text: AppLocalizations.of(context)!.shoutout,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color:
                           Theme.of(context).buttonTheme.colorScheme?.primary))),
