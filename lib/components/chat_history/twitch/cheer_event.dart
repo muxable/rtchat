@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:styled_text/styled_text.dart';
 
 Uri getCorrespondingImageUrl(int bits) {
   final key = [100000, 10000, 5000, 1000, 100]
@@ -18,19 +19,13 @@ class TwitchCheerEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = model.isAnonymous ? 'Anonymous' : model.giverName;
-    final boldStyle = Theme.of(context).textTheme.titleSmall;
     return DecoratedEventWidget.avatar(
       avatar: ResilientNetworkImage(getCorrespondingImageUrl(model.bits)),
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(text: name, style: boldStyle),
-            const TextSpan(text: " cheered"),
-            TextSpan(text: " ${(model.bits)}", style: boldStyle),
-            const TextSpan(text: " bits."),
-            TextSpan(text: " ${model.cheerMessage}")
-          ],
-        ),
+      child: StyledText(
+        text: '<b>$name</b> cheered <b>${model.bits}</b> bits. ${model.cheerMessage}',
+        tags: {
+          'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+        },
       ),
     );
   }
