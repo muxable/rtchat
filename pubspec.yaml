@@ -12,6 +12,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  battery_plus: ^5.0.2
   audioplayers: ^6.0.0
   characters: ^1.3.0
   cloud_firestore: ^5.0.1
