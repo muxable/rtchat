@@ -7,16 +7,21 @@ import 'package:styled_text/styled_text.dart';
 class TwitchHostEventWidget extends StatelessWidget {
   final TwitchHostEventModel model;
 
-  TwitchHostEventWidget(this.model, {super.key});
+  const TwitchHostEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return DecoratedEventWidget.avatar(
       avatar: ResilientNetworkImage(model.from.profilePictureUrl),
       child: StyledText(
-        text: '<b>${model.from.displayName}</b> is hosting with a party of <b>${model.viewers}</b>',
+        text:
+            '<b>${model.from.displayName}</b> is hosting with a party of <b>${model.viewers}</b>',
         tags: {
-          'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+          'b': StyledTextTag(
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold)),
         },
       ),
     );

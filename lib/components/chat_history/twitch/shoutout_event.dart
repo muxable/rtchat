@@ -14,9 +14,12 @@ class TwitchShoutoutCreateEventWidget extends StatelessWidget {
     return DecoratedEventWidget.icon(
       icon: Icons.campaign,
       child: StyledText(
-        text: 'Shoutout was given to <b>${model.toBroadcasterUserName}</b> with ${model.viewerCount} viewers',
+        text:
+            'Shoutout was given to <b>${model.toBroadcasterUserName}</b> with ${model.viewerCount} viewers',
         tags: {
-          'b': StyledTextTag(style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purpleAccent)),
+          'b': StyledTextTag(
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.purpleAccent)),
         },
       ),
     );
@@ -33,9 +36,12 @@ class TwitchShoutoutReceiveEventWidget extends StatelessWidget {
     return DecoratedEventWidget.icon(
       icon: Icons.campaign,
       child: StyledText(
-        text: '<b>${model.fromBroadcasterUserName}</b> gave you a shoutout to ${model.viewerCount} viewers',
+        text:
+            '<b>${model.fromBroadcasterUserName}</b> gave you a shoutout to ${model.viewerCount} viewers',
         tags: {
-          'b': StyledTextTag(style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purpleAccent)),
+          'b': StyledTextTag(
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.purpleAccent)),
         },
       ),
     );
