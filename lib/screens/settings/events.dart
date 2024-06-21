@@ -54,7 +54,8 @@ class EventsScreen extends StatelessWidget {
                 )))),
             EventConfigListTile(
               title: Text(AppLocalizations.of(context)!.followEventConfigTitle),
-              subtitle: Text(AppLocalizations.of(context)!.customizeYourFollowEvent),
+              subtitle:
+                  Text(AppLocalizations.of(context)!.customizeYourFollowEvent),
               routeName: '/settings/events/follow',
               child: Switch.adaptive(
                 value: eventSubConfig.followEventConfig.showEvent,
@@ -101,8 +102,10 @@ class EventsScreen extends StatelessWidget {
                   text: 'Thanks for the stream!',
                 )))),
             EventConfigListTile(
-              title: Text(AppLocalizations.of(context)!.subscribeEventConfigTitle),
-              subtitle: Text(AppLocalizations.of(context)!.customizeYourSubscriptionEvent),
+              title:
+                  Text(AppLocalizations.of(context)!.subscribeEventConfigTitle),
+              subtitle: Text(
+                  AppLocalizations.of(context)!.customizeYourSubscriptionEvent),
               routeName: '/settings/events/subscription',
               child: Switch.adaptive(
                 value: eventSubConfig.subscriptionEventConfig.showEvent,
@@ -123,7 +126,8 @@ class EventsScreen extends StatelessWidget {
                 )))),
             EventConfigListTile(
               title: Text(AppLocalizations.of(context)!.cheerEventConfigTitle),
-              subtitle: Text(AppLocalizations.of(context)!.customizeYourCheerEvent),
+              subtitle:
+                  Text(AppLocalizations.of(context)!.customizeYourCheerEvent),
               routeName: '/settings/events/cheer',
               child: Switch.adaptive(
                 value: eventSubConfig.cheerEventConfig.showEvent,
@@ -151,7 +155,8 @@ class EventsScreen extends StatelessWidget {
                         )))),
             EventConfigListTile(
               title: Text(AppLocalizations.of(context)!.raidEventConfigTitle),
-              subtitle: Text(AppLocalizations.of(context)!.customizeYourRaidEvent),
+              subtitle:
+                  Text(AppLocalizations.of(context)!.customizeYourRaidEvent),
               routeName: '/settings/events/raid',
               child: Switch.adaptive(
                 value: eventSubConfig.raidEventConfig.showEvent,
@@ -173,7 +178,8 @@ class EventsScreen extends StatelessWidget {
                 )))),
             EventConfigListTile(
               title: Text(AppLocalizations.of(context)!.hostEventConfigTitle),
-              subtitle: Text(AppLocalizations.of(context)!.customizeYourHostEvent),
+              subtitle:
+                  Text(AppLocalizations.of(context)!.customizeYourHostEvent),
               routeName: '/settings/events/host',
               child: Switch.adaptive(
                 value: eventSubConfig.hostEventConfig.showEvent,
@@ -195,8 +201,10 @@ class EventsScreen extends StatelessWidget {
                   endTimestamp: DateTime(2021),
                 )))),
             EventConfigListTile(
-              title: Text(AppLocalizations.of(context)!.hypetrainEventConfigTitle),
-              subtitle: Text(AppLocalizations.of(context)!.customizeYourHypetrainEvent),
+              title:
+                  Text(AppLocalizations.of(context)!.hypetrainEventConfigTitle),
+              subtitle: Text(
+                  AppLocalizations.of(context)!.customizeYourHypetrainEvent),
               routeName: '/settings/events/hypetrain',
               child: Switch.adaptive(
                 value: eventSubConfig.hypetrainEventConfig.showEvent,
@@ -231,7 +239,8 @@ class EventsScreen extends StatelessWidget {
                         status: 'placeholder')))),
             EventConfigListTile(
               title: Text(AppLocalizations.of(context)!.pollEventConfigTitle),
-              subtitle: Text(AppLocalizations.of(context)!.customizeYourPollEvent),
+              subtitle:
+                  Text(AppLocalizations.of(context)!.customizeYourPollEvent),
               routeName: '/settings/events/poll',
               child: Switch.adaptive(
                 value: eventSubConfig.pollEventConfig.showEvent,
@@ -256,8 +265,10 @@ class EventsScreen extends StatelessWidget {
                           'outcome2', 100, 'blue', 'Tails')
                     ])))),
             EventConfigListTile(
-              title: Text(AppLocalizations.of(context)!.predictionEventConfigTitle),
-              subtitle: Text(AppLocalizations.of(context)!.customizeYourPredictionEvent),
+              title: Text(
+                  AppLocalizations.of(context)!.predictionEventConfigTitle),
+              subtitle: Text(
+                  AppLocalizations.of(context)!.customizeYourPredictionEvent),
               routeName: '/settings/events/prediction',
               child: Switch.adaptive(
                 value: eventSubConfig.predictionEventConfig.showEvent,
@@ -279,11 +290,14 @@ class EventsScreen extends StatelessWidget {
                   userInput: 'Infront of Topaz!',
                 )))),
             EventConfigListTile(
-              title: Text(AppLocalizations.of(context)!.channelPointRedemptionEventConfigTitle),
-              subtitle: Text(AppLocalizations.of(context)!.customizeYourChannelPointRedemptionEvent),
+              title: Text(AppLocalizations.of(context)!
+                  .channelPointRedemptionEventConfigTitle),
+              subtitle: Text(AppLocalizations.of(context)!
+                  .customizeYourChannelPointRedemptionEvent),
               routeName: '/settings/events/channel-point',
               child: Switch.adaptive(
-                value: eventSubConfig.channelPointRedemptionEventConfig.showEvent,
+                value:
+                    eventSubConfig.channelPointRedemptionEventConfig.showEvent,
                 onChanged: (value) => eventSubConfig
                     .setChannelPointRedemptionEventShowable(value),
               ),
@@ -301,8 +315,10 @@ class EventsScreen extends StatelessWidget {
                       displayName: 'muxfd'),
                 )))),
             EventConfigListTile(
-              title: Text(AppLocalizations.of(context)!.outgoingRaidEventConfigTitle),
-              subtitle: Text(AppLocalizations.of(context)!.customizeYourOutgoingRaidEvent),
+              title: Text(
+                  AppLocalizations.of(context)!.outgoingRaidEventConfigTitle),
+              subtitle: Text(
+                  AppLocalizations.of(context)!.customizeYourOutgoingRaidEvent),
               routeName: '/settings/events/raiding',
               child: Switch.adaptive(
                 value: eventSubConfig.raidingEventConfig.showEvent,
