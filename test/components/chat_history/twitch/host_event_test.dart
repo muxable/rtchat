@@ -25,8 +25,7 @@ void main() {
 
     final findText = find.byWidgetPredicate((Widget widget) =>
         widget is StyledText &&
-        widget.text.toPlainText() ==
-            "<b>automux</b> is hosting with a party of <b>10</b>");
+        widget.text == "<b>automux</b> is hosting with a party of <b>10</b>");
 
     expect(findText, findsOneWidget);
   });
