@@ -21,7 +21,8 @@ class RealtimeCashDonationEventWidget extends StatelessWidget {
                   ? '<b>${model.donor}</b> donated <b>${model.value.toString()} ${model.currency}</b>. '
                   : 'Anonymous donated <b>${model.value.toString()} ${model.currency}</b>. ',
               tags: {
-                'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+                'b': StyledTextTag(
+                    style: Theme.of(context).textTheme.titleSmall),
               },
             ),
             if (model.message != null && model.message!.isNotEmpty)

@@ -17,9 +17,11 @@ class StreamlabsDonationEventWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             StyledText(
-              text: '<b>${model.name}</b> tipped <b>${model.formattedAmount}</b> on Streamlabs.',
+              text:
+                  '<b>${model.name}</b> tipped <b>${model.formattedAmount}</b> on Streamlabs.',
               tags: {
-                'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+                'b': StyledTextTag(
+                    style: Theme.of(context).textTheme.titleSmall),
               },
             ),
             if (model.message != null && model.message!.isNotEmpty)
