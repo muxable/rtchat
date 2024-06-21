@@ -120,24 +120,37 @@ class _DrawerHeader extends StatelessWidget {
                         icon: const Icon(Icons.qr_code),
                         onPressed: () {
                           Navigator.of(context).pop();
-                          showModalBottomSheet(
-                              context: context,
-                              builder: (context) {
-                                return Consumer<QRModel>(
+
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return Dialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25.0),
+                                ),
+                                child: Consumer<QRModel>(
                                   builder: (context, qrModel, child) {
                                     return Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.only(top: 20),
-                                        decoration: BoxDecoration(
-                                            gradient: qrModel.currentGradient,
-                                            borderRadius:
-                                                const BorderRadius.vertical(
-                                              top: Radius.circular(25.0),
-                                            )),
-                                        child: const QRDisplay());
+                                      width: MediaQuery.of(context)
+                                                  .orientation ==
+                                              Orientation.landscape
+                                          ? MediaQuery.of(context).size.width *
+                                              0.01
+                                          : double.infinity,
+                                      decoration: BoxDecoration(
+                                        gradient: qrModel.currentGradient,
+                                        borderRadius:
+                                            const BorderRadius.vertical(
+                                                top: Radius.circular(25.0),
+                                                bottom: Radius.circular(25.0)),
+                                      ),
+                                      child: const QRDisplay(),
+                                    );
                                   },
-                                );
-                              });
+                                ),
+                              );
+                            },
+                          );
                         },
                       ),
                     );

@@ -199,7 +199,7 @@ class SettingsScreen extends StatelessWidget {
                 )),
           ),
           Column(
-              children: {"wormoSTEEZE", "ThisIsKurrrt", "nezst"}.map((key) {
+              children: {"wormoSTEEZE", "ThisisKurtIRL", "nezst"}.map((key) {
             final url = "https://twitch.tv/$key";
             return ListTile(
               leading: const Image(
