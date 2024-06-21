@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
 import 'package:styled_text/styled_text.dart';
@@ -10,6 +11,7 @@ class StreamElementsTipEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return DecoratedEventWidget.avatar(
       avatar: const AssetImage("assets/streamelements.png"),
       child: Column(
@@ -17,8 +19,7 @@ class StreamElementsTipEventWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             StyledText(
-              text:
-                  '<b>${model.name}</b> tipped <b>${model.formattedAmount}</b> on StreamElements.',
+              text: loc.streamElementsTipEventMessage(model.name, model.formattedAmount),
               tags: {
                 'b': StyledTextTag(
                     style: Theme.of(context).textTheme.titleSmall),

@@ -778,5 +778,165 @@
         "example": "1"
       }
     }
+  },
+  "realtimeCashDonationWithDonor": "<b>{donor}</b> donated <b>{value} {currency}</b>",
+  "@realtimeCashDonationWithDonor": {
+    "description": "Message displayed when a RealtimeCash donation is made with a donor name",
+    "placeholders": {
+      "donor": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "value": {
+        "type": "String",
+        "example": "5"
+      },
+      "currency": {
+        "type": "String",
+        "example": "USD"
+      }
+    }
+  },
+  "realtimeCashDonationAnonymous": "An anonymous user donated <b>{value} {currency}</b>",
+  "@realtimeCashDonationAnonymous": {
+    "description": "Message displayed when a RealtimeCash donation is made anonymously",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "5"
+      },
+      "currency": {
+        "type": "String",
+        "example": "USD"
+      }
+    }
+  },
+  "streamElementsTipEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b>",
+  "@streamElementsTipEventMessage": {
+    "description": "Message displayed when a StreamElements tip event occurs",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "formattedAmount": {
+        "type": "String",
+        "example": "$5.00"
+      }
+    }
+  },
+  "streamlabsDonationEventMessage": "<b>{name}</b> donated <b>{formattedAmount}</b>",
+  "@streamlabsDonationEventMessage": {
+    "description": "Message displayed when a Streamlabs donation event occurs",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "formattedAmount": {
+        "type": "String",
+        "example": "$5.00"
+      }
+    }
+  },
+  "channelPointRedemptionWithUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points with message: <b>{userInput}</b>",
+  "@channelPointRedemptionWithUserInput": {
+    "description": "Message displayed when a channel point redemption event occurs with user input",
+    "placeholders": {
+      "redeemerUsername": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "rewardName": {
+        "type": "String",
+        "example": "Highlight My Message"
+      },
+      "rewardCost": {
+        "type": "String",
+        "example": "100"
+      },
+      "userInput": {
+        "type": "String",
+        "example": "Hello World!"
+      }
+    }
+  },
+  "channelPointRedemptionWithoutUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points",
+  "@channelPointRedemptionWithoutUserInput": {
+    "description": "Message displayed when a channel point redemption event occurs without user input",
+    "placeholders": {
+      "redeemerUsername": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "rewardName": {
+        "type": "String",
+        "example": "Highlight My Message"
+      },
+      "rewardCost": {
+        "type": "String",
+        "example": "100"
+      }
+    }
+  },
+  "cheerEventMessage": "<b>{name}</b> cheered <b>{bits}</b> bits with message: <b>{cheerMessage}</b>",
+  "@cheerEventMessage": {
+    "description": "Message displayed when a cheer event occurs",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "bits": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "cheerMessage": {
+        "type": "String",
+        "example": "Great stream!"
+      }
+    }
+  },
+  "hostEventMessage": "<b>{fromDisplayName}</b> is hosting you with <b>{viewers}</b> viewers!",
+  "@hostEventMessage": {
+    "description": "Message displayed when a host event occurs",
+    "placeholders": {
+      "fromDisplayName": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "viewers": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "hypeTrainEventProgress": "Hype Train is at level <b>{level}</b> with <b>{progressPercent}%</b> progress",
+  "@hypeTrainEventProgress": {
+    "description": "Message displayed when a hype train event is in progress",
+    "placeholders": {
+      "level": {
+        "type": "String",
+        "example": "3"
+      },
+      "progressPercent": {
+        "type": "String",
+        "example": "75"
+      }
+    }
+  },
+  "hypeTrainEventEnded": "Hype Train ended at level <b>{level}</b> and was <b>{result}</b>",
+  "@hypeTrainEventEnded": {
+    "description": "Message displayed when a hype train event ends",
+    "placeholders": {
+      "level": {
+        "type": "String",
+        "example": "3"
+      },
+      "result": {
+        "type": "String",
+        "example": "successful"
+      }
+    }
   }
 }
