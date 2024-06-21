@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
@@ -30,7 +31,7 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
     return DecoratedEventWidget.icon(
       icon: Icons.star,
       child: StyledText(
-        text: '<b>${model.subscriberUserName}</b> subscribed at Tier ${model.tier.replaceAll("000", "")}',
+        text: AppLocalizations.of(context)!.subscriptionEvent(model.subscriberUserName, model.tier.replaceAll("000", "")),
         tags: {
           'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
         },
@@ -50,7 +51,7 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
     return DecoratedEventWidget.icon(
       icon: Icons.redeem,
       child: StyledText(
-        text: '<b>${model.gifterUserName}</b> gifted ${model.total} Tier ${model.tier.replaceAll("000", "")} subscription${model.total > 1 ? "s" : ""}${model.cumulativeTotal > 0 ? " (${model.cumulativeTotal} total)" : ""}',
+        text: AppLocalizations.of(context)!.subscriptionGiftEvent(model.gifterUserName, model.total.toString(), model.tier.replaceAll("000", ""), model.cumulativeTotal.toString()),
         tags: {
           'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
         },
@@ -118,7 +119,7 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
       icon: Icons.star,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         StyledText(
-          text: '<b>${model.subscriberUserName}</b> subscribed at Tier ${model.tier.replaceAll("000", "")} for ${model.cumulativeMonths == 1 ? "1 month" : "${model.cumulativeMonths} months"}',
+          text: AppLocalizations.of(context)!.subscriptionMessageEvent(model.subscriberUserName, model.tier.replaceAll("000", ""), model.cumulativeMonths.toString()),
           tags: {
             'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
           },

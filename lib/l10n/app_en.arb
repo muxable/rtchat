@@ -724,5 +724,59 @@
         "example": "muxfd"
       }
     }
+  },
+  "subscriptionEvent": "<bold>{subscriberUserName}</bold> has subscribed at Tier {tier}!",
+  "@subscriptionEvent": {
+    "description": "Message displayed when a subscription event occurs",
+    "placeholders": {
+      "subscriberUserName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "tier": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "subscriptionGiftEvent": "<bold>{gifterUserName}</bold> has gifted {total} Tier {tier} subs, totaling {cumulativeTotal}!",
+  "@subscriptionGiftEvent": {
+    "description": "Message displayed when a subscription gift event occurs",
+    "placeholders": {
+      "gifterUserName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "tier": {
+        "type": "String",
+        "example": "1"
+      },
+      "cumulativeTotal": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "subscriptionMessageEvent": "<bold>{subscriberUserName}</bold> has subscribed for {cumulativeMonths} months at Tier {tier}!",
+  "@subscriptionMessageEvent": {
+    "description": "Message displayed when a subscription message event occurs",
+    "placeholders": {
+      "subscriberUserName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "cumulativeMonths": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "tier": {
+        "type": "String",
+        "example": "1"
+      }
+    }
   }
 }
