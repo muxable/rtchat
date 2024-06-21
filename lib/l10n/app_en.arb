@@ -797,7 +797,7 @@
       }
     }
   },
-  "realtimeCashDonationAnonymous": "An anonymous user donated <b>{value} {currency}</b>.",
+  "realtimeCashDonationAnonymous": "Anonymous donated <b>{value} {currency}</b>.",
   "@realtimeCashDonationAnonymous": {
     "description": "Message displayed when a RealtimeCash donation is made anonymously",
     "placeholders": {
@@ -811,7 +811,7 @@
       }
     }
   },
-  "streamElementsTipEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b>.",
+  "streamElementsTipEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b> on StreamElements.",
   "@streamElementsTipEventMessage": {
     "description": "Message displayed when a StreamElements tip event occurs",
     "placeholders": {
@@ -825,7 +825,7 @@
       }
     }
   },
-  "streamlabsDonationEventMessage": "<b>{name}</b> donated <b>{formattedAmount}</b>.",
+  "streamlabsDonationEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b> on Streamlabs.",
   "@streamlabsDonationEventMessage": {
     "description": "Message displayed when a Streamlabs donation event occurs",
     "placeholders": {
@@ -839,7 +839,7 @@
       }
     }
   },
-  "channelPointRedemptionWithUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points. <b>{userInput}</b>",
+  "channelPointRedemptionWithUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points. {userInput}",
   "@channelPointRedemptionWithUserInput": {
     "description": "Message displayed when a channel point redemption event occurs with user input",
     "placeholders": {
@@ -881,7 +881,7 @@
       }
     }
   },
-  "cheerEventMessage": "<b>{name}</b> cheered <b>{bits}</b> bits. <b>{cheerMessage}</b>",
+  "cheerEventMessage": "<b>{name}</b> cheered <b>{bits}</b> bits. {cheerMessage}",
   "@cheerEventMessage": {
     "description": "Message displayed when a cheer event occurs",
     "placeholders": {
@@ -917,7 +917,7 @@
       }
     }
   },
-  "hypeTrainEventProgress": "Hype Train is at level <b>{level}</b> with <b>{progressPercent}%</b> progress.",
+  "hypeTrainEventProgress": "Hype Train level <b>{level}</b> in progress! <b>{progressPercent}%</b> completed!",
   "@hypeTrainEventProgress": {
     "description": "Message displayed when a hype train event is in progress",
     "placeholders": {
@@ -931,7 +931,7 @@
       }
     }
   },
-  "hypeTrainEventEndedSuccessful": "Hype Train ended at level <b>{level}</b> and was <b>successful</b>.",
+  "hypeTrainEventEndedSuccessful": "Hype Train level <b>{level}</b> succeeded.",
   "@hypeTrainEventEndedSuccessful": {
     "description": "Message displayed when a hype train event ends successfully",
     "placeholders": {
@@ -942,7 +942,7 @@
       }
     }
   },
-  "hypeTrainEventEndedUnsuccessful": "Hype Train ended at level <b>{level}</b> and was <b>not successful</b>.",
+  "hypeTrainEventEndedUnsuccessful": "Hype Train level <b>{level}</b> failed.",
   "@hypeTrainEventEndedUnsuccessful": {
     "description": "Message displayed when a hype train event ends unsuccessfully",
     "placeholders": {
