@@ -25,7 +25,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
       child: Row(children: [
         Expanded(
           child: StyledText(
-            text: AppLocalizations.of(context)!.raidEventMessage(model.from.displayName, _formatter.format(model.viewers)),
+            text: AppLocalizations.of(context)!.raidEventMessage(model.from.displayName, _formatter.format(model.viewers)) ?? '',
             tags: {
               'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
             },
