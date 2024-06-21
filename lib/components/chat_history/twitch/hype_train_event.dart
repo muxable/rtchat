@@ -15,20 +15,18 @@ class TwitchHypeTrainEventWidget extends StatelessWidget {
       child: Builder(builder: (context) {
         if (model.hasEnded) {
           return StyledText(
-            text: 'Hype Train level <b>${model.level}</b> ' +
-                (model.isSuccessful ? 'succeeded! ' : 'was not successful. '),
+            text:
+                'Hype Train level <b>${model.level}</b> ${model.isSuccessful ? 'succeeded! ' : 'was not successful. '}',
             tags: {
-              'b': StyledTextTag(
-                  style: Theme.of(context).textTheme.titleSmall),
+              'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
             },
           );
         } else {
           return StyledText(
-            text: 'Hype Train level <b>${model.level}</b> in progress! ' +
+            text: 'Hype Train level <b>${model.level}</b> in progress! '
                 '${(model.progress * 100) ~/ model.goal}% completed!',
             tags: {
-              'b': StyledTextTag(
-                  style: Theme.of(context).textTheme.titleSmall),
+              'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
             },
           );
         }
