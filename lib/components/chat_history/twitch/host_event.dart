@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
@@ -14,8 +15,9 @@ class TwitchHostEventWidget extends StatelessWidget {
     return DecoratedEventWidget.avatar(
       avatar: ResilientNetworkImage(model.from.profilePictureUrl),
       child: StyledText(
-        text:
-            '<b>${model.from.displayName}</b> is hosting with a party of <b>${model.viewers}</b>',
+        text: AppLocalizations.of(context)!.hostEventMessage(
+            model.from.displayName ?? AppLocalizations.of(context)!.anonymous,
+            model.viewers),
         tags: {
           'b': StyledTextTag(
               style: Theme.of(context)

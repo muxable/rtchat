@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:styled_text/styled_text.dart';
@@ -18,8 +19,10 @@ class RealtimeCashDonationEventWidget extends StatelessWidget {
           children: [
             StyledText(
               text: model.donor != null && model.donor!.isNotEmpty
-                  ? '<b>${model.donor}</b> donated <b>${model.value.toString()} ${model.currency}</b>. '
-                  : 'Anonymous donated <b>${model.value.toString()} ${model.currency}</b>. ',
+                  ? AppLocalizations.of(context)!.realtimeCashDonationWithDonor(
+                      model.donor!, model.value.toString(), model.currency)
+                  : AppLocalizations.of(context)!.realtimeCashDonationAnonymous(
+                      model.value.toString(), model.currency),
               tags: {
                 'b': StyledTextTag(
                     style: Theme.of(context).textTheme.titleSmall),

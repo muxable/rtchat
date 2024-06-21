@@ -623,11 +623,11 @@
   "@customizeYourHostEvent": {
     "description": "Subtitle for the host event configuration"
   },
-  "hypetrainEventConfigTitle": "Hypetrain Event",
+  "hypetrainEventConfigTitle": "Hype Train Event",
   "@hypetrainEventConfigTitle": {
     "description": "Title for the hypetrain event configuration"
   },
-  "customizeYourHypetrainEvent": "Customize your hypetrain event",
+  "customizeYourHypetrainEvent": "Customize your hype train event",
   "@customizeYourHypetrainEvent": {
     "description": "Subtitle for the hypetrain event configuration"
   },
@@ -681,7 +681,7 @@
   "@shoutout": {
     "description": "Button text for the shoutout action in a raid event"
   },
-  "raidingEventRaiding": "<b>{displayName}</b> is raiding...",
+  "raidingEventRaiding": "Raiding <b>{displayName}</b>...",
   "@raidingEventRaiding": {
     "description": "Message displayed when a raiding event is in progress",
     "placeholders": {
@@ -691,7 +691,7 @@
       }
     }
   },
-  "raidingEventTimeRemaining": "Time remaining: {seconds}s",
+  "raidingEventTimeRemaining": "{seconds}s",
   "@raidingEventTimeRemaining": {
     "description": "Message displaying the time remaining for a raiding event",
     "placeholders": {
@@ -776,6 +776,180 @@
       "tier": {
         "type": "String",
         "example": "1"
+      }
+    }
+  },
+  "realtimeCashDonationWithDonor": "<b>{donor}</b> donated <b>{value} {currency}</b>.",
+  "@realtimeCashDonationWithDonor": {
+    "description": "Message displayed when a RealtimeCash donation is made with a donor name",
+    "placeholders": {
+      "donor": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "value": {
+        "type": "String",
+        "example": "5"
+      },
+      "currency": {
+        "type": "String",
+        "example": "USD"
+      }
+    }
+  },
+  "realtimeCashDonationAnonymous": "Anonymous donated <b>{value} {currency}</b>.",
+  "@realtimeCashDonationAnonymous": {
+    "description": "Message displayed when a RealtimeCash donation is made anonymously",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "5"
+      },
+      "currency": {
+        "type": "String",
+        "example": "USD"
+      }
+    }
+  },
+  "streamElementsTipEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b> on StreamElements.",
+  "@streamElementsTipEventMessage": {
+    "description": "Message displayed when a StreamElements tip event occurs",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "formattedAmount": {
+        "type": "String",
+        "example": "$5.00"
+      }
+    }
+  },
+  "streamlabsDonationEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b> on Streamlabs.",
+  "@streamlabsDonationEventMessage": {
+    "description": "Message displayed when a Streamlabs donation event occurs",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "formattedAmount": {
+        "type": "String",
+        "example": "$5.00"
+      }
+    }
+  },
+  "channelPointRedemptionWithUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points. {userInput}",
+  "@channelPointRedemptionWithUserInput": {
+    "description": "Message displayed when a channel point redemption event occurs with user input",
+    "placeholders": {
+      "redeemerUsername": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "rewardName": {
+        "type": "String",
+        "example": "Highlight My Message"
+      },
+      "rewardCost": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "100"
+      },
+      "userInput": {
+        "type": "String",
+        "example": "Hello World!"
+      }
+    }
+  },
+  "channelPointRedemptionWithoutUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points.",
+  "@channelPointRedemptionWithoutUserInput": {
+    "description": "Message displayed when a channel point redemption event occurs without user input",
+    "placeholders": {
+      "redeemerUsername": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "rewardName": {
+        "type": "String",
+        "example": "Highlight My Message"
+      },
+      "rewardCost": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "100"
+      }
+    }
+  },
+  "cheerEventMessage": "<b>{name}</b> cheered <b>{bits}</b> bits. {cheerMessage}",
+  "@cheerEventMessage": {
+    "description": "Message displayed when a cheer event occurs",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "bits": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "cheerMessage": {
+        "type": "String",
+        "example": "Great stream!"
+      }
+    }
+  },
+  "anonymous": "Anonymous",
+  "@anonymous": {
+    "description": "Username of an anonymous user"
+  },
+  "hostEventMessage": "<b>{fromDisplayName}</b> is hosting with a party of <b>{viewers}</b>.",
+  "@hostEventMessage": {
+    "description": "Message displayed when a host event occurs",
+    "placeholders": {
+      "fromDisplayName": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "viewers": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "hypeTrainEventProgress": "Hype Train level <b>{level}</b> in progress! <b>{progressPercent}%</b> completed!",
+  "@hypeTrainEventProgress": {
+    "description": "Message displayed when a hype train event is in progress",
+    "placeholders": {
+      "level": {
+        "type": "String",
+        "example": "3"
+      },
+      "progressPercent": {
+        "type": "String",
+        "example": "75"
+      }
+    }
+  },
+  "hypeTrainEventEndedSuccessful": "Hype Train level <b>{level}</b> succeeded.",
+  "@hypeTrainEventEndedSuccessful": {
+    "description": "Message displayed when a hype train event ends successfully",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      }
+    }
+  },
+  "hypeTrainEventEndedUnsuccessful": "Hype Train level <b>{level}</b> failed.",
+  "@hypeTrainEventEndedUnsuccessful": {
+    "description": "Message displayed when a hype train event ends unsuccessfully",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
       }
     }
   }
