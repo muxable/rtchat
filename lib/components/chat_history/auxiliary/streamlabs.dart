@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
+import 'package:styled_text/styled_text.dart';
 
 class StreamlabsDonationEventWidget extends StatelessWidget {
   final StreamlabsDonationEventModel model;
@@ -9,26 +10,22 @@ class StreamlabsDonationEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final boldStyle = Theme.of(context).textTheme.titleSmall;
-    final message = model.message;
     return DecoratedEventWidget.avatar(
       avatar: const AssetImage("assets/streamlabs.png"),
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(text: model.name, style: boldStyle),
-                  const TextSpan(text: " tipped "),
-                  TextSpan(text: model.formattedAmount, style: boldStyle),
-                  const TextSpan(text: " on Streamlabs."),
-                ],
-              ),
+            StyledText(
+              text:
+                  '<b>${model.name}</b> tipped <b>${model.formattedAmount}</b> on Streamlabs.',
+              tags: {
+                'b': StyledTextTag(
+                    style: Theme.of(context).textTheme.titleSmall),
+              },
             ),
-            if (message != null && message.isNotEmpty)
-              Text.rich(TextSpan(text: message),
+            if (model.message != null && model.message!.isNotEmpty)
+              Text(model.message!,
                   style: const TextStyle(fontStyle: FontStyle.italic)),
           ]),
     );
