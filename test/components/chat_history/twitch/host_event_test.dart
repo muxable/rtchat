@@ -28,7 +28,7 @@ void main() {
 
     final findText = find.byWidgetPredicate((Widget widget) =>
         widget is RichText &&
-        widget.text.toPlainText() == "automux is hosting with a party of 10");
+        widget.text.toPlainText() == "automux is hosting with a party of 10.");
 
     expect(findText, findsOneWidget);
   });

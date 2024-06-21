@@ -903,7 +903,7 @@
   "@anonymous": {
     "description": "Username of an anonymous user"
   },
-  "hostEventMessage": "<b>{fromDisplayName}</b> is hosting you with <b>{viewers}</b> viewers!",
+  "hostEventMessage": "<b>{fromDisplayName}</b> is hosting with a party of <b>{viewers}</b>.",
   "@hostEventMessage": {
     "description": "Message displayed when a host event occurs",
     "placeholders": {
