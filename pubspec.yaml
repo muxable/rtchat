@@ -30,7 +30,7 @@ dependencies:
   flutter_tts: ^3.8.5
   flutter_web_auth: ^0.5.0
   google_fonts: ^4.0.4
-  google_mobile_ads: ^4.0.0
+  google_mobile_ads: ^5.1.0
   in_app_purchase: ^3.2.0
   intl: ^0.19.0
   just_audio: ^0.9.36
