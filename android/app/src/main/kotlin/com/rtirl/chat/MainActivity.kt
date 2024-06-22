@@ -12,7 +12,6 @@ import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
-import android.util.Log
 import androidx.annotation.NonNull
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
