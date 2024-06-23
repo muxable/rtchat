@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -162,6 +161,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   void initState() {
     super.initState();
@@ -255,16 +255,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             : Icons.voice_over_off),
                         tooltip: AppLocalizations.of(context)!.textToSpeech,
                         onPressed: () async {
-                          if (!kDebugMode) {
+                          if (!ttsModel.useNewTts) {
                             ttsModel.enabled = !ttsModel.enabled;
                           } else {
-                            if (!ttsModel.enabled) {
+                            if (ttsModel.enabled) {
+                              ttsModel.enabled = false;
                               updateChannelSubscription("");
                               await TextToSpeechPlugin.speak(
                                   "Text to speech disabled");
                               await TextToSpeechPlugin.disableTTS();
                               NotificationsPlugin.cancelNotification();
                             } else {
+                              ttsModel.enabled = true;
                               channelStreamController.stream
                                   .listen((currentChannel) {
                                 if (currentChannel.isEmpty) {
@@ -273,6 +275,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   });
                                 }
                               });
+
                               await TextToSpeechPlugin.speak(
                                   "Text to speech enabled");
                               updateChannelSubscription(

@@ -262,7 +262,14 @@ class TextToSpeechScreen extends StatelessWidget {
               onChanged: (value) {
                 model.isPreludeMuted = value;
               },
-            )
+            ),
+            SwitchListTile.adaptive(
+              title: const Text("Try new text to speech"),
+              value: model.useNewTts,
+              onChanged: (value) {
+                model.useNewTts = value;
+              },
+            ),
           ],
         );
       }),
