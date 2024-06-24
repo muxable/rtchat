@@ -264,13 +264,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           if (!kDebugMode) {
                             ttsModel.enabled = !ttsModel.enabled;
                           } else {
-                            if (ttsModel.newTtsEnabled) {
+                            // Toggle newTtsEnabled and notify listeners immediately
+                            ttsModel.newTtsEnabled = !ttsModel.newTtsEnabled;
+
+                            if (!ttsModel.newTtsEnabled) {
                               updateChannelSubscription("");
                               await TextToSpeechPlugin.speak(
                                   "Text to speech disabled");
                               await TextToSpeechPlugin.disableTTS();
                               NotificationsPlugin.cancelNotification();
                             } else {
+                              // Start listening to the stream before toggling newTtsEnabled
                               channelStreamController.stream
                                   .listen((currentChannel) {
                                 if (currentChannel.isEmpty) {
