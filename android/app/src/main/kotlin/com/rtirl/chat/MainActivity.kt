@@ -36,7 +36,7 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         handleIntent()
-        startNotificationService()
+       
     }
 
     private fun startNotificationService() {
@@ -44,6 +44,7 @@ class MainActivity : FlutterActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ContextCompat.startForegroundService(this, intent)
         } else {
+            intent.putExtra("action", "showNotification")
             startService(intent)
         }
     }
@@ -73,10 +74,8 @@ class MainActivity : FlutterActivity() {
                     startService(intent)
                     result.success(true)
                 }
-                "showNotification" -> {
-                    val intent = Intent(this, NotificationService::class.java)
-                    intent.putExtra("action", "showNotification")
-                    startService(intent)
+                "showNotification" -> {                  
+                    startNotificationService()
                     result.success(true)
                 }
                 else -> result.notImplemented()
