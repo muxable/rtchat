@@ -22,7 +22,7 @@ class NotificationsPlugin {
 
       _channel.setMethodCallHandler((call) async {
         if (call.method == "disableTTs") {
-          model.enabled = false;
+          model.newTtsEnabled = false;
 
           updateChannelSubscription("");
           await TextToSpeechPlugin.speak("Text to speech disabled");

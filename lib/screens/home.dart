@@ -250,33 +250,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Consumer<TtsModel>(
                     builder: (context, ttsModel, child) {
                       return IconButton(
-                        icon: Icon(ttsModel.enabled
-                            ? Icons.record_voice_over
-                            : Icons.voice_over_off),
+                        icon: Icon(
+                          !kDebugMode
+                              ? (ttsModel.enabled
+                                  ? Icons.record_voice_over
+                                  : Icons.voice_over_off)
+                              : (ttsModel.newTtsEnabled
+                                  ? Icons.record_voice_over
+                                  : Icons.voice_over_off),
+                        ),
                         tooltip: AppLocalizations.of(context)!.textToSpeech,
                         onPressed: () async {
                           if (!kDebugMode) {
                             ttsModel.enabled = !ttsModel.enabled;
                           } else {
-                            if (!ttsModel.enabled) {
+                            // Toggle newTtsEnabled and notify listeners immediately
+                            ttsModel.newTtsEnabled = !ttsModel.newTtsEnabled;
+
+                            if (!ttsModel.newTtsEnabled) {
                               updateChannelSubscription("");
                               await TextToSpeechPlugin.speak(
                                   "Text to speech disabled");
                               await TextToSpeechPlugin.disableTTS();
                               NotificationsPlugin.cancelNotification();
                             } else {
+                              // Start listening to the stream before toggling newTtsEnabled
                               channelStreamController.stream
                                   .listen((currentChannel) {
                                 if (currentChannel.isEmpty) {
-                                  setState(() {
-                                    ttsModel.enabled = false;
-                                  });
+                                  ttsModel.newTtsEnabled = false;
                                 }
                               });
                               await TextToSpeechPlugin.speak(
                                   "Text to speech enabled");
                               updateChannelSubscription(
-                                  "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}");
+                                "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}",
+                              );
                               NotificationsPlugin.showNotification();
                               NotificationsPlugin.listenToTTs(ttsModel);
                             }
