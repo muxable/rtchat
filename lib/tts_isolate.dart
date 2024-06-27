@@ -88,12 +88,18 @@ Future<void> isolateMain(
                     timestamp: messageData['timestamp'].toDate(),
                     deleted: false,
                     channelId: messageData['channelId']);
+                // Check if the message is from a bot and if bot messages should be muted
+                if (ttsModel.isBotMuted && messageModel.author.isBot) {
+                  return; // Skip vocalization for bot messages
+                }
                 final finalMessage = ttsModel.getVocalization(
                   messageModel,
                   includeAuthorPrelude: !ttsModel.isPreludeMuted,
                 );
                 if (finalMessage.isNotEmpty) {
-                  await ttsQueue.speak(message.id, finalMessage);
+                  // Pass the speech rate and volume values to the TTS engine before vocalizing.
+                  await ttsQueue.speak(message.id, finalMessage,
+                      speed: ttsModel.speed, volume: ttsModel.pitch);
                 }
                 break;
               case "stream.offline":
