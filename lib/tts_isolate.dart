@@ -97,6 +97,7 @@ Future<void> isolateMain(
                   includeAuthorPrelude: !ttsModel.isPreludeMuted,
                 );
                 if (finalMessage.isNotEmpty) {
+                  // Pass the speech rate and volume values to the TTS engine before vocalizing.
                   await ttsQueue.speak(message.id, finalMessage,
                       speed: ttsModel.speed * 1.2,
                       volume: ttsModel.pitch,
