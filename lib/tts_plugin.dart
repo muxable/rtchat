@@ -67,14 +67,20 @@ class TextToSpeechPlugin {
 
 class TTSQueue {
   final Queue<TTSQueueElement> queue = Queue<TTSQueueElement>();
+  var _lastMessageTime = DateTime.now();
 
   bool get isEmpty => queue.isEmpty;
   int get length => queue.length;
 
   Future<void> speak(String id, String text,
-      {double? speed, double? volume}) async {
+      {double? speed, double? volume, DateTime? timestamp}) async {
     final completer = Completer<void>();
     final element = TTSQueueElement(id: id, text: text, completer: completer);
+
+    if (timestamp != null && timestamp.isBefore(_lastMessageTime)) {
+      return;
+    }
+    _lastMessageTime = timestamp ?? DateTime.now();
 
     if (queue.length >= 20 && !readUserName) {
       queue.clear();
@@ -95,7 +101,7 @@ class TTSQueue {
       if (queue.firstOrNull != element) {
         throw Exception('Message was deleted');
       }
-      await TextToSpeechPlugin.speak(text);
+      await TextToSpeechPlugin.speak(text, speed: speed ?? 1.5, volume: volume);
       completer.complete();
 
       if (isEmpty) {
@@ -103,7 +109,7 @@ class TTSQueue {
       }
     } else {
       queue.addLast(element);
-      await TextToSpeechPlugin.speak(text);
+      await TextToSpeechPlugin.speak(text, speed: speed ?? 1.5, volume: volume);
       completer.complete();
 
       if (isEmpty) {
