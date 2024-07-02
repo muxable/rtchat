@@ -24,6 +24,7 @@ import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/notifications_plugin.dart';
 import 'package:rtchat/tts_plugin.dart';
+import 'package:rtchat/volume_plugin.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -273,6 +274,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   "Text to speech disabled");
                               await TextToSpeechPlugin.disableTTS();
                               NotificationsPlugin.cancelNotification();
+                              VolumePlugin.reduceVolumeOnTtsStart();
                             } else {
                               // Start listening to the stream before toggling newTtsEnabled
                               channelStreamController.stream
@@ -287,6 +289,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}",
                               );
                               NotificationsPlugin.showNotification();
+                              VolumePlugin.increaseVolumeOnTtsStop();
                               NotificationsPlugin.listenToTTs(ttsModel);
                             }
                           }
