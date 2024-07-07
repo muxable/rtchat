@@ -112,5 +112,19 @@
   "durationOneDayTimeoutPrompt": "Suspender por 1 día",
   "durationTwoDaysTimeoutPrompt": "Suspender por 2 días",
   "durationOneWeekTimeoutPrompt": "Suspender por 1 semana",
-  "durationTwoWeeksTimeoutPrompt": "Suspender por 2 semanas"
+  "durationTwoWeeksTimeoutPrompt": "Suspender por 2 semanas",
+  "errorFetchingViewerList": "No se pudo obtener la lista de espectadores para este canal",
+  "eventsTitle": "Eventos",
+  "followEventConfigTitle": "Evento de seguimiento",
+  "customizeYourFollowEvent": "Personaliza tu evento de seguimiento",
+  "subscribeEventConfigTitle": "Evento de suscripción",
+  "customizeYourSubscriptionEvent": "Personaliza tu evento de suscripción",
+  "cheerEventConfigTitle": "Evento de animación",
+  "customizeYourCheerEvent": "Personaliza tu evento de animación",
+  "raidEventConfigTitle": "Evento de incursión",
+  "customizeYourRaidEvent": "Personaliza tu evento de incursión",
+  "hostEventConfigTitle": "Evento de anfitrión",
+  "customizeYourHostEvent": "Personaliza tu evento de anfitrión",
+  "hypetrainEventConfigTitle": "Evento de tren de hype",
+  "customizeYourHypetrainEvent": "Personaliza tu evento de tren de hype"
 }

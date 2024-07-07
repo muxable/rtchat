@@ -112,5 +112,19 @@
   "durationOneDayTimeoutPrompt": "Timeout für 1 tag",
   "durationTwoDaysTimeoutPrompt": "Timeout für 2 tage",
   "durationOneWeekTimeoutPrompt": "Timeout für 1 woche",
-  "durationTwoWeeksTimeoutPrompt": "Timeout für 2 wochen"
+  "durationTwoWeeksTimeoutPrompt": "Timeout für 2 wochen",
+  "errorFetchingViewerList": "Wir konnten die Zuschauerliste für diesen Kanal nicht abrufen",
+  "eventsTitle": "Veranstaltungen",
+  "followEventConfigTitle": "Folgenereignis",
+  "customizeYourFollowEvent": "Passen Sie Ihr Folgeereignis an",
+  "subscribeEventConfigTitle": "Ereignis abonnieren",
+  "customizeYourSubscriptionEvent": "Passen Sie Ihr Abonnementereignis an",
+  "cheerEventConfigTitle": "Jubelereignis",
+  "customizeYourCheerEvent": "Passen Sie Ihr Jubelereignis an",
+  "raidEventConfigTitle": "Raid-Ereignis",
+  "customizeYourRaidEvent": "Passen Sie Ihr Raid-Ereignis an",
+  "hostEventConfigTitle": "Host-Ereignis",
+  "customizeYourHostEvent": "Passen Sie Ihr Host-Ereignis an",
+  "hypetrainEventConfigTitle": "Hypetrain-Ereignis",
+  "customizeYourHypetrainEvent": "Passen Sie Ihr Hypetrain-Ereignis an"
 }

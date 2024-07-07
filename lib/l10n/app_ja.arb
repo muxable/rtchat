@@ -112,5 +112,19 @@
   "durationOneDayTimeoutPrompt": "1日間タイムアウト",
   "durationTwoDaysTimeoutPrompt": "2日間タイムアウト",
   "durationOneWeekTimeoutPrompt": "1週間タイムアウト",
-  "durationTwoWeeksTimeoutPrompt": "2週間タイムアウト"
+  "durationTwoWeeksTimeoutPrompt": "2週間タイムアウト",
+  "errorFetchingViewerList": "このチャンネルの視聴者リストを取得できませんでした",
+  "eventsTitle": "イベント",
+  "followEventConfigTitle": "フォローイベント",
+  "customizeYourFollowEvent": "フォローイベントをカスタマイズする",
+  "subscribeEventConfigTitle": "サブスクライブイベント",
+  "customizeYourSubscriptionEvent": "サブスクリプションイベントをカスタマイズする",
+  "cheerEventConfigTitle": "チアイベント",
+  "customizeYourCheerEvent": "チアイベントをカスタマイズする",
+  "raidEventConfigTitle": "レイドイベント",
+  "customizeYourRaidEvent": "レイドイベントをカスタマイズする",
+  "hostEventConfigTitle": "ホストイベント",
+  "customizeYourHostEvent": "ホストイベントをカスタマイズする",
+  "hypetrainEventConfigTitle": "ハイプトレインイベント",
+  "customizeYourHypetrainEvent": "ハイプトレインイベントをカスタマイズする"
 }

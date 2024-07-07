@@ -113,5 +113,19 @@
   "durationOneDayTimeoutPrompt": "封鎖1天",
   "durationTwoDaysTimeoutPrompt": "封鎖2天",
   "durationOneWeekTimeoutPrompt": "封鎖1週",
-  "durationTwoWeeksTimeoutPrompt": "封鎖2週"
+  "durationTwoWeeksTimeoutPrompt": "封鎖2週",
+  "errorFetchingViewerList": "我們無法獲取此頻道的觀眾列表",
+  "eventsTitle": "事件",
+  "followEventConfigTitle": "追隨事件",
+  "customizeYourFollowEvent": "自訂您的追隨事件",
+  "subscribeEventConfigTitle": "訂閱事件",
+  "customizeYourSubscriptionEvent": "自訂您的訂閱事件",
+  "cheerEventConfigTitle": "歡呼事件",
+  "customizeYourCheerEvent": "自訂您的歡呼事件",
+  "raidEventConfigTitle": "突襲事件",
+  "customizeYourRaidEvent": "自訂您的突襲事件",
+  "hostEventConfigTitle": "主持事件",
+  "customizeYourHostEvent": "自訂您的主持事件",
+  "hypetrainEventConfigTitle": "熱潮列車事件",
+  "customizeYourHypetrainEvent": "自訂您的熱潮列車事件"
 }

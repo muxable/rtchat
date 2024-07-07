@@ -112,5 +112,19 @@
   "durationOneDayTimeoutPrompt": "1 দিনের জন্য সময়সীমা",
   "durationTwoDaysTimeoutPrompt": "2 দিনের জন্য সময়সীমা",
   "durationOneWeekTimeoutPrompt": "1 সপ্তাহের জন্য সময়সীমা",
-  "durationTwoWeeksTimeoutPrompt": "2 সপ্তাহের জন্য সময়সীমা"
+  "durationTwoWeeksTimeoutPrompt": "2 সপ্তাহের জন্য সময়সীমা",
+  "errorFetchingViewerList": "এই চ্যানেলের জন্য দর্শকের তালিকা আনা যায়নি",
+  "eventsTitle": "ইভেন্টস",
+  "followEventConfigTitle": "অনুসরণ ইভেন্ট",
+  "customizeYourFollowEvent": "আপনার অনুসরণ ইভেন্ট কাস্টমাইজ করুন",
+  "subscribeEventConfigTitle": "সাবস্ক্রাইব ইভেন্ট",
+  "customizeYourSubscriptionEvent": "আপনার সাবস্ক্রিপশন ইভেন্ট কাস্টমাইজ করুন",
+  "cheerEventConfigTitle": "চিয়ার ইভেন্ট",
+  "customizeYourCheerEvent": "আপনার চিয়ার ইভেন্ট কাস্টমাইজ করুন",
+  "raidEventConfigTitle": "রেইড ইভেন্ট",
+  "customizeYourRaidEvent": "আপনার রেইড ইভেন্ট কাস্টমাইজ করুন",
+  "hostEventConfigTitle": "হোস্ট ইভেন্ট",
+  "customizeYourHostEvent": "আপনার হোস্ট ইভেন্ট কাস্টমাইজ করুন",
+  "hypetrainEventConfigTitle": "হাইপ ট্রেন ইভেন্ট",
+  "customizeYourHypetrainEvent": "আপনার হাইপ ট্রেন ইভেন্ট কাস্টমাইজ করুন"
 }

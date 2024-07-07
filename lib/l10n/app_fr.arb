@@ -112,5 +112,19 @@
   "durationOneDayTimeoutPrompt": "Délai d'attente pour 1 jour",
   "durationTwoDaysTimeoutPrompt": "Délai d'attente pour 2 jours",
   "durationOneWeekTimeoutPrompt": "Délai d'attente pour 1 semaine",
-  "durationTwoWeeksTimeoutPrompt": "Délai d'attente pour 2 semaines"
+  "durationTwoWeeksTimeoutPrompt": "Délai d'attente pour 2 semaines",
+  "errorFetchingViewerList": "Nous n'avons pas pu récupérer la liste des téléspectateurs pour cette chaîne",
+  "eventsTitle": "Événements",
+  "followEventConfigTitle": "Événement de suivi",
+  "customizeYourFollowEvent": "Personnalisez votre événement de suivi",
+  "subscribeEventConfigTitle": "Événement d'abonnement",
+  "customizeYourSubscriptionEvent": "Personnalisez votre événement d'abonnement",
+  "cheerEventConfigTitle": "Événement de cheer",
+  "customizeYourCheerEvent": "Personnalisez votre événement de cheer",
+  "raidEventConfigTitle": "Événement de raid",
+  "customizeYourRaidEvent": "Personnalisez votre événement de raid",
+  "hostEventConfigTitle": "Événement d'hôte",
+  "customizeYourHostEvent": "Personnalisez votre événement d'hôte",
+  "hypetrainEventConfigTitle": "Événement de train de la hype",
+  "customizeYourHypetrainEvent": "Personnalisez votre événement de train de la hype"
 }
