@@ -112,5 +112,7 @@
   "durationOneDayTimeoutPrompt": "Délai d'attente pour 1 jour",
   "durationTwoDaysTimeoutPrompt": "Délai d'attente pour 2 jours",
   "durationOneWeekTimeoutPrompt": "Délai d'attente pour 1 semaine",
-  "durationTwoWeeksTimeoutPrompt": "Délai d'attente pour 2 semaines"
+  "durationTwoWeeksTimeoutPrompt": "Délai d'attente pour 2 semaines",
+  "actionMessage": "{author} est en train de faire une action: {text}",
+  "saidMessage": "{author} a dit: {text}"
 }

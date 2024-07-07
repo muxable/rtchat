@@ -112,5 +112,7 @@
   "durationOneDayTimeoutPrompt": "1日間タイムアウト",
   "durationTwoDaysTimeoutPrompt": "2日間タイムアウト",
   "durationOneWeekTimeoutPrompt": "1週間タイムアウト",
-  "durationTwoWeeksTimeoutPrompt": "2週間タイムアウト"
+  "durationTwoWeeksTimeoutPrompt": "2週間タイムアウト",
+  "actionMessage": "{author} がアクションを実行しています: {text}",
+  "saidMessage": "{author} が言いました: {text}"
 }

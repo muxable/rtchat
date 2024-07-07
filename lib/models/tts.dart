@@ -18,6 +18,7 @@ import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TtsModel extends ChangeNotifier {
   var _isCloudTtsEnabled = false;
@@ -105,7 +106,7 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String getVocalization(MessageModel model,
+  String getVocalization(BuildContext context, MessageModel model,
       {bool includeAuthorPrelude = false}) {
     if (model is TwitchMessageModel) {
       final text = model.tokenized
@@ -132,9 +133,13 @@ class TtsModel extends ChangeNotifier {
       if (!includeAuthorPrelude || isPreludeMuted) {
         return text;
       }
-      return model.isAction ? "$author $text" : "$author said $text";
+      return model.isAction
+          ? AppLocalizations.of(context)!.actionMessage(author, text)
+          : AppLocalizations.of(context)!.saidMessage(author, text);
     } else if (model is StreamStateEventModel) {
-      return model.isOnline ? "Stream is online" : "Stream is offline";
+      return model.isOnline
+          ? AppLocalizations.of(context)!.streamOnline
+          : AppLocalizations.of(context)!.streamOffline;
     } else if (model is SystemMessageModel) {
       return model.text;
     }
@@ -317,8 +322,10 @@ class TtsModel extends ChangeNotifier {
       includeAuthorPrelude = !(activeMessage.author == model.author);
     }
 
-    final vocalization =
-        getVocalization(model, includeAuthorPrelude: includeAuthorPrelude);
+    final vocalization = getVocalization(
+      model,
+      includeAuthorPrelude: includeAuthorPrelude,
+    );
 
     // if the vocalization is empty, skip the message
     if (vocalization.isEmpty) {
