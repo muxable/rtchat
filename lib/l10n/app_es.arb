@@ -148,5 +148,13 @@
   "realtimeCashDonationWithDonor": "<b>{donor}</b> ha donado <b>{value} {currency}</b>.",
   "realtimeCashDonationAnonymous": "Anónimo ha donado <b>{value} {currency}</b>.",
   "streamElementsTipEventMessage": "<b>{name}</b> ha dado una propina de <b>{formattedAmount}</b> en StreamElements.",
-  "streamlabsDonationEventMessage": "<b>{name}</b> ha dado una propina de <b>{formattedAmount}</b> en Streamlabs."
+  "streamlabsDonationEventMessage": "<b>{name}</b> ha dado una propina de <b>{formattedAmount}</b> en Streamlabs.",
+  "channelPointRedemptionWithUserInput": "<b>{redeemerUsername}</b> canjeó <b>{rewardName}</b> por <b>{rewardCost}</b> puntos. {userInput}",
+  "channelPointRedemptionWithoutUserInput": "<b>{redeemerUsername}</b> canjeó <b>{rewardName}</b> por <b>{rewardCost}</b> puntos.",
+  "cheerEventMessage": "<b>{name}</b> animó con <b>{bits}</b> bits. {cheerMessage}",
+  "anonymous": "Anónimo",
+  "hostEventMessage": "<b>{fromDisplayName}</b> está alojando con un grupo de <b>{viewers}</b>.",
+  "hypeTrainEventProgress": "¡El tren del hype nivel <b>{level}</b> está en progreso! ¡<b>{progressPercent}%</b> completado!",
+  "hypeTrainEventEndedSuccessful": "El tren del hype nivel <b>{level}</b> ha tenido éxito.",
+  "hypeTrainEventEndedUnsuccessful": "El tren del hype nivel <b>{level}</b> ha fallado."
 }

@@ -148,5 +148,13 @@
   "realtimeCashDonationWithDonor": "<b>{donor}</b>が<b>{value}{currency}</b>を寄付しました。",
   "realtimeCashDonationAnonymous": "匿名が<b>{value}{currency}</b>を寄付しました。",
   "streamElementsTipEventMessage": "<b>{name}</b>がStreamElementsで<b>{formattedAmount}</b>をチップしました。",
-  "streamlabsDonationEventMessage": "<b>{name}</b>がStreamlabsで<b>{formattedAmount}</b>をチップしました。"
+  "streamlabsDonationEventMessage": "<b>{name}</b>がStreamlabsで<b>{formattedAmount}</b>をチップしました。",
+  "channelPointRedemptionWithUserInput": "<b>{redeemerUsername}</b> が <b>{rewardName}</b> を <b>{rewardCost}</b> ポイントで交換しました。 {userInput}",
+  "channelPointRedemptionWithoutUserInput": "<b>{redeemerUsername}</b> が <b>{rewardName}</b> を <b>{rewardCost}</b> ポイントで交換しました。",
+  "cheerEventMessage": "<b>{name}</b> が <b>{bits}</b> ビッツをチアーしました。 {cheerMessage}",
+  "anonymous": "匿名",
+  "hostEventMessage": "<b>{fromDisplayName}</b> が <b>{viewers}</b> 人のパーティーでホストしています。",
+  "hypeTrainEventProgress": "ハイプトレインレベル <b>{level}</b> が進行中です！ <b>{progressPercent}%</b> 完了しました！",
+  "hypeTrainEventEndedSuccessful": "ハイプトレインレベル <b>{level}</b> が成功しました。",
+  "hypeTrainEventEndedUnsuccessful": "ハイプトレインレベル <b>{level}</b> が失敗しました。"
 }
