@@ -112,8 +112,5 @@
   "durationOneDayTimeoutPrompt": "Suspender por 1 día",
   "durationTwoDaysTimeoutPrompt": "Suspender por 2 días",
   "durationOneWeekTimeoutPrompt": "Suspender por 1 semana",
-  "durationTwoWeeksTimeoutPrompt": "Suspender por 2 semanas",
-  "actionMessage": "{author} está realizando una acción: {text}",
-  "saidMessage": "{author} dijo: {text}",
-  "sampleMessage": "Este es un mensaje de muestra para texto a voz."
+  "durationTwoWeeksTimeoutPrompt": "Suspender por 2 semanas"
 }
