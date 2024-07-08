@@ -126,5 +126,16 @@
   "hostEventConfigTitle": "Evento de anfitrión",
   "customizeYourHostEvent": "Personaliza tu evento de anfitrión",
   "hypetrainEventConfigTitle": "Evento de tren de hype",
-  "customizeYourHypetrainEvent": "Personaliza tu evento de tren de hype"
+  "customizeYourHypetrainEvent": "Personaliza tu evento de tren de hype",
+  "pollEventConfigTitle": "Evento de encuesta",
+  "customizeYourPollEvent": "Personaliza tu evento de encuesta",
+  "predictionEventConfigTitle": "Evento de predicción",
+  "customizeYourPredictionEvent": "Personaliza tu evento de predicción",
+  "channelPointRedemptionEventConfigTitle": "Evento de canje de puntos del canal",
+  "customizeYourChannelPointRedemptionEvent": "Personaliza tu evento de canje de puntos del canal",
+  "outgoingRaidEventConfigTitle": "Evento de incursión saliente",
+  "customizeYourOutgoingRaidEvent": "Personaliza tu evento de incursión saliente",
+  "raidEventMessage": "<b>{displayName}</b> está haciendo una incursión con <b>{viewerCount}</b> espectadores!",
+  "shoutout": "Shoutout",
+  "raidingEventRaiding": "Incursión en <b>{displayName}</b>..."
 }
