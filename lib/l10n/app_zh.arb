@@ -112,5 +112,19 @@
   "durationOneDayTimeoutPrompt": "暂停1天",
   "durationTwoDaysTimeoutPrompt": "暂停2天",
   "durationOneWeekTimeoutPrompt": "暂停1周",
-  "durationTwoWeeksTimeoutPrompt": "暂停2周"
+  "durationTwoWeeksTimeoutPrompt": "暂停2周",
+  "errorFetchingViewerList": "我们无法获取此频道的观众列表",
+  "eventsTitle": "事件",
+  "followEventConfigTitle": "关注事件",
+  "customizeYourFollowEvent": "自定义您的关注事件",
+  "subscribeEventConfigTitle": "订阅事件",
+  "customizeYourSubscriptionEvent": "自定义您的订阅事件",
+  "cheerEventConfigTitle": "欢呼事件",
+  "customizeYourCheerEvent": "自定义您的欢呼事件",
+  "raidEventConfigTitle": "突袭事件",
+  "customizeYourRaidEvent": "自定义您的突袭事件",
+  "hostEventConfigTitle": "主持事件",
+  "customizeYourHostEvent": "自定义您的主持事件",
+  "hypetrainEventConfigTitle": "热潮列车事件",
+  "customizeYourHypetrainEvent": "自定义您的热潮列车事件"
 }

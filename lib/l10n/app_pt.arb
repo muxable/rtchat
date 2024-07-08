@@ -113,5 +113,19 @@
   "durationOneDayTimeoutPrompt": "Timeout de 1 dia",
   "durationTwoDaysTimeoutPrompt": "Timeout de 2 dias",
   "durationOneWeekTimeoutPrompt": "Timeout de 1 semana",
-  "durationTwoWeeksTimeoutPrompt": "Timeout de 2 semanas"
+  "durationTwoWeeksTimeoutPrompt": "Timeout de 2 semanas",
+  "errorFetchingViewerList": "Não foi possível buscar a lista de espectadores para este canal",
+  "eventsTitle": "Eventos",
+  "followEventConfigTitle": "Evento de Seguir",
+  "customizeYourFollowEvent": "Personalize seu evento de seguir",
+  "subscribeEventConfigTitle": "Evento de Inscrição",
+  "customizeYourSubscriptionEvent": "Personalize seu evento de inscrição",
+  "cheerEventConfigTitle": "Evento de Torcida",
+  "customizeYourCheerEvent": "Personalize seu evento de torcida",
+  "raidEventConfigTitle": "Evento de Raid",
+  "customizeYourRaidEvent": "Personalize seu evento de raid",
+  "hostEventConfigTitle": "Evento de Host",
+  "customizeYourHostEvent": "Personalize seu evento de host",
+  "hypetrainEventConfigTitle": "Evento de Trem do Hype",
+  "customizeYourHypetrainEvent": "Personalize seu evento de trem do hype"
 }

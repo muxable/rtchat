@@ -112,5 +112,19 @@
   "durationOneDayTimeoutPrompt": "Time-out voor 1 dag",
   "durationTwoDaysTimeoutPrompt": "Time-out voor 2 dagen",
   "durationOneWeekTimeoutPrompt": "Time-out voor 1 week",
-  "durationTwoWeeksTimeoutPrompt": "Time-out voor 2 weken"
+  "durationTwoWeeksTimeoutPrompt": "Time-out voor 2 weken",
+  "errorFetchingViewerList": "We konden de kijkerslijst voor dit kanaal niet ophalen",
+  "eventsTitle": "Evenementen",
+  "followEventConfigTitle": "Volg evenement",
+  "customizeYourFollowEvent": "Pas je volg evenement aan",
+  "subscribeEventConfigTitle": "Abonneer evenement",
+  "customizeYourSubscriptionEvent": "Pas je abonneer evenement aan",
+  "cheerEventConfigTitle": "Juich evenement",
+  "customizeYourCheerEvent": "Pas je juich evenement aan",
+  "raidEventConfigTitle": "Raid evenement",
+  "customizeYourRaidEvent": "Pas je raid evenement aan",
+  "hostEventConfigTitle": "Host evenement",
+  "customizeYourHostEvent": "Pas je host evenement aan",
+  "hypetrainEventConfigTitle": "Hypetrein evenement",
+  "customizeYourHypetrainEvent": "Pas je hypetrein evenement aan"
 }
