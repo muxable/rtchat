@@ -126,5 +126,16 @@
   "hostEventConfigTitle": "হোস্ট ইভেন্ট",
   "customizeYourHostEvent": "আপনার হোস্ট ইভেন্ট কাস্টমাইজ করুন",
   "hypetrainEventConfigTitle": "হাইপ ট্রেন ইভেন্ট",
-  "customizeYourHypetrainEvent": "আপনার হাইপ ট্রেন ইভেন্ট কাস্টমাইজ করুন"
+  "customizeYourHypetrainEvent": "আপনার হাইপ ট্রেন ইভেন্ট কাস্টমাইজ করুন",
+  "pollEventConfigTitle": "পোল ইভেন্ট",
+  "customizeYourPollEvent": "আপনার পোল ইভেন্ট কাস্টমাইজ করুন",
+  "predictionEventConfigTitle": "ভবিষ্যদ্বাণী ইভেন্ট",
+  "customizeYourPredictionEvent": "আপনার ভবিষ্যদ্বাণী ইভেন্ট কাস্টমাইজ করুন",
+  "channelPointRedemptionEventConfigTitle": "চ্যানেল পয়েন্ট রিডেম্পশন ইভেন্ট",
+  "customizeYourChannelPointRedemptionEvent": "আপনার চ্যানেল পয়েন্ট রিডেম্পশন ইভেন্ট কাস্টমাইজ করুন",
+  "outgoingRaidEventConfigTitle": "আউটগোয়িং রেইড ইভেন্ট",
+  "customizeYourOutgoingRaidEvent": "আপনার আউটগোয়িং রেইড ইভেন্ট কাস্টমাইজ করুন",
+  "raidEventMessage": "<b>{displayName}</b> {viewerCount} দর্শক নিয়ে রেইড করছে!",
+  "shoutout": "শাউটআউট",
+  "raidingEventRaiding": "রেইডিং <b>{displayName}</b>..."
 }

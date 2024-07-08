@@ -126,5 +126,16 @@
   "hostEventConfigTitle": "Host-Ereignis",
   "customizeYourHostEvent": "Passen Sie Ihr Host-Ereignis an",
   "hypetrainEventConfigTitle": "Hypetrain-Ereignis",
-  "customizeYourHypetrainEvent": "Passen Sie Ihr Hypetrain-Ereignis an"
+  "customizeYourHypetrainEvent": "Passen Sie Ihr Hypetrain-Ereignis an",
+  "pollEventConfigTitle": "Umfrage-Ereignis",
+  "customizeYourPollEvent": "Passen Sie Ihr Umfrage-Ereignis an",
+  "predictionEventConfigTitle": "Vorhersage-Ereignis",
+  "customizeYourPredictionEvent": "Passen Sie Ihr Vorhersage-Ereignis an",
+  "channelPointRedemptionEventConfigTitle": "Kanalpunkt-Einlösung-Ereignis",
+  "customizeYourChannelPointRedemptionEvent": "Passen Sie Ihr Kanalpunkt-Einlösung-Ereignis an",
+  "outgoingRaidEventConfigTitle": "Ausgehendes Raid-Ereignis",
+  "customizeYourOutgoingRaidEvent": "Passen Sie Ihr ausgehendes Raid-Ereignis an",
+  "raidEventMessage": "<b>{displayName}</b> raidet mit <b>{viewerCount}</b> Zuschauern!",
+  "shoutout": "Shoutout",
+  "raidingEventRaiding": "Raid auf <b>{displayName}</b>..."
 }

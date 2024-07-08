@@ -126,5 +126,16 @@
   "hostEventConfigTitle": "主持事件",
   "customizeYourHostEvent": "自定义您的主持事件",
   "hypetrainEventConfigTitle": "热潮列车事件",
-  "customizeYourHypetrainEvent": "自定义您的热潮列车事件"
+  "customizeYourHypetrainEvent": "自定义您的热潮列车事件",
+  "pollEventConfigTitle": "投票事件",
+  "customizeYourPollEvent": "自定义您的投票事件",
+  "predictionEventConfigTitle": "预测事件",
+  "customizeYourPredictionEvent": "自定义您的预测事件",
+  "channelPointRedemptionEventConfigTitle": "频道积分兑换事件",
+  "customizeYourChannelPointRedemptionEvent": "自定义您的频道积分兑换事件",
+  "outgoingRaidEventConfigTitle": "外发突袭事件",
+  "customizeYourOutgoingRaidEvent": "自定义您的外发突袭事件",
+  "raidEventMessage": "<b>{displayName}</b> 正在进行突袭，带着 <b>{viewerCount}</b> 位观众！",
+  "shoutout": "大喊",
+  "raidingEventRaiding": "正在突袭 <b>{displayName}</b>..."
 }

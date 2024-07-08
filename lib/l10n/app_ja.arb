@@ -126,5 +126,16 @@
   "hostEventConfigTitle": "ホストイベント",
   "customizeYourHostEvent": "ホストイベントをカスタマイズする",
   "hypetrainEventConfigTitle": "ハイプトレインイベント",
-  "customizeYourHypetrainEvent": "ハイプトレインイベントをカスタマイズする"
+  "customizeYourHypetrainEvent": "ハイプトレインイベントをカスタマイズする",
+  "pollEventConfigTitle": "投票イベント",
+  "customizeYourPollEvent": "投票イベントをカスタマイズする",
+  "predictionEventConfigTitle": "予測イベント",
+  "customizeYourPredictionEvent": "予測イベントをカスタマイズする",
+  "channelPointRedemptionEventConfigTitle": "チャンネルポイント交換イベント",
+  "customizeYourChannelPointRedemptionEvent": "チャンネルポイント交換イベントをカスタマイズする",
+  "outgoingRaidEventConfigTitle": "送信レイドイベント",
+  "customizeYourOutgoingRaidEvent": "送信レイドイベントをカスタマイズする",
+  "raidEventMessage": "<b>{displayName}</b> が <b>{viewerCount}</b> 人の視聴者とレイドしています！",
+  "shoutout": "シャウトアウト",
+  "raidingEventRaiding": "<b>{displayName}</b> をレイド中..."
 }

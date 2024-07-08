@@ -126,5 +126,16 @@
   "hostEventConfigTitle": "Événement d'hôte",
   "customizeYourHostEvent": "Personnalisez votre événement d'hôte",
   "hypetrainEventConfigTitle": "Événement de train de la hype",
-  "customizeYourHypetrainEvent": "Personnalisez votre événement de train de la hype"
+  "customizeYourHypetrainEvent": "Personnalisez votre événement de train de la hype",
+  "pollEventConfigTitle": "Événement de sondage",
+  "customizeYourPollEvent": "Personnalisez votre événement de sondage",
+  "predictionEventConfigTitle": "Événement de prédiction",
+  "customizeYourPredictionEvent": "Personnalisez votre événement de prédiction",
+  "channelPointRedemptionEventConfigTitle": "Événement de rachat de points de chaîne",
+  "customizeYourChannelPointRedemptionEvent": "Personnalisez votre événement de rachat de points de chaîne",
+  "outgoingRaidEventConfigTitle": "Événement de raid sortant",
+  "customizeYourOutgoingRaidEvent": "Personnalisez votre événement de raid sortant",
+  "raidEventMessage": "<b>{displayName}</b> fait un raid avec <b>{viewerCount}</b> spectateurs !",
+  "shoutout": "Shoutout",
+  "raidingEventRaiding": "Raid sur <b>{displayName}</b>..."
 }

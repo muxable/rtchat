@@ -126,5 +126,16 @@
   "hostEventConfigTitle": "Host evenement",
   "customizeYourHostEvent": "Pas je host evenement aan",
   "hypetrainEventConfigTitle": "Hypetrein evenement",
-  "customizeYourHypetrainEvent": "Pas je hypetrein evenement aan"
+  "customizeYourHypetrainEvent": "Pas je hypetrein evenement aan",
+  "pollEventConfigTitle": "Poll evenement",
+  "customizeYourPollEvent": "Pas je poll evenement aan",
+  "predictionEventConfigTitle": "Voorspellings evenement",
+  "customizeYourPredictionEvent": "Pas je voorspellings evenement aan",
+  "channelPointRedemptionEventConfigTitle": "Kanaal punt inwissel evenement",
+  "customizeYourChannelPointRedemptionEvent": "Pas je kanaal punt inwissel evenement aan",
+  "outgoingRaidEventConfigTitle": "Uitgaande raid evenement",
+  "customizeYourOutgoingRaidEvent": "Pas je uitgaande raid evenement aan",
+  "raidEventMessage": "<b>{displayName}</b> is aan het raiden met <b>{viewerCount}</b> kijkers!",
+  "shoutout": "Shoutout",
+  "raidingEventRaiding": "Raiden <b>{displayName}</b>..."
 }
