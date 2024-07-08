@@ -112,8 +112,5 @@
   "durationOneDayTimeoutPrompt": "Timeout für 1 tag",
   "durationTwoDaysTimeoutPrompt": "Timeout für 2 tage",
   "durationOneWeekTimeoutPrompt": "Timeout für 1 woche",
-  "durationTwoWeeksTimeoutPrompt": "Timeout für 2 wochen",
-  "actionMessage": "{author} führt eine Aktion aus: {text}",
-  "saidMessage": "{author} sagte: {text}",
-  "sampleMessage": "Dies ist eine Beispielnachricht für Text-zu-Sprache."
+  "durationTwoWeeksTimeoutPrompt": "Timeout für 2 wochen"
 }
