@@ -149,5 +149,13 @@
   "realtimeCashDonationWithDonor": "<b>{donor}</b> 捐贈了 <b>{value} {currency}</b>。",
   "realtimeCashDonationAnonymous": "匿名捐贈了 <b>{value} {currency}</b>。",
   "streamElementsTipEventMessage": "<b>{name}</b> 在 StreamElements 上打賞了 <b>{formattedAmount}</b>。",
-  "streamlabsDonationEventMessage": "<b>{name}</b> 在 Streamlabs 上打賞了 <b>{formattedAmount}</b>。"
+  "streamlabsDonationEventMessage": "<b>{name}</b> 在 Streamlabs 上打賞了 <b>{formattedAmount}</b>。",
+  "channelPointRedemptionWithUserInput": "<b>{redeemerUsername}</b> 兌換了 <b>{rewardName}</b>，花費了 <b>{rewardCost}</b> 點數。{userInput}",
+  "channelPointRedemptionWithoutUserInput": "<b>{redeemerUsername}</b> 兌換了 <b>{rewardName}</b>，花費了 <b>{rewardCost}</b> 點數。",
+  "cheerEventMessage": "<b>{name}</b> 歡呼了 <b>{bits}</b> 點。{cheerMessage}",
+  "anonymous": "匿名",
+  "hostEventMessage": "<b>{fromDisplayName}</b> 正在主持，帶著 <b>{viewers}</b> 位觀眾。",
+  "hypeTrainEventProgress": "熱潮列車等級 <b>{level}</b> 進行中！已完成 <b>{progressPercent}%</b>！",
+  "hypeTrainEventEndedSuccessful": "熱潮列車等級 <b>{level}</b> 成功。",
+  "hypeTrainEventEndedUnsuccessful": "熱潮列車等級 <b>{level}</b> 失敗。"
 }
