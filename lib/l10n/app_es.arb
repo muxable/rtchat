@@ -137,5 +137,16 @@
   "customizeYourOutgoingRaidEvent": "Personaliza tu evento de incursión saliente",
   "raidEventMessage": "<b>{displayName}</b> está haciendo una incursión con <b>{viewerCount}</b> espectadores!",
   "shoutout": "Shoutout",
-  "raidingEventRaiding": "Incursión en <b>{displayName}</b>..."
+  "raidingEventRaiding": "Incursión en <b>{displayName}</b>...",
+  "raidingEventTimeRemaining": "Quedan {seconds} segundos",
+  "raidingEventRaided": "<b>{displayName}</b> ha hecho una incursión!",
+  "raidingEventJoin": "Unirse",
+  "raidingEventCanceled": "La incursión de <b>{displayName}</b> fue cancelada.",
+  "subscriptionEvent": "<b>{subscriberUserName}</b> se ha suscrito en el nivel {tier}!",
+  "subscriptionGiftEvent": "<b>{gifterUserName}</b> ha regalado {total} suscripciones de nivel {tier}, sumando un total de {cumulativeTotal}!",
+  "subscriptionMessageEvent": "<b>{subscriberUserName}</b> se ha suscrito por {cumulativeMonths} meses en el nivel {tier}!",
+  "realtimeCashDonationWithDonor": "<b>{donor}</b> ha donado <b>{value} {currency}</b>.",
+  "realtimeCashDonationAnonymous": "Anónimo ha donado <b>{value} {currency}</b>.",
+  "streamElementsTipEventMessage": "<b>{name}</b> ha dado una propina de <b>{formattedAmount}</b> en StreamElements.",
+  "streamlabsDonationEventMessage": "<b>{name}</b> ha dado una propina de <b>{formattedAmount}</b> en Streamlabs."
 }

@@ -138,5 +138,16 @@
   "customizeYourOutgoingRaidEvent": "Personalize seu evento de raid de saída",
   "raidEventMessage": "<b>{displayName}</b> está fazendo raid com <b>{viewerCount}</b> espectadores!",
   "shoutout": "Shoutout",
-  "raidingEventRaiding": "Fazendo raid em <b>{displayName}</b>..."
+  "raidingEventRaiding": "Fazendo raid em <b>{displayName}</b>...",
+  "raidingEventTimeRemaining": "{seconds}s",
+  "raidingEventRaided": "<b>{displayName}</b> fez raid!",
+  "raidingEventJoin": "Participar",
+  "raidingEventCanceled": "O raid de <b>{displayName}</b> foi cancelado.",
+  "subscriptionEvent": "<b>{subscriberUserName}</b> se inscreveu no Tier {tier}!",
+  "subscriptionGiftEvent": "<b>{gifterUserName}</b> presenteou {total} subs de Tier {tier}, totalizando {cumulativeTotal}!",
+  "subscriptionMessageEvent": "<b>{subscriberUserName}</b> está inscrito há {cumulativeMonths} meses no Tier {tier}!",
+  "realtimeCashDonationWithDonor": "<b>{donor}</b> doou <b>{value} {currency}</b>.",
+  "realtimeCashDonationAnonymous": "Anônimo doou <b>{value} {currency}</b>.",
+  "streamElementsTipEventMessage": "<b>{name}</b> deu uma gorjeta de <b>{formattedAmount}</b> no StreamElements.",
+  "streamlabsDonationEventMessage": "<b>{name}</b> deu uma gorjeta de <b>{formattedAmount}</b> no Streamlabs."
 }

@@ -137,5 +137,16 @@
   "customizeYourOutgoingRaidEvent": "自定义您的外发突袭事件",
   "raidEventMessage": "<b>{displayName}</b> 正在进行突袭，带着 <b>{viewerCount}</b> 位观众！",
   "shoutout": "大喊",
-  "raidingEventRaiding": "正在突袭 <b>{displayName}</b>..."
+  "raidingEventRaiding": "正在突袭 <b>{displayName}</b>...",
+  "raidingEventTimeRemaining": "{seconds}秒",
+  "raidingEventRaided": "<b>{displayName}</b> 已经突袭了！",
+  "raidingEventJoin": "加入",
+  "raidingEventCanceled": "<b>{displayName}</b> 的突袭被取消了。",
+  "subscriptionEvent": "<b>{subscriberUserName}</b> 已订阅第 {tier} 层！",
+  "subscriptionGiftEvent": "<b>{gifterUserName}</b> 已赠送 {total} 个第 {tier} 层订阅，总计 {cumulativeTotal} 个！",
+  "subscriptionMessageEvent": "<b>{subscriberUserName}</b> 已订阅 {cumulativeMonths} 个月的第 {tier} 层！",
+  "realtimeCashDonationWithDonor": "<b>{donor}</b> 捐赠了 <b>{value} {currency}</b>。",
+  "realtimeCashDonationAnonymous": "匿名捐赠了 <b>{value} {currency}</b>。",
+  "streamElementsTipEventMessage": "<b>{name}</b> 在 StreamElements 上打赏了 <b>{formattedAmount}</b>。",
+  "streamlabsDonationEventMessage": "<b>{name}</b> 在 Streamlabs 上打赏了 <b>{formattedAmount}</b>。"
 }
