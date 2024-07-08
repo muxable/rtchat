@@ -137,5 +137,16 @@
   "customizeYourOutgoingRaidEvent": "Personnalisez votre événement de raid sortant",
   "raidEventMessage": "<b>{displayName}</b> fait un raid avec <b>{viewerCount}</b> spectateurs !",
   "shoutout": "Shoutout",
-  "raidingEventRaiding": "Raid sur <b>{displayName}</b>..."
+  "raidingEventRaiding": "Raid sur <b>{displayName}</b>...",
+  "raidingEventTimeRemaining": "Temps restant : {seconds} secondes",
+  "raidingEventRaided": "<b>{displayName}</b> a fait un raid !",
+  "raidingEventJoin": "Rejoindre",
+  "raidingEventCanceled": "Le raid de <b>{displayName}</b> a été annulé.",
+  "subscriptionEvent": "<b>{subscriberUserName}</b> s'est abonné au niveau {tier} !",
+  "subscriptionGiftEvent": "<b>{gifterUserName}</b> a offert {total} abonnements de niveau {tier}, totalisant {cumulativeTotal} !",
+  "subscriptionMessageEvent": "<b>{subscriberUserName}</b> est abonné depuis {cumulativeMonths} mois au niveau {tier} !",
+  "realtimeCashDonationWithDonor": "<b>{donor}</b> a fait un don de <b>{value} {currency}</b>.",
+  "realtimeCashDonationAnonymous": "Anonyme a fait un don de <b>{value} {currency}</b>.",
+  "streamElementsTipEventMessage": "<b>{name}</b> a donné un pourboire de <b>{formattedAmount}</b> sur StreamElements.",
+  "streamlabsDonationEventMessage": "<b>{name}</b> a donné un pourboire de <b>{formattedAmount}</b> sur Streamlabs."
 }

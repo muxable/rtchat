@@ -137,5 +137,16 @@
   "customizeYourOutgoingRaidEvent": "Pas je uitgaande raid evenement aan",
   "raidEventMessage": "<b>{displayName}</b> is aan het raiden met <b>{viewerCount}</b> kijkers!",
   "shoutout": "Shoutout",
-  "raidingEventRaiding": "Raiden <b>{displayName}</b>..."
+  "raidingEventRaiding": "Raiden <b>{displayName}</b>...",
+  "raidingEventTimeRemaining": "{seconds}s",
+  "raidingEventRaided": "<b>{displayName}</b> heeft geraid!",
+  "raidingEventJoin": "Deelnemen",
+  "raidingEventCanceled": "De raid van <b>{displayName}</b> is geannuleerd.",
+  "subscriptionEvent": "<b>{subscriberUserName}</b> heeft zich geabonneerd op Tier {tier}!",
+  "subscriptionGiftEvent": "<b>{gifterUserName}</b> heeft {total} Tier {tier} abonnementen cadeau gedaan, in totaal {cumulativeTotal}!",
+  "subscriptionMessageEvent": "<b>{subscriberUserName}</b> is {cumulativeMonths} maanden geabonneerd op Tier {tier}!",
+  "realtimeCashDonationWithDonor": "<b>{donor}</b> heeft <b>{value} {currency}</b> gedoneerd.",
+  "realtimeCashDonationAnonymous": "Anoniem heeft <b>{value} {currency}</b> gedoneerd.",
+  "streamElementsTipEventMessage": "<b>{name}</b> heeft <b>{formattedAmount}</b> getipt op StreamElements.",
+  "streamlabsDonationEventMessage": "<b>{name}</b> heeft <b>{formattedAmount}</b> getipt op Streamlabs."
 }
