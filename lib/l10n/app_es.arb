@@ -125,8 +125,8 @@
   "customizeYourRaidEvent": "Personaliza tu evento de incursión",
   "hostEventConfigTitle": "Evento de anfitrión",
   "customizeYourHostEvent": "Personaliza tu evento de anfitrión",
-  "hypetrainEventConfigTitle": "Evento de tren de hype",
-  "customizeYourHypetrainEvent": "Personaliza tu evento de tren de hype",
+  "hypetrainEventConfigTitle": "Evento de Hype Train",
+  "customizeYourHypetrainEvent": "Personaliza tu evento de Hype Train",
   "pollEventConfigTitle": "Evento de encuesta",
   "customizeYourPollEvent": "Personaliza tu evento de encuesta",
   "predictionEventConfigTitle": "Evento de predicción",
@@ -154,7 +154,7 @@
   "cheerEventMessage": "<b>{name}</b> animó con <b>{bits}</b> bits. {cheerMessage}",
   "anonymous": "Anónimo",
   "hostEventMessage": "<b>{fromDisplayName}</b> está alojando con un grupo de <b>{viewers}</b>.",
-  "hypeTrainEventProgress": "¡El tren del hype nivel <b>{level}</b> está en progreso! ¡<b>{progressPercent}%</b> completado!",
-  "hypeTrainEventEndedSuccessful": "El tren del hype nivel <b>{level}</b> ha tenido éxito.",
-  "hypeTrainEventEndedUnsuccessful": "El tren del hype nivel <b>{level}</b> ha fallado."
+  "hypeTrainEventProgress": "¡El Hype Train nivel <b>{level}</b> está en progreso! ¡<b>{progressPercent}%</b> completado!",
+  "hypeTrainEventEndedSuccessful": "El Hype Train nivel <b>{level}</b> ha tenido éxito.",
+  "hypeTrainEventEndedUnsuccessful": "El Hype Train nivel <b>{level}</b> ha fallado."
 }

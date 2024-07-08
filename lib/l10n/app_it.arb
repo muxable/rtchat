@@ -125,8 +125,8 @@
   "customizeYourRaidEvent": "Personalizza il tuo evento di raid",
   "hostEventConfigTitle": "Evento di host",
   "customizeYourHostEvent": "Personalizza il tuo evento di host",
-  "hypetrainEventConfigTitle": "Evento di hypetrain",
-  "customizeYourHypetrainEvent": "Personalizza il tuo evento di hypetrain",
+  "hypetrainEventConfigTitle": "Evento di Hype Train",
+  "customizeYourHypetrainEvent": "Personalizza il tuo evento di Hype Train",
   "pollEventConfigTitle": "Evento di sondaggio",
   "customizeYourPollEvent": "Personalizza il tuo evento di sondaggio",
   "predictionEventConfigTitle": "Evento di previsione",
@@ -154,7 +154,7 @@
   "cheerEventMessage": "<b>{name}</b> ha fatto il tifo con <b>{bits}</b> bit. {cheerMessage}",
   "anonymous": "Anonimo",
   "hostEventMessage": "<b>{fromDisplayName}</b> sta ospitando con un gruppo di <b>{viewers}</b> spettatori.",
-  "hypeTrainEventProgress": "Hypetrain al livello <b>{level}</b> in corso! Completato al <b>{progressPercent}%</b>!",
-  "hypeTrainEventEndedSuccessful": "Hypetrain al livello <b>{level}</b> completato con successo.",
-  "hypeTrainEventEndedUnsuccessful": "Hypetrain al livello <b>{level}</b> non completato con successo."
+  "hypeTrainEventProgress": "Hype Train al livello <b>{level}</b> in corso! Completato al <b>{progressPercent}%</b>!",
+  "hypeTrainEventEndedSuccessful": "Hype Train al livello <b>{level}</b> completato con successo.",
+  "hypeTrainEventEndedUnsuccessful": "Hype Train al livello <b>{level}</b> non completato con successo."
 }
