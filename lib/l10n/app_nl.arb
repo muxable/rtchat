@@ -125,8 +125,8 @@
   "customizeYourRaidEvent": "Pas je raid evenement aan",
   "hostEventConfigTitle": "Host evenement",
   "customizeYourHostEvent": "Pas je host evenement aan",
-  "hypetrainEventConfigTitle": "Hypetrein evenement",
-  "customizeYourHypetrainEvent": "Pas je hypetrein evenement aan",
+  "hypetrainEventConfigTitle": "Hype Train evenement",
+  "customizeYourHypetrainEvent": "Pas je Hype Train evenement aan",
   "pollEventConfigTitle": "Poll evenement",
   "customizeYourPollEvent": "Pas je poll evenement aan",
   "predictionEventConfigTitle": "Voorspellings evenement",
@@ -154,7 +154,7 @@
   "cheerEventMessage": "<b>{name}</b> heeft <b>{bits}</b> bits gejuicht. {cheerMessage}",
   "anonymous": "Anoniem",
   "hostEventMessage": "<b>{fromDisplayName}</b> is aan het hosten met een groep van <b>{viewers}</b> kijkers.",
-  "hypeTrainEventProgress": "Hypetrein level <b>{level}</b> is bezig! <b>{progressPercent}%</b> voltooid!",
-  "hypeTrainEventEndedSuccessful": "Hypetrein level <b>{level}</b> is geslaagd.",
-  "hypeTrainEventEndedUnsuccessful": "Hypetrein level <b>{level}</b> is mislukt."
+  "hypeTrainEventProgress": "Hype Train level <b>{level}</b> is bezig! <b>{progressPercent}%</b> voltooid!",
+  "hypeTrainEventEndedSuccessful": "Hype Train level <b>{level}</b> is geslaagd.",
+  "hypeTrainEventEndedUnsuccessful": "Hype Train level <b>{level}</b> is mislukt."
 }

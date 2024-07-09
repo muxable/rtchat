@@ -126,8 +126,8 @@
   "customizeYourRaidEvent": "Personalize seu evento de raid",
   "hostEventConfigTitle": "Evento de Host",
   "customizeYourHostEvent": "Personalize seu evento de host",
-  "hypetrainEventConfigTitle": "Evento de Trem do Hype",
-  "customizeYourHypetrainEvent": "Personalize seu evento de trem do hype",
+  "hypetrainEventConfigTitle": "Evento de Hype Train",
+  "customizeYourHypetrainEvent": "Personalize seu evento de Hype Train",
   "pollEventConfigTitle": "Evento de Enquete",
   "customizeYourPollEvent": "Personalize seu evento de enquete",
   "predictionEventConfigTitle": "Evento de Previsão",
@@ -155,7 +155,7 @@
   "cheerEventMessage": "<b>{name}</b> torceu <b>{bits}</b> bits. {cheerMessage}",
   "anonymous": "Anônimo",
   "hostEventMessage": "<b>{fromDisplayName}</b> está hospedando com um grupo de <b>{viewers}</b> espectadores.",
-  "hypeTrainEventProgress": "Trem do Hype nível <b>{level}</b> em andamento! <b>{progressPercent}%</b> concluído!",
-  "hypeTrainEventEndedSuccessful": "Trem do Hype nível <b>{level}</b> concluído com sucesso.",
-  "hypeTrainEventEndedUnsuccessful": "Trem do Hype nível <b>{level}</b> falhou."
+  "hypeTrainEventProgress": "Hype Train nível <b>{level}</b> em andamento! <b>{progressPercent}%</b> concluído!",
+  "hypeTrainEventEndedSuccessful": "Hype Train nível <b>{level}</b> concluído com sucesso.",
+  "hypeTrainEventEndedUnsuccessful": "Hype Train nível <b>{level}</b> falhou."
 }
