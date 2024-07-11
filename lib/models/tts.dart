@@ -106,7 +106,7 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String getVocalization(BuildContext context, MessageModel model,
+  String getVocalization(AppLocalizations l10n, MessageModel model,
       {bool includeAuthorPrelude = false}) {
     if (model is TwitchMessageModel) {
       final text = model.tokenized
@@ -134,12 +134,12 @@ class TtsModel extends ChangeNotifier {
         return text;
       }
       return model.isAction
-          ? AppLocalizations.of(context)!.actionMessage(author, text)
-          : AppLocalizations.of(context)!.saidMessage(author, text);
+          ? l10n.actionMessage(author, text)
+          : l10n.saidMessage(author, text);
     } else if (model is StreamStateEventModel) {
       return model.isOnline
-          ? AppLocalizations.of(context)!.streamOnline
-          : AppLocalizations.of(context)!.streamOffline;
+          ? l10n.streamOnline
+          : l10n.streamOffline;
     } else if (model is SystemMessageModel) {
       return model.text;
     }

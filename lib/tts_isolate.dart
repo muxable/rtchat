@@ -11,6 +11,7 @@ import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/messages/twitch/reply.dart';
 import 'package:rtchat/tts_plugin.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
@@ -93,6 +94,7 @@ Future<void> isolateMain(
                   return; // Skip vocalization for bot messages
                 }
                 final finalMessage = ttsModel.getVocalization(
+                  AppLocalizations.of(context),
                   messageModel,
                   includeAuthorPrelude: !ttsModel.isPreludeMuted,
                 );
