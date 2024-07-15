@@ -98,7 +98,7 @@ packages:
     source: hosted
     version: "2.1.1"
   characters:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: characters
       sha256: "04a925763edad70e8443c99234dc3328f442e811f1d8fd1a72f1c8ad0f69a605"
@@ -170,7 +170,7 @@ packages:
     source: hosted
     version: "1.18.0"
   crypto:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: crypto
       sha256: ff625774173754681d66daaf4a448684fb04b78f902da9cb3d308c19cc5e8bab
@@ -923,14 +923,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
-  stream_transform:
-    dependency: "direct main"
-    description:
-      name: stream_transform
-      sha256: "14a00e794c7c11aa145a170587321aedce29769c08d7f58b1d141da75e3b1c6f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   streaming_shared_preferences:
     dependency: "direct main"
     description:
