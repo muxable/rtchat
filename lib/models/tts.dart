@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:crypto/crypto.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -353,11 +352,9 @@ class TtsModel extends ChangeNotifier {
         if (model is TwitchMessageModel) {
           if (isRandomVoiceEnabled) {
             final name = model.author.displayName;
-            final hash = BigInt.parse(
-                sha1.convert(utf8.encode(name!)).toString(),
-                radix: 16);
-            voice = voices[hash.remainder(BigInt.from(voices.length)).toInt()];
-            pitch = hash.remainder(BigInt.from(21)).toInt() / 5 - 2;
+            final hash = name.hashCode;
+            voice = voices[hash % voices.length];
+            pitch = (hash % 21) / 5 - 2;
           } else {
             voice = _voice[_language.languageCode];
             pitch = _pitch * 4 - 2;
