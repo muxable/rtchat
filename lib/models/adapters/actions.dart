@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:rtchat/models/channels.dart';
 import 'package:http/http.dart' as http;
+import 'package:rtchat/models/channels.dart';
 
 class ActionsAdapter {
   final FirebaseFirestore firestore;
