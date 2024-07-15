@@ -68,13 +68,13 @@ void updateChannelSubscription(String? data) {
 StreamController<String> channelStreamController =
     StreamController<String>.broadcast();
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
   final prefs = await StreamingSharedPreferences.instance;
-  await tts_isolate.isolateMain(
-      ReceivePort().sendPort, channelStreamController, prefs);
 
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
@@ -124,8 +124,20 @@ class _AppState extends State<App> {
   bool _isDiscoModeRunning = false;
   Timer? _discoModeTimer;
 
+  void spawnIsolate(AppLocalizations localizations) async {
+    await tts_isolate.isolateMain(ReceivePort().sendPort,
+        channelStreamController, widget.prefs, localizations);
+  }
+
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final localizations = AppLocalizations.of(context);
+      if (localizations != null) {
+        spawnIsolate(localizations);
+      }
+    });
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserModel()),
@@ -293,6 +305,7 @@ class _AppState extends State<App> {
       ],
       child: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return MaterialApp(
+          navigatorKey: navigatorKey,
           title: 'RealtimeChat',
           theme: Themes.lightTheme,
           darkTheme: Themes.darkTheme,

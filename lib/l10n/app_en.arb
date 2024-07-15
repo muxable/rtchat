@@ -984,5 +984,13 @@
         "example": "Hello everyone!"
       }
     }
+  },
+  "textToSpeechEnabled": "Text to speech enabled",
+  "@textToSpeechEnabled": {
+      "description": "Message indicating that text to speech has been enabled"
+    },
+  "textToSpeechDisabled": "Text to speech disabled",
+  "@textToSpeechDisabled": {
+      "description": "Message indicating that text to speech has been disabled"
   }
 }

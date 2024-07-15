@@ -137,9 +137,10 @@ class TtsModel extends ChangeNotifier {
           ? l10n.actionMessage(author, text)
           : l10n.saidMessage(author, text);
     } else if (model is StreamStateEventModel) {
+      final timestamp = model.timestamp;
       return model.isOnline
-          ? l10n.streamOnline
-          : l10n.streamOffline;
+          ? l10n.streamOnline(timestamp, timestamp)
+          : l10n.streamOffline(timestamp, timestamp);
     } else if (model is SystemMessageModel) {
       return model.text;
     }
@@ -165,7 +166,7 @@ class TtsModel extends ChangeNotifier {
     return _isEnabled;
   }
 
-  set enabled(bool value) {
+  void setEnabled(AppLocalizations localizations, bool value) {
     if (value == _isEnabled) {
       return;
     }
@@ -174,8 +175,11 @@ class TtsModel extends ChangeNotifier {
       _lastMessageTime = DateTime.now();
     }
     say(
+        localizations,
         SystemMessageModel(
-            text: "Text to speech ${value ? "enabled" : "disabled"}"),
+            text: value
+                ? localizations.textToSpeechEnabled
+                : localizations.textToSpeechDisabled),
         force: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
@@ -291,7 +295,8 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  void say(MessageModel model, {bool force = false}) async {
+  void say(AppLocalizations localizations, MessageModel model,
+      {bool force = false}) async {
     if (!enabled && !force) {
       return;
     }
@@ -323,6 +328,7 @@ class TtsModel extends ChangeNotifier {
     }
 
     final vocalization = getVocalization(
+      localizations,
       model,
       includeAuthorPrelude: includeAuthorPrelude,
     );

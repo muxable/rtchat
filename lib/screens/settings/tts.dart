@@ -162,6 +162,7 @@ class TextToSpeechScreen extends StatelessWidget {
                     audioPlayer.play();
                   } else {
                     model.say(
+                        AppLocalizations.of(context)!,
                         SystemMessageModel(
                           text: AppLocalizations.of(context)!.sampleMessage,
                         ),
