@@ -265,10 +265,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       tooltip: AppLocalizations.of(context)!.textToSpeech,
                       onPressed: () async {
                         if (!kDebugMode) {
-                            ttsModel.setEnabled(AppLocalizations.of(context)!,
-                                ttsModel.enabled ? false : true);
-                            // Toggle newTtsEnabled and notify listeners immediately
-                          } else {
+                          ttsModel.setEnabled(AppLocalizations.of(context)!,
+                              ttsModel.enabled ? false : true);
+                          // Toggle newTtsEnabled and notify listeners immediately
+                        } else {
                           ttsModel.newTtsEnabled = !ttsModel.newTtsEnabled;
 
                           if (!ttsModel.newTtsEnabled) {
