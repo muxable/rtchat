@@ -16,7 +16,7 @@ class NotificationsPlugin {
     }
   }
 
-  static Future<void> listenToTTs(TtsModel model) async {
+  static Future<void> listenToTts(TtsModel model) async {
     try {
       debugPrint("Listening to TTS");
 
