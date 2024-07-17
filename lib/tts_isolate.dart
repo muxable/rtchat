@@ -18,21 +18,23 @@ final DateTime ttsTimeStampListener = DateTime.now();
 StreamSubscription? messagesSubscription;
 StreamSubscription? channelSubscription;
 
-@pragma("vm:entry-point")
 Future<void> isolateMain(
     SendPort sendPort,
     StreamController<String> channelStream,
     StreamingSharedPreferences prefs,
-    AppLocalizations localizations) async {
+    Locale currentLocale) async {
   DartPluginRegistrant.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  final localizations = await AppLocalizations.delegate.load(currentLocale);
+
   final ttsQueue = TTSQueue();
 
   final ttsModel = TtsModel.fromJson(
       jsonDecode(prefs.getString("tts", defaultValue: '{}').getValue()));
 
-  // listen for changes to the tts preferences and update the isolates ttsModel
+  // Listen for changes to the tts preferences and update the isolates ttsModel
   final ttsPrefs = prefs.getString('tts', defaultValue: '{}');
   ttsPrefs.listen((value) async {
     ttsModel.updateFromJson(jsonDecode(value));
