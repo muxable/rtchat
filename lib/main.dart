@@ -76,13 +76,10 @@ void main() async {
   await MobileAds.instance.initialize();
   final prefs = await StreamingSharedPreferences.instance;
 
-  final currentLocalization = PlatformDispatcher.instance.locale;
-
-  final localizations =
-      await AppLocalizations.delegate.load(currentLocalization);
+  final currentLocale = PlatformDispatcher.instance.locale;
 
   await tts_isolate.isolateMain(
-      ReceivePort().sendPort, channelStreamController, prefs, localizations);
+      ReceivePort().sendPort, channelStreamController, prefs, currentLocale);
 
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;

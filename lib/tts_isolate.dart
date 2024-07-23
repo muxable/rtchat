@@ -22,10 +22,12 @@ Future<void> isolateMain(
     SendPort sendPort,
     StreamController<String> channelStream,
     StreamingSharedPreferences prefs,
-    AppLocalizations localizations) async {
+    Locale currentLocale) async {
   DartPluginRegistrant.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  final localizations = await AppLocalizations.delegate.load(currentLocale);
 
   final ttsQueue = TTSQueue();
 
