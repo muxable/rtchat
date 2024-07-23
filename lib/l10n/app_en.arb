@@ -952,5 +952,45 @@
         "example": "3"
       }
     }
+  },
+  "sampleMessage": "This is a sample message for text to speech.",
+  "@sampleMessage": {
+    "description": "Sample message for text to speech"
+  },
+  "actionMessage": "{author} is performing an action: {text}",
+  "@actionMessage": {
+    "description": "Message for an action performed by the author",
+    "placeholders": {
+      "author": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "text": {
+        "type": "String",
+        "example": "is dancing"
+      }
+    }
+  },
+  "saidMessage": "{author} said: {text}",
+  "@saidMessage": {
+    "description": "Message for something said by the author",
+    "placeholders": {
+      "author": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "text": {
+        "type": "String",
+        "example": "Hello everyone!"
+      }
+    }
+  },
+  "textToSpeechEnabled": "Text to speech enabled",
+  "@textToSpeechEnabled": {
+      "description": "Message indicating that text to speech has been enabled"
+    },
+  "textToSpeechDisabled": "Text to speech disabled",
+  "@textToSpeechDisabled": {
+      "description": "Message indicating that text to speech has been disabled"
   }
 }

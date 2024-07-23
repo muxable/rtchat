@@ -59,8 +59,8 @@ dev_dependencies:
     sdk: flutter
 
 flutter:
+  uses-material-design: true
+  generate: true
   assets:
     - assets/
     - assets/providers/
-  generate: true
-  uses-material-design: true

@@ -68,13 +68,18 @@ void updateChannelSubscription(String? data) {
 StreamController<String> channelStreamController =
     StreamController<String>.broadcast();
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await MobileAds.instance.initialize();
   final prefs = await StreamingSharedPreferences.instance;
+
+  final currentLocale = PlatformDispatcher.instance.locale;
+
   await tts_isolate.isolateMain(
-      ReceivePort().sendPort, channelStreamController, prefs);
+      ReceivePort().sendPort, channelStreamController, prefs, currentLocale);
 
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
@@ -293,6 +298,7 @@ class _AppState extends State<App> {
       ],
       child: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return MaterialApp(
+          navigatorKey: navigatorKey,
           title: 'RealtimeChat',
           theme: Themes.lightTheme,
           darkTheme: Themes.darkTheme,

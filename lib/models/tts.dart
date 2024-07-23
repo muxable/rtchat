@@ -17,6 +17,7 @@ import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TtsModel extends ChangeNotifier {
   var _isCloudTtsEnabled = false;
@@ -104,7 +105,7 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String getVocalization(MessageModel model,
+  String getVocalization(AppLocalizations l10n, MessageModel model,
       {bool includeAuthorPrelude = false}) {
     if (model is TwitchMessageModel) {
       final text = model.tokenized
@@ -131,9 +132,14 @@ class TtsModel extends ChangeNotifier {
       if (!includeAuthorPrelude || isPreludeMuted) {
         return text;
       }
-      return model.isAction ? "$author $text" : "$author said $text";
+      return model.isAction
+          ? l10n.actionMessage(author, text)
+          : l10n.saidMessage(author, text);
     } else if (model is StreamStateEventModel) {
-      return model.isOnline ? "Stream is online" : "Stream is offline";
+      final timestamp = model.timestamp;
+      return model.isOnline
+          ? l10n.streamOnline(timestamp, timestamp)
+          : l10n.streamOffline(timestamp, timestamp);
     } else if (model is SystemMessageModel) {
       return model.text;
     }
@@ -159,7 +165,7 @@ class TtsModel extends ChangeNotifier {
     return _isEnabled;
   }
 
-  set enabled(bool value) {
+  void setEnabled(AppLocalizations localizations, bool value) {
     if (value == _isEnabled) {
       return;
     }
@@ -168,8 +174,11 @@ class TtsModel extends ChangeNotifier {
       _lastMessageTime = DateTime.now();
     }
     say(
+        localizations,
         SystemMessageModel(
-            text: "Text to speech ${value ? "enabled" : "disabled"}"),
+            text: value
+                ? localizations.textToSpeechEnabled
+                : localizations.textToSpeechDisabled),
         force: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
@@ -285,7 +294,8 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  void say(MessageModel model, {bool force = false}) async {
+  void say(AppLocalizations localizations, MessageModel model,
+      {bool force = false}) async {
     if (!enabled && !force) {
       return;
     }
@@ -316,8 +326,11 @@ class TtsModel extends ChangeNotifier {
       includeAuthorPrelude = !(activeMessage.author == model.author);
     }
 
-    final vocalization =
-        getVocalization(model, includeAuthorPrelude: includeAuthorPrelude);
+    final vocalization = getVocalization(
+      localizations,
+      model,
+      includeAuthorPrelude: includeAuthorPrelude,
+    );
 
     // if the vocalization is empty, skip the message
     if (vocalization.isEmpty) {
