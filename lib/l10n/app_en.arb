@@ -75,7 +75,7 @@
   },
   "activityFeed": "Activity feed",
   "@activityFeed": {
-    "description": "Tooltip text for a button that shows the activity feed"
+    "description": "Header for the activity feed settings page and tooltip text for a button that shows the activity feed"
   },
   "streamOnline": "Stream online at {date}, {time}",
   "@streamOnline": {
@@ -220,10 +220,6 @@
   "or": "or",
   "@or": {
     "description": "Text label that separates two options"
-  },
-  "activityFeed": "Activity feed",
-  "@activityFeed": {
-    "description": "Header for the activity feed settings page"
   },
   "clearCookies": "Clear cookies",
   "@clearCookies": {
