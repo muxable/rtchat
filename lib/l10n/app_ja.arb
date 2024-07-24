@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> が <b>{viewers}</b> 人のパーティーでホストしています。",
   "hypeTrainEventProgress": "ハイプトレインレベル <b>{level}</b> が進行中です！ <b>{progressPercent}%</b> 完了しました！",
   "hypeTrainEventEndedSuccessful": "ハイプトレインレベル <b>{level}</b> が成功しました。",
-  "hypeTrainEventEndedUnsuccessful": "ハイプトレインレベル <b>{level}</b> が失敗しました。"
+  "hypeTrainEventEndedUnsuccessful": "ハイプトレインレベル <b>{level}</b> が失敗しました。",
+  "sampleMessage": "これは音声合成のサンプルメッセージです。",
+  "actionMessage": "{author} がアクションを実行しています: {text}",
+  "saidMessage": "{author} は次のように言った: {text}",
+  "textToSpeechEnabled": "テキスト読み上げ機能が有効",
+  "textToSpeechDisabled": "テキスト読み上げが無効になっています"
 }

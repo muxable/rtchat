@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b>님이 <b>{viewers}</b>명의 파티와 함께 호스팅 중입니다.",
   "hypeTrainEventProgress": "하이프 트레인 레벨 <b>{level}</b> 진행 중! <b>{progressPercent}%</b> 완료!",
   "hypeTrainEventEndedSuccessful": "하이프 트레인 레벨 <b>{level}</b> 성공.",
-  "hypeTrainEventEndedUnsuccessful": "하이프 트레인 레벨 <b>{level}</b> 실패."
+  "hypeTrainEventEndedUnsuccessful": "하이프 트레인 레벨 <b>{level}</b> 실패.",
+  "sampleMessage": "이것은 텍스트 음성 변환을 위한 샘플 메시지입니다.",
+  "actionMessage": "{author} 가 다음 작업을 수행 중입니다: {text}",
+  "saidMessage": "{author} 님이 말했습니다: {text}",
+  "textToSpeechEnabled": "텍스트 음성 변환 활성화됨",
+  "textToSpeechDisabled": "텍스트 음성 변환이 비활성화되었습니다"
 }

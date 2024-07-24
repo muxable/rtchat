@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> está alojando con un grupo de <b>{viewers}</b>.",
   "hypeTrainEventProgress": "¡El tren del hype nivel <b>{level}</b> está en progreso! ¡<b>{progressPercent}%</b> completado!",
   "hypeTrainEventEndedSuccessful": "El tren del hype nivel <b>{level}</b> ha tenido éxito.",
-  "hypeTrainEventEndedUnsuccessful": "El tren del hype nivel <b>{level}</b> ha fallado."
+  "hypeTrainEventEndedUnsuccessful": "El tren del hype nivel <b>{level}</b> ha fallado.",
+  "sampleMessage": "Este es un mensaje de muestra para texto a voz.",
+  "actionMessage": "{autor} está realizando una acción: {texto}|",
+  "saidMessage": "{author} dijo: {text}",
+  "textToSpeechEnabled": "Texto a voz activado",
+  "textToSpeechDisabled": "Texto a voz desactivado"
 }
