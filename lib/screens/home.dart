@@ -175,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final model = Provider.of<AudioModel>(context, listen: false);
       final ttsModel = Provider.of<TtsModel>(context, listen: false);
 
-      NotificationsPlugin.listenToTTs(ttsModel);
+      NotificationsPlugin.listenToTts(ttsModel);
 
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
@@ -265,7 +265,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       tooltip: AppLocalizations.of(context)!.textToSpeech,
                       onPressed: () async {
                         if (!kDebugMode) {
-                          ttsModel.enabled = !ttsModel.enabled;
+                          ttsModel.setEnabled(AppLocalizations.of(context)!,
+                              ttsModel.enabled ? false : true);
                           // Toggle newTtsEnabled and notify listeners immediately
                         } else {
                           ttsModel.newTtsEnabled = !ttsModel.newTtsEnabled;
@@ -290,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}",
                             );
                             NotificationsPlugin.showNotification();
-                            NotificationsPlugin.listenToTTs(ttsModel);
+                            NotificationsPlugin.listenToTts(ttsModel);
                           }
                         }
                       },
