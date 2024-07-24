@@ -19,7 +19,7 @@ class StreamlabsDonationEventWidget extends StatelessWidget {
           children: [
             StyledText(
               text: AppLocalizations.of(context)!
-                  .streamlabsDonationEventMessage(
+                  .streamlabsTipEventMessage(
                       model.name, model.formattedAmount),
               tags: {
                 'b': StyledTextTag(
