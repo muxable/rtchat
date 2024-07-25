@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> hostuje z grupą <b>{viewers}</b> widzów.",
   "hypeTrainEventProgress": "Hypetrain na poziomie <b>{level}</b> w toku! Ukończono <b>{progressPercent}%</b>!",
   "hypeTrainEventEndedSuccessful": "Hypetrain na poziomie <b>{level}</b> zakończony sukcesem.",
-  "hypeTrainEventEndedUnsuccessful": "Hypetrain na poziomie <b>{level}</b> zakończony niepowodzeniem."
+  "hypeTrainEventEndedUnsuccessful": "Hypetrain na poziomie <b>{level}</b> zakończony niepowodzeniem.",
+  "sampleMessage": "To jest przykładowa wiadomość tekstowa na mowę.",
+  "actionMessage": "{author} wykonuje akcję: {text}",
+  "saidMessage": "{autor} powiedział: {text}",
+  "textToSpeechEnabled": "Włączono funkcję zamiany tekstu na mowę",
+  "textToSpeechDisabled": "Tekst na mowę wyłączony"
 }

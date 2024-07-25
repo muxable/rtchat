@@ -158,7 +158,7 @@
   "hypeTrainEventEndedSuccessful": "El tren del hype nivel <b>{level}</b> ha tenido éxito.",
   "hypeTrainEventEndedUnsuccessful": "El tren del hype nivel <b>{level}</b> ha fallado.",
   "sampleMessage": "Este es un mensaje de muestra para texto a voz.",
-  "actionMessage": "{autor} está realizando una acción: {texto}|",
+  "actionMessage": "{autor} está realizando una acción: {texto}",
   "saidMessage": "{author} dijo: {text}",
   "textToSpeechEnabled": "Texto a voz activado",
   "textToSpeechDisabled": "Texto a voz desactivado"
