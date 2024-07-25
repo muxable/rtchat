@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> is aan het hosten met een groep van <b>{viewers}</b> kijkers.",
   "hypeTrainEventProgress": "Hype Train level <b>{level}</b> is bezig! <b>{progressPercent}%</b> voltooid!",
   "hypeTrainEventEndedSuccessful": "Hype Train level <b>{level}</b> is geslaagd.",
-  "hypeTrainEventEndedUnsuccessful": "Hype Train level <b>{level}</b> is mislukt."
+  "hypeTrainEventEndedUnsuccessful": "Hype Train level <b>{level}</b> is mislukt.",
+  "sampleMessage": "Dit is een voorbeeldbericht voor tekst-naar-spraak.",
+  "actionMessage": "{author} voert een actie uit: {text}",
+  "saidMessage": "{auteur} zei: {tekst}",
+  "textToSpeechEnabled": "Text-to-Speech geactiveerd",
+  "textToSpeechDisabled": "Text-to-Speech gedeactiveerd"
 }
