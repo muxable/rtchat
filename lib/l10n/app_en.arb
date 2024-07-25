@@ -775,9 +775,9 @@
       }
     }
   },
-  "realtimeCashDonationWithDonor": "<b>{donor}</b> donated <b>{value} {currency}</b>.",
-  "@realtimeCashDonationWithDonor": {
-    "description": "Message displayed when a RealtimeCash donation is made with a donor name",
+  "realtimeCashTipWithDonor": "<b>{donor}</b> tipped <b>{value} {currency}</b>.",
+  "@realtimeCashTipWithDonor": {
+    "description": "Message displayed when a RealtimeCash tip is made with a donor name",
     "placeholders": {
       "donor": {
         "type": "String",
@@ -793,9 +793,9 @@
       }
     }
   },
-  "realtimeCashDonationAnonymous": "Anonymous donated <b>{value} {currency}</b>.",
-  "@realtimeCashDonationAnonymous": {
-    "description": "Message displayed when a RealtimeCash donation is made anonymously",
+  "realtimeCashTipAnonymous": "Anonymous tipped <b>{value} {currency}</b>.",
+  "@realtimeCashTipAnonymous": {
+    "description": "Message displayed when a RealtimeCash tip is made anonymously",
     "placeholders": {
       "value": {
         "type": "String",
@@ -821,9 +821,9 @@
       }
     }
   },
-  "streamlabsDonationEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b> on Streamlabs.",
-  "@streamlabsDonationEventMessage": {
-    "description": "Message displayed when a Streamlabs donation event occurs",
+  "streamlabsTipEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b> on Streamlabs.",
+  "@streamlabsTipEventMessage": {
+    "description": "Message displayed when a Streamlabs tip event occurs",
     "placeholders": {
       "name": {
         "type": "String",
