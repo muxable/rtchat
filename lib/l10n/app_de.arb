@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> hostet mit einer Party von <b>{viewers}</b>.",
   "hypeTrainEventProgress": "Hype Train Level <b>{level}</b> in Bearbeitung! <b>{progressPercent}%</b> abgeschlossen!",
   "hypeTrainEventEndedSuccessful": "Hype Train Level <b>{level}</b> erfolgreich abgeschlossen.",
-  "hypeTrainEventEndedUnsuccessful": "Hype Train Level <b>{level}</b> nicht erfolgreich abgeschlossen."
+  "hypeTrainEventEndedUnsuccessful": "Hype Train Level <b>{level}</b> nicht erfolgreich abgeschlossen.",
+  "sampleMessage": "Dies ist eine Beispielnachricht für Text-to-Speech.",
+  "actionMessage": "{author} führt eine Aktion aus: {text}",
+  "saidMessage": "{author} sagte: {text}",
+  "textToSpeechEnabled": "Text-to-Speech aktiviert",
+  "textToSpeechDisabled": "Text-to-Speech deaktiviert"
 }
