@@ -19,9 +19,9 @@ class RealtimeCashDonationEventWidget extends StatelessWidget {
           children: [
             StyledText(
               text: model.donor != null && model.donor!.isNotEmpty
-                  ? AppLocalizations.of(context)!.realtimeCashDonationWithDonor(
+                  ? AppLocalizations.of(context)!.realtimeCashTipWithDonor(
                       model.donor!, model.value.toString(), model.currency)
-                  : AppLocalizations.of(context)!.realtimeCashDonationAnonymous(
+                  : AppLocalizations.of(context)!.realtimeCashTipAnonymous(
                       model.value.toString(), model.currency),
               tags: {
                 'b': StyledTextTag(
