@@ -127,6 +127,18 @@ func main() {
 		}
 		w.Write([]byte((72*time.Hour - time.Since(start)).String()))
 	}))
+	http.Handle("/readiness", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !isListening.Load() || time.Since(start) > 72*time.Hour {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	}))
+	http.Handle("/liveness", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	}))
 
 	go func() {
 		zap.L().Info("starting http server")
