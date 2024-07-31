@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/emote_text_editing_controller.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/chat_mode.dart';
@@ -33,7 +34,7 @@ extension _AutocompleteModeExtension on _AutocompleteMode {
 }
 
 class AutocompleteWidget extends StatefulWidget {
-  final TextEditingController controller;
+  final EmoteTextEditingController controller;
   final Function(String) onSend;
   final Channel channel;
 
@@ -101,10 +102,8 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
                   child: IconButton(
                       tooltip: emote.code,
                       onPressed: () {
-                        widget.controller.text = "${text.substring(
-                          0,
-                          text.length - lastToken.length,
-                        )}${emote.code} ";
+                        widget.controller.addEmote(emote);
+
                         // move cursor position
                         widget.controller.selection =
                             TextSelection.fromPosition(TextPosition(

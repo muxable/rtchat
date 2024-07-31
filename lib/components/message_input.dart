@@ -7,6 +7,7 @@ import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/autocomplete.dart';
 import 'package:rtchat/components/emote_picker.dart';
+import 'package:rtchat/components/emote_text_editing_controller.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
@@ -38,7 +39,7 @@ const _greyscale = ColorFilter.matrix([
 ]);
 
 class _MessageInputWidgetState extends State<MessageInputWidget> {
-  final _textEditingController = TextEditingController();
+  final _textEditingController = EmoteTextEditingController();
   final _chatInputFocusNode = FocusNode();
   var _isEmotePickerVisible = false;
   var _isKeyboardVisible = false;
@@ -135,8 +136,10 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             });
             return;
           }
-          _textEditingController.text =
-              "${_textEditingController.text} ${emote.code}";
+
+          debugPrint("Emote Url : ${emote.imageUrl}");
+
+          _textEditingController.addEmote(emote);
         });
   }
 
