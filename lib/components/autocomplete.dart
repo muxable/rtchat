@@ -103,11 +103,6 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
                       tooltip: emote.code,
                       onPressed: () {
                         widget.controller.addEmote(emote);
-
-                        // move cursor position
-                        widget.controller.selection =
-                            TextSelection.fromPosition(TextPosition(
-                                offset: widget.controller.text.length));
                       },
                       splashRadius: 24,
                       icon: Image(image: ResilientNetworkImage(emote.uri))),
