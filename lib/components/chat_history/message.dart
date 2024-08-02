@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/chat_history/ad.dart';
 import 'package:rtchat/components/chat_history/auxiliary/realtimecash_donation.dart';
 import 'package:rtchat/components/chat_history/auxiliary/streamelements.dart';
 import 'package:rtchat/components/chat_history/auxiliary/streamlabs.dart';
@@ -291,8 +290,6 @@ class ChatHistoryMessage extends StatelessWidget {
       );
     } else if (m is ChatClearedEventModel) {
       return ChatClearedEventWidget(m);
-    } else if (m is AdMessageModel) {
-      return AdMessageWidget(m);
     } else if (m is StreamlabsDonationEventModel) {
       return StreamlabsDonationEventWidget(m);
     } else if (m is StreamElementsTipEventModel) {
