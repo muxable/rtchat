@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> <b>{viewers}</b> জনের পার্টি নিয়ে হোস্ট করছে।",
   "hypeTrainEventProgress": "হাইপ ট্রেন লেভেল <b>{level}</b> চলছে! <b>{progressPercent}%</b> সম্পন্ন হয়েছে!",
   "hypeTrainEventEndedSuccessful": "হাইপ ট্রেন লেভেল <b>{level}</b> সফল হয়েছে।",
-  "hypeTrainEventEndedUnsuccessful": "হাইপ ট্রেন লেভেল <b>{level}</b> ব্যর্থ হয়েছে।"
+  "hypeTrainEventEndedUnsuccessful": "হাইপ ট্রেন লেভেল <b>{level}</b> ব্যর্থ হয়েছে।",
+  "sampleMessage": "এটি পাঠ্য থেকে বক্তৃতার জন্য একটি নমুনা বার্তা।",
+  "actionMessage": "{author} {text}",
+  "saidMessage": "{author} বলেছেন: {text}",
+  "textToSpeechEnabled": "টেক্সট টু স্পিচ সক্ষম",
+  "textToSpeechDisabled": "টেক্সট টু স্পিচ অক্ষম"
 }
