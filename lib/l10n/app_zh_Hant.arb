@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> 正在主持，帶著 <b>{viewers}</b> 位觀眾。",
   "hypeTrainEventProgress": "熱潮列車等級 <b>{level}</b> 進行中！已完成 <b>{progressPercent}%</b>！",
   "hypeTrainEventEndedSuccessful": "熱潮列車等級 <b>{level}</b> 成功。",
-  "hypeTrainEventEndedUnsuccessful": "熱潮列車等級 <b>{level}</b> 失敗。"
+  "hypeTrainEventEndedUnsuccessful": "熱潮列車等級 <b>{level}</b> 失敗。",
+  "sampleMessage": "这是文字转语音的信息示例。",
+  "actionMessage":"{author} {text}",
+  "saidMessage": "{author} 說：{text}",
+  "textToSpeechEnabled": "已启用文本转语音",
+  "textToSpeechDisabled": "已禁用文本转语音"
 }
