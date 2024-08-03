@@ -90,6 +90,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       final commandsModel = Provider.of<CommandsModel>(context, listen: false);
       commandsModel.addCommand(Command(value, DateTime.now()));
     }
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _textEditingController.clear();
     });
@@ -110,6 +113,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
           ));
         }
         done = true;
+        if (!mounted) {
+          return;
+        }
         setState(() {
           _pendingSend.remove(value);
         });
@@ -117,6 +123,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       () async {
         await Future.delayed(const Duration(seconds: 1));
         if (!done) {
+          if (!mounted) {
+            return;
+          }
           setState(() {
             _pendingSend.add(value);
           });
