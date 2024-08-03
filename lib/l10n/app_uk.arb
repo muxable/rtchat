@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> хостить з групою з <b>{viewers}</b> глядачів.",
   "hypeTrainEventProgress": "Hypetrain на рівні <b>{level}</b> в процесі! Завершено на <b>{progressPercent}%</b>!",
   "hypeTrainEventEndedSuccessful": "Hypetrain на рівні <b>{level}</b> завершено успішно.",
-  "hypeTrainEventEndedUnsuccessful": "Hypetrain на рівні <b>{level}</b> завершено невдало."
+  "hypeTrainEventEndedUnsuccessful": "Hypetrain на рівні <b>{level}</b> завершено невдало.",
+  "sampleMessage": "Це зразок повідомлення для перетворення тексту в мову.",
+  "actionMessage": "{author} {text}",
+  "saidMessage": "{author} сказав: {text}",
+  "textToSpeechEnabled": "Синтез мовлення ввімкнено",
+  "textToSpeechDisabled": "Синтез мовлення вимкнено"
 }
