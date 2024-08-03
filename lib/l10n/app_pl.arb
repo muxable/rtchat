@@ -159,7 +159,7 @@
   "hypeTrainEventEndedUnsuccessful": "Hypetrain na poziomie <b>{level}</b> zakończony niepowodzeniem.",
   "sampleMessage": "To jest przykładowa wiadomość tekstowa na mowę.",
   "actionMessage": "{author} {text}",
-  "saidMessage": "{autor} powiedział: {text}",
+  "saidMessage": "{author} powiedział: {text}",
   "textToSpeechEnabled": "Włączono funkcję zamiany tekstu na mowę",
   "textToSpeechDisabled": "Tekst na mowę wyłączony"
 }

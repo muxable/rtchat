@@ -159,7 +159,7 @@
   "hypeTrainEventEndedUnsuccessful": "Hype Train level <b>{level}</b> is mislukt.",
   "sampleMessage": "Dit is een voorbeeldbericht voor tekst-naar-spraak.",
   "actionMessage": "{author} {text}",
-  "saidMessage": "{auteur} zei: {tekst}",
+  "saidMessage": "{author} zei: {text}",
   "textToSpeechEnabled": "Text-to-Speech geactiveerd",
   "textToSpeechDisabled": "Text-to-Speech gedeactiveerd"
 }
