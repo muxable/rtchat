@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> héberge avec un groupe de <b>{viewers}</b>.",
   "hypeTrainEventProgress": "Le train de la hype de niveau <b>{level}</b> est en cours ! <b>{progressPercent}%</b> terminé !",
   "hypeTrainEventEndedSuccessful": "Le train de la hype de niveau <b>{level}</b> a réussi.",
-  "hypeTrainEventEndedUnsuccessful": "Le train de la hype de niveau <b>{level}</b> a échoué."
+  "hypeTrainEventEndedUnsuccessful": "Le train de la hype de niveau <b>{level}</b> a échoué.",
+  "sampleMessage": "Il s'agit d'un exemple de message pour la synthèse vocale.",
+  "actionMessage": "{author} {text}",
+  "saidMessage": "{author} a dit: {text}",
+  "textToSpeechEnabled": "Synthèse vocale activée",
+  "textToSpeechDisabled": "Synthèse vocale désactivée"
 }
