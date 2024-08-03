@@ -158,7 +158,7 @@
   "hypeTrainEventEndedSuccessful": "হাইপ ট্রেন লেভেল <b>{level}</b> সফল হয়েছে।",
   "hypeTrainEventEndedUnsuccessful": "হাইপ ট্রেন লেভেল <b>{level}</b> ব্যর্থ হয়েছে।",
   "sampleMessage": "এটি পাঠ্য থেকে বক্তৃতার জন্য একটি নমুনা বার্তা।",
-  "actionMessage": "{author} একটি ক্রিয়া সম্পাদন করছে: {text}",
+  "actionMessage": "{author} {text}",
   "saidMessage": "{author} বলেছেন: {text}",
   "textToSpeechEnabled": "টেক্সট টু স্পিচ সক্ষম",
   "textToSpeechDisabled": "টেক্সট টু স্পিচ অক্ষম"

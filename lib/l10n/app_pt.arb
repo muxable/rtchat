@@ -158,7 +158,7 @@
   "hypeTrainEventEndedSuccessful": "Hype Train nível <b>{level}</b> concluído com sucesso.",
   "hypeTrainEventEndedUnsuccessful": "Hype Train nível <b>{level}</b> falhou.",
   "sampleMessage": "Este é um exemplo de mensagem de texto para voz.",
-  "actionMessage": "{author} está a realizar uma ação: {text}",
+  "actionMessage": "{author} {text}",
   "saidMessage": "{author} disse: {text}",
   "textToSpeechEnabled": "Texto para voz ativado",
   "textToSpeechDisabled": "Texto para voz desativado"

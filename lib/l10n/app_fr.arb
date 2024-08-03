@@ -158,7 +158,7 @@
   "hypeTrainEventEndedSuccessful": "Le train de la hype de niveau <b>{level}</b> a réussi.",
   "hypeTrainEventEndedUnsuccessful": "Le train de la hype de niveau <b>{level}</b> a échoué.",
   "sampleMessage": "Il s'agit d'un exemple de message pour la synthèse vocale.",
-  "actionMessage": "{author} effectue une action: {text}",
+  "actionMessage": "{author} {text}",
   "saidMessage": "{author} a dit: {text}",
   "textToSpeechEnabled": "Synthèse vocale activée",
   "textToSpeechDisabled": "Synthèse vocale désactivée"

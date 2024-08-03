@@ -158,7 +158,7 @@
   "hypeTrainEventEndedSuccessful": "Hypetrain на рівні <b>{level}</b> завершено успішно.",
   "hypeTrainEventEndedUnsuccessful": "Hypetrain на рівні <b>{level}</b> завершено невдало.",
   "sampleMessage": "Це зразок повідомлення для перетворення тексту в мову.",
-  "actionMessage": "{author} виконує дію: {text}",
+  "actionMessage": "{author} {text}",
   "saidMessage": "{author} сказав: {text}",
   "textToSpeechEnabled": "Синтез мовлення ввімкнено",
   "textToSpeechDisabled": "Синтез мовлення вимкнено"

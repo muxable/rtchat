@@ -158,7 +158,7 @@
   "hypeTrainEventEndedSuccessful": "Hypetrain на уровне <b>{level}</b> завершен успешно.",
   "hypeTrainEventEndedUnsuccessful": "Hypetrain на уровне <b>{level}</b> завершен неудачно.",
   "sampleMessage": "Это пример сообщения для преобразования текста в речь.",
-  "actionMessage": "{author} выполняет действие: {text}",
+  "actionMessage": "{author} {text}",
   "saidMessage": "{author} сказал: {text}",
   "textToSpeechEnabled": "Преобразование текста в речь включено",
   "textToSpeechDisabled": "Преобразование текста в речь отключено"

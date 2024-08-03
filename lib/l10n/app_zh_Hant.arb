@@ -158,7 +158,7 @@
   "hypeTrainEventEndedSuccessful": "熱潮列車等級 <b>{level}</b> 成功。",
   "hypeTrainEventEndedUnsuccessful": "熱潮列車等級 <b>{level}</b> 失敗。",
   "sampleMessage": "这是文字转语音的信息示例。",
-  "actionMessage": "{author} 正在執行一個動作：{text}",
+  "actionMessage":"{author} {text}",
   "saidMessage": "{author} 說：{text}",
   "textToSpeechEnabled": "已启用文本转语音",
   "textToSpeechDisabled": "已禁用文本转语音"
