@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:isolate';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -55,7 +54,6 @@ import 'package:rtchat/screens/settings/tts/languages.dart';
 import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
-import 'package:rtchat/tts_isolate.dart' as tts_isolate;
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 void updateChannelSubscription(String? data) {
@@ -74,10 +72,10 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final prefs = await StreamingSharedPreferences.instance;
 
-  final currentLocale = PlatformDispatcher.instance.locale;
+  // final currentLocale = PlatformDispatcher.instance.locale;
 
-  await tts_isolate.isolateMain(
-      ReceivePort().sendPort, channelStreamController, prefs, currentLocale);
+  // await tts_isolate.isolateMain(
+  //     ReceivePort().sendPort, channelStreamController, prefs, currentLocale);
 
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
