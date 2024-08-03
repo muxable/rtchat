@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> är värd med en grupp på <b>{viewers}</b> tittare.",
   "hypeTrainEventProgress": "Hype Train nivå <b>{level}</b> pågår! <b>{progressPercent}%</b> slutfört!",
   "hypeTrainEventEndedSuccessful": "Hype Train nivå <b>{level}</b> lyckades.",
-  "hypeTrainEventEndedUnsuccessful": "Hype Train nivå <b>{level}</b> misslyckades."
+  "hypeTrainEventEndedUnsuccessful": "Hype Train nivå <b>{level}</b> misslyckades.",
+  "sampleMessage": "Detta är ett exempelmeddelande för text till tal.",
+  "actionMessage": "{author} {text}",
+  "saidMessage": "{author} sa: {text}",
+  "textToSpeechEnabled": "Text till tal aktiverat",
+  "textToSpeechDisabled": "Text till tal inaktiverad"
 }
