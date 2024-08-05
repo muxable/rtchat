@@ -43,7 +43,7 @@ class _ChannelSearchBottomSheetWidgetState
           Row(children: [
             Expanded(
                 child: Text(
-                    _raid
+                    _raid && widget.onRaid != null
                         ? AppLocalizations.of(context)!.raidAChannel
                         : AppLocalizations.of(context)!.searchChannels,
                     style: Theme.of(context).textTheme.headlineMedium)),
@@ -90,7 +90,7 @@ class _ChannelSearchBottomSheetWidgetState
             query: _value,
             controller: widget.controller,
             onChannelSelect: (channel) {
-              if (_raid) {
+              if (_raid && widget.onRaid != null) {
                 FirebaseAnalytics.instance.logEvent(
                     name: "raid", parameters: {"channelId": channel.channelId});
                 widget.onRaid!(channel);
@@ -102,7 +102,7 @@ class _ChannelSearchBottomSheetWidgetState
               }
               Navigator.of(context).pop();
             },
-            isShowOnlyOnline: _raid,
+            isShowOnlyOnline: _raid && widget.onRaid != null,
           ))
         ],
       ),
