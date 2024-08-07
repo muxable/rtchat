@@ -953,7 +953,7 @@
   "@sampleMessage": {
     "description": "Sample message for text to speech"
   },
-  "actionMessage": "{author} is performing an action: {text}",
+  "actionMessage": "{author} {text}",
   "@actionMessage": {
     "description": "Message for an action performed by the author",
     "placeholders": {

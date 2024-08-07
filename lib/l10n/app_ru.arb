@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> хостит с группой из <b>{viewers}</b> зрителей.",
   "hypeTrainEventProgress": "Hypetrain на уровне <b>{level}</b> в процессе! Завершено на <b>{progressPercent}%</b>!",
   "hypeTrainEventEndedSuccessful": "Hypetrain на уровне <b>{level}</b> завершен успешно.",
-  "hypeTrainEventEndedUnsuccessful": "Hypetrain на уровне <b>{level}</b> завершен неудачно."
+  "hypeTrainEventEndedUnsuccessful": "Hypetrain на уровне <b>{level}</b> завершен неудачно.",
+  "sampleMessage": "Это пример сообщения для преобразования текста в речь.",
+  "actionMessage": "{author} {text}",
+  "saidMessage": "{author} сказал: {text}",
+  "textToSpeechEnabled": "Преобразование текста в речь включено",
+  "textToSpeechDisabled": "Преобразование текста в речь отключено"
 }

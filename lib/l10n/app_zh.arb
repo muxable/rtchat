@@ -9,7 +9,7 @@
   "searchChannels": "搜索",
   "raidAChannel": "袭击",
   "noMessagesEmptyState": "太安静了",
-  "newMessageCount": "",
+  "newMessageCount": "{count,plural, =0{沒有新訊息} =1{1 則新訊息} other{{count} 則新訊息}}",
   "signInWithTwitch": "Twitch 登录",
   "signInError": "登录时出错。请重试。",
   "continueAsGuest": "以访客继续",
@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> 正在主持，带着 <b>{viewers}</b> 位观众。",
   "hypeTrainEventProgress": "热潮列车等級 <b>{level}</b> 進行中！已完成 <b>{progressPercent}%</b>！",
   "hypeTrainEventEndedSuccessful": "热潮列车等級 <b>{level}</b> 成功。",
-  "hypeTrainEventEndedUnsuccessful": "热潮列车等級 <b>{level}</b> 失敗。"
+  "hypeTrainEventEndedUnsuccessful": "热潮列车等級 <b>{level}</b> 失敗。",
+  "sampleMessage": "這是文字轉語音的訊息範例。",
+  "actionMessage": "{author} {text}",
+  "saidMessage": "{author} 說: {text}",
+  "textToSpeechEnabled": "已啟用文字轉語音",
+  "textToSpeechDisabled": "文字轉語音已停用"
 }

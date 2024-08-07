@@ -156,5 +156,10 @@
   "hostEventMessage": "<b>{fromDisplayName}</b> يستضيف مع مجموعة من <b>{viewers}</b>.",
   "hypeTrainEventProgress": "قطار الحماس في المستوى <b>{level}</b> قيد التقدم! تم إكمال <b>{progressPercent}%</b>!",
   "hypeTrainEventEndedSuccessful": "تم نجاح قطار الحماس في المستوى <b>{level}</b>.",
-  "hypeTrainEventEndedUnsuccessful": "فشل قطار الحماس في المستوى <b>{level}</b>."
+  "hypeTrainEventEndedUnsuccessful": "فشل قطار الحماس في المستوى <b>{level}</b>.",
+  "sampleMessage": "هذه رسالة نموذجية لتحويل النص إلى كلام.",
+  "actionMessage": "{author} {text}",
+  "saidMessage": "{author} قال: {text}",
+  "textToSpeechEnabled": " تم تمكين تحويل النص إلى كلام",
+  "textToSpeechDisabled": "  تم تعطيل تحويل النص إلى كلام"
 }
