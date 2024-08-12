@@ -3,7 +3,7 @@ import Flutter
 import UIKit
 import WebKit
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
     var sharedText = ""
     
