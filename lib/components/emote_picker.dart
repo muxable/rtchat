@@ -194,7 +194,7 @@ class EmotePickerWidget extends StatelessWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         onEmoteSelected(null);
       },
       child: SizedBox(
