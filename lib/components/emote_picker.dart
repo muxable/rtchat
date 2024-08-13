@@ -178,12 +178,14 @@ class _TabbedEmotePickerWidget extends StatelessWidget {
 
 class EmotePickerWidget extends StatelessWidget {
   final void Function(Emote?) onEmoteSelected;
+  final List<Emote> emotes;
   final Channel channel;
 
   const EmotePickerWidget({
     super.key,
     required this.onEmoteSelected,
     required this.channel,
+    required this.emotes,
   });
 
   @override
@@ -199,19 +201,10 @@ class EmotePickerWidget extends StatelessWidget {
       },
       child: SizedBox(
         height: min(48 * rowNumber.toDouble(), maxHeight),
-        child: FutureBuilder<List<Emote>>(
-          future: getEmotes(channel),
-          initialData: const [],
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            return _TabbedEmotePickerWidget(
-              emotes: snapshot.data!,
-              onEmoteSelected: onEmoteSelected,
-              channel: channel,
-            );
-          },
+        child: _TabbedEmotePickerWidget(
+          emotes: emotes,
+          onEmoteSelected: onEmoteSelected,
+          channel: channel,
         ),
       ),
     );
