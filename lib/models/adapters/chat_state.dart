@@ -99,31 +99,42 @@ class ChatStateAdapter {
     });
   }
 
-  Future<List<TwitchBadgeInfo>> getTwitchBadges({String? channelId}) {
-    return functions
-        .httpsCallable("getBadges")
-        .call({"provider": "twitch", "channelId": channelId}).then((result) {
-      // data is a badge info array
-      if (result.data == null) {
-        return [];
+  Future<List<TwitchBadgeInfo>> getTwitchBadges({String? channelId}) async {
+    for (int attempt = 0; attempt < 3; attempt++) {
+      try {
+        final result = await functions
+            .httpsCallable("getBadges")
+            .call({"provider": "twitch", "channelId": channelId});
+        if (result.data == null) {
+          return [];
+        }
+        return result.data
+            .map<TwitchBadgeInfo>((badgeInfo) => TwitchBadgeInfo(
+                  setId: badgeInfo["set_id"],
+                  versions: badgeInfo["versions"]
+                      .map<BadgeVersion>((version) => BadgeVersion(
+                            id: version["id"],
+                            imageUrl1x: version["image_url_1x"],
+                            imageUrl2x: version["image_url_2x"],
+                            imageUrl4x: version["image_url_4x"],
+                            description: version["description"],
+                            title: version["title"],
+                            clickAction: version["click_action"],
+                            clickUrl: version["click_url"],
+                          ))
+                      .toList(),
+                ))
+            .toList();
+      } catch (e) {
+        if (e is FirebaseFunctionsException &&
+            e.code == 'unavailable' &&
+            attempt < 2) {
+          await Future.delayed(const Duration(seconds: 1));
+        } else {
+          rethrow;
+        }
       }
-      return result.data
-          .map<TwitchBadgeInfo>((badgeInfo) => TwitchBadgeInfo(
-                setId: badgeInfo["set_id"],
-                versions: badgeInfo["versions"]
-                    .map<BadgeVersion>((version) => BadgeVersion(
-                          id: version["id"],
-                          imageUrl1x: version["image_url_1x"],
-                          imageUrl2x: version["image_url_2x"],
-                          imageUrl4x: version["image_url_4x"],
-                          description: version["description"],
-                          title: version["title"],
-                          clickAction: version["click_action"],
-                          clickUrl: version["click_url"],
-                        ))
-                    .toList(),
-              ))
-          .toList();
-    });
+    }
+    return [];
   }
 }

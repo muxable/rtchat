@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/bytes_audio_source.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TextToSpeechScreen extends StatelessWidget {
   const TextToSpeechScreen({super.key});
@@ -116,9 +117,9 @@ class TextToSpeechScreen extends StatelessWidget {
                                       color: Theme.of(context).dividerColor),
                                 ).copyWith(
                                   foregroundColor:
-                                      MaterialStateProperty.resolveWith<Color>(
-                                    (Set<MaterialState> states) =>
-                                        states.contains(MaterialState.disabled)
+                                      WidgetStateProperty.resolveWith<Color>(
+                                    (Set<WidgetState> states) =>
+                                        states.contains(WidgetState.disabled)
                                             ? Theme.of(context)
                                                 .colorScheme
                                                 .onSurface
@@ -154,16 +155,16 @@ class TextToSpeechScreen extends StatelessWidget {
                       "voice": model.voice,
                       "rate": model.speed * 1.5 + 0.5,
                       "pitch": model.pitch * 4 - 2,
-                      "text":
-                          "kevin calmly and collectively consumes cheesecake",
+                      "text": AppLocalizations.of(context)!.sampleMessage,
                     });
                     final bytes = const Base64Decoder().convert(response.data);
                     audioPlayer.setAudioSource(BytesAudioSource(bytes));
                     audioPlayer.play();
                   } else {
                     model.say(
+                        AppLocalizations.of(context)!,
                         SystemMessageModel(
-                          text: "muxfd said have you followed muxfd on twitch?",
+                          text: AppLocalizations.of(context)!.sampleMessage,
                         ),
                         force: true);
                   }
