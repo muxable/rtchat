@@ -1,116 +1,1020 @@
 {
-  "sendAMessage": "Enviar un mensaje...",
-  "writeSomething": "Escribe algo...",
-  "speakToTheCrowds": "Habla a las masas...",
-  "shareYourThoughts": "Comparte lo que piensas...",
-  "saySomethingYouLittleBitch": "Di algo, perrita...",
-  "search": "Buscar",
-  "notSignedIn": "Sin iniciar sesión",
-  "searchChannels": "Buscar",
+  "sendAMessage": "Send a message...",
+  "@sendAMessage": {
+    "description": "Message input field placeholder text"
+  },
+  "writeSomething": "Write something...",
+  "@writeSomething": {
+    "description": "Message input field placeholder text"
+  },
+  "speakToTheCrowds": "Speak to the crowds...",
+  "@speakToTheCrowds": {
+    "description": "Message input field placeholder text"
+  },
+  "shareYourThoughts": "Share your thoughts...",
+  "@shareYourThoughts": {
+    "description": "Message input field placeholder text"
+  },
+  "saySomethingYouLittleBitch": "Say something, you little bitch...",
+  "@saySomethingYouLittleBitch": {
+    "description": "Message input field placeholder text"
+  },
+  "search": "Search",
+  "@search": {
+    "description": "Placeholder text for search bar"
+  },
+  "notSignedIn": "Not signed in",
+  "@notSignedIn": {
+    "description": "Label for unauthenticated user"
+  },
+  "searchChannels": "Search",
+  "@searchChannels": {
+    "description": "Header for a page that lets the user search channels"
+  },
   "raidAChannel": "Raid",
-  "noMessagesEmptyState": "Demasiado silencioso...",
-  "newMessageCount": "{count,plural, =0{Sin mensajes nuevos} =1{1 mensaje nuevo} other{{count} mensajes nuevos}}",
-  "signInWithTwitch": "Inicia sesión con Twitch",
-  "signInError": "Ocurrió un error iniciando sesión. Intenta de nuevo.",
-  "continueAsGuest": "Continuar como invitado",
-  "signInToSendMessages": "Inicia sesión para enviar mensajes",
-  "currentViewers": "Espectadores",
-  "textToSpeech": "Texto a voz",
-  "streamPreview": "Vista previa del stream",
-  "activityFeed": "Feed de actividades",
-  "streamOnline": "En línea {date}, {time}",
-  "streamOffline": "Fuera de línea {date}, {time}",
-  "chatCleared": "Chat limpiado {date}, {time}",
-  "configureQuickLinks": "Configuración enlaces rápidos",
-  "disableRainMode": "Desactivar modo lluvia",
-  "enableRainMode": "Activar modo lluvia",
-  "disableRainModeSubtitle": "Desactiva la interacción",
-  "enableRainModeSubtitle": "Activa la interacción",
-  "refreshAudioSources": "Refrescar fuentes de audio",
-  "refreshAudioSourcesCount": "{count,plural, =0{No se refrescaron fuentes de audio} =1{1 fuente de audio refrescada} other{{count} fuentes de audio refrescadas}}",
-  "settings": "Configuración",
-  "signOut": "Cerrar sesión",
-  "cancel": "Cancelar",
-  "signOutConfirmation": "Estás seguro que deseas cerrar sesión?",
-  "broadcaster": "Streamer",
-  "moderators": "Moderadores",
-  "viewers": "Espectadores",
-  "communityVips": "VIPs de la comunidad",
-  "searchViewers": "Buscar espectadores",
-  "reconnecting": "Reconectando...",
-  "twitchBadges": "Emblemas de Twitch",
-  "selectAll": "Seleccionar todo",
-  "quickLinks": "Enlaces rápidos",
-  "swipeToDeleteQuickLinks": "Desliza a los lados para eliminar",
-  "quickLinksLabelHint": "Nombre",
-  "invalidUrlErrorText": "Este no parece ser un enlace válido",
-  "duplicateUrlErrorText": "Este enlace ya existe",
-  "or": "o",
-  "clearCookies": "Limpiar cookies",
-  "disabled": "Desactivado",
-  "twitchActivityFeed": "Feed de actividades de Twitch",
-  "signInToEnable": "Debes iniciar sesión ara activar está opción",
-  "customUrl": "URL Personalizada",
-  "preview": "Vista previa",
-  "audioSources": "Fuentes de audio",
-  "enableOffStreamSwitchTitle": "Activar fuera de línea (utiliza más batería)",
-  "enableOffStreamSwitchEnabledSubtitle": "También se reproducirá audio cuando esté fuera de línea",
-  "enableOffStreamSwitchDisabledSubtitle": "Sólo se reproducirá audio cuando esté en línea",
-  "iosOggWarningTitle": "Hey! Atención!",
-  "iosOggWarningSubtitle": "iOS no soporta el formato *.ogg, el cual es utilizado por defecto en Streamlabs. Asegúrese de utilizar otro formato para que las alertas sean reproducidas.",
+  "@raidAChannel": {
+    "description": "Header for a page that lets the raid channels"
+  },
+  "noMessagesEmptyState": "It's quiet in here.",
+  "@noMessagesEmptyState": {
+    "description": "Empty state placeholder when there are no messages"
+  },
+  "newMessageCount": "{count,plural, =0{No new messages} =1{1 new message} other{{count} new messages}}",
+  "@newMessageCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "signInWithTwitch": "Sign in with Twitch",
+  "@signInWithTwitch": {
+    "description": "Button label to allow a user to sign in with Twitch"
+  },
+  "signInError": "An error occurred when signing in. Please try again.",
+  "@signInError": {
+    "description": "Error message that shows when signing in fails"
+  },
+  "continueAsGuest": "Continue as Guest",
+  "@continueAsGuest": {
+    "description": "Button label to allow a user to use the app without signing in"
+  },
+  "signInToSendMessages": "Sign in to send messages",
+  "@signInToSendMessages": {
+    "description": "Text label to indicate that signing in is required to send messages"
+  },
+  "currentViewers": "Current viewers",
+  "@currentViewers": {
+    "description": "Tooltip text for a button that shows the current viewers"
+  },
+  "textToSpeech": "Text to speech",
+  "@textToSpeech": {
+    "description": "Tooltip text for a button that enables text to speech"
+  },
+  "streamPreview": "Stream preview",
+  "@streamPreview": {
+    "description": "Tooltip text for a button that shows the stream preview"
+  },
+  "activityFeed": "Activity feed",
+  "@activityFeed": {
+    "description": "Header for the activity feed settings page and tooltip text for a button that shows the activity feed"
+  },
+  "streamOnline": "Stream online at {date}, {time}",
+  "@streamOnline": {
+    "description": "Event label to indicate that the stream is online",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMEEEEd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jms"
+      }
+    }
+  },
+  "streamOffline": "Stream offline at {date}, {time}",
+  "@streamOffline": {
+    "description": "Event label to indicate that the stream is offline",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMEEEEd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jms"
+      }
+    }
+  },
+  "chatCleared": "Chat cleared at {date}, {time}",
+  "@chatCleared": {
+    "description": "Event label to indicate that the chat was cleared",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMEEEEd"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jms"
+      }
+    }
+  },
+  "configureQuickLinks": "Configure quick links",
+  "@configureQuickLinks": {
+    "description": "Button label that shows the quick links configuration"
+  },
+  "disableRainMode": "Disable rain mode",
+  "@disableRainMode": {
+    "description": "Button label that disables rain mode"
+  },
+  "enableRainMode": "Enable rain mode",
+  "@enableRainMode": {
+    "description": "Button label that enables rain mode"
+  },
+  "disableRainModeSubtitle": "Interaction will be enabled",
+  "@disableRainModeSubtitle": {
+    "description": "Subtitle for the button that disables rain mode, indicating that interaction will be enabled"
+  },
+  "enableRainModeSubtitle": "Interaction will be disabled",
+  "@enableRainModeSubtitle": {
+    "description": "Subtitle for the button that enables rain mode, indicating that interaction will be disabled"
+  },
+  "refreshAudioSources": "Refresh audio sources",
+  "@refreshAudioSources": {
+    "description": "Button label that refreshes the audio sources"
+  },
+  "refreshAudioSourcesCount": "{count,plural, =0{No audio sources refreshed} =1{1 audio source refreshed} other{{count} audio sources refreshed}}",
+  "@refreshAudioSourcesCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Button label that shows the settings"
+  },
+  "signOut": "Sign out",
+  "@signOut": {
+    "description": "Button label that signs the user out"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Button label that cancels an action"
+  },
+  "signOutConfirmation": "Are you sure you want to sign out?",
+  "@signOutConfirmation": {
+    "description": "Confirmation message that shows when the user wants to sign out"
+  },
+  "broadcaster": "Broadcaster",
+  "@broadcaster": {
+    "description": "Label for the broadcaster"
+  },
+  "moderators": "Moderators",
+  "@moderators": {
+    "description": "Label for the moderators"
+  },
+  "viewers": "Viewers",
+  "@viewers": {
+    "description": "Label for the viewers"
+  },
+  "communityVips": "Community VIPs",
+  "@communityVips": {
+    "description": "Label for the community VIPs"
+  },
+  "searchViewers": "Search Viewers",
+  "@searchViewers": {
+    "description": "Header for the search bar that lets the user search viewers"
+  },
+  "reconnecting": "Reconnecting...",
+  "@reconnecting": {
+    "description": "Text label that shows when the app is reconnecting"
+  },
+  "twitchBadges": "Twitch badges",
+  "@twitchBadges": {
+    "description": "Header for the Twitch badges page"
+  },
+  "selectAll": "Select all",
+  "@selectAll": {
+    "description": "Button label that selects all badges"
+  },
+  "quickLinks": "Quick links",
+  "@quickLinks": {
+    "description": "Header for the quick links page"
+  },
+  "swipeToDeleteQuickLinks": "Swipe left or right to delete quick link",
+  "@swipeToDeleteQuickLinks": {
+    "description": "Text label that shows when the user can swipe to delete a quick link"
+  },
+  "quickLinksLabelHint": "Label",
+  "@quickLinksLabelHint": {
+    "description": "Hint text for the quick link label"
+  },
+  "invalidUrlErrorText": "This doesn't look like a valid URL",
+  "@invalidUrlErrorText": {
+    "description": "Error message that shows when the URL is invalid"
+  },
+  "duplicateUrlErrorText": "This link already exists",
+  "@duplicateUrlErrorText": {
+    "description": "Error message that shows when the URL already exists"
+  },
+  "or": "or",
+  "@or": {
+    "description": "Text label that separates two options"
+  },
+  "clearCookies": "Clear cookies",
+  "@clearCookies": {
+    "description": "Button label that clears the cookies"
+  },
+  "disabled": "Disabled",
+  "@disabled": {
+    "description": "Option label to disable a feature"
+  },
+  "twitchActivityFeed": "Twitch activity feed",
+  "@twitchActivityFeed": {
+    "description": "Option label to use the default Twitch activity feed"
+  },
+  "signInToEnable": "You must be signed in to enable this",
+  "@signInToEnable": {
+    "description": "Error message that shows when the user must be signed in to enable a feature"
+  },
+  "customUrl": "Custom URL",
+  "@customUrl": {
+    "description": "Option label to use a custom URL"
+  },
+  "preview": "Preview",
+  "@preview": {
+    "description": "Section header for the activity feed preview"
+  },
+  "audioSources": "Audio sources",
+  "@audioSources": {
+    "description": "Header for the audio sources page"
+  },
+  "enableOffStreamSwitchTitle": "Enable off-stream (uses more battery)",
+  "@enableOffStreamSwitchTitle": {
+    "description": "Option label to enable the off-stream tile"
+  },
+  "enableOffStreamSwitchEnabledSubtitle": "Audio will also play when you're offline",
+  "@enableOffStreamSwitchEnabledSubtitle": {
+    "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will also play when the user is offline"
+  },
+  "enableOffStreamSwitchDisabledSubtitle": "Audio will only play when you're live",
+  "@enableOffstreamSwitchDisabledSubtitle": {
+    "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will only play when the user is live"
+  },
+  "iosOggWarningTitle": "Hey! Listen!",
+  "@iosOggWarningTitle": {
+    "description": "Title for the warning that shows when the user is on iOS and the audio source is OGG"
+  },
+  "iosOggWarningSubtitle": "iOS doesn't support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won't play.",
+  "@iosOggWarningSubtitle": {
+    "description": "Message for the warning that shows when the user is on iOS and the audio source is OGG"
+  },
   "url": "URL",
-  "activityFeedSubtitle": "Personaliza tu feed de actividades",
-  "audioSourcesSubtitle": "Agrega sitios web para reproducir alertas sonoras",
-  "quickLinksSubtitle": "Agrega atajos a herramientas frecuentes",
-  "chatHistory": "Historial de Chat",
-  "chatHistorySubtitle": "Cambia la apariencia del chat",
-  "textToSpeechSubtitle": "Cambia la configuración de Texto a Voz",
-  "events": "Eventos",
-  "eventsSubtitle": "Configura eventos de Twitch",
-  "thirdPartyServices": "Servicios de terceros",
-  "thirdPartyServicesSubtitle": "Conecta un servicio de terceros",
-  "followingEvent": "<bold>{displayName}</bold> te está siguiendo",
-  "followingEvent2": "<bold>{displayName}</bold> y <bold>{displayNameTwo}</bold> te están siguiendo",
-  "followingEvent3": "<bold>{displayName}</bold>, <bold>{displayNameTwo}</bold>, y {numOthers} otros te están siguiendo",
-  "unmuteUser": "Quitar silencio a {displayName}",
-  "muteUser": "Silenciar a {displayName}",
-  "timeoutUser": "Suspender a {displayName}",
-  "banUser": "Bannear a {displayName}",
-  "unbanUser": "Quitar ban a {displayName}",
-  "viewProfile": "Ver perfil de {displayName}",
-  "copyMessage": "Copiar mensaje",
-  "deleteMessage": "Eliminar mensaje",
-  "longScrollNotification": "Estás bajando mucho, no?",
-  "stfu": "ok",
-  "globalEmotes": "Emoticonos globales",
-  "followerCount": "{count,plural, =0{0 seguidores} =1{1 seguidor} other{{count} seguidores}}",
-  "viewerCount": "{count,plural, =0{0 espectadores} =1{1 espectador} other{{count} espectadores}}",
-  "streamPreviewMessage": "La vista previa del stream utiliza batería considerable. Leer el chat sin la vista previa extenderá la batería.",
-  "okay": "Ok",
-  "streamPreviewLoading": "Cargando (o el stream no está en línea)",
-  "copiedToClipboard": "Copiado al portapapeles",
-  "audioSourcesRequirePermissions": "Las fuentes de audio requireren permisos",
-  "audioSourcesRequirePermissionsMessage": "Autorice a RealtimeChat para utilizar fuentes de audio",
-  "audioSourcesRemoveButton": "Eliminar fuentes de audio",
-  "audioSourcesOpenSettingsButton": "Abrir configuración",
-  "flashOn": "Flash activado",
-  "flashOff": "Flash desactivado",
-  "durationOneSecond": "1 segundo",
-  "durationOneMinute": "1 minuto",
-  "durationTenMinutes": "10 minutos",
-  "durationOneHour": "1 hora",
-  "durationSixHours": "6 horas",
-  "durationOneDay": "1 día",
-  "durationTwoDays": "2 días",
-  "durationOneWeek": "1 semana",
-  "durationTwoWeeks": "2 semanas",
-  "durationOneSecondTimeoutPrompt": "Suspender por 1 segundo",
-  "durationOneMinuteTimeoutPrompt": "Suspender por 1 minuto",
-  "durationTenMinutesTimeoutPrompt": "Suspender por 10 minutos",
-  "durationOneHourTimeoutPrompt": "Suspender por 1 hora",
-  "durationSixHoursTimeoutPrompt": "Suspender por 6 horas",
-  "durationOneDayTimeoutPrompt": "Suspender por 1 día",
-  "durationTwoDaysTimeoutPrompt": "Suspender por 2 días",
-  "durationOneWeekTimeoutPrompt": "Suspender por 1 semana",
-  "durationTwoWeeksTimeoutPrompt": "Suspender por 2 semanas"
+  "@url": {
+    "description": "Label for the URL"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Header for the settings page"
+  },
+  "activityFeedSubtitle": "Customize your activity feed",
+  "@activityFeedSubtitle": {
+    "description": "Subtitle for the activity feed settings page"
+  },
+  "audioSourcesSubtitle": "Add web sources for alert sounds",
+  "@audioSourcesSubtitle": {
+    "description": "Subtitle for the audio sources page"
+  },
+  "quickLinksSubtitle": "Add shortcuts to commonly-used tools",
+  "@quickLinksSubtitle": {
+    "description": "Subtitle for the quick links page"
+  },
+  "chatHistory": "Chat history",
+  "@chatHistory": {
+    "description": "Header for the chat history page"
+  },
+  "chatHistorySubtitle": "Change the chat appearance",
+  "@chatHistorySubtitle": {
+    "description": "Subtitle for the chat history page"
+  },
+  "textToSpeechSubtitle": "Change text to speech settings",
+  "@textToSpeechSubtitle": {
+    "description": "Subtitle for the text to speech page"
+  },
+  "events": "Events",
+  "@events": {
+    "description": "Header for the events page"
+  },
+  "eventsSubtitle": "Configure Twitch events",
+  "@eventsSubtitle": {
+    "description": "Subtitle for the events page"
+  },
+  "thirdPartyServices": "Third-party services",
+  "@thirdPartyServices": {
+    "description": "Header for the third-party services page"
+  },
+  "thirdPartyServicesSubtitle": "Connect to a third-party service",
+  "@thirdPartyServicesSubtitle": {
+    "description": "Subtitle for the third-party services page"
+  },
+  "followingEvent": "<b>{displayName}</b> is following you",
+  "@followingEvent": {
+    "description": "Text label that shows when a user follows the streamer",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "followingEvent2": "<b>{displayName}</b> and <b>{displayNameTwo}</b> are following you",
+  "@followingEvent2": {
+    "description": "Text label that shows when two users follow the streamer",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "displayNameTwo": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "followingEvent3": "<b>{displayName}</b>, <b>{displayNameTwo}</b>, and {numOthers} others are following you",
+  "@followingEvent3": {
+    "description": "Text label that shows when three or more users follow the streamer",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "displayNameTwo": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "numOthers": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "unmuteUser": "Unmute {displayName}",
+  "@unmuteUser": {
+    "description": "Unmute option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "muteUser": "Mute {displayName}",
+  "@muteUser": {
+    "description": "Mute option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "timeoutUser": "Timeout {displayName}",
+  "@timeoutUser": {
+    "description": "Timeout option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "banUser": "Ban {displayName}",
+  "@banUser": {
+    "description": "Ban option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "unbanUser": "Unban {displayName}",
+  "@unbanUser": {
+    "description": "Unban option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "viewProfile": "View {displayName}'s profile",
+  "@viewProfile": {
+    "description": "Unban option shown when long pressing on a chat message",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "copyMessage": "Copy Message",
+  "@copyMessage": {
+    "description": "Copy option shown when long pressing on a chat message"
+  },
+  "deleteMessage": "Delete Message",
+  "@deleteMessage": {
+    "description": "Delete option shown when long pressing on a chat message"
+  },
+  "longScrollNotification": "You're scrolling kind of far, don't you think?",
+  "@longScrollNotification": {
+    "description": "Notification shown when the user scrolls very far back in the chat history"
+  },
+  "stfu": "stfu",
+  "@stfu": {
+    "description": "Text label for the stfu button"
+  },
+  "globalEmotes": "Global Emotes",
+  "@globalEmotes": {
+    "description": "Text label for the global emotes category header"
+  },
+  "followerCount": "{count,plural, =0{0 followers} =1{1 follower} other{{count} followers}}",
+  "@followerCount": {
+    "description": "Text label for the followers count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "viewerCount": "{count,plural, =0{0 viewers} =1{1 viewer} other{{count} viewers}}",
+  "@viewerCount": {
+    "description": "Text label for the viewers count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "streamPreviewMessage": "Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.",
+  "@streamPreviewMessage": {
+    "description": "Notification shown when the user leaves the stream preview open for a long time"
+  },
+  "okay": "Okay",
+  "@okay": {
+    "description": "Okay button text"
+  },
+  "streamPreviewLoading": "Loading (or stream is offline)...",
+  "@streamPreviewLoading": {
+    "description": "Text label shown when the stream preview is loading"
+  },
+  "copiedToClipboard": "Copied to clipboard",
+  "@copiedToClipboard": {
+    "description": "Notification shown when a message is copied to the clipboard"
+  },
+  "audioSourcesRequirePermissions": "Audio sources require permissions",
+  "@audioSourcesRequirePermissions": {
+    "description": "Alert title prompting the user to grant permissions to use audio sources"
+  },
+  "audioSourcesRequirePermissionsMessage": "Approve RealtimeChat to draw over other apps to use audio sources.",
+  "@audioSourcesRequirePermissionsMessage": {
+    "description": "Alert message prompting the user to grant permissions to use audio sources"
+  },
+  "audioSourcesRemoveButton": "Remove audio sources",
+  "@audioSourcesRemoveButton": {
+    "description": "Button text for removing audio sources"
+  },
+  "audioSourcesOpenSettingsButton": "Open settings",
+  "@audioSourcesOpenSettingsButton": {
+    "description": "Button text for opening settings"
+  },
+  "flashOn": "Flash on",
+  "@flashOn": {
+    "description": "Text label for the camera flash enable button."
+  },
+  "flashOff": "Flash off",
+  "@flashOff": {
+    "description": "Text label for the camera flash disable button."
+  },
+  "durationOneSecond": "1 second",
+  "@durationOneSecond": {
+    "description": "Text label for a one second duration"
+  },
+  "durationOneMinute": "1 minute",
+  "@durationOneMinute": {
+    "description": "Text label for a one minute duration"
+  },
+  "durationTenMinutes": "10 minutes",
+  "@durationTenMinutes": {
+    "description": "Text label for a ten minute duration"
+  },
+  "durationOneHour": "1 hour",
+  "@durationOneHour": {
+    "description": "Text label for a one hour duration"
+  },
+  "durationSixHours": "6 hours",
+  "@durationSixHours": {
+    "description": "Text label for a six hour duration"
+  },
+  "durationOneDay": "1 day",
+  "@durationOneDay": {
+    "description": "Text label for a one day duration"
+  },
+  "durationTwoDays": "2 days",
+  "@durationTwoDays": {
+    "description": "Text label for a two day duration"
+  },
+  "durationOneWeek": "1 week",
+  "@durationOneWeek": {
+    "description": "Text label for a one week duration"
+  },
+  "durationTwoWeeks": "2 weeks",
+  "@durationTwoWeeks": {
+    "description": "Text label for a two week duration"
+  },
+  "durationOneSecondTimeoutPrompt": "Timeout for 1 second",
+  "@durationOneSecondTimeoutPrompt": {
+    "description": "Button label to timeout for a one second duration"
+  },
+  "durationOneMinuteTimeoutPrompt": "Timeout for 1 minute",
+  "@durationOneMinuteTimeoutPrompt": {
+    "description": "Button label to timeout for a one minute duration"
+  },
+  "durationTenMinutesTimeoutPrompt": "Timeout for 10 minutes",
+  "@durationTenMinutesTimeoutPrompt": {
+    "description": "Button label to timeout for a ten minute duration"
+  },
+  "durationOneHourTimeoutPrompt": "Timeout for 1 hour",
+  "@durationOneHourTimeoutPrompt": {
+    "description": "Button label to timeout for a one hour duration"
+  },
+  "durationSixHoursTimeoutPrompt": "Timeout for 6 hours",
+  "@durationSixHoursTimeoutPrompt": {
+    "description": "Button label to timeout for a six hour duration"
+  },
+  "durationOneDayTimeoutPrompt": "Timeout for 1 day",
+  "@durationOneDayTimeoutPrompt": {
+    "description": "Button label to timeout for a one day duration"
+  },
+  "durationTwoDaysTimeoutPrompt": "Timeout for 2 days",
+  "@durationTwoDaysTimeoutPrompt": {
+    "description": "Button label to timeout for a two day duration"
+  },
+  "durationOneWeekTimeoutPrompt": "Timeout for 1 week",
+  "@durationOneWeekTimeoutPrompt": {
+    "description": "Button label to timeout for a one week duration"
+  },
+  "durationTwoWeeksTimeoutPrompt": "Timeout for 2 weeks",
+  "@durationTwoWeeksTimeoutPrompt": {
+    "description": "Button label to timeout for a two week duration"
+  },
+  "errorFetchingViewerList": "We couldn't fetch the viewer list for this channel",
+  "@errorFetchingViewerList": {
+      "description": "Error message if unable to fetch list"
+  },
+  "eventsTitle": "Events",
+  "@eventsTitle": {
+    "description": "Title for the events settings screen"
+  },
+  "followEventConfigTitle": "Follow Event",
+  "@followEventConfigTitle": {
+    "description": "Title for the follow event configuration"
+  },
+  "customizeYourFollowEvent": "Customize your follow event",
+  "@customizeYourFollowEvent": {
+    "description": "Subtitle for the follow event configuration"
+  },
+  "subscribeEventConfigTitle": "Subscribe Event",
+  "@subscribeEventConfigTitle": {
+    "description": "Title for the subscribe event configuration"
+  },
+  "customizeYourSubscriptionEvent": "Customize your subscription event",
+  "@customizeYourSubscriptionEvent": {
+    "description": "Subtitle for the subscribe event configuration"
+  },
+  "cheerEventConfigTitle": "Cheer Event",
+  "@cheerEventConfigTitle": {
+    "description": "Title for the cheer event configuration"
+  },
+  "customizeYourCheerEvent": "Customize your cheer event",
+  "@customizeYourCheerEvent": {
+    "description": "Subtitle for the cheer event configuration"
+  },
+  "raidEventConfigTitle": "Raid Event",
+  "@raidEventConfigTitle": {
+    "description": "Title for the raid event configuration"
+  },
+  "customizeYourRaidEvent": "Customize your raid event",
+  "@customizeYourRaidEvent": {
+    "description": "Subtitle for the raid event configuration"
+  },
+  "hostEventConfigTitle": "Host Event",
+  "@hostEventConfigTitle": {
+    "description": "Title for the host event configuration"
+  },
+  "customizeYourHostEvent": "Customize your host event",
+  "@customizeYourHostEvent": {
+    "description": "Subtitle for the host event configuration"
+  },
+  "hypetrainEventConfigTitle": "Hype Train Event",
+  "@hypetrainEventConfigTitle": {
+    "description": "Title for the hypetrain event configuration"
+  },
+  "customizeYourHypetrainEvent": "Customize your hype train event",
+  "@customizeYourHypetrainEvent": {
+    "description": "Subtitle for the hypetrain event configuration"
+  },
+  "pollEventConfigTitle": "Poll Event",
+  "@pollEventConfigTitle": {
+    "description": "Title for the poll event configuration"
+  },
+  "customizeYourPollEvent": "Customize your poll event",
+  "@customizeYourPollEvent": {
+    "description": "Subtitle for the poll event configuration"
+  },
+  "predictionEventConfigTitle": "Prediction Event",
+  "@predictionEventConfigTitle": {
+    "description": "Title for the prediction event configuration"
+  },
+  "customizeYourPredictionEvent": "Customize your prediction event",
+  "@customizeYourPredictionEvent": {
+    "description": "Subtitle for the prediction event configuration"
+  },
+  "channelPointRedemptionEventConfigTitle": "Channel Point Redemption Event",
+  "@channelPointRedemptionEventConfigTitle": {
+    "description": "Title for the channel point redemption event configuration"
+  },
+  "customizeYourChannelPointRedemptionEvent": "Customize your channel point redemption event",
+  "@customizeYourChannelPointRedemptionEvent": {
+    "description": "Subtitle for the channel point redemption event configuration"
+  },
+  "outgoingRaidEventConfigTitle": "Outgoing Raid Event",
+  "@outgoingRaidEventConfigTitle": {
+    "description": "Title for the outgoing raid event configuration"
+  },
+  "customizeYourOutgoingRaidEvent": "Customize your outgoing raid event",
+  "@customizeYourOutgoingRaidEvent": {
+    "description": "Subtitle for the outgoing raid event configuration"
+  },
+  "raidEventMessage": "<b>{displayName}</b> is raiding with <b>{viewerCount}</b> viewers!",
+  "@raidEventMessage": {
+    "description": "Message displayed when a raid event occurs",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "viewerCount": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "shoutout": "Shoutout",
+  "@shoutout": {
+    "description": "Button text for the shoutout action in a raid event"
+  },
+  "raidingEventRaiding": "Raiding <b>{displayName}</b>...",
+  "@raidingEventRaiding": {
+    "description": "Message displayed when a raiding event is in progress",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "raidingEventTimeRemaining": "{seconds}s",
+  "@raidingEventTimeRemaining": {
+    "description": "Message displaying the time remaining for a raiding event",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "raidingEventRaided": "<b>{displayName}</b> has raided!",
+  "@raidingEventRaided": {
+    "description": "Message displayed when a raiding event has completed successfully",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "raidingEventJoin": "Join",
+  "@raidingEventJoin": {
+    "description": "Button text to join the raid in a raiding event"
+  },
+  "raidingEventCanceled": "<b>{displayName}</b>'s raid was canceled.",
+  "@raidingEventCanceled": {
+    "description": "Message displayed when a raiding event is canceled",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "subscriptionEvent": "<b>{subscriberUserName}</b> has subscribed at Tier {tier}!",
+  "@subscriptionEvent": {
+    "description": "Message displayed when a subscription event occurs",
+    "placeholders": {
+      "subscriberUserName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "tier": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "subscriptionGiftEvent": "<b>{gifterUserName}</b> has gifted {total} Tier {tier} subs, totaling {cumulativeTotal}!",
+  "@subscriptionGiftEvent": {
+    "description": "Message displayed when a subscription gift event occurs",
+    "placeholders": {
+      "gifterUserName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "tier": {
+        "type": "String",
+        "example": "1"
+      },
+      "cumulativeTotal": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "subscriptionMessageEvent": "<b>{subscriberUserName}</b> has subscribed for {cumulativeMonths} months at Tier {tier}!",
+  "@subscriptionMessageEvent": {
+    "description": "Message displayed when a subscription message event occurs",
+    "placeholders": {
+      "subscriberUserName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "cumulativeMonths": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "tier": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "realtimeCashTipWithDonor": "<b>{donor}</b> tipped <b>{value} {currency}</b>.",
+  "@realtimeCashTipWithDonor": {
+    "description": "Message displayed when a RealtimeCash tip is made with a donor name",
+    "placeholders": {
+      "donor": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "value": {
+        "type": "String",
+        "example": "5"
+      },
+      "currency": {
+        "type": "String",
+        "example": "USD"
+      }
+    }
+  },
+  "realtimeCashTipAnonymous": "Anonymous tipped <b>{value} {currency}</b>.",
+  "@realtimeCashTipAnonymous": {
+    "description": "Message displayed when a RealtimeCash tip is made anonymously",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "5"
+      },
+      "currency": {
+        "type": "String",
+        "example": "USD"
+      }
+    }
+  },
+  "streamElementsTipEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b> on StreamElements.",
+  "@streamElementsTipEventMessage": {
+    "description": "Message displayed when a StreamElements tip event occurs",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "formattedAmount": {
+        "type": "String",
+        "example": "$5.00"
+      }
+    }
+  },
+  "streamlabsTipEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b> on Streamlabs.",
+  "@streamlabsTipEventMessage": {
+    "description": "Message displayed when a Streamlabs tip event occurs",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "formattedAmount": {
+        "type": "String",
+        "example": "$5.00"
+      }
+    }
+  },
+  "channelPointRedemptionWithUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points. {userInput}",
+  "@channelPointRedemptionWithUserInput": {
+    "description": "Message displayed when a channel point redemption event occurs with user input",
+    "placeholders": {
+      "redeemerUsername": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "rewardName": {
+        "type": "String",
+        "example": "Highlight My Message"
+      },
+      "rewardCost": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "100"
+      },
+      "userInput": {
+        "type": "String",
+        "example": "Hello World!"
+      }
+    }
+  },
+  "channelPointRedemptionWithoutUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points.",
+  "@channelPointRedemptionWithoutUserInput": {
+    "description": "Message displayed when a channel point redemption event occurs without user input",
+    "placeholders": {
+      "redeemerUsername": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "rewardName": {
+        "type": "String",
+        "example": "Highlight My Message"
+      },
+      "rewardCost": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "100"
+      }
+    }
+  },
+  "cheerEventMessage": "<b>{name}</b> cheered <b>{bits}</b> bits. {cheerMessage}",
+  "@cheerEventMessage": {
+    "description": "Message displayed when a cheer event occurs",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "bits": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "cheerMessage": {
+        "type": "String",
+        "example": "Great stream!"
+      }
+    }
+  },
+  "anonymous": "Anonymous",
+  "@anonymous": {
+    "description": "Username of an anonymous user"
+  },
+  "hostEventMessage": "<b>{fromDisplayName}</b> is hosting with a party of <b>{viewers}</b>.",
+  "@hostEventMessage": {
+    "description": "Message displayed when a host event occurs",
+    "placeholders": {
+      "fromDisplayName": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "viewers": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "hypeTrainEventProgress": "Hype Train level <b>{level}</b> in progress! <b>{progressPercent}%</b> completed!",
+  "@hypeTrainEventProgress": {
+    "description": "Message displayed when a hype train event is in progress",
+    "placeholders": {
+      "level": {
+        "type": "String",
+        "example": "3"
+      },
+      "progressPercent": {
+        "type": "String",
+        "example": "75"
+      }
+    }
+  },
+  "hypeTrainEventEndedSuccessful": "Hype Train level <b>{level}</b> succeeded.",
+  "@hypeTrainEventEndedSuccessful": {
+    "description": "Message displayed when a hype train event ends successfully",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      }
+    }
+  },
+  "hypeTrainEventEndedUnsuccessful": "Hype Train level <b>{level}</b> failed.",
+  "@hypeTrainEventEndedUnsuccessful": {
+    "description": "Message displayed when a hype train event ends unsuccessfully",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      }
+    }
+  },
+  "sampleMessage": "This is a sample message for text to speech.",
+  "@sampleMessage": {
+    "description": "Sample message for text to speech"
+  },
+  "actionMessage": "{author} {text}",
+  "@actionMessage": {
+    "description": "Message for an action performed by the author",
+    "placeholders": {
+      "author": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "text": {
+        "type": "String",
+        "example": "is dancing"
+      }
+    }
+  },
+  "saidMessage": "{author} said: {text}",
+  "@saidMessage": {
+    "description": "Message for something said by the author",
+    "placeholders": {
+      "author": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "text": {
+        "type": "String",
+        "example": "Hello everyone!"
+      }
+    }
+  },
+  "textToSpeechEnabled": "Text to speech enabled",
+  "@textToSpeechEnabled": {
+      "description": "Message indicating that text to speech has been enabled"
+    },
+  "textToSpeechDisabled": "Text to speech disabled",
+  "@textToSpeechDisabled": {
+      "description": "Message indicating that text to speech has been disabled"
+  },
+  "subscribedAtTier" : "subscribed at tier",
+  "@subscribedAtTierPrompt" : {
+    "subscribedAtTierPrompt" : "Text Box label to display tier subscribed at"
+  },
+  "gifted" : "gifted",
+  "@giftedPrompt" : {
+    "giftedPrompt" : "Text Box label to display tier of gifted subscription"
+  },
+     "tier": "Tier",
+  "@tierPrompt": {
+    "tierPrompt": "Text Box label to display tier of subscription"
+  },
+  "subscriptions": "subscriptions",
+  "@subscriptionsPrompt": {
+    "subscriptionsPrompt": "Text Box label to display prompt for subscriptions"
+  },
+  "subscription": "subscription",
+  "@subscriptionPrompt": {
+    "subscriptionPrompt": "Text Box label to display prompt for a subscription"
+  },
+   "theyHaveGifted": "They've gifted",
+  "@haveGiftedPrompt": {
+    "haveGiftedPrompt": "Text Box label to display prompt for 'They've gifted'"
+  },
+   "subsInTheChannel": "subs in the channel",
+  "@subsInTheChannelPrompt": {
+    "subsInTheChannelPrompt": "Text Box label to display prompt for subscriptions gifted in the channel"
+  }
 }
