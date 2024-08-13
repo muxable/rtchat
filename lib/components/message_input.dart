@@ -12,9 +12,9 @@ import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/models/messages/tokens.dart';
+import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/share_channel.dart';
-import 'package:rtchat/models/messages/twitch/emote.dart';
 
 class EmoteTextEditingController extends TextEditingController {
   List<Emote> emotes;
