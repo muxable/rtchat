@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
@@ -334,10 +333,21 @@ class MessagesAdapter {
 
   Future<void> subscribe(Channel channel) async {
     final subscribe = functions.httpsCallable('subscribe');
-    await subscribe({
-      "provider": channel.provider,
-      "channelId": channel.channelId,
-    });
+    for (var i = 0; i < 3; i++) {
+      try {
+        await subscribe({
+          "provider": channel.provider,
+          "channelId": channel.channelId,
+        });
+        return;
+      } catch (e, st) {
+        if (i == 2) {
+          FirebaseCrashlytics.instance.recordError(e, st, fatal: false);
+        } else {
+          await Future.delayed(const Duration(seconds: 1));
+        }
+      }
+    }
   }
 
   Future<List<DeltaEvent>> forChannelHistory(
@@ -362,8 +372,6 @@ class MessagesAdapter {
   Stream<DeltaEvent> forChannel(Channel channel) {
     subscribe(channel);
     final emotes = getEmotes(channel);
-    var lastAdTimestamp = DateTime.now();
-    var lastAdMessageCount = 0;
     var isInitialSnapshot = true;
     return db
         .collection("channels")
@@ -380,24 +388,10 @@ class MessagesAdapter {
           final event = _toDeltaEvent(await emotes, change.doc);
           if (event != null) {
             yield event;
-            lastAdMessageCount++;
           }
         } catch (e, st) {
           // send this report immediately.
           FirebaseCrashlytics.instance.recordError(e, st, fatal: true);
-        }
-        // if there have been at least five minutes since the last ad, show one.
-        if (DateTime.now().difference(lastAdTimestamp) >
-                (kDebugMode
-                    ? const Duration(seconds: 1)
-                    : const Duration(minutes: 5)) &&
-            // ensure that there are also at least 50 messages in between ads.
-            lastAdMessageCount > 50 &&
-            !isInitialSnapshot) {
-          lastAdTimestamp = DateTime.now();
-          lastAdMessageCount = 0;
-          yield AppendDeltaEvent(
-              AdMessageModel(adId: AdHelper.chatHistoryAdId));
         }
       }
       if (isInitialSnapshot &&

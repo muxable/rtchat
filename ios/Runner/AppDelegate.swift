@@ -1,10 +1,9 @@
 import AVFoundation
 import Flutter
-import flutter_background_service_ios
 import UIKit
 import WebKit
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
     var sharedText = ""
     
@@ -12,8 +11,6 @@ import WebKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        SwiftFlutterBackgroundServicePlugin.taskIdentifier = "com.rtirl.chat.tts"
-
         var views = [String: WKWebView]()
 
         let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
@@ -35,6 +32,9 @@ import WebKit
                 }
                 
                 let utterance = AVSpeechUtterance(string: text)
+                // Set speech rate and volume
+                utterance.rate = args?["speed"] as? Float ?? AVSpeechUtteranceDefaultSpeechRate
+                utterance.volume = args?["volume"] as? Float ?? 1.0
                 synthesizer.speak(utterance)
                 result(Bool(true))
                 

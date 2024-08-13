@@ -46,7 +46,8 @@ function createEventsub(token: string, type: string, twitchUserId: string) {
     condition = { to_broadcaster_user_id: twitchUserId };
   } else if (
     type === "channel.shoutout.create" ||
-    type === "channel.shoutout.receive"
+    type === "channel.shoutout.receive" ||
+    type === "channel.follow"
   ) {
     condition = {
       broadcaster_user_id: twitchUserId,
@@ -62,7 +63,7 @@ function createEventsub(token: string, type: string, twitchUserId: string) {
     },
     body: JSON.stringify({
       type,
-      version: "1",
+      version: type === "channel.follow" ? "2" : "1",
       condition,
       transport: {
         method: "webhook",
@@ -91,18 +92,25 @@ export async function checkEventSubSubscriptions(userId: string) {
     console.log("missing twitch user id");
     return;
   }
-  const promises = Object.values(EventsubType).map(async (type) => {
-    // TODO: clean this up.
+  for (const type of Object.values(EventsubType)) {
     let response = await createEventsub(appAccessToken, type, twitchUserId);
     if (response.status == 409) {
       // subscription already exists, this is ok.
-      return;
+      console.log("subscription already exists", type, twitchUserId);
+      continue;
+    } else if (response.status != 202) {
+      console.error(
+        "failed to create subscription",
+        type,
+        await response.json(),
+        response.status
+      );
+      continue;
     }
     const json = await response.json();
     console.log("subscribing to", type, twitchUserId);
     console.log(JSON.stringify(json));
-  });
-  await Promise.all(promises);
+  }
 }
 
 export const eventsub = functions.https.onRequest(async (req, res) => {
@@ -130,6 +138,12 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
     return;
   } else if (status === "enabled") {
     const type = req.body?.subscription?.type as EventsubType;
+    const version = req.body?.subscription?.version as string;
+
+    if (type === EventsubType.ChannelFollow && version === "1") {
+      console.log("rejecting channel.follow v1");
+      return;
+    }
 
     const channelId = `twitch:${
       req.body.event["broadcaster_user_id"] ??
