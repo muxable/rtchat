@@ -34,7 +34,7 @@ class QuicklinksListView extends StatelessWidget {
             onLongPress: () async {
               Navigator.pop(context);
               await Clipboard.setData(ClipboardData(text: url));
-              if (!context.mounted) return;
+              if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                     content:
