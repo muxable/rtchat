@@ -190,10 +190,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (mounted) {
         debugPrint("Conditions passed");
         model.showAudioPermissionDialog(context);
-         _battery.batteryState.then(_updateBatteryState);
+        debugPrint("Directly calling listenToTts");
+        NotificationsPlugin.listenToTts(ttsModel);
+        _battery.batteryState.then(_updateBatteryState);
         _batteryStateSubscription =
             _battery.onBatteryStateChanged.listen(_updateBatteryState);
-      }
       }
     });
   }
@@ -212,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final int batteryLevel = await _battery.batteryLevel;
     final bool isCharging = state == BatteryState.charging;
 
-    if(!mounted) {
+    if (!mounted) {
       return;
     }
 
@@ -242,6 +243,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         AppLocalizations.of(context)!.streamPreviewMessage,
       )),
     );
+  }
+
+  void disableStreamPreview() {
+    Provider.of<LayoutModel>(context, listen: false).isShowPreview = false;
   }
 
   @override
