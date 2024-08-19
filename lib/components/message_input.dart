@@ -11,12 +11,119 @@ import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/commands.dart';
+import 'package:rtchat/models/messages/tokens.dart';
+import 'package:rtchat/models/messages/twitch/emote.dart';
+import 'package:rtchat/models/style.dart';
 import 'package:rtchat/share_channel.dart';
+
+class EmoteTextEditingController extends TextEditingController {
+  List<Emote> emotes;
+
+  EmoteTextEditingController(this.emotes);
+
+  Iterable<MessageToken> tokenizeEmotes(
+      String message, List<Emote> emotes) sync* {
+    final emotesMap = {for (final emote in emotes) emote.code: emote};
+    var lastParsedStart = 0;
+    for (var start = 0; start < message.length;) {
+      final end = message.indexOf(" ", start);
+      final token =
+          end == -1 ? message.substring(start) : message.substring(start, end);
+      final emote = emotesMap[token.trim()];
+      if (emote != null) {
+        if (lastParsedStart != start) {
+          yield TextToken(message.substring(lastParsedStart, start));
+        }
+        yield EmoteToken(url: emote.uri, code: emote.code);
+        lastParsedStart = end == -1 ? message.length : end;
+      }
+      start = end == -1 ? message.length : end + 1;
+    }
+    if (lastParsedStart != message.length) {
+      yield TextToken(message.substring(lastParsedStart));
+    }
+  }
+
+  static Iterable<InlineSpan> render(
+      BuildContext context, StyleModel styleModel, MessageToken token) sync* {
+    if (token is TextToken) {
+      yield TextSpan(text: token.text);
+    } else if (token is EmoteToken) {
+      yield* [
+        TextSpan(text: "\u200B" * (token.code.length - 1)),
+        WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Tooltip(
+                message: token.code,
+                preferBelow: false,
+                child: Image(
+                    height: styleModel.fontSize,
+                    image: ResilientNetworkImage(token.url),
+                    errorBuilder: (context, error, stackTrace) =>
+                        Text(token.code))))
+      ];
+    } else {
+      throw Exception("invalid token");
+    }
+  }
+
+  @override
+  TextSpan buildTextSpan({
+    required BuildContext context,
+    TextStyle? style,
+    required bool withComposing,
+  }) {
+    assert(!value.composing.isValid ||
+        !withComposing ||
+        value.isComposingRangeValid);
+    // If the composing range is out of range for the current text, ignore it to
+    // preserve the tree integrity, otherwise in release mode a RangeError will
+    // be thrown and this EditableText will be built with a broken subtree.
+    final bool composingRegionOutOfRange =
+        !value.isComposingRangeValid || !withComposing;
+
+    final styleModel = Provider.of<StyleModel>(context, listen: false);
+
+    if (composingRegionOutOfRange) {
+      return TextSpan(
+          style: style,
+          children: tokenizeEmotes(text, emotes)
+              .expand((token) => render(context, styleModel, token))
+              .toList());
+    }
+
+    final TextStyle composingStyle =
+        style?.merge(const TextStyle(decoration: TextDecoration.underline)) ??
+            const TextStyle(decoration: TextDecoration.underline);
+
+    return TextSpan(
+      style: style,
+      children: <TextSpan>[
+        TextSpan(
+            children:
+                tokenizeEmotes(value.composing.textBefore(value.text), emotes)
+                    .expand((token) => render(context, styleModel, token))
+                    .toList()),
+        TextSpan(
+          style: composingStyle,
+          text: value.composing.textInside(value.text),
+        ),
+        TextSpan(
+            children:
+                tokenizeEmotes(value.composing.textAfter(value.text), emotes)
+                    .expand((token) => render(context, styleModel, token))
+                    .toList()),
+      ],
+    );
+  }
+}
 
 class MessageInputWidget extends StatefulWidget {
   final Channel channel;
+  final List<Emote> emotes; // TODO: decouple this from the twitch emote model.
 
-  const MessageInputWidget({super.key, required this.channel});
+  const MessageInputWidget(
+      {super.key, required this.channel, required this.emotes});
 
   @override
   State<MessageInputWidget> createState() => _MessageInputWidgetState();
@@ -38,7 +145,7 @@ const _greyscale = ColorFilter.matrix([
 ]);
 
 class _MessageInputWidgetState extends State<MessageInputWidget> {
-  final _textEditingController = TextEditingController();
+  late final EmoteTextEditingController _textEditingController;
   final _chatInputFocusNode = FocusNode();
   var _isEmotePickerVisible = false;
   var _isKeyboardVisible = false;
@@ -51,6 +158,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   void initState() {
     super.initState();
     final keyboardVisibilityController = KeyboardVisibilityController();
+    _textEditingController = EmoteTextEditingController(widget.emotes);
     // Subscribe to keyboard visibility changes.
     keyboardSubscription =
         keyboardVisibilityController.onChange.listen((visible) {
@@ -64,6 +172,12 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       ..onDataReceived = _handleSharedData
       // Check to see if there is any shared data already via sharing
       ..getSharedText().then(_handleSharedData);
+  }
+
+  @override
+  void didUpdateWidget(MessageInputWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _textEditingController.emotes = widget.emotes;
   }
 
   // Handles any shared data we may receive.
@@ -90,6 +204,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       final commandsModel = Provider.of<CommandsModel>(context, listen: false);
       commandsModel.addCommand(Command(value, DateTime.now()));
     }
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _textEditingController.clear();
     });
@@ -110,6 +227,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
           ));
         }
         done = true;
+        if (!mounted) {
+          return;
+        }
         setState(() {
           _pendingSend.remove(value);
         });
@@ -117,27 +237,15 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       () async {
         await Future.delayed(const Duration(seconds: 1));
         if (!done) {
+          if (!mounted) {
+            return;
+          }
           setState(() {
             _pendingSend.add(value);
           });
         }
       }(),
     ]);
-  }
-
-  Widget _buildEmotePicker(BuildContext context) {
-    return EmotePickerWidget(
-        channel: widget.channel,
-        onEmoteSelected: (emote) {
-          if (emote == null) {
-            setState(() {
-              _isEmotePickerVisible = false;
-            });
-            return;
-          }
-          _textEditingController.text =
-              "${_textEditingController.text} ${emote.code}";
-        });
   }
 
   @override
@@ -243,7 +351,25 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                 ),
               ),
             ),
-            _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
+            _isEmotePickerVisible
+                ? EmotePickerWidget(
+                    channel: widget.channel,
+                    emotes: widget.emotes,
+                    onEmoteSelected: (emote) {
+                      if (emote == null) {
+                        setState(() {
+                          _isEmotePickerVisible = false;
+                        });
+                        return;
+                      }
+                      if (_textEditingController.text.isNotEmpty) {
+                        _textEditingController.text =
+                            "${_textEditingController.text} ${emote.code} ";
+                      } else {
+                        _textEditingController.text = "${emote.code} ";
+                      }
+                    })
+                : Container(),
           ]),
     );
   }

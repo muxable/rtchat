@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
@@ -8,6 +9,7 @@ import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:styled_text/styled_text.dart';
 
 Color tierColor(BuildContext context, String tier) {
   if (tier == '2000') {
@@ -26,22 +28,18 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme.titleSmall;
     return DecoratedEventWidget.icon(
       icon: Icons.star,
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-                text: model.subscriberUserName,
-                style: Theme.of(context).textTheme.titleSmall),
-            const TextSpan(text: " subscribed at "),
-            TextSpan(
-              text: "Tier ${model.tier.replaceAll("000", "")}",
-              style: textTheme?.copyWith(color: tierColor(context, model.tier)),
-            ),
-          ],
-        ),
+      child: StyledText(
+        text: AppLocalizations.of(context)!.subscriptionEvent(
+            model.subscriberUserName, model.tier.replaceAll("000", "")),
+        tags: {
+          'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+        },
+        style: Theme.of(context)
+            .textTheme
+            .titleSmall
+            ?.copyWith(color: tierColor(context, model.tier)),
       ),
     );
   }
@@ -54,26 +52,21 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme.titleSmall;
     return DecoratedEventWidget.icon(
       icon: Icons.redeem,
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(text: model.gifterUserName, style: textTheme),
-            TextSpan(text: " gifted ${model.total} "),
-            TextSpan(
-                text: "Tier ${model.tier.replaceAll("000", "")}",
-                style:
-                    textTheme?.copyWith(color: tierColor(context, model.tier))),
-            TextSpan(
-                text: model.total > 1 ? " subscriptions" : " subscription"),
-            TextSpan(
-                text: model.cumulativeTotal > 0
-                    ? " (${model.cumulativeTotal} total)"
-                    : ""),
-          ],
-        ),
+      child: StyledText(
+        text: AppLocalizations.of(context)!.subscriptionGiftEvent(
+            model.gifterUserName,
+            model.total,
+            model.tier.replaceAll("000", ""),
+            model.cumulativeTotal),
+        tags: {
+          'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+        },
+        style: Theme.of(context)
+            .textTheme
+            .titleSmall
+            ?.copyWith(color: tierColor(context, model.tier)),
       ),
     );
   }
@@ -136,26 +129,19 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
     return DecoratedEventWidget.icon(
       icon: Icons.star,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                  text: model.subscriberUserName,
-                  style: Theme.of(context).textTheme.titleSmall),
-              const TextSpan(text: " subscribed at "),
-              TextSpan(
-                text: "Tier ${model.tier.replaceAll("000", "")}",
-                style:
-                    textTheme?.copyWith(color: tierColor(context, model.tier)),
-              ),
-              const TextSpan(text: " for "),
-              TextSpan(
-                  text: model.cumulativeMonths == 1
-                      ? "1 month"
-                      : "${model.cumulativeMonths} months",
-                  style: textTheme),
-            ],
+        StyledText(
+          text: AppLocalizations.of(context)!.subscriptionMessageEvent(
+            model.subscriberUserName,
+            model.cumulativeMonths,
+            model.tier.replaceAll("000", ""),
           ),
+          tags: {
+            'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+          },
+          style: Theme.of(context)
+              .textTheme
+              .titleSmall
+              ?.copyWith(color: tierColor(context, model.tier)),
         ),
         if (model.text.isNotEmpty)
           Consumer<StyleModel>(builder: (context, styleModel, child) {
