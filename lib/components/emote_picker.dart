@@ -58,7 +58,7 @@ class EmotesList extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             alignment: Alignment.centerLeft,
             child: Padding(
-              padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
               child: Text(
                 categories[index],
                 style: TextStyle(
@@ -81,14 +81,19 @@ class EmotesList extends StatelessWidget {
                   return Tooltip(
                     message: emote.code,
                     preferBelow: false,
-                    child: IconButton(
-                      onPressed: () => onEmoteSelected(emote),
-                      splashRadius: 24,
-                      icon: CrossFadeImage(
-                        placeholder: emote.image.placeholderImage,
-                        image: emote.image,
-                        width: 36,
-                        height: 36,
+                    child: SizedBox(
+                      // Adjust width for 7 emotes per row
+                      width: (MediaQuery.of(context).size.width - 32) / 7 - 8,
+                      height: 36,
+                      child: IconButton(
+                        onPressed: () => onEmoteSelected(emote),
+                        splashRadius: 24,
+                        icon: CrossFadeImage(
+                          placeholder: emote.image.placeholderImage,
+                          image: emote.image,
+                          width: 36,
+                          height: 36,
+                        ),
                       ),
                     ),
                   );
@@ -130,44 +135,58 @@ class _TabbedEmotePickerWidget extends StatelessWidget {
       if (byProvider.containsKey("7tv")) const Tab(text: "7TV"),
     ];
     return DefaultTabController(
-        length: tabs.length,
-        child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+      length: tabs.length,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
           TabBar(tabs: tabs),
           Expanded(
-              child: TabBarView(
-            children: [
-              if (byProvider.containsKey("twitch"))
-                EmotesList(
+            child: TabBarView(
+              children: [
+                if (byProvider.containsKey("twitch"))
+                  EmotesList(
                     emotes: byProvider["twitch"]!,
                     onEmoteSelected: onEmoteSelected,
-                    channel: channel),
-              if (byProvider.containsKey("bttv"))
-                EmotesList(
+                    channel: channel,
+                  ),
+                if (byProvider.containsKey("bttv"))
+                  EmotesList(
                     emotes: byProvider["bttv"]!,
                     onEmoteSelected: onEmoteSelected,
-                    channel: channel),
-              if (byProvider.containsKey("ffz"))
-                EmotesList(
+                    channel: channel,
+                  ),
+                if (byProvider.containsKey("ffz"))
+                  EmotesList(
                     emotes: byProvider["ffz"]!,
                     onEmoteSelected: onEmoteSelected,
-                    channel: channel),
-              if (byProvider.containsKey("7tv"))
-                EmotesList(
+                    channel: channel,
+                  ),
+                if (byProvider.containsKey("7tv"))
+                  EmotesList(
                     emotes: byProvider["7tv"]!,
                     onEmoteSelected: onEmoteSelected,
-                    channel: channel),
-            ],
-          )),
-        ]));
+                    channel: channel,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
 class EmotePickerWidget extends StatelessWidget {
   final void Function(Emote?) onEmoteSelected;
+  final List<Emote> emotes;
   final Channel channel;
 
-  const EmotePickerWidget(
-      {super.key, required this.onEmoteSelected, required this.channel});
+  const EmotePickerWidget({
+    super.key,
+    required this.onEmoteSelected,
+    required this.channel,
+    required this.emotes,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -177,23 +196,16 @@ class EmotePickerWidget extends StatelessWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         onEmoteSelected(null);
       },
       child: SizedBox(
         height: min(48 * rowNumber.toDouble(), maxHeight),
-        child: FutureBuilder<List<Emote>>(
-            future: getEmotes(channel),
-            initialData: const [],
-            builder: (context, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              return _TabbedEmotePickerWidget(
-                  emotes: snapshot.data!,
-                  onEmoteSelected: onEmoteSelected,
-                  channel: channel);
-            }),
+        child: _TabbedEmotePickerWidget(
+          emotes: emotes,
+          onEmoteSelected: onEmoteSelected,
+          channel: channel,
+        ),
       ),
     );
   }

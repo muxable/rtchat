@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:isolate';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/firebase_options.dart';
 import 'package:rtchat/models/activity_feed.dart';
@@ -56,7 +54,6 @@ import 'package:rtchat/screens/settings/tts/languages.dart';
 import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
-import 'package:rtchat/tts_isolate.dart' as tts_isolate;
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 void updateChannelSubscription(String? data) {
@@ -68,13 +65,17 @@ void updateChannelSubscription(String? data) {
 StreamController<String> channelStreamController =
     StreamController<String>.broadcast();
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await MobileAds.instance.initialize();
   final prefs = await StreamingSharedPreferences.instance;
-  await tts_isolate.isolateMain(
-      ReceivePort().sendPort, channelStreamController, prefs);
+
+  // final currentLocale = PlatformDispatcher.instance.locale;
+
+  // await tts_isolate.isolateMain(
+  //     ReceivePort().sendPort, channelStreamController, prefs, currentLocale);
 
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
@@ -293,6 +294,7 @@ class _AppState extends State<App> {
       ],
       child: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return MaterialApp(
+          navigatorKey: navigatorKey,
           title: 'RealtimeChat',
           theme: Themes.lightTheme,
           darkTheme: Themes.darkTheme,
