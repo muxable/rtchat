@@ -16,13 +16,13 @@ class NotificationsPlugin {
     }
   }
 
-  static Future<void> listenToTTs(TtsModel model) async {
+  static Future<void> listenToTts(TtsModel model) async {
     try {
       debugPrint("Listening to TTS");
 
       _channel.setMethodCallHandler((call) async {
         if (call.method == "disableTTs") {
-          model.enabled = false;
+          model.newTtsEnabled = false;
 
           updateChannelSubscription("");
           await TextToSpeechPlugin.speak("Text to speech disabled");

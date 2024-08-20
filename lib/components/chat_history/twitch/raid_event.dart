@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
@@ -7,14 +7,13 @@ import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
+import 'package:styled_text/styled_text.dart';
 
 class TwitchRaidEventWidget extends StatelessWidget {
   final TwitchRaidEventModel model;
   final Channel channel;
 
-  final NumberFormat _formatter = NumberFormat.decimalPattern();
-
-  TwitchRaidEventWidget(this.model, {super.key, required this.channel});
+  const TwitchRaidEventWidget(this.model, {super.key, required this.channel});
 
   @override
   Widget build(BuildContext context) {
@@ -22,18 +21,13 @@ class TwitchRaidEventWidget extends StatelessWidget {
       avatar: ResilientNetworkImage(model.from.profilePictureUrl),
       child: Row(children: [
         Expanded(
-          child: Text.rich(TextSpan(
-            children: [
-              TextSpan(
-                  text: model.from.displayName,
-                  style: Theme.of(context).textTheme.titleSmall),
-              const TextSpan(text: " is raiding with a party of "),
-              TextSpan(
-                  text: _formatter.format(model.viewers),
-                  style: Theme.of(context).textTheme.titleSmall),
-              const TextSpan(text: "."),
-            ],
-          )),
+          child: StyledText(
+            text: AppLocalizations.of(context)!
+                .raidEventMessage(model.from.displayName ?? "", model.viewers),
+            tags: {
+              'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+            },
+          ),
         ),
         Consumer<EventSubConfigurationModel>(
             builder: (context, eventSubConfigurationModel, child) {
@@ -43,7 +37,7 @@ class TwitchRaidEventWidget extends StatelessWidget {
           }
           return GestureDetector(
               child: Text.rich(TextSpan(
-                  text: "Shoutout",
+                  text: AppLocalizations.of(context)!.shoutout,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color:
                           Theme.of(context).buttonTheme.colorScheme?.primary))),

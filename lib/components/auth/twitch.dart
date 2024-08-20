@@ -45,7 +45,7 @@ class SignInWithTwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all(const Color(0xFF6441A5)),
+        backgroundColor: WidgetStateProperty.all(const Color(0xFF6441A5)),
       ),
       child: Text(AppLocalizations.of(context)!.signInWithTwitch,
           style: const TextStyle(
