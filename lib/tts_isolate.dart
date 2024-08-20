@@ -6,32 +6,35 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/messages/twitch/reply.dart';
 import 'package:rtchat/tts_plugin.dart';
-
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 final DateTime ttsTimeStampListener = DateTime.now();
 StreamSubscription? messagesSubscription;
 StreamSubscription? channelSubscription;
 
-@pragma("vm:entry-point")
 Future<void> isolateMain(
     SendPort sendPort,
     StreamController<String> channelStream,
-    StreamingSharedPreferences prefs) async {
+    StreamingSharedPreferences prefs,
+    Locale currentLocale) async {
   DartPluginRegistrant.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  final localizations = await AppLocalizations.delegate.load(currentLocale);
+
   final ttsQueue = TTSQueue();
 
   final ttsModel = TtsModel.fromJson(
       jsonDecode(prefs.getString("tts", defaultValue: '{}').getValue()));
 
-  // listen for changes to the tts preferences and update the isolates ttsModel
+  // Listen for changes to the tts preferences and update the isolates ttsModel
   final ttsPrefs = prefs.getString('tts', defaultValue: '{}');
   ttsPrefs.listen((value) async {
     ttsModel.updateFromJson(jsonDecode(value));
@@ -93,11 +96,16 @@ Future<void> isolateMain(
                   return; // Skip vocalization for bot messages
                 }
                 final finalMessage = ttsModel.getVocalization(
+                  localizations,
                   messageModel,
                   includeAuthorPrelude: !ttsModel.isPreludeMuted,
                 );
                 if (finalMessage.isNotEmpty) {
-                  await ttsQueue.speak(message.id, finalMessage);
+                  // Pass the speech rate and volume values to the TTS engine before vocalizing.
+                  await ttsQueue.speak(message.id, finalMessage,
+                      speed: ttsModel.speed * 1.2,
+                      volume: ttsModel.pitch,
+                      timestamp: messageModel.timestamp);
                 }
                 break;
               case "stream.offline":

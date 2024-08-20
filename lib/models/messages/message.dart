@@ -31,15 +31,6 @@ abstract class MessageModel {
 
 var nativeMessageIdCounter = 0;
 
-class AdMessageModel extends MessageModel {
-  final String adId;
-
-  AdMessageModel({required this.adId})
-      : super(
-            timestamp: DateTime.now(),
-            messageId: 'ad-${nativeMessageIdCounter++}');
-}
-
 class StreamStateEventModel extends MessageModel {
   final bool isOnline;
 

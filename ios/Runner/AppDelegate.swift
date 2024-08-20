@@ -3,7 +3,7 @@ import Flutter
 import UIKit
 import WebKit
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
     var sharedText = ""
     
@@ -32,6 +32,9 @@ import WebKit
                 }
                 
                 let utterance = AVSpeechUtterance(string: text)
+                // Set speech rate and volume
+                utterance.rate = args?["speed"] as? Float ?? AVSpeechUtteranceDefaultSpeechRate
+                utterance.volume = args?["volume"] as? Float ?? 1.0
                 synthesizer.speak(utterance)
                 result(Bool(true))
                 

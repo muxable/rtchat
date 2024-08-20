@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:crypto/crypto.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -18,6 +17,7 @@ import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TtsModel extends ChangeNotifier {
   var _isCloudTtsEnabled = false;
@@ -42,6 +42,7 @@ class TtsModel extends ChangeNotifier {
   var _speed = Platform.isAndroid ? 0.8 : 0.395;
   var _pitch = 1.0;
   var _isEnabled = false;
+  var _isNewTTsEnabled = false;
   final Set<TwitchUserModel> _mutedUsers = {};
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
@@ -104,7 +105,7 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String getVocalization(MessageModel model,
+  String getVocalization(AppLocalizations l10n, MessageModel model,
       {bool includeAuthorPrelude = false}) {
     if (model is TwitchMessageModel) {
       final text = model.tokenized
@@ -131,20 +132,40 @@ class TtsModel extends ChangeNotifier {
       if (!includeAuthorPrelude || isPreludeMuted) {
         return text;
       }
-      return model.isAction ? "$author $text" : "$author said $text";
+      return model.isAction
+          ? l10n.actionMessage(author, text)
+          : l10n.saidMessage(author, text);
     } else if (model is StreamStateEventModel) {
-      return model.isOnline ? "Stream is online" : "Stream is offline";
+      final timestamp = model.timestamp;
+      return model.isOnline
+          ? l10n.streamOnline(timestamp, timestamp)
+          : l10n.streamOffline(timestamp, timestamp);
     } else if (model is SystemMessageModel) {
       return model.text;
     }
     return "";
   }
 
+  bool get newTtsEnabled {
+    return _isNewTTsEnabled;
+  }
+
+  set newTtsEnabled(bool value) {
+    if (value == _isNewTTsEnabled) {
+      return;
+    }
+    _isNewTTsEnabled = value;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
+
   bool get enabled {
     return _isEnabled;
   }
 
-  set enabled(bool value) {
+  void setEnabled(AppLocalizations localizations, bool value) {
     if (value == _isEnabled) {
       return;
     }
@@ -153,8 +174,11 @@ class TtsModel extends ChangeNotifier {
       _lastMessageTime = DateTime.now();
     }
     say(
+        localizations,
         SystemMessageModel(
-            text: "Text to speech ${value ? "enabled" : "disabled"}"),
+            text: value
+                ? localizations.textToSpeechEnabled
+                : localizations.textToSpeechDisabled),
         force: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
@@ -270,7 +294,8 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  void say(MessageModel model, {bool force = false}) async {
+  void say(AppLocalizations localizations, MessageModel model,
+      {bool force = false}) async {
     if (!enabled && !force) {
       return;
     }
@@ -301,8 +326,11 @@ class TtsModel extends ChangeNotifier {
       includeAuthorPrelude = !(activeMessage.author == model.author);
     }
 
-    final vocalization =
-        getVocalization(model, includeAuthorPrelude: includeAuthorPrelude);
+    final vocalization = getVocalization(
+      localizations,
+      model,
+      includeAuthorPrelude: includeAuthorPrelude,
+    );
 
     // if the vocalization is empty, skip the message
     if (vocalization.isEmpty) {
@@ -337,11 +365,9 @@ class TtsModel extends ChangeNotifier {
         if (model is TwitchMessageModel) {
           if (isRandomVoiceEnabled) {
             final name = model.author.displayName;
-            final hash = BigInt.parse(
-                sha1.convert(utf8.encode(name!)).toString(),
-                radix: 16);
-            voice = voices[hash.remainder(BigInt.from(voices.length)).toInt()];
-            pitch = hash.remainder(BigInt.from(21)).toInt() / 5 - 2;
+            final hash = name.hashCode;
+            voice = voices[hash % voices.length];
+            pitch = (hash % 21) / 5 - 2;
           } else {
             voice = _voice[_language.languageCode];
             pitch = _pitch * 4 - 2;

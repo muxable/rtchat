@@ -75,7 +75,7 @@
   },
   "activityFeed": "Activity feed",
   "@activityFeed": {
-    "description": "Tooltip text for a button that shows the activity feed"
+    "description": "Header for the activity feed settings page and tooltip text for a button that shows the activity feed"
   },
   "streamOnline": "Stream online at {date}, {time}",
   "@streamOnline": {
@@ -221,10 +221,6 @@
   "@or": {
     "description": "Text label that separates two options"
   },
-  "activityFeed": "Activity feed",
-  "@activityFeed": {
-    "description": "Header for the activity feed settings page"
-  },
   "clearCookies": "Clear cookies",
   "@clearCookies": {
     "description": "Button label that clears the cookies"
@@ -253,15 +249,15 @@
   "@audioSources": {
     "description": "Header for the audio sources page"
   },
-  "enableOffstreamSwitchTitle": "Enable off-stream (uses more battery)",
-  "@enableOffstreamSwitchTitle": {
+  "enableOffStreamSwitchTitle": "Enable off-stream (uses more battery)",
+  "@enableOffStreamSwitchTitle": {
     "description": "Option label to enable the off-stream tile"
   },
-  "enableOffstreamSwitchEnabledSubtitle": "Audio will also play when you're offline",
-  "@enableOffstreamSwitchEnabledSubtitle": {
+  "enableOffStreamSwitchEnabledSubtitle": "Audio will also play when you're offline",
+  "@enableOffStreamSwitchEnabledSubtitle": {
     "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will also play when the user is offline"
   },
-  "enableOffstreamSwitchDisabledSubtitle": "Audio will only play when you're live",
+  "enableOffStreamSwitchDisabledSubtitle": "Audio will only play when you're live",
   "@enableOffstreamSwitchDisabledSubtitle": {
     "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will only play when the user is live"
   },
@@ -779,9 +775,9 @@
       }
     }
   },
-  "realtimeCashDonationWithDonor": "<b>{donor}</b> donated <b>{value} {currency}</b>.",
-  "@realtimeCashDonationWithDonor": {
-    "description": "Message displayed when a RealtimeCash donation is made with a donor name",
+  "realtimeCashTipWithDonor": "<b>{donor}</b> tipped <b>{value} {currency}</b>.",
+  "@realtimeCashTipWithDonor": {
+    "description": "Message displayed when a RealtimeCash tip is made with a donor name",
     "placeholders": {
       "donor": {
         "type": "String",
@@ -797,9 +793,9 @@
       }
     }
   },
-  "realtimeCashDonationAnonymous": "Anonymous donated <b>{value} {currency}</b>.",
-  "@realtimeCashDonationAnonymous": {
-    "description": "Message displayed when a RealtimeCash donation is made anonymously",
+  "realtimeCashTipAnonymous": "Anonymous tipped <b>{value} {currency}</b>.",
+  "@realtimeCashTipAnonymous": {
+    "description": "Message displayed when a RealtimeCash tip is made anonymously",
     "placeholders": {
       "value": {
         "type": "String",
@@ -825,9 +821,9 @@
       }
     }
   },
-  "streamlabsDonationEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b> on Streamlabs.",
-  "@streamlabsDonationEventMessage": {
-    "description": "Message displayed when a Streamlabs donation event occurs",
+  "streamlabsTipEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b> on Streamlabs.",
+  "@streamlabsTipEventMessage": {
+    "description": "Message displayed when a Streamlabs tip event occurs",
     "placeholders": {
       "name": {
         "type": "String",
@@ -952,5 +948,45 @@
         "example": "3"
       }
     }
+  },
+  "sampleMessage": "This is a sample message for text to speech.",
+  "@sampleMessage": {
+    "description": "Sample message for text to speech"
+  },
+  "actionMessage": "{author} {text}",
+  "@actionMessage": {
+    "description": "Message for an action performed by the author",
+    "placeholders": {
+      "author": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "text": {
+        "type": "String",
+        "example": "is dancing"
+      }
+    }
+  },
+  "saidMessage": "{author} said: {text}",
+  "@saidMessage": {
+    "description": "Message for something said by the author",
+    "placeholders": {
+      "author": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "text": {
+        "type": "String",
+        "example": "Hello everyone!"
+      }
+    }
+  },
+  "textToSpeechEnabled": "Text to speech enabled",
+  "@textToSpeechEnabled": {
+      "description": "Message indicating that text to speech has been enabled"
+    },
+  "textToSpeechDisabled": "Text to speech disabled",
+  "@textToSpeechDisabled": {
+      "description": "Message indicating that text to speech has been disabled"
   }
 }
