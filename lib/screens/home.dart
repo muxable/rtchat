@@ -189,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         debugPrint("Conditions passed");
         model.showAudioPermissionDialog(context);
         debugPrint("Directly calling listenToTTs");
-        NotificationsPlugin.listenToTTs(ttsModel);
+        NotificationsPlugin.listenToTts(ttsModel);
         initializeThermal(ttsModel, layoutModel);
       }
     });
