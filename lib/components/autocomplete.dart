@@ -113,6 +113,7 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
                     icon: Image(
                         width: 24,
                         height: 24,
+                        filterQuality: FilterQuality.high,
                         image: ResilientNetworkImage(emote.uri)));
               }).toList(),
             );
