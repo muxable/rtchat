@@ -188,9 +188,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
       }
-
       if (mounted) {
+        debugPrint("Conditions passed");
         model.showAudioPermissionDialog(context);
+        checkAndHandleBatteryLevel(ttsModel);
       }
     });
   }
@@ -201,7 +202,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     if (batteryLevel < 5 && !isCharging) {
       if (model.enabled) {
-        model.enabled = false;
+        if (mounted) {
+          model.setEnabled(AppLocalizations.of(context)!, false);
+        }
+
         updateChannelSubscription("");
         await TextToSpeechPlugin.speak("Text to speech disabled");
         await TextToSpeechPlugin.disableTTS();
@@ -214,10 +218,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void dispose() {
     WakelockPlus.disable();
     super.dispose();
-
-    if (_batteryStateSubscription != null) {
-      _batteryStateSubscription!.cancel();
-    }
   }
 
   @override
