@@ -46,8 +46,6 @@ class MainActivity : FlutterActivity(), AudioManager.OnAudioFocusChangeListener 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         handleIntent()
-      
-
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK).run {
             setAudioAttributes(AudioAttributes.Builder()
