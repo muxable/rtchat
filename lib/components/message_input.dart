@@ -250,6 +250,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+
     return Material(
       child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -262,6 +265,90 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                   child: Text(e,
                       style: const TextStyle(fontStyle: FontStyle.italic)),
                 )),
+
+            if (isLandscape && _isKeyboardVisible)
+              Flexible(
+                  fit: FlexFit.loose,
+                  child: Container(
+                    color: Colors.black.withOpacity(0.7),
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      focusNode: _chatInputFocusNode,
+                      controller: _textEditingController,
+                      textInputAction: TextInputAction.send,
+                      maxLines: 6,
+                      minLines: 1,
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: InputDecoration(
+                          prefixIcon: IconButton(
+                            onPressed: () {
+                              if (_isEmotePickerVisible) {
+                                setState(() => _isEmotePickerVisible = false);
+                                _chatInputFocusNode.requestFocus();
+                              } else {
+                                _chatInputFocusNode.unfocus();
+                                setState(() {
+                                  _isEmotePickerVisible = true;
+                                  _emoteIndex =
+                                      Random().nextInt(_emotes.length);
+                                });
+                              }
+                            },
+                            splashRadius: 24,
+                            icon: _isEmotePickerVisible
+                                ? const Icon(Icons.keyboard_rounded)
+                                : ColorFiltered(
+                                    colorFilter: _greyscale,
+                                    child: Image(
+                                      width: 24,
+                                      height: 24,
+                                      image: ResilientNetworkImage(
+                                          Uri.parse(_emotes[_emoteIndex])),
+                                    )),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.send_rounded),
+                            color: Theme.of(context).colorScheme.primary,
+                            splashRadius: 24,
+                            onPressed: () =>
+                                sendMessage(_textEditingController.text),
+                          ),
+                          border: InputBorder.none,
+                          hintMaxLines: 1,
+                          hintText: () {
+                            final l10n = AppLocalizations.of(context)!;
+                            if (_textSeed < 0.5) {
+                              return l10n.sendAMessage;
+                            } else if (_textSeed < 0.9) {
+                              return l10n.writeSomething;
+                            } else if (_textSeed < 0.99) {
+                              return l10n.speakToTheCrowds;
+                            } else if (_textSeed < 0.999) {
+                              return l10n.shareYourThoughts;
+                            }
+                            return l10n.saySomethingYouLittleBitch;
+                          }()),
+                      onChanged: (text) {
+                        final filtered = text.replaceAll('\n', ' ');
+                        if (filtered == text) {
+                          return;
+                        }
+                        setState(() {
+                          _textEditingController.value = TextEditingValue(
+                              text: filtered,
+                              selection: TextSelection.fromPosition(
+                                  TextPosition(
+                                      offset:
+                                          _textEditingController.text.length)));
+                        });
+                      },
+                      onSubmitted: sendMessage,
+                      onTap: () {
+                        setState(() => _isEmotePickerVisible = false);
+                        _chatInputFocusNode.requestFocus();
+                      },
+                    ),
+                  )),
             if (_isKeyboardVisible)
               Flexible(
                 child: AutocompleteWidget(
