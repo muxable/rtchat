@@ -82,8 +82,13 @@ class EmotesList extends StatelessWidget {
                     message: emote.code,
                     preferBelow: false,
                     child: SizedBox(
-                      // Adjust width for 7 emotes per row
-                      width: (MediaQuery.of(context).size.width - 32) / 7 - 8,
+                      // Adjust width for 7 emotes per row in portrait, 10 in landscape.
+                      width: (MediaQuery.of(context).size.width - 32) /
+                              (MediaQuery.of(context).orientation ==
+                                      Orientation.portrait
+                                  ? 7
+                                  : 10) -
+                          8,
                       height: 36,
                       child: IconButton(
                         onPressed: () => onEmoteSelected(emote),

@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
@@ -164,6 +166,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  late StreamSubscription<bool> keyboardSubscription;
+  bool _isKeyboardVisible = false;
 
   @override
   void initState() {
@@ -186,11 +190,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         model.showAudioPermissionDialog(context);
       }
     });
+
+    final keyboardVisibilityController = KeyboardVisibilityController();
+    // Subscribe to keyboard visibility changes.
+    keyboardSubscription =
+        keyboardVisibilityController.onChange.listen((visible) {
+      setState(() {
+        _isKeyboardVisible = visible;
+      });
+    });
   }
 
   @override
   void dispose() {
     WakelockPlus.disable();
+    keyboardSubscription.cancel();
     super.dispose();
   }
 
@@ -215,100 +229,106 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 FocusManager.instance.primaryFocus?.unfocus(),
             onEndDrawerChanged: (isOpened) =>
                 FocusManager.instance.primaryFocus?.unfocus(),
-            appBar: HeaderBarWidget(
-              onChannelSelect: widget.onChannelSelect,
-              channel: widget.channel,
-              actions: [
-                Consumer2<ActivityFeedModel, LayoutModel>(
-                  builder: (context, activityFeedModel, layoutModel, child) {
-                    if (!activityFeedModel.isEnabled) {
-                      return Container();
-                    }
-                    return IconButton(
-                      icon: Icon(layoutModel.isShowNotifications
-                          ? Icons.notifications
-                          : Icons.notifications_outlined),
-                      tooltip: AppLocalizations.of(context)!.activityFeed,
-                      onPressed: () {
-                        layoutModel.isShowNotifications =
-                            !layoutModel.isShowNotifications;
-                      },
-                    );
-                  },
-                ),
-                if (width > 256)
-                  Consumer<LayoutModel>(
-                    builder: (context, layoutModel, child) {
-                      return IconButton(
-                        icon: Icon(layoutModel.isShowPreview
-                            ? Icons.preview
-                            : Icons.preview_outlined),
-                        tooltip: AppLocalizations.of(context)!.streamPreview,
-                        onPressed: () {
-                          layoutModel.isShowPreview =
-                              !layoutModel.isShowPreview;
-                        },
-                      );
-                    },
-                  ),
-                Consumer<TtsModel>(
-                  builder: (context, ttsModel, child) {
-                    return IconButton(
-                      icon: Icon(
-                        !kDebugMode
-                            ? (ttsModel.enabled
-                                ? Icons.record_voice_over
-                                : Icons.voice_over_off)
-                            : (ttsModel.newTtsEnabled
-                                ? Icons.record_voice_over
-                                : Icons.voice_over_off),
-                      ),
-                      tooltip: AppLocalizations.of(context)!.textToSpeech,
-                      onPressed: () async {
-                        if (!kDebugMode) {
-                          ttsModel.setEnabled(AppLocalizations.of(context)!,
-                              ttsModel.enabled ? false : true);
-                          // Toggle newTtsEnabled and notify listeners immediately
-                        } else {
-                          ttsModel.newTtsEnabled = !ttsModel.newTtsEnabled;
-
-                          if (!ttsModel.newTtsEnabled) {
-                            updateChannelSubscription("");
-                            await TextToSpeechPlugin.speak(
-                                "Text to speech disabled");
-                            await TextToSpeechPlugin.disableTTS();
-                            NotificationsPlugin.cancelNotification();
-                          } else {
-                            // Start listening to the stream before toggling newTtsEnabled
-                            channelStreamController.stream
-                                .listen((currentChannel) {
-                              if (currentChannel.isEmpty) {
-                                ttsModel.newTtsEnabled = false;
-                              }
-                            });
-                            await TextToSpeechPlugin.speak(
-                                "Text to speech enabled");
-                            updateChannelSubscription(
-                              "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}",
-                            );
-                            NotificationsPlugin.showNotification();
-                            NotificationsPlugin.listenToTts(ttsModel);
+            appBar: orientation == Orientation.landscape && _isKeyboardVisible
+                ? null
+                : HeaderBarWidget(
+                    onChannelSelect: widget.onChannelSelect,
+                    channel: widget.channel,
+                    actions: [
+                      Consumer2<ActivityFeedModel, LayoutModel>(
+                        builder:
+                            (context, activityFeedModel, layoutModel, child) {
+                          if (!activityFeedModel.isEnabled) {
+                            return Container();
                           }
-                        }
-                      },
-                    );
-                  },
-                ),
-                if (userModel.isSignedIn() && width > 256)
-                  IconButton(
-                    icon: const Icon(Icons.people),
-                    tooltip: AppLocalizations.of(context)!.currentViewers,
-                    onPressed: () {
-                      _scaffoldKey.currentState?.openEndDrawer();
-                    },
+                          return IconButton(
+                            icon: Icon(layoutModel.isShowNotifications
+                                ? Icons.notifications
+                                : Icons.notifications_outlined),
+                            tooltip: AppLocalizations.of(context)!.activityFeed,
+                            onPressed: () {
+                              layoutModel.isShowNotifications =
+                                  !layoutModel.isShowNotifications;
+                            },
+                          );
+                        },
+                      ),
+                      if (width > 256)
+                        Consumer<LayoutModel>(
+                          builder: (context, layoutModel, child) {
+                            return IconButton(
+                              icon: Icon(layoutModel.isShowPreview
+                                  ? Icons.preview
+                                  : Icons.preview_outlined),
+                              tooltip:
+                                  AppLocalizations.of(context)!.streamPreview,
+                              onPressed: () {
+                                layoutModel.isShowPreview =
+                                    !layoutModel.isShowPreview;
+                              },
+                            );
+                          },
+                        ),
+                      Consumer<TtsModel>(
+                        builder: (context, ttsModel, child) {
+                          return IconButton(
+                            icon: Icon(
+                              !kDebugMode
+                                  ? (ttsModel.enabled
+                                      ? Icons.record_voice_over
+                                      : Icons.voice_over_off)
+                                  : (ttsModel.newTtsEnabled
+                                      ? Icons.record_voice_over
+                                      : Icons.voice_over_off),
+                            ),
+                            tooltip: AppLocalizations.of(context)!.textToSpeech,
+                            onPressed: () async {
+                              if (!kDebugMode) {
+                                ttsModel.setEnabled(
+                                    AppLocalizations.of(context)!,
+                                    ttsModel.enabled ? false : true);
+                                // Toggle newTtsEnabled and notify listeners immediately
+                              } else {
+                                ttsModel.newTtsEnabled =
+                                    !ttsModel.newTtsEnabled;
+
+                                if (!ttsModel.newTtsEnabled) {
+                                  updateChannelSubscription("");
+                                  await TextToSpeechPlugin.speak(
+                                      "Text to speech disabled");
+                                  await TextToSpeechPlugin.disableTTS();
+                                  NotificationsPlugin.cancelNotification();
+                                } else {
+                                  // Start listening to the stream before toggling newTtsEnabled
+                                  channelStreamController.stream
+                                      .listen((currentChannel) {
+                                    if (currentChannel.isEmpty) {
+                                      ttsModel.newTtsEnabled = false;
+                                    }
+                                  });
+                                  await TextToSpeechPlugin.speak(
+                                      "Text to speech enabled");
+                                  updateChannelSubscription(
+                                    "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}",
+                                  );
+                                  NotificationsPlugin.showNotification();
+                                  NotificationsPlugin.listenToTts(ttsModel);
+                                }
+                              }
+                            },
+                          );
+                        },
+                      ),
+                      if (userModel.isSignedIn() && width > 256)
+                        IconButton(
+                          icon: const Icon(Icons.people),
+                          tooltip: AppLocalizations.of(context)!.currentViewers,
+                          onPressed: () {
+                            _scaffoldKey.currentState?.openEndDrawer();
+                          },
+                        ),
+                    ],
                   ),
-              ],
-            ),
             body: Container(
               height: mediaQuery.size.height,
               color: Theme.of(context).scaffoldBackgroundColor,
