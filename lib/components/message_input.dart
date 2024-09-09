@@ -122,8 +122,11 @@ class MessageInputWidget extends StatefulWidget {
   final Channel channel;
   final List<Emote> emotes; // TODO: decouple this from the twitch emote model.
 
-  const MessageInputWidget(
-      {super.key, required this.channel, required this.emotes});
+  const MessageInputWidget({
+    super.key,
+    required this.channel,
+    required this.emotes,
+  });
 
   @override
   State<MessageInputWidget> createState() => _MessageInputWidgetState();
@@ -190,6 +193,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   @override
   void dispose() {
     keyboardSubscription.cancel();
+    _chatInputFocusNode.dispose();
     _textEditingController.dispose();
     super.dispose();
   }
