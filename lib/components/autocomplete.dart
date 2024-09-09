@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -120,7 +119,6 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
                           image: ResilientNetworkImage(emote.uri)));
                 }).toList(),
               );
-              ;
             });
           },
         );
