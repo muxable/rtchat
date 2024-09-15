@@ -253,69 +253,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             },
                           );
                         },
-                      );
-                    }),
-                  Consumer<TtsModel>(
-                    builder: (context, ttsModel, child) {
-                      return IconButton(
-                        icon: Icon(
-                          !kDebugMode
-                              ? (ttsModel.enabled
-                                  ? Icons.record_voice_over
-                                  : Icons.voice_over_off)
-                              : (ttsModel.newTtsEnabled
-                                  ? Icons.record_voice_over
-                                  : Icons.voice_over_off),
-                        ),
-                        tooltip: AppLocalizations.of(context)!.textToSpeech,
-                        onPressed: () async {
-                          if (!kDebugMode) {
-                            ttsModel.setEnabled(AppLocalizations.of(context)!,
-                                ttsModel.enabled ? false : true);
-                          } else {
-                            // Toggle newTtsEnabled and notify listeners immediately
-                            ttsModel.newTtsEnabled = !ttsModel.newTtsEnabled;
-
-                            if (!ttsModel.newTtsEnabled) {
-                              updateChannelSubscription("");
-                              await TextToSpeechPlugin.speak(
-                                  "Text to speech disabled");
-                              await TextToSpeechPlugin.disableTTS();
-                              NotificationsPlugin.cancelNotification();
-                              VolumePlugin.reduceVolumeOnTtsStart();
-                            } else {
-                              // Start listening to the stream before toggling newTtsEnabled
-                              channelStreamController.stream
-                                  .listen((currentChannel) {
-                                if (currentChannel.isEmpty) {
-                                  ttsModel.newTtsEnabled = false;
-                                }
-                              });
-                              await TextToSpeechPlugin.speak(
-                                  "Text to speech enabled");
-                              updateChannelSubscription(
-                                "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}",
-                              );
-                              NotificationsPlugin.showNotification();
-                              VolumePlugin.increaseVolumeOnTtsStop();
-                              NotificationsPlugin.listenToTts(ttsModel);
-                            }
-                          }
-                        },
-                      );
-                    },
-                  ),
-                Consumer<TtsModel>(
-                  builder: (context, ttsModel, child) {
-                    return IconButton(
-                      icon: Icon(
-                        !kDebugMode
-                            ? (ttsModel.enabled
-                                ? Icons.record_voice_over
-                                : Icons.voice_over_off)
-                            : (ttsModel.newTtsEnabled
-                                ? Icons.record_voice_over
-                                : Icons.voice_over_off),
                       ),
                       if (width > 256)
                         Consumer<LayoutModel>(
@@ -362,6 +299,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       "Text to speech disabled");
                                   await TextToSpeechPlugin.disableTTS();
                                   NotificationsPlugin.cancelNotification();
+                                  VolumePlugin.reduceVolumeOnTtsStart();
                                 } else {
                                   // Start listening to the stream before toggling newTtsEnabled
                                   channelStreamController.stream
@@ -376,6 +314,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}",
                                   );
                                   NotificationsPlugin.showNotification();
+                                  VolumePlugin.increaseVolumeOnTtsStop();
                                   NotificationsPlugin.listenToTts(ttsModel);
                                 }
                               }
