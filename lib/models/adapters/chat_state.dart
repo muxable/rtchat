@@ -100,7 +100,10 @@ class ChatStateAdapter {
   }
 
   Future<List<TwitchBadgeInfo>> getTwitchBadges({String? channelId}) async {
-    for (int attempt = 0; attempt < 3; attempt++) {
+    const int maxAttempts = 10;
+    const int baseDelay = 1; // in seconds
+
+    for (int attempt = 0; attempt < maxAttempts; attempt++) {
       try {
         final result = await functions
             .httpsCallable("getBadges")
@@ -126,10 +129,13 @@ class ChatStateAdapter {
                 ))
             .toList();
       } catch (e) {
-        if (e is FirebaseFunctionsException &&
-            e.code == 'unavailable' &&
-            attempt < 2) {
-          await Future.delayed(const Duration(seconds: 1));
+        if (e is FirebaseFunctionsException && e.code == 'unavailable') {
+          if (attempt < maxAttempts - 1) {
+            await Future.delayed(Duration(seconds: baseDelay * (1 << attempt)));
+          } else {
+            // Handle the "UNAVAILABLE" error gracefully beyond the 10 attempts
+            return [];
+          }
         } else {
           rethrow;
         }
