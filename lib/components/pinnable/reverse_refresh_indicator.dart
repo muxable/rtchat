@@ -413,7 +413,7 @@ class ReverseRefreshIndicatorState extends State<ReverseRefreshIndicator>
     _positionController.value =
         newValue.clamp(0.0, 1.0); // this triggers various rebuilds
     if (_mode == _RefreshIndicatorMode.drag &&
-        _valueColor.value!.alpha == 0xFF) {
+        _valueColor.value!.a == 0xFF) {
       _mode = _RefreshIndicatorMode.armed;
     }
   }
