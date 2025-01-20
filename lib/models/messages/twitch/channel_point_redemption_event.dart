@@ -63,6 +63,6 @@ class TwitchChannelPointRedemptionEventModel extends MessageModel {
         return Icons.timer;
       case TwitchChannelPointRedemptionStatus.unknown:
         return Icons.help;
-      }
+    }
   }
 }
