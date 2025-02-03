@@ -186,7 +186,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   // Handles any shared data we may receive.
   void _handleSharedData(String sharedData) {
     setState(() {
-      _textEditingController.text = sharedData;
+      if (_textEditingController != null) {
+        _textEditingController.text = sharedData;
+      }
     });
   }
 
