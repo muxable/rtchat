@@ -123,7 +123,7 @@ class TextToSpeechScreen extends StatelessWidget {
                                             ? Theme.of(context)
                                                 .colorScheme
                                                 .onSurface
-                                                .withOpacity(0.6)
+                                                .withValues(alpha: 0.6)
                                             : Theme.of(context)
                                                 .colorScheme
                                                 .onSurface,
