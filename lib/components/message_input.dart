@@ -344,8 +344,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       _textEditingController?.value = TextEditingValue(
                           text: filtered,
                           selection: TextSelection.fromPosition(TextPosition(
-                              offset: _textEditingController?.text.length ??
-                                  0)));
+                              offset:
+                                  _textEditingController?.text.length ?? 0)));
                     });
                   },
                   onSubmitted: sendMessage,
