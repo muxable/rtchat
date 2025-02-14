@@ -37,6 +37,14 @@ if (flutterVersionName == null) {
 android {
     compileSdkVersion 34
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+    kotlinOptions {
+        jvmTarget = '21'
+    }
+
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
@@ -72,7 +80,7 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.21"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.1.0"
     implementation "androidx.media:media:1.4.1"
     implementation 'androidx.multidex:multidex:2.0.1'
 }

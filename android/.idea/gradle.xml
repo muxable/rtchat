@@ -4,36 +4,51 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="testRunner" value="GRADLE" />
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT">
+            <builds>
+              <build path="$USER_HOME$/Downloads/flutter/packages/flutter_tools/gradle" name="gradle">
+                <projects>
+                  <project path="$USER_HOME$/Downloads/flutter/packages/flutter_tools/gradle" />
+                </projects>
+              </build>
+            </builds>
+          </compositeBuild>
+        </compositeConfiguration>
+        <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/audio_service-0.18.0/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/audio_session-0.1.6/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/audioplayers-0.19.1/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/cloud_firestore-2.5.2/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/cloud_functions-3.0.3/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/firebase_analytics-8.3.2/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-3.1.1/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-1.6.0/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/firebase_crashlytics-2.2.1/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/firebase_remote_config-0.10.0+5/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/flutter_inappwebview-5.3.2/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/flutter_keyboard_visibility-5.0.3/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/flutter_tts-3.2.2/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/flutter_web_auth-0.3.1/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/package_info_plus-1.0.6/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/path_provider-2.0.3/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences-2.0.7/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/sqflite-2.0.0+4/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher-6.0.10/android" />
-            <option value="$PROJECT_DIR$/../../flutter/.pub-cache/hosted/pub.dartlang.org/wakelock-0.5.4/android" />
+            <option value="$USER_HOME$/.pub-cache/git/motion_sensors-6dafc3639b3e96460fabc639768a60b431b53610/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/audio_session-0.1.18/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/audioplayers_android-5.0.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/cloud_firestore-5.0.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/cloud_functions-5.0.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/firebase_analytics-11.0.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/firebase_auth-5.1.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/firebase_core-3.1.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/firebase_crashlytics-4.0.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/firebase_database-11.0.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_custom_tabs-1.2.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_keyboard_visibility-6.0.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_tts-3.8.5/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_web_auth-0.5.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/in_app_purchase_android-0.3.6+1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/just_audio-0.9.39/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/mobile_scanner-5.1.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/package_info_plus-8.0.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.2.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/shared_preferences_android-2.2.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.3/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/wakelock_plus-1.2.8/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/webview_flutter_android-3.16.4/android" />
+            <option value="$USER_HOME$/Downloads/flutter/packages/flutter_tools/gradle" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>
-        <option name="resolveModulePerSourceSet" value="false" />
+        <option name="resolveExternalAnnotations" value="false" />
       </GradleProjectSettings>
     </option>
   </component>

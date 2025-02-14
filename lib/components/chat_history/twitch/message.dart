@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:linkify/linkify.dart';
-import 'package:motion_sensors/motion_sensors.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
@@ -12,6 +11,7 @@ import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/urls.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 
 const colors = [
   Color(0xFFFF0000),
@@ -153,11 +153,11 @@ class TwitchMessageWidget extends StatelessWidget {
   Widget authorWidget(
       TwitchUserModel author, StyleModel styleModel, TextStyle authorStyle) {
     if (contributors.contains(model.author.userId)) {
-      return StreamBuilder<AbsoluteOrientationEvent>(
-          stream: motionSensors.absoluteOrientation,
+      return StreamBuilder<AccelerometerEvent>(
+          stream: accelerometerEvents,
           builder: (context, snapshot) {
-            final orientation = snapshot.data;
-            if (orientation == null) {
+            final acceleration = snapshot.data;
+            if (acceleration == null) {
               return RichText(
                   text: TextSpan(
                       text: styleModel.getTwitchDisplayName(model.author),
@@ -165,10 +165,9 @@ class TwitchMessageWidget extends StatelessWidget {
             }
             final hslColor = HSLColor.fromColor(
                 styleModel.applyLightnessBoost(context, color));
-            final deg =
-                (orientation.pitch + orientation.roll + orientation.yaw) *
-                    180 /
-                    3.1415;
+            // Calculate rotation based on accelerometer data
+            final deg = (acceleration.x + acceleration.y + acceleration.z) * 50;
+
             final shimmer =
                 hslColor.withHue((hslColor.hue - deg) % 360).toColor();
             return RichText(
