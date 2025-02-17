@@ -1,1 +1,0 @@
-/Users/wolfof420street/StudioProjects/rtchat/build/app/intermediates/cxx/RelWithDebInfo/332o1ub2/obj/x86_64

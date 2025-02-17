@@ -1,2 +1,0 @@
-/Users/wolfof420street/StudioProjects/rtchat/android/app/.cxx/RelWithDebInfo/332o1ub2/arm64-v8a/CMakeFiles/edit_cache.dir
-/Users/wolfof420street/StudioProjects/rtchat/android/app/.cxx/RelWithDebInfo/332o1ub2/arm64-v8a/CMakeFiles/rebuild_cache.dir
