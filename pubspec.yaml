@@ -34,12 +34,16 @@ dependencies:
   just_audio: ^0.9.46
   linkify: ^5.0.0
   metadata_fetch: ^0.4.1
-  mobile_scanner: ^6.0.6
+  mobile_scanner: ^5.0.2
+  motion_sensors:
+    git:
+      url: https://github.com/Wolfof420Street/motion_sensors.git
+      ref: master
   package_info_plus: ^8.0.0
   path_provider: ^2.1.3
   provider: ^6.1.2
   qr_flutter: ^4.1.0
-  sensors_plus: ^6.1.1
+
   streaming_shared_preferences: ^2.0.0
   sticky_headers: ^0.3.0+2
   styled_text: ^8.1.0

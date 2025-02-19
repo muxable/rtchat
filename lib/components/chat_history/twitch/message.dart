@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:linkify/linkify.dart';
+import 'package:motion_sensors/motion_sensors.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
@@ -11,7 +12,6 @@ import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/urls.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 
 const colors = [
   Color(0xFFFF0000),
@@ -118,7 +118,7 @@ class TwitchMessageWidget extends StatelessWidget {
               recognizer: (TapGestureRecognizer()
                 ..onTap = () async {
                   final model =
-                      Provider.of<LayoutModel>(context, listen: false);
+                  Provider.of<LayoutModel>(context, listen: false);
                   if (!model.locked) {
                     await openUrl(token.url);
                   }
@@ -132,12 +132,12 @@ class TwitchMessageWidget extends StatelessWidget {
       final loginChannel = userModel.userChannel?.displayName;
       if (token.username.toLowerCase() == loginChannel?.toLowerCase()) {
         yield TextSpan(
-            // wrap tag with nonbreaking spaces
+          // wrap tag with nonbreaking spaces
             text: "\u{00A0}@${token.username}\u{00A0}",
             style: tagStyleStreamer);
       } else {
         yield TextSpan(
-            // wrap tag with nonbreaking spaces
+          // wrap tag with nonbreaking spaces
             text: "\u{00A0}@${token.username}\u{00A0}",
             style: tagStyle);
       }
@@ -153,11 +153,11 @@ class TwitchMessageWidget extends StatelessWidget {
   Widget authorWidget(
       TwitchUserModel author, StyleModel styleModel, TextStyle authorStyle) {
     if (contributors.contains(model.author.userId)) {
-      return StreamBuilder<AccelerometerEvent>(
-          stream: accelerometerEvents,
+      return StreamBuilder<AbsoluteOrientationEvent>(
+          stream: motionSensors.absoluteOrientation,
           builder: (context, snapshot) {
-            final acceleration = snapshot.data;
-            if (acceleration == null) {
+            final orientation = snapshot.data;
+            if (orientation == null) {
               return RichText(
                   text: TextSpan(
                       text: styleModel.getTwitchDisplayName(model.author),
@@ -165,11 +165,12 @@ class TwitchMessageWidget extends StatelessWidget {
             }
             final hslColor = HSLColor.fromColor(
                 styleModel.applyLightnessBoost(context, color));
-            // Calculate rotation based on accelerometer data
-            final deg = (acceleration.x + acceleration.y + acceleration.z) * 50;
-
+            final deg =
+                (orientation.pitch + orientation.roll + orientation.yaw) *
+                    180 /
+                    3.1415;
             final shimmer =
-                hslColor.withHue((hslColor.hue - deg) % 360).toColor();
+            hslColor.withHue((hslColor.hue - deg) % 360).toColor();
             return RichText(
                 text: TextSpan(
                     text: styleModel.getTwitchDisplayName(model.author),
@@ -215,17 +216,17 @@ class TwitchMessageWidget extends StatelessWidget {
       if (model.annotations.isFirstTimeChatter) {
         children.add(WidgetSpan(
             child: Stack(
-          children: [
-            authorWidget(model.author, styleModel, authorStyle),
-            SizedBox(
-                width: styleModel.fontSize,
-                height: styleModel.fontSize,
-                child: Transform.translate(
-                    offset: Offset(
-                        -styleModel.fontSize / 2, -styleModel.fontSize / 4),
-                    child: const Image(image: AssetImage("assets/hat.png")))),
-          ],
-        )));
+              children: [
+                authorWidget(model.author, styleModel, authorStyle),
+                SizedBox(
+                    width: styleModel.fontSize,
+                    height: styleModel.fontSize,
+                    child: Transform.translate(
+                        offset: Offset(
+                            -styleModel.fontSize / 2, -styleModel.fontSize / 4),
+                        child: const Image(image: AssetImage("assets/hat.png")))),
+              ],
+            )));
       } else {
         children.add(authorSpan(model.author, styleModel, authorStyle));
       }
@@ -270,14 +271,14 @@ class TwitchMessageWidget extends StatelessWidget {
                     ),
                     TextSpan(
                         text:
-                            '${model.reply?.author.displayName}: ${model.reply?.message}'),
+                        '${model.reply?.author.displayName}: ${model.reply?.message}'),
                   ]),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.apply(
-                        color: Theme.of(context).hintColor,
-                        fontSizeFactor: 0.75,
-                      ),
+                    color: Theme.of(context).hintColor,
+                    fontSizeFactor: 0.75,
+                  ),
                 ),
               Text.rich(
                 TextSpan(
