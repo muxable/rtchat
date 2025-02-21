@@ -18,7 +18,20 @@ Future<void> openUrl(Uri url) async {
       ),
     );
   } else if (url.isScheme("http") || url.isScheme("https")) {
-    await customtabs.launchUrl(url);
+    await customtabs.launchUrl(url,
+      customTabsOptions: customtabs.CustomTabsOptions(
+        shareState: customtabs.CustomTabsShareState.on,
+        urlBarHidingEnabled: true,
+        showTitle: true,
+        closeButton: customtabs.CustomTabsCloseButton(
+          icon: customtabs.CustomTabsCloseButtonIcons.back,
+        ),
+      ),
+      safariVCOptions: customtabs.SafariViewControllerOptions(
+        barCollapsingEnabled: true,
+        dismissButtonStyle: customtabs.SafariViewControllerDismissButtonStyle.close,
+      ),
+    );
   } else {
     await launchUrl(url);
   }
