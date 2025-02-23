@@ -11,14 +11,14 @@ dependencies:
   flutter:
     sdk: flutter
   audioplayers: ^6.0.0
-  cloud_firestore: ^5.0.1
-  cloud_functions: ^5.0.1
+  cloud_firestore: ^4.8.0
+  cloud_functions: ^4.0.22
   cupertino_icons: ^1.0.8
-  firebase_analytics: ^11.0.1
-  firebase_auth: ^5.1.0
-  firebase_core: ^3.1.0
-  firebase_crashlytics: ^4.0.1
-  firebase_database: ^11.0.1
+  firebase_analytics: ^10.4.3
+  firebase_auth: ^4.9.0
+  firebase_core: ^2.32.0
+  firebase_crashlytics: ^3.0.16
+  firebase_database: ^10.0.20
   flutter_custom_tabs: ^2.1.0
   flutter_keyboard_visibility: ^6.0.0
   flutter_localizations:
