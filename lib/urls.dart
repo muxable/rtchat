@@ -5,29 +5,27 @@ Future<void> openUrl(Uri url) async {
   if (!url.hasScheme) {
     await customtabs.launchUrl(
       url.replace(scheme: 'http'),
-      customTabsOptions: customtabs.CustomTabsOptions(
+      customTabsOptions: const customtabs.CustomTabsOptions(
         shareState: customtabs.CustomTabsShareState.on,
         urlBarHidingEnabled: true,
         showTitle: true,
       ),
-      safariVCOptions: customtabs.SafariViewControllerOptions(
+      safariVCOptions: const customtabs.SafariViewControllerOptions(
         barCollapsingEnabled: true,
         dismissButtonStyle:
             customtabs.SafariViewControllerDismissButtonStyle.close,
       ),
     );
   } else if (url.isScheme("http") || url.isScheme("https")) {
-    await customtabs.launchUrl(
-      url,
-      customTabsOptions: customtabs.CustomTabsOptions(
-        shareState: customtabs.CustomTabsShareState.on,
-        urlBarHidingEnabled: true,
-        showTitle: true,
-      ),
-      safariVCOptions: customtabs.SafariViewControllerOptions(
-        barCollapsingEnabled: true,
-      )
-    );
+    await customtabs.launchUrl(url,
+        customTabsOptions: const customtabs.CustomTabsOptions(
+          shareState: customtabs.CustomTabsShareState.on,
+          urlBarHidingEnabled: true,
+          showTitle: true,
+        ),
+        safariVCOptions: const customtabs.SafariViewControllerOptions(
+          barCollapsingEnabled: true,
+        ));
   } else {
     await launchUrl(url);
   }
