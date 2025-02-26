@@ -122,8 +122,11 @@ class MessageInputWidget extends StatefulWidget {
   final Channel channel;
   final List<Emote> emotes; // TODO: decouple this from the twitch emote model.
 
-  const MessageInputWidget(
-      {super.key, required this.channel, required this.emotes});
+  const MessageInputWidget({
+    super.key,
+    required this.channel,
+    required this.emotes,
+  });
 
   @override
   State<MessageInputWidget> createState() => _MessageInputWidgetState();
@@ -145,7 +148,7 @@ const _greyscale = ColorFilter.matrix([
 ]);
 
 class _MessageInputWidgetState extends State<MessageInputWidget> {
-  late final EmoteTextEditingController _textEditingController;
+  EmoteTextEditingController? _textEditingController;
   final _chatInputFocusNode = FocusNode();
   var _isEmotePickerVisible = false;
   var _isKeyboardVisible = false;
@@ -177,20 +180,21 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   @override
   void didUpdateWidget(MessageInputWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _textEditingController.emotes = widget.emotes;
+    _textEditingController?.emotes = widget.emotes;
   }
 
   // Handles any shared data we may receive.
   void _handleSharedData(String sharedData) {
     setState(() {
-      _textEditingController.text = sharedData;
+      _textEditingController?.text = sharedData;
     });
   }
 
   @override
   void dispose() {
     keyboardSubscription.cancel();
-    _textEditingController.dispose();
+    _chatInputFocusNode.dispose();
+    _textEditingController?.dispose();
     super.dispose();
   }
 
@@ -208,7 +212,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       return;
     }
     setState(() {
-      _textEditingController.clear();
+      _textEditingController?.clear();
     });
     var done = false;
     await Future.wait([
@@ -265,7 +269,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             if (_isKeyboardVisible)
               Flexible(
                 child: AutocompleteWidget(
-                  controller: _textEditingController,
+                  controller: _textEditingController!,
                   onSend: sendMessage,
                   channel: widget.channel,
                 ),
@@ -314,7 +318,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                         color: Theme.of(context).colorScheme.primary,
                         splashRadius: 24,
                         onPressed: () =>
-                            sendMessage(_textEditingController.text),
+                            sendMessage(_textEditingController?.text ?? ''),
                       ),
                       border: InputBorder.none,
                       hintMaxLines: 1,
@@ -337,10 +341,11 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       return;
                     }
                     setState(() {
-                      _textEditingController.value = TextEditingValue(
+                      _textEditingController?.value = TextEditingValue(
                           text: filtered,
                           selection: TextSelection.fromPosition(TextPosition(
-                              offset: _textEditingController.text.length)));
+                              offset:
+                                  _textEditingController?.text.length ?? 0)));
                     });
                   },
                   onSubmitted: sendMessage,
@@ -362,11 +367,11 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                         });
                         return;
                       }
-                      if (_textEditingController.text.isNotEmpty) {
-                        _textEditingController.text =
-                            "${_textEditingController.text} ${emote.code} ";
+                      if (_textEditingController?.text.isNotEmpty ?? false) {
+                        _textEditingController?.text =
+                            "${_textEditingController?.text} ${emote.code} ";
                       } else {
-                        _textEditingController.text = "${emote.code} ";
+                        _textEditingController?.text = "${emote.code} ";
                       }
                     })
                 : Container(),

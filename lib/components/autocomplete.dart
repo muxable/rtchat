@@ -90,35 +90,43 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
             if (!snapshot.hasData || lastToken.isEmpty) {
               return Container();
             }
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: (snapshot.data as List<Emote>)
-                  .where((emote) => emote.code
-                      .toLowerCase()
-                      .startsWith(lastToken.toLowerCase()))
-                  .take(MediaQuery.of(context).size.width ~/ 48)
-                  .map((emote) {
-                return IconButton(
-                    tooltip: emote.code,
-                    onPressed: () {
-                      widget.controller.text = "${text.substring(
-                        0,
-                        text.length - lastToken.length,
-                      )}${emote.code} ";
-                      // move cursor position
-                      widget.controller.selection = TextSelection.fromPosition(
-                          TextPosition(offset: widget.controller.text.length));
-                    },
-                    splashRadius: 24,
-                    icon: Image(
-                        width: 24,
-                        height: 24,
-                        image: ResilientNetworkImage(emote.uri)));
-              }).toList(),
-            );
+            return LayoutBuilder(builder: (context, constraints) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: (snapshot.data as List<Emote>)
+                    .where((emote) => emote.code
+                        .toLowerCase()
+                        .startsWith(lastToken.toLowerCase()))
+                    .take(constraints.maxWidth ~/ 48)
+                    .map((emote) {
+                  return IconButton(
+                      tooltip: emote.code,
+                      onPressed: () {
+                        widget.controller.text = "${text.substring(
+                          0,
+                          text.length - lastToken.length,
+                        )}${emote.code} ";
+                        // move cursor position
+                        widget.controller.selection =
+                            TextSelection.fromPosition(TextPosition(
+                                offset: widget.controller.text.length));
+                      },
+                      splashRadius: 24,
+                      icon: Image(
+                          width: 24,
+                          height: 24,
+                          filterQuality: FilterQuality.medium,
+                          image: ResilientNetworkImage(emote.uri)));
+                }).toList(),
+              );
+            });
           },
         );
       case _AutocompleteMode.slashCommand:
+        if (MediaQuery.of(context).orientation == Orientation.landscape) {
+          // this is too difficult to show in landscape mode.
+          return Container();
+        }
         return Container(
           constraints: const BoxConstraints(maxHeight: 200),
           child: ListView(
