@@ -56,8 +56,7 @@ class ChatHistoryMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final m = message;
-    final formattedTimestamp =
-        DateFormat.jm().format(m.timestamp);
+    final formattedTimestamp = DateFormat.jm().format(m.timestamp);
 
     if (m is TwitchMessageModel) {
       return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
