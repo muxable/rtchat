@@ -263,7 +263,14 @@ class TextToSpeechScreen extends StatelessWidget {
               onChanged: (value) {
                 model.isPreludeMuted = value;
               },
-            )
+            ),
+            SwitchListTile.adaptive(
+              title: const Text("Alerts only"),
+              value: model.isAlertsOnly,
+              onChanged: (value) {
+                model.setAlertsOnly(value);
+              },
+            ),
           ],
         );
       }),
