@@ -277,11 +277,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   ? (ttsModel.isAlertsOnly
                                       ? Icons.campaign
                                       : ttsModel.enabled
-                                          ? Icons.record_voice_over
-                                          : Icons.voice_over_off)
+                                          ? Icons.volume_up
+                                          : Icons.volume_off)
                                   : (ttsModel.newTtsEnabled
-                                      ? Icons.record_voice_over
-                                      : Icons.voice_over_off),
+                                      ? Icons.volume_up
+                                      : Icons.volume_off),
                             ),
                             tooltip: AppLocalizations.of(context)!.textToSpeech,
                             onPressed: () async {
