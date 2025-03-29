@@ -191,6 +191,10 @@ class TtsModel extends ChangeNotifier {
   }
 
   void setEnabled(AppLocalizations localizations, bool value) {
+    if (value == _isEnabled && !_isAlertsOnly) {
+      return;
+    }
+
     _isEnabled = value;
     if (value) {
       _lastMessageTime = DateTime.now();
