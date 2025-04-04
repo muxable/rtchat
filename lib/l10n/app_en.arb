@@ -988,5 +988,13 @@
   "textToSpeechDisabled": "Text to speech disabled",
   "@textToSpeechDisabled": {
       "description": "Message indicating that text to speech has been disabled"
-  }
+  },
+  "alertsEnabled" : "Alerts enabled tap again to enable text to speech",
+    "@alertsEnabled" : {
+        "description": "Message indicating that alerts have been enabled"
+    },
+    "alertsDisabled" : "Alerts disabled tap again to enable text to speech",
+    "@alertsDisabled" : {
+        "description": "Message indicating that alerts have been disabled"
+    }
 }

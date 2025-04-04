@@ -263,7 +263,7 @@ class TextToSpeechScreen extends StatelessWidget {
               onChanged: (value) {
                 model.isPreludeMuted = value;
               },
-            )
+            ),
           ],
         );
       }),
