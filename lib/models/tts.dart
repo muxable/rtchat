@@ -47,6 +47,7 @@ class TtsModel extends ChangeNotifier {
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
+  var _isAlertsOnly = false;
 
   @override
   void dispose() {
@@ -150,6 +151,30 @@ class TtsModel extends ChangeNotifier {
     return _isNewTTsEnabled;
   }
 
+  bool get isAlertsOnly {
+    return _isAlertsOnly;
+  }
+
+  void setAlertsOnly(AppLocalizations localizations, bool value) {
+    if (value == _isAlertsOnly) {
+      return;
+    }
+
+    if (value) {
+      _isEnabled = true;
+    }
+
+    _isAlertsOnly = value;
+    if (value) {
+      say(localizations, SystemMessageModel(text: localizations.alertsEnabled),
+          force: true);
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
+
   set newTtsEnabled(bool value) {
     if (value == _isNewTTsEnabled) {
       return;
@@ -166,13 +191,15 @@ class TtsModel extends ChangeNotifier {
   }
 
   void setEnabled(AppLocalizations localizations, bool value) {
-    if (value == _isEnabled) {
+    if (value == _isEnabled && !_isAlertsOnly) {
       return;
     }
+
     _isEnabled = value;
     if (value) {
       _lastMessageTime = DateTime.now();
     }
+
     say(
         localizations,
         SystemMessageModel(
@@ -297,6 +324,10 @@ class TtsModel extends ChangeNotifier {
   void say(AppLocalizations localizations, MessageModel model,
       {bool force = false}) async {
     if (!enabled && !force) {
+      return;
+    }
+
+    if (_isAlertsOnly && model is TwitchMessageModel) {
       return;
     }
 
