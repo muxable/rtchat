@@ -13,7 +13,6 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/firebase_options.dart';
-import 'package:rtchat/components/channel_localization.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/commands.dart';
@@ -131,16 +130,6 @@ class _AppState extends State<App> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserModel()),
-        ChangeNotifierProxyProvider<UserModel, ChannelLocalization>(
-          create: (context) => ChannelLocalization(),
-          update: (context, userModel, channelLocalization) {
-            if (userModel.activeChannel != null) {
-              channelLocalization!
-                  .setChannelLanguage(userModel.activeChannel!.language);
-            }
-            return channelLocalization!;
-          },
-        ),
         ChangeNotifierProvider(create: (context) {
           final model = ActivityFeedModel.fromJson(jsonDecode(widget.prefs
               .getString("activity_feed", defaultValue: '{}')

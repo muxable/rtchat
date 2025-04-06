@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/channel_localization.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/tokens.dart';
@@ -29,15 +28,14 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final channelLocale = ChannelLocalization.getLocale(context);
-    final localizations = channelLocale != null
-        ? lookupAppLocalizations(channelLocale)
-        : AppLocalizations.of(context);
+    final userModel = Provider.of<UserModel>(context);
+    final channelLocale = userModel.getChannelLocale(context);
+    final localizations = lookupAppLocalizations(channelLocale);
 
     return DecoratedEventWidget.icon(
       icon: Icons.star,
       child: StyledText(
-        text: localizations!.subscriptionEvent(
+        text: localizations.subscriptionEvent(
             model.subscriberUserName, model.tier.replaceAll("000", "")),
         tags: {
           'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
@@ -58,15 +56,14 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final channelLocale = ChannelLocalization.getLocale(context);
-    final localizations = channelLocale != null
-        ? lookupAppLocalizations(channelLocale)
-        : AppLocalizations.of(context);
+    final userModel = Provider.of<UserModel>(context);
+    final channelLocale = userModel.getChannelLocale(context);
+    final localizations = lookupAppLocalizations(channelLocale);
 
     return DecoratedEventWidget.icon(
       icon: Icons.redeem,
       child: StyledText(
-        text: localizations!.subscriptionGiftEvent(
+        text: localizations.subscriptionGiftEvent(
             model.gifterUserName,
             model.total,
             model.tier.replaceAll("000", ""),
@@ -137,15 +134,15 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme.titleSmall;
-    final channelLocale = ChannelLocalization.getLocale(context);
-    final localizations = channelLocale != null
-        ? lookupAppLocalizations(channelLocale)
-        : AppLocalizations.of(context);
+    final userModel = Provider.of<UserModel>(context);
+    final channelLocale = userModel.getChannelLocale(context);
+    final localizations = lookupAppLocalizations(channelLocale);
+
     return DecoratedEventWidget.icon(
       icon: Icons.star,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         StyledText(
-          text: localizations!.subscriptionMessageEvent(
+          text: localizations.subscriptionMessageEvent(
             model.subscriberUserName,
             model.cumulativeMonths,
             model.tier.replaceAll("000", ""),
