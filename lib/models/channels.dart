@@ -6,14 +6,16 @@ class Channel {
   final String provider;
   final String channelId;
   final String displayName;
+  final String? language;
 
-  Channel(this.provider, this.channelId, this.displayName);
+  Channel(this.provider, this.channelId, this.displayName, {this.language});
 
   @override
   bool operator ==(other) =>
       other is Channel &&
       other.provider == provider &&
-      other.channelId == channelId;
+      other.channelId == channelId &&
+      other.displayName == displayName;
 
   @override
   int get hashCode => provider.hashCode ^ channelId.hashCode;
@@ -35,6 +37,7 @@ class Channel {
       'provider': provider,
       'channelId': channelId,
       'displayName': displayName,
+      'language': language,
     };
   }
 }

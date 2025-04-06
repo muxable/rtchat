@@ -28,10 +28,14 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userModel = Provider.of<UserModel>(context);
+    final channelLocale = userModel.getChannelLocale(context);
+    final localizations = lookupAppLocalizations(channelLocale);
+
     return DecoratedEventWidget.icon(
       icon: Icons.star,
       child: StyledText(
-        text: AppLocalizations.of(context)!.subscriptionEvent(
+        text: localizations.subscriptionEvent(
             model.subscriberUserName, model.tier.replaceAll("000", "")),
         tags: {
           'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
@@ -52,10 +56,14 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userModel = Provider.of<UserModel>(context);
+    final channelLocale = userModel.getChannelLocale(context);
+    final localizations = lookupAppLocalizations(channelLocale);
+
     return DecoratedEventWidget.icon(
       icon: Icons.redeem,
       child: StyledText(
-        text: AppLocalizations.of(context)!.subscriptionGiftEvent(
+        text: localizations.subscriptionGiftEvent(
             model.gifterUserName,
             model.total,
             model.tier.replaceAll("000", ""),
@@ -126,11 +134,15 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme.titleSmall;
+    final userModel = Provider.of<UserModel>(context);
+    final channelLocale = userModel.getChannelLocale(context);
+    final localizations = lookupAppLocalizations(channelLocale);
+
     return DecoratedEventWidget.icon(
       icon: Icons.star,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         StyledText(
-          text: AppLocalizations.of(context)!.subscriptionMessageEvent(
+          text: localizations.subscriptionMessageEvent(
             model.subscriberUserName,
             model.cumulativeMonths,
             model.tier.replaceAll("000", ""),
