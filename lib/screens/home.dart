@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
@@ -273,7 +272,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         builder: (context, ttsModel, child) {
                           return IconButton(
                             icon: Icon(
-                              !kDebugMode
+                              !ttsModel.newTtsEnabled
                                   ? (ttsModel.isAlertsOnly
                                       ? Icons.campaign
                                       : ttsModel.enabled
@@ -285,7 +284,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                             tooltip: AppLocalizations.of(context)!.textToSpeech,
                             onPressed: () async {
-                              if (!kDebugMode) {
+                              if (!ttsModel.newTtsEnabled) {
                                 final localizations =
                                     AppLocalizations.of(context)!;
 
