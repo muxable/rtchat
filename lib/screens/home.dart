@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
@@ -273,56 +272,55 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         builder: (context, ttsModel, child) {
                           return IconButton(
                             icon: Icon(
-                              !kDebugMode
-                                  ? (ttsModel.isAlertsOnly
-                                      ? Icons.campaign
-                                      : ttsModel.enabled
-                                          ? Icons.volume_up
-                                          : Icons.volume_off)
-                                  : (ttsModel.newTtsEnabled
+                              ttsModel.isAlertsOnly
+                                  ? Icons.campaign
+                                  : ttsModel.enabled
                                       ? Icons.volume_up
-                                      : Icons.volume_off),
+                                      : Icons.volume_off,
                             ),
                             tooltip: AppLocalizations.of(context)!.textToSpeech,
                             onPressed: () async {
-                              if (!kDebugMode) {
-                                final localizations =
-                                    AppLocalizations.of(context)!;
-
+                              final localizations =
+                                  AppLocalizations.of(context)!;
+                              if (!ttsModel.newTtsEnabled) {
                                 if (!ttsModel.enabled) {
                                   ttsModel.setAlertsOnly(localizations, true);
                                 } else if (ttsModel.isAlertsOnly) {
                                   ttsModel.setEnabled(localizations, true);
-
                                   ttsModel.setAlertsOnly(localizations, false);
                                 } else {
                                   ttsModel.setEnabled(localizations, false);
                                 }
                               } else {
-                                ttsModel.newTtsEnabled =
-                                    !ttsModel.newTtsEnabled;
-
-                                if (!ttsModel.newTtsEnabled) {
-                                  updateChannelSubscription("");
-                                  await TextToSpeechPlugin.speak(
-                                      "Text to speech disabled");
-                                  await TextToSpeechPlugin.disableTTS();
-                                  NotificationsPlugin.cancelNotification();
-                                } else {
-                                  // Start listening to the stream before toggling newTtsEnabled
-                                  channelStreamController.stream
-                                      .listen((currentChannel) {
-                                    if (currentChannel.isEmpty) {
-                                      ttsModel.newTtsEnabled = false;
-                                    }
-                                  });
-                                  await TextToSpeechPlugin.speak(
-                                      "Text to speech enabled");
+                                if (!ttsModel.enabled) {
+                                  ttsModel.setAlertsOnly(localizations, true);
                                   updateChannelSubscription(
                                     "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}",
                                   );
+                                  await TextToSpeechPlugin.speak(
+                                      localizations.alertsEnabled);
                                   NotificationsPlugin.showNotification();
                                   NotificationsPlugin.listenToTts(ttsModel);
+                                  channelStreamController.stream
+                                      .listen((currentChannel) {
+                                    if (currentChannel.isEmpty) {
+                                      ttsModel.setEnabled(localizations, false);
+                                      ttsModel.setAlertsOnly(
+                                          localizations, false);
+                                    }
+                                  });
+                                } else if (ttsModel.isAlertsOnly) {
+                                  ttsModel.setEnabled(localizations, true);
+                                  ttsModel.setAlertsOnly(localizations, false);
+                                  await TextToSpeechPlugin.speak(
+                                      localizations.textToSpeechEnabled);
+                                } else {
+                                  ttsModel.setEnabled(localizations, false);
+                                  updateChannelSubscription("");
+                                  await TextToSpeechPlugin.speak(
+                                      localizations.textToSpeechDisabled);
+                                  await TextToSpeechPlugin.disableTTS();
+                                  NotificationsPlugin.cancelNotification();
                                 }
                               }
                             },
