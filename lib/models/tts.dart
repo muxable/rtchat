@@ -166,8 +166,11 @@ class TtsModel extends ChangeNotifier {
 
     _isAlertsOnly = value;
     if (value) {
-      say(localizations, SystemMessageModel(text: localizations.alertsEnabled),
-          force: true);
+      if (!newTtsEnabled) {
+        say(localizations,
+            SystemMessageModel(text: localizations.alertsEnabled),
+            force: true);
+      }
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -200,13 +203,16 @@ class TtsModel extends ChangeNotifier {
       _lastMessageTime = DateTime.now();
     }
 
-    say(
-        localizations,
-        SystemMessageModel(
-            text: value
-                ? localizations.textToSpeechEnabled
-                : localizations.textToSpeechDisabled),
-        force: true);
+    if (!newTtsEnabled) {
+      say(
+          localizations,
+          SystemMessageModel(
+              text: value
+                  ? localizations.textToSpeechEnabled
+                  : localizations.textToSpeechDisabled),
+          force: true);
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });

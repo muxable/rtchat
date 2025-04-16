@@ -66,6 +66,9 @@ Future<void> isolateMain(
             final type = messageData['type'] as String?;
             switch (type) {
               case "message":
+                if (ttsModel.isAlertsOnly) {
+                  return;
+                }
                 final messageModel = TwitchMessageModel(
                     messageId: message.id,
                     author: TwitchUserModel(
