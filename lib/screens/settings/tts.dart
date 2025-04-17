@@ -271,6 +271,13 @@ class TextToSpeechScreen extends StatelessWidget {
                 model.newTtsEnabled = value;
               },
             ),
+            SwitchListTile.adaptive(
+              title: const Text("TTS for subscribers only"),
+              value: model.isSubscribersOnly,
+              onChanged: (value) {
+                model.isSubscribersOnly = value;
+              },
+            ),
           ],
         );
       }),
