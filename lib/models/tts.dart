@@ -48,6 +48,7 @@ class TtsModel extends ChangeNotifier {
   var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
   var _isAlertsOnly = false;
+  var _isSubscribersOnly = false;
 
   @override
   void dispose() {
@@ -153,6 +154,17 @@ class TtsModel extends ChangeNotifier {
 
   bool get isAlertsOnly {
     return _isAlertsOnly;
+  }
+
+  bool get isSubscribersOnly {
+    return _isSubscribersOnly;
+  }
+
+  set isSubscribersOnly(bool value) {
+    _isSubscribersOnly = value;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void setAlertsOnly(AppLocalizations localizations, bool value) {
@@ -338,6 +350,10 @@ class TtsModel extends ChangeNotifier {
     }
 
     if (model is TwitchMessageModel) {
+      if (_isSubscribersOnly && (model.tags['badges']?['subscriber'] == null)) {
+        return;
+      }
+
       if (_mutedUsers.any((user) =>
           user.displayName?.toLowerCase() ==
           model.author.displayName?.toLowerCase())) {
