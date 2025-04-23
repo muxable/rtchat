@@ -84,7 +84,7 @@ class UserModel extends ChangeNotifier {
       return _channelLocale ??
           Locale(normalizeLanguageCode(_activeChannel!.language!));
     }
-    // Fallback to device locale
+    // Fallback to the device locale
     return Localizations.localeOf(context);
   }
 
