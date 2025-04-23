@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:linkify/linkify.dart';
-import 'package:motion_sensors/motion_sensors.dart';
+import 'package:dchs_motion_sensors/dchs_motion_sensors.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
