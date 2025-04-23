@@ -69,6 +69,11 @@ Future<void> isolateMain(
                 if (ttsModel.isAlertsOnly) {
                   return;
                 }
+                if (ttsModel.isSubscribersOnly &&
+                    (messageData['tags']['subscriber'] == null ||
+                        messageData['tags']['subscriber'] == '0')) {
+                  return;
+                }
                 final messageModel = TwitchMessageModel(
                     messageId: message.id,
                     author: TwitchUserModel(
