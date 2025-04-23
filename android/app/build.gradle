@@ -35,10 +35,19 @@ if (flutterVersionName == null) {
 }
 
 android {
-    compileSdkVersion 34
+    compileSdkVersion 35
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = '17'
     }
 
     defaultConfig {
@@ -72,7 +81,9 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.21"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.0.0"
     implementation "androidx.media:media:1.4.1"
     implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'com.google.android.play:app-update:2.1.0'
+    implementation 'com.google.android.play:feature-delivery:2.1.0'
 }
