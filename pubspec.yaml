@@ -34,7 +34,7 @@ dependencies:
   just_audio: ^0.9.39
   linkify: ^5.0.0
   metadata_fetch: ^0.4.1
-  mobile_scanner: ^5.0.2
+  mobile_scanner: ^6.0.10
   dchs_motion_sensors: ^2.0.0
   package_info_plus: ^8.0.0
   path_provider: ^2.1.3
