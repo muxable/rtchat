@@ -47,4 +47,13 @@ class ProfilesAdapter {
       return doc.exists && (doc.get("claims")['ads'] ?? false);
     });
   }
+
+  Future<String> getCompanionAuthToken({required String sessionUuid}) async {
+    final doc = await db
+        .collection("companion-tokens")
+        .doc(sessionUuid)
+        .snapshots()
+        .firstWhere((event) => event.exists);
+    return doc.data()!["token"] as String;
+  }
 }

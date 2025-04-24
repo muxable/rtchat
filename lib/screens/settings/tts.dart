@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -116,13 +117,13 @@ class TextToSpeechScreen extends StatelessWidget {
                                       color: Theme.of(context).dividerColor),
                                 ).copyWith(
                                   foregroundColor:
-                                      MaterialStateProperty.resolveWith<Color>(
-                                    (Set<MaterialState> states) =>
-                                        states.contains(MaterialState.disabled)
+                                      WidgetStateProperty.resolveWith<Color>(
+                                    (Set<WidgetState> states) =>
+                                        states.contains(WidgetState.disabled)
                                             ? Theme.of(context)
                                                 .colorScheme
                                                 .onSurface
-                                                .withOpacity(0.6)
+                                                .withValues(alpha: 0.6)
                                             : Theme.of(context)
                                                 .colorScheme
                                                 .onSurface,
@@ -154,16 +155,16 @@ class TextToSpeechScreen extends StatelessWidget {
                       "voice": model.voice,
                       "rate": model.speed * 1.5 + 0.5,
                       "pitch": model.pitch * 4 - 2,
-                      "text":
-                          "kevin calmly and collectively consumes cheesecake",
+                      "text": AppLocalizations.of(context)!.sampleMessage,
                     });
                     final bytes = const Base64Decoder().convert(response.data);
                     audioPlayer.setAudioSource(BytesAudioSource(bytes));
                     audioPlayer.play();
                   } else {
                     model.say(
+                        AppLocalizations.of(context)!,
                         SystemMessageModel(
-                          text: "muxfd said have you followed muxfd on twitch?",
+                          text: AppLocalizations.of(context)!.sampleMessage,
                         ),
                         force: true);
                   }
@@ -262,7 +263,21 @@ class TextToSpeechScreen extends StatelessWidget {
               onChanged: (value) {
                 model.isPreludeMuted = value;
               },
-            )
+            ),
+            SwitchListTile.adaptive(
+              title: const Text("Enable new text to speech"),
+              value: model.newTtsEnabled,
+              onChanged: (value) {
+                model.newTtsEnabled = value;
+              },
+            ),
+            SwitchListTile.adaptive(
+              title: const Text("Subscribers only"),
+              value: model.isSubscribersOnly,
+              onChanged: (value) {
+                model.isSubscribersOnly = value;
+              },
+            ),
           ],
         );
       }),

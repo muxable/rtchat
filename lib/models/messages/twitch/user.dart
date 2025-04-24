@@ -56,17 +56,8 @@ class TwitchUserModel {
 
   bool get isBot => botList.contains(login.toLowerCase());
 
-  String get display {
-    final author = displayName ?? login;
-    if (author.toLowerCase() != login) {
-      // this is an internationalized name.
-      return "$displayName ($login)";
-    }
-    return author;
-  }
-
   Color get color {
-    final n = display.codeUnits.first + display.codeUnits.last;
+    final n = login.codeUnits.first + login.codeUnits.last;
     return colors[n % colors.length];
   }
 

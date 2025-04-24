@@ -1,17 +1,16 @@
 import AVFoundation
 import Flutter
-import flutter_background_service_ios
 import UIKit
 import WebKit
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
+    var sharedText = ""
+    
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        SwiftFlutterBackgroundServicePlugin.taskIdentifier = "com.rtirl.chat.tts"
-
         var views = [String: WKWebView]()
 
         let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
@@ -33,6 +32,9 @@ import WebKit
                 }
                 
                 let utterance = AVSpeechUtterance(string: text)
+                // Set speech rate and volume
+                utterance.rate = args?["speed"] as? Float ?? AVSpeechUtteranceDefaultSpeechRate
+                utterance.volume = args?["volume"] as? Float ?? 1.0
                 synthesizer.speak(utterance)
                 result(Bool(true))
                 
@@ -111,8 +113,36 @@ import WebKit
                     result(FlutterMethodNotImplemented)
                 }
         }
+        
+        let shareChannel = FlutterMethodChannel(name: "com.rtirl.chat/share", binaryMessenger: controller.binaryMessenger)
+        
+        shareChannel.setMethodCallHandler {
+            call, result in
+            
+            if call.method == "getSharedData" {
+                result(self.sharedText)
+            }
+        }
 
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+    
+    override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        
+        if url.scheme == "com.rtirl.chat", url.host == "sharetext" {
+            // This means that the app was launched from the share extension
+            let uriComponents = NSURLComponents(string: url.absoluteString)
+            
+            uriComponents?.queryItems?.forEach {
+                item in
+                
+                if item.name == "text", let itemValue = item.value?.removingPercentEncoding {
+                    self.sharedText = itemValue
+                }
+            }
+        }
+        
+        return true
     }
 }

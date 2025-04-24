@@ -350,12 +350,6 @@ func (h *TwitchAgent) bindEvents(client *twitch.Client) {
 		zap.L().Info("adding message", zap.String("content", message.Message), zap.String("channelId", channelID), zap.String("channel", message.Channel))
 		go h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
 	})
-
-	client.OnReconnectMessage(func(message twitch.ReconnectMessage) {
-		if err := client.Connect(); err != nil {
-			zap.L().Error("failed to reconnect", zap.Error(err))
-		}
-	})
 }
 
 type AuthenticatedTwitchClient struct {
@@ -425,6 +419,18 @@ func (h *TwitchAgent) JoinAsUser(r *agent.Request, asUserID string) (io.Closer, 
 
 	h.bindEvents(client)
 
+	client.OnReconnectMessage(func(message twitch.ReconnectMessage) {
+		newToken, err := authProvider.Token()
+		if err != nil {
+			zap.L().Error("failed to refresh token", zap.Error(err))
+			newToken = token
+		}
+		client.SetIRCToken(fmt.Sprintf("oauth:%s", newToken.AccessToken))
+		if err := client.Connect(); err != nil {
+			zap.L().Error("failed to reconnect", zap.Error(err))
+		}
+	})
+
 	if profileData["login"].(string) != "realtimechat" {
 		sendClient := twitch.NewClient(profileData["login"].(string), fmt.Sprintf("oauth:%s", token.AccessToken))
 
@@ -433,8 +439,14 @@ func (h *TwitchAgent) JoinAsUser(r *agent.Request, asUserID string) (io.Closer, 
 		}
 
 		sendClient.OnReconnectMessage(func(message twitch.ReconnectMessage) {
+			newToken, err := authProvider.Token()
+			if err != nil {
+				zap.L().Error("failed to refresh token", zap.Error(err))
+				newToken = token
+			}
+			client.SetIRCToken(fmt.Sprintf("oauth:%s", newToken.AccessToken))
 			if err := sendClient.Connect(); err != nil {
-				zap.L().Error("failed to reconnect", zap.Error(err))
+				zap.L().Error("failed to reconnect send channel", zap.Error(err))
 			}
 		})
 

@@ -159,9 +159,11 @@ func main() {
 					case agent.ProviderTwitch:
 						switch existing.(type) {
 						case *handler.AuthenticatedTwitchClient:
-							// we don't need to upgrade.
-							zap.L().Info("already authenticated", zap.String("id", req.String()))
-							return
+							// skip upgrade with 75% probability
+							if rand.Intn(4) != 0 {
+								zap.L().Info("already authenticated", zap.String("id", req.String()))
+								return
+							}
 						}
 						client, err := twitch.NewClient(req)
 						if err != nil {

@@ -10,19 +10,12 @@ Widget _iconWithText(IconData icon, String text) {
   return Column(children: [
     Padding(
         padding: const EdgeInsets.symmetric(vertical: 4), child: Icon(icon)),
-    Text(text),
+    Text(text, overflow: TextOverflow.fade)
   ]);
 }
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  int _versionTapCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -178,8 +171,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       selectedColor: Theme.of(context).colorScheme.secondary,
                       children: [
                         _iconWithText(Icons.auto_mode, "System"),
-                        _iconWithText(Icons.light_mode, "Light mode"),
-                        _iconWithText(Icons.dark_mode, "Dark mode"),
+                        _iconWithText(Icons.light_mode, "Light"),
+                        _iconWithText(Icons.dark_mode, "Dark"),
                       ],
                     ),
                   ])),
@@ -206,7 +199,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 )),
           ),
           Column(
-              children: {"wormoSTEEZE", "ThisIsKurrrt", "nezst"}.map((key) {
+              children: {"wormoSTEEZE", "ThisisKurtIRL", "nezst"}.map((key) {
             final url = "https://twitch.tv/$key";
             return ListTile(
               leading: const Image(
@@ -226,38 +219,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final appName = packageInfo.appName;
                 final version = packageInfo.version;
                 final buildNumber = packageInfo.buildNumber;
-                return AboutListTile(
-                  icon: const Icon(Icons.info),
-                  applicationName: appName,
-                  applicationVersion: 'Version $version ($buildNumber)',
-                  applicationLegalese: '\u{a9} 2023 Muxable',
-                  dense: true,
-                  aboutBoxChildren: [
-                    const SizedBox(height: 24),
-                    InkWell(
-                        child: const Text(
-                          'Seems legit',
-                          textAlign: TextAlign.center,
-                        ),
-                        onTap: () {
-                          setState(() {
-                            if (++_versionTapCount == 6) {
-                              _versionTapCount = 0;
-                              final model = Provider.of<StyleModel>(context,
-                                  listen: false);
-                              model.isDiscoModeAvailable =
-                                  !model.isDiscoModeAvailable;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: model.isDiscoModeAvailable
-                                          ? const Text(
-                                              "🕺 Disco mode enabled! :D")
-                                          : const Text(
-                                              "🕺 Disco mode disabled D:")));
-                            }
-                          });
-                        })
-                  ],
+                return ListTile(
+                  title: Text(appName),
+                  subtitle: Text('$version ($buildNumber)'),
+                  onTap: () {
+                    showLicensePage(
+                      context: context,
+                      applicationName: appName,
+                      applicationVersion: 'Version $version ($buildNumber)',
+                      applicationLegalese: '\u{a9} 2025 Muxable',
+                    );
+                  },
+                  onLongPress: () {
+                    final model =
+                        Provider.of<StyleModel>(context, listen: false);
+                    model.isDiscoModeAvailable = !model.isDiscoModeAvailable;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: model.isDiscoModeAvailable
+                            ? const Text("🕺 Disco mode enabled! :D")
+                            : const Text("🕺 Disco mode disabled D:")));
+                  },
                 );
               })
         ]);

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Existing string resources -->
+
+    <!-- Add these lines for your TTS notification channel -->
+    <string name="tts_notification_channel_name">Text-to-Speech Notifications</string>
+    <string name="tts_notification_channel_description">Notifications when Text-to-Speech is active</string>
+</resources>

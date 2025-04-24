@@ -11,8 +11,11 @@ class QRDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     final querySize = MediaQuery.of(context).size;
 
+    final isLandScape = querySize.width > querySize.height;
+
     return Consumer<UserModel>(builder: (context, userModel, child) {
       final userChannel = userModel.userChannel;
+
       final inviteLink =
           "https://www.twitch.tv/${userModel.userChannel?.displayName ?? ""}";
 
@@ -23,35 +26,42 @@ class QRDisplay extends StatelessWidget {
               qrModel.changeGradient();
             },
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  height: querySize.height * 0.42,
-                  width: querySize.width * 0.85,
-                  padding: EdgeInsets.only(top: querySize.height * 0.01),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(querySize.width * 0.06),
-                    color: Colors.white,
-                  ),
-                  child: Stack(
-                    alignment: Alignment
-                        .center, // This centers the CircleAvatar in the middle of the Stack
-                    children: [
-                      QrImageView(
-                        data: inviteLink,
-                        eyeStyle: const QrEyeStyle(
-                          eyeShape: QrEyeShape.square,
-                          color: Colors.black,
-                        ),
-                        dataModuleStyle: const QrDataModuleStyle(
-                          dataModuleShape: QrDataModuleShape.square,
-                          color: Colors.black,
-                        ),
+                Flexible(
+                  child: Container(
+                    padding: EdgeInsets.only(
+                      top: querySize.height * 0.03,
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.only(
+                        top: querySize.height * 0.02,
                       ),
-                      CircleAvatar(
-                        radius: 35,
-                        backgroundImage: userChannel?.profilePicture,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                    ],
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          QrImageView(
+                            data: inviteLink,
+                            eyeStyle: const QrEyeStyle(
+                              eyeShape: QrEyeShape.square,
+                              color: Colors.black,
+                            ),
+                            dataModuleStyle: const QrDataModuleStyle(
+                              dataModuleShape: QrDataModuleShape.square,
+                              color: Colors.black,
+                            ),
+                          ),
+                          CircleAvatar(
+                            radius: isLandScape ? 25 : 30,
+                            backgroundImage: userChannel?.profilePicture,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
                 Padding(

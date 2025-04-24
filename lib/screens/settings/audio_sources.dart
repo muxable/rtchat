@@ -6,6 +6,8 @@ import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
+import 'package:rtchat/components/scanner_error.dart';
+import 'package:rtchat/components/scanner_settings.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
@@ -20,7 +22,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
   final _formKey = GlobalKey<FormState>();
   final _textEditingController = TextEditingController();
   late final AudioModel _audioModel;
-  final _scanController = MobileScannerController(
+  MobileScannerController _scanController = MobileScannerController(
     // facing: CameraFacing.back,
     // torchEnabled: false,
     detectionSpeed: DetectionSpeed.noDuplicates,
@@ -45,20 +47,25 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
     if (_formKey.currentState!.validate()) {
       // fetch the title for the page.
       final url = _textEditingController.text;
-      final metadata = await MetadataFetch.extract(url);
+      Metadata? metadata;
+      try {
+        metadata = await MetadataFetch.extract(url);
+      } catch (e) {
+        metadata = null;
+      }
+
+      final title = metadata?.title ?? Uri.parse(url).host;
 
       if (!mounted) return;
       final model = Provider.of<AudioModel>(context, listen: false);
       if (!await AudioChannel.hasPermission()) {
-        if (context.mounted) {
-          await model.showAudioPermissionDialog(context);
-        }
+        if (!mounted) return;
+        await model.showAudioPermissionDialog(context);
       }
-      await model
-          .addSource(AudioSource(metadata?.title, Uri.parse(url), false));
+      await model.addSource(AudioSource(title, Uri.parse(url), false));
 
-      _textEditingController.clear();
       if (!mounted) return;
+      _textEditingController.clear();
       FocusScope.of(context).unfocus();
     }
   }
@@ -74,12 +81,12 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
               children: [
                 SwitchListTile.adaptive(
                   title: Text(
-                      AppLocalizations.of(context)!.enableOffstreamSwitchTitle),
+                      AppLocalizations.of(context)!.enableOffStreamSwitchTitle),
                   subtitle: model.isAlwaysEnabled
                       ? Text(AppLocalizations.of(context)!
-                          .enableOffstreamSwitchEnabledSubtitle)
+                          .enableOffStreamSwitchEnabledSubtitle)
                       : Text(AppLocalizations.of(context)!
-                          .enableOffstreamSwitchDisabledSubtitle),
+                          .enableOffStreamSwitchDisabledSubtitle),
                   value: model.isAlwaysEnabled,
                   onChanged: (value) {
                     model.isAlwaysEnabled = value;
@@ -141,42 +148,72 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                                           ScaffoldMessenger.of(context);
 
                                       showModalBottomSheet(
+                                        isScrollControlled: true,
                                         context: context,
                                         builder: (ctx) {
-                                          return MobileScanner(
-                                            fit: BoxFit.contain,
-                                            controller: _scanController,
-                                            onDetect: (capture) {
-                                              final List<Barcode> barcodes =
-                                                  capture.barcodes;
+                                          return Stack(
+                                            children: [
+                                              MobileScanner(
+                                                errorBuilder:
+                                                    (context, error, child) {
+                                                  return ScannerErrorWidget(
+                                                      error: error);
+                                                },
+                                                controller: _scanController,
+                                                onDetect: (capture) {
+                                                  final List<Barcode> barcodes =
+                                                      capture.barcodes;
 
-                                              if (barcodes.isEmpty) {
-                                                messenger.showSnackBar(SnackBar(
-                                                    content: Text(AppLocalizations
-                                                            .of(context)!
-                                                        .invalidUrlErrorText)));
-                                              }
+                                                  if (barcodes.isEmpty) {
+                                                    messenger.showSnackBar(SnackBar(
+                                                        content: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .invalidUrlErrorText)));
+                                                  }
 
-                                              final barcode = barcodes.first;
+                                                  final barcode =
+                                                      barcodes.first;
 
-                                              if (barcode.rawValue == null ||
-                                                  barcode.rawValue!.isEmpty) {
-                                                messenger.showSnackBar(SnackBar(
-                                                    content: Text(AppLocalizations
-                                                            .of(context)!
-                                                        .invalidUrlErrorText)));
+                                                  if (barcode.rawValue ==
+                                                          null ||
+                                                      barcode
+                                                          .rawValue!.isEmpty) {
+                                                    messenger.showSnackBar(SnackBar(
+                                                        content: Text(
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .invalidUrlErrorText)));
 
-                                                Navigator.pop(ctx);
-                                              }
+                                                    Navigator.pop(ctx);
+                                                  }
 
-                                              _textEditingController.text =
-                                                  '${barcode.rawValue}';
+                                                  _textEditingController.text =
+                                                      '${barcode.rawValue}';
 
-                                              Navigator.pop(ctx);
-                                            },
+                                                  Navigator.pop(ctx);
+                                                },
+                                              ),
+                                              Positioned(
+                                                  top: 50,
+                                                  left: 0,
+                                                  right: 0,
+                                                  child: ScannerSettings(
+                                                      scanController:
+                                                          _scanController)),
+                                            ],
                                           );
                                         },
-                                      );
+                                      ).then((value) {
+                                        _scanController.dispose();
+
+                                        //re initialize controller
+                                        _scanController =
+                                            MobileScannerController(
+                                          detectionSpeed:
+                                              DetectionSpeed.noDuplicates,
+                                        );
+                                      });
                                     })),
                             validator: (value) {
                               if (value == null ||

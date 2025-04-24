@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:linkify/linkify.dart';
-import 'package:motion_sensors/motion_sensors.dart';
+import 'package:dchs_motion_sensors/dchs_motion_sensors.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/badge.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
@@ -159,8 +159,9 @@ class TwitchMessageWidget extends StatelessWidget {
             final orientation = snapshot.data;
             if (orientation == null) {
               return RichText(
-                  text:
-                      TextSpan(text: model.author.display, style: authorStyle));
+                  text: TextSpan(
+                      text: styleModel.getTwitchDisplayName(model.author),
+                      style: authorStyle));
             }
             final hslColor = HSLColor.fromColor(
                 styleModel.applyLightnessBoost(context, color));
@@ -172,7 +173,7 @@ class TwitchMessageWidget extends StatelessWidget {
                 hslColor.withHue((hslColor.hue - deg) % 360).toColor();
             return RichText(
                 text: TextSpan(
-                    text: model.author.display,
+                    text: styleModel.getTwitchDisplayName(model.author),
                     style: authorStyle.copyWith(color: shimmer)));
           });
     }
@@ -184,7 +185,9 @@ class TwitchMessageWidget extends StatelessWidget {
     if (contributors.contains(model.author.userId)) {
       return WidgetSpan(child: authorWidget(author, styleModel, authorStyle));
     }
-    return TextSpan(text: model.author.display, style: authorStyle);
+    return TextSpan(
+        text: styleModel.getTwitchDisplayName(model.author),
+        style: authorStyle);
   }
 
   @override

@@ -1,8 +1,8 @@
 package com.rtirl.chat
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
@@ -16,6 +16,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.*
 import androidx.core.app.NotificationCompat
+import androidx.multidex.BuildConfig
 import io.flutter.Log
 
 class AudioService : Service() {
@@ -168,5 +169,4 @@ class AudioService : Service() {
             START_NOT_STICKY
         }
     }
-
 }

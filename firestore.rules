@@ -47,5 +47,10 @@ service cloud.firestore {
       allow read: if resource.data.lastActiveAt.toMillis() >= request.time.toMillis() - 7 * 86400 * 1000;
       allow write: if false;
     }
+    match /companion-tokens/{document=**} {
+      allow get: if true;
+      allow list: if false;
+      allow write: if false;
+    }
   }
 }

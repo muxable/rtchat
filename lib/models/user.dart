@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
 
@@ -16,6 +16,7 @@ class UserModel extends ChangeNotifier {
   User? _user;
   Channel? _userChannel;
   Channel? _activeChannel;
+  Locale? _channelLocale;
 
   UserModel() {
     _userSubscription =
@@ -65,7 +66,49 @@ class UserModel extends ChangeNotifier {
 
   set activeChannel(Channel? channel) {
     _activeChannel = channel;
+    setChannelLanguage(channel?.language);
     notifyListeners();
+  }
+
+  void setChannelLanguage(String? languageCode) {
+    if (languageCode != null) {
+      _channelLocale = Locale(normalizeLanguageCode(languageCode));
+    } else {
+      _channelLocale = null;
+    }
+    notifyListeners();
+  }
+
+  Locale getChannelLocale(BuildContext context) {
+    if (_activeChannel?.language != null) {
+      return _channelLocale ??
+          Locale(normalizeLanguageCode(_activeChannel!.language!));
+    }
+    // Fallback to the device locale
+    return Localizations.localeOf(context);
+  }
+
+  static String normalizeLanguageCode(String? twitchLang) {
+    final mappings = {
+      'en': 'en',
+      'es': 'es',
+      'fr': 'fr',
+      'de': 'de',
+      'it': 'it',
+      'ar': 'ar',
+      'bn': 'bn',
+      'ja': 'ja',
+      'ko': 'ko',
+      'nl': 'nl',
+      'pl': 'pl',
+      'pt': 'pt',
+      'ru': 'ru',
+      'sv': 'sv',
+      'uk': 'uk',
+      'zh': 'zh',
+      'zh-Hant': 'zh',
+    };
+    return mappings[twitchLang] ?? 'en';
   }
 
   Uri? get activityFeedUri {

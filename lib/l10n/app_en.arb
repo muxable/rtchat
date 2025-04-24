@@ -75,7 +75,7 @@
   },
   "activityFeed": "Activity feed",
   "@activityFeed": {
-    "description": "Tooltip text for a button that shows the activity feed"
+    "description": "Header for the activity feed settings page and tooltip text for a button that shows the activity feed"
   },
   "streamOnline": "Stream online at {date}, {time}",
   "@streamOnline": {
@@ -221,10 +221,6 @@
   "@or": {
     "description": "Text label that separates two options"
   },
-  "activityFeed": "Activity feed",
-  "@activityFeed": {
-    "description": "Header for the activity feed settings page"
-  },
   "clearCookies": "Clear cookies",
   "@clearCookies": {
     "description": "Button label that clears the cookies"
@@ -253,15 +249,15 @@
   "@audioSources": {
     "description": "Header for the audio sources page"
   },
-  "enableOffstreamSwitchTitle": "Enable off-stream (uses more battery)",
-  "@enableOffstreamSwitchTitle": {
+  "enableOffStreamSwitchTitle": "Enable off-stream (uses more battery)",
+  "@enableOffStreamSwitchTitle": {
     "description": "Option label to enable the off-stream tile"
   },
-  "enableOffstreamSwitchEnabledSubtitle": "Audio will also play when you're offline",
-  "@enableOffstreamSwitchEnabledSubtitle": {
+  "enableOffStreamSwitchEnabledSubtitle": "Audio will also play when you're offline",
+  "@enableOffStreamSwitchEnabledSubtitle": {
     "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will also play when the user is offline"
   },
-  "enableOffstreamSwitchDisabledSubtitle": "Audio will only play when you're live",
+  "enableOffStreamSwitchDisabledSubtitle": "Audio will only play when you're live",
   "@enableOffstreamSwitchDisabledSubtitle": {
     "description": "Subtitle for the option to enable the off-stream tile, indicating that audio will only play when the user is live"
   },
@@ -321,7 +317,7 @@
   "@thirdPartyServicesSubtitle": {
     "description": "Subtitle for the third-party services page"
   },
-  "followingEvent": "<bold>{displayName}</bold> is following you",
+  "followingEvent": "<b>{displayName}</b> is following you",
   "@followingEvent": {
     "description": "Text label that shows when a user follows the streamer",
     "placeholders": {
@@ -331,7 +327,7 @@
       }
     }
   },
-  "followingEvent2": "<bold>{displayName}</bold> and <bold>{displayNameTwo}</bold> are following you",
+  "followingEvent2": "<b>{displayName}</b> and <b>{displayNameTwo}</b> are following you",
   "@followingEvent2": {
     "description": "Text label that shows when two users follow the streamer",
     "placeholders": {
@@ -345,7 +341,7 @@
       }
     }
   },
-  "followingEvent3": "<bold>{displayName}</bold>, <bold>{displayNameTwo}</bold>, and {numOthers} others are following you",
+  "followingEvent3": "<b>{displayName}</b>, <b>{displayNameTwo}</b>, and {numOthers} others are following you",
   "@followingEvent3": {
     "description": "Text label that shows when three or more users follow the streamer",
     "placeholders": {
@@ -512,7 +508,7 @@
     "description": "Text label for a one minute duration"
   },
   "durationTenMinutes": "10 minutes",
-  "@durationFifteenMinutes": {
+  "@durationTenMinutes": {
     "description": "Text label for a ten minute duration"
   },
   "durationOneHour": "1 hour",
@@ -536,43 +532,469 @@
     "description": "Text label for a one week duration"
   },
   "durationTwoWeeks": "2 weeks",
-  "@durationOneMonth": {
+  "@durationTwoWeeks": {
     "description": "Text label for a two week duration"
   },
   "durationOneSecondTimeoutPrompt": "Timeout for 1 second",
   "@durationOneSecondTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a one second duration"
+    "description": "Button label to timeout for a one second duration"
   },
   "durationOneMinuteTimeoutPrompt": "Timeout for 1 minute",
   "@durationOneMinuteTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a one minute duration"
+    "description": "Button label to timeout for a one minute duration"
   },
   "durationTenMinutesTimeoutPrompt": "Timeout for 10 minutes",
-  "@durationFifteenMinutesTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a ten minute duration"
+  "@durationTenMinutesTimeoutPrompt": {
+    "description": "Button label to timeout for a ten minute duration"
   },
   "durationOneHourTimeoutPrompt": "Timeout for 1 hour",
   "@durationOneHourTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a one hour duration"
+    "description": "Button label to timeout for a one hour duration"
   },
   "durationSixHoursTimeoutPrompt": "Timeout for 6 hours",
   "@durationSixHoursTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a six hour duration"
+    "description": "Button label to timeout for a six hour duration"
   },
   "durationOneDayTimeoutPrompt": "Timeout for 1 day",
   "@durationOneDayTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a one day duration"
+    "description": "Button label to timeout for a one day duration"
   },
   "durationTwoDaysTimeoutPrompt": "Timeout for 2 days",
   "@durationTwoDaysTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a two day duration"
+    "description": "Button label to timeout for a two day duration"
   },
   "durationOneWeekTimeoutPrompt": "Timeout for 1 week",
   "@durationOneWeekTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a one week duration"
+    "description": "Button label to timeout for a one week duration"
   },
   "durationTwoWeeksTimeoutPrompt": "Timeout for 2 weeks",
   "@durationTwoWeeksTimeoutPrompt": {
-    "descriptionTimeoutPrompt": "Button label to timeout for a two week duration"
-  }
+    "description": "Button label to timeout for a two week duration"
+  },
+  "errorFetchingViewerList": "We couldn't fetch the viewer list for this channel",
+  "@errorFetchingViewerList": {
+      "description": "Error message if unable to fetch list"
+  },
+  "eventsTitle": "Events",
+  "@eventsTitle": {
+    "description": "Title for the events settings screen"
+  },
+  "followEventConfigTitle": "Follow Event",
+  "@followEventConfigTitle": {
+    "description": "Title for the follow event configuration"
+  },
+  "customizeYourFollowEvent": "Customize your follow event",
+  "@customizeYourFollowEvent": {
+    "description": "Subtitle for the follow event configuration"
+  },
+  "subscribeEventConfigTitle": "Subscribe Event",
+  "@subscribeEventConfigTitle": {
+    "description": "Title for the subscribe event configuration"
+  },
+  "customizeYourSubscriptionEvent": "Customize your subscription event",
+  "@customizeYourSubscriptionEvent": {
+    "description": "Subtitle for the subscribe event configuration"
+  },
+  "cheerEventConfigTitle": "Cheer Event",
+  "@cheerEventConfigTitle": {
+    "description": "Title for the cheer event configuration"
+  },
+  "customizeYourCheerEvent": "Customize your cheer event",
+  "@customizeYourCheerEvent": {
+    "description": "Subtitle for the cheer event configuration"
+  },
+  "raidEventConfigTitle": "Raid Event",
+  "@raidEventConfigTitle": {
+    "description": "Title for the raid event configuration"
+  },
+  "customizeYourRaidEvent": "Customize your raid event",
+  "@customizeYourRaidEvent": {
+    "description": "Subtitle for the raid event configuration"
+  },
+  "hostEventConfigTitle": "Host Event",
+  "@hostEventConfigTitle": {
+    "description": "Title for the host event configuration"
+  },
+  "customizeYourHostEvent": "Customize your host event",
+  "@customizeYourHostEvent": {
+    "description": "Subtitle for the host event configuration"
+  },
+  "hypetrainEventConfigTitle": "Hype Train Event",
+  "@hypetrainEventConfigTitle": {
+    "description": "Title for the hypetrain event configuration"
+  },
+  "customizeYourHypetrainEvent": "Customize your hype train event",
+  "@customizeYourHypetrainEvent": {
+    "description": "Subtitle for the hypetrain event configuration"
+  },
+  "pollEventConfigTitle": "Poll Event",
+  "@pollEventConfigTitle": {
+    "description": "Title for the poll event configuration"
+  },
+  "customizeYourPollEvent": "Customize your poll event",
+  "@customizeYourPollEvent": {
+    "description": "Subtitle for the poll event configuration"
+  },
+  "predictionEventConfigTitle": "Prediction Event",
+  "@predictionEventConfigTitle": {
+    "description": "Title for the prediction event configuration"
+  },
+  "customizeYourPredictionEvent": "Customize your prediction event",
+  "@customizeYourPredictionEvent": {
+    "description": "Subtitle for the prediction event configuration"
+  },
+  "channelPointRedemptionEventConfigTitle": "Channel Point Redemption Event",
+  "@channelPointRedemptionEventConfigTitle": {
+    "description": "Title for the channel point redemption event configuration"
+  },
+  "customizeYourChannelPointRedemptionEvent": "Customize your channel point redemption event",
+  "@customizeYourChannelPointRedemptionEvent": {
+    "description": "Subtitle for the channel point redemption event configuration"
+  },
+  "outgoingRaidEventConfigTitle": "Outgoing Raid Event",
+  "@outgoingRaidEventConfigTitle": {
+    "description": "Title for the outgoing raid event configuration"
+  },
+  "customizeYourOutgoingRaidEvent": "Customize your outgoing raid event",
+  "@customizeYourOutgoingRaidEvent": {
+    "description": "Subtitle for the outgoing raid event configuration"
+  },
+  "raidEventMessage": "<b>{displayName}</b> is raiding with <b>{viewerCount}</b> viewers!",
+  "@raidEventMessage": {
+    "description": "Message displayed when a raid event occurs",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "viewerCount": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "shoutout": "Shoutout",
+  "@shoutout": {
+    "description": "Button text for the shoutout action in a raid event"
+  },
+  "raidingEventRaiding": "Raiding <b>{displayName}</b>...",
+  "@raidingEventRaiding": {
+    "description": "Message displayed when a raiding event is in progress",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "raidingEventTimeRemaining": "{seconds}s",
+  "@raidingEventTimeRemaining": {
+    "description": "Message displaying the time remaining for a raiding event",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "raidingEventRaided": "<b>{displayName}</b> has raided!",
+  "@raidingEventRaided": {
+    "description": "Message displayed when a raiding event has completed successfully",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "raidingEventJoin": "Join",
+  "@raidingEventJoin": {
+    "description": "Button text to join the raid in a raiding event"
+  },
+  "raidingEventCanceled": "<b>{displayName}</b>'s raid was canceled.",
+  "@raidingEventCanceled": {
+    "description": "Message displayed when a raiding event is canceled",
+    "placeholders": {
+      "displayName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "subscriptionEvent": "<b>{subscriberUserName}</b> has subscribed at Tier {tier}!",
+  "@subscriptionEvent": {
+    "description": "Message displayed when a subscription event occurs",
+    "placeholders": {
+      "subscriberUserName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "tier": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "subscriptionGiftEvent": "<b>{gifterUserName}</b> has gifted {total} Tier {tier} subs, totaling {cumulativeTotal}!",
+  "@subscriptionGiftEvent": {
+    "description": "Message displayed when a subscription gift event occurs",
+    "placeholders": {
+      "gifterUserName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "tier": {
+        "type": "String",
+        "example": "1"
+      },
+      "cumulativeTotal": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "subscriptionMessageEvent": "<b>{subscriberUserName}</b> has subscribed for {cumulativeMonths} months at Tier {tier}!",
+  "@subscriptionMessageEvent": {
+    "description": "Message displayed when a subscription message event occurs",
+    "placeholders": {
+      "subscriberUserName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "cumulativeMonths": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "tier": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "realtimeCashTipWithDonor": "<b>{donor}</b> tipped <b>{value} {currency}</b>.",
+  "@realtimeCashTipWithDonor": {
+    "description": "Message displayed when a RealtimeCash tip is made with a donor name",
+    "placeholders": {
+      "donor": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "value": {
+        "type": "String",
+        "example": "5"
+      },
+      "currency": {
+        "type": "String",
+        "example": "USD"
+      }
+    }
+  },
+  "realtimeCashTipAnonymous": "Anonymous tipped <b>{value} {currency}</b>.",
+  "@realtimeCashTipAnonymous": {
+    "description": "Message displayed when a RealtimeCash tip is made anonymously",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "5"
+      },
+      "currency": {
+        "type": "String",
+        "example": "USD"
+      }
+    }
+  },
+  "streamElementsTipEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b> on StreamElements.",
+  "@streamElementsTipEventMessage": {
+    "description": "Message displayed when a StreamElements tip event occurs",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "formattedAmount": {
+        "type": "String",
+        "example": "$5.00"
+      }
+    }
+  },
+  "streamlabsTipEventMessage": "<b>{name}</b> tipped <b>{formattedAmount}</b> on Streamlabs.",
+  "@streamlabsTipEventMessage": {
+    "description": "Message displayed when a Streamlabs tip event occurs",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "formattedAmount": {
+        "type": "String",
+        "example": "$5.00"
+      }
+    }
+  },
+  "channelPointRedemptionWithUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points. {userInput}",
+  "@channelPointRedemptionWithUserInput": {
+    "description": "Message displayed when a channel point redemption event occurs with user input",
+    "placeholders": {
+      "redeemerUsername": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "rewardName": {
+        "type": "String",
+        "example": "Highlight My Message"
+      },
+      "rewardCost": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "100"
+      },
+      "userInput": {
+        "type": "String",
+        "example": "Hello World!"
+      }
+    }
+  },
+  "channelPointRedemptionWithoutUserInput": "<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points.",
+  "@channelPointRedemptionWithoutUserInput": {
+    "description": "Message displayed when a channel point redemption event occurs without user input",
+    "placeholders": {
+      "redeemerUsername": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "rewardName": {
+        "type": "String",
+        "example": "Highlight My Message"
+      },
+      "rewardCost": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "100"
+      }
+    }
+  },
+  "cheerEventMessage": "<b>{name}</b> cheered <b>{bits}</b> bits. {cheerMessage}",
+  "@cheerEventMessage": {
+    "description": "Message displayed when a cheer event occurs",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "bits": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "cheerMessage": {
+        "type": "String",
+        "example": "Great stream!"
+      }
+    }
+  },
+  "anonymous": "Anonymous",
+  "@anonymous": {
+    "description": "Username of an anonymous user"
+  },
+  "hostEventMessage": "<b>{fromDisplayName}</b> is hosting with a party of <b>{viewers}</b>.",
+  "@hostEventMessage": {
+    "description": "Message displayed when a host event occurs",
+    "placeholders": {
+      "fromDisplayName": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "viewers": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "hypeTrainEventProgress": "Hype Train level <b>{level}</b> in progress! <b>{progressPercent}%</b> completed!",
+  "@hypeTrainEventProgress": {
+    "description": "Message displayed when a hype train event is in progress",
+    "placeholders": {
+      "level": {
+        "type": "String",
+        "example": "3"
+      },
+      "progressPercent": {
+        "type": "String",
+        "example": "75"
+      }
+    }
+  },
+  "hypeTrainEventEndedSuccessful": "Hype Train level <b>{level}</b> succeeded.",
+  "@hypeTrainEventEndedSuccessful": {
+    "description": "Message displayed when a hype train event ends successfully",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      }
+    }
+  },
+  "hypeTrainEventEndedUnsuccessful": "Hype Train level <b>{level}</b> failed.",
+  "@hypeTrainEventEndedUnsuccessful": {
+    "description": "Message displayed when a hype train event ends unsuccessfully",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "3"
+      }
+    }
+  },
+  "sampleMessage": "This is a sample message for text to speech.",
+  "@sampleMessage": {
+    "description": "Sample message for text to speech"
+  },
+  "actionMessage": "{author} {text}",
+  "@actionMessage": {
+    "description": "Message for an action performed by the author",
+    "placeholders": {
+      "author": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "text": {
+        "type": "String",
+        "example": "is dancing"
+      }
+    }
+  },
+  "saidMessage": "{author} said: {text}",
+  "@saidMessage": {
+    "description": "Message for something said by the author",
+    "placeholders": {
+      "author": {
+        "type": "String",
+        "example": "JohnDoe"
+      },
+      "text": {
+        "type": "String",
+        "example": "Hello everyone!"
+      }
+    }
+  },
+  "textToSpeechEnabled": "Text to speech enabled",
+  "@textToSpeechEnabled": {
+      "description": "Message indicating that text to speech has been enabled"
+    },
+  "textToSpeechDisabled": "Text to speech disabled",
+  "@textToSpeechDisabled": {
+      "description": "Message indicating that text to speech has been disabled"
+  },
+  "alertsEnabled" : "Alerts enabled tap again to enable text to speech",
+    "@alertsEnabled" : {
+        "description": "Message indicating that alerts have been enabled"
+    },
+    "alertsDisabled" : "Alerts disabled tap again to enable text to speech",
+    "@alertsDisabled" : {
+        "description": "Message indicating that alerts have been disabled"
+    }
 }

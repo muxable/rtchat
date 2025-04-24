@@ -11,12 +11,122 @@ import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/commands.dart';
+import 'package:rtchat/models/messages/tokens.dart';
+import 'package:rtchat/models/messages/twitch/emote.dart';
+import 'package:rtchat/models/style.dart';
 import 'package:rtchat/share_channel.dart';
+
+class EmoteTextEditingController extends TextEditingController {
+  List<Emote> emotes;
+
+  EmoteTextEditingController(this.emotes);
+
+  Iterable<MessageToken> tokenizeEmotes(
+      String message, List<Emote> emotes) sync* {
+    final emotesMap = {for (final emote in emotes) emote.code: emote};
+    var lastParsedStart = 0;
+    for (var start = 0; start < message.length;) {
+      final end = message.indexOf(" ", start);
+      final token =
+          end == -1 ? message.substring(start) : message.substring(start, end);
+      final emote = emotesMap[token.trim()];
+      if (emote != null) {
+        if (lastParsedStart != start) {
+          yield TextToken(message.substring(lastParsedStart, start));
+        }
+        yield EmoteToken(url: emote.uri, code: emote.code);
+        lastParsedStart = end == -1 ? message.length : end;
+      }
+      start = end == -1 ? message.length : end + 1;
+    }
+    if (lastParsedStart != message.length) {
+      yield TextToken(message.substring(lastParsedStart));
+    }
+  }
+
+  static Iterable<InlineSpan> render(
+      BuildContext context, StyleModel styleModel, MessageToken token) sync* {
+    if (token is TextToken) {
+      yield TextSpan(text: token.text);
+    } else if (token is EmoteToken) {
+      yield* [
+        TextSpan(text: "\u200B" * (token.code.length - 1)),
+        WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Tooltip(
+                message: token.code,
+                preferBelow: false,
+                child: Image(
+                    height: styleModel.fontSize,
+                    image: ResilientNetworkImage(token.url),
+                    errorBuilder: (context, error, stackTrace) =>
+                        Text(token.code))))
+      ];
+    } else {
+      throw Exception("invalid token");
+    }
+  }
+
+  @override
+  TextSpan buildTextSpan({
+    required BuildContext context,
+    TextStyle? style,
+    required bool withComposing,
+  }) {
+    assert(!value.composing.isValid ||
+        !withComposing ||
+        value.isComposingRangeValid);
+    // If the composing range is out of range for the current text, ignore it to
+    // preserve the tree integrity, otherwise in release mode a RangeError will
+    // be thrown and this EditableText will be built with a broken subtree.
+    final bool composingRegionOutOfRange =
+        !value.isComposingRangeValid || !withComposing;
+
+    final styleModel = Provider.of<StyleModel>(context, listen: false);
+
+    if (composingRegionOutOfRange) {
+      return TextSpan(
+          style: style,
+          children: tokenizeEmotes(text, emotes)
+              .expand((token) => render(context, styleModel, token))
+              .toList());
+    }
+
+    final TextStyle composingStyle =
+        style?.merge(const TextStyle(decoration: TextDecoration.underline)) ??
+            const TextStyle(decoration: TextDecoration.underline);
+
+    return TextSpan(
+      style: style,
+      children: <TextSpan>[
+        TextSpan(
+            children:
+                tokenizeEmotes(value.composing.textBefore(value.text), emotes)
+                    .expand((token) => render(context, styleModel, token))
+                    .toList()),
+        TextSpan(
+          style: composingStyle,
+          text: value.composing.textInside(value.text),
+        ),
+        TextSpan(
+            children:
+                tokenizeEmotes(value.composing.textAfter(value.text), emotes)
+                    .expand((token) => render(context, styleModel, token))
+                    .toList()),
+      ],
+    );
+  }
+}
 
 class MessageInputWidget extends StatefulWidget {
   final Channel channel;
+  final List<Emote> emotes; // TODO: decouple this from the twitch emote model.
 
-  const MessageInputWidget({super.key, required this.channel});
+  const MessageInputWidget({
+    super.key,
+    required this.channel,
+    required this.emotes,
+  });
 
   @override
   State<MessageInputWidget> createState() => _MessageInputWidgetState();
@@ -38,7 +148,7 @@ const _greyscale = ColorFilter.matrix([
 ]);
 
 class _MessageInputWidgetState extends State<MessageInputWidget> {
-  final _textEditingController = TextEditingController();
+  EmoteTextEditingController? _textEditingController;
   final _chatInputFocusNode = FocusNode();
   var _isEmotePickerVisible = false;
   var _isKeyboardVisible = false;
@@ -51,6 +161,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   void initState() {
     super.initState();
     final keyboardVisibilityController = KeyboardVisibilityController();
+    _textEditingController = EmoteTextEditingController(widget.emotes);
     // Subscribe to keyboard visibility changes.
     keyboardSubscription =
         keyboardVisibilityController.onChange.listen((visible) {
@@ -66,18 +177,24 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       ..getSharedText().then(_handleSharedData);
   }
 
+  @override
+  void didUpdateWidget(MessageInputWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _textEditingController?.emotes = widget.emotes;
+  }
+
   // Handles any shared data we may receive.
   void _handleSharedData(String sharedData) {
-    debugPrint('Shared data received: $sharedData');
     setState(() {
-      _textEditingController.text = sharedData;
+      _textEditingController?.text = sharedData;
     });
   }
 
   @override
   void dispose() {
     keyboardSubscription.cancel();
-    _textEditingController.dispose();
+    _chatInputFocusNode.dispose();
+    _textEditingController?.dispose();
     super.dispose();
   }
 
@@ -91,8 +208,11 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       final commandsModel = Provider.of<CommandsModel>(context, listen: false);
       commandsModel.addCommand(Command(value, DateTime.now()));
     }
+    if (!mounted) {
+      return;
+    }
     setState(() {
-      _textEditingController.clear();
+      _textEditingController?.clear();
     });
     var done = false;
     await Future.wait([
@@ -111,6 +231,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
           ));
         }
         done = true;
+        if (!mounted) {
+          return;
+        }
         setState(() {
           _pendingSend.remove(value);
         });
@@ -118,6 +241,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       () async {
         await Future.delayed(const Duration(seconds: 1));
         if (!done) {
+          if (!mounted) {
+            return;
+          }
           setState(() {
             _pendingSend.add(value);
           });
@@ -126,45 +252,34 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     ]);
   }
 
-  Widget _buildEmotePicker(BuildContext context) {
-    return EmotePickerWidget(
-        channel: widget.channel,
-        onEmoteSelected: (emote) {
-          if (emote == null) {
-            setState(() {
-              _isEmotePickerVisible = false;
-            });
-            return;
-          }
-          _textEditingController.text =
-              "${_textEditingController.text} ${emote.code}";
-        });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Material(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // render pending sends
-        ..._pendingSend.map((e) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-              child:
-                  Text(e, style: const TextStyle(fontStyle: FontStyle.italic)),
-            )),
-        if (_isKeyboardVisible)
-          AutocompleteWidget(
-            controller: _textEditingController,
-            onSend: sendMessage,
-            channel: widget.channel,
-          ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Container(
-            decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(24)),
-                color: Theme.of(context).inputDecorationTheme.fillColor),
-            child: Row(children: [
-              Expanded(
+      child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // render pending sends
+            ..._pendingSend.map((e) => Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                  child: Text(e,
+                      style: const TextStyle(fontStyle: FontStyle.italic)),
+                )),
+            if (_isKeyboardVisible)
+              Flexible(
+                child: AutocompleteWidget(
+                  controller: _textEditingController!,
+                  onSend: sendMessage,
+                  channel: widget.channel,
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Container(
+                decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(24)),
+                    color: Theme.of(context).splashColor),
                 child: TextField(
                   focusNode: _chatInputFocusNode,
                   controller: _textEditingController,
@@ -173,46 +288,40 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                   minLines: 1,
                   textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
-                      prefixIcon: Material(
-                        color: Theme.of(context).inputDecorationTheme.fillColor,
-                        borderRadius: BorderRadius.circular(24),
-                        child: IconButton(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            onPressed: () {
-                              if (_isEmotePickerVisible) {
-                                setState(() => _isEmotePickerVisible = false);
-                                _chatInputFocusNode.requestFocus();
-                              } else {
-                                _chatInputFocusNode.unfocus();
-                                setState(() {
-                                  _isEmotePickerVisible = true;
-                                  _emoteIndex =
-                                      Random().nextInt(_emotes.length);
-                                });
-                              }
-                            },
-                            splashRadius: 24,
-                            icon: _isEmotePickerVisible
-                                ? const Icon(Icons.keyboard_rounded)
-                                : ColorFiltered(
-                                    colorFilter: _greyscale,
-                                    child: Image(
-                                      image: ResilientNetworkImage(
-                                          Uri.parse(_emotes[_emoteIndex])),
-                                    ))),
+                      prefixIcon: IconButton(
+                        onPressed: () {
+                          if (_isEmotePickerVisible) {
+                            setState(() => _isEmotePickerVisible = false);
+                            _chatInputFocusNode.requestFocus();
+                          } else {
+                            _chatInputFocusNode.unfocus();
+                            setState(() {
+                              _isEmotePickerVisible = true;
+                              _emoteIndex = Random().nextInt(_emotes.length);
+                            });
+                          }
+                        },
+                        splashRadius: 24,
+                        icon: _isEmotePickerVisible
+                            ? const Icon(Icons.keyboard_rounded)
+                            : ColorFiltered(
+                                colorFilter: _greyscale,
+                                child: Image(
+                                  width: 24,
+                                  height: 24,
+                                  image: ResilientNetworkImage(
+                                      Uri.parse(_emotes[_emoteIndex])),
+                                )),
                       ),
-                      suffixIcon: Material(
-                        color: Theme.of(context).inputDecorationTheme.fillColor,
-                        borderRadius: BorderRadius.circular(24),
-                        child: IconButton(
-                          icon: const Icon(Icons.send_rounded),
-                          color: Theme.of(context).colorScheme.primary,
-                          splashRadius: 24,
-                          onPressed: () =>
-                              sendMessage(_textEditingController.text),
-                        ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.send_rounded),
+                        color: Theme.of(context).colorScheme.primary,
+                        splashRadius: 24,
+                        onPressed: () =>
+                            sendMessage(_textEditingController?.text ?? ''),
                       ),
                       border: InputBorder.none,
+                      hintMaxLines: 1,
                       hintText: () {
                         final l10n = AppLocalizations.of(context)!;
                         if (_textSeed < 0.5) {
@@ -232,10 +341,11 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                       return;
                     }
                     setState(() {
-                      _textEditingController.value = TextEditingValue(
+                      _textEditingController?.value = TextEditingValue(
                           text: filtered,
                           selection: TextSelection.fromPosition(TextPosition(
-                              offset: _textEditingController.text.length)));
+                              offset:
+                                  _textEditingController?.text.length ?? 0)));
                     });
                   },
                   onSubmitted: sendMessage,
@@ -245,11 +355,27 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                   },
                 ),
               ),
-            ]),
-          ),
-        ),
-        _isEmotePickerVisible ? _buildEmotePicker(context) : Container(),
-      ]),
+            ),
+            _isEmotePickerVisible
+                ? EmotePickerWidget(
+                    channel: widget.channel,
+                    emotes: widget.emotes,
+                    onEmoteSelected: (emote) {
+                      if (emote == null) {
+                        setState(() {
+                          _isEmotePickerVisible = false;
+                        });
+                        return;
+                      }
+                      if (_textEditingController?.text.isNotEmpty ?? false) {
+                        _textEditingController?.text =
+                            "${_textEditingController?.text} ${emote.code} ";
+                      } else {
+                        _textEditingController?.text = "${emote.code} ";
+                      }
+                    })
+                : Container(),
+          ]),
     );
   }
 }

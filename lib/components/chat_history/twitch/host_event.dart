@@ -1,32 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:styled_text/styled_text.dart';
 
 class TwitchHostEventWidget extends StatelessWidget {
   final TwitchHostEventModel model;
 
-  final NumberFormat _formatter = NumberFormat.decimalPattern();
-
-  TwitchHostEventWidget(this.model, {super.key});
+  const TwitchHostEventWidget(this.model, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return DecoratedEventWidget.avatar(
       avatar: ResilientNetworkImage(model.from.profilePictureUrl),
-      child: Text.rich(TextSpan(
-        children: [
-          TextSpan(
-              text: model.from.displayName,
-              style: Theme.of(context).textTheme.titleSmall),
-          const TextSpan(text: " is hosting with a party of "),
-          TextSpan(
-              text: _formatter.format(model.viewers),
-              style: Theme.of(context).textTheme.titleSmall),
-          const TextSpan(text: "."),
-        ],
-      )),
+      child: StyledText(
+        text: AppLocalizations.of(context)!.hostEventMessage(
+            model.from.displayName ?? AppLocalizations.of(context)!.anonymous,
+            model.viewers),
+        tags: {
+          'b': StyledTextTag(
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold)),
+        },
+      ),
     );
   }
 }

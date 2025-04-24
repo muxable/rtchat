@@ -2,10 +2,12 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <queries>
         <intent>
@@ -56,7 +58,7 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-        <activity android:name="com.linusu.flutter_web_auth.CallbackActivity" android:exported="true">
+        <activity android:name="com.linusu.flutter_web_auth_2.CallbackActivity" android:exported="true">
             <intent-filter android:label="flutter_web_auth">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -84,5 +86,19 @@
         <service
             android:name="id.flutter.flutter_background_service.BackgroundService"
             android:foregroundServiceType="mediaPlayback"/>
+
+       <service
+        android:name=".NotificationService"
+        android:foregroundServiceType="dataSync|mediaPlayback"
+        android:exported="false">
+       </service>
+
+    <receiver android:name=".DisableTTSReceiver"
+    android:exported="false"> <!-- Set to false if not intended for public use -->
+    <intent-filter>
+        <action android:name="com.rtirl.chat.ACTION_DISABLE_TTS"/>
+    </intent-filter>
+    </receiver>
+
     </application>
 </manifest>

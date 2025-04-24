@@ -1,6 +1,7 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 
 Color darken(Color color, [double amount = .1]) {
   assert(amount >= 0 && amount <= 1);
@@ -54,6 +55,7 @@ class StyleModel extends ChangeNotifier {
   bool _isDeletedMessagesVisible = true;
   CompactMessages _compactMessages = CompactMessages.none;
   bool _isDiscoModeAvailable = false;
+  bool _isLoginShown = true;
 
   double get fontSize {
     return _fontSize;
@@ -99,6 +101,22 @@ class StyleModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get isLoginShown => _isLoginShown;
+
+  set isLoginShown(bool isLoginShown) {
+    _isLoginShown = isLoginShown;
+    notifyListeners();
+  }
+
+  String getTwitchDisplayName(TwitchUserModel user) {
+    final author = user.displayName ?? user.login;
+    if (author.toLowerCase() != user.login && isLoginShown) {
+      // this is an internationalized name.
+      return "${user.displayName} (${user.login})";
+    }
+    return author;
+  }
+
   bool get isDiscoModeAvailable => _isDiscoModeAvailable;
 
   StyleModel.fromJson(Map<String, dynamic> json) {
@@ -117,6 +135,9 @@ class StyleModel extends ChangeNotifier {
     if (json['isDiscoModeEnabled'] != null) {
       _isDiscoModeAvailable = json['isDiscoModeEnabled'];
     }
+    if (json['isLoginShown'] != null) {
+      _isLoginShown = json['isLoginShown'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -125,5 +146,6 @@ class StyleModel extends ChangeNotifier {
         "isDeletedMessagesVisible": _isDeletedMessagesVisible,
         "compactMessages": _compactMessages.toJson(),
         "isDiscoModeEnabled": _isDiscoModeAvailable,
+        "isLoginShown": _isLoginShown,
       };
 }

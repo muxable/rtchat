@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
+import 'package:styled_text/styled_text.dart';
 
 class TwitchChannelPointRedemptionEventWidget extends StatelessWidget {
   final TwitchChannelPointRedemptionEventModel model;
@@ -11,21 +13,19 @@ class TwitchChannelPointRedemptionEventWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedEventWidget.icon(
       icon: model.icon,
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-                text: model.redeemerUsername,
-                style: Theme.of(context).textTheme.titleSmall),
-            const TextSpan(text: " redeemed "),
-            TextSpan(
-                text: "${model.rewardName} ",
-                style: Theme.of(context).textTheme.titleSmall),
-            TextSpan(
-                text:
-                    "for ${model.rewardCost} points. ${model.userInput ?? ''}"),
-          ],
-        ),
+      child: StyledText(
+        text: model.userInput != null
+            ? AppLocalizations.of(context)!.channelPointRedemptionWithUserInput(
+                model.redeemerUsername,
+                model.rewardName,
+                model.rewardCost,
+                model.userInput!)
+            : AppLocalizations.of(context)!
+                .channelPointRedemptionWithoutUserInput(
+                    model.redeemerUsername, model.rewardName, model.rewardCost),
+        tags: {
+          'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+        },
       ),
     );
   }

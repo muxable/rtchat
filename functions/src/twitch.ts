@@ -50,7 +50,7 @@ export async function getTwitchId(login: string) {
         Authorization: `Bearer ${token.token["access_token"]}`,
         "Client-Id": TWITCH_CLIENT_ID,
       },
-    }
+    },
   );
 
   const json = (await response.json()) as any;
@@ -75,7 +75,7 @@ export async function timeout(
   broadcasterId: string,
   userId: string,
   length: number,
-  reason: string
+  reason: string,
 ) {
   const profile = await admin.firestore().collection("profiles").doc(uid).get();
   if (!profile.exists) {
@@ -97,7 +97,7 @@ export async function timeout(
           reason,
         },
       }),
-    }
+    },
   );
   return await response.json();
 }
@@ -105,7 +105,7 @@ export async function timeout(
 export async function unban(
   uid: string,
   broadcasterId: string,
-  userId: string
+  userId: string,
 ) {
   const profile = await admin.firestore().collection("profiles").doc(uid).get();
   if (!profile.exists) {
@@ -120,7 +120,7 @@ export async function unban(
     {
       method: "DELETE",
       headers: await getHeaders(uid),
-    }
+    },
   );
   return await response.json();
 }
@@ -135,11 +135,16 @@ export async function ban(uid: string, broadcasterId: string, userId: string) {
     return;
   }
   const response = await fetch(
-    `https://api.twitch.tv/helix/moderation/bans?broadcaster_id=${broadcasterId}&moderator_id=${moderatorId}&user_id=${userId}`,
+    `https://api.twitch.tv/helix/moderation/bans?broadcaster_id=${broadcasterId}&moderator_id=${moderatorId}`,
     {
-      method: "DELETE",
+      method: "POST",
       headers: await getHeaders(uid),
-    }
+      body: JSON.stringify({
+        data: {
+          user_id: userId,
+        },
+      }),
+    },
   );
   return await response.json();
 }
@@ -147,7 +152,7 @@ export async function ban(uid: string, broadcasterId: string, userId: string) {
 export async function deleteMessage(
   uid: string,
   broadcasterId: string,
-  messageId: string
+  messageId: string,
 ) {
   const profile = await admin.firestore().collection("profiles").doc(uid).get();
   if (!profile.exists) {
@@ -162,7 +167,7 @@ export async function deleteMessage(
     {
       method: "DELETE",
       headers: await getHeaders(uid),
-    }
+    },
   );
   return await response.json();
 }
@@ -170,7 +175,7 @@ export async function deleteMessage(
 export async function raid(
   uid: string,
   fromBroadcasterId: string,
-  toBroadcasterId: string
+  toBroadcasterId: string,
 ) {
   const profile = await admin.firestore().collection("profiles").doc(uid).get();
   if (!profile.exists) {
@@ -182,7 +187,7 @@ export async function raid(
     {
       method: "POST",
       headers: await getHeaders(uid),
-    }
+    },
   );
   return await response.json();
 }

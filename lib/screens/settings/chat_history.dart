@@ -39,7 +39,8 @@ final message2 = TwitchMessageModel(
     channelId: 'placeholder');
 final message3 = TwitchMessageModel(
     messageId: "placeholder3",
-    author: const TwitchUserModel(userId: 'muxfd', login: 'muxfd'),
+    author: const TwitchUserModel(
+        userId: 'muxfd', login: 'muxfd', displayName: 'マックス'),
     tags: {
       "color": "#00FF7F",
       "badges-raw": "broadcaster/1,moderator/1",
@@ -139,6 +140,17 @@ class ChatHistoryScreen extends StatelessWidget {
               value: styleModel.isDeletedMessagesVisible,
               onChanged: (value) {
                 styleModel.isDeletedMessagesVisible = value;
+              },
+            ),
+            SwitchListTile.adaptive(
+              title: const Text('Show login names'),
+              subtitle: styleModel.isLoginShown
+                  ? const Text(
+                      "Login names will be shown if they are different from the display name")
+                  : const Text("Login names will be hidden"),
+              value: styleModel.isLoginShown,
+              onChanged: (value) {
+                styleModel.isLoginShown = value;
               },
             ),
             Padding(

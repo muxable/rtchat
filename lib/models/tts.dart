@@ -4,20 +4,20 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:crypto/crypto.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
-import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/tts/language.dart';
+import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TtsModel extends ChangeNotifier {
   var _isCloudTtsEnabled = false;
@@ -42,11 +42,13 @@ class TtsModel extends ChangeNotifier {
   var _speed = Platform.isAndroid ? 0.8 : 0.395;
   var _pitch = 1.0;
   var _isEnabled = false;
+  var _isNewTTsEnabled = false;
   final Set<TwitchUserModel> _mutedUsers = {};
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
-  final bool _useNewTTs = kDebugMode;
+  var _isAlertsOnly = false;
+  var _isSubscribersOnly = false;
 
   @override
   void dispose() {
@@ -105,7 +107,7 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String getVocalization(MessageModel model,
+  String getVocalization(AppLocalizations l10n, MessageModel model,
       {bool includeAuthorPrelude = false}) {
     if (model is TwitchMessageModel) {
       final text = model.tokenized
@@ -132,31 +134,97 @@ class TtsModel extends ChangeNotifier {
       if (!includeAuthorPrelude || isPreludeMuted) {
         return text;
       }
-      return model.isAction ? "$author $text" : "$author said $text";
+      return model.isAction
+          ? l10n.actionMessage(author, text)
+          : l10n.saidMessage(author, text);
     } else if (model is StreamStateEventModel) {
-      return model.isOnline ? "Stream is online" : "Stream is offline";
+      final timestamp = model.timestamp;
+      return model.isOnline
+          ? l10n.streamOnline(timestamp, timestamp)
+          : l10n.streamOffline(timestamp, timestamp);
     } else if (model is SystemMessageModel) {
       return model.text;
     }
     return "";
   }
 
+  bool get newTtsEnabled {
+    return _isNewTTsEnabled;
+  }
+
+  bool get isAlertsOnly {
+    return _isAlertsOnly;
+  }
+
+  bool get isSubscribersOnly {
+    return _isSubscribersOnly;
+  }
+
+  set isSubscribersOnly(bool value) {
+    _isSubscribersOnly = value;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
+
+  void setAlertsOnly(AppLocalizations localizations, bool value) {
+    if (value == _isAlertsOnly) {
+      return;
+    }
+
+    if (value) {
+      _isEnabled = true;
+    }
+
+    _isAlertsOnly = value;
+    if (value) {
+      if (!newTtsEnabled) {
+        say(localizations,
+            SystemMessageModel(text: localizations.alertsEnabled),
+            force: true);
+      }
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
+
+  set newTtsEnabled(bool value) {
+    if (value == _isNewTTsEnabled) {
+      return;
+    }
+    _isNewTTsEnabled = value;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
+
   bool get enabled {
     return _isEnabled;
   }
 
-  set enabled(bool value) {
-    if (value == _isEnabled) {
+  void setEnabled(AppLocalizations localizations, bool value) {
+    if (value == _isEnabled && !_isAlertsOnly) {
       return;
     }
+
     _isEnabled = value;
     if (value) {
       _lastMessageTime = DateTime.now();
     }
-    say(
-        SystemMessageModel(
-            text: "Text to speech ${value ? "enabled" : "disabled"}"),
-        force: true);
+
+    if (!newTtsEnabled) {
+      say(
+          localizations,
+          SystemMessageModel(
+              text: value
+                  ? localizations.textToSpeechEnabled
+                  : localizations.textToSpeechDisabled),
+          force: true);
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });
@@ -165,8 +233,6 @@ class TtsModel extends ChangeNotifier {
   Language get language {
     return _language;
   }
-
-  bool get useNewTts => _useNewTTs;
 
   set language(Language language) {
     _language = language;
@@ -273,13 +339,21 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  void say(MessageModel model, {bool force = false}) async {
+  void say(AppLocalizations localizations, MessageModel model,
+      {bool force = false}) async {
     if (!enabled && !force) {
       return;
     }
-    // we have to manage our own queue here because queueing is not supported on ios.
+
+    if (_isAlertsOnly && model is TwitchMessageModel) {
+      return;
+    }
 
     if (model is TwitchMessageModel) {
+      if (_isSubscribersOnly && (model.tags['badges']?['subscriber'] == null)) {
+        return;
+      }
+
       if (_mutedUsers.any((user) =>
           user.displayName?.toLowerCase() ==
           model.author.displayName?.toLowerCase())) {
@@ -305,8 +379,11 @@ class TtsModel extends ChangeNotifier {
       includeAuthorPrelude = !(activeMessage.author == model.author);
     }
 
-    final vocalization =
-        getVocalization(model, includeAuthorPrelude: includeAuthorPrelude);
+    final vocalization = getVocalization(
+      localizations,
+      model,
+      includeAuthorPrelude: includeAuthorPrelude,
+    );
 
     // if the vocalization is empty, skip the message
     if (vocalization.isEmpty) {
@@ -341,11 +418,9 @@ class TtsModel extends ChangeNotifier {
         if (model is TwitchMessageModel) {
           if (isRandomVoiceEnabled) {
             final name = model.author.displayName;
-            final hash = BigInt.parse(
-                sha1.convert(utf8.encode(name!)).toString(),
-                radix: 16);
-            voice = voices[hash.remainder(BigInt.from(voices.length)).toInt()];
-            pitch = hash.remainder(BigInt.from(21)).toInt() / 5 - 2;
+            final hash = name.hashCode;
+            voice = voices[hash % voices.length];
+            pitch = (hash % 21) / 5 - 2;
           } else {
             voice = _voice[_language.languageCode];
             pitch = _pitch * 4 - 2;
@@ -379,7 +454,12 @@ class TtsModel extends ChangeNotifier {
     _pending.clear();
   }
 
-  TtsModel.fromJson(Map<String, dynamic> json) {
+  void updateFromJson(Map<String, dynamic> json) {
+    _updateFromJsonInternal(json);
+    notifyListeners();
+  }
+
+  void _updateFromJsonInternal(Map<String, dynamic> json) {
     if (json['isBotMuted'] != null) {
       _isBotMuted = json['isBotMuted'];
     }
@@ -410,6 +490,10 @@ class TtsModel extends ChangeNotifier {
         _mutedUsers.add(TwitchUserModel.fromJson(user));
       }
     }
+  }
+
+  TtsModel.fromJson(Map<String, dynamic> json) {
+    _updateFromJsonInternal(json);
   }
 
   Map<String, dynamic> toJson() => {

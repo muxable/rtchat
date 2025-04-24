@@ -2,11 +2,9 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:crypto/crypto.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert' as convert;
 
 import 'package:path_provider/path_provider.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
@@ -15,8 +13,7 @@ class PlaceholderImage extends ImageProvider<PlaceholderImage> {
   final Uri uri;
   final double scale;
 
-  String get hash =>
-      sha1.convert(convert.utf8.encode(uri.toString())).toString();
+  int get hash => uri.hashCode;
 
   const PlaceholderImage(this.uri, {this.scale = 1.0});
 

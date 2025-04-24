@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:convert' as convert;
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:crypto/crypto.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -93,13 +91,12 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
     return client;
   }
 
-  static final Map<String, Future<Codec>> _pending = {};
+  static final Map<int, Future<Codec>> _pending = {};
 
   final Uri uri;
   final double scale;
 
-  String get hash =>
-      sha1.convert(convert.utf8.encode(uri.toString())).toString();
+  int get hash => uri.hashCode;
 
   PlaceholderImage get placeholderImage => PlaceholderImage(uri, scale: scale);
 

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:styled_text/styled_text.dart';
 
 class TwitchRaidingEventWidget extends StatelessWidget {
   final TwitchRaidingEventModel model;
@@ -34,20 +36,23 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                       ResilientNetworkImage(model.targetUser.profilePictureUrl),
                   child: Row(children: [
                     Expanded(
-                      child: Text.rich(TextSpan(
-                        children: [
-                          const TextSpan(text: "Raiding "),
-                          TextSpan(
-                              text: model.targetUser.displayName,
+                      child: StyledText(
+                        text: AppLocalizations.of(context)!.raidingEventRaiding(
+                            model.targetUser.displayName ??
+                                AppLocalizations.of(context)!.anonymous),
+                        tags: {
+                          'b': StyledTextTag(
                               style: Theme.of(context).textTheme.titleSmall),
-                          const TextSpan(text: "."),
-                        ],
-                      )),
+                        },
+                      ),
                     ),
                     Text.rich(TextSpan(
                         text: remaining.isNegative
-                            ? "0s"
-                            : "${remaining.inSeconds + 1}s",
+                            ? AppLocalizations.of(context)!
+                                .raidingEventTimeRemaining(0)
+                            : AppLocalizations.of(context)!
+                                .raidingEventTimeRemaining(
+                                    remaining.inSeconds + 1),
                         style: Theme.of(context).textTheme.titleSmall))
                   ])),
             ]);
@@ -58,18 +63,18 @@ class TwitchRaidingEventWidget extends StatelessWidget {
               avatar: ResilientNetworkImage(model.targetUser.profilePictureUrl),
               child: Row(children: [
                 Expanded(
-                  child: Text.rich(TextSpan(
-                    children: [
-                      const TextSpan(text: "Raided "),
-                      TextSpan(
-                          text: model.targetUser.displayName,
+                  child: StyledText(
+                    text: AppLocalizations.of(context)!.raidingEventRaided(
+                        model.targetUser.displayName ??
+                            AppLocalizations.of(context)!.anonymous),
+                    tags: {
+                      'b': StyledTextTag(
                           style: Theme.of(context).textTheme.titleSmall),
-                      const TextSpan(text: "."),
-                    ],
-                  )),
+                    },
+                  ),
                 ),
                 Text.rich(TextSpan(
-                    text: "Join",
+                    text: AppLocalizations.of(context)!.raidingEventJoin,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: Theme.of(context)
                             .buttonTheme
@@ -83,15 +88,14 @@ class TwitchRaidingEventWidget extends StatelessWidget {
     } else {
       return DecoratedEventWidget.avatar(
           avatar: ResilientNetworkImage(model.targetUser.profilePictureUrl),
-          child: Text.rich(TextSpan(
-            children: [
-              const TextSpan(text: "Raid to "),
-              TextSpan(
-                  text: model.targetUser.displayName,
-                  style: Theme.of(context).textTheme.titleSmall),
-              const TextSpan(text: " canceled."),
-            ],
-          )));
+          child: StyledText(
+            text: AppLocalizations.of(context)!.raidingEventCanceled(
+                model.targetUser.displayName ??
+                    AppLocalizations.of(context)!.anonymous),
+            tags: {
+              'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+            },
+          ));
     }
   }
 }

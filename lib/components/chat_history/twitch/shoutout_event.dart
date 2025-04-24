@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/models/messages/twitch/shoutout_create_event.dart';
 import 'package:rtchat/models/messages/twitch/shoutout_receive_event.dart';
+import 'package:styled_text/styled_text.dart';
 
 class TwitchShoutoutCreateEventWidget extends StatelessWidget {
   final TwitchShoutoutCreateEventModel model;
@@ -12,27 +13,15 @@ class TwitchShoutoutCreateEventWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedEventWidget.icon(
       icon: Icons.campaign,
-      child: Builder(builder: (context) {
-        return Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                  text: "Shoutout was given to ",
-                  style: Theme.of(context).textTheme.titleSmall),
-              TextSpan(
-                text: model.toBroadcasterUserName,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall!
-                    .copyWith(color: Colors.purpleAccent),
-              ),
-              TextSpan(
-                  text: " with ${model.viewerCount} viewers",
-                  style: Theme.of(context).textTheme.titleSmall),
-            ],
-          ),
-        );
-      }),
+      child: StyledText(
+        text:
+            'Shoutout was given to <b>${model.toBroadcasterUserName}</b> with ${model.viewerCount} viewers',
+        tags: {
+          'b': StyledTextTag(
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.purpleAccent)),
+        },
+      ),
     );
   }
 }
@@ -46,27 +35,15 @@ class TwitchShoutoutReceiveEventWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedEventWidget.icon(
       icon: Icons.campaign,
-      child: Builder(builder: (context) {
-        return Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: model.fromBroadcasterUserName,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall!
-                    .copyWith(color: Colors.purpleAccent),
-              ),
-              TextSpan(
-                  text: " gave you a shoutout",
-                  style: Theme.of(context).textTheme.titleSmall),
-              TextSpan(
-                  text: " to ${model.viewerCount} viewers",
-                  style: Theme.of(context).textTheme.titleSmall),
-            ],
-          ),
-        );
-      }),
+      child: StyledText(
+        text:
+            '<b>${model.fromBroadcasterUserName}</b> gave you a shoutout to ${model.viewerCount} viewers',
+        tags: {
+          'b': StyledTextTag(
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.purpleAccent)),
+        },
+      ),
     );
   }
 }

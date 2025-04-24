@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:core';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:rtchat/main.dart';
 import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
@@ -34,7 +36,14 @@ class MessagesModel extends ChangeNotifier {
     _separators = {};
     _events = [];
     _isLive = false;
-    _tts?.enabled = false;
+    if (_tts != null) {
+      final localizations = _getLocalizations();
+      if (localizations != null) {
+        _tts!.setEnabled(localizations, false);
+      } else {
+        debugPrint("Localizations not available");
+      }
+    }
     notifyListeners();
 
     _subscription?.cancel();
@@ -52,7 +61,13 @@ class MessagesModel extends ChangeNotifier {
             _messages.insert(index, event.model);
           } else {
             _messages.add(event.model);
-            _tts?.say(event.model);
+            // Pass localizations to the TTS say method
+            final localizations = _getLocalizations();
+            if (localizations != null) {
+              _tts?.say(localizations, event.model);
+            } else {
+              debugPrint("Localizations not available");
+            }
             if (_isLive && shouldPing()) {
               ProfilesAdapter.instance
                   .getIsOnline(channelId: channel.toString())
@@ -199,7 +214,14 @@ class MessagesModel extends ChangeNotifier {
       return;
     }
     _tts = tts;
-    tts?.enabled = false;
+    if (_tts != null) {
+      final localizations = _getLocalizations();
+      if (localizations != null) {
+        _tts!.setEnabled(localizations, false);
+      } else {
+        debugPrint("Localizations not available");
+      }
+    }
     notifyListeners();
   }
 
@@ -252,4 +274,16 @@ class MessagesModel extends ChangeNotifier {
         "announcementPinDuration": _announcementPinDuration.inSeconds.toInt(),
         "pingMinGapDuration": _pingMinGapDuration.inSeconds.toInt(),
       };
+
+  BuildContext? _getContext() {
+    return navigatorKey.currentContext;
+  }
+
+  AppLocalizations? _getLocalizations() {
+    final context = _getContext();
+    if (context != null) {
+      return AppLocalizations.of(context);
+    }
+    return null;
+  }
 }

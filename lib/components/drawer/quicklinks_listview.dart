@@ -31,15 +31,15 @@ class QuicklinksListView extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             onTap: () => openUrl(source.url),
-            onLongPress: () {
+            onLongPress: () async {
               Navigator.pop(context);
-              Clipboard.setData(ClipboardData(text: url)).then((_) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text(
-                          AppLocalizations.of(context)!.copiedToClipboard)),
-                );
-              });
+              await Clipboard.setData(ClipboardData(text: url));
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content:
+                        Text(AppLocalizations.of(context)!.copiedToClipboard)),
+              );
             },
           );
         }).toList(),

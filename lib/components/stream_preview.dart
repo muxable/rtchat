@@ -137,7 +137,7 @@ class _StreamPreviewState extends State<StreamPreview> {
         Positioned.fill(
           child: IgnorePointer(
             child: Container(
-              color: Colors.black.withOpacity(0.8),
+              color: Colors.black.withValues(alpha: 0.8),
               child: Center(
                 child: Text(
                   AppLocalizations.of(context)!.streamPreviewLoading,
@@ -167,7 +167,7 @@ class _StreamPreviewState extends State<StreamPreview> {
               duration: const Duration(milliseconds: 100),
               opacity: _isOverlayActive ? 1.0 : 0.0,
               child: Container(
-                color: Colors.black.withOpacity(0.4),
+                color: Colors.black.withValues(alpha: 0.4),
                 child: Padding(
                   padding: const EdgeInsets.all(8),
                   child: Consumer<StreamPreviewModel>(
