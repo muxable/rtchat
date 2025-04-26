@@ -74,7 +74,7 @@ class MainActivity : FlutterActivity() {
                     result.success(true)
                 }
                 "showNotification" -> {
-                    startNotificationService()
+                    // startNotificationService()
                     result.success(true)
                 }
                 else -> result.notImplemented()
