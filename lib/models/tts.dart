@@ -182,7 +182,7 @@ class TtsModel extends ChangeNotifier {
   void toggleMode(AppLocalizations localizations) {
     switch (_mode) {
       case TtsMode.disabled:
-        setMode(localizations, TtsMode.alertsOnly);
+        setMode(localizations, TtsMode.enabled); // TODO: enable alerts tts
         break;
       case TtsMode.alertsOnly:
         setMode(localizations, TtsMode.enabled);
