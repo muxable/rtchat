@@ -39,7 +39,7 @@ class MessagesModel extends ChangeNotifier {
     if (_tts != null) {
       final localizations = _getLocalizations();
       if (localizations != null) {
-        _tts!.setEnabled(localizations, false);
+        _tts!.setMode(localizations, TtsMode.disabled);
       } else {
         debugPrint("Localizations not available");
       }
@@ -217,7 +217,7 @@ class MessagesModel extends ChangeNotifier {
     if (_tts != null) {
       final localizations = _getLocalizations();
       if (localizations != null) {
-        _tts!.setEnabled(localizations, false);
+        _tts!.setMode(localizations, TtsMode.disabled);
       } else {
         debugPrint("Localizations not available");
       }

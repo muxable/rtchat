@@ -16,7 +16,6 @@ import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
-import 'package:rtchat/main.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -25,7 +24,6 @@ import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/notifications_plugin.dart';
-import 'package:rtchat/tts_plugin.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -271,57 +269,53 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       Consumer<TtsModel>(
                         builder: (context, ttsModel, child) {
                           return IconButton(
-                            icon: Icon(
-                              ttsModel.isAlertsOnly
-                                  ? Icons.campaign
-                                  : ttsModel.enabled
-                                      ? Icons.volume_up
-                                      : Icons.volume_off,
-                            ),
+                            icon: Builder(builder: (context) {
+                              switch (ttsModel.mode) {
+                                case TtsMode.disabled:
+                                  return const Icon(Icons.volume_off);
+                                case TtsMode.enabled:
+                                  return const Icon(Icons.volume_up);
+                                case TtsMode.alertsOnly:
+                                  return const Icon(Icons.campaign);
+                              }
+                            }),
                             tooltip: AppLocalizations.of(context)!.textToSpeech,
                             onPressed: () async {
                               final localizations =
                                   AppLocalizations.of(context)!;
                               if (!ttsModel.newTtsEnabled) {
-                                if (!ttsModel.enabled) {
-                                  ttsModel.setAlertsOnly(localizations, true);
-                                } else if (ttsModel.isAlertsOnly) {
-                                  ttsModel.setEnabled(localizations, true);
-                                  ttsModel.setAlertsOnly(localizations, false);
-                                } else {
-                                  ttsModel.setEnabled(localizations, false);
-                                }
+                                ttsModel.toggleMode(localizations);
                               } else {
-                                if (!ttsModel.enabled) {
-                                  ttsModel.setAlertsOnly(localizations, true);
-                                  updateChannelSubscription(
-                                    "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}",
-                                  );
-                                  await TextToSpeechPlugin.speak(
-                                      localizations.alertsEnabled);
-                                  NotificationsPlugin.showNotification();
-                                  NotificationsPlugin.listenToTts(ttsModel);
-                                  channelStreamController.stream
-                                      .listen((currentChannel) {
-                                    if (currentChannel.isEmpty) {
-                                      ttsModel.setEnabled(localizations, false);
-                                      ttsModel.setAlertsOnly(
-                                          localizations, false);
-                                    }
-                                  });
-                                } else if (ttsModel.isAlertsOnly) {
-                                  ttsModel.setEnabled(localizations, true);
-                                  ttsModel.setAlertsOnly(localizations, false);
-                                  await TextToSpeechPlugin.speak(
-                                      localizations.textToSpeechEnabled);
-                                } else {
-                                  ttsModel.setEnabled(localizations, false);
-                                  updateChannelSubscription("");
-                                  await TextToSpeechPlugin.speak(
-                                      localizations.textToSpeechDisabled);
-                                  await TextToSpeechPlugin.disableTTS();
-                                  NotificationsPlugin.cancelNotification();
-                                }
+                                // if (!ttsModel.enabled) {
+                                //   ttsModel.setAlertsOnly(localizations, true);
+                                //   updateChannelSubscription(
+                                //     "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}",
+                                //   );
+                                //   await TextToSpeechPlugin.speak(
+                                //       localizations.alertsEnabled);
+                                //   NotificationsPlugin.showNotification();
+                                //   NotificationsPlugin.listenToTts(ttsModel);
+                                //   channelStreamController.stream
+                                //       .listen((currentChannel) {
+                                //     if (currentChannel.isEmpty) {
+                                //       ttsModel.setEnabled(localizations, false);
+                                //       ttsModel.setAlertsOnly(
+                                //           localizations, false);
+                                //     }
+                                //   });
+                                // } else if (ttsModel.isAlertsOnly) {
+                                //   ttsModel.setEnabled(localizations, true);
+                                //   ttsModel.setAlertsOnly(localizations, false);
+                                //   await TextToSpeechPlugin.speak(
+                                //       localizations.textToSpeechEnabled);
+                                // } else {
+                                //   ttsModel.setEnabled(localizations, false);
+                                //   updateChannelSubscription("");
+                                //   await TextToSpeechPlugin.speak(
+                                //       localizations.textToSpeechDisabled);
+                                //   await TextToSpeechPlugin.disableTTS();
+                                //   NotificationsPlugin.cancelNotification();
+                                // }
                               }
                             },
                           );

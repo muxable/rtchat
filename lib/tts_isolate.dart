@@ -66,7 +66,7 @@ Future<void> isolateMain(
             final type = messageData['type'] as String?;
             switch (type) {
               case "message":
-                if (ttsModel.isAlertsOnly) {
+                if (ttsModel.mode == TtsMode.alertsOnly) {
                   return;
                 }
                 if (ttsModel.isSubscribersOnly &&

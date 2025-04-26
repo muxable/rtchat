@@ -19,6 +19,8 @@ import 'package:rtchat/models/user.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+enum TtsMode { disabled, alertsOnly, enabled }
+
 class TtsModel extends ChangeNotifier {
   var _isCloudTtsEnabled = false;
   final _tts = FlutterTts()
@@ -41,13 +43,12 @@ class TtsModel extends ChangeNotifier {
   var _isPreludeMuted = false;
   var _speed = Platform.isAndroid ? 0.8 : 0.395;
   var _pitch = 1.0;
-  var _isEnabled = false;
+  var _mode = TtsMode.disabled;
   var _isNewTTsEnabled = false;
   final Set<TwitchUserModel> _mutedUsers = {};
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
-  var _isAlertsOnly = false;
   var _isSubscribersOnly = false;
 
   @override
@@ -152,39 +153,12 @@ class TtsModel extends ChangeNotifier {
     return _isNewTTsEnabled;
   }
 
-  bool get isAlertsOnly {
-    return _isAlertsOnly;
-  }
-
   bool get isSubscribersOnly {
     return _isSubscribersOnly;
   }
 
   set isSubscribersOnly(bool value) {
     _isSubscribersOnly = value;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
-    });
-  }
-
-  void setAlertsOnly(AppLocalizations localizations, bool value) {
-    if (value == _isAlertsOnly) {
-      return;
-    }
-
-    if (value) {
-      _isEnabled = true;
-    }
-
-    _isAlertsOnly = value;
-    if (value) {
-      if (!newTtsEnabled) {
-        say(localizations,
-            SystemMessageModel(text: localizations.alertsEnabled),
-            force: true);
-      }
-    }
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });
@@ -201,29 +175,47 @@ class TtsModel extends ChangeNotifier {
     });
   }
 
-  bool get enabled {
-    return _isEnabled;
+  TtsMode get mode {
+    return _mode;
   }
 
-  void setEnabled(AppLocalizations localizations, bool value) {
-    if (value == _isEnabled && !_isAlertsOnly) {
+  void toggleMode(AppLocalizations localizations) {
+    switch (_mode) {
+      case TtsMode.disabled:
+        setMode(localizations, TtsMode.alertsOnly);
+        break;
+      case TtsMode.alertsOnly:
+        setMode(localizations, TtsMode.enabled);
+        break;
+      case TtsMode.enabled:
+        setMode(localizations, TtsMode.disabled);
+        break;
+    }
+  }
+
+  void setMode(AppLocalizations localizations, TtsMode mode) {
+    if (_mode == mode) {
       return;
     }
-
-    _isEnabled = value;
-    if (value) {
-      _lastMessageTime = DateTime.now();
+    _mode = mode;
+    switch (mode) {
+      case TtsMode.alertsOnly:
+        say(localizations,
+            SystemMessageModel(text: localizations.alertsEnabled),
+            force: true);
+        break;
+      case TtsMode.enabled:
+        say(localizations,
+            SystemMessageModel(text: localizations.textToSpeechEnabled),
+            force: true);
+        break;
+      case TtsMode.disabled:
+        say(localizations,
+            SystemMessageModel(text: localizations.textToSpeechDisabled),
+            force: true);
+        break;
     }
-
-    if (!newTtsEnabled) {
-      say(
-          localizations,
-          SystemMessageModel(
-              text: value
-                  ? localizations.textToSpeechEnabled
-                  : localizations.textToSpeechDisabled),
-          force: true);
-    }
+    _lastMessageTime = DateTime.now();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
@@ -341,11 +333,11 @@ class TtsModel extends ChangeNotifier {
 
   void say(AppLocalizations localizations, MessageModel model,
       {bool force = false}) async {
-    if (!enabled && !force) {
+    if (_mode == TtsMode.disabled && !force) {
       return;
     }
 
-    if (_isAlertsOnly && model is TwitchMessageModel) {
+    if (_mode == TtsMode.alertsOnly && model is TwitchMessageModel) {
       return;
     }
 
@@ -400,7 +392,7 @@ class TtsModel extends ChangeNotifier {
 
     _activeMessage = model;
 
-    if ((_isEnabled || model is SystemMessageModel) &&
+    if ((_mode != TtsMode.disabled || model is SystemMessageModel) &&
         _pending.contains(model.messageId)) {
       // TODO: replace with subscription logic
       if (!_isCloudTtsEnabled) {
