@@ -285,7 +285,7 @@
   "@audioSourcesSubtitle": {
     "description": "Subtitle for the audio sources page"
   },
-  "quickLinksSubtitle": "Add shortcuts to commonly-used tools",
+  "quickLinksSubtitle": "Add shortcuts to commonly used tools",
   "@quickLinksSubtitle": {
     "description": "Subtitle for the quick links page"
   },
