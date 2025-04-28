@@ -51,7 +51,7 @@
 		<string>http</string>
 	</array>
 	<key>LSMinimumSystemVersion</key>
-	<string>13.0</string>
+	<string>15.5</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
