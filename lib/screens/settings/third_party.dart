@@ -80,7 +80,7 @@ class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
             padding: const EdgeInsets.only(left: 88, right: 16),
             child: TextField(
                 controller: TextEditingController()..text = snapshot.data ?? "",
-                readOnly: true,
+                readOnly: false,
                 decoration: InputDecoration(
                     hintText: "Wallet address",
                     suffixIcon: IconButton(
@@ -264,6 +264,109 @@ class _StreamElementsWidget extends StatelessWidget {
   }
 }
 
+class _RealTimeKitWidget extends StatefulWidget {
+  @override
+  State<_RealTimeKitWidget> createState() => _RealTimeKitWidgetState();
+}
+
+class _RealTimeKitWidgetState extends State<_RealTimeKitWidget> {
+  var _scanController = MobileScannerController(
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
+
+  String apiKey = "";
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ListTile(
+          leading: const Image(image: AssetImage('assets/realtimekit.png')),
+          title: const Text("Realtime Kit"),
+          subtitle: const Text("Control OBS remotely"),
+          onTap: () => apiKey.isNotEmpty
+              ? openUrl(Uri.parse(apiKey))
+              : openUrl(Uri.parse("https://kit.rtirl.com/")),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 88, right: 16),
+          child: TextField(
+              controller: TextEditingController()..text = apiKey,
+              readOnly: false,
+              decoration: InputDecoration(
+                  hintText: "API Key",
+                  suffixIcon: IconButton(
+                      icon: const Icon(Icons.qr_code_scanner),
+                      onPressed: () {
+                        final messenger = ScaffoldMessenger.of(context);
+
+                        showModalBottomSheet(
+                          isScrollControlled: true,
+                          context: context,
+                          builder: (ctx) {
+                            return Stack(
+                              children: [
+                                MobileScanner(
+                                  errorBuilder: (context, error, child) {
+                                    return ScannerErrorWidget(error: error);
+                                  },
+                                  controller: _scanController,
+                                  onDetect: (capture) {
+                                    final List<Barcode> barcodes =
+                                        capture.barcodes;
+
+                                    if (barcodes.isEmpty) {
+                                      messenger.showSnackBar(SnackBar(
+                                          content: Text(
+                                              AppLocalizations.of(context)!
+                                                  .invalidUrlErrorText)));
+                                      return;
+                                    }
+
+                                    final barcode = barcodes.first;
+
+                                    if (barcode.rawValue == null ||
+                                        barcode.rawValue!.isEmpty) {
+                                      messenger.showSnackBar(SnackBar(
+                                          content: Text(
+                                              AppLocalizations.of(context)!
+                                                  .invalidUrlErrorText)));
+                                      Navigator.pop(ctx);
+                                      return;
+                                    }
+
+                                    setState(() {
+                                      apiKey = barcode.rawValue!;
+                                    });
+
+                                    Navigator.pop(ctx);
+                                  },
+                                ),
+                                Positioned(
+                                    top: 50,
+                                    left: 0,
+                                    right: 0,
+                                    child: ScannerSettings(
+                                      scanController: _scanController,
+                                    )),
+                              ],
+                            );
+                          },
+                        ).then((value) {
+                          _scanController.dispose();
+
+                          _scanController = MobileScannerController(
+                            detectionSpeed: DetectionSpeed.noDuplicates,
+                          );
+                        });
+                      })),
+              keyboardType: TextInputType.url),
+        ),
+      ],
+    );
+  }
+}
+
 class ThirdPartyScreen extends StatelessWidget {
   const ThirdPartyScreen({super.key});
 
@@ -281,6 +384,8 @@ class ThirdPartyScreen extends StatelessWidget {
             return ListView(
               children: [
                 _RealtimeCashWidget(userId: userId),
+                const Divider(),
+                _RealTimeKitWidget(),
                 const Divider(),
                 _StreamlabsWidget(userId: userId),
                 const Divider(),
