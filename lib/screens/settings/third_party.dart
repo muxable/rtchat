@@ -282,7 +282,7 @@ class _RealTimeKitWidgetState extends State<_RealTimeKitWidget> {
       children: [
         ListTile(
           leading: const Image(image: AssetImage('assets/realtimekit.png')),
-          title: const Text("Realtime Kit"),
+          title: const Text("RealtimeKit"),
           subtitle: const Text("Control OBS remotely"),
           trailing: SizedBox(
             width: 24,
