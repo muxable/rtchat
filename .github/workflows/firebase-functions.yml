@@ -11,7 +11,7 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: w9jds/firebase-action@master
         with:
           args: functions:config:set alchemy.signingkey="$ALCHEMY_SIGNING_KEY" alchemy.ethsigningkey="$ALCHEMY_ETH_SIGNING_KEY" twitch.id="$TWITCH_CLIENT_ID" twitch.secret="$TWITCH_CLIENT_SECRET" express.secret="$EXPRESS_SESSION_SECRET" streamlabs.id="$STREAMLABS_CLIENT_ID" streamlabs.secret="$STREAMLABS_CLIENT_SECRET" streamelements.id="$STREAMELEMENTS_CLIENT_ID" streamelements.secret="$STREAMELEMENTS_CLIENT_SECRET"
