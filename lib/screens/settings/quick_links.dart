@@ -8,6 +8,21 @@ import 'package:rtchat/components/scanner_settings.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
+extension LocalizedActions on AppLocalizations {
+  String getActionLabel(String key) {
+    switch (key) {
+      case 'enableRainMode':
+        return enableRainMode;
+      case 'refreshAudioSources':
+        return refreshAudioSources;
+      case 'raidAChannel':
+        return raidAChannel;
+      default:
+        return '';
+    }
+  }
+}
+
 class QuickLinksScreen extends StatefulWidget {
   const QuickLinksScreen({super.key});
 
@@ -244,6 +259,30 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                     )
                   ]),
                 ])),
+          ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(AppLocalizations.of(context)!.sidebarActions,
+                    style: Theme.of(context).textTheme.titleMedium),
+                Consumer<QuickLinksModel>(
+                  builder: (context, model, _) => Column(
+                    children: QuickLinksModel.availableActions.map((action) {
+                      return SwitchListTile(
+                        title: Text(AppLocalizations.of(context)!
+                            .getActionLabel(action['labelKey'])),
+                        secondary: Icon(action['icon']),
+                        value: model.isActionEnabled(action['id']),
+                        onChanged: (_) => model.toggleAction(action['id']),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
           ),
         ]),
       ),

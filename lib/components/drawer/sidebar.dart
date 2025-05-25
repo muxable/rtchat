@@ -10,6 +10,7 @@ import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/qr_code.dart';
+import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/settings/qr.dart';
 import 'package:rtchat/urls.dart';
@@ -225,6 +226,109 @@ class Sidebar extends StatefulWidget {
 }
 
 class _SidebarState extends State<Sidebar> {
+  Widget _buildActionTile(BuildContext context, String actionId) {
+    switch (actionId) {
+      case 'rainMode':
+        return Consumer<LayoutModel>(builder: (context, layoutModel, _) {
+          return ListTile(
+            leading: const Icon(Icons.thunderstorm),
+            title: Text(layoutModel.locked
+                ? AppLocalizations.of(context)!.disableRainMode
+                : AppLocalizations.of(context)!.enableRainMode),
+            subtitle: Text(
+                layoutModel.locked
+                    ? AppLocalizations.of(context)!.disableRainModeSubtitle
+                    : AppLocalizations.of(context)!.enableRainModeSubtitle,
+                overflow: TextOverflow.ellipsis),
+            onTap: () {
+              layoutModel.locked = !layoutModel.locked;
+              Navigator.pop(context);
+            },
+          );
+        });
+      case 'refreshAudio':
+        return Consumer<AudioModel>(builder: (context, audioModel, _) {
+          if (audioModel.sources.isEmpty) return Container();
+          return ListTile(
+            leading: const Icon(Icons.cached_outlined),
+            title: Text(AppLocalizations.of(context)!.refreshAudioSources),
+            onTap: () async {
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              final count = await audioModel.refreshAllSources();
+              if (!context.mounted) return;
+              scaffoldMessenger.showSnackBar(SnackBar(
+                  content: Text(AppLocalizations.of(context)!
+                      .refreshAudioSourcesCount(count))));
+            },
+          );
+        });
+      case 'raid':
+        return Consumer<UserModel>(builder: (context, model, _) {
+          return ListTile(
+            leading: const Icon(Icons.connect_without_contact),
+            title: Text(AppLocalizations.of(context)!.raidAChannel),
+            onTap: () {
+              Navigator.of(context).pop();
+              showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                builder: (context) => _buildRaidBottomSheet(context),
+              );
+            },
+          );
+        });
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildRaidBottomSheet(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.8,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) {
+        return SingleChildScrollView(
+          controller: scrollController,
+          child: Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 16,
+              right: 16,
+            ),
+            child: Consumer<UserModel>(
+              builder: (context, model, _) {
+                final userChannel = model.userChannel;
+                return ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height * 0.8,
+                    maxHeight: MediaQuery.of(context).size.height * 0.9,
+                  ),
+                  child: ChannelSearchBottomSheetWidget(
+                    isRaid: true,
+                    onChannelSelect: (channel) {
+                      model.activeChannel = channel;
+                    },
+                    onRaid: userChannel == model.activeChannel &&
+                            userChannel != null
+                        ? (channel) {
+                            final activeChannel = model.activeChannel;
+                            if (activeChannel == null) return;
+                            ActionsAdapter.instance
+                                .raid(activeChannel, channel);
+                          }
+                        : null,
+                    controller: scrollController,
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tiles = <Widget>[
@@ -233,102 +337,15 @@ class _SidebarState extends State<Sidebar> {
           title: Text(AppLocalizations.of(context)!.configureQuickLinks),
           onTap: () =>
               Navigator.of(context).pushNamed("/settings/quick-links")),
-
       const Divider(),
-
-      // setting
-      Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-        if (!layoutModel.locked) {
-          return ListTile(
-            leading: const Icon(Icons.thunderstorm),
-            title: Text(AppLocalizations.of(context)!.enableRainMode),
-            subtitle: Text(AppLocalizations.of(context)!.enableRainModeSubtitle,
-                overflow: TextOverflow.ellipsis),
-            onTap: () async {
-              layoutModel.locked = !layoutModel.locked;
-              Navigator.pop(context);
-            },
-          );
-        }
-
-        return ListTile(
-          leading: const Icon(Icons.thunderstorm),
-          title: Text(AppLocalizations.of(context)!.disableRainMode),
-          subtitle: Text(AppLocalizations.of(context)!.disableRainModeSubtitle,
-              overflow: TextOverflow.ellipsis),
-          onTap: () async {
-            layoutModel.locked = !layoutModel.locked;
-            Navigator.pop(context);
-          },
-        );
-      }),
-
-      Consumer<AudioModel>(builder: (context, audioModel, child) {
-        if (audioModel.sources.isEmpty) {
-          return Container();
-        }
-        return ListTile(
-          leading: const Icon(Icons.cached_outlined),
-          title: Text(AppLocalizations.of(context)!.refreshAudioSources),
-          onTap: () async {
-            final scaffoldMessenger = ScaffoldMessenger.of(context);
-            final count = await audioModel.refreshAllSources();
-            if (!context.mounted) return;
-            scaffoldMessenger.showSnackBar(SnackBar(
-                content: Text(AppLocalizations.of(context)!
-                    .refreshAudioSourcesCount(count))));
-          },
-        );
-      }),
-
-      //raid
-      Consumer<UserModel>(builder: (context, model, child) {
-        return ListTile(
-          leading: const Icon(Icons.connect_without_contact),
-          title: Text(AppLocalizations.of(context)!.raidAChannel),
-          onTap: () {
-            Navigator.of(context).pop();
-            showModalBottomSheet<void>(
-              context: context,
-              isScrollControlled: true,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              builder: (context) {
-                return DraggableScrollableSheet(
-                  initialChildSize: 0.8,
-                  maxChildSize: 0.9,
-                  expand: false,
-                  builder: (context, controller) {
-                    final model =
-                        Provider.of<UserModel>(context, listen: false);
-                    final userChannel = model.userChannel;
-                    return ChannelSearchBottomSheetWidget(
-                      isRaid: true,
-                      onChannelSelect: (channel) {
-                        model.activeChannel = channel;
-                      },
-                      onRaid: userChannel == model.activeChannel &&
-                              userChannel != null
-                          ? (channel) {
-                              final activeChannel = model.activeChannel;
-                              if (activeChannel == null) {
-                                return;
-                              }
-                              ActionsAdapter.instance
-                                  .raid(activeChannel, channel);
-                            }
-                          : null,
-                      controller: controller,
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      }),
-
+      Consumer<QuickLinksModel>(
+        builder: (context, model, _) => Column(
+          children: QuickLinksModel.availableActions
+              .where((action) => model.isActionEnabled(action['id']))
+              .map((action) => _buildActionTile(context, action['id']))
+              .toList(),
+        ),
+      ),
       ListTile(
         leading: const Icon(Icons.build_outlined),
         title: Text(AppLocalizations.of(context)!.settings),
