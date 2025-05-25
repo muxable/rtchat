@@ -110,7 +110,7 @@ class _StreamPreviewState extends State<StreamPreview> {
                   "window.action(window.Actions.SetQuality, 'auto')");
             } else {
               await _controller.runJavaScript(
-                  "window.action(window.Actions.SetQuality, '160p')");
+                  "window.action(window.Actions.SetQuality, ${jsonEncode(model.quality)}");
             }
           }
         },
@@ -233,7 +233,7 @@ class _StreamPreviewState extends State<StreamPreview> {
                                               "window.action(window.Actions.SetQuality, 'auto')");
                                         } else {
                                           await _controller.runJavaScript(
-                                              "window.action(window.Actions.SetQuality, '160p')");
+                                              "window.action(window.Actions.SetQuality, ${jsonEncode(model.quality)})");
                                         }
                                       },
                                 color: Colors.white,

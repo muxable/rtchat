@@ -6,6 +6,22 @@ class StreamPreviewModel extends ChangeNotifier {
   var _isHighDefinition = false;
   var _volume = 0;
   var _showBatteryPrompt = true;
+  var _quality = '160p';
+
+  static const List<String> supportedQualities = [
+    '160p',
+    '360p',
+    '480p',
+    '720p',
+    '1080p',
+  ];
+
+  String get quality => _quality;
+
+  set quality(String value) {
+    _quality = value;
+    notifyListeners();
+  }
 
   bool get isHighDefinition => _isHighDefinition;
 
@@ -29,6 +45,10 @@ class StreamPreviewModel extends ChangeNotifier {
   }
 
   StreamPreviewModel.fromJson(Map<String, dynamic> json) {
+    if (json['quality'] != null) {
+      _quality = json['quality'];
+    }
+
     if (json['isHighDefinition'] != null) {
       _isHighDefinition = json['isHighDefinition'];
     }
@@ -44,5 +64,6 @@ class StreamPreviewModel extends ChangeNotifier {
         'isHighDefinition': _isHighDefinition,
         'volume': _volume,
         'showBatteryPrompt': _showBatteryPrompt,
+        'quality': _quality
       };
 }
