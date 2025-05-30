@@ -37,7 +37,14 @@ class SignInWithTwitch extends StatelessWidget {
         },
       ),
     );
-    controller.loadRequest(Uri.parse("about:blank"));
+    const htmlContent = '''
+      <!DOCTYPE html>
+      <html>
+      <head><meta charset="UTF-8"></head>
+      <body></body>
+      </html>
+      ''';
+    await controller.loadHtmlString(htmlContent);
     return completer.future;
   }
 
