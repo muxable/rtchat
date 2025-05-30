@@ -38,6 +38,10 @@ class _StreamPreviewState extends State<StreamPreview> {
   String? _playerState;
   Timer? _promptTimer;
 
+  List<String> _availableQualities = [];
+  bool _hasQualityOptions = false;
+  Timer? _qualityCheckTimer;
+
   @override
   void initState() {
     super.initState();
@@ -81,10 +85,23 @@ class _StreamPreviewState extends State<StreamPreview> {
       ..addJavaScriptChannel("Flutter", onMessageReceived: (message) {
         try {
           final data = jsonDecode(message.message);
-          if (data is Map && data.containsKey('params')) {
-            final params = data['params'];
-            if (params is Map && mounted) {
-              setState(() => _playerState = params["playback"]);
+          if (data is Map) {
+            if (data['type'] == 'playerCapabilities') {
+              if (mounted) {
+                setState(() {
+                  _availableQualities =
+                      List<String>.from(data['qualities'] ?? []);
+                  _hasQualityOptions = _availableQualities.length > 1;
+                });
+              }
+              return;
+            }
+
+            if (data.containsKey('params')) {
+              final params = data['params'];
+              if (params is Map && mounted) {
+                setState(() => _playerState = params["playback"]);
+              }
             }
           }
         } catch (e, st) {
@@ -95,8 +112,10 @@ class _StreamPreviewState extends State<StreamPreview> {
         onPageFinished: (url) async {
           await _controller.runJavaScript(
               await rootBundle.loadString('assets/twitch-tunnel.js'));
+
           // wait a second for twitch to catch up.
           await Future.delayed(const Duration(seconds: 1));
+
           if (Platform.isIOS) {
             await _controller.runJavaScript(
                 "window.action(window.Actions.SetMuted, ${model.volume == 0})");
@@ -105,16 +124,15 @@ class _StreamPreviewState extends State<StreamPreview> {
                 .runJavaScript("window.action(window.Actions.SetMuted, false)");
             await _controller.runJavaScript(
                 "window.action(window.Actions.SetVolume, ${model.volume / 100})");
-            if (model.isHighDefinition) {
-              await _controller.runJavaScript(
-                  "window.action(window.Actions.SetQuality, 'auto')");
-            } else {
-              await _controller.runJavaScript(
-                  "window.action(window.Actions.SetQuality, ${jsonEncode(model.quality)}");
-            }
           }
         },
       ));
+
+    _qualityCheckTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted) {
+        _controller.runJavaScript('window.detectPlayerCapabilities()');
+      }
+    });
   }
 
   @override
@@ -122,6 +140,7 @@ class _StreamPreviewState extends State<StreamPreview> {
     super.dispose();
 
     _promptTimer?.cancel();
+    _qualityCheckTimer?.cancel();
 
     // on iOS, the webview is not disposed when the widget is disposed.
     // this causes audio to keep playing even when the widget is closed.
@@ -138,6 +157,35 @@ class _StreamPreviewState extends State<StreamPreview> {
     if (url != newUrl) {
       _controller.loadRequest(newUrl);
       url = newUrl;
+    }
+  }
+
+  Future<void> _setQuality(StreamPreviewModel model) async {
+    if (!_hasQualityOptions) return;
+
+    if (model.isHighDefinition) {
+      if (_availableQualities.contains('auto')) {
+        await _controller
+            .runJavaScript("window.action(window.Actions.SetQuality, 'auto')");
+      } else {
+        final hdOptions = _availableQualities
+            .where((q) => q.contains('720') || q.contains('1080'))
+            .toList();
+        if (hdOptions.isNotEmpty) {
+          await _controller.runJavaScript(
+              "window.action(window.Actions.SetQuality, '${hdOptions.last}')");
+        }
+      }
+    } else {
+      final sdOptions = _availableQualities
+          .where(
+              (q) => !q.contains('720') && !q.contains('1080') && q != 'auto')
+          .toList();
+
+      final qualityToUse = sdOptions.isNotEmpty ? sdOptions.first : '360p';
+
+      await _controller.runJavaScript(
+          "window.action(window.Actions.SetQuality, '$qualityToUse')");
     }
   }
 
@@ -223,23 +271,29 @@ class _StreamPreviewState extends State<StreamPreview> {
                           // SetQuality doesn't seem to work on ios so we don't show the button.
                           if (!Platform.isIOS)
                             IconButton(
-                                onPressed: !_isOverlayActive
-                                    ? null
-                                    : () async {
-                                        model.isHighDefinition =
-                                            !model.isHighDefinition;
-                                        if (model.isHighDefinition) {
-                                          await _controller.runJavaScript(
-                                              "window.action(window.Actions.SetQuality, 'auto')");
-                                        } else {
-                                          await _controller.runJavaScript(
-                                              "window.action(window.Actions.SetQuality, ${jsonEncode(model.quality)})");
-                                        }
-                                      },
+                                onPressed:
+                                    !_isOverlayActive || !_hasQualityOptions
+                                        ? null
+                                        : () async {
+                                            model.isHighDefinition =
+                                                !model.isHighDefinition;
+                                            await _setQuality(model);
+                                          },
                                 color: Colors.white,
-                                icon: Icon(model.isHighDefinition
-                                    ? Icons.hd
-                                    : Icons.sd)),
+                                icon: Stack(
+                                  children: [
+                                    Icon(model.isHighDefinition
+                                        ? Icons.hd
+                                        : Icons.sd),
+                                    if (!_hasQualityOptions)
+                                      const Positioned(
+                                        right: 0,
+                                        bottom: 0,
+                                        child: Icon(Icons.block,
+                                            size: 12, color: Colors.red),
+                                      )
+                                  ],
+                                )),
                         ],
                       );
                     },

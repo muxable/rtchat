@@ -37,6 +37,44 @@ window.action = function(eventName, params) {
   );
 }
 
+
+window.detectPlayerCapabilities = function() {
+  // Wait for player to be available
+  const checkPlayer = setInterval(() => {
+    if (window.player && typeof player.getQualities === 'function') {
+      clearInterval(checkPlayer);
+
+      try {
+        // Get available qualities
+        const qualities = player.getQualities().map(q => q.group);
+
+        // Send to Flutter
+        if (window.Flutter) {
+          Flutter.postMessage(JSON.stringify({
+            type: 'playerCapabilities',
+            qualities: qualities,
+            currentQuality: player.getQuality()
+          }));
+        }
+      } catch (e) {
+        console.error('Quality detection failed:', e);
+      }
+    }
+  }, 500);
+};
+
+// Initialize when Twitch player is ready
+if (typeof Twitch !== 'undefined') {
+  Twitch.Player.READY && Twitch.Player.READY(() => {
+    window.detectPlayerCapabilities();
+  });
+}
+
+// Also check when our iframe loads
+window.addEventListener('load', () => {
+  window.detectPlayerCapabilities();
+});
+
 if (Flutter) {
   window.addEventListener(
     "message",
