@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:styled_text/styled_text.dart';
 

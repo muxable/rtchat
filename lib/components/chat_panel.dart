@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/chat_history/separator.dart';
@@ -10,6 +9,7 @@ import 'package:rtchat/components/connection_status.dart';
 import 'package:rtchat/components/pinnable/reverse_refresh_indicator.dart';
 import 'package:rtchat/components/pinnable/scroll_view.dart';
 import 'package:rtchat/components/style_model_theme.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages.dart';
