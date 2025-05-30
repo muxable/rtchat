@@ -3,7 +3,6 @@ import 'dart:core';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/main.dart';
 import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
@@ -12,6 +11,8 @@ import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts.dart';
+
+import './l10n/app_localizations.dart';
 
 class MessagesModel extends ChangeNotifier {
   StreamSubscription<void>? _subscription;

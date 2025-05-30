@@ -3,10 +3,11 @@ import 'dart:core';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
+
+import './l10n/app_localizations.dart';
 
 class AudioSource {
   final String? name;

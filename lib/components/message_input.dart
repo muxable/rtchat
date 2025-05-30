@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/autocomplete.dart';
@@ -15,6 +14,8 @@ import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/share_channel.dart';
+
+import './l10n/app_localizations.dart';
 
 class EmoteTextEditingController extends TextEditingController {
   List<Emote> emotes;

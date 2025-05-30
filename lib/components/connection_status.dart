@@ -1,7 +1,8 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_panel.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import './l10n/app_localizations.dart';
 
 class ConnectionStatusWidget extends StatelessWidget {
   final _delay = const Duration(seconds: 5);

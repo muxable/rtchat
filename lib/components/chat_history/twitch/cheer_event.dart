@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:styled_text/styled_text.dart';
+
+import './l10n/app_localizations.dart';
 
 Uri getCorrespondingImageUrl(int bits) {
   final key = [100000, 10000, 5000, 1000, 100]

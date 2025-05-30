@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sticky_headers/sticky_headers/widget.dart';
+
+import './l10n/app_localizations.dart';
 
 class EmotesList extends StatelessWidget {
   const EmotesList({

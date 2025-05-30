@@ -3,8 +3,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/urls.dart';
+
+import './l10n/app_localizations.dart';
 
 Widget _iconWithText(IconData icon, String text) {
   return Column(children: [

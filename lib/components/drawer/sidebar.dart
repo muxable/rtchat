@@ -1,6 +1,5 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/components/drawer/quicklinks_listview.dart';
@@ -13,6 +12,8 @@ import 'package:rtchat/models/qr_code.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/settings/qr.dart';
 import 'package:rtchat/urls.dart';
+
+import './l10n/app_localizations.dart';
 
 class _DrawerHeader extends StatelessWidget {
   const _DrawerHeader();

@@ -6,13 +6,14 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/messages/twitch/reply.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/tts_plugin.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
+
+import './l10n/app_localizations.dart';
 
 final DateTime ttsTimeStampListener = DateTime.now();
 StreamSubscription? messagesSubscription;
