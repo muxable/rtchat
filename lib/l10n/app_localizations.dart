@@ -1115,6 +1115,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Alerts only'**
   String get alertsEnabled;
+
+  /// Header for the toggleable sidebar actions section
+  ///
+  /// In en, this message translates to:
+  /// **'Sidebar Actions'**
+  String get sidebarActions;
 }
 
 class _AppLocalizationsDelegate
