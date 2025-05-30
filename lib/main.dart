@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/firebase_options.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/commands.dart';
@@ -54,8 +55,6 @@ import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
-
-import './l10n/app_localizations.dart';
 
 void updateChannelSubscription(String? data) {
   if (data != null) {

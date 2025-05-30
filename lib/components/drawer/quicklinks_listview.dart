@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/urls.dart';
-
-import './l10n/app_localizations.dart';
 
 class QuicklinksListView extends StatelessWidget {
   const QuicklinksListView({super.key});

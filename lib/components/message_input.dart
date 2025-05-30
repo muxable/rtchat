@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/autocomplete.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/commands.dart';
@@ -14,8 +15,6 @@ import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/share_channel.dart';
-
-import './l10n/app_localizations.dart';
 
 class EmoteTextEditingController extends TextEditingController {
   List<Emote> emotes;

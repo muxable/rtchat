@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:styled_text/styled_text.dart';
-
-import './l10n/app_localizations.dart';
 
 class TwitchRaidEventWidget extends StatelessWidget {
   final TwitchRaidEventModel model;

@@ -6,10 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/auth/companion_auth.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
-import './l10n/app_localizations.dart';
 
 final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
 

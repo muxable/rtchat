@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import './l10n/app_localizations.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 
 class HeaderSearchBar extends StatelessWidget {
   final void Function(String) onFilterBySearchBarText;

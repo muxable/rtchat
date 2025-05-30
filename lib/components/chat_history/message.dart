@@ -22,6 +22,7 @@ import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raiding_event.dart';
 import 'package:rtchat/components/chat_history/twitch/shoutout_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
@@ -44,8 +45,6 @@ import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/urls.dart';
-
-import './l10n/app_localizations.dart';
 
 class ChatHistoryMessage extends StatelessWidget {
   final MessageModel message;

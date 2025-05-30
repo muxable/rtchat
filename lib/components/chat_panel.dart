@@ -9,6 +9,7 @@ import 'package:rtchat/components/connection_status.dart';
 import 'package:rtchat/components/pinnable/reverse_refresh_indicator.dart';
 import 'package:rtchat/components/pinnable/scroll_view.dart';
 import 'package:rtchat/components/style_model_theme.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages.dart';
@@ -22,8 +23,6 @@ import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
-
-import './l10n/app_localizations.dart';
 
 class RebuildableWidget extends StatefulWidget {
   final Widget Function(BuildContext) builder;

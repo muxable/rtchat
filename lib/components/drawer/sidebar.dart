@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/components/drawer/quicklinks_listview.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -12,8 +13,6 @@ import 'package:rtchat/models/qr_code.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/screens/settings/qr.dart';
 import 'package:rtchat/urls.dart';
-
-import './l10n/app_localizations.dart';
 
 class _DrawerHeader extends StatelessWidget {
   const _DrawerHeader();

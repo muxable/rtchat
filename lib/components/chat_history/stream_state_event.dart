@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/message.dart';
-
-import './l10n/app_localizations.dart';
 
 class StreamStateEventWidget extends StatelessWidget {
   final StreamStateEventModel model;

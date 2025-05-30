@@ -15,6 +15,7 @@ import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -24,8 +25,6 @@ import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/notifications_plugin.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-
-import './l10n/app_localizations.dart';
 
 class ResizableWidget extends StatefulWidget {
   final bool resizable;

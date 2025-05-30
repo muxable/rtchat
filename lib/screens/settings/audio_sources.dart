@@ -7,10 +7,9 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/scanner_error.dart';
 import 'package:rtchat/components/scanner_settings.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
-
-import './l10n/app_localizations.dart';
 
 class AudioSourcesScreen extends StatefulWidget {
   const AudioSourcesScreen({super.key});

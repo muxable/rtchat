@@ -11,6 +11,7 @@ import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raiding_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
 import 'package:rtchat/components/style_model_theme.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
@@ -23,8 +24,6 @@ import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
-
-import './l10n/app_localizations.dart';
 
 class EventsScreen extends StatelessWidget {
   const EventsScreen({super.key});

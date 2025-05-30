@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
@@ -17,8 +18,6 @@ import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/user.dart';
-
-import './l10n/app_localizations.dart';
 
 enum TtsMode { disabled, alertsOnly, enabled }
 

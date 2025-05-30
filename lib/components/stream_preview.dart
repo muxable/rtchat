@@ -6,13 +6,12 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/stream_preview.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
-
-import './l10n/app_localizations.dart';
 
 class StreamPreview extends StatefulWidget {
   const StreamPreview({super.key, required this.channel});
