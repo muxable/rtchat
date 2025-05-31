@@ -6,8 +6,9 @@ import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
-import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
+
+import '../../models/stream_preview.dart';
 
 final message1 = TwitchMessageModel(
     messageId: "placeholder1",
@@ -231,7 +232,7 @@ class ChatHistoryScreen extends StatelessWidget {
                             model.quality = newValue;
                           }
                         },
-                        items: StreamPreviewModel.supportedQualities
+                        items: model.availableQualities
                             .map<DropdownMenuItem<String>>((String value) {
                           return DropdownMenuItem<String>(
                             value: value,

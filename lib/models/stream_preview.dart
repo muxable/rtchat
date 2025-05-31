@@ -8,13 +8,9 @@ class StreamPreviewModel extends ChangeNotifier {
   var _showBatteryPrompt = true;
   var _quality = '160p';
 
-  static const List<String> supportedQualities = [
-    '160p',
-    '360p',
-    '480p',
-    '720p',
-    '1080p',
-  ];
+  List<String> _availableQualities = [];
+
+  bool _canSwitchQuality = false;
 
   String get quality => _quality;
 
@@ -23,7 +19,25 @@ class StreamPreviewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  set availableQualities(List<String> qualities) {
+    _availableQualities = qualities;
+
+    _canSwitchQuality = qualities.length > 1;
+    notifyListeners();
+  }
+
+  set canSwitchQuality(bool value) {
+    if (_canSwitchQuality != value) {
+      _canSwitchQuality = value;
+      notifyListeners();
+    }
+  }
+
   bool get isHighDefinition => _isHighDefinition;
+
+  List<String> get availableQualities => List.unmodifiable(_availableQualities);
+
+  bool get canSwitchQuality => _canSwitchQuality;
 
   set isHighDefinition(bool value) {
     _isHighDefinition = value;
@@ -58,12 +72,21 @@ class StreamPreviewModel extends ChangeNotifier {
     if (json['showBatteryPrompt'] != null) {
       _showBatteryPrompt = json['showBatteryPrompt'];
     }
+
+    if (json['availableQualities'] != null) {
+      final list = json['availableQualities'] as List<dynamic>;
+      _availableQualities = list.map((e) => e.toString()).toList();
+      _canSwitchQuality =
+          json['canSwitchQuality'] as bool? ?? (_availableQualities.length > 1);
+    }
   }
 
   Map<String, dynamic> toJson() => {
         'isHighDefinition': _isHighDefinition,
         'volume': _volume,
         'showBatteryPrompt': _showBatteryPrompt,
+        'availableQualities': _availableQualities,
+        'canSwitchQuality': _canSwitchQuality,
         'quality': _quality
       };
 }

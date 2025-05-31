@@ -15,7 +15,6 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class StreamPreview extends StatefulWidget {
   const StreamPreview({super.key, required this.channel});
-
   final Channel channel;
 
   @override
@@ -23,30 +22,23 @@ class StreamPreview extends StatefulWidget {
 }
 
 extension Embed on Channel {
-  Uri get embedUri {
-    return Uri.parse(
-        'https://chat.rtirl.com/embed?provider=$provider&channelId=$channelId');
-  }
+  Uri get embedUri => Uri.parse(
+      'https://chat.rtirl.com/embed?provider=$provider&channelId=$channelId');
 }
 
 class _StreamPreviewState extends State<StreamPreview> {
   late WebViewController _controller;
   late Uri url;
-
   var _isOverlayActive = false;
   Timer? _overlayTimer;
   String? _playerState;
   Timer? _promptTimer;
 
-  List<String> _availableQualities = [];
-  bool _hasQualityOptions = false;
-  Timer? _qualityCheckTimer;
-
   @override
   void initState() {
     super.initState();
-
     final model = Provider.of<StreamPreviewModel>(context, listen: false);
+
     if (model.showBatteryPrompt) {
       _promptTimer = Timer(const Duration(minutes: 5), () {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -64,16 +56,17 @@ class _StreamPreviewState extends State<StreamPreview> {
     }
 
     url = widget.channel.embedUri;
-
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       _controller = WebViewController.fromPlatformCreationParams(
-          WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const {},
-      ));
+        WebKitWebViewControllerCreationParams(
+          allowsInlineMediaPlayback: true,
+          mediaTypesRequiringUserAction: const {},
+        ),
+      );
     } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
       _controller = WebViewController.fromPlatformCreationParams(
-          AndroidWebViewControllerCreationParams());
+        AndroidWebViewControllerCreationParams(),
+      );
     } else {
       throw UnsupportedError("Unsupported platform");
     }
@@ -81,37 +74,15 @@ class _StreamPreviewState extends State<StreamPreview> {
     _controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..enableZoom(false)
-      ..loadRequest(url)
-      ..addJavaScriptChannel("Flutter", onMessageReceived: (message) {
-        try {
-          final data = jsonDecode(message.message);
-          if (data is Map) {
-            if (data['type'] == 'playerCapabilities') {
-              if (mounted) {
-                setState(() {
-                  _availableQualities =
-                      List<String>.from(data['qualities'] ?? []);
-                  _hasQualityOptions = _availableQualities.length > 1;
-                });
-              }
-              return;
-            }
-
-            if (data.containsKey('params')) {
-              final params = data['params'];
-              if (params is Map && mounted) {
-                setState(() => _playerState = params["playback"]);
-              }
-            }
-          }
-        } catch (e, st) {
-          FirebaseCrashlytics.instance.recordError(e, st);
-        }
-      })
+      ..addJavaScriptChannel(
+        'Flutter',
+        onMessageReceived: _onJsMessage,
+      )
       ..setNavigationDelegate(NavigationDelegate(
-        onPageFinished: (url) async {
+        onPageFinished: (uri) async {
           await _controller.runJavaScript(
-              await rootBundle.loadString('assets/twitch-tunnel.js'));
+            await rootBundle.loadString('assets/twitch-tunnel.js'),
+          );
 
           // wait a second for twitch to catch up.
           await Future.delayed(const Duration(seconds: 1));
@@ -124,73 +95,60 @@ class _StreamPreviewState extends State<StreamPreview> {
                 .runJavaScript("window.action(window.Actions.SetMuted, false)");
             await _controller.runJavaScript(
                 "window.action(window.Actions.SetVolume, ${model.volume / 100})");
+            await _controller.runJavaScript(
+                "window.action(window.Actions.SetQuality, '${model.isHighDefinition ? 'auto' : '160p'}')");
           }
         },
-      ));
+      ))
+      ..loadRequest(url);
+  }
 
-    _qualityCheckTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
-      if (mounted) {
-        _controller.runJavaScript('window.detectPlayerCapabilities()');
+  void _onJsMessage(JavaScriptMessage message) {
+    try {
+      final data = jsonDecode(message.message) as Map<String, dynamic>;
+      if (data.containsKey('params') &&
+          data['params'] is Map &&
+          data['params']['playback'] != null) {
+        setState(() => _playerState = data['params']['playback'] as String);
       }
-    });
+      if (data['event'] == 'qualities_available') {
+        final model = Provider.of<StreamPreviewModel>(context, listen: false);
+        final List<String> quals =
+            List<String>.from(data['qualities'] as List<dynamic>);
+        model.availableQualities = quals;
+        model.canSwitchQuality = quals.length > 1;
+      }
+    } catch (e, st) {
+      FirebaseCrashlytics.instance.recordError(e, st);
+    }
   }
 
   @override
   void dispose() {
-    super.dispose();
-
     _promptTimer?.cancel();
-    _qualityCheckTimer?.cancel();
-
     // on iOS, the webview is not disposed when the widget is disposed.
     // this causes audio to keep playing even when the widget is closed.
     // therefore, we load a blank page to silence the audio.
+
     if (Platform.isIOS) {
       _controller.loadHtmlString(" ");
     }
+    super.dispose();
   }
 
   @override
   void didUpdateWidget(StreamPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
     final newUrl = widget.channel.embedUri;
-    if (url != newUrl) {
+    if (newUrl != url) {
       _controller.loadRequest(newUrl);
       url = newUrl;
     }
   }
 
-  Future<void> _setQuality(StreamPreviewModel model) async {
-    if (!_hasQualityOptions) return;
-
-    if (model.isHighDefinition) {
-      if (_availableQualities.contains('auto')) {
-        await _controller
-            .runJavaScript("window.action(window.Actions.SetQuality, 'auto')");
-      } else {
-        final hdOptions = _availableQualities
-            .where((q) => q.contains('720') || q.contains('1080'))
-            .toList();
-        if (hdOptions.isNotEmpty) {
-          await _controller.runJavaScript(
-              "window.action(window.Actions.SetQuality, '${hdOptions.last}')");
-        }
-      }
-    } else {
-      final sdOptions = _availableQualities
-          .where(
-              (q) => !q.contains('720') && !q.contains('1080') && q != 'auto')
-          .toList();
-
-      final qualityToUse = sdOptions.isNotEmpty ? sdOptions.first : '360p';
-
-      await _controller.runJavaScript(
-          "window.action(window.Actions.SetQuality, '$qualityToUse')");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final model = Provider.of<StreamPreviewModel>(context);
     return Stack(children: [
       WebViewWidget(controller: _controller),
       if (_playerState == null || _playerState == "Idle")
@@ -215,13 +173,9 @@ class _StreamPreviewState extends State<StreamPreview> {
               _overlayTimer = Timer(const Duration(seconds: 3), () {
                 _overlayTimer = null;
                 if (!mounted) return;
-                setState(() {
-                  _isOverlayActive = false;
-                });
+                setState(() => _isOverlayActive = false);
               });
-              setState(() {
-                _isOverlayActive = true;
-              });
+              setState(() => _isOverlayActive = true);
             },
             child: AnimatedOpacity(
               duration: const Duration(milliseconds: 100),
@@ -230,73 +184,59 @@ class _StreamPreviewState extends State<StreamPreview> {
                 color: Colors.black.withValues(alpha: 0.4),
                 child: Padding(
                   padding: const EdgeInsets.all(8),
-                  child: Consumer<StreamPreviewModel>(
-                    builder: (context, model, child) {
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          IconButton(
-                              onPressed: !_isOverlayActive
-                                  ? null
-                                  : () async {
-                                      if (Platform.isIOS) {
-                                        // SetVolume doesn't seem to work on ios so we use SetMuted instead and toggle between 0 and 100.
-                                        model.volume =
-                                            model.volume == 0 ? 100 : 0;
-                                        await _controller.runJavaScript(
-                                            "window.action(window.Actions.SetMuted, ${model.volume == 0})");
-                                        return;
-                                      }
-                                      if (model.volume == 0) {
-                                        model.volume = 100;
-                                      } else if (model.volume == 100) {
-                                        model.volume = 33;
-                                      } else {
-                                        model.volume = 0;
-                                      }
-                                      await _controller.runJavaScript(
-                                          "window.action(window.Actions.SetMuted, false)");
-                                      await _controller.runJavaScript(
-                                          "window.action(window.Actions.SetVolume, ${model.volume / 100})");
-                                    },
-                              color: Colors.white,
-                              icon: Icon(
-                                model.volume == 0
-                                    ? Icons.volume_mute
-                                    : model.volume == 100
-                                        ? Icons.volume_up
-                                        : Icons.volume_down,
-                              )),
-                          // SetQuality doesn't seem to work on ios so we don't show the button.
-                          if (!Platform.isIOS)
-                            IconButton(
-                                onPressed:
-                                    !_isOverlayActive || !_hasQualityOptions
-                                        ? null
-                                        : () async {
-                                            model.isHighDefinition =
-                                                !model.isHighDefinition;
-                                            await _setQuality(model);
-                                          },
-                                color: Colors.white,
-                                icon: Stack(
-                                  children: [
-                                    Icon(model.isHighDefinition
-                                        ? Icons.hd
-                                        : Icons.sd),
-                                    if (!_hasQualityOptions)
-                                      const Positioned(
-                                        right: 0,
-                                        bottom: 0,
-                                        child: Icon(Icons.block,
-                                            size: 12, color: Colors.red),
-                                      )
-                                  ],
-                                )),
-                        ],
-                      );
-                    },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: !_isOverlayActive
+                            ? null
+                            : () async {
+                                if (Platform.isIOS) {
+                                  // SetVolume doesn't seem to work on ios so we use SetMuted instead and toggle between 0 and 100.
+                                  model.volume = model.volume == 0 ? 100 : 0;
+                                  await _controller.runJavaScript(
+                                      "window.action(window.Actions.SetMuted, ${model.volume == 0})");
+                                  return;
+                                }
+                                model.volume = (model.volume == 0)
+                                    ? 100
+                                    : (model.volume == 100)
+                                        ? 33
+                                        : 0;
+                                await _controller.runJavaScript(
+                                    "window.action(window.Actions.SetMuted, false)");
+                                await _controller.runJavaScript(
+                                    "window.action(window.Actions.SetVolume, ${model.volume / 100})");
+                              },
+                        color: Colors.white,
+                        icon: Icon(
+                          model.volume == 0
+                              ? Icons.volume_mute
+                              : model.volume == 100
+                                  ? Icons.volume_up
+                                  : Icons.volume_down,
+                        ),
+                      ),
+                      // SetQuality doesn't seem to work on ios so we don't show the button.
+                      if (!Platform.isIOS)
+                        IconButton(
+                          onPressed: (!_isOverlayActive ||
+                                  !model.canSwitchQuality)
+                              ? null
+                              : () async {
+                                  model.isHighDefinition =
+                                      !model.isHighDefinition;
+                                  final target =
+                                      model.isHighDefinition ? 'auto' : '160p';
+                                  await _controller.runJavaScript(
+                                      "window.action(window.Actions.SetQuality, '$target')");
+                                },
+                          color: Colors.white,
+                          icon: Icon(
+                            model.isHighDefinition ? Icons.hd : Icons.sd,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
