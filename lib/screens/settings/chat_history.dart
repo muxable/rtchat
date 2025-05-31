@@ -6,6 +6,7 @@ import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
 
 final message1 = TwitchMessageModel(
@@ -204,6 +205,40 @@ class ChatHistoryScreen extends StatelessWidget {
                     onChanged: (value) {
                       messagesModel.announcementPinDuration =
                           Duration(seconds: value.toInt());
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Stream Preview Quality",
+                      style: DefaultTextStyle.of(context).style.copyWith(
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontWeight: FontWeight.bold,
+                          )),
+                  Consumer<StreamPreviewModel>(
+                    builder: (context, model, child) {
+                      return DropdownButton<String>(
+                        value: model.quality,
+                        icon: const Icon(Icons.arrow_drop_down),
+                        underline: Container(height: 1, color: Colors.grey),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            model.quality = newValue;
+                          }
+                        },
+                        items: model.availableQualities
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                      );
                     },
                   ),
                 ],
