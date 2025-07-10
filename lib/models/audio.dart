@@ -176,7 +176,12 @@ class AudioModel extends ChangeNotifier {
     final player = AudioPlayer();
     _speakerDisconnectTimer = Timer.periodic(
       const Duration(minutes: 5),
-      (_) => player.play(AssetSource("silence.mp3")),
+      (_) => player.play(
+        AssetSource("silence.mp3"),
+        ctx: AudioContextConfig(
+          focus: AudioContextConfigFocus.mixWithOthers,
+        ).build(),
+      ),
     );
     final sources = json['sources'];
     if (sources != null) {
