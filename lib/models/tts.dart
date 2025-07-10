@@ -11,9 +11,22 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/channels.dart';
+import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
+import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
+import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
+import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
+import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/prediction_event.dart';
+import 'package:rtchat/models/messages/twitch/raiding_event.dart';
+import 'package:rtchat/models/messages/twitch/shoutout_create_event.dart';
+import 'package:rtchat/models/messages/twitch/shoutout_receive_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/tts/language.dart';
@@ -145,7 +158,36 @@ class TtsModel extends ChangeNotifier {
           : l10n.streamOffline(timestamp, timestamp);
     } else if (model is SystemMessageModel) {
       return model.text;
-    }
+    } else if (model is TwitchRaidEventModel) {
+      return l10n.raidEventMessage(model.from.displayName ?? "", model.viewers);
+    } else if (model is TwitchSubscriptionEventModel) {
+      return l10n.subscriptionEvent(
+          model.subscriberUserName, model.tier.replaceAll("000", ""));
+    } else if (model is TwitchSubscriptionGiftEventModel) {
+      return l10n.subscriptionGiftEvent(model.gifterUserName, model.total,
+          model.tier.replaceAll("000", ""), model.cumulativeTotal);
+    } else if (model is TwitchSubscriptionMessageEventModel) {
+      return l10n.subscriptionMessageEvent(
+        model.subscriberUserName,
+        model.cumulativeMonths,
+        model.tier.replaceAll("000", ""),
+      );
+    } else if (model is TwitchFollowEventModel) {
+      return l10n.followingEvent(
+          model.followers.first.displayName ?? model.followers.first.login);
+    } else if (model is TwitchCheerEventModel) {
+    } else if (model is TwitchPollEventModel) {
+    } else if (model is TwitchChannelPointRedemptionEventModel) {
+    } else if (model is TwitchHypeTrainEventModel) {
+    } else if (model is TwitchPredictionEventModel) {
+    } else if (model is TwitchHostEventModel) {
+    } else if (model is TwitchRaidingEventModel) {
+    } else if (model is ChatClearedEventModel) {
+    } else if (model is StreamlabsDonationEventModel) {
+    } else if (model is StreamElementsTipEventModel) {
+    } else if (model is SimpleRealtimeCashDonationEventModel) {
+    } else if (model is TwitchShoutoutCreateEventModel) {
+    } else if (model is TwitchShoutoutReceiveEventModel) {}
     return "";
   }
 
