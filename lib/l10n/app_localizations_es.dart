@@ -700,4 +700,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get alertsEnabled => 'Alerts only';
+
+  @override
+  String get sidebarActions => 'Sidebar Actions';
 }

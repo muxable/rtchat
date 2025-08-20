@@ -1,3 +1,4 @@
+
 {
   "sendAMessage": "Send a message...",
   "@sendAMessage": {
@@ -992,5 +993,9 @@
   "alertsEnabled" : "Alerts only",
   "@alertsEnabled" : {
       "description": "Message indicating that alerts have been enabled"
+  },
+  "sidebarActions": "Sidebar Actions",
+  "@sidebarActions": {
+    "description": "Header for the toggleable sidebar actions section"
   }
 }
