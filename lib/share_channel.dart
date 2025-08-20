@@ -13,7 +13,6 @@ class ShareChannel {
             return;
           }
           // We got something! Inform our listener.
-          // Note: onDataReceived may be null if the listener has been disposed
           onDataReceived?.call(data);
         });
       }
