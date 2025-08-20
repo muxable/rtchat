@@ -175,11 +175,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       // Register a callback to handle any shared data while app is running
       ..onDataReceived = _handleSharedData;
     // Check to see if there is any shared data already via sharing
-    _shareChannel!.getSharedText().then((sharedData) {
-      if (mounted && sharedData.isNotEmpty) {
-        _handleSharedData(sharedData);
-      }
-    });
+    _shareChannel!.getSharedText().then(_handleSharedData);
   }
 
   @override
