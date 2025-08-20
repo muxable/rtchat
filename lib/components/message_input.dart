@@ -156,6 +156,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   var _emoteIndex = Random().nextInt(_emotes.length);
   final _textSeed = Random().nextDouble();
   final List<String> _pendingSend = [];
+  ShareChannel? _shareChannel;
 
   @override
   void initState() {
@@ -170,11 +171,15 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       });
     });
 
-    ShareChannel()
+    _shareChannel = ShareChannel()
       // Register a callback to handle any shared data while app is running
-      ..onDataReceived = _handleSharedData
-      // Check to see if there is any shared data already via sharing
-      ..getSharedText().then(_handleSharedData);
+      ..onDataReceived = _handleSharedData;
+    // Check to see if there is any shared data already via sharing
+    _shareChannel!.getSharedText().then((sharedData) {
+      if (mounted && sharedData.isNotEmpty) {
+        _handleSharedData(sharedData);
+      }
+    });
   }
 
   @override
@@ -185,6 +190,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   // Handles any shared data we may receive.
   void _handleSharedData(String sharedData) {
+    if (!mounted || sharedData.isEmpty) {
+      return;
+    }
     setState(() {
       _textEditingController?.text = sharedData;
     });
@@ -195,6 +203,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     keyboardSubscription.cancel();
     _chatInputFocusNode.dispose();
     _textEditingController?.dispose();
+    _shareChannel?.onDataReceived = null;
     super.dispose();
   }
 
