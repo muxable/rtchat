@@ -16,31 +16,57 @@ document.body.appendChild(ifr);
 window.parent = ifr.contentWindow;
 
 window.Actions = {
-  DisableCaptions: 0,
-  EnableCaptions: 1,
-  Pause: 2,
-  Play: 3,
-  Seek: 4,
-  SetChannel: 5,
-  SetChannelID: 6,
-  SetCollection: 7,
-  SetQuality: 8,
-  SetVideo: 9,
-  SetMuted: 10,
-  SetVolume: 11,
+    DisableCaptions: 0,
+    EnableCaptions: 1,
+    Pause: 2,
+    Play: 3,
+    Seek: 4,
+    SetChannel: 5,
+    SetChannelID: 6,
+    SetCollection: 7,
+    SetQuality: 8,
+    SetVideo: 9,
+    SetMuted: 10,
+    SetVolume: 11,
 };
 
 window.action = function(eventName, params) {
-  ifr.contentWindow.postMessage(
-    { eventName, params, namespace: "twitch-embed-player-proxy" },
-    "*"
-  );
-}
+    ifr.contentWindow.postMessage({
+        eventName,
+        params,
+        namespace: "twitch-embed-player-proxy"
+    }, "*");
+};
 
 if (Flutter) {
-  window.addEventListener(
-    "message",
-    (e) => Flutter.postMessage(JSON.stringify(e.data)),
-    false
-  );
+    window.addEventListener(
+        "message", (e) => Flutter.postMessage(JSON.stringify(e.data)), false
+    );
 }
+
+function hookPlayer(player) {
+
+    player.addEventListener(Twitch.Player.PLAYING, function() {
+        let qualities = player.getQualities();
+
+        qualities = qualities.map(q =>
+            (typeof q === "object" && q.group) ? q.group : q
+        );
+
+        if (Flutter) {
+            Flutter.postMessage(JSON.stringify({
+                event: "qualities_available",
+                qualities: qualities
+            }));
+        }
+    });
+}
+
+window.addEventListener("message", function init(e) {
+    const data = e.data;
+    if (data && data.namespace === "twitch-embed-player-proxy" && data.eventName === "PlayerReady") {
+
+        hookPlayer(data.params.player);
+        window.removeEventListener("message", init);
+    }
+}, false);
