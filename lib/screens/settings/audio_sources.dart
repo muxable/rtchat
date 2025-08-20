@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -10,6 +11,24 @@ import 'package:rtchat/components/scanner_settings.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
+
+// Helper functions for URL validation
+bool hasFileExtension(Uri uri) {
+  final segments = uri.pathSegments;
+  if (segments.isNotEmpty) {
+    final last = segments.last;
+    return last.contains('.') && last.split('.').last.length > 1;
+  }
+  return false;
+}
+
+bool isOgg(Uri uri) {
+  return uri.path.toLowerCase().endsWith('.ogg');
+}
+
+bool isHttpOnIOS(Uri uri) {
+  return (Platform.isIOS || Platform.isMacOS) && uri.scheme == 'http';
+}
 
 class AudioSourcesScreen extends StatefulWidget {
   const AudioSourcesScreen({super.key});
@@ -45,16 +64,54 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
 
   void add() async {
     if (_formKey.currentState!.validate()) {
-      // fetch the title for the page.
-      final url = _textEditingController.text;
+      final urlStr = _textEditingController.text;
+      final uri = Uri.tryParse(urlStr);
+
+      // New validation logic:
+      if (uri == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Invalid URL."))
+        );
+        return;
+      }
+
+      // Warn for missing file extension on iOS/macOS
+      if ((Platform.isIOS || Platform.isMacOS) && !hasFileExtension(uri)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Audio file URLs must have a file extension (e.g. .mp3, .wav) on iOS/macOS. See https://github.com/bluefireteam/audioplayers/blob/main/troubleshooting.md#ios-macos-urls-or-paths-without-a-file-extension")
+          )
+        );
+        return;
+      }
+
+      // Warn for .ogg on iOS
+      if (Platform.isIOS && isOgg(uri)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("iOS does not support .ogg format. Please use .mp3 or .wav. See https://github.com/bluefireteam/audioplayers/blob/main/troubleshooting.md#supported-formats--encodings")
+          )
+        );
+        return;
+      }
+
+      // Warn for HTTP on iOS/macOS
+      if (isHttpOnIOS(uri)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Non-HTTPS URLs may not work on iOS/macOS. See https://github.com/bluefireteam/audioplayers/blob/main/troubleshooting.md#unsafe-http")
+          )
+        );
+        // Allow user to continue, don't return
+      }
+
       Metadata? metadata;
       try {
-        metadata = await MetadataFetch.extract(url);
+        metadata = await MetadataFetch.extract(urlStr);
       } catch (e) {
         metadata = null;
       }
-
-      final title = metadata?.title ?? Uri.parse(url).host;
+      final title = metadata?.title ?? uri.host;
 
       if (!mounted) return;
       final model = Provider.of<AudioModel>(context, listen: false);
@@ -62,8 +119,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
         if (!mounted) return;
         await model.showAudioPermissionDialog(context);
       }
-      await model.addSource(AudioSource(title, Uri.parse(url), false));
-
+      await model.addSource(AudioSource(title, uri, false));
       if (!mounted) return;
       _textEditingController.clear();
       FocusScope.of(context).unfocus();
