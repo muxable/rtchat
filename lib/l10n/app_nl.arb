@@ -255,5 +255,9 @@
   "thirdPartyAuthError": "Hmm, dat werkte niet. Probeer het opnieuw, of vraag het op Discord?",
   "companionAuthBrowserTooOld": "Je browser is te oud om direct in te loggen. Scan deze QR-code met je telefoon om op een ander apparaat in te loggen.",
   "companionAuthScanQrCode": "Scan deze QR-code met je telefoon om op een ander apparaat in te loggen.",
-  "alertsEnabled": "Alleen meldingen"
+  "alertsEnabled": "Alleen meldingen",
+  "kickSubscriptionEvent": "<b>{subscriberName}</b> heeft geabonneerd!",
+  "kickResubscriptionEvent": "<b>{subscriberName}</b> heeft het abonnement verlengd voor {months} maanden!",
+  "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> heeft {count} abonnementen cadeau gegeven!",
+  "kicksGiftedEvent": "<b>{senderName}</b> heeft {amount} Kicks gestuurd!"
 }

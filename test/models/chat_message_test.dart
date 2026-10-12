@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages.dart';
+import 'package:rtchat/models/messages/kick/event.dart';
+import 'package:rtchat/models/messages/kick/user.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts.dart';
 
@@ -62,5 +64,31 @@ void main() {
     final model = MessagesModel.fromJson({});
     model.messages.add(fakeMessage("hi"));
     expect(model.authors.single.login, "kicker");
+  });
+
+  test("tts announces kick events without markup", () {
+    final model = TtsModel.fromJson({});
+    const kicker =
+        KickUserModel(userId: '7', login: 'kicker', displayName: 'Kicker');
+    expect(
+        model.getVocalization(
+            l10n,
+            KickSubscriptionEventModel(
+                messageId: 's',
+                timestamp: t0,
+                subscriber: kicker,
+                months: 1,
+                isRenewal: false)),
+        "Kicker has subscribed!");
+    expect(
+        model.getVocalization(
+            l10n,
+            KicksGiftedEventModel(
+                messageId: 'k',
+                timestamp: t0,
+                sender: kicker,
+                amount: 50,
+                giftName: 'Hype')),
+        "Kicker sent 50 Kicks!");
   });
 }

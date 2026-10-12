@@ -1674,6 +1674,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan this QR code with your phone to sign in on another device.'**
   String get companionAuthScanQrCode;
+
+  /// A new Kick subscription
+  ///
+  /// In en, this message translates to:
+  /// **'<b>{subscriberName}</b> has subscribed!'**
+  String kickSubscriptionEvent(String subscriberName);
+
+  /// A renewed Kick subscription
+  ///
+  /// In en, this message translates to:
+  /// **'<b>{subscriberName}</b> has resubscribed for {months} months!'**
+  String kickResubscriptionEvent(String subscriberName, int months);
+
+  /// Gifted Kick subscriptions
+  ///
+  /// In en, this message translates to:
+  /// **'<b>{gifterName}</b> has gifted {count} subs!'**
+  String kickGiftedSubscriptionsEvent(String gifterName, int count);
+
+  /// Kicks (Kick's virtual currency) sent to the streamer
+  ///
+  /// In en, this message translates to:
+  /// **'<b>{senderName}</b> sent {amount} Kicks!'**
+  String kicksGiftedEvent(String senderName, int amount);
 }
 
 class _AppLocalizationsDelegate

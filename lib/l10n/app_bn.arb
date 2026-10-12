@@ -255,5 +255,9 @@
   "thirdPartyAuthError": "হুম, কাজ হয়নি। আবার চেষ্টা করুন, নাকি Discord-এ জিজ্ঞেস করবেন?",
   "companionAuthBrowserTooOld": "আপনার ব্রাউজার সরাসরি সাইন ইন করার জন্য অনেক পুরনো। অন্য ডিভাইসে সাইন ইন করতে আপনার ফোন দিয়ে এই QR কোড স্ক্যান করুন।",
   "companionAuthScanQrCode": "অন্য ডিভাইসে সাইন ইন করতে আপনার ফোন দিয়ে এই QR কোড স্ক্যান করুন।",
-  "alertsEnabled": "শুধু সতর্কতা"
+  "alertsEnabled": "শুধু সতর্কতা",
+  "kickSubscriptionEvent": "<b>{subscriberName}</b> সাবস্ক্রাইব করেছেন!",
+  "kickResubscriptionEvent": "<b>{subscriberName}</b> {months} মাসের জন্য আবার সাবস্ক্রাইব করেছেন!",
+  "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> {count}টি সাব উপহার দিয়েছেন!",
+  "kicksGiftedEvent": "<b>{senderName}</b> {amount} Kicks পাঠিয়েছেন!"
 }

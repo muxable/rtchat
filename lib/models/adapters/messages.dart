@@ -9,6 +9,9 @@ import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
 import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
+import 'package:rtchat/models/messages/kick/event.dart';
+import 'package:rtchat/models/messages/kick/message.dart';
+import 'package:rtchat/models/messages/kick/user.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
@@ -331,6 +334,15 @@ DeltaEvent? toDeltaEvent(
     case "channel.shoutout.receive":
       final model = TwitchShoutoutReceiveEventModel.fromDocumentData(id, data);
       return AppendDeltaEvent(model);
+    case "kick.chat.message.sent":
+    case "kick.channel.followed":
+    case "kick.channel.subscription.new":
+    case "kick.channel.subscription.renewal":
+    case "kick.channel.subscription.gifts":
+    case "kick.kicks.gifted":
+    case "kick.moderation.banned":
+    case "kick.channel.reward.redemption.updated":
+      return kickDeltaEvent(id, data);
   }
   return null;
 }
@@ -451,4 +463,77 @@ class MessagesAdapter {
         .get()
         .then((snapshot) => snapshot.docs.isNotEmpty);
   }
+}
+
+/// Parses the documents written by the backend's Kick webhook, which wrap
+/// Kick's webhook payload in `event`.
+DeltaEvent? kickDeltaEvent(String id, Map<String, dynamic> data) {
+  final event = Map<String, dynamic>.from(data['event'] ?? {});
+  final DateTime timestamp = data['timestamp'].toDate();
+  KickUserModel user(String key) =>
+      KickUserModel.fromJson(Map<String, dynamic>.from(event[key] ?? {}));
+
+  switch (data['type']) {
+    case "kick.chat.message.sent":
+      return AppendDeltaEvent(KickMessageModel.fromEvent(
+          messageId: id,
+          timestamp: timestamp,
+          channelId: data['channelId'],
+          event: event));
+    case "kick.channel.followed":
+      return AppendDeltaEvent(KickFollowEventModel(
+          messageId: id, timestamp: timestamp, follower: user('follower')));
+    case "kick.channel.subscription.new":
+    case "kick.channel.subscription.renewal":
+      return AppendDeltaEvent(KickSubscriptionEventModel(
+          messageId: id,
+          timestamp: timestamp,
+          subscriber: user('subscriber'),
+          months: event['duration'] ?? 1,
+          isRenewal: data['type'] == "kick.channel.subscription.renewal"));
+    case "kick.channel.subscription.gifts":
+      final gifter = event['gifter'];
+      return AppendDeltaEvent(KickGiftedSubscriptionsEventModel(
+          messageId: id,
+          timestamp: timestamp,
+          gifter: gifter == null || gifter['is_anonymous'] == true
+              ? null
+              : user('gifter'),
+          giftees: [
+            for (final giftee in (event['giftees'] as List?) ?? const [])
+              KickUserModel.fromJson(Map<String, dynamic>.from(giftee)),
+          ]));
+    case "kick.kicks.gifted":
+      final gift = event['gift'] ?? {};
+      final message = gift['message'] as String?;
+      return AppendDeltaEvent(KicksGiftedEventModel(
+          messageId: id,
+          timestamp: timestamp,
+          sender: user('sender'),
+          amount: gift['amount'] ?? 0,
+          giftName: gift['name'] ?? '',
+          message: message == null || message.isEmpty ? null : message));
+    case "kick.moderation.banned":
+      // like a twitch userclear: the user's messages are removed.
+      final bannedUserId = event['banned_user']?['user_id']?.toString();
+      return UpdateAllDeltaEvent(timestamp, (message) {
+        if (message is! KickMessageModel ||
+            message.author.userId != bannedUserId) {
+          return message;
+        }
+        return message.withDeleted(true);
+      });
+    case "kick.channel.reward.redemption.updated":
+      final reward = event['reward'] ?? {};
+      final input = event['user_input'] as String?;
+      return AppendDeltaEvent(KickRewardRedemptionEventModel(
+          messageId: id,
+          timestamp: timestamp,
+          redeemer: user('redeemer'),
+          rewardTitle: reward['title'] ?? '',
+          cost: reward['cost'] ?? 0,
+          status: event['status'] ?? '',
+          userInput: input == null || input.isEmpty ? null : input));
+  }
+  return null;
 }

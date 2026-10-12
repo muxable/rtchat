@@ -255,5 +255,9 @@
   "thirdPartyAuthError": "Vaya, no funcionó. ¿Lo intentas de nuevo o preguntas en Discord?",
   "companionAuthBrowserTooOld": "Tu navegador es demasiado antiguo para iniciar sesión directamente. Escanea este código QR con tu teléfono para iniciar sesión en otro dispositivo.",
   "companionAuthScanQrCode": "Escanea este código QR con tu teléfono para iniciar sesión en otro dispositivo.",
-  "alertsEnabled": "Solo alertas"
+  "alertsEnabled": "Solo alertas",
+  "kickSubscriptionEvent": "¡<b>{subscriberName}</b> se ha suscrito!",
+  "kickResubscriptionEvent": "¡<b>{subscriberName}</b> ha renovado su suscripción por {months} meses!",
+  "kickGiftedSubscriptionsEvent": "¡<b>{gifterName}</b> ha regalado {count} suscripciones!",
+  "kicksGiftedEvent": "¡<b>{senderName}</b> ha enviado {amount} Kicks!"
 }

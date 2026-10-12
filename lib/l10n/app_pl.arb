@@ -255,5 +255,9 @@
   "thirdPartyAuthError": "Hmm, nie udało się. Spróbuj ponownie lub zapytaj na Discordzie?",
   "companionAuthBrowserTooOld": "Twoja przeglądarka jest zbyt stara, aby zalogować się bezpośrednio. Zeskanuj ten kod QR telefonem, aby zalogować się na innym urządzeniu.",
   "companionAuthScanQrCode": "Zeskanuj ten kod QR telefonem, aby zalogować się na innym urządzeniu.",
-  "alertsEnabled": "Tylko alerty"
+  "alertsEnabled": "Tylko alerty",
+  "kickSubscriptionEvent": "<b>{subscriberName}</b> zasubskrybował!",
+  "kickResubscriptionEvent": "<b>{subscriberName}</b> odnowił subskrypcję na {months} mies.!",
+  "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> podarował {count} subskrypcji!",
+  "kicksGiftedEvent": "<b>{senderName}</b> wysłał {amount} Kicks!"
 }

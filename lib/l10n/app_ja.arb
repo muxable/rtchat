@@ -255,5 +255,9 @@
   "thirdPartyAuthError": "うまくいきませんでした。もう一度試すか、Discordで質問してください。",
   "companionAuthBrowserTooOld": "お使いのブラウザは古いため直接ログインできません。スマートフォンでこのQRコードをスキャンして、別のデバイスでログインしてください。",
   "companionAuthScanQrCode": "スマートフォンでこのQRコードをスキャンして、別のデバイスでログインしてください。",
-  "alertsEnabled": "アラートのみ"
+  "alertsEnabled": "アラートのみ",
+  "kickSubscriptionEvent": "<b>{subscriberName}</b>さんがサブスクライブしました！",
+  "kickResubscriptionEvent": "<b>{subscriberName}</b>さんが{months}か月目のサブスクを更新しました！",
+  "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b>さんが{count}件のサブスクをギフトしました！",
+  "kicksGiftedEvent": "<b>{senderName}</b>さんが{amount} Kicksを送りました！"
 }

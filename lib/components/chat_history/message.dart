@@ -8,6 +8,8 @@ import 'package:rtchat/components/chat_history/auxiliary/streamelements.dart';
 import 'package:rtchat/components/chat_history/auxiliary/streamlabs.dart';
 import 'package:rtchat/components/chat_history/chat_cleared_event.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
+import 'package:rtchat/components/chat_history/kick/events.dart';
+import 'package:rtchat/components/chat_history/kick/message.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
 import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
@@ -29,6 +31,8 @@ import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
 import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
+import 'package:rtchat/models/messages/kick/event.dart';
+import 'package:rtchat/models/messages/kick/message.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
@@ -307,6 +311,21 @@ class ChatHistoryMessage extends StatelessWidget {
       return TwitchShoutoutCreateEventWidget(m);
     } else if (m is TwitchShoutoutReceiveEventModel) {
       return TwitchShoutoutReceiveEventWidget(m);
+    } else if (m is KickMessageModel) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: KickMessageWidget(m),
+      );
+    } else if (m is KickFollowEventModel) {
+      return KickFollowEventWidget(m);
+    } else if (m is KickSubscriptionEventModel) {
+      return KickSubscriptionEventWidget(m);
+    } else if (m is KickGiftedSubscriptionsEventModel) {
+      return KickGiftedSubscriptionsEventWidget(m);
+    } else if (m is KicksGiftedEventModel) {
+      return KicksGiftedEventWidget(m);
+    } else if (m is KickRewardRedemptionEventModel) {
+      return KickRewardRedemptionEventWidget(m);
     } else {
       throw AssertionError("invalid message type $m");
     }

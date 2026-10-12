@@ -1018,4 +1018,36 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get companionAuthScanQrCode =>
       'অন্য ডিভাইসে সাইন ইন করতে আপনার ফোন দিয়ে এই QR কোড স্ক্যান করুন।';
+
+  @override
+  String kickSubscriptionEvent(String subscriberName) {
+    return '<b>$subscriberName</b> সাবস্ক্রাইব করেছেন!';
+  }
+
+  @override
+  String kickResubscriptionEvent(String subscriberName, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$subscriberName</b> $monthsString মাসের জন্য আবার সাবস্ক্রাইব করেছেন!';
+  }
+
+  @override
+  String kickGiftedSubscriptionsEvent(String gifterName, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '<b>$gifterName</b> $countStringটি সাব উপহার দিয়েছেন!';
+  }
+
+  @override
+  String kicksGiftedEvent(String senderName, int amount) {
+    final intl.NumberFormat amountNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String amountString = amountNumberFormat.format(amount);
+
+    return '<b>$senderName</b> $amountString Kicks পাঠিয়েছেন!';
+  }
 }

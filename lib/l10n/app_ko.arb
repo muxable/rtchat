@@ -255,5 +255,9 @@
   "thirdPartyAuthError": "음, 제대로 되지 않았어요. 다시 시도하거나 Discord에 문의해 주세요.",
   "companionAuthBrowserTooOld": "브라우저가 너무 오래되어 바로 로그인할 수 없습니다. 휴대폰으로 이 QR 코드를 스캔하여 다른 기기에서 로그인하세요.",
   "companionAuthScanQrCode": "휴대폰으로 이 QR 코드를 스캔하여 다른 기기에서 로그인하세요.",
-  "alertsEnabled": "알림만"
+  "alertsEnabled": "알림만",
+  "kickSubscriptionEvent": "<b>{subscriberName}</b>님이 구독했습니다!",
+  "kickResubscriptionEvent": "<b>{subscriberName}</b>님이 {months}개월째 구독을 갱신했습니다!",
+  "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b>님이 구독 {count}개를 선물했습니다!",
+  "kicksGiftedEvent": "<b>{senderName}</b>님이 {amount} Kicks를 보냈습니다!"
 }
