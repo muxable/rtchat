@@ -1026,6 +1026,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
     return '<b>$senderName</b> 送出了 $amountString Kicks！';
   }
+
+  @override
+  String get signInWithKick => '使用 Kick 登录';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2050,4 +2053,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
     return '<b>$senderName</b> 送出了 $amountString Kicks！';
   }
+
+  @override
+  String get signInWithKick => '使用 Kick 登入';
 }

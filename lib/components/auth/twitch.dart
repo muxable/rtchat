@@ -11,17 +11,32 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
-
-class SignInWithTwitch extends StatelessWidget {
+/// Signs in with a provider's account.
+class SignInButton extends StatelessWidget {
+  final String provider;
   final void Function()? onStart;
   final void Function()? onComplete;
 
-  const SignInWithTwitch({
+  const SignInButton({
     super.key,
+    required this.provider,
     this.onStart,
     this.onComplete,
   });
+
+  static const _colors = {
+    Providers.twitch: Color(0xFF6441A5),
+    Providers.kick: Color(0xFF53FC18),
+  };
+
+  String _label(AppLocalizations l10n) {
+    switch (provider) {
+      case Providers.kick:
+        return l10n.signInWithKick;
+      default:
+        return l10n.signInWithTwitch;
+    }
+  }
 
   static Future<bool> isGlobalThisSupported() async {
     final completer = Completer<bool>();
@@ -44,17 +59,18 @@ class SignInWithTwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = _colors[provider] ?? Theme.of(context).colorScheme.primary;
     return ElevatedButton(
       style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(const Color(0xFF6441A5)),
+        backgroundColor: WidgetStateProperty.all(color),
       ),
-      child: Text(AppLocalizations.of(context)!.signInWithTwitch,
-          style: const TextStyle(
-            color: Colors.white,
+      child: Text(_label(AppLocalizations.of(context)!),
+          style: TextStyle(
+            color: color.computeLuminance() > 0.5 ? Colors.black : Colors.white,
           )),
       onPressed: () async {
         final isGlobalThisSupported =
-            await SignInWithTwitch.isGlobalThisSupported();
+            await SignInButton.isGlobalThisSupported();
         if (!context.mounted) {
           return;
         }
@@ -68,8 +84,8 @@ class SignInWithTwitch extends StatelessWidget {
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             builder: (context) {
-              return const CompanionAuthWidget(
-                provider: Providers.twitch,
+              return CompanionAuthWidget(
+                provider: provider,
                 isTooOld: true,
               );
             },
@@ -96,8 +112,8 @@ class SignInWithTwitch extends StatelessWidget {
               onPressed: () {
                 navigator.push(ModalBottomSheetRoute(
                   builder: (context) {
-                    return const CompanionAuthWidget(
-                      provider: Providers.twitch,
+                    return CompanionAuthWidget(
+                      provider: provider,
                       isTooOld: false,
                     );
                   },
@@ -111,7 +127,8 @@ class SignInWithTwitch extends StatelessWidget {
             ));
         onStart?.call();
         try {
-          await FirebaseAnalytics.instance.logLogin(loginMethod: "twitch");
+          await FirebaseAnalytics.instance.logLogin(loginMethod: provider);
+          final url = Uri.https('chat.rtirl.com', '/auth/$provider/redirect');
           final result = await FlutterWebAuth2.authenticate(
               url: url.toString(), callbackUrlScheme: "com.rtirl.chat");
           final token = Uri.parse(result).queryParameters['token'];
@@ -136,4 +153,26 @@ class SignInWithTwitch extends StatelessWidget {
       },
     );
   }
+}
+
+class SignInWithTwitch extends StatelessWidget {
+  final void Function()? onStart;
+  final void Function()? onComplete;
+
+  const SignInWithTwitch({super.key, this.onStart, this.onComplete});
+
+  @override
+  Widget build(BuildContext context) => SignInButton(
+      provider: Providers.twitch, onStart: onStart, onComplete: onComplete);
+}
+
+class SignInWithKick extends StatelessWidget {
+  final void Function()? onStart;
+  final void Function()? onComplete;
+
+  const SignInWithKick({super.key, this.onStart, this.onComplete});
+
+  @override
+  Widget build(BuildContext context) => SignInButton(
+      provider: Providers.kick, onStart: onStart, onComplete: onComplete);
 }

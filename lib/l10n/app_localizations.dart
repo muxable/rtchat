@@ -1698,6 +1698,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'<b>{senderName}</b> sent {amount} Kicks!'**
   String kicksGiftedEvent(String senderName, int amount);
+
+  /// Button to sign in with a Kick account
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Kick'**
+  String get signInWithKick;
 }
 
 class _AppLocalizationsDelegate

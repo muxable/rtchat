@@ -259,5 +259,6 @@
   "kickSubscriptionEvent": "<b>{subscriberName}</b> оформил подписку!",
   "kickResubscriptionEvent": "<b>{subscriberName}</b> продлил подписку: {months} мес.!",
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> подарил подписки: {count}!",
-  "kicksGiftedEvent": "<b>{senderName}</b> отправил {amount} Kicks!"
+  "kicksGiftedEvent": "<b>{senderName}</b> отправил {amount} Kicks!",
+  "signInWithKick": "Войти через Kick"
 }

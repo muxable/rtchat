@@ -1054,4 +1054,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
     return 'أرسل <b>$senderName</b> $amountString Kicks!';
   }
+
+  @override
+  String get signInWithKick => 'تسجيل الدخول باستخدام Kick';
 }

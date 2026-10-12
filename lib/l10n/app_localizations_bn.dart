@@ -1050,4 +1050,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
     return '<b>$senderName</b> $amountString Kicks পাঠিয়েছেন!';
   }
+
+  @override
+  String get signInWithKick => 'Kick দিয়ে সাইন ইন করুন';
 }

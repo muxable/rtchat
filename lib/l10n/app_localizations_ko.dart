@@ -1028,4 +1028,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
     return '<b>$senderName</b>님이 $amountString Kicks를 보냈습니다!';
   }
+
+  @override
+  String get signInWithKick => 'Kick으로 로그인';
 }

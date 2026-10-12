@@ -32,7 +32,7 @@ class UserModel extends ChangeNotifier {
         return;
       }
       _profileSubscription = ProfilesAdapter.instance
-          .getChannel(userId: user.uid, provider: Providers.twitch)
+          .getChannel(userId: user.uid)
           .listen((channel) {
         _userChannel = channel;
         _isLoading = false;

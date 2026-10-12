@@ -1059,4 +1059,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
     return '¡<b>$senderName</b> ha enviado $amountString Kicks!';
   }
+
+  @override
+  String get signInWithKick => 'Inicia sesión con Kick';
 }
