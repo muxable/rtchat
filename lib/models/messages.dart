@@ -51,20 +51,14 @@ class MessagesModel extends ChangeNotifier {
       _subscription =
           MessagesAdapter.instance.forChannel(channel).listen((event) {
         _events.add(event);
-        if (event is AppendDeltaEvent) {
-          // check if this event comes after the last message
-          if (_messages.isNotEmpty &&
-              event.model.timestamp.isBefore(_messages.last.timestamp)) {
-            // this message is out of order, so we need to insert it in the right place
-            final index = _messages.indexWhere(
-                (element) => element.timestamp.isAfter(event.model.timestamp));
-            _messages.insert(index, event.model);
-          } else {
-            _messages.add(event.model);
+        _messages = applyDeltaEvent(
+          _messages,
+          event,
+          onAppend: (model) {
             // Pass localizations to the TTS say method
             final localizations = _getLocalizations();
             if (localizations != null) {
-              _tts?.say(localizations, event.model);
+              _tts?.say(localizations, model);
             } else {
               debugPrint("Localizations not available");
             }
@@ -78,53 +72,17 @@ class MessagesModel extends ChangeNotifier {
                 }
               });
             }
-          }
-          // check to see if we should add a separator
-          // always add if it's the first message.
-          if (_messages.length == 1) {
-            _separators.add(0);
-          } else {
-            final lastSeparator =
-                _separators.isEmpty ? 0 : _separators.reduce(max);
-            // add if the last separator was at least 50 away and this was a
-            // chat message.
-            if (_messages.length - lastSeparator >= 50 &&
-                event.model is TwitchMessageModel) {
-              _separators.add(_messages.length - 1);
-            }
-            // add if the difference between this message and the last message
-            // is more than 5 minutes.
-            final cmp = _messages[_messages.length - 2];
-            if (event.model.timestamp.difference(cmp.timestamp).inMinutes > 5) {
-              _separators.add(_messages.length - 1);
-            }
-          }
-        } else if (event is UpdateDeltaEvent) {
-          for (var i = 0; i < _messages.length; i++) {
-            final message = _messages[i];
-            if (message.messageId == event.messageId) {
-              _messages[i] = event.update(message);
-              if (message is TwitchMessageModel && message.deleted) {
-                _tts?.unsay(message.messageId);
-              }
-              break;
-            }
-          }
-        } else if (event is UpdateAllDeltaEvent) {
-          for (var i = 0; i < _messages.length; i++) {
-            final message = event.update(_messages[i]);
+          },
+          onUpdate: (event, previous, updated) {
+            final message = event is UpdateAllDeltaEvent ? updated : previous;
             if (message is TwitchMessageModel && message.deleted) {
               _tts?.unsay(message.messageId);
             }
-            _messages[i] = message;
-          }
+          },
+        );
+        if (event is AppendDeltaEvent) {
+          updateSeparators(_messages, _separators, event.model);
         } else if (event is ClearDeltaEvent) {
-          _messages = [
-            ChatClearedEventModel(
-              messageId: event.messageId,
-              timestamp: event.timestamp,
-            )
-          ];
           _separators = {};
           _tts?.stop();
         } else if (event is LiveStateDeltaEvent) {
@@ -163,37 +121,7 @@ class MessagesModel extends ChangeNotifier {
     _events = [...events, ...futureEvents];
     for (final event in _events) {
       // reproduce the message set
-      if (event is AppendDeltaEvent) {
-        // check if this event comes after the last message
-        if (messages.isNotEmpty &&
-            event.model.timestamp.isBefore(messages.last.timestamp)) {
-          // this message is out of order, so we need to insert it in the right place
-          final index = messages.indexWhere(
-              (element) => element.timestamp.isAfter(event.model.timestamp));
-          messages.insert(index, event.model);
-        } else {
-          messages.add(event.model);
-        }
-      } else if (event is UpdateDeltaEvent) {
-        for (var i = 0; i < messages.length; i++) {
-          final message = messages[i];
-          if (message.messageId == event.messageId) {
-            messages[i] = event.update(message);
-            break;
-          }
-        }
-      } else if (event is UpdateAllDeltaEvent) {
-        for (var i = 0; i < messages.length; i++) {
-          messages[i] = event.update(messages[i]);
-        }
-      } else if (event is ClearDeltaEvent) {
-        messages = [
-          ChatClearedEventModel(
-            messageId: event.messageId,
-            timestamp: event.timestamp,
-          )
-        ];
-      }
+      messages = applyDeltaEvent(messages, event);
     }
     _messages = messages;
     notifyListeners();
@@ -285,5 +213,84 @@ class MessagesModel extends ChangeNotifier {
       return AppLocalizations.of(context);
     }
     return null;
+  }
+}
+
+/// Applies [event] to [messages] in place and returns the resulting list, which
+/// is a new list if the event clears the chat.
+///
+/// [onAppend] is called when a message is appended to the end of the list, but
+/// not when an out-of-order message is inserted. [onUpdate] is called for each
+/// message replaced by an [UpdateDeltaEvent] or [UpdateAllDeltaEvent].
+@visibleForTesting
+List<MessageModel> applyDeltaEvent(
+  List<MessageModel> messages,
+  DeltaEvent event, {
+  void Function(MessageModel model)? onAppend,
+  void Function(DeltaEvent event, MessageModel previous, MessageModel updated)?
+      onUpdate,
+}) {
+  if (event is AppendDeltaEvent) {
+    // check if this event comes after the last message
+    if (messages.isNotEmpty &&
+        event.model.timestamp.isBefore(messages.last.timestamp)) {
+      // this message is out of order, so we need to insert it in the right place
+      final index = messages.indexWhere(
+          (element) => element.timestamp.isAfter(event.model.timestamp));
+      messages.insert(index, event.model);
+    } else {
+      messages.add(event.model);
+      onAppend?.call(event.model);
+    }
+  } else if (event is UpdateDeltaEvent) {
+    for (var i = 0; i < messages.length; i++) {
+      final message = messages[i];
+      if (message.messageId == event.messageId) {
+        final updated = event.update(message);
+        messages[i] = updated;
+        onUpdate?.call(event, message, updated);
+        break;
+      }
+    }
+  } else if (event is UpdateAllDeltaEvent) {
+    for (var i = 0; i < messages.length; i++) {
+      final message = messages[i];
+      final updated = event.update(message);
+      onUpdate?.call(event, message, updated);
+      messages[i] = updated;
+    }
+  } else if (event is ClearDeltaEvent) {
+    return [
+      ChatClearedEventModel(
+        messageId: event.messageId,
+        timestamp: event.timestamp,
+      )
+    ];
+  }
+  return messages;
+}
+
+/// Adds a separator to [separators] if needed after [model] was added to
+/// [messages].
+@visibleForTesting
+void updateSeparators(
+    List<MessageModel> messages, Set<int> separators, MessageModel model) {
+  // check to see if we should add a separator
+  // always add if it's the first message.
+  if (messages.length == 1) {
+    separators.add(0);
+  } else {
+    final lastSeparator = separators.isEmpty ? 0 : separators.reduce(max);
+    // add if the last separator was at least 50 away and this was a
+    // chat message.
+    if (messages.length - lastSeparator >= 50 && model is TwitchMessageModel) {
+      separators.add(messages.length - 1);
+    }
+    // add if the difference between this message and the last message
+    // is more than 5 minutes.
+    final cmp = messages[messages.length - 2];
+    if (model.timestamp.difference(cmp.timestamp).inMinutes > 5) {
+      separators.add(messages.length - 1);
+    }
   }
 }

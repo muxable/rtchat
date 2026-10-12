@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
@@ -65,8 +66,12 @@ class LiveStateDeltaEvent extends DeltaEvent {
 }
 
 DeltaEvent? _toDeltaEvent(
-    List<Emote> emotes, DocumentSnapshot<Map<String, dynamic>> doc) {
-  final data = doc.data();
+        List<Emote> emotes, DocumentSnapshot<Map<String, dynamic>> doc) =>
+    toDeltaEvent(emotes, doc.id, doc.data());
+
+@visibleForTesting
+DeltaEvent? toDeltaEvent(
+    List<Emote> emotes, String id, Map<String, dynamic>? data) {
   if (data == null) {
     return null;
   }
@@ -94,7 +99,7 @@ DeltaEvent? _toDeltaEvent(
           : null;
 
       final model = TwitchMessageModel(
-          messageId: doc.id,
+          messageId: id,
           author: author,
           message: message,
           reply: reply,
@@ -117,7 +122,7 @@ DeltaEvent? _toDeltaEvent(
       });
     case "channel.raid":
       final model = TwitchRaidEventModel(
-          messageId: doc.id,
+          messageId: id,
           from: TwitchUserModel(
               userId: data['event']['from_broadcaster_user_id'],
               login: data['event']['from_broadcaster_user_login'],
@@ -127,7 +132,7 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "clear":
       return ClearDeltaEvent(
-        messageId: doc.id,
+        messageId: id,
         timestamp: data['timestamp'].toDate(),
       );
     case "userclear":
@@ -145,7 +150,7 @@ DeltaEvent? _toDeltaEvent(
       }
       final hosterInfo = data['hosterChannelId'].split(':');
       final model = TwitchHostEventModel(
-          messageId: doc.id,
+          messageId: id,
           from: TwitchUserModel(
               userId: hosterInfo[1],
               login: data['displayName'],
@@ -156,7 +161,7 @@ DeltaEvent? _toDeltaEvent(
     case "channel.subscribe":
       final model = TwitchSubscriptionEventModel(
           timestamp: data['timestamp'].toDate(),
-          messageId: doc.id,
+          messageId: id,
           subscriberUserName: data['event']['user_name'],
           isGift: data['event']['is_gift'],
           tier: data['event']['tier']);
@@ -169,7 +174,7 @@ DeltaEvent? _toDeltaEvent(
 
       final model = TwitchSubscriptionGiftEventModel(
           timestamp: data['timestamp'].toDate(),
-          messageId: doc.id,
+          messageId: id,
           gifterUserName: gifterName,
           tier: data['event']['tier'],
           total: data['event']['total'],
@@ -179,7 +184,7 @@ DeltaEvent? _toDeltaEvent(
     case "channel.subscription.message":
       final model = TwitchSubscriptionMessageEventModel(
           timestamp: data['timestamp'].toDate(),
-          messageId: doc.id,
+          messageId: id,
           subscriberUserName: data['event']['user_name'],
           tier: data['event']['tier'],
           streakMonths: data['event']['streak_months'],
@@ -192,14 +197,14 @@ DeltaEvent? _toDeltaEvent(
       return AppendDeltaEvent(model);
     case "channel.follow":
       return AppendDeltaEvent(
-          TwitchFollowEventModel.fromDocumentData(doc.id, data));
+          TwitchFollowEventModel.fromDocumentData(id, data));
     case "channel.cheer":
       final model = TwitchCheerEventModel(
           bits: data['event']['bits'],
           isAnonymous: data['event']['is_anonymous'],
           cheerMessage: data['event']['message'],
           giverName: data['event']['user_name'],
-          messageId: doc.id,
+          messageId: id,
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
     case "channel.poll.begin":
@@ -275,7 +280,7 @@ DeltaEvent? _toDeltaEvent(
     case "stream.online":
     case "stream.offline":
       final model = StreamStateEventModel(
-          messageId: doc.id,
+          messageId: id,
           isOnline: data['type'] == "stream.online",
           timestamp: data['timestamp'].toDate());
       return AppendDeltaEvent(model);
@@ -300,22 +305,20 @@ DeltaEvent? _toDeltaEvent(
         return message.withSuccessful();
       });
     case "streamlabs.donation":
-      final model = StreamlabsDonationEventModel.fromDocumentData(doc.id, data);
+      final model = StreamlabsDonationEventModel.fromDocumentData(id, data);
       return AppendDeltaEvent(model);
     case "streamelements.tip":
-      final model = StreamElementsTipEventModel.fromDocumentData(doc.id, data);
+      final model = StreamElementsTipEventModel.fromDocumentData(id, data);
       return AppendDeltaEvent(model);
     case "realtimecash.donation":
       final model =
-          SimpleRealtimeCashDonationEventModel.fromDocumentData(doc.id, data);
+          SimpleRealtimeCashDonationEventModel.fromDocumentData(id, data);
       return AppendDeltaEvent(model);
     case "channel.shoutout.create":
-      final model =
-          TwitchShoutoutCreateEventModel.fromDocumentData(doc.id, data);
+      final model = TwitchShoutoutCreateEventModel.fromDocumentData(id, data);
       return AppendDeltaEvent(model);
     case "channel.shoutout.receive":
-      final model =
-          TwitchShoutoutReceiveEventModel.fromDocumentData(doc.id, data);
+      final model = TwitchShoutoutReceiveEventModel.fromDocumentData(id, data);
       return AppendDeltaEvent(model);
   }
   return null;
