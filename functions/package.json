@@ -34,5 +34,8 @@
     "typescript": "^4.8.2",
     "vitest": "^3.2.7"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "vite": "6.3.6"
+  }
 }
