@@ -5,6 +5,7 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
 import { AuthorizationCode } from "simple-oauth2";
+import { resolveLink } from "./accounts";
 import {
   codeChallenge,
   createCodeVerifier,
@@ -131,6 +132,7 @@ app.get("/auth/twitch/redirect", (req, res) => {
   const state = req.session.state || crypto.randomBytes(20).toString("hex");
   req.session.companion = req.query.companion?.toString();
   req.session.state = state.toString();
+  req.session.token = req.query.token?.toString();
   const redirectUri = new AuthorizationCode(TWITCH_OAUTH_CONFIG).authorizeURL({
     redirect_uri: `${HOST}/auth/twitch/callback`,
     scope: [
@@ -203,18 +205,38 @@ async function completeSignIn(
   profile: { id: string },
   token: object
 ) {
+  // a signed-in user linking another account passes their id token.
+  const linkToken = req.session.token;
+  req.session.token = undefined;
+  const linkUid = await toUserId(linkToken);
+  if (linkToken && !linkUid) {
+    res.redirect("com.rtirl.chat://error?message=invalid_token");
+    return;
+  }
+
   // check if this user exists already.
   const userIdRef = admin
     .database()
     .ref("userIds")
     .child(provider)
     .child(profile.id);
-  const firebaseUserIdDoc = await userIdRef.get();
-  let firebaseUserId = firebaseUserIdDoc.val();
-  if (!firebaseUserId) {
-    const userRecord = await admin.auth().createUser({});
-    await userIdRef.set(userRecord.uid);
-    firebaseUserId = userRecord.uid;
+  const mappedUid: string | null = (await userIdRef.get()).val();
+  let firebaseUserId: string;
+  switch (resolveLink(mappedUid, linkUid)) {
+    case "conflict":
+      res.redirect("com.rtirl.chat://error?message=already_linked");
+      return;
+    case "existing":
+      firebaseUserId = mappedUid!;
+      break;
+    case "link":
+      firebaseUserId = linkUid!;
+      await userIdRef.set(firebaseUserId);
+      break;
+    case "create":
+      firebaseUserId = (await admin.auth().createUser({})).uid;
+      await userIdRef.set(firebaseUserId);
+      break;
   }
 
   // save the token to the user doc.
@@ -253,6 +275,7 @@ app.get("/auth/kick/redirect", (req, res) => {
   req.session.companion = req.query.companion?.toString();
   req.session.state = state;
   req.session.codeVerifier = verifier;
+  req.session.token = req.query.token?.toString();
   const redirectUri = new AuthorizationCode(oauthConfig("kick")).authorizeURL({
     redirect_uri: `${HOST}/auth/kick/callback`,
     scope: KICK_SCOPES,

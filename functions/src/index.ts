@@ -6,6 +6,7 @@ import {
   ethAlchemyWebhook,
   setRealTimeCashAddress,
 } from "./alchemy_webhook";
+import { unlinkAccount } from "./accounts";
 import { app as authApp } from "./auth";
 import { getBadges } from "./badges";
 import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
@@ -458,3 +459,5 @@ export {
   updateFollowerAndViewerCount,
 };
 export const auth = functions.https.onRequest(authApp);
+
+export { unlinkAccount };
