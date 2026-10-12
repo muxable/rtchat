@@ -308,6 +308,24 @@ void main() {
       expect(model.emotes.single.end, 4);
     });
 
+    test('channel.subscription.message without a shared streak', () {
+      // EventSub sends a null streak when the user doesn't share it.
+      final model = append<TwitchSubscriptionMessageEventModel>(
+          doc('channel.subscription.message', {
+        'event': {
+          'user_name': 'Sub',
+          'tier': '2000',
+          'streak_months': null,
+          'cumulative_months': 12,
+          'duration_months': 6,
+          'message': {'text': '', 'emotes': null},
+        }
+      }));
+      expect(model.streakMonths, 0);
+      expect(model.durationMonths, 6);
+      expect(model.emotes, isEmpty);
+    });
+
     test('channel.follow', () {
       final model = append<TwitchFollowEventModel>(doc('channel.follow', {
         'event': {
