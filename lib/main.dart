@@ -167,8 +167,13 @@ class _AppState extends State<App> {
                   .getValue()),
             );
             final player = AudioPlayer();
-            model.onMessagePing =
-                () => player.play(AssetSource('message-sound.wav'));
+            model.onMessagePing = () {
+              // don't play alerts while the app is in the background.
+              if (WidgetsBinding.instance.lifecycleState ==
+                  AppLifecycleState.resumed) {
+                player.play(AssetSource('message-sound.wav'));
+              }
+            };
             model.channel =
                 Provider.of<UserModel>(context, listen: false).activeChannel;
             model.tts = Provider.of<TtsModel>(context, listen: false);
