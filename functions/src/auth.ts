@@ -6,7 +6,14 @@ import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
 import { AuthorizationCode } from "simple-oauth2";
 import {
+  codeChallenge,
+  createCodeVerifier,
+  getKickProfile,
+  KICK_SCOPES,
+} from "./kick";
+import {
   isValidState,
+  oauthConfig,
   STREAMELEMENTS_OAUTH_CONFIG,
   STREAMLABS_OAUTH_CONFIG,
   TWITCH_CLIENT_ID,
@@ -111,6 +118,7 @@ declare module "express-session" {
     state?: string;
     token?: string;
     provider?: string;
+    codeVerifier?: string;
   }
 }
 
@@ -175,15 +183,32 @@ app.get("/auth/twitch/callback", async (req, res) => {
 
   req.session.state = undefined;
 
-  const twitchUserId = users["data"][0]["id"];
-  const email = users["data"][0]["email"];
+  const twitchProfile = {
+    id: users["data"][0]["id"],
+    displayName: users["data"][0]["display_name"],
+    login: users["data"][0]["login"],
+    profilePictureUrl: users["data"][0]["profile_image_url"],
+    email: users["data"][0]["email"] || null,
+  };
 
+  await completeSignIn(req, res, "twitch", twitchProfile, results.token);
+});
+
+// Maps a provider account to a Firebase user (creating one if needed), stores
+// the provider's token and profile, and hands a custom token back to the app.
+async function completeSignIn(
+  req: express.Request,
+  res: express.Response,
+  provider: string,
+  profile: { id: string },
+  token: object
+) {
   // check if this user exists already.
   const userIdRef = admin
     .database()
     .ref("userIds")
-    .child("twitch")
-    .child(twitchUserId);
+    .child(provider)
+    .child(profile.id);
   const firebaseUserIdDoc = await userIdRef.get();
   let firebaseUserId = firebaseUserIdDoc.val();
   if (!firebaseUserId) {
@@ -197,35 +222,64 @@ app.get("/auth/twitch/callback", async (req, res) => {
     .firestore()
     .collection("tokens")
     .doc(firebaseUserId)
-    .set({ twitch: JSON.stringify(results.token) }, { merge: true });
+    .set({ [provider]: JSON.stringify(token) }, { merge: true });
 
   // save the profile information too.
-  const twitchProfile = {
-    id: users["data"][0]["id"],
-    displayName: users["data"][0]["display_name"],
-    login: users["data"][0]["login"],
-    profilePictureUrl: users["data"][0]["profile_image_url"],
-    email: email || null,
-  };
-
   await admin
     .firestore()
     .collection("profiles")
     .doc(firebaseUserId)
-    .set({ twitch: twitchProfile }, { merge: true });
+    .set({ [provider]: profile }, { merge: true });
 
-  const token = await admin.auth().createCustomToken(firebaseUserId);
+  const customToken = await admin.auth().createCustomToken(firebaseUserId);
 
   if (req.session.companion) {
     await admin
       .firestore()
       .collection("companion-tokens")
       .doc(req.session.companion)
-      .set({ token }, { merge: true });
+      .set({ token: customToken }, { merge: true });
     res.send("Logged in successfully.");
   } else {
-    res.redirect("com.rtirl.chat://success?token=" + encodeURIComponent(token));
+    res.redirect(
+      "com.rtirl.chat://success?token=" + encodeURIComponent(customToken)
+    );
   }
+}
+
+app.get("/auth/kick/redirect", (req, res) => {
+  const state = crypto.randomBytes(20).toString("hex");
+  const verifier = createCodeVerifier();
+  req.session.companion = req.query.companion?.toString();
+  req.session.state = state;
+  req.session.codeVerifier = verifier;
+  const redirectUri = new AuthorizationCode(oauthConfig("kick")).authorizeURL({
+    redirect_uri: `${HOST}/auth/kick/callback`,
+    scope: KICK_SCOPES,
+    state,
+    code_challenge: codeChallenge(verifier),
+    code_challenge_method: "S256",
+  } as any);
+  res.redirect(redirectUri);
+});
+
+app.get("/auth/kick/callback", async (req, res) => {
+  const verifier = req.session?.codeVerifier;
+  if (!isValidState(req.session?.state, req.query.state) || !verifier) {
+    res.redirect("/auth/kick/redirect");
+    return;
+  }
+  req.session.state = undefined;
+  req.session.codeVerifier = undefined;
+
+  const results = await new AuthorizationCode(oauthConfig("kick")).getToken({
+    code: String(req.query.code),
+    redirect_uri: `${HOST}/auth/kick/callback`,
+    code_verifier: verifier,
+  } as any);
+
+  const profile = await getKickProfile(String(results.token.access_token));
+  await completeSignIn(req, res, "kick", profile, results.token);
 });
 
 app.get("/auth/streamlabs/redirect", (req, res) => {
