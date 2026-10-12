@@ -6,6 +6,19 @@ import 'package:rtchat/components/image/resilient_network_image.dart';
 abstract final class Providers {
   static const twitch = 'twitch';
   static const kick = 'kick';
+
+  static const all = [twitch, kick];
+}
+
+/// The user-facing name of a provider.
+String providerName(String provider) {
+  switch (provider) {
+    case Providers.twitch:
+      return 'Twitch';
+    case Providers.kick:
+      return 'Kick';
+  }
+  return provider;
 }
 
 class Channel {
