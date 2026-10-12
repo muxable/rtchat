@@ -65,9 +65,20 @@ class LiveStateDeltaEvent extends DeltaEvent {
   const LiveStateDeltaEvent(super.timestamp);
 }
 
-DeltaEvent? _toDeltaEvent(
-        List<Emote> emotes, DocumentSnapshot<Map<String, dynamic>> doc) =>
-    toDeltaEvent(emotes, doc.id, doc.data());
+DeltaEvent? _toDeltaEvent(Channel channel, List<Emote> emotes,
+        DocumentSnapshot<Map<String, dynamic>> doc) =>
+    toChannelDeltaEvent(channel, emotes, doc.id, doc.data());
+
+/// Parses a message document from [channel], tagging new messages with it.
+@visibleForTesting
+DeltaEvent? toChannelDeltaEvent(Channel channel, List<Emote> emotes, String id,
+    Map<String, dynamic>? data) {
+  final event = toDeltaEvent(emotes, id, data);
+  if (event is AppendDeltaEvent) {
+    event.model.channel = channel;
+  }
+  return event;
+}
 
 @visibleForTesting
 DeltaEvent? toDeltaEvent(
@@ -367,7 +378,7 @@ class MessagesAdapter {
         .get();
 
     return results.docs
-        .map((doc) => _toDeltaEvent(emotes, doc))
+        .map((doc) => _toDeltaEvent(channel, emotes, doc))
         .whereType<DeltaEvent>()
         .toList();
   }
@@ -388,7 +399,7 @@ class MessagesAdapter {
           .where((change) => change.type == DocumentChangeType.added);
       for (final change in changes) {
         try {
-          final event = _toDeltaEvent(await emotes, change.doc);
+          final event = _toDeltaEvent(channel, await emotes, change.doc);
           if (event != null) {
             yield event;
           }

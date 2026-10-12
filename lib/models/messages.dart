@@ -250,7 +250,7 @@ List<MessageModel> applyDeltaEvent(
     for (var i = 0; i < messages.length; i++) {
       final message = messages[i];
       if (message.messageId == event.messageId) {
-        final updated = event.update(message);
+        final updated = event.update(message)..channel ??= message.channel;
         messages[i] = updated;
         onUpdate?.call(event, message, updated);
         break;
@@ -259,7 +259,7 @@ List<MessageModel> applyDeltaEvent(
   } else if (event is UpdateAllDeltaEvent) {
     for (var i = 0; i < messages.length; i++) {
       final message = messages[i];
-      final updated = event.update(message);
+      final updated = event.update(message)..channel ??= message.channel;
       onUpdate?.call(event, message, updated);
       messages[i] = updated;
     }

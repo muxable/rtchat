@@ -224,7 +224,7 @@ class _ChannelSearchResultsWidgetState
                           result.title == null ? null : Text(result.title!),
                       onTap: () {
                         widget.onChannelSelect(Channel(
-                          "twitch",
+                          Providers.twitch,
                           result.channelId,
                           result.displayName,
                         ));

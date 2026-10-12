@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:rtchat/models/channels.dart';
 
 class Viewers {
   final List<String> broadcaster;
@@ -107,7 +108,7 @@ class ChatStateAdapter {
       try {
         final result = await functions
             .httpsCallable("getBadges")
-            .call({"provider": "twitch", "channelId": channelId});
+            .call({"provider": Providers.twitch, "channelId": channelId});
         if (result.data == null) {
           return [];
         }
