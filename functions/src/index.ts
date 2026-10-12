@@ -10,6 +10,13 @@ import { app as authApp } from "./auth";
 import { getBadges } from "./badges";
 import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
 import { getEmotes } from "./emotes";
+import {
+  banKickUser,
+  deleteKickMessage,
+  resolveKickUserId,
+  sendKickMessage,
+  unbanKickUser,
+} from "./kick_actions";
 import { eventsub } from "./eventsub";
 import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
@@ -82,6 +89,13 @@ export const send = functions.https.onCall(async (data, context) => {
       ws.send(`PRIVMSG #${targetChannel} :${message}`);
       ws.close();
       return;
+    case "kick":
+      return await sendKickMessage(
+        context.auth.uid,
+        channelId,
+        message,
+        data?.replyToMessageId
+      );
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -156,6 +170,12 @@ export const ban = functions.https.onCall(async (data, context) => {
     case "twitch":
       const banUserId = userId ? userId : await twitch.getTwitchId(username);
       return await twitch.ban(context.auth.uid, channelId, banUserId);
+    case "kick":
+      return await banKickUser(
+        context.auth.uid,
+        channelId,
+        userId ?? (await resolveKickUserId(username))
+      );
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -180,6 +200,12 @@ export const unban = functions.https.onCall(async (data, context) => {
     case "twitch":
       const banUserId = userId ? userId : await twitch.getTwitchId(username);
       return await twitch.unban(context.auth.uid, channelId, banUserId);
+    case "kick":
+      return await unbanKickUser(
+        context.auth.uid,
+        channelId,
+        userId ?? (await resolveKickUserId(username))
+      );
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -212,6 +238,13 @@ export const timeout = functions.https.onCall(async (data, context) => {
         length,
         reason
       );
+    case "kick":
+      return await banKickUser(
+        context.auth.uid,
+        channelId,
+        userId ?? (await resolveKickUserId(username)),
+        { durationSeconds: length, reason }
+      );
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -239,6 +272,8 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
         channelId,
         messageId.replace(/^twitch:/, "")
       );
+    case "kick":
+      return await deleteKickMessage(context.auth.uid, messageId);
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
