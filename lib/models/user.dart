@@ -14,7 +14,7 @@ class UserModel extends ChangeNotifier {
   StreamSubscription<void>? _profileSubscription;
 
   User? _user;
-  Channel? _userChannel;
+  List<Channel> _userChannels = [];
   Channel? _activeChannel;
   Locale? _channelLocale;
 
@@ -26,15 +26,16 @@ class UserModel extends ChangeNotifier {
       await FirebaseCrashlytics.instance.setUserIdentifier(user?.uid ?? "");
       await FirebaseAnalytics.instance.setUserId(id: user?.uid);
       if (user == null) {
-        _userChannel = null;
+        _userChannels = [];
         _isLoading = false;
         notifyListeners();
         return;
       }
       _profileSubscription = ProfilesAdapter.instance
-          .getChannel(userId: user.uid, provider: Providers.twitch)
-          .listen((channel) {
-        _userChannel = channel;
+          .getChannels(userId: user.uid)
+          .listen((channels) {
+        _userChannels = channels;
+        final channel = userChannel;
         _isLoading = false;
         notifyListeners();
         if (channel != null) {
@@ -60,9 +61,14 @@ class UserModel extends ChangeNotifier {
 
   User? get user => _user;
 
-  Channel? get userChannel => _userChannel;
+  /// The channels of every account the user has linked.
+  List<Channel> get userChannels => _userChannels;
 
-  Channel? get activeChannel => _activeChannel ?? _userChannel;
+  /// The user's primary channel: their Twitch channel if linked, otherwise
+  /// their first linked account. Prefer [userChannels] in new code.
+  Channel? get userChannel => _userChannels.firstOrNull;
+
+  Channel? get activeChannel => _activeChannel ?? userChannel;
 
   set activeChannel(Channel? channel) {
     _activeChannel = channel;
@@ -112,7 +118,7 @@ class UserModel extends ChangeNotifier {
   }
 
   Uri? get activityFeedUri {
-    final channel = _userChannel;
+    final channel = userChannel;
     if (channel == null) {
       return null;
     }

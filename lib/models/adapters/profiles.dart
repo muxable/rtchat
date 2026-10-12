@@ -10,22 +10,13 @@ class ProfilesAdapter {
       _instance ??= ProfilesAdapter._(db: FirebaseFirestore.instance);
   static ProfilesAdapter? _instance;
 
-  Stream<Channel?> getChannel(
-      {required String userId, required String provider}) {
-    return db.collection("profiles").doc(userId).snapshots().map((event) {
-      if (!event.exists) {
-        return null;
-      }
-      final data = event.data();
-      if (data == null || !data.containsKey("twitch")) {
-        return null;
-      }
-      final twitch = data['twitch'];
-      if (twitch == null) {
-        return null;
-      }
-      return Channel(provider, twitch['id'], twitch['displayName']);
-    });
+  /// The channels of every account linked to [userId], Twitch first.
+  Stream<List<Channel>> getChannels({required String userId}) {
+    return db
+        .collection("profiles")
+        .doc(userId)
+        .snapshots()
+        .map((event) => channelsFromProfile(event.data()));
   }
 
   Stream<bool> getIsOnline({required String channelId}) {
@@ -56,4 +47,18 @@ class ProfilesAdapter {
         .firstWhere((event) => event.exists);
     return doc.data()!["token"] as String;
   }
+}
+
+/// Reads the linked accounts stored at `profiles/{uid}.{provider}`.
+List<Channel> channelsFromProfile(Map<String, dynamic>? data) {
+  final channels = <Channel>[];
+  for (final provider in [Providers.twitch, Providers.kick]) {
+    final account = data?[provider];
+    if (account is! Map || account['id'] == null) {
+      continue;
+    }
+    channels.add(Channel(provider, account['id'].toString(),
+        account['displayName'] ?? account['slug'] ?? account['login'] ?? ''));
+  }
+  return channels;
 }
