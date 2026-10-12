@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:rtchat/main.dart';
+import 'package:rtchat/screens/settings/chat_history.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 import 'emulator.dart';
@@ -33,8 +34,7 @@ Finder findRichText(String text) => find.byWidgetPredicate(
 /// pumpAndSettle never settles here because the app has ongoing animations
 /// and timers, so poll until the finder matches.
 Future<void> pumpUntil(WidgetTester tester, Finder finder,
-    {bool found = true,
-    Duration timeout = const Duration(seconds: 30)}) async {
+    {bool found = true, Duration timeout = const Duration(seconds: 30)}) async {
   final end = DateTime.now().add(timeout);
   while (DateTime.now().isBefore(end)) {
     await tester.pump(const Duration(milliseconds: 250));
@@ -93,8 +93,8 @@ void main() {
     await pumpUntil(tester, findRichText('hello from history'));
 
     // Messages written while the app is open stream in.
-    await seeder.setDocument('$channelPath/live',
-        chatMessage('hello in real time', DateTime.now()));
+    await seeder.setDocument(
+        '$channelPath/live', chatMessage('hello in real time', DateTime.now()));
     await pumpUntil(tester, findRichText('hello in real time'));
 
     // A moderator deleting the message hides it.
@@ -119,14 +119,21 @@ void main() {
     await pumpUntil(tester, find.text('/e2estreamer'));
 
     navigatorKey.currentState!.pushNamed('/settings/chat-history');
+    await pumpUntil(tester, find.byType(ChatHistoryScreen));
+    // the option is below the fold, and ListView only builds visible items.
     final option = find.text('Compact individual messages');
-    await pumpUntil(tester, option);
-    await tester.scrollUntilVisible(option, 200);
+    await tester.scrollUntilVisible(option, 200,
+        scrollable: find
+            .descendant(
+                of: find.byType(ChatHistoryScreen),
+                matching: find.byType(Scrollable))
+            .first);
     await tester.tap(option);
     await tester.pump();
 
-    final style = jsonDecode(
-        prefs.getString('style', defaultValue: '{}').getValue()) as Map;
+    final style =
+        jsonDecode(prefs.getString('style', defaultValue: '{}').getValue())
+            as Map;
     expect(style['compactMessages'], 1);
   });
 }
