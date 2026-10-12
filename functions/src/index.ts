@@ -17,6 +17,7 @@ import {
   sendKickMessage,
   unbanKickUser,
 } from "./kick_actions";
+import { kickWebhook } from "./kick_webhook";
 import { eventsub } from "./eventsub";
 import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
@@ -484,6 +485,7 @@ export {
   subscribe,
   unsubscribe,
   eventsub,
+  kickWebhook,
   search,
   getEmotes,
   getBadges,
