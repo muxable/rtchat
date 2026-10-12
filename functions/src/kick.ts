@@ -1,7 +1,47 @@
+import * as crypto from "crypto";
 import fetch from "cross-fetch";
 
 // Kick's public API: https://docs.kick.com/
 export const KICK_API = "https://api.kick.com/public/v1";
+
+export const KICK_SCOPES = [
+  "user:read",
+  "channel:read",
+  "chat:write",
+  "events:subscribe",
+  "moderation:ban",
+  "moderation:chat_message:manage",
+];
+
+// PKCE (RFC 7636), which Kick requires for the authorization code flow.
+export function createCodeVerifier() {
+  return crypto.randomBytes(32).toString("base64url");
+}
+
+export function codeChallenge(verifier: string) {
+  return crypto.createHash("sha256").update(verifier).digest("base64url");
+}
+
+export interface KickProfile {
+  id: string;
+  slug: string;
+  displayName: string;
+  profilePictureUrl: string | null;
+  email: string | null;
+}
+
+// Combines the authorized user (GET /users) and their channel (GET /channels)
+// into the shape stored at profiles/{uid}.kick. A Kick user's id is also their
+// channel's broadcaster_user_id.
+export function toKickProfile(user: any, channel: any): KickProfile {
+  return {
+    id: String(user.user_id),
+    slug: channel?.slug ?? String(user.name).toLowerCase(),
+    displayName: user.name,
+    profilePictureUrl: user.profile_picture || null,
+    email: user.email || null,
+  };
+}
 
 export async function kickApi(
   accessToken: string,
@@ -25,4 +65,11 @@ export async function kickApi(
     );
   }
   return response.status === 204 ? null : await response.json();
+}
+
+// Looks up the user an access token belongs to.
+export async function getKickProfile(accessToken: string) {
+  const users = await kickApi(accessToken, "/users");
+  const channels = await kickApi(accessToken, "/channels");
+  return toKickProfile(users.data[0], channels.data?.[0]);
 }
