@@ -95,7 +95,7 @@ class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
                               return Stack(
                                 children: [
                                   MobileScanner(
-                                    errorBuilder: (context, error, child) {
+                                    errorBuilder: (context, error) {
                                       return ScannerErrorWidget(error: error);
                                     },
                                     controller: _scanController,

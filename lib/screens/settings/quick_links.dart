@@ -154,8 +154,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                                           return Stack(
                                             children: [
                                               MobileScanner(
-                                                errorBuilder:
-                                                    (context, error, child) {
+                                                errorBuilder: (context, error) {
                                                   return ScannerErrorWidget(
                                                       error: error);
                                                 },

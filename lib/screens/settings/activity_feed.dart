@@ -159,7 +159,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                                   return Stack(
                                     children: [
                                       MobileScanner(
-                                        errorBuilder: (context, error, child) {
+                                        errorBuilder: (context, error) {
                                           return ScannerErrorWidget(
                                               error: error);
                                         },

@@ -154,8 +154,7 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                                           return Stack(
                                             children: [
                                               MobileScanner(
-                                                errorBuilder:
-                                                    (context, error, child) {
+                                                errorBuilder: (context, error) {
                                                   return ScannerErrorWidget(
                                                       error: error);
                                                 },
