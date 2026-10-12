@@ -174,7 +174,7 @@ void main() {
                   from: const TwitchUserModel(
                       userId: '2', login: 'raider', displayName: 'Raider'),
                   viewers: 42)),
-          l10n.raidEventMessage('Raider', 42));
+          'Raider is raiding with 42 viewers!');
     });
 
     test('follow uses the first follower, falling back to login', () {
@@ -189,7 +189,7 @@ void main() {
                     TwitchUserModel(
                         userId: '3', login: 'second', displayName: 'Second'),
                   ])),
-          l10n.followingEvent('first'));
+          'first is following you');
     });
 
     test('subscription tiers are spoken as 1/2/3', () {
@@ -207,7 +207,7 @@ void main() {
                     subscriberUserName: 'sub',
                     isGift: false,
                     tier: tier)),
-            l10n.subscriptionEvent('sub', spoken));
+            'sub has subscribed at Tier $spoken!');
       }
     });
 
@@ -222,7 +222,7 @@ void main() {
                   tier: '1000',
                   total: 5,
                   cumulativeTotal: 20)),
-          l10n.subscriptionGiftEvent('gifter', 5, '1', 20));
+          'gifter has gifted 5 Tier 1 subs, totaling 20!');
     });
 
     test('subscription message', () {
@@ -239,7 +239,7 @@ void main() {
                   streakMonths: 3,
                   emotes: const [],
                   text: 'hi')),
-          l10n.subscriptionMessageEvent('sub', 12, '2'));
+          'sub has subscribed for 12 months at Tier 2!');
     });
 
     test('unhandled events are silent', () {
@@ -298,6 +298,21 @@ void main() {
       expect(restored.isMuted(user), isTrue);
       restored.unmute(user);
       expect(restored.isMuted(user), isFalse);
+    });
+
+    test('muting matches on login', () {
+      model.mute(const TwitchUserModel(userId: '1', login: 'nodisplayname'));
+      expect(model.isMuted(const TwitchUserModel(userId: '2', login: 'other')),
+          isFalse);
+      expect(
+          model.isMuted(const TwitchUserModel(
+              userId: '1', login: 'NoDisplayName', displayName: 'Renamed')),
+          isTrue);
+      model.unmute(const TwitchUserModel(userId: '1', login: 'nodisplayname'));
+      expect(
+          model.isMuted(
+              const TwitchUserModel(userId: '1', login: 'nodisplayname')),
+          isFalse);
     });
   });
 }
