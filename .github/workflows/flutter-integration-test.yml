@@ -37,6 +37,22 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+      # downloading the emulator jars occasionally fails mid-transfer, so cache
+      # them and retry the download before booting the android emulator.
+      - name: Cache Firebase emulators
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-15.33.0
+      - name: Download Firebase emulators
+        run: |
+          for emulator in firestore database; do
+            for attempt in 1 2 3; do
+              npx -y firebase-tools@15.33.0 setup:emulators:$emulator && break
+              [ $attempt = 3 ] && exit 1
+              sleep 10
+            done
+          done
       - name: Run integration tests against Firebase emulators
         uses: reactivecircus/android-emulator-runner@v2
         with:
