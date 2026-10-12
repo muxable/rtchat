@@ -287,6 +287,15 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                   focusNode: _chatInputFocusNode,
                   controller: _textEditingController,
                   textInputAction: TextInputAction.send,
+                  // kick rejects messages over 500 characters (grapheme
+                  // clusters, which is how maxLength counts too).
+                  maxLength:
+                      widget.channel.provider == Providers.kick ? 500 : null,
+                  buildCounter: (context,
+                          {required currentLength,
+                          required isFocused,
+                          maxLength}) =>
+                      null,
                   maxLines: 6,
                   minLines: 1,
                   textAlignVertical: TextAlignVertical.center,

@@ -33,26 +33,29 @@ class ActionsAdapter {
     throw Exception("Failed to send message");
   }
 
-  Future<void> ban(Channel channel, String username) async {
+  Future<void> ban(Channel channel, String username, {String? userId}) async {
     final call = functions.httpsCallable('ban');
     await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
       "username": username,
+      if (userId != null) "userId": userId,
     });
   }
 
-  Future<void> unban(Channel channel, String username) async {
+  Future<void> unban(Channel channel, String username, {String? userId}) async {
     final call = functions.httpsCallable('unban');
     await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
       "username": username,
+      if (userId != null) "userId": userId,
     });
   }
 
-  Future<void> timeout(Channel channel, String username, String reason,
-      Duration duration) async {
+  Future<void> timeout(
+      Channel channel, String username, String reason, Duration duration,
+      {String? userId}) async {
     final call = functions.httpsCallable('timeout');
     await call({
       "provider": channel.provider,
@@ -60,6 +63,7 @@ class ActionsAdapter {
       "username": username,
       "reason": reason,
       "length": duration.inSeconds,
+      if (userId != null) "userId": userId,
     });
   }
 
