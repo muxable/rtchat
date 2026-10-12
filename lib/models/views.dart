@@ -46,6 +46,9 @@ class ViewsModel extends ChangeNotifier {
   /// A send target meaning every channel the user can post to.
   static const allChannels = 'all';
 
+  // the key of the channel picked to preview.
+  String? _previewTarget;
+
   ViewsModel();
 
   /// Keeps the user's own channel in sync with the signed-in account.
@@ -167,6 +170,19 @@ class ViewsModel extends ChangeNotifier {
       return targets.firstOrNull;
     }
     return primary;
+  }
+
+  /// The channel whose stream is previewed: the one picked, while it's
+  /// shown, otherwise the first channel.
+  Channel? get previewChannel =>
+      channels
+          .where((channel) => channel.toString() == _previewTarget)
+          .firstOrNull ??
+      primaryChannel;
+
+  set previewChannel(Channel? channel) {
+    _previewTarget = channel?.toString();
+    notifyListeners();
   }
 
   /// The locale of the channel being viewed, falling back to the device's.

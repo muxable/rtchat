@@ -13,7 +13,7 @@ import 'package:rtchat/components/drawer/end_drawer.dart';
 import 'package:rtchat/components/drawer/sidebar.dart';
 import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
-import 'package:rtchat/components/stream_preview.dart';
+import 'package:rtchat/components/view_stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/activity_feed.dart';
@@ -373,8 +373,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   } else if (layoutModel.isShowPreview) {
                                     return AspectRatio(
                                       aspectRatio: 16 / 9,
-                                      child: StreamPreview(
-                                          channel: widget.channel),
+                                      child: ViewStreamPreview(
+                                          fallback: widget.channel),
                                     );
                                   } else {
                                     return Container();
@@ -410,8 +410,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     if (layoutModel.isShowNotifications) {
                                       return const ActivityFeedPanelWidget();
                                     } else if (layoutModel.isShowPreview) {
-                                      return StreamPreview(
-                                          channel: widget.channel);
+                                      return ViewStreamPreview(
+                                          fallback: widget.channel);
                                     } else {
                                       return Container();
                                     }
