@@ -143,15 +143,13 @@ void main() {
     });
   });
 
-  group('updateSeparators', () {
+  group('computeSeparators', () {
     List<int> appendAll(List<MessageModel> models) {
       final messages = <MessageModel>[];
-      final separators = <int>{};
       for (final model in models) {
-        messages.add(model);
-        updateSeparators(messages, separators, model);
+        applyDeltaEvent(messages, AppendDeltaEvent(model));
       }
-      return separators.toList()..sort();
+      return computeSeparators(messages).toList()..sort();
     }
 
     test('adds a separator for the first message', () {
@@ -182,6 +180,33 @@ void main() {
       ];
       // the gap is compared in whole minutes, so 5m59s is not enough.
       expect(appendAll(models), [0, 2]);
+    });
+
+    test('out-of-order inserts keep separators on the right messages', () {
+      // a and b are 10 minutes apart, so b starts a new section.
+      final messages = <MessageModel>[];
+      for (final model in [
+        chat('a', t0),
+        chat('b', t0.add(const Duration(minutes: 10))),
+        // x arrives late and lands between a and b.
+        chat('x', t0.add(const Duration(minutes: 1))),
+      ]) {
+        applyDeltaEvent(messages, AppendDeltaEvent(model));
+      }
+      expect(ids(messages), ['a', 'x', 'b']);
+      // the gap is now between x and b, so the separator stays on b.
+      expect(computeSeparators(messages).toList()..sort(), [0, 2]);
+    });
+
+    test('separators follow messages when older ones are pruned', () {
+      final messages = <MessageModel>[
+        chat('a', t0),
+        chat('b', t0.add(const Duration(minutes: 1))),
+        chat('c', t0.add(const Duration(minutes: 10))),
+      ];
+      expect(computeSeparators(messages).toList()..sort(), [0, 2]);
+      messages.removeAt(0);
+      expect(computeSeparators(messages).toList()..sort(), [0, 1]);
     });
   });
 

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:core';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
@@ -74,16 +73,16 @@ class MessagesModel extends ChangeNotifier {
             }
           },
           onUpdate: (event, previous, updated) {
-            final message = event is UpdateAllDeltaEvent ? updated : previous;
-            if (message is TwitchMessageModel && message.deleted) {
-              _tts?.unsay(message.messageId);
+            // stop reading out messages as soon as they're deleted.
+            if (updated is TwitchMessageModel && updated.deleted) {
+              _tts?.unsay(updated.messageId);
             }
           },
         );
-        if (event is AppendDeltaEvent) {
-          updateSeparators(_messages, _separators, event.model);
-        } else if (event is ClearDeltaEvent) {
-          _separators = {};
+        if (event is AppendDeltaEvent || event is ClearDeltaEvent) {
+          _separators = computeSeparators(_messages);
+        }
+        if (event is ClearDeltaEvent) {
           _tts?.stop();
         } else if (event is LiveStateDeltaEvent) {
           _isLive = true;
@@ -112,8 +111,11 @@ class MessagesModel extends ChangeNotifier {
       return;
     }
     final futureEvents = _events; // this prevents a race.
+    if (futureEvents.isEmpty) {
+      return;
+    }
     final events = await MessagesAdapter.instance
-        .forChannelHistory(channel, _events.first.timestamp);
+        .forChannelHistory(channel, futureEvents.first.timestamp);
     if (events.isEmpty) {
       return;
     }
@@ -124,6 +126,7 @@ class MessagesModel extends ChangeNotifier {
       messages = applyDeltaEvent(messages, event);
     }
     _messages = messages;
+    _separators = computeSeparators(_messages);
     notifyListeners();
   }
 
@@ -133,6 +136,7 @@ class MessagesModel extends ChangeNotifier {
       _messages.removeRange(0, _messages.length - 1000);
       _events.removeWhere(
           (element) => element.timestamp.isBefore(_messages.first.timestamp));
+      _separators = computeSeparators(_messages);
     }
   }
 
@@ -270,27 +274,30 @@ List<MessageModel> applyDeltaEvent(
   return messages;
 }
 
-/// Adds a separator to [separators] if needed after [model] was added to
-/// [messages].
+/// Returns the indices of [messages] that should be preceded by a separator.
+///
+/// The first message always gets one; after that a separator is added at least
+/// every 50 messages (on a chat message) and wherever more than 5 minutes
+/// elapsed since the previous message. Recomputing from the list keeps indices
+/// correct after out-of-order inserts, history loads and pruning.
 @visibleForTesting
-void updateSeparators(
-    List<MessageModel> messages, Set<int> separators, MessageModel model) {
-  // check to see if we should add a separator
-  // always add if it's the first message.
-  if (messages.length == 1) {
-    separators.add(0);
-  } else {
-    final lastSeparator = separators.isEmpty ? 0 : separators.reduce(max);
-    // add if the last separator was at least 50 away and this was a
-    // chat message.
-    if (messages.length - lastSeparator >= 50 && model is TwitchMessageModel) {
-      separators.add(messages.length - 1);
+Set<int> computeSeparators(List<MessageModel> messages) {
+  final separators = <int>{};
+  var last = 0;
+  for (var i = 0; i < messages.length; i++) {
+    if (i == 0) {
+      separators.add(0);
+      continue;
     }
-    // add if the difference between this message and the last message
-    // is more than 5 minutes.
-    final cmp = messages[messages.length - 2];
-    if (model.timestamp.difference(cmp.timestamp).inMinutes > 5) {
-      separators.add(messages.length - 1);
+    final model = messages[i];
+    if (i + 1 - last >= 50 && model is TwitchMessageModel) {
+      separators.add(i);
+      last = i;
+    }
+    if (model.timestamp.difference(messages[i - 1].timestamp).inMinutes > 5) {
+      separators.add(i);
+      last = i;
     }
   }
+  return separators;
 }
