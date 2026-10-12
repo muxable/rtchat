@@ -45,4 +45,4 @@ jobs:
           target: google_apis
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: npx -y firebase-tools@15.33.0 emulators:exec --only auth,firestore,database --project rtchat-47692 "flutter test integration_test --reporter expanded"
+          script: npx -y firebase-tools@15.33.0 emulators:exec --only auth,firestore,database --project rtchat-47692 "flutter test integration_test --no-dds --reporter expanded"
