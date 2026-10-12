@@ -36,7 +36,8 @@ if (flutterVersionName == null) {
 
 android {
     namespace 'com.rtirl.chat'
-    compileSdkVersion 35
+    compileSdkVersion flutter.compileSdkVersion
+    ndkVersion flutter.ndkVersion
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
@@ -53,8 +54,8 @@ android {
 
     defaultConfig {
         applicationId "com.rtirl.chat"
-        minSdkVersion 23
-        targetSdkVersion 35
+        minSdkVersion flutter.minSdkVersion
+        targetSdkVersion flutter.targetSdkVersion
         versionCode vcode
         versionName flutterVersionName
         multiDexEnabled true
