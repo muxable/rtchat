@@ -34,6 +34,8 @@ import 'package:rtchat/models/user.dart';
 
 enum TtsMode { disabled, alertsOnly, enabled }
 
+final _markup = RegExp(r'</?b>');
+
 class TtsModel extends ChangeNotifier {
   var _isCloudTtsEnabled = false;
   final _tts = FlutterTts()
@@ -151,7 +153,13 @@ class TtsModel extends ChangeNotifier {
       return model.isAction
           ? l10n.actionMessage(author, text)
           : l10n.saidMessage(author, text);
-    } else if (model is StreamStateEventModel) {
+    }
+    // event strings mark up names with <b> for display; don't read it aloud.
+    return _eventVocalization(l10n, model).replaceAll(_markup, "");
+  }
+
+  String _eventVocalization(AppLocalizations l10n, MessageModel model) {
+    if (model is StreamStateEventModel) {
       final timestamp = model.timestamp;
       return model.isOnline
           ? l10n.streamOnline(timestamp, timestamp)
@@ -354,8 +362,10 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // match on login: it's stable and always present, unlike displayName.
   bool isMuted(TwitchUserModel user) {
-    return _mutedUsers.contains(user);
+    final login = user.login.toLowerCase();
+    return _mutedUsers.any((muted) => muted.login.toLowerCase() == login);
   }
 
   void mute(TwitchUserModel model) {
@@ -364,7 +374,10 @@ class TtsModel extends ChangeNotifier {
   }
 
   void unmute(TwitchUserModel model) {
-    if (_mutedUsers.remove(model)) {
+    final login = model.login.toLowerCase();
+    final count = _mutedUsers.length;
+    _mutedUsers.removeWhere((muted) => muted.login.toLowerCase() == login);
+    if (_mutedUsers.length != count) {
       notifyListeners();
     }
   }
@@ -384,9 +397,7 @@ class TtsModel extends ChangeNotifier {
         return;
       }
 
-      if (_mutedUsers.any((user) =>
-          user.displayName?.toLowerCase() ==
-          model.author.displayName?.toLowerCase())) {
+      if (isMuted(model.author)) {
         return;
       }
 
