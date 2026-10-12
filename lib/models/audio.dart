@@ -95,7 +95,11 @@ class AudioModel extends ChangeNotifier {
 
   List<AudioSource> get sources => _sources;
 
-  bool get enabled => _isOnline || _isSettingsVisible || _isAlwaysEnabled;
+  // sources only play on the home screen for a signed in streamer, but can
+  // always be previewed from the settings screen.
+  bool get enabled =>
+      _isSettingsVisible ||
+      (_hostChannel != null && (_isOnline || _isAlwaysEnabled));
 
   Future<void> addSource(AudioSource source) async {
     if (_sources.contains(source)) {
