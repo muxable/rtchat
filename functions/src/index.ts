@@ -90,12 +90,15 @@ export const send = functions.https.onCall(async (data, context) => {
       ws.close();
       return;
     case "kick":
-      return await sendKickMessage(
+      // like twitch, return nothing on success: the app shows any returned
+      // value as an error.
+      await sendKickMessage(
         context.auth.uid,
         channelId,
         message,
         data?.replyToMessageId
       );
+      return;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
