@@ -140,7 +140,7 @@ class AudioModel extends ChangeNotifier {
     }
   }
 
-  showAudioPermissionDialog(BuildContext context) {
+  Future<void> showAudioPermissionDialog(BuildContext context) {
     return showDialog<void>(
         context: context,
         barrierDismissible: false, // user must tap button!

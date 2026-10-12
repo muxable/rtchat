@@ -73,7 +73,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
           Expanded(child:
               Consumer<QuickLinksModel>(builder: (context, quickLinks, child) {
             return ReorderableListView(
-              onReorder: quickLinks.swapSource,
+              onReorderItem: quickLinks.moveSource,
               children: quickLinks.sources.map((source) {
                 return Dismissible(
                   key: ValueKey(source),

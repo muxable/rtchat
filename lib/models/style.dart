@@ -24,7 +24,7 @@ Color lighten(Color color, [double amount = .1]) {
 enum CompactMessages { none, withinMessage, acrossMessages }
 
 extension CompactMessagesJson on CompactMessages {
-  static fromJson(dynamic value) {
+  static CompactMessages fromJson(dynamic value) {
     switch (value) {
       case 0:
         return CompactMessages.none;
@@ -37,7 +37,7 @@ extension CompactMessagesJson on CompactMessages {
     }
   }
 
-  toJson() {
+  int toJson() {
     switch (this) {
       case CompactMessages.none:
         return 0;
