@@ -1035,4 +1035,36 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get companionAuthScanQrCode =>
       'Отсканируйте этот QR-код телефоном, чтобы войти на другом устройстве.';
+
+  @override
+  String kickSubscriptionEvent(String subscriberName) {
+    return '<b>$subscriberName</b> оформил подписку!';
+  }
+
+  @override
+  String kickResubscriptionEvent(String subscriberName, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$subscriberName</b> продлил подписку: $monthsString мес.!';
+  }
+
+  @override
+  String kickGiftedSubscriptionsEvent(String gifterName, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '<b>$gifterName</b> подарил подписки: $countString!';
+  }
+
+  @override
+  String kicksGiftedEvent(String senderName, int amount) {
+    final intl.NumberFormat amountNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String amountString = amountNumberFormat.format(amount);
+
+    return '<b>$senderName</b> отправил $amountString Kicks!';
+  }
 }

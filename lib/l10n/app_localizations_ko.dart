@@ -996,4 +996,36 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get companionAuthScanQrCode => '휴대폰으로 이 QR 코드를 스캔하여 다른 기기에서 로그인하세요.';
+
+  @override
+  String kickSubscriptionEvent(String subscriberName) {
+    return '<b>$subscriberName</b>님이 구독했습니다!';
+  }
+
+  @override
+  String kickResubscriptionEvent(String subscriberName, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$subscriberName</b>님이 $monthsString개월째 구독을 갱신했습니다!';
+  }
+
+  @override
+  String kickGiftedSubscriptionsEvent(String gifterName, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '<b>$gifterName</b>님이 구독 $countString개를 선물했습니다!';
+  }
+
+  @override
+  String kicksGiftedEvent(String senderName, int amount) {
+    final intl.NumberFormat amountNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String amountString = amountNumberFormat.format(amount);
+
+    return '<b>$senderName</b>님이 $amountString Kicks를 보냈습니다!';
+  }
 }

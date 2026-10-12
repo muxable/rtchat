@@ -15,6 +15,7 @@ import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
 import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
 import 'package:rtchat/models/messages/chat.dart';
+import 'package:rtchat/models/messages/kick/event.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
@@ -156,7 +157,18 @@ class TtsModel extends ChangeNotifier {
   }
 
   String _eventVocalization(AppLocalizations l10n, MessageModel model) {
-    if (model is StreamStateEventModel) {
+    if (model is KickFollowEventModel) {
+      return l10n.followingEvent(model.follower.name);
+    } else if (model is KickSubscriptionEventModel) {
+      return model.isRenewal
+          ? l10n.kickResubscriptionEvent(model.subscriber.name, model.months)
+          : l10n.kickSubscriptionEvent(model.subscriber.name);
+    } else if (model is KickGiftedSubscriptionsEventModel) {
+      return l10n.kickGiftedSubscriptionsEvent(
+          model.gifter?.name ?? l10n.anonymous, model.giftees.length);
+    } else if (model is KicksGiftedEventModel) {
+      return l10n.kicksGiftedEvent(model.sender.name, model.amount);
+    } else if (model is StreamStateEventModel) {
       final timestamp = model.timestamp;
       return model.isOnline
           ? l10n.streamOnline(timestamp, timestamp)

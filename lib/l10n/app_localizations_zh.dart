@@ -994,6 +994,38 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get companionAuthScanQrCode => '请用手机扫描此二维码，在其他设备上登录。';
+
+  @override
+  String kickSubscriptionEvent(String subscriberName) {
+    return '<b>$subscriberName</b> 订阅了！';
+  }
+
+  @override
+  String kickResubscriptionEvent(String subscriberName, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$subscriberName</b> 续订了 $monthsString 个月！';
+  }
+
+  @override
+  String kickGiftedSubscriptionsEvent(String gifterName, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '<b>$gifterName</b> 赠送了 $countString 个订阅！';
+  }
+
+  @override
+  String kicksGiftedEvent(String senderName, int amount) {
+    final intl.NumberFormat amountNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String amountString = amountNumberFormat.format(amount);
+
+    return '<b>$senderName</b> 送出了 $amountString Kicks！';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1986,4 +2018,36 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get companionAuthScanQrCode => '請用手機掃描此 QR 碼，在其他裝置上登入。';
+
+  @override
+  String kickSubscriptionEvent(String subscriberName) {
+    return '<b>$subscriberName</b> 訂閱了！';
+  }
+
+  @override
+  String kickResubscriptionEvent(String subscriberName, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$subscriberName</b> 續訂了 $monthsString 個月！';
+  }
+
+  @override
+  String kickGiftedSubscriptionsEvent(String gifterName, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '<b>$gifterName</b> 贈送了 $countString 個訂閱！';
+  }
+
+  @override
+  String kicksGiftedEvent(String senderName, int amount) {
+    final intl.NumberFormat amountNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String amountString = amountNumberFormat.format(amount);
+
+    return '<b>$senderName</b> 送出了 $amountString Kicks！';
+  }
 }
