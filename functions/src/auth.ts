@@ -1,5 +1,6 @@
 import * as crypto from "crypto";
 import * as express from "express";
+import { rateLimit } from "express-rate-limit";
 import * as expressSession from "express-session";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
@@ -96,6 +97,20 @@ export class FirestoreStore extends Store {
 }
 
 const app = express();
+
+// requests arrive through Google's front end, which sets X-Forwarded-For.
+app.set("trust proxy", 1);
+
+// each sign-in is a handful of requests; this only slows down abuse.
+app.use(
+  "/auth",
+  rateLimit({
+    windowMs: 60 * 1000,
+    limit: 30,
+    standardHeaders: "draft-7",
+    legacyHeaders: false,
+  })
+);
 
 app.use(
   expressSession({
