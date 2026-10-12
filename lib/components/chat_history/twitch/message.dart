@@ -160,7 +160,7 @@ class TwitchMessageWidget extends StatelessWidget {
             if (orientation == null) {
               return RichText(
                   text: TextSpan(
-                      text: styleModel.getTwitchDisplayName(model.author),
+                      text: styleModel.getDisplayName(model.author),
                       style: authorStyle));
             }
             final hslColor = HSLColor.fromColor(
@@ -173,7 +173,7 @@ class TwitchMessageWidget extends StatelessWidget {
                 hslColor.withHue((hslColor.hue - deg) % 360).toColor();
             return RichText(
                 text: TextSpan(
-                    text: styleModel.getTwitchDisplayName(model.author),
+                    text: styleModel.getDisplayName(model.author),
                     style: authorStyle.copyWith(color: shimmer)));
           });
     }
@@ -186,8 +186,7 @@ class TwitchMessageWidget extends StatelessWidget {
       return WidgetSpan(child: authorWidget(author, styleModel, authorStyle));
     }
     return TextSpan(
-        text: styleModel.getTwitchDisplayName(model.author),
-        style: authorStyle);
+        text: styleModel.getDisplayName(model.author), style: authorStyle);
   }
 
   @override
