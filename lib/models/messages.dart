@@ -66,6 +66,16 @@ class MessagesModel extends ChangeNotifier {
 
   List<Channel> get channels => _channels;
 
+  @override
+  void dispose() {
+    // otherwise events that arrive later notify a disposed model.
+    for (final subscription in _subscriptions) {
+      subscription.cancel();
+    }
+    _subscriptions.clear();
+    super.dispose();
+  }
+
   void _onEvent(Channel channel, DeltaEvent event) {
     _events.add((channel: channel, event: event));
     _messages = applyDeltaEvent(
