@@ -285,12 +285,36 @@ void main() {
         'speed': 0.6,
         'voice': {'fr': 'fr-FR-Wavenet-A'},
         'mutedUsers': [
-          {'userId': '1', 'login': 'muxfd', 'displayName': 'Muxfd'},
+          {
+            'provider': 'kick',
+            'userId': '1',
+            'login': 'muxfd',
+            'displayName': 'Muxfd'
+          },
         ],
       };
       final roundTripped = TtsModel.fromJson(json).toJson();
       expect(roundTripped, json);
       expect(TtsModel.fromJson(roundTripped).toJson(), json);
+    });
+
+    test('muted users saved before providers existed are twitch users', () {
+      final restored = TtsModel.fromJson({
+        'mutedUsers': [
+          {'userId': '1', 'login': 'muxfd', 'displayName': 'Muxfd'},
+        ],
+      });
+      expect(restored.toJson()['mutedUsers'], [
+        {
+          'provider': 'twitch',
+          'userId': '1',
+          'displayName': 'Muxfd',
+          'login': 'muxfd'
+        },
+      ]);
+      expect(
+          restored.isMuted(const TwitchUserModel(userId: '1', login: 'muxfd')),
+          isTrue);
     });
 
     test('muted users survive a round trip', () {

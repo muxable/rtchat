@@ -29,9 +29,9 @@ import 'package:rtchat/models/messages/twitch/shoutout_receive_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
-import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/tts/language.dart';
+import 'package:rtchat/models/tts/muted_user.dart';
 import 'package:rtchat/models/views.dart';
 
 enum TtsMode { disabled, alertsOnly, enabled }
@@ -67,7 +67,10 @@ class TtsModel extends ChangeNotifier {
   var _speed = Platform.isAndroid ? 0.8 : 0.395;
   var _pitch = 1.0;
   var _mode = TtsMode.disabled;
-  final Set<TwitchUserModel> _mutedUsers = {};
+  final List<MutedUser> _mutedUsers = [];
+  // languages of the channels being watched, for reading messages in the
+  // language of the channel they came from.
+  final Map<Channel, Language> _channelLanguages = {};
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
@@ -81,6 +84,7 @@ class TtsModel extends ChangeNotifier {
 
   void update(ViewsModel model) async {
     if (kDebugMode) {
+      _updateChannelLanguages(model.channels);
       final channel = model.primaryChannel;
       if (channel == null) {
         _isSupportedLanguage = false;
@@ -102,6 +106,18 @@ class TtsModel extends ChangeNotifier {
           !(streamLanguage == 'other' || streamLanguage == 'asl');
       language = _isSupportedLanguage ? Language(streamLanguage) : Language();
       notifyListeners();
+    }
+  }
+
+  Future<void> _updateChannelLanguages(List<Channel> channels) async {
+    _channelLanguages.removeWhere((channel, _) => !channels.contains(channel));
+    for (final channel in channels) {
+      final metadata = await ChannelsAdapter.instance.forChannel(channel).first;
+      final language =
+          metadata is StreamChannelMetadata ? metadata.language : null;
+      if (language != null && language != 'other' && language != 'asl') {
+        _channelLanguages[channel] = Language(language);
+      }
     }
   }
 
@@ -362,25 +378,36 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // match on login: it's stable and always present, unlike displayName.
-  bool isMuted(ChatUser user) {
-    final login = user.login.toLowerCase();
-    return _mutedUsers.any((muted) =>
-        muted.provider == user.provider && muted.login.toLowerCase() == login);
-  }
+  // match on provider and login: logins are stable and always present,
+  // unlike display names, and the same login on another provider is someone
+  // else.
+  bool isMuted(ChatUser user) =>
+      _mutedUsers.any((muted) => muted.matches(user));
 
-  void mute(TwitchUserModel model) {
-    _mutedUsers.add(model);
+  void mute(ChatUser user) {
+    if (isMuted(user)) {
+      return;
+    }
+    _mutedUsers.add(MutedUser.from(user));
     notifyListeners();
   }
 
-  void unmute(TwitchUserModel model) {
-    final login = model.login.toLowerCase();
+  void unmute(ChatUser user) {
     final count = _mutedUsers.length;
-    _mutedUsers.removeWhere((muted) => muted.login.toLowerCase() == login);
+    _mutedUsers.removeWhere((muted) => muted.matches(user));
     if (_mutedUsers.length != count) {
       notifyListeners();
     }
+  }
+
+  @visibleForTesting
+  void setChannelLanguage(Channel channel, Language language) =>
+      _channelLanguages[channel] = language;
+
+  /// The language to read [model] in: its channel's, if known.
+  Language languageFor(MessageModel model) {
+    final channel = model.channel;
+    return (channel == null ? null : _channelLanguages[channel]) ?? _language;
   }
 
   void say(AppLocalizations localizations, MessageModel model,
@@ -490,7 +517,8 @@ class TtsModel extends ChangeNotifier {
             voice = voices[hash % voices.length];
             pitch = (hash % 21) / 5 - 2;
           } else {
-            voice = _voice[_language.languageCode];
+            voice = _voice[languageFor(model).languageCode] ??
+                _voice[_language.languageCode];
             pitch = _pitch * 4 - 2;
           }
         }
@@ -571,7 +599,7 @@ class TtsModel extends ChangeNotifier {
     final userJson = json['mutedUsers'];
     if (userJson != null) {
       for (var user in userJson) {
-        _mutedUsers.add(TwitchUserModel.fromJson(user));
+        _mutedUsers.add(MutedUser.fromJson(Map<String, dynamic>.from(user)));
       }
     }
   }
