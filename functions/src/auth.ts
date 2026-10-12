@@ -6,6 +6,7 @@ import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
 import { AuthorizationCode } from "simple-oauth2";
 import {
+  isValidState,
   STREAMELEMENTS_OAUTH_CONFIG,
   STREAMLABS_OAUTH_CONFIG,
   TWITCH_CLIENT_ID,
@@ -156,7 +157,7 @@ app.get("/auth/twitch/redirect", (req, res) => {
 });
 
 app.get("/auth/twitch/callback", async (req, res) => {
-  if (!req.session?.state || req.session.state !== req.session.state) {
+  if (!isValidState(req.session?.state, req.query.state)) {
     res.redirect("/auth/twitch/redirect");
     return;
   }

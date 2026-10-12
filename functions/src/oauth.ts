@@ -1,6 +1,8 @@
+import * as crypto from "crypto";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import {
+  AccessToken,
   AuthorizationCode,
   ClientCredentials,
   ModuleOptions,
@@ -65,6 +67,67 @@ export const STREAMELEMENTS_OAUTH_CONFIG = {
   },
 } as ModuleOptions<"client_id">;
 
+// Kick is optional until the app is registered, so a missing config must not
+// break deploys of the other functions.
+export const KICK_CLIENT_ID: string | undefined = functions.config().kick?.id;
+export const KICK_CLIENT_SECRET: string | undefined =
+  functions.config().kick?.secret;
+
+export const KICK_OAUTH_CONFIG = {
+  client: {
+    id: KICK_CLIENT_ID,
+    secret: KICK_CLIENT_SECRET,
+  },
+  auth: {
+    tokenHost: "https://id.kick.com",
+    tokenPath: "/oauth/token",
+    authorizePath: "/oauth/authorize",
+    revokePath: "/oauth/revoke",
+  },
+  options: {
+    bodyFormat: "form",
+    authorizationMethod: "body",
+  },
+} as ModuleOptions<"client_id">;
+
+export function oauthConfig(provider: string) {
+  switch (provider) {
+    case "twitch":
+      return TWITCH_OAUTH_CONFIG;
+    case "kick":
+      if (!KICK_CLIENT_ID || !KICK_CLIENT_SECRET) {
+        throw new Error("kick oauth is not configured");
+      }
+      return KICK_OAUTH_CONFIG;
+    case "streamlabs":
+      return STREAMLABS_OAUTH_CONFIG;
+    case "streamelements":
+      return STREAMELEMENTS_OAUTH_CONFIG;
+  }
+  throw new Error(`unknown oauth provider: ${provider}`);
+}
+
+// Whether the `state` returned to an OAuth callback matches the one issued by
+// the redirect, which protects the login flow against CSRF.
+export function isValidState(expected: string | undefined, actual: unknown) {
+  if (!expected || typeof actual !== "string") {
+    return false;
+  }
+  const a = Buffer.from(expected);
+  const b = Buffer.from(actual);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+// Whether a refresh failed because the grant was revoked or expired, as
+// opposed to a transient error.
+export function isInvalidRefreshError(err: any) {
+  const payload = err?.data?.payload;
+  return (
+    payload?.message === "Invalid refresh token" || // twitch
+    payload?.error === "invalid_grant" // rfc 6749, used by kick
+  );
+}
+
 export async function getAccessToken(userId: string, provider: string) {
   // fetch the token from the database.
   const ref = admin.firestore().collection("tokens").doc(userId);
@@ -72,13 +135,15 @@ export async function getAccessToken(userId: string, provider: string) {
   if (!encoded) {
     return null;
   }
-  const client = new AuthorizationCode(TWITCH_OAUTH_CONFIG);
+  const client = new AuthorizationCode(oauthConfig(provider));
   let accessToken = client.createToken(JSON.parse(encoded));
   while (accessToken.expired(300)) {
     try {
+      // providers like kick rotate refresh tokens, so the refreshed token
+      // (including its new refresh token) is persisted below.
       accessToken = await accessToken.refresh();
     } catch (err: any) {
-      if (err.data?.payload?.message === "Invalid refresh token") {
+      if (isInvalidRefreshError(err)) {
         await admin
           .firestore()
           .collection("tokens")
@@ -99,12 +164,25 @@ export async function getAccessToken(userId: string, provider: string) {
   return accessToken.token["access_token"] as string;
 }
 
+const appTokens = new Map<string, AccessToken>();
+
 export async function getAppAccessToken(provider: string) {
   switch (provider) {
     case "twitch":
       return new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken({
         scopes: [],
       });
+    case "kick": {
+      const cached = appTokens.get(provider);
+      if (cached && !cached.expired(300)) {
+        return cached;
+      }
+      const token = await new ClientCredentials(oauthConfig(provider)).getToken(
+        {}
+      );
+      appTokens.set(provider, token);
+      return token;
+    }
   }
   return null;
 }
