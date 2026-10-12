@@ -102,6 +102,15 @@ export async function timeout(
   return await response.json();
 }
 
+// Helix DELETE endpoints respond with 204 No Content on success, which has no
+// JSON body to parse.
+async function parseResponse(response: {
+  status: number;
+  json(): Promise<any>;
+}) {
+  return response.status === 204 ? null : await response.json();
+}
+
 export async function unban(
   uid: string,
   broadcasterId: string,
@@ -122,7 +131,7 @@ export async function unban(
       headers: await getHeaders(uid),
     },
   );
-  return await response.json();
+  return await parseResponse(response);
 }
 
 export async function ban(uid: string, broadcasterId: string, userId: string) {
@@ -169,7 +178,7 @@ export async function deleteMessage(
       headers: await getHeaders(uid),
     },
   );
-  return await response.json();
+  return await parseResponse(response);
 }
 
 export async function raid(
