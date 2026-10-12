@@ -7,9 +7,8 @@ import 'package:rtchat/main.dart';
 import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/chat.dart';
 import 'package:rtchat/models/messages/message.dart';
-import 'package:rtchat/models/messages/twitch/message.dart';
-import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts.dart';
 
 class MessagesModel extends ChangeNotifier {
@@ -74,7 +73,7 @@ class MessagesModel extends ChangeNotifier {
           },
           onUpdate: (event, previous, updated) {
             // stop reading out messages as soon as they're deleted.
-            if (updated is TwitchMessageModel && updated.deleted) {
+            if (updated is ChatMessage && updated.deleted) {
               _tts?.unsay(updated.messageId);
             }
           },
@@ -98,9 +97,9 @@ class MessagesModel extends ChangeNotifier {
 
   bool get isLive => _isLive;
 
-  Set<TwitchUserModel> get authors {
+  Set<ChatUser> get authors {
     return _messages
-        .whereType<TwitchMessageModel>()
+        .whereType<ChatMessage>()
         .map((model) => model.author)
         .toSet();
   }
@@ -290,7 +289,7 @@ Set<int> computeSeparators(List<MessageModel> messages) {
       continue;
     }
     final model = messages[i];
-    if (i + 1 - last >= 50 && model is TwitchMessageModel) {
+    if (i + 1 - last >= 50 && model is ChatMessage) {
       separators.add(i);
       last = i;
     }

@@ -1,5 +1,6 @@
 import 'package:flutter/painting.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/chat.dart';
 
 const colors = [
   Color(0xFFFF0000),
@@ -33,9 +34,12 @@ const botList = {
   'sery_bot'
 };
 
-class TwitchUserModel {
+class TwitchUserModel implements ChatUser {
+  @override
   final String userId;
+  @override
   final String? displayName;
+  @override
   final String login;
 
   const TwitchUserModel(
@@ -54,6 +58,10 @@ class TwitchUserModel {
       other.displayName == displayName &&
       other.login == login;
 
+  @override
+  String get provider => Providers.twitch;
+
+  @override
   bool get isBot => botList.contains(login.toLowerCase());
 
   Color get color {
