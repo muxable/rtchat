@@ -17,6 +17,9 @@ jobs:
           args: functions:config:set alchemy.signingkey="$ALCHEMY_SIGNING_KEY" alchemy.ethsigningkey="$ALCHEMY_ETH_SIGNING_KEY" twitch.id="$TWITCH_CLIENT_ID" twitch.secret="$TWITCH_CLIENT_SECRET" express.secret="$EXPRESS_SESSION_SECRET" streamlabs.id="$STREAMLABS_CLIENT_ID" streamlabs.secret="$STREAMLABS_CLIENT_SECRET" streamelements.id="$STREAMELEMENTS_CLIENT_ID" streamelements.secret="$STREAMELEMENTS_CLIENT_SECRET"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          # functions:config:set is deprecated and disabled by default until
+          # the config moves to params, see #1409.
+          FIREBASE_CLI_EXPERIMENTS: legacyRuntimeConfigCommands
           TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
           TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
           STREAMLABS_CLIENT_ID: ${{ secrets.STREAMLABS_CLIENT_ID }}
@@ -32,3 +35,4 @@ jobs:
           args: deploy --only functions
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_CLI_EXPERIMENTS: legacyRuntimeConfigCommands
