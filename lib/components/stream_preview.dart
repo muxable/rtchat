@@ -70,6 +70,10 @@ class _StreamPreviewState extends State<StreamPreview> {
     } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
       _controller = WebViewController.fromPlatformCreationParams(
           AndroidWebViewControllerCreationParams());
+      // Android blocks unmuted playback that wasn't started by a tap inside
+      // the webview, which leaves the preview muted.
+      (_controller.platform as AndroidWebViewController)
+          .setMediaPlaybackRequiresUserGesture(false);
     } else {
       throw UnsupportedError("Unsupported platform");
     }
