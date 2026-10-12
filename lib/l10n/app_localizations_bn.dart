@@ -607,7 +607,7 @@ class AppLocalizationsBn extends AppLocalizations {
     final String cumulativeMonthsString =
         cumulativeMonthsNumberFormat.format(cumulativeMonths);
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b> টিয়ার $tier-এ $durationMonthsString মাস আগাম সাবস্ক্রাইব করেছেন, মোট $cumulativeMonthsString মাস!';
   }
 
   @override

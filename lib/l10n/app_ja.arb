@@ -145,6 +145,7 @@
   "subscriptionEvent": "<b>{subscriberUserName}</b>がティア{tier}にサブスクライブしました！",
   "subscriptionGiftEvent": "<b>{gifterUserName}</b>がティア{tier}のサブスクリプションを{total}個ギフトし、合計{cumulativeTotal}個になりました！",
   "subscriptionMessageEvent": "<b>{subscriberUserName}</b>がティア{tier}に{cumulativeMonths}ヶ月間サブスクライブしました！",
+  "subscriptionMessageMultiMonthEvent": "<b>{subscriberUserName}</b>さんがTier {tier}で{durationMonths}か月分を先払いでサブスクしました（累計{cumulativeMonths}か月）！",
   "realtimeCashTipWithDonor": "<b>{donor}</b> さんが <b>{value} {currency}</b> のチップを送りました。",
   "realtimeCashTipAnonymous": "匿名のユーザーが <b>{value} {currency}</b> にチップを送りました。",
   "streamElementsTipEventMessage": "<b>{name}</b>がStreamElementsで<b>{formattedAmount}</b>をチップしました。",

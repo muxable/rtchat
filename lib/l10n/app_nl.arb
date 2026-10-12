@@ -145,6 +145,7 @@
   "subscriptionEvent": "<b>{subscriberUserName}</b> heeft zich geabonneerd op Tier {tier}!",
   "subscriptionGiftEvent": "<b>{gifterUserName}</b> heeft {total} Tier {tier} abonnementen cadeau gedaan, in totaal {cumulativeTotal}!",
   "subscriptionMessageEvent": "<b>{subscriberUserName}</b> is {cumulativeMonths} maanden geabonneerd op Tier {tier}!",
+  "subscriptionMessageMultiMonthEvent": "<b>{subscriberUserName}</b> heeft zich geabonneerd op niveau {tier} voor {durationMonths} maanden vooruit, {cumulativeMonths} maanden in totaal!",
   "realtimeCashTipWithDonor": "<b>{donor}</b> heeft <b>{value} {currency}</b> getipt.",
   "realtimeCashTipAnonymous": "Anoniem heeft <b>{value} {currency}</b> getipt.",
   "streamElementsTipEventMessage": "<b>{name}</b> heeft <b>{formattedAmount}</b> getipt op StreamElements.",

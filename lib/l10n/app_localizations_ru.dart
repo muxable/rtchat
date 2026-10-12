@@ -614,7 +614,7 @@ class AppLocalizationsRu extends AppLocalizations {
     final String cumulativeMonthsString =
         cumulativeMonthsNumberFormat.format(cumulativeMonths);
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b> оформил подписку уровня $tier на $durationMonthsString мес. вперёд, всего $cumulativeMonthsString мес.!';
   }
 
   @override

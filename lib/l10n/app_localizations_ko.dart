@@ -595,7 +595,7 @@ class AppLocalizationsKo extends AppLocalizations {
     final String cumulativeMonthsString =
         cumulativeMonthsNumberFormat.format(cumulativeMonths);
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b>님이 티어 $tier로 $durationMonthsString개월을 미리 구독했습니다. 총 $cumulativeMonthsString개월!';
   }
 
   @override

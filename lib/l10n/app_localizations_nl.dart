@@ -609,7 +609,7 @@ class AppLocalizationsNl extends AppLocalizations {
     final String cumulativeMonthsString =
         cumulativeMonthsNumberFormat.format(cumulativeMonths);
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b> heeft zich geabonneerd op niveau $tier voor $durationMonthsString maanden vooruit, $cumulativeMonthsString maanden in totaal!';
   }
 
   @override

@@ -145,6 +145,7 @@
   "subscriptionEvent": "<b>{subscriberUserName}</b> 已订阅第 {tier} 层！",
   "subscriptionGiftEvent": "<b>{gifterUserName}</b> 已赠送 {total} 个第 {tier} 层订阅，总计 {cumulativeTotal} 个！",
   "subscriptionMessageEvent": "<b>{subscriberUserName}</b> 已订阅 {cumulativeMonths} 个月的第 {tier} 层！",
+  "subscriptionMessageMultiMonthEvent": "<b>{subscriberUserName}</b> 以等级 {tier} 预付订阅了 {durationMonths} 个月，累计 {cumulativeMonths} 个月！",
   "realtimeCashTipWithDonor": "<b>{donor}</b> 小费 <b>{value} {currency}</b>。",
   "realtimeCashTipAnonymous": "匿名酬金 <b>{value} {currency}</b>。",
   "streamElementsTipEventMessage": "<b>{name}</b> 在 StreamElements 上打赏了 <b>{formattedAmount}</b>。",

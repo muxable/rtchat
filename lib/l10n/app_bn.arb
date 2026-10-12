@@ -145,6 +145,7 @@
   "subscriptionEvent": "<b>{subscriberUserName}</b> টিয়ার {tier} এ সাবস্ক্রাইব করেছে!",
   "subscriptionGiftEvent": "<b>{gifterUserName}</b> {total} টি টিয়ার {tier} সাব উপহার দিয়েছে, মোট {cumulativeTotal}!",
   "subscriptionMessageEvent": "<b>{subscriberUserName}</b> টিয়ার {tier} এ {cumulativeMonths} মাসের জন্য সাবস্ক্রাইব করেছে!",
+  "subscriptionMessageMultiMonthEvent": "<b>{subscriberUserName}</b> টিয়ার {tier}-এ {durationMonths} মাস আগাম সাবস্ক্রাইব করেছেন, মোট {cumulativeMonths} মাস!",
   "realtimeCashTipWithDonor": "<b>{donor}</b> টিপ দিয়েছে। <b>{value} {currency}</b>.",
   "realtimeCashTipAnonymous": "বেনামী টিপ দিয়েছে। <b>{value} {currency}</b>.",
   "streamElementsTipEventMessage": "<b>{name}</b> StreamElements এ <b>{formattedAmount}</b> টিপ দিয়েছে।",

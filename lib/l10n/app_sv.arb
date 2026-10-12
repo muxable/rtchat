@@ -145,6 +145,7 @@
   "subscriptionEvent": "<b>{subscriberUserName}</b> har prenumererat på nivå {tier}!",
   "subscriptionGiftEvent": "<b>{gifterUserName}</b> har gett {total} prenumerationer på nivå {tier}, totalt {cumulativeTotal}!",
   "subscriptionMessageEvent": "<b>{subscriberUserName}</b> har prenumererat i {cumulativeMonths} månader på nivå {tier}!",
+  "subscriptionMessageMultiMonthEvent": "<b>{subscriberUserName}</b> har prenumererat på nivå {tier} i {durationMonths} månader i förväg, {cumulativeMonths} månader totalt!",
   "realtimeCashTipWithDonor": "<b>{donor}</b> gav en dricks på <b>{value} {currency}</b>.",
   "realtimeCashTipAnonymous": "Anonym gav en dricks på <b>{value} {currency}</b>.",
   "streamElementsTipEventMessage": "<b>{name}</b> gav en dricks på <b>{formattedAmount}</b> på StreamElements.",

@@ -145,6 +145,7 @@
   "subscriptionEvent": "<b>{subscriberUserName}</b> hat ein Abonnement der Stufe {tier} abgeschlossen!",
   "subscriptionGiftEvent": "<b>{gifterUserName}</b> hat {total} Abonnements der Stufe {tier} verschenkt, insgesamt {cumulativeTotal}!",
   "subscriptionMessageEvent": "<b>{subscriberUserName}</b> hat seit {cumulativeMonths} Monaten ein Abonnement der Stufe {tier}!",
+  "subscriptionMessageMultiMonthEvent": "<b>{subscriberUserName}</b> hat ein Abonnement der Stufe {tier} für {durationMonths} Monate im Voraus abgeschlossen, insgesamt {cumulativeMonths} Monate!",
   "realtimeCashTipWithDonor": "<b>{donor}</b> hat <b>{value} {currency}</b> getippt.",
   "realtimeCashTipAnonymous": "Anonym hat <b>{value} {currency}</b> getippt.",
   "streamElementsTipEventMessage": "<b>{name}</b> hat <b>{formattedAmount}</b> auf StreamElements getippt.",
