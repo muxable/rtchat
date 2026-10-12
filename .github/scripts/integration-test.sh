@@ -5,7 +5,7 @@
 set -u
 
 attempt() {
-  timeout 20m flutter test integration_test --no-dds --reporter expanded
+  timeout 20m flutter test integration_test --reporter expanded
 }
 
 if attempt; then
