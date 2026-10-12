@@ -76,7 +76,7 @@ class ChatHistoryMessage extends StatelessWidget {
         final userModel = Provider.of<UserModel>(context, listen: false);
         final loginChannelId = userModel.userChannel?.channelId;
         final viewingChannelId = m.channelId.split(':')[1];
-        final channel = Channel("twitch", viewingChannelId, "");
+        final channel = Channel(Providers.twitch, viewingChannelId, "");
 
         if (loginChannelId != viewingChannelId) {
           return child;

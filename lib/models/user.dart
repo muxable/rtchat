@@ -32,7 +32,7 @@ class UserModel extends ChangeNotifier {
         return;
       }
       _profileSubscription = ProfilesAdapter.instance
-          .getChannel(userId: user.uid, provider: "twitch")
+          .getChannel(userId: user.uid, provider: Providers.twitch)
           .listen((channel) {
         _userChannel = channel;
         _isLoading = false;
@@ -117,7 +117,7 @@ class UserModel extends ChangeNotifier {
       return null;
     }
     switch (channel.provider) {
-      case "twitch":
+      case Providers.twitch:
         return Uri.tryParse(
             "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
     }

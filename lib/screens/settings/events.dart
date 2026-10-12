@@ -149,7 +149,7 @@ class EventsScreen extends StatelessWidget {
                           viewers: 4,
                         ),
                         channel: Channel(
-                          "twitch",
+                          Providers.twitch,
                           "muxfd",
                           "muxfd",
                         )))),
