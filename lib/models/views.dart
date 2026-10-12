@@ -83,6 +83,12 @@ class ViewsModel extends ChangeNotifier {
   // isn't remembered across restarts.
   ChannelView? _openedView;
 
+  // where each view's messages are sent: a channel key, or [allChannels].
+  final Map<String, String> _sendTargets = {};
+
+  /// A send target meaning every channel the user can post to.
+  static const allChannels = 'all';
+
   ViewsModel();
 
   /// Keeps "My channel" in sync with the signed-in account.
@@ -109,6 +115,38 @@ class ViewsModel extends ChangeNotifier {
   /// The first channel of the active view. Features that only support one
   /// channel at a time (for now) use this one.
   Channel? get primaryChannel => activeView.channels.firstOrNull;
+
+  /// The channels of the active view that someone signed in as [userChannel]
+  /// can post to: those on the same platform.
+  List<Channel> postableChannels(Channel? userChannel) => activeView.channels
+      .where((channel) => channel.provider == userChannel?.provider)
+      .toList();
+
+  /// The send target chosen for the active view: a channel's key
+  /// (`provider:id`) or [allChannels].
+  String? get sendTarget => _sendTargets[activeView.id];
+
+  set sendTarget(String? target) {
+    if (target == null) {
+      _sendTargets.remove(activeView.id);
+    } else {
+      _sendTargets[activeView.id] = target;
+    }
+    notifyListeners();
+  }
+
+  /// Where to send a message from the active view: the chosen target if it's
+  /// still postable, otherwise the first postable channel.
+  List<Channel> sendTargets(Channel? userChannel) {
+    final postable = postableChannels(userChannel);
+    final target = sendTarget;
+    if (target == allChannels) {
+      return postable;
+    }
+    final chosen =
+        postable.where((channel) => channel.toString() == target).firstOrNull;
+    return [if (chosen != null) chosen else ...postable.take(1)];
+  }
 
   /// Shows a single channel, e.g. one picked from search.
   void openChannel(Channel channel) {

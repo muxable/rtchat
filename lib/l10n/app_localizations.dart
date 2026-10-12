@@ -1716,6 +1716,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Turn off'**
   String get turnOffTextToSpeech;
+
+  /// Send a chat message to every channel in the view
+  ///
+  /// In en, this message translates to:
+  /// **'Send to all channels'**
+  String get sendToAllChannels;
 }
 
 class _AppLocalizationsDelegate

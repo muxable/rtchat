@@ -1456,5 +1456,9 @@
   "turnOffTextToSpeech": "Turn off",
   "@turnOffTextToSpeech": {
     "description": "Button in the text to speech notification that turns text to speech off"
+  },
+  "sendToAllChannels": "Send to all channels",
+  "@sendToAllChannels": {
+    "description": "Send a chat message to every channel in the view"
   }
 }

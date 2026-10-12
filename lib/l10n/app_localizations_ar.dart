@@ -1064,4 +1064,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'إيقاف';
+
+  @override
+  String get sendToAllChannels => 'إرسال إلى كل القنوات';
 }

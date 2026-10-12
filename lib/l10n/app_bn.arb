@@ -262,5 +262,6 @@
   "kicksGiftedEvent": "<b>{senderName}</b> {amount} Kicks পাঠিয়েছেন!",
   "signInWithKick": "Kick দিয়ে সাইন ইন করুন",
   "textToSpeechTooManyMessages": "অনেক বেশি বার্তা আছে। টেক্সট টু স্পিচ বন্ধ করা হয়েছে",
-  "turnOffTextToSpeech": "বন্ধ করুন"
+  "turnOffTextToSpeech": "বন্ধ করুন",
+  "sendToAllChannels": "সব চ্যানেলে পাঠান"
 }

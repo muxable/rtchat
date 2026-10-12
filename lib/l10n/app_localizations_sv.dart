@@ -1060,4 +1060,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Stäng av';
+
+  @override
+  String get sendToAllChannels => 'Skicka till alla kanaler';
 }

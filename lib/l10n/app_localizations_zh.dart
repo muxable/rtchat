@@ -1035,6 +1035,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => '关闭';
+
+  @override
+  String get sendToAllChannels => '发送到所有频道';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2068,4 +2071,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get turnOffTextToSpeech => '關閉';
+
+  @override
+  String get sendToAllChannels => '傳送到所有頻道';
 }

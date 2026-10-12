@@ -1074,4 +1074,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Вимкнути';
+
+  @override
+  String get sendToAllChannels => 'Надіслати в усі канали';
 }
