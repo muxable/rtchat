@@ -4,7 +4,7 @@ import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
-import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/views.dart';
 import 'package:styled_text/styled_text.dart';
 
 class TwitchRaidingEventWidget extends StatelessWidget {
@@ -82,8 +82,8 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                             ?.primary))),
               ])),
           onTap: () {
-            final userModel = Provider.of<UserModel>(context, listen: false);
-            userModel.activeChannel = model.targetUser.asChannel;
+            Provider.of<ViewsModel>(context, listen: false)
+                .openChannel(model.targetUser.asChannel);
           });
     } else {
       return DecoratedEventWidget.avatar(

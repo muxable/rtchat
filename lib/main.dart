@@ -28,6 +28,7 @@ import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/views.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/onboarding.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
@@ -148,7 +149,19 @@ class _AppState extends State<App> {
               widget.prefs.setString('layout', jsonEncode(model.toJson()));
             });
         }),
-        ChangeNotifierProxyProvider<UserModel, TtsModel>(
+        ChangeNotifierProxyProvider<UserModel, ViewsModel>(
+          create: (context) {
+            final model = ViewsModel.fromJson(jsonDecode(widget.prefs
+                .getString("views", defaultValue: '{}')
+                .getValue()));
+            return model
+              ..addListener(() {
+                widget.prefs.setString('views', jsonEncode(model.toJson()));
+              });
+          },
+          update: (context, userModel, model) => model!..update(userModel),
+        ),
+        ChangeNotifierProxyProvider<ViewsModel, TtsModel>(
           create: (context) {
             final model = TtsModel.fromJson(jsonDecode(
                 widget.prefs.getString("tts", defaultValue: '{}').getValue()));
@@ -157,9 +170,9 @@ class _AppState extends State<App> {
                 widget.prefs.setString('tts', jsonEncode(model.toJson()));
               });
           },
-          update: (context, userModel, model) => model!..update(userModel),
+          update: (context, views, model) => model!..update(views),
         ),
-        ChangeNotifierProxyProvider2<UserModel, TtsModel, MessagesModel>(
+        ChangeNotifierProxyProvider2<ViewsModel, TtsModel, MessagesModel>(
           create: (context) {
             final model = MessagesModel.fromJson(
               jsonDecode(widget.prefs
@@ -175,7 +188,7 @@ class _AppState extends State<App> {
               }
             };
             model.channel =
-                Provider.of<UserModel>(context, listen: false).activeChannel;
+                Provider.of<ViewsModel>(context, listen: false).primaryChannel;
             model.tts = Provider.of<TtsModel>(context, listen: false);
             return model
               ..addListener(() {
@@ -193,8 +206,8 @@ class _AppState extends State<App> {
                     .setString("message_config", jsonEncode(model.toJson()));
               });
           },
-          update: (context, userModel, ttsModel, model) {
-            model!.channel = userModel.activeChannel;
+          update: (context, views, ttsModel, model) {
+            model!.channel = views.primaryChannel;
             model.tts = ttsModel;
             return model;
           },
@@ -246,20 +259,20 @@ class _AppState extends State<App> {
                   .setString('event_sub_configs', jsonEncode(model.toJson()));
             });
         }),
-        ChangeNotifierProxyProvider<UserModel, TwitchBadgeModel>(
+        ChangeNotifierProxyProvider<ViewsModel, TwitchBadgeModel>(
             create: (context) {
           final model = TwitchBadgeModel.fromJson(jsonDecode(widget.prefs
               .getString("twitch_badge", defaultValue: '{}')
               .getValue()));
           model.channel =
-              Provider.of<UserModel>(context, listen: false).activeChannel;
+              Provider.of<ViewsModel>(context, listen: false).primaryChannel;
           return model
             ..addListener(() {
               widget.prefs
                   .setString('twitch_badge', jsonEncode(model.toJson()));
             });
-        }, update: (context, userModel, model) {
-          model!.channel = userModel.activeChannel;
+        }, update: (context, views, model) {
+          model!.channel = views.primaryChannel;
           return model;
         }),
         ChangeNotifierProxyProvider<UserModel, AudioModel>(
@@ -312,24 +325,20 @@ class _AppState extends State<App> {
           initialRoute: '/',
           routes: {
             '/': (context) {
-              return Consumer<UserModel>(
-                builder: (context, userModel, child) {
+              return Consumer2<UserModel, ViewsModel>(
+                builder: (context, userModel, views, child) {
                   if (userModel.isLoading) {
                     // don't show anything yet.
                     return Container();
                   }
-                  final activeChannel = userModel.activeChannel;
-                  if (activeChannel == null) {
-                    return OnboardingScreen(onChannelSelect: (channel) {
-                      userModel.activeChannel = channel;
-                    });
+                  final channel = views.primaryChannel;
+                  if (channel == null) {
+                    return OnboardingScreen(onChannelSelect: views.openChannel);
                   }
                   return HomeScreen(
                       isDiscoModeEnabled: _isDiscoModeRunning,
-                      channel: activeChannel,
-                      onChannelSelect: (channel) {
-                        userModel.activeChannel = channel;
-                      });
+                      channel: channel,
+                      onChannelSelect: views.openChannel);
                 },
               );
             },

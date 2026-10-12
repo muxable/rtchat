@@ -9,6 +9,7 @@ import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/views.dart';
 import 'package:styled_text/styled_text.dart';
 
 Color tierColor(BuildContext context, String tier) {
@@ -28,8 +29,8 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userModel = Provider.of<UserModel>(context);
-    final channelLocale = userModel.getChannelLocale(context);
+    final channelLocale =
+        Provider.of<ViewsModel>(context).channelLocale(context);
     final localizations = lookupAppLocalizations(channelLocale);
 
     return DecoratedEventWidget.icon(
@@ -56,8 +57,8 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userModel = Provider.of<UserModel>(context);
-    final channelLocale = userModel.getChannelLocale(context);
+    final channelLocale =
+        Provider.of<ViewsModel>(context).channelLocale(context);
     final localizations = lookupAppLocalizations(channelLocale);
 
     return DecoratedEventWidget.icon(
@@ -134,8 +135,8 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme.titleSmall;
-    final userModel = Provider.of<UserModel>(context);
-    final channelLocale = userModel.getChannelLocale(context);
+    final channelLocale =
+        Provider.of<ViewsModel>(context).channelLocale(context);
     final localizations = lookupAppLocalizations(channelLocale);
 
     return DecoratedEventWidget.icon(
