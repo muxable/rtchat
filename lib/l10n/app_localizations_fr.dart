@@ -606,6 +606,21 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String subscriptionMessageMultiMonthEvent(String subscriberUserName,
+      String tier, int durationMonths, int cumulativeMonths) {
+    final intl.NumberFormat durationMonthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String durationMonthsString =
+        durationMonthsNumberFormat.format(durationMonths);
+    final intl.NumberFormat cumulativeMonthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String cumulativeMonthsString =
+        cumulativeMonthsNumberFormat.format(cumulativeMonths);
+
+    return '<b>$subscriberUserName</b> s\'est abonné au niveau $tier pour $durationMonthsString mois à l\'avance, $cumulativeMonthsString mois au total !';
+  }
+
+  @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
     return '<b>$donor</b> a donné un pourboire de <b>$value $currency</b>.';
   }

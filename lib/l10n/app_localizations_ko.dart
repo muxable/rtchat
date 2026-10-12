@@ -584,6 +584,21 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String subscriptionMessageMultiMonthEvent(String subscriberUserName,
+      String tier, int durationMonths, int cumulativeMonths) {
+    final intl.NumberFormat durationMonthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String durationMonthsString =
+        durationMonthsNumberFormat.format(durationMonths);
+    final intl.NumberFormat cumulativeMonthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String cumulativeMonthsString =
+        cumulativeMonthsNumberFormat.format(cumulativeMonths);
+
+    return '<b>$subscriberUserName</b>님이 티어 $tier로 $durationMonthsString개월을 미리 구독했습니다. 총 $cumulativeMonthsString개월!';
+  }
+
+  @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
     return '<b>$donor</b> 팁을 주었다 <b>$value $currency</b>.';
   }

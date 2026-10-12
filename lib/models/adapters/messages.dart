@@ -187,9 +187,9 @@ DeltaEvent? toDeltaEvent(
           messageId: id,
           subscriberUserName: data['event']['user_name'],
           tier: data['event']['tier'],
-          streakMonths: data['event']['streak_months'],
+          streakMonths: data['event']['streak_months'] ?? 0,
           cumulativeMonths: data['event']['cumulative_months'],
-          durationMonths: data['event']['duration_months'],
+          durationMonths: data['event']['duration_months'] ?? 1,
           emotes: SubscriptionMessageEventEmote.fromDynamicList(
               data['event']['message']['emotes']),
           text: data['event']['message']['text']);

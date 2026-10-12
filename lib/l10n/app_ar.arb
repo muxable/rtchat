@@ -145,6 +145,7 @@
   "subscriptionEvent": "<b>{subscriberUserName}</b> اشترك في المستوى {tier}!",
   "subscriptionGiftEvent": "<b>{gifterUserName}</b> قدم {total} اشتراكات في المستوى {tier}، بإجمالي {cumulativeTotal}!",
   "subscriptionMessageEvent": "<b>{subscriberUserName}</b> اشترك لمدة {cumulativeMonths} أشهر في المستوى {tier}!",
+  "subscriptionMessageMultiMonthEvent": "اشترك <b>{subscriberUserName}</b> في المستوى {tier} لمدة {durationMonths} شهر مقدمًا، {cumulativeMonths} شهر إجمالًا!",
   "realtimeCashTipWithDonor": "<b>{donor}</b> موهوب <b>{value} {currency}</b>.",
   "realtimeCashTipAnonymous": "أعطى غير معروف <b>{value} {currency}</b>.",
   "streamElementsTipEventMessage": "<b>{name}</b> قدم بقشيش بمبلغ <b>{formattedAmount}</b> على StreamElements.",

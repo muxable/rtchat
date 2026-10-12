@@ -1006,6 +1006,13 @@ abstract class AppLocalizations {
   String subscriptionMessageEvent(
       String subscriberUserName, int cumulativeMonths, String tier);
 
+  /// Message displayed when a subscriber pays for multiple months at once
+  ///
+  /// In en, this message translates to:
+  /// **'<b>{subscriberUserName}</b> has subscribed at Tier {tier} for {durationMonths} months in advance, {cumulativeMonths} months in total!'**
+  String subscriptionMessageMultiMonthEvent(String subscriberUserName,
+      String tier, int durationMonths, int cumulativeMonths);
+
   /// Message displayed when a RealtimeCash tip is made with a donor name
   ///
   /// In en, this message translates to:

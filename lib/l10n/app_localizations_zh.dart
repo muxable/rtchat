@@ -583,6 +583,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String subscriptionMessageMultiMonthEvent(String subscriberUserName,
+      String tier, int durationMonths, int cumulativeMonths) {
+    final intl.NumberFormat durationMonthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String durationMonthsString =
+        durationMonthsNumberFormat.format(durationMonths);
+    final intl.NumberFormat cumulativeMonthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String cumulativeMonthsString =
+        cumulativeMonthsNumberFormat.format(cumulativeMonths);
+
+    return '<b>$subscriberUserName</b> 以等级 $tier 预付订阅了 $durationMonthsString 个月，累计 $cumulativeMonthsString 个月！';
+  }
+
+  @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
     return '<b>$donor</b> 小费 <b>$value $currency</b>。';
   }
@@ -1557,6 +1572,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
         cumulativeMonthsNumberFormat.format(cumulativeMonths);
 
     return '<b>$subscriberUserName</b> 已訂閱 $tier 級 $cumulativeMonthsString 個月！';
+  }
+
+  @override
+  String subscriptionMessageMultiMonthEvent(String subscriberUserName,
+      String tier, int durationMonths, int cumulativeMonths) {
+    final intl.NumberFormat durationMonthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String durationMonthsString =
+        durationMonthsNumberFormat.format(durationMonths);
+    final intl.NumberFormat cumulativeMonthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String cumulativeMonthsString =
+        cumulativeMonthsNumberFormat.format(cumulativeMonths);
+
+    return '<b>$subscriberUserName</b> 以層級 $tier 預付訂閱了 $durationMonthsString 個月，累計 $cumulativeMonthsString 個月！';
   }
 
   @override

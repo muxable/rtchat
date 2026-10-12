@@ -167,11 +167,7 @@ class TtsModel extends ChangeNotifier {
       return l10n.subscriptionGiftEvent(model.gifterUserName, model.total,
           model.tier.replaceAll("000", ""), model.cumulativeTotal);
     } else if (model is TwitchSubscriptionMessageEventModel) {
-      return l10n.subscriptionMessageEvent(
-        model.subscriberUserName,
-        model.cumulativeMonths,
-        model.tier.replaceAll("000", ""),
-      );
+      return model.localizedText(l10n);
     } else if (model is TwitchFollowEventModel) {
       return l10n.followingEvent(
           model.followers.first.displayName ?? model.followers.first.login);

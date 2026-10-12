@@ -145,6 +145,7 @@
   "subscriptionEvent": "<b>{subscriberUserName}</b> підписався на рівень {tier}!",
   "subscriptionGiftEvent": "<b>{gifterUserName}</b> подарував {total} підписок рівня {tier}, всього {cumulativeTotal}!",
   "subscriptionMessageEvent": "<b>{subscriberUserName}</b> підписався на рівень {tier} на {cumulativeMonths} місяців!",
+  "subscriptionMessageMultiMonthEvent": "<b>{subscriberUserName}</b> оформив підписку рівня {tier} на {durationMonths} міс. наперед, усього {cumulativeMonths} міс.!",
   "realtimeCashTipWithDonor": "<b>{donor}</b> дав чайові в розмірі <b>{value} {currency}</b>.",
   "realtimeCashTipAnonymous": "Анонім дав чайові в розмірі <b>{value} {currency}</b>.",
   "streamElementsTipEventMessage": "<b>{name}</b> дав чайові в розмірі <b>{formattedAmount}</b> на StreamElements.",

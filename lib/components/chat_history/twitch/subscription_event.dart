@@ -142,11 +142,7 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
       icon: Icons.star,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         StyledText(
-          text: localizations.subscriptionMessageEvent(
-            model.subscriberUserName,
-            model.cumulativeMonths,
-            model.tier.replaceAll("000", ""),
-          ),
+          text: model.localizedText(localizations),
           tags: {
             'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
           },

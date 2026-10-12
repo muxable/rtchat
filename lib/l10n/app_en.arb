@@ -775,6 +775,28 @@
       }
     }
   },
+  "subscriptionMessageMultiMonthEvent": "<b>{subscriberUserName}</b> has subscribed at Tier {tier} for {durationMonths} months in advance, {cumulativeMonths} months in total!",
+  "@subscriptionMessageMultiMonthEvent": {
+    "description": "Message displayed when a subscriber pays for multiple months at once",
+    "placeholders": {
+      "subscriberUserName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "tier": {
+        "type": "String",
+        "example": "1"
+      },
+      "durationMonths": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "cumulativeMonths": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "realtimeCashTipWithDonor": "<b>{donor}</b> tipped <b>{value} {currency}</b>.",
   "@realtimeCashTipWithDonor": {
     "description": "Message displayed when a RealtimeCash tip is made with a donor name",
