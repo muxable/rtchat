@@ -47,12 +47,9 @@ class QuickLinksModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void swapSource(int a, int b) {
-    if (a < b) {
-      b -= 1;
-    }
-    final item = _sources.removeAt(a);
-    _sources.insert(b, item);
+  void moveSource(int oldIndex, int newIndex) {
+    final item = _sources.removeAt(oldIndex);
+    _sources.insert(newIndex, item);
     notifyListeners();
   }
 

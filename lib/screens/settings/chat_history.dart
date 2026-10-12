@@ -161,27 +161,25 @@ class ChatHistoryScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       )),
             ),
-            RadioListTile(
-              title: const Text('Don\'t compact messages'),
-              subtitle: const Text("Messages are shown unchanged"),
-              value: CompactMessages.none,
+            RadioGroup<CompactMessages>(
               groupValue: styleModel.compactMessages,
-              onChanged: (CompactMessages? value) {
+              onChanged: (value) {
                 if (value != null) {
                   styleModel.compactMessages = value;
                 }
               },
-            ),
-            RadioListTile(
-              title: const Text('Compact individual messages'),
-              subtitle: const Text("Repetitive text in messages is shortened"),
-              value: CompactMessages.withinMessage,
-              groupValue: styleModel.compactMessages,
-              onChanged: (CompactMessages? value) {
-                if (value != null) {
-                  styleModel.compactMessages = value;
-                }
-              },
+              child: const Column(children: [
+                RadioListTile(
+                  title: Text('Don\'t compact messages'),
+                  subtitle: Text("Messages are shown unchanged"),
+                  value: CompactMessages.none,
+                ),
+                RadioListTile(
+                  title: Text('Compact individual messages'),
+                  subtitle: Text("Repetitive text in messages is shortened"),
+                  value: CompactMessages.withinMessage,
+                ),
+              ]),
             ),
             Padding(
               padding: const EdgeInsets.all(16),
@@ -227,55 +225,23 @@ class ChatHistoryScreen extends StatelessWidget {
                 ],
               ),
             ),
-            RadioListTile(
-              title: const Text('Disabled'),
-              value: const Duration(days: 10000),
+            RadioGroup<Duration>(
               groupValue: messagesModel.pingMinGapDuration,
-              onChanged: (Duration? value) {
+              onChanged: (value) {
                 if (value != null) {
                   messagesModel.pingMinGapDuration = value;
                 }
               },
-            ),
-            RadioListTile(
-              title: const Text('30 seconds'),
-              value: const Duration(seconds: 30),
-              groupValue: messagesModel.pingMinGapDuration,
-              onChanged: (Duration? value) {
-                if (value != null) {
-                  messagesModel.pingMinGapDuration = value;
-                }
-              },
-            ),
-            RadioListTile(
-              title: const Text('1 minute'),
-              value: const Duration(minutes: 1),
-              groupValue: messagesModel.pingMinGapDuration,
-              onChanged: (Duration? value) {
-                if (value != null) {
-                  messagesModel.pingMinGapDuration = value;
-                }
-              },
-            ),
-            RadioListTile(
-              title: const Text('5 minutes'),
-              value: const Duration(minutes: 5),
-              groupValue: messagesModel.pingMinGapDuration,
-              onChanged: (Duration? value) {
-                if (value != null) {
-                  messagesModel.pingMinGapDuration = value;
-                }
-              },
-            ),
-            RadioListTile(
-              title: const Text('10 minutes'),
-              value: const Duration(minutes: 10),
-              groupValue: messagesModel.pingMinGapDuration,
-              onChanged: (Duration? value) {
-                if (value != null) {
-                  messagesModel.pingMinGapDuration = value;
-                }
-              },
+              child: Column(children: [
+                for (final (label, duration) in const [
+                  ('Disabled', Duration(days: 10000)),
+                  ('30 seconds', Duration(seconds: 30)),
+                  ('1 minute', Duration(minutes: 1)),
+                  ('5 minutes', Duration(minutes: 5)),
+                  ('10 minutes', Duration(minutes: 10)),
+                ])
+                  RadioListTile(title: Text(label), value: duration),
+              ]),
             ),
           ],
         );
