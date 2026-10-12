@@ -124,12 +124,15 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                           }
                           final texts = <Widget>[];
                           if (layoutModel.isStatsVisible) {
-                            if (data is TwitchChannelMetadata) {
+                            if (data is StreamChannelMetadata) {
+                              final followerCount = data.followerCount;
                               if (data.onlineAt == null) {
-                                texts.add(Text(
-                                    AppLocalizations.of(context)!
-                                        .followerCount(data.followerCount),
-                                    style: style));
+                                if (followerCount != null) {
+                                  texts.add(Text(
+                                      AppLocalizations.of(context)!
+                                          .followerCount(followerCount),
+                                      style: style));
+                                }
                               } else {
                                 texts.add(Text(
                                     AppLocalizations.of(context)!
