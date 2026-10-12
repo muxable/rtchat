@@ -699,5 +699,317 @@ class AppLocalizationsEs extends AppLocalizations {
   String get textToSpeechDisabled => 'Texto a voz desactivado';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Solo alertas';
+
+  @override
+  String get pinDuration => 'Duración fijada';
+
+  @override
+  String durationSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds segundos',
+      one: '1 segundo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutos',
+      one: '1 minuto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enableEvent => 'Activar evento';
+
+  @override
+  String get showEventInChatHistory =>
+      'Mostrar el evento en el historial del chat';
+
+  @override
+  String get enableShoutouts => 'Activar menciones';
+
+  @override
+  String get enableShoutoutsSubtitle =>
+      'Enviar al chat un enlace al canal que hace la incursión';
+
+  @override
+  String get raidConfigurationTitle => 'Configuración de incursiones';
+
+  @override
+  String get cheerConfigurationTitle => 'Configuración de cheers';
+
+  @override
+  String get followConfigurationTitle => 'Configuración de seguimientos';
+
+  @override
+  String get outgoingRaidConfigurationTitle =>
+      'Configuración de incursiones salientes';
+
+  @override
+  String get hostConfigurationTitle => 'Configuración de hosts';
+
+  @override
+  String get channelPointConfigurationTitle =>
+      'Configuración de puntos de canal';
+
+  @override
+  String get pollConfigurationTitle => 'Configuración de encuestas';
+
+  @override
+  String get hypetrainConfigurationTitle => 'Configuración del Hype Train';
+
+  @override
+  String get subscriptionConfigurationTitle => 'Configuración de suscripciones';
+
+  @override
+  String get predictionConfigurationTitle => 'Configuración de predicciones';
+
+  @override
+  String get unfulfilledRewardsPinDuration =>
+      'Duración fijada adicional para recompensas sin completar';
+
+  @override
+  String get pollPinDuration => 'Duración fijada tras el resultado final';
+
+  @override
+  String get hypetrainPinDuration =>
+      'Duración fijada tras terminar el Hype Train';
+
+  @override
+  String get enableGiftedSubscriptions =>
+      'Activar suscripciones regaladas individuales';
+
+  @override
+  String get enableGiftedSubscriptionsSubtitle =>
+      'Mostrar cada suscripción regalada';
+
+  @override
+  String get settingsBackupTitle => 'Copia de seguridad y restauración';
+
+  @override
+  String get cloudBackup => 'Copia en la nube';
+
+  @override
+  String get lastBackupNever => 'Última copia: nunca';
+
+  @override
+  String get backUp => 'Hacer copia';
+
+  @override
+  String get restore => 'Restaurar';
+
+  @override
+  String get localBackup => 'Copia local';
+
+  @override
+  String get exportSettings => 'Exportar';
+
+  @override
+  String get importSettings => 'Importar';
+
+  @override
+  String get showViewerAndFollowerCount => 'Mostrar espectadores y seguidores';
+
+  @override
+  String get screenOrientation => 'Orientación de pantalla';
+
+  @override
+  String get appTheme => 'Tema de la app';
+
+  @override
+  String get systemDefault => 'Sistema';
+
+  @override
+  String get portrait => 'Vertical';
+
+  @override
+  String get landscape => 'Horizontal';
+
+  @override
+  String get lightTheme => 'Claro';
+
+  @override
+  String get darkTheme => 'Oscuro';
+
+  @override
+  String get openSourceTitle => 'RealtimeChat es de código abierto';
+
+  @override
+  String get openSourceSubtitle => '¡Encuéntranos en GitHub!';
+
+  @override
+  String get discordSubtitle => '¡Únete al Discord de Muxable!';
+
+  @override
+  String get earlyTestersThanks =>
+      '¡Gracias a todos los primeros testers que reportaron errores!';
+
+  @override
+  String get discoModeEnabled => '🕺 ¡Modo disco activado! :D';
+
+  @override
+  String get discoModeDisabled => '🕺 Modo disco desactivado D:';
+
+  @override
+  String get cloudTts => 'TTS en la nube';
+
+  @override
+  String get languages => 'Idiomas';
+
+  @override
+  String get voices => 'Voces';
+
+  @override
+  String get perViewerVoice => 'Voz por espectador';
+
+  @override
+  String get perViewerVoiceSubtitle =>
+      'Identifica a tus espectadores por su voz';
+
+  @override
+  String get randomVoice => 'Aleatoria';
+
+  @override
+  String get playSampleMessage => 'Reproducir mensaje de ejemplo';
+
+  @override
+  String get textToSpeechRate => 'Velocidad de voz';
+
+  @override
+  String get textToSpeechPitch => 'Tono de voz';
+
+  @override
+  String get unlockHighQualityVoices => 'Desbloquear voces de alta calidad';
+
+  @override
+  String get muteBots => 'Silenciar texto a voz para bots';
+
+  @override
+  String get muteEmotes => 'Silenciar todos los emotes en texto a voz';
+
+  @override
+  String get muteViewerNames =>
+      'Silenciar nombres de espectadores en texto a voz';
+
+  @override
+  String get subscribersOnly => 'Solo suscriptores';
+
+  @override
+  String get storeNotAvailable => 'Tienda no disponible';
+
+  @override
+  String get unavailable => 'No disponible';
+
+  @override
+  String get subscribe => 'Suscribirse';
+
+  @override
+  String get pending => 'Pendiente';
+
+  @override
+  String get subscribed => 'Suscrito';
+
+  @override
+  String get pleaseSignIn => 'Inicia sesión';
+
+  @override
+  String get searchLanguages => 'Buscar idiomas';
+
+  @override
+  String get closeSearch => 'Cerrar búsqueda';
+
+  @override
+  String get playSample => 'Reproducir ejemplo';
+
+  @override
+  String get fontSize => 'Tamaño de fuente';
+
+  @override
+  String get usernameContrastBoost => 'Aumento de contraste de nombres';
+
+  @override
+  String get twitchBadgeSettings => 'Configuración de insignias de Twitch';
+
+  @override
+  String get twitchBadgeSettingsSubtitle => 'Elige qué insignias se muestran';
+
+  @override
+  String get showDeletedMessages => 'Mostrar mensajes eliminados';
+
+  @override
+  String get deletedMessagesGreyedOut =>
+      'Los mensajes eliminados se mostrarán en gris';
+
+  @override
+  String get deletedMessagesRemoved => 'Los mensajes eliminados se quitarán';
+
+  @override
+  String get showLoginNames => 'Mostrar nombres de usuario';
+
+  @override
+  String get loginNamesShown =>
+      'Los nombres de usuario se mostrarán si son distintos del nombre visible';
+
+  @override
+  String get loginNamesHidden => 'Los nombres de usuario se ocultarán';
+
+  @override
+  String get compactMessages => 'Compactar mensajes';
+
+  @override
+  String get dontCompactMessages => 'No compactar mensajes';
+
+  @override
+  String get dontCompactMessagesSubtitle =>
+      'Los mensajes se muestran sin cambios';
+
+  @override
+  String get compactIndividualMessages => 'Compactar mensajes individuales';
+
+  @override
+  String get compactIndividualMessagesSubtitle =>
+      'El texto repetido en los mensajes se acorta';
+
+  @override
+  String get announcementPinDuration => 'Duración fijada de anuncios';
+
+  @override
+  String get idleMessageAlertDuration => 'Alerta por chat inactivo';
+
+  @override
+  String get idleMessageAlertDurationSubtitle =>
+      'Si no hay mensajes durante este tiempo y llega uno nuevo, sonará una alerta.';
+
+  @override
+  String get realtimeCashSubtitle => 'Conecta una billetera ETH o MATIC';
+
+  @override
+  String get walletAddress => 'Dirección de la billetera';
+
+  @override
+  String get streamlabsSubtitle => 'Consulta tus donaciones de Streamlabs';
+
+  @override
+  String get streamElementsSubtitle =>
+      'Consulta tus donaciones de StreamElements';
+
+  @override
+  String get thirdPartyAuthError =>
+      'Vaya, no funcionó. ¿Lo intentas de nuevo o preguntas en Discord?';
+
+  @override
+  String get companionAuthBrowserTooOld =>
+      'Tu navegador es demasiado antiguo para iniciar sesión directamente. Escanea este código QR con tu teléfono para iniciar sesión en otro dispositivo.';
+
+  @override
+  String get companionAuthScanQrCode =>
+      'Escanea este código QR con tu teléfono para iniciar sesión en otro dispositivo.';
 }

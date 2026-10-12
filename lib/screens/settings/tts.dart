@@ -17,7 +17,7 @@ class TextToSpeechScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final audioPlayer = AudioPlayer();
     return Scaffold(
-      appBar: AppBar(title: const Text("Text to speech")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.textToSpeech)),
       body: Consumer<TtsModel>(builder: (context, model, child) {
         return ListView(
           children: [
@@ -25,7 +25,7 @@ class TextToSpeechScreen extends StatelessWidget {
               Column(
                 children: [
                   SwitchListTile.adaptive(
-                    title: const Text('Cloud TTS'),
+                    title: Text(AppLocalizations.of(context)!.cloudTts),
                     value: model.isCloudTtsEnabled,
                     onChanged: (value) {
                       model.isCloudTtsEnabled = value;
@@ -44,7 +44,7 @@ class TextToSpeechScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "Languages",
+                                      AppLocalizations.of(context)!.languages,
                                       style: TextStyle(
                                         color: Theme.of(context)
                                             .colorScheme
@@ -77,21 +77,23 @@ class TextToSpeechScreen extends StatelessWidget {
                                 ),
                               Align(
                                 alignment: Alignment.centerLeft,
-                                child: Text("Voices",
-                                    style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
-                                      fontWeight: FontWeight.bold,
-                                    )),
+                                child:
+                                    Text(AppLocalizations.of(context)!.voices,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                          fontWeight: FontWeight.bold,
+                                        )),
                               ),
                             ],
                           ),
                         ),
                         SwitchListTile.adaptive(
-                          title: const Text('Per-viewer voice'),
-                          subtitle:
-                              const Text('Identify your viewers by voice'),
+                          title: Text(
+                              AppLocalizations.of(context)!.perViewerVoice),
+                          subtitle: Text(AppLocalizations.of(context)!
+                              .perViewerVoiceSubtitle),
                           value: model.isRandomVoiceEnabled,
                           onChanged: (value) {
                             model.isRandomVoiceEnabled = value;
@@ -133,7 +135,8 @@ class TextToSpeechScreen extends StatelessWidget {
                                   alignment: Alignment.centerLeft,
                                   child: Text(
                                     model.isRandomVoiceEnabled
-                                        ? 'Random'
+                                        ? AppLocalizations.of(context)!
+                                            .randomVoice
                                         : model.voice,
                                   ),
                                 ),
@@ -169,7 +172,7 @@ class TextToSpeechScreen extends StatelessWidget {
                         force: true);
                   }
                 },
-                child: const Text("Play sample message"),
+                child: Text(AppLocalizations.of(context)!.playSampleMessage),
               ),
             ),
             const SizedBox(height: 8),
@@ -178,7 +181,7 @@ class TextToSpeechScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Text to Speech Rate",
+                  Text(AppLocalizations.of(context)!.textToSpeechRate,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
@@ -192,7 +195,7 @@ class TextToSpeechScreen extends StatelessWidget {
                       model.speed = value;
                     },
                   ),
-                  Text("Text to Speech Pitch",
+                  Text(AppLocalizations.of(context)!.textToSpeechPitch,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
@@ -222,8 +225,9 @@ class TextToSpeechScreen extends StatelessWidget {
                             child: Text.rich(
                               TextSpan(
                                 children: [
-                                  const TextSpan(
-                                      text: 'Unlock high-quality voices'),
+                                  TextSpan(
+                                      text: AppLocalizations.of(context)!
+                                          .unlockHighQualityVoices),
                                   const WidgetSpan(child: SizedBox(width: 8)),
                                   WidgetSpan(
                                     child: Icon(
@@ -244,28 +248,28 @@ class TextToSpeechScreen extends StatelessWidget {
               ),
             ),
             SwitchListTile.adaptive(
-              title: const Text('Mute text to speech for bots'),
+              title: Text(AppLocalizations.of(context)!.muteBots),
               value: model.isBotMuted,
               onChanged: (value) {
                 model.isBotMuted = value;
               },
             ),
             SwitchListTile.adaptive(
-              title: const Text('Mute all emotes in text to speech'),
+              title: Text(AppLocalizations.of(context)!.muteEmotes),
               value: model.isEmoteMuted,
               onChanged: (value) {
                 model.isEmoteMuted = value;
               },
             ),
             SwitchListTile.adaptive(
-              title: const Text("Mute viewer names in text to speech"),
+              title: Text(AppLocalizations.of(context)!.muteViewerNames),
               value: model.isPreludeMuted,
               onChanged: (value) {
                 model.isPreludeMuted = value;
               },
             ),
             SwitchListTile.adaptive(
-              title: const Text("Subscribers only"),
+              title: Text(AppLocalizations.of(context)!.subscribersOnly),
               value: model.isSubscribersOnly,
               onChanged: (value) {
                 model.isSubscribersOnly = value;

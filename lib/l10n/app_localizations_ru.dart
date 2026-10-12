@@ -707,5 +707,317 @@ class AppLocalizationsRu extends AppLocalizations {
   String get textToSpeechDisabled => 'Преобразование текста в речь отключено';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Только оповещения';
+
+  @override
+  String get pinDuration => 'Время закрепления';
+
+  @override
+  String durationSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds секунды',
+      many: '$seconds секунд',
+      few: '$seconds секунды',
+      one: '$seconds секунда',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes минуты',
+      many: '$minutes минут',
+      few: '$minutes минуты',
+      one: '$minutes минута',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enableEvent => 'Включить событие';
+
+  @override
+  String get showEventInChatHistory => 'Показывать событие в истории чата';
+
+  @override
+  String get enableShoutouts => 'Включить шаутауты';
+
+  @override
+  String get enableShoutoutsSubtitle =>
+      'Отправлять в чат ссылку на канал, совершивший рейд';
+
+  @override
+  String get raidConfigurationTitle => 'Настройки рейдов';
+
+  @override
+  String get cheerConfigurationTitle => 'Настройки чиров';
+
+  @override
+  String get followConfigurationTitle => 'Настройки фолловов';
+
+  @override
+  String get outgoingRaidConfigurationTitle => 'Настройки исходящих рейдов';
+
+  @override
+  String get hostConfigurationTitle => 'Настройки хостов';
+
+  @override
+  String get channelPointConfigurationTitle => 'Настройки баллов канала';
+
+  @override
+  String get pollConfigurationTitle => 'Настройки опросов';
+
+  @override
+  String get hypetrainConfigurationTitle => 'Настройки Hype Train';
+
+  @override
+  String get subscriptionConfigurationTitle => 'Настройки подписок';
+
+  @override
+  String get predictionConfigurationTitle => 'Настройки прогнозов';
+
+  @override
+  String get unfulfilledRewardsPinDuration =>
+      'Дополнительное время закрепления для невыполненных наград';
+
+  @override
+  String get pollPinDuration => 'Время закрепления после итогового результата';
+
+  @override
+  String get hypetrainPinDuration =>
+      'Время закрепления после окончания Hype Train';
+
+  @override
+  String get enableGiftedSubscriptions =>
+      'Включить отдельные подаренные подписки';
+
+  @override
+  String get enableGiftedSubscriptionsSubtitle =>
+      'Показывать каждую подаренную подписку';
+
+  @override
+  String get settingsBackupTitle => 'Резервное копирование и восстановление';
+
+  @override
+  String get cloudBackup => 'Облачная копия';
+
+  @override
+  String get lastBackupNever => 'Последняя копия: никогда';
+
+  @override
+  String get backUp => 'Создать копию';
+
+  @override
+  String get restore => 'Восстановить';
+
+  @override
+  String get localBackup => 'Локальная копия';
+
+  @override
+  String get exportSettings => 'Экспорт';
+
+  @override
+  String get importSettings => 'Импорт';
+
+  @override
+  String get showViewerAndFollowerCount =>
+      'Показывать число зрителей и фолловеров';
+
+  @override
+  String get screenOrientation => 'Ориентация экрана';
+
+  @override
+  String get appTheme => 'Тема приложения';
+
+  @override
+  String get systemDefault => 'Системная';
+
+  @override
+  String get portrait => 'Книжная';
+
+  @override
+  String get landscape => 'Альбомная';
+
+  @override
+  String get lightTheme => 'Светлая';
+
+  @override
+  String get darkTheme => 'Тёмная';
+
+  @override
+  String get openSourceTitle =>
+      'RealtimeChat — проект с открытым исходным кодом';
+
+  @override
+  String get openSourceSubtitle => 'Найдите нас на GitHub!';
+
+  @override
+  String get discordSubtitle => 'Присоединяйтесь к Discord Muxable!';
+
+  @override
+  String get earlyTestersThanks =>
+      'Спасибо всем первым тестировщикам, присылавшим отчёты об ошибках!';
+
+  @override
+  String get discoModeEnabled => '🕺 Режим диско включён! :D';
+
+  @override
+  String get discoModeDisabled => '🕺 Режим диско выключен D:';
+
+  @override
+  String get cloudTts => 'Облачный TTS';
+
+  @override
+  String get languages => 'Языки';
+
+  @override
+  String get voices => 'Голоса';
+
+  @override
+  String get perViewerVoice => 'Голос для каждого зрителя';
+
+  @override
+  String get perViewerVoiceSubtitle => 'Узнавайте зрителей по голосу';
+
+  @override
+  String get randomVoice => 'Случайный';
+
+  @override
+  String get playSampleMessage => 'Воспроизвести пример сообщения';
+
+  @override
+  String get textToSpeechRate => 'Скорость речи';
+
+  @override
+  String get textToSpeechPitch => 'Высота голоса';
+
+  @override
+  String get unlockHighQualityVoices => 'Открыть голоса высокого качества';
+
+  @override
+  String get muteBots => 'Отключить озвучку для ботов';
+
+  @override
+  String get muteEmotes => 'Отключить озвучку всех эмоутов';
+
+  @override
+  String get muteViewerNames => 'Отключить озвучку имён зрителей';
+
+  @override
+  String get subscribersOnly => 'Только подписчики';
+
+  @override
+  String get storeNotAvailable => 'Магазин недоступен';
+
+  @override
+  String get unavailable => 'Недоступно';
+
+  @override
+  String get subscribe => 'Подписаться';
+
+  @override
+  String get pending => 'Ожидание';
+
+  @override
+  String get subscribed => 'Подписка оформлена';
+
+  @override
+  String get pleaseSignIn => 'Войдите в аккаунт';
+
+  @override
+  String get searchLanguages => 'Поиск языков';
+
+  @override
+  String get closeSearch => 'Закрыть поиск';
+
+  @override
+  String get playSample => 'Воспроизвести пример';
+
+  @override
+  String get fontSize => 'Размер шрифта';
+
+  @override
+  String get usernameContrastBoost => 'Усиление контраста имён';
+
+  @override
+  String get twitchBadgeSettings => 'Настройки значков Twitch';
+
+  @override
+  String get twitchBadgeSettingsSubtitle => 'Выберите, какие значки показывать';
+
+  @override
+  String get showDeletedMessages => 'Показывать удалённые сообщения';
+
+  @override
+  String get deletedMessagesGreyedOut => 'Удалённые сообщения будут затемнены';
+
+  @override
+  String get deletedMessagesRemoved => 'Удалённые сообщения будут скрыты';
+
+  @override
+  String get showLoginNames => 'Показывать логины';
+
+  @override
+  String get loginNamesShown =>
+      'Логины будут показаны, если отличаются от отображаемого имени';
+
+  @override
+  String get loginNamesHidden => 'Логины будут скрыты';
+
+  @override
+  String get compactMessages => 'Сжатие сообщений';
+
+  @override
+  String get dontCompactMessages => 'Не сжимать сообщения';
+
+  @override
+  String get dontCompactMessagesSubtitle =>
+      'Сообщения показываются без изменений';
+
+  @override
+  String get compactIndividualMessages => 'Сжимать отдельные сообщения';
+
+  @override
+  String get compactIndividualMessagesSubtitle =>
+      'Повторяющийся текст в сообщениях сокращается';
+
+  @override
+  String get announcementPinDuration => 'Время закрепления объявлений';
+
+  @override
+  String get idleMessageAlertDuration => 'Оповещение о тишине в чате';
+
+  @override
+  String get idleMessageAlertDurationSubtitle =>
+      'Если в течение этого времени не было сообщений и приходит новое, прозвучит сигнал.';
+
+  @override
+  String get realtimeCashSubtitle => 'Подключите кошелёк ETH или MATIC';
+
+  @override
+  String get walletAddress => 'Адрес кошелька';
+
+  @override
+  String get streamlabsSubtitle => 'Просматривайте пожертвования Streamlabs';
+
+  @override
+  String get streamElementsSubtitle =>
+      'Просматривайте пожертвования StreamElements';
+
+  @override
+  String get thirdPartyAuthError =>
+      'Хм, не получилось. Попробуйте ещё раз или спросите в Discord?';
+
+  @override
+  String get companionAuthBrowserTooOld =>
+      'Ваш браузер слишком старый для прямого входа. Отсканируйте этот QR-код телефоном, чтобы войти на другом устройстве.';
+
+  @override
+  String get companionAuthScanQrCode =>
+      'Отсканируйте этот QR-код телефоном, чтобы войти на другом устройстве.';
 }

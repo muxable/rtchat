@@ -697,5 +697,310 @@ class AppLocalizationsSv extends AppLocalizations {
   String get textToSpeechDisabled => 'Text till tal inaktiverad';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Endast aviseringar';
+
+  @override
+  String get pinDuration => 'Fäst tid';
+
+  @override
+  String durationSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds sekunder',
+      one: '1 sekund',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minuter',
+      one: '1 minut',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enableEvent => 'Aktivera händelse';
+
+  @override
+  String get showEventInChatHistory => 'Visa händelsen i chatthistoriken';
+
+  @override
+  String get enableShoutouts => 'Aktivera shoutouts';
+
+  @override
+  String get enableShoutoutsSubtitle =>
+      'Skicka en länk till den raidande kanalen i chatten';
+
+  @override
+  String get raidConfigurationTitle => 'Raidinställningar';
+
+  @override
+  String get cheerConfigurationTitle => 'Cheerinställningar';
+
+  @override
+  String get followConfigurationTitle => 'Följinställningar';
+
+  @override
+  String get outgoingRaidConfigurationTitle =>
+      'Inställningar för utgående raids';
+
+  @override
+  String get hostConfigurationTitle => 'Hostinställningar';
+
+  @override
+  String get channelPointConfigurationTitle => 'Inställningar för kanalpoäng';
+
+  @override
+  String get pollConfigurationTitle => 'Omröstningsinställningar';
+
+  @override
+  String get hypetrainConfigurationTitle => 'Hype Train-inställningar';
+
+  @override
+  String get subscriptionConfigurationTitle => 'Prenumerationsinställningar';
+
+  @override
+  String get predictionConfigurationTitle => 'Förutsägelseinställningar';
+
+  @override
+  String get unfulfilledRewardsPinDuration =>
+      'Extra fäst tid för ouppfyllda belöningar';
+
+  @override
+  String get pollPinDuration => 'Fäst tid efter slutresultatet';
+
+  @override
+  String get hypetrainPinDuration => 'Fäst tid efter att Hype Train är över';
+
+  @override
+  String get enableGiftedSubscriptions =>
+      'Aktivera enskilda gåvoprenumerationer';
+
+  @override
+  String get enableGiftedSubscriptionsSubtitle =>
+      'Visa varje prenumeration som ges bort';
+
+  @override
+  String get settingsBackupTitle =>
+      'Säkerhetskopiera och återställ inställningar';
+
+  @override
+  String get cloudBackup => 'Molnsäkerhetskopia';
+
+  @override
+  String get lastBackupNever => 'Senaste säkerhetskopia: aldrig';
+
+  @override
+  String get backUp => 'Säkerhetskopiera';
+
+  @override
+  String get restore => 'Återställ';
+
+  @override
+  String get localBackup => 'Lokal säkerhetskopia';
+
+  @override
+  String get exportSettings => 'Exportera';
+
+  @override
+  String get importSettings => 'Importera';
+
+  @override
+  String get showViewerAndFollowerCount => 'Visa antal tittare och följare';
+
+  @override
+  String get screenOrientation => 'Skärmorientering';
+
+  @override
+  String get appTheme => 'Apptema';
+
+  @override
+  String get systemDefault => 'System';
+
+  @override
+  String get portrait => 'Stående';
+
+  @override
+  String get landscape => 'Liggande';
+
+  @override
+  String get lightTheme => 'Ljust';
+
+  @override
+  String get darkTheme => 'Mörkt';
+
+  @override
+  String get openSourceTitle => 'RealtimeChat är öppen källkod';
+
+  @override
+  String get openSourceSubtitle => 'Hitta oss på GitHub!';
+
+  @override
+  String get discordSubtitle => 'Gå med i Muxables Discord!';
+
+  @override
+  String get earlyTestersThanks =>
+      'Tack till alla tidiga testare som rapporterade buggar!';
+
+  @override
+  String get discoModeEnabled => '🕺 Discoläge aktiverat! :D';
+
+  @override
+  String get discoModeDisabled => '🕺 Discoläge inaktiverat D:';
+
+  @override
+  String get cloudTts => 'Moln-TTS';
+
+  @override
+  String get languages => 'Språk';
+
+  @override
+  String get voices => 'Röster';
+
+  @override
+  String get perViewerVoice => 'Röst per tittare';
+
+  @override
+  String get perViewerVoiceSubtitle => 'Känn igen dina tittare på rösten';
+
+  @override
+  String get randomVoice => 'Slumpmässig';
+
+  @override
+  String get playSampleMessage => 'Spela upp exempelmeddelande';
+
+  @override
+  String get textToSpeechRate => 'Talhastighet';
+
+  @override
+  String get textToSpeechPitch => 'Tonhöjd';
+
+  @override
+  String get unlockHighQualityVoices => 'Lås upp röster av hög kvalitet';
+
+  @override
+  String get muteBots => 'Stäng av text-till-tal för bottar';
+
+  @override
+  String get muteEmotes => 'Stäng av alla emotes i text-till-tal';
+
+  @override
+  String get muteViewerNames => 'Stäng av tittarnamn i text-till-tal';
+
+  @override
+  String get subscribersOnly => 'Endast prenumeranter';
+
+  @override
+  String get storeNotAvailable => 'Butiken är inte tillgänglig';
+
+  @override
+  String get unavailable => 'Inte tillgänglig';
+
+  @override
+  String get subscribe => 'Prenumerera';
+
+  @override
+  String get pending => 'Väntar';
+
+  @override
+  String get subscribed => 'Prenumererar';
+
+  @override
+  String get pleaseSignIn => 'Logga in';
+
+  @override
+  String get searchLanguages => 'Sök språk';
+
+  @override
+  String get closeSearch => 'Stäng sökning';
+
+  @override
+  String get playSample => 'Spela upp exempel';
+
+  @override
+  String get fontSize => 'Teckenstorlek';
+
+  @override
+  String get usernameContrastBoost => 'Kontrastförstärkning för användarnamn';
+
+  @override
+  String get twitchBadgeSettings => 'Inställningar för Twitch-märken';
+
+  @override
+  String get twitchBadgeSettingsSubtitle => 'Välj vilka märken som syns';
+
+  @override
+  String get showDeletedMessages => 'Visa raderade meddelanden';
+
+  @override
+  String get deletedMessagesGreyedOut => 'Raderade meddelanden gråas ut';
+
+  @override
+  String get deletedMessagesRemoved => 'Raderade meddelanden tas bort';
+
+  @override
+  String get showLoginNames => 'Visa inloggningsnamn';
+
+  @override
+  String get loginNamesShown =>
+      'Inloggningsnamn visas om de skiljer sig från visningsnamnet';
+
+  @override
+  String get loginNamesHidden => 'Inloggningsnamn döljs';
+
+  @override
+  String get compactMessages => 'Komprimera meddelanden';
+
+  @override
+  String get dontCompactMessages => 'Komprimera inte meddelanden';
+
+  @override
+  String get dontCompactMessagesSubtitle => 'Meddelanden visas oförändrade';
+
+  @override
+  String get compactIndividualMessages => 'Komprimera enskilda meddelanden';
+
+  @override
+  String get compactIndividualMessagesSubtitle =>
+      'Upprepad text i meddelanden förkortas';
+
+  @override
+  String get announcementPinDuration => 'Fäst tid för meddelanden';
+
+  @override
+  String get idleMessageAlertDuration => 'Varning vid tyst chatt';
+
+  @override
+  String get idleMessageAlertDurationSubtitle =>
+      'Om det inte kommer några meddelanden under den här tiden och sedan kommer ett nytt spelas ett varningsljud.';
+
+  @override
+  String get realtimeCashSubtitle => 'Anslut en ETH- eller MATIC-plånbok';
+
+  @override
+  String get walletAddress => 'Plånboksadress';
+
+  @override
+  String get streamlabsSubtitle => 'Se dina Streamlabs-donationer';
+
+  @override
+  String get streamElementsSubtitle => 'Se dina StreamElements-donationer';
+
+  @override
+  String get thirdPartyAuthError =>
+      'Hmm, det fungerade inte. Försök igen, eller fråga på Discord?';
+
+  @override
+  String get companionAuthBrowserTooOld =>
+      'Din webbläsare är för gammal för att logga in direkt. Skanna den här QR-koden med telefonen för att logga in på en annan enhet.';
+
+  @override
+  String get companionAuthScanQrCode =>
+      'Skanna den här QR-koden med telefonen för att logga in på en annan enhet.';
 }

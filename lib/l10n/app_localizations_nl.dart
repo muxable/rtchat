@@ -169,7 +169,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get reconnecting => 'Opnieuw verbinden';
 
   @override
-  String get twitchBadges => 'Twitch badges';
+  String get twitchBadges => 'Twitch-badges';
 
   @override
   String get selectAll => 'Alles selecteren';
@@ -702,5 +702,313 @@ class AppLocalizationsNl extends AppLocalizations {
   String get textToSpeechDisabled => 'Text-to-Speech gedeactiveerd';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Alleen meldingen';
+
+  @override
+  String get pinDuration => 'Vastpinduur';
+
+  @override
+  String durationSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds seconden',
+      one: '1 seconde',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minuten',
+      one: '1 minuut',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enableEvent => 'Gebeurtenis inschakelen';
+
+  @override
+  String get showEventInChatHistory =>
+      'Gebeurtenis tonen in de chatgeschiedenis';
+
+  @override
+  String get enableShoutouts => 'Shoutouts inschakelen';
+
+  @override
+  String get enableShoutoutsSubtitle =>
+      'Een link naar het raidende kanaal in de chat plaatsen';
+
+  @override
+  String get raidConfigurationTitle => 'Raid-instellingen';
+
+  @override
+  String get cheerConfigurationTitle => 'Cheer-instellingen';
+
+  @override
+  String get followConfigurationTitle => 'Volg-instellingen';
+
+  @override
+  String get outgoingRaidConfigurationTitle =>
+      'Instellingen voor uitgaande raids';
+
+  @override
+  String get hostConfigurationTitle => 'Host-instellingen';
+
+  @override
+  String get channelPointConfigurationTitle => 'Kanaalpunten-instellingen';
+
+  @override
+  String get pollConfigurationTitle => 'Poll-instellingen';
+
+  @override
+  String get hypetrainConfigurationTitle => 'Hype Train-instellingen';
+
+  @override
+  String get subscriptionConfigurationTitle => 'Abonnement-instellingen';
+
+  @override
+  String get predictionConfigurationTitle => 'Voorspelling-instellingen';
+
+  @override
+  String get unfulfilledRewardsPinDuration =>
+      'Extra vastpinduur voor niet-uitgevoerde beloningen';
+
+  @override
+  String get pollPinDuration => 'Vastpinduur na de definitieve uitslag';
+
+  @override
+  String get hypetrainPinDuration => 'Vastpinduur na afloop van de Hype Train';
+
+  @override
+  String get enableGiftedSubscriptions =>
+      'Afzonderlijke cadeau-abonnementen inschakelen';
+
+  @override
+  String get enableGiftedSubscriptionsSubtitle => 'Elk cadeau-abonnement tonen';
+
+  @override
+  String get settingsBackupTitle => 'Instellingen back-uppen en herstellen';
+
+  @override
+  String get cloudBackup => 'Cloudback-up';
+
+  @override
+  String get lastBackupNever => 'Laatste back-up: nooit';
+
+  @override
+  String get backUp => 'Back-up maken';
+
+  @override
+  String get restore => 'Herstellen';
+
+  @override
+  String get localBackup => 'Lokale back-up';
+
+  @override
+  String get exportSettings => 'Exporteren';
+
+  @override
+  String get importSettings => 'Importeren';
+
+  @override
+  String get showViewerAndFollowerCount => 'Aantal kijkers en volgers tonen';
+
+  @override
+  String get screenOrientation => 'Schermoriëntatie';
+
+  @override
+  String get appTheme => 'App-thema';
+
+  @override
+  String get systemDefault => 'Systeem';
+
+  @override
+  String get portrait => 'Staand';
+
+  @override
+  String get landscape => 'Liggend';
+
+  @override
+  String get lightTheme => 'Licht';
+
+  @override
+  String get darkTheme => 'Donker';
+
+  @override
+  String get openSourceTitle => 'RealtimeChat is open source';
+
+  @override
+  String get openSourceSubtitle => 'Vind ons op GitHub!';
+
+  @override
+  String get discordSubtitle => 'Word lid van de Muxable-Discord!';
+
+  @override
+  String get earlyTestersThanks =>
+      'Dank aan alle vroege testers die bugs hebben gemeld!';
+
+  @override
+  String get discoModeEnabled => '🕺 Discomodus ingeschakeld! :D';
+
+  @override
+  String get discoModeDisabled => '🕺 Discomodus uitgeschakeld D:';
+
+  @override
+  String get cloudTts => 'Cloud-TTS';
+
+  @override
+  String get languages => 'Talen';
+
+  @override
+  String get voices => 'Stemmen';
+
+  @override
+  String get perViewerVoice => 'Stem per kijker';
+
+  @override
+  String get perViewerVoiceSubtitle => 'Herken je kijkers aan hun stem';
+
+  @override
+  String get randomVoice => 'Willekeurig';
+
+  @override
+  String get playSampleMessage => 'Voorbeeldbericht afspelen';
+
+  @override
+  String get textToSpeechRate => 'Spreeksnelheid';
+
+  @override
+  String get textToSpeechPitch => 'Toonhoogte';
+
+  @override
+  String get unlockHighQualityVoices =>
+      'Stemmen van hoge kwaliteit ontgrendelen';
+
+  @override
+  String get muteBots => 'Tekst-naar-spraak dempen voor bots';
+
+  @override
+  String get muteEmotes => 'Alle emotes dempen in tekst-naar-spraak';
+
+  @override
+  String get muteViewerNames => 'Kijkersnamen dempen in tekst-naar-spraak';
+
+  @override
+  String get subscribersOnly => 'Alleen abonnees';
+
+  @override
+  String get storeNotAvailable => 'Winkel niet beschikbaar';
+
+  @override
+  String get unavailable => 'Niet beschikbaar';
+
+  @override
+  String get subscribe => 'Abonneren';
+
+  @override
+  String get pending => 'In behandeling';
+
+  @override
+  String get subscribed => 'Geabonneerd';
+
+  @override
+  String get pleaseSignIn => 'Log in';
+
+  @override
+  String get searchLanguages => 'Talen zoeken';
+
+  @override
+  String get closeSearch => 'Zoeken sluiten';
+
+  @override
+  String get playSample => 'Voorbeeld afspelen';
+
+  @override
+  String get fontSize => 'Lettergrootte';
+
+  @override
+  String get usernameContrastBoost => 'Contrastverhoging gebruikersnamen';
+
+  @override
+  String get twitchBadgeSettings => 'Twitch-badge-instellingen';
+
+  @override
+  String get twitchBadgeSettingsSubtitle =>
+      'Bepaal welke badges zichtbaar zijn';
+
+  @override
+  String get showDeletedMessages => 'Verwijderde berichten tonen';
+
+  @override
+  String get deletedMessagesGreyedOut =>
+      'Verwijderde berichten worden grijs weergegeven';
+
+  @override
+  String get deletedMessagesRemoved => 'Verwijderde berichten worden verborgen';
+
+  @override
+  String get showLoginNames => 'Inlognamen tonen';
+
+  @override
+  String get loginNamesShown =>
+      'Inlognamen worden getoond als ze verschillen van de weergavenaam';
+
+  @override
+  String get loginNamesHidden => 'Inlognamen worden verborgen';
+
+  @override
+  String get compactMessages => 'Berichten inkorten';
+
+  @override
+  String get dontCompactMessages => 'Berichten niet inkorten';
+
+  @override
+  String get dontCompactMessagesSubtitle =>
+      'Berichten worden ongewijzigd getoond';
+
+  @override
+  String get compactIndividualMessages => 'Afzonderlijke berichten inkorten';
+
+  @override
+  String get compactIndividualMessagesSubtitle =>
+      'Herhaalde tekst in berichten wordt ingekort';
+
+  @override
+  String get announcementPinDuration => 'Vastpinduur van aankondigingen';
+
+  @override
+  String get idleMessageAlertDuration => 'Melding bij stille chat';
+
+  @override
+  String get idleMessageAlertDurationSubtitle =>
+      'Als er zo lang geen berichten zijn en er komt een nieuw bericht binnen, klinkt er een meldingsgeluid.';
+
+  @override
+  String get realtimeCashSubtitle => 'Koppel een ETH- of MATIC-wallet';
+
+  @override
+  String get walletAddress => 'Walletadres';
+
+  @override
+  String get streamlabsSubtitle => 'Bekijk je Streamlabs-donaties';
+
+  @override
+  String get streamElementsSubtitle => 'Bekijk je StreamElements-donaties';
+
+  @override
+  String get thirdPartyAuthError =>
+      'Hmm, dat werkte niet. Probeer het opnieuw, of vraag het op Discord?';
+
+  @override
+  String get companionAuthBrowserTooOld =>
+      'Je browser is te oud om direct in te loggen. Scan deze QR-code met je telefoon om op een ander apparaat in te loggen.';
+
+  @override
+  String get companionAuthScanQrCode =>
+      'Scan deze QR-code met je telefoon om op een ander apparaat in te loggen.';
 }
