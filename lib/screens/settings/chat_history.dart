@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/style_model_theme.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
@@ -50,7 +51,7 @@ final message3 = TwitchMessageModel(
         isAction: false, isFirstTimeChatter: false, announcement: null),
     thirdPartyEmotes: [
       Emote(
-        provider: "twitch",
+        provider: Providers.twitch,
         category: null,
         id: 'catJAM',
         code: 'catJAM',

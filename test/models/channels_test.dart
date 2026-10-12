@@ -14,16 +14,20 @@ void main() {
     expect({a, b}, hasLength(1));
   });
 
-  test("equality considers provider, channelId and displayName", () {
-    final a = Channel("twitch", "123", "Foo");
-    expect(a, isNot(Channel("youtube", "123", "Foo")));
-    expect(a, isNot(Channel("twitch", "456", "Foo")));
-    expect(a, isNot(Channel("twitch", "123", "Bar")));
+  test("equality considers provider and channelId only", () {
+    final a = Channel(Providers.twitch, "123", "Foo");
+    expect(a, isNot(Channel(Providers.kick, "123", "Foo")));
+    expect(a, isNot(Channel(Providers.twitch, "456", "Foo")));
+    // renaming a channel doesn't make it a different channel.
+    expect(a, Channel(Providers.twitch, "123", "Bar"));
+    expect(a.hashCode, Channel(Providers.twitch, "123", "Bar").hashCode);
   });
 
-  test("profilePictureUrl uses the channel id", () {
-    expect(Channel("twitch", "123", "Foo").profilePictureUrl.toString(),
+  test("profilePictureUrl uses the channel's provider and id", () {
+    expect(Channel(Providers.twitch, "123", "Foo").profilePictureUrl.toString(),
         "https://rtirl.com/pfp.png?provider=twitch&channelId=123");
+    expect(Channel(Providers.kick, "9", "Foo").profilePictureUrl.toString(),
+        "https://rtirl.com/pfp.png?provider=kick&channelId=9");
   });
 
   test("toJson", () {

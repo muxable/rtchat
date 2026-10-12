@@ -7,6 +7,7 @@ import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/auth/companion_auth.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -68,7 +69,7 @@ class SignInWithTwitch extends StatelessWidget {
             ),
             builder: (context) {
               return const CompanionAuthWidget(
-                provider: "twitch",
+                provider: Providers.twitch,
                 isTooOld: true,
               );
             },
@@ -96,7 +97,7 @@ class SignInWithTwitch extends StatelessWidget {
                 navigator.push(ModalBottomSheetRoute(
                   builder: (context) {
                     return const CompanionAuthWidget(
-                      provider: "twitch",
+                      provider: Providers.twitch,
                       isTooOld: false,
                     );
                   },

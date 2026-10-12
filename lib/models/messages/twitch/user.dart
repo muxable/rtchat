@@ -63,10 +63,11 @@ class TwitchUserModel {
 
   Uri get profilePictureUrl {
     return Uri.parse(
-        "https://rtirl.com/pfp.png?provider=twitch&channelId=$userId");
+        "https://rtirl.com/pfp.png?provider=${Providers.twitch}&channelId=$userId");
   }
 
-  Channel get asChannel => Channel("twitch", userId, displayName ?? login);
+  Channel get asChannel =>
+      Channel(Providers.twitch, userId, displayName ?? login);
 
   TwitchUserModel.fromJson(Map<String, dynamic> json)
       : userId = json["userId"],

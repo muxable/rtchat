@@ -38,7 +38,7 @@ class ChannelsAdapter {
         return ChannelMetadata(onlineAt: null);
       }
       switch (channel.provider) {
-        case "twitch":
+        case Providers.twitch:
           return TwitchChannelMetadata(
               onlineAt: (data["onlineAt"] as Timestamp?)?.toDate(),
               viewerCount: data["viewerCount"] ?? 0,
