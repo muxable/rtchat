@@ -1078,4 +1078,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Désactiver';
+
+  @override
+  String get sendToAllChannels => 'Envoyer à toutes les chaînes';
 }

@@ -1037,4 +1037,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => '끄기';
+
+  @override
+  String get sendToAllChannels => '모든 채널로 보내기';
 }

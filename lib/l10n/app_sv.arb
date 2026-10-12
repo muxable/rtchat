@@ -262,5 +262,6 @@
   "kicksGiftedEvent": "<b>{senderName}</b> skickade {amount} Kicks!",
   "signInWithKick": "Logga in med Kick",
   "textToSpeechTooManyMessages": "Det finns för många meddelanden. Text till tal avstängt",
-  "turnOffTextToSpeech": "Stäng av"
+  "turnOffTextToSpeech": "Stäng av",
+  "sendToAllChannels": "Skicka till alla kanaler"
 }

@@ -262,5 +262,6 @@
   "kicksGiftedEvent": "<b>{senderName}</b>さんが{amount} Kicksを送りました！",
   "signInWithKick": "Kickでサインイン",
   "textToSpeechTooManyMessages": "メッセージが多すぎます。読み上げをオフにしました",
-  "turnOffTextToSpeech": "オフにする"
+  "turnOffTextToSpeech": "オフにする",
+  "sendToAllChannels": "すべてのチャンネルに送信"
 }

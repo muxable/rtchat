@@ -1060,4 +1060,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'বন্ধ করুন';
+
+  @override
+  String get sendToAllChannels => 'সব চ্যানেলে পাঠান';
 }

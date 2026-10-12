@@ -262,5 +262,6 @@
   "kicksGiftedEvent": "<b>{senderName}</b>님이 {amount} Kicks를 보냈습니다!",
   "signInWithKick": "Kick으로 로그인",
   "textToSpeechTooManyMessages": "메시지가 너무 많습니다. 텍스트 음성 변환이 꺼졌습니다",
-  "turnOffTextToSpeech": "끄기"
+  "turnOffTextToSpeech": "끄기",
+  "sendToAllChannels": "모든 채널로 보내기"
 }

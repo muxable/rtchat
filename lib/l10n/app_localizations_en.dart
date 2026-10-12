@@ -1059,4 +1059,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Turn off';
+
+  @override
+  String get sendToAllChannels => 'Send to all channels';
 }

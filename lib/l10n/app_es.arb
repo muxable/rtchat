@@ -262,5 +262,6 @@
   "kicksGiftedEvent": "¡<b>{senderName}</b> ha enviado {amount} Kicks!",
   "signInWithKick": "Inicia sesión con Kick",
   "textToSpeechTooManyMessages": "Hay demasiados mensajes. Texto a voz desactivado",
-  "turnOffTextToSpeech": "Desactivar"
+  "turnOffTextToSpeech": "Desactivar",
+  "sendToAllChannels": "Enviar a todos los canales"
 }

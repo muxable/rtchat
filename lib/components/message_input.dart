@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/autocomplete.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/components/send_target_picker.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
@@ -14,6 +15,8 @@ import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/style.dart';
+import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/views.dart';
 import 'package:rtchat/share_channel.dart';
 
 class EmoteTextEditingController extends TextEditingController {
@@ -201,6 +204,13 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     super.dispose();
   }
 
+  List<Channel> _targets(BuildContext context) {
+    final views = Provider.of<ViewsModel>(context, listen: false);
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    final targets = views.sendTargets(userModel.userChannel);
+    return targets.isEmpty ? [widget.channel] : targets;
+  }
+
   void sendMessage(String value) async {
     value = value.trim();
     if (value.isEmpty) {
@@ -217,22 +227,27 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     setState(() {
       _textEditingController?.clear();
     });
+    final targets = _targets(context);
     var done = false;
     await Future.wait([
       () async {
-        try {
-          final error =
-              await ActionsAdapter.instance.send(widget.channel, value);
-          if (error != null) {
+        // a message for several channels is sent to each; failures are
+        // reported per channel.
+        await Future.wait(targets.map((target) async {
+          final prefix = targets.length > 1 ? "${target.displayName}: " : "";
+          try {
+            final error = await ActionsAdapter.instance.send(target, value);
+            if (error != null) {
+              messenger.showSnackBar(SnackBar(
+                content: Text("$prefix$error"),
+              ));
+            }
+          } catch (e) {
             messenger.showSnackBar(SnackBar(
-              content: Text(error),
+              content: Text("$prefix$e"),
             ));
           }
-        } catch (e) {
-          messenger.showSnackBar(SnackBar(
-            content: Text(e.toString()),
-          ));
-        }
+        }));
         done = true;
         if (!mounted) {
           return;
@@ -279,94 +294,100 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
               ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Container(
-                decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(24)),
-                    color: Theme.of(context).splashColor),
-                child: TextField(
-                  focusNode: _chatInputFocusNode,
-                  controller: _textEditingController,
-                  textInputAction: TextInputAction.send,
-                  // kick rejects messages over 500 characters (grapheme
-                  // clusters, which is how maxLength counts too).
-                  maxLength:
-                      widget.channel.provider == Providers.kick ? 500 : null,
-                  buildCounter: (context,
-                          {required currentLength,
-                          required isFocused,
-                          maxLength}) =>
-                      null,
-                  maxLines: 6,
-                  minLines: 1,
-                  textAlignVertical: TextAlignVertical.center,
-                  decoration: InputDecoration(
-                      prefixIcon: IconButton(
-                        onPressed: () {
-                          if (_isEmotePickerVisible) {
-                            setState(() => _isEmotePickerVisible = false);
-                            _chatInputFocusNode.requestFocus();
-                          } else {
-                            _chatInputFocusNode.unfocus();
-                            setState(() {
-                              _isEmotePickerVisible = true;
-                              _emoteIndex = Random().nextInt(_emotes.length);
-                            });
+              child: Row(children: [
+                const SendTargetPicker(),
+                Expanded(
+                    child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.all(Radius.circular(24)),
+                      color: Theme.of(context).splashColor),
+                  child: TextField(
+                    focusNode: _chatInputFocusNode,
+                    controller: _textEditingController,
+                    textInputAction: TextInputAction.send,
+                    // kick rejects messages over 500 characters (grapheme
+                    // clusters, which is how maxLength counts too).
+                    maxLength: _targets(context)
+                            .any((target) => target.provider == Providers.kick)
+                        ? 500
+                        : null,
+                    buildCounter: (context,
+                            {required currentLength,
+                            required isFocused,
+                            maxLength}) =>
+                        null,
+                    maxLines: 6,
+                    minLines: 1,
+                    textAlignVertical: TextAlignVertical.center,
+                    decoration: InputDecoration(
+                        prefixIcon: IconButton(
+                          onPressed: () {
+                            if (_isEmotePickerVisible) {
+                              setState(() => _isEmotePickerVisible = false);
+                              _chatInputFocusNode.requestFocus();
+                            } else {
+                              _chatInputFocusNode.unfocus();
+                              setState(() {
+                                _isEmotePickerVisible = true;
+                                _emoteIndex = Random().nextInt(_emotes.length);
+                              });
+                            }
+                          },
+                          splashRadius: 24,
+                          icon: _isEmotePickerVisible
+                              ? const Icon(Icons.keyboard_rounded)
+                              : ColorFiltered(
+                                  colorFilter: _greyscale,
+                                  child: Image(
+                                    width: 24,
+                                    height: 24,
+                                    image: ResilientNetworkImage(
+                                        Uri.parse(_emotes[_emoteIndex])),
+                                  )),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.send_rounded),
+                          color: Theme.of(context).colorScheme.primary,
+                          splashRadius: 24,
+                          onPressed: () =>
+                              sendMessage(_textEditingController?.text ?? ''),
+                        ),
+                        border: InputBorder.none,
+                        hintMaxLines: 1,
+                        hintText: () {
+                          final l10n = AppLocalizations.of(context)!;
+                          if (_textSeed < 0.5) {
+                            return l10n.sendAMessage;
+                          } else if (_textSeed < 0.9) {
+                            return l10n.writeSomething;
+                          } else if (_textSeed < 0.99) {
+                            return l10n.speakToTheCrowds;
+                          } else if (_textSeed < 0.999) {
+                            return l10n.shareYourThoughts;
                           }
-                        },
-                        splashRadius: 24,
-                        icon: _isEmotePickerVisible
-                            ? const Icon(Icons.keyboard_rounded)
-                            : ColorFiltered(
-                                colorFilter: _greyscale,
-                                child: Image(
-                                  width: 24,
-                                  height: 24,
-                                  image: ResilientNetworkImage(
-                                      Uri.parse(_emotes[_emoteIndex])),
-                                )),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.send_rounded),
-                        color: Theme.of(context).colorScheme.primary,
-                        splashRadius: 24,
-                        onPressed: () =>
-                            sendMessage(_textEditingController?.text ?? ''),
-                      ),
-                      border: InputBorder.none,
-                      hintMaxLines: 1,
-                      hintText: () {
-                        final l10n = AppLocalizations.of(context)!;
-                        if (_textSeed < 0.5) {
-                          return l10n.sendAMessage;
-                        } else if (_textSeed < 0.9) {
-                          return l10n.writeSomething;
-                        } else if (_textSeed < 0.99) {
-                          return l10n.speakToTheCrowds;
-                        } else if (_textSeed < 0.999) {
-                          return l10n.shareYourThoughts;
-                        }
-                        return l10n.saySomethingYouLittleBitch;
-                      }()),
-                  onChanged: (text) {
-                    final filtered = text.replaceAll('\n', ' ');
-                    if (filtered == text) {
-                      return;
-                    }
-                    setState(() {
-                      _textEditingController?.value = TextEditingValue(
-                          text: filtered,
-                          selection: TextSelection.fromPosition(TextPosition(
-                              offset:
-                                  _textEditingController?.text.length ?? 0)));
-                    });
-                  },
-                  onSubmitted: sendMessage,
-                  onTap: () {
-                    setState(() => _isEmotePickerVisible = false);
-                    _chatInputFocusNode.requestFocus();
-                  },
-                ),
-              ),
+                          return l10n.saySomethingYouLittleBitch;
+                        }()),
+                    onChanged: (text) {
+                      final filtered = text.replaceAll('\n', ' ');
+                      if (filtered == text) {
+                        return;
+                      }
+                      setState(() {
+                        _textEditingController?.value = TextEditingValue(
+                            text: filtered,
+                            selection: TextSelection.fromPosition(TextPosition(
+                                offset:
+                                    _textEditingController?.text.length ?? 0)));
+                      });
+                    },
+                    onSubmitted: sendMessage,
+                    onTap: () {
+                      setState(() => _isEmotePickerVisible = false);
+                      _chatInputFocusNode.requestFocus();
+                    },
+                  ),
+                )),
+              ]),
             ),
             _isEmotePickerVisible
                 ? EmotePickerWidget(

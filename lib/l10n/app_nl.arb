@@ -262,5 +262,6 @@
   "kicksGiftedEvent": "<b>{senderName}</b> heeft {amount} Kicks gestuurd!",
   "signInWithKick": "Log in met Kick",
   "textToSpeechTooManyMessages": "Er zijn te veel berichten. Tekst-naar-spraak uitgeschakeld",
-  "turnOffTextToSpeech": "Uitschakelen"
+  "turnOffTextToSpeech": "Uitschakelen",
+  "sendToAllChannels": "Naar alle kanalen sturen"
 }
