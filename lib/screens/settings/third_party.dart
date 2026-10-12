@@ -8,6 +8,7 @@ import 'package:rtchat/components/scanner_settings.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/donations.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/wallet_address.dart';
 import 'package:rtchat/urls.dart';
 
 const streamlabsCurrencies = [
@@ -100,34 +101,18 @@ class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
                                     },
                                     controller: _scanController,
                                     onDetect: (capture) {
-                                      final List<Barcode> barcodes =
-                                          capture.barcodes;
-
-                                      if (barcodes.isEmpty) {
+                                      final address = parseWalletAddress(capture
+                                          .barcodes.firstOrNull?.rawValue);
+                                      if (address == null) {
                                         messenger.showSnackBar(SnackBar(
                                             content: Text(
                                                 AppLocalizations.of(context)!
                                                     .invalidUrlErrorText)));
+                                      } else {
+                                        DonationsAdapter.instance
+                                            .setRealtimeCashAddress(
+                                                address: address);
                                       }
-
-                                      final barcode = barcodes.first;
-
-                                      if (barcode.rawValue == null ||
-                                          barcode.rawValue!.isEmpty) {
-                                        messenger.showSnackBar(SnackBar(
-                                            content: Text(
-                                                AppLocalizations.of(context)!
-                                                    .invalidUrlErrorText)));
-
-                                        Navigator.pop(ctx);
-                                      }
-
-                                      DonationsAdapter.instance
-                                          .setRealtimeCashAddress(
-                                              address: barcode.rawBytes
-                                                  .toString()
-                                                  .toLowerCase());
-
                                       Navigator.pop(ctx);
                                     },
                                   ),
