@@ -119,7 +119,41 @@ export function toDocuments(delivery: KickDelivery, now = Date.now()) {
       channel.categoryId = event.metadata?.category?.id ?? null;
       channel.categoryName = event.metadata?.category?.name ?? null;
       break;
+    case "channel.followed":
+      messages.push({
+        id: `kick:${delivery.messageId}`,
+        data: envelope("kick.channel.followed"),
+      });
+      // like twitch, approximate the follower count between metadata polls.
+      channel.followerCount = admin.firestore.FieldValue.increment(1);
+      break;
+    case "channel.subscription.new":
+    case "channel.subscription.renewal":
+    case "channel.subscription.gifts":
+    case "kicks.gifted":
+      messages.push({
+        id: `kick:${delivery.messageId}`,
+        data: envelope(`kick.${delivery.type}`, event.created_at),
+      });
+      break;
+    case "moderation.banned":
+      // expires_at is null for permanent bans and set for timeouts.
+      messages.push({
+        id: `kick:${delivery.messageId}`,
+        data: envelope("kick.moderation.banned", event.metadata?.created_at),
+      });
+      break;
+    case "channel.reward.redemption.updated":
+      messages.push({
+        id: `kick:${delivery.messageId}`,
+        data: envelope(
+          "kick.channel.reward.redemption.updated",
+          event.redeemed_at
+        ),
+      });
+      break;
     default:
+      functions.logger.info("unhandled kick event", { type: delivery.type });
       messages.push({
         id: `kick:${delivery.messageId}`,
         data: envelope(`kick.${delivery.type}`, event.created_at),
