@@ -5,6 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/components/provider_icon.dart';
 import 'package:rtchat/models/channels.dart';
 
 final _search = FirebaseFunctions.instance.httpsCallable("search");
@@ -73,7 +74,9 @@ Stream<List<SearchResult>> search(String query, bool isShowOnlyOnline) async* {
         .toList();
   });
   final slowFiltered = slow.where((result) =>
-      !fastFiltered.any((element) => element.channelId == result.channelId) &&
+      !fastFiltered.any((element) =>
+          element.provider == result.provider &&
+          element.channelId == result.channelId) &&
       (!isShowOnlyOnline || result.isOnline));
   yield [...fastRanked, ...slowFiltered];
 }
@@ -213,8 +216,19 @@ class _ChannelSearchResultsWidgetState
                       title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(result.displayName,
-                                overflow: TextOverflow.ellipsis),
+                            Expanded(
+                              child: Row(children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 6),
+                                  child:
+                                      ProviderIcon(result.provider, size: 14),
+                                ),
+                                Flexible(
+                                  child: Text(result.displayName,
+                                      overflow: TextOverflow.ellipsis),
+                                ),
+                              ]),
+                            ),
                             Text(
                               result.language ?? "??",
                               style: Theme.of(context).textTheme.labelSmall,
@@ -224,7 +238,7 @@ class _ChannelSearchResultsWidgetState
                           result.title == null ? null : Text(result.title!),
                       onTap: () {
                         widget.onChannelSelect(Channel(
-                          Providers.twitch,
+                          result.provider,
                           result.channelId,
                           result.displayName,
                         ));

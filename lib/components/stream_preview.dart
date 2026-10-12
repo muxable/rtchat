@@ -97,6 +97,10 @@ class _StreamPreviewState extends State<StreamPreview> {
       })
       ..setNavigationDelegate(NavigationDelegate(
         onPageFinished: (url) async {
+          // only twitch's player can be driven over the javascript tunnel.
+          if (!_isTwitch) {
+            return;
+          }
           await _controller.runJavaScript(
               await rootBundle.loadString('assets/twitch-tunnel.js'));
           // wait a second for twitch to catch up.
@@ -145,8 +149,15 @@ class _StreamPreviewState extends State<StreamPreview> {
     }
   }
 
+  bool get _isTwitch => widget.channel.provider == Providers.twitch;
+
   @override
   Widget build(BuildContext context) {
+    if (!_isTwitch) {
+      // other players don't report their state, so they use their own
+      // controls rather than our overlay.
+      return WebViewWidget(controller: _controller);
+    }
     return Stack(children: [
       WebViewWidget(controller: _controller),
       if (_playerState == null || _playerState == "Idle")
