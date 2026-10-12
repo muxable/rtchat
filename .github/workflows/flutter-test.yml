@@ -5,12 +5,10 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
-  analyze:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

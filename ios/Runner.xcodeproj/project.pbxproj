@@ -385,7 +385,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$PODS_ROOT/FirebaseCrashlytics/upload-symbols\" --flutter-project \"$PROJECT_DIR/firebase_app_id_file.json\" ";
+			shellScript = "# firebase_crashlytics comes from CocoaPods or Swift Package Manager. Flutter\n# clones Swift packages into build/ios/SourcePackages, Xcode into DerivedData.\nfor UPLOAD_SYMBOLS in \\\n  \"$PODS_ROOT/FirebaseCrashlytics/upload-symbols\" \\\n  \"$PROJECT_DIR/../build/ios/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols\" \\\n  \"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols\"; do\n  if [ -f \"$UPLOAD_SYMBOLS\" ]; then\n    exec \"$UPLOAD_SYMBOLS\" --flutter-project \"$PROJECT_DIR/firebase_app_id_file.json\"\n  fi\ndone\necho \"warning: Crashlytics upload-symbols not found, skipping dSYM upload\"\n";
 		};
 		3B06AD1E1E4923F5004D2608 /* Thin Binary */ = {
 			isa = PBXShellScriptBuildPhase;
