@@ -687,5 +687,298 @@ class AppLocalizationsJa extends AppLocalizations {
   String get textToSpeechDisabled => 'テキスト読み上げが無効になっています';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'アラートのみ';
+
+  @override
+  String get pinDuration => 'ピン留め時間';
+
+  @override
+  String durationSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds秒',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes分',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enableEvent => 'イベントを有効にする';
+
+  @override
+  String get showEventInChatHistory => 'チャット履歴にイベントを表示';
+
+  @override
+  String get enableShoutouts => 'シャウトアウトを有効にする';
+
+  @override
+  String get enableShoutoutsSubtitle => 'レイドしてきたチャンネルへのリンクをチャットに送信';
+
+  @override
+  String get raidConfigurationTitle => 'レイドの設定';
+
+  @override
+  String get cheerConfigurationTitle => 'Cheerの設定';
+
+  @override
+  String get followConfigurationTitle => 'フォローの設定';
+
+  @override
+  String get outgoingRaidConfigurationTitle => '送信レイドの設定';
+
+  @override
+  String get hostConfigurationTitle => 'ホストの設定';
+
+  @override
+  String get channelPointConfigurationTitle => 'チャンネルポイントの設定';
+
+  @override
+  String get pollConfigurationTitle => '投票の設定';
+
+  @override
+  String get hypetrainConfigurationTitle => 'ハイプトレインの設定';
+
+  @override
+  String get subscriptionConfigurationTitle => 'サブスクリプションの設定';
+
+  @override
+  String get predictionConfigurationTitle => '予想の設定';
+
+  @override
+  String get unfulfilledRewardsPinDuration => '未対応の特典の追加ピン留め時間';
+
+  @override
+  String get pollPinDuration => '結果確定後のピン留め時間';
+
+  @override
+  String get hypetrainPinDuration => 'ハイプトレイン終了後のピン留め時間';
+
+  @override
+  String get enableGiftedSubscriptions => 'ギフトサブを個別に表示する';
+
+  @override
+  String get enableGiftedSubscriptionsSubtitle => 'ギフトされたサブスクをすべて表示';
+
+  @override
+  String get settingsBackupTitle => '設定のバックアップと復元';
+
+  @override
+  String get cloudBackup => 'クラウドバックアップ';
+
+  @override
+  String get lastBackupNever => '前回のバックアップ: なし';
+
+  @override
+  String get backUp => 'バックアップ';
+
+  @override
+  String get restore => '復元';
+
+  @override
+  String get localBackup => 'ローカルバックアップ';
+
+  @override
+  String get exportSettings => 'エクスポート';
+
+  @override
+  String get importSettings => 'インポート';
+
+  @override
+  String get showViewerAndFollowerCount => '視聴者数とフォロワー数を表示';
+
+  @override
+  String get screenOrientation => '画面の向き';
+
+  @override
+  String get appTheme => 'アプリのテーマ';
+
+  @override
+  String get systemDefault => 'システム';
+
+  @override
+  String get portrait => '縦向き';
+
+  @override
+  String get landscape => '横向き';
+
+  @override
+  String get lightTheme => 'ライト';
+
+  @override
+  String get darkTheme => 'ダーク';
+
+  @override
+  String get openSourceTitle => 'RealtimeChatはオープンソースです';
+
+  @override
+  String get openSourceSubtitle => 'GitHubで見つけてください！';
+
+  @override
+  String get discordSubtitle => 'MuxableのDiscordに参加しよう！';
+
+  @override
+  String get earlyTestersThanks => 'バグを報告してくれた初期テスターの皆さんに感謝します！';
+
+  @override
+  String get discoModeEnabled => '🕺 ディスコモード オン！ :D';
+
+  @override
+  String get discoModeDisabled => '🕺 ディスコモード オフ D:';
+
+  @override
+  String get cloudTts => 'クラウドTTS';
+
+  @override
+  String get languages => '言語';
+
+  @override
+  String get voices => '音声';
+
+  @override
+  String get perViewerVoice => '視聴者ごとの音声';
+
+  @override
+  String get perViewerVoiceSubtitle => '声で視聴者を聞き分ける';
+
+  @override
+  String get randomVoice => 'ランダム';
+
+  @override
+  String get playSampleMessage => 'サンプルメッセージを再生';
+
+  @override
+  String get textToSpeechRate => '読み上げ速度';
+
+  @override
+  String get textToSpeechPitch => '読み上げの高さ';
+
+  @override
+  String get unlockHighQualityVoices => '高品質な音声をアンロック';
+
+  @override
+  String get muteBots => 'ボットの読み上げをミュート';
+
+  @override
+  String get muteEmotes => 'すべてのエモートの読み上げをミュート';
+
+  @override
+  String get muteViewerNames => '視聴者名の読み上げをミュート';
+
+  @override
+  String get subscribersOnly => 'サブスク登録者のみ';
+
+  @override
+  String get storeNotAvailable => 'ストアを利用できません';
+
+  @override
+  String get unavailable => '利用不可';
+
+  @override
+  String get subscribe => '登録する';
+
+  @override
+  String get pending => '保留中';
+
+  @override
+  String get subscribed => '登録済み';
+
+  @override
+  String get pleaseSignIn => 'ログインしてください';
+
+  @override
+  String get searchLanguages => '言語を検索';
+
+  @override
+  String get closeSearch => '検索を閉じる';
+
+  @override
+  String get playSample => 'サンプルを再生';
+
+  @override
+  String get fontSize => 'フォントサイズ';
+
+  @override
+  String get usernameContrastBoost => 'ユーザー名のコントラスト強調';
+
+  @override
+  String get twitchBadgeSettings => 'Twitchバッジの設定';
+
+  @override
+  String get twitchBadgeSettingsSubtitle => '表示するバッジを選択';
+
+  @override
+  String get showDeletedMessages => '削除されたメッセージを表示';
+
+  @override
+  String get deletedMessagesGreyedOut => '削除されたメッセージはグレー表示されます';
+
+  @override
+  String get deletedMessagesRemoved => '削除されたメッセージは非表示になります';
+
+  @override
+  String get showLoginNames => 'ログイン名を表示';
+
+  @override
+  String get loginNamesShown => '表示名と異なる場合はログイン名を表示します';
+
+  @override
+  String get loginNamesHidden => 'ログイン名は非表示になります';
+
+  @override
+  String get compactMessages => 'メッセージの短縮';
+
+  @override
+  String get dontCompactMessages => 'メッセージを短縮しない';
+
+  @override
+  String get dontCompactMessagesSubtitle => 'メッセージはそのまま表示されます';
+
+  @override
+  String get compactIndividualMessages => '個々のメッセージを短縮';
+
+  @override
+  String get compactIndividualMessagesSubtitle => 'メッセージ内の繰り返しを短縮します';
+
+  @override
+  String get announcementPinDuration => 'アナウンスのピン留め時間';
+
+  @override
+  String get idleMessageAlertDuration => 'チャット無音アラートの時間';
+
+  @override
+  String get idleMessageAlertDurationSubtitle =>
+      'この時間メッセージがなく、新しいメッセージが届くとアラート音が鳴ります。';
+
+  @override
+  String get realtimeCashSubtitle => 'ETHまたはMATICウォレットを接続';
+
+  @override
+  String get walletAddress => 'ウォレットアドレス';
+
+  @override
+  String get streamlabsSubtitle => 'Streamlabsの寄付を表示';
+
+  @override
+  String get streamElementsSubtitle => 'StreamElementsの寄付を表示';
+
+  @override
+  String get thirdPartyAuthError => 'うまくいきませんでした。もう一度試すか、Discordで質問してください。';
+
+  @override
+  String get companionAuthBrowserTooOld =>
+      'お使いのブラウザは古いため直接ログインできません。スマートフォンでこのQRコードをスキャンして、別のデバイスでログインしてください。';
+
+  @override
+  String get companionAuthScanQrCode =>
+      'スマートフォンでこのQRコードをスキャンして、別のデバイスでログインしてください。';
 }

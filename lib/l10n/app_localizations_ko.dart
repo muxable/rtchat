@@ -687,5 +687,298 @@ class AppLocalizationsKo extends AppLocalizations {
   String get textToSpeechDisabled => '텍스트 음성 변환이 비활성화되었습니다';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => '알림만';
+
+  @override
+  String get pinDuration => '고정 시간';
+
+  @override
+  String durationSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds초',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes분',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enableEvent => '이벤트 사용';
+
+  @override
+  String get showEventInChatHistory => '채팅 기록에 이벤트 표시';
+
+  @override
+  String get enableShoutouts => '샤웃아웃 사용';
+
+  @override
+  String get enableShoutoutsSubtitle => '습격한 채널의 링크를 채팅에 보내기';
+
+  @override
+  String get raidConfigurationTitle => '습격 설정';
+
+  @override
+  String get cheerConfigurationTitle => '치어 설정';
+
+  @override
+  String get followConfigurationTitle => '팔로우 설정';
+
+  @override
+  String get outgoingRaidConfigurationTitle => '보내는 습격 설정';
+
+  @override
+  String get hostConfigurationTitle => '호스트 설정';
+
+  @override
+  String get channelPointConfigurationTitle => '채널 포인트 설정';
+
+  @override
+  String get pollConfigurationTitle => '투표 설정';
+
+  @override
+  String get hypetrainConfigurationTitle => '하이프 트레인 설정';
+
+  @override
+  String get subscriptionConfigurationTitle => '구독 설정';
+
+  @override
+  String get predictionConfigurationTitle => '예측 설정';
+
+  @override
+  String get unfulfilledRewardsPinDuration => '처리되지 않은 보상의 추가 고정 시간';
+
+  @override
+  String get pollPinDuration => '결과 확정 후 고정 시간';
+
+  @override
+  String get hypetrainPinDuration => '하이프 트레인 종료 후 고정 시간';
+
+  @override
+  String get enableGiftedSubscriptions => '선물 구독 개별 표시';
+
+  @override
+  String get enableGiftedSubscriptionsSubtitle => '선물된 모든 구독 표시';
+
+  @override
+  String get settingsBackupTitle => '설정 백업 및 복원';
+
+  @override
+  String get cloudBackup => '클라우드 백업';
+
+  @override
+  String get lastBackupNever => '마지막 백업: 없음';
+
+  @override
+  String get backUp => '백업';
+
+  @override
+  String get restore => '복원';
+
+  @override
+  String get localBackup => '로컬 백업';
+
+  @override
+  String get exportSettings => '내보내기';
+
+  @override
+  String get importSettings => '가져오기';
+
+  @override
+  String get showViewerAndFollowerCount => '시청자 및 팔로워 수 표시';
+
+  @override
+  String get screenOrientation => '화면 방향';
+
+  @override
+  String get appTheme => '앱 테마';
+
+  @override
+  String get systemDefault => '시스템';
+
+  @override
+  String get portrait => '세로';
+
+  @override
+  String get landscape => '가로';
+
+  @override
+  String get lightTheme => '라이트';
+
+  @override
+  String get darkTheme => '다크';
+
+  @override
+  String get openSourceTitle => 'RealtimeChat은 오픈 소스입니다';
+
+  @override
+  String get openSourceSubtitle => 'GitHub에서 만나요!';
+
+  @override
+  String get discordSubtitle => 'Muxable Discord에 참여하세요!';
+
+  @override
+  String get earlyTestersThanks => '버그를 제보해 주신 초기 테스터 여러분께 감사드립니다!';
+
+  @override
+  String get discoModeEnabled => '🕺 디스코 모드 켜짐! :D';
+
+  @override
+  String get discoModeDisabled => '🕺 디스코 모드 꺼짐 D:';
+
+  @override
+  String get cloudTts => '클라우드 TTS';
+
+  @override
+  String get languages => '언어';
+
+  @override
+  String get voices => '음성';
+
+  @override
+  String get perViewerVoice => '시청자별 음성';
+
+  @override
+  String get perViewerVoiceSubtitle => '목소리로 시청자 구별하기';
+
+  @override
+  String get randomVoice => '무작위';
+
+  @override
+  String get playSampleMessage => '샘플 메시지 재생';
+
+  @override
+  String get textToSpeechRate => '음성 속도';
+
+  @override
+  String get textToSpeechPitch => '음성 높낮이';
+
+  @override
+  String get unlockHighQualityVoices => '고품질 음성 잠금 해제';
+
+  @override
+  String get muteBots => '봇 메시지 음성 끄기';
+
+  @override
+  String get muteEmotes => '모든 이모트 음성 끄기';
+
+  @override
+  String get muteViewerNames => '시청자 이름 음성 끄기';
+
+  @override
+  String get subscribersOnly => '구독자 전용';
+
+  @override
+  String get storeNotAvailable => '스토어를 사용할 수 없음';
+
+  @override
+  String get unavailable => '사용할 수 없음';
+
+  @override
+  String get subscribe => '구독';
+
+  @override
+  String get pending => '대기 중';
+
+  @override
+  String get subscribed => '구독함';
+
+  @override
+  String get pleaseSignIn => '로그인하세요';
+
+  @override
+  String get searchLanguages => '언어 검색';
+
+  @override
+  String get closeSearch => '검색 닫기';
+
+  @override
+  String get playSample => '샘플 재생';
+
+  @override
+  String get fontSize => '글꼴 크기';
+
+  @override
+  String get usernameContrastBoost => '사용자 이름 대비 강화';
+
+  @override
+  String get twitchBadgeSettings => 'Twitch 배지 설정';
+
+  @override
+  String get twitchBadgeSettingsSubtitle => '표시할 배지 선택';
+
+  @override
+  String get showDeletedMessages => '삭제된 메시지 표시';
+
+  @override
+  String get deletedMessagesGreyedOut => '삭제된 메시지가 회색으로 표시됩니다';
+
+  @override
+  String get deletedMessagesRemoved => '삭제된 메시지가 제거됩니다';
+
+  @override
+  String get showLoginNames => '로그인 이름 표시';
+
+  @override
+  String get loginNamesShown => '표시 이름과 다르면 로그인 이름이 표시됩니다';
+
+  @override
+  String get loginNamesHidden => '로그인 이름이 숨겨집니다';
+
+  @override
+  String get compactMessages => '메시지 압축';
+
+  @override
+  String get dontCompactMessages => '메시지 압축 안 함';
+
+  @override
+  String get dontCompactMessagesSubtitle => '메시지가 그대로 표시됩니다';
+
+  @override
+  String get compactIndividualMessages => '개별 메시지 압축';
+
+  @override
+  String get compactIndividualMessagesSubtitle => '메시지의 반복되는 텍스트가 줄어듭니다';
+
+  @override
+  String get announcementPinDuration => '공지 고정 시간';
+
+  @override
+  String get idleMessageAlertDuration => '채팅 무응답 알림 시간';
+
+  @override
+  String get idleMessageAlertDurationSubtitle =>
+      '이 시간 동안 메시지가 없다가 새 메시지가 오면 알림음이 재생됩니다.';
+
+  @override
+  String get realtimeCashSubtitle => 'ETH 또는 MATIC 지갑 연결';
+
+  @override
+  String get walletAddress => '지갑 주소';
+
+  @override
+  String get streamlabsSubtitle => 'Streamlabs 후원 보기';
+
+  @override
+  String get streamElementsSubtitle => 'StreamElements 후원 보기';
+
+  @override
+  String get thirdPartyAuthError =>
+      '음, 제대로 되지 않았어요. 다시 시도하거나 Discord에 문의해 주세요.';
+
+  @override
+  String get companionAuthBrowserTooOld =>
+      '브라우저가 너무 오래되어 바로 로그인할 수 없습니다. 휴대폰으로 이 QR 코드를 스캔하여 다른 기기에서 로그인하세요.';
+
+  @override
+  String get companionAuthScanQrCode => '휴대폰으로 이 QR 코드를 스캔하여 다른 기기에서 로그인하세요.';
 }

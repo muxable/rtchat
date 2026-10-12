@@ -699,4 +699,307 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alertsEnabled => 'Alerts only';
+
+  @override
+  String get pinDuration => 'Pin Duration';
+
+  @override
+  String durationSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds seconds',
+      one: '1 second',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes',
+      one: '1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enableEvent => 'Enable event';
+
+  @override
+  String get showEventInChatHistory => 'Show event in chat history';
+
+  @override
+  String get enableShoutouts => 'Enable shoutouts';
+
+  @override
+  String get enableShoutoutsSubtitle =>
+      'Send a link to the raiding channel to chat';
+
+  @override
+  String get raidConfigurationTitle => 'Raid Configuration';
+
+  @override
+  String get cheerConfigurationTitle => 'Cheer Configuration';
+
+  @override
+  String get followConfigurationTitle => 'Follow Configuration';
+
+  @override
+  String get outgoingRaidConfigurationTitle => 'Outgoing Raid Configuration';
+
+  @override
+  String get hostConfigurationTitle => 'Host Configuration';
+
+  @override
+  String get channelPointConfigurationTitle => 'Channel Point Configuration';
+
+  @override
+  String get pollConfigurationTitle => 'Poll Configuration';
+
+  @override
+  String get hypetrainConfigurationTitle => 'Hypetrain Configuration';
+
+  @override
+  String get subscriptionConfigurationTitle => 'Subscription Configuration';
+
+  @override
+  String get predictionConfigurationTitle => 'Prediction Configuration';
+
+  @override
+  String get unfulfilledRewardsPinDuration =>
+      'Additional Pin Duration for Unfulfilled Rewards';
+
+  @override
+  String get pollPinDuration => 'Pin duration after the result is finalized';
+
+  @override
+  String get hypetrainPinDuration => 'Pin duration after hypetrain is over';
+
+  @override
+  String get enableGiftedSubscriptions =>
+      'Enable individual gifted subscriptions';
+
+  @override
+  String get enableGiftedSubscriptionsSubtitle =>
+      'Show every subscription that is gifted';
+
+  @override
+  String get settingsBackupTitle => 'Settings backup and restore';
+
+  @override
+  String get cloudBackup => 'Cloud backup';
+
+  @override
+  String get lastBackupNever => 'Last backup: never';
+
+  @override
+  String get backUp => 'Back up';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get localBackup => 'Local backup';
+
+  @override
+  String get exportSettings => 'Export';
+
+  @override
+  String get importSettings => 'Import';
+
+  @override
+  String get showViewerAndFollowerCount => 'Show viewer and follower count';
+
+  @override
+  String get screenOrientation => 'Screen orientation';
+
+  @override
+  String get appTheme => 'App theme';
+
+  @override
+  String get systemDefault => 'System';
+
+  @override
+  String get portrait => 'Portrait';
+
+  @override
+  String get landscape => 'Landscape';
+
+  @override
+  String get lightTheme => 'Light';
+
+  @override
+  String get darkTheme => 'Dark';
+
+  @override
+  String get openSourceTitle => 'RealtimeChat is open source';
+
+  @override
+  String get openSourceSubtitle => 'Find us on GitHub!';
+
+  @override
+  String get discordSubtitle => 'Join the Muxable Discord!';
+
+  @override
+  String get earlyTestersThanks =>
+      'Thanks to all the early testers who sent bug reports!';
+
+  @override
+  String get discoModeEnabled => '🕺 Disco mode enabled! :D';
+
+  @override
+  String get discoModeDisabled => '🕺 Disco mode disabled D:';
+
+  @override
+  String get cloudTts => 'Cloud TTS';
+
+  @override
+  String get languages => 'Languages';
+
+  @override
+  String get voices => 'Voices';
+
+  @override
+  String get perViewerVoice => 'Per-viewer voice';
+
+  @override
+  String get perViewerVoiceSubtitle => 'Identify your viewers by voice';
+
+  @override
+  String get randomVoice => 'Random';
+
+  @override
+  String get playSampleMessage => 'Play sample message';
+
+  @override
+  String get textToSpeechRate => 'Text to Speech Rate';
+
+  @override
+  String get textToSpeechPitch => 'Text to Speech Pitch';
+
+  @override
+  String get unlockHighQualityVoices => 'Unlock high-quality voices';
+
+  @override
+  String get muteBots => 'Mute text to speech for bots';
+
+  @override
+  String get muteEmotes => 'Mute all emotes in text to speech';
+
+  @override
+  String get muteViewerNames => 'Mute viewer names in text to speech';
+
+  @override
+  String get subscribersOnly => 'Subscribers only';
+
+  @override
+  String get storeNotAvailable => 'Store not available';
+
+  @override
+  String get unavailable => 'Unavailable';
+
+  @override
+  String get subscribe => 'Subscribe';
+
+  @override
+  String get pending => 'Pending';
+
+  @override
+  String get subscribed => 'Subscribed';
+
+  @override
+  String get pleaseSignIn => 'Please Sign In';
+
+  @override
+  String get searchLanguages => 'Search languages';
+
+  @override
+  String get closeSearch => 'Close search';
+
+  @override
+  String get playSample => 'Play sample';
+
+  @override
+  String get fontSize => 'Font size';
+
+  @override
+  String get usernameContrastBoost => 'Username contrast boost';
+
+  @override
+  String get twitchBadgeSettings => 'Twitch badge settings';
+
+  @override
+  String get twitchBadgeSettingsSubtitle => 'Control which badges are visible';
+
+  @override
+  String get showDeletedMessages => 'Show deleted messages';
+
+  @override
+  String get deletedMessagesGreyedOut => 'Deleted messages will be greyed out';
+
+  @override
+  String get deletedMessagesRemoved => 'Deleted messages will be removed';
+
+  @override
+  String get showLoginNames => 'Show login names';
+
+  @override
+  String get loginNamesShown =>
+      'Login names will be shown if they are different from the display name';
+
+  @override
+  String get loginNamesHidden => 'Login names will be hidden';
+
+  @override
+  String get compactMessages => 'Compact messages';
+
+  @override
+  String get dontCompactMessages => 'Don\'t compact messages';
+
+  @override
+  String get dontCompactMessagesSubtitle => 'Messages are shown unchanged';
+
+  @override
+  String get compactIndividualMessages => 'Compact individual messages';
+
+  @override
+  String get compactIndividualMessagesSubtitle =>
+      'Repetitive text in messages is shortened';
+
+  @override
+  String get announcementPinDuration => 'Announcement pin duration';
+
+  @override
+  String get idleMessageAlertDuration => 'Idle message alert duration';
+
+  @override
+  String get idleMessageAlertDurationSubtitle =>
+      'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
+
+  @override
+  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+
+  @override
+  String get walletAddress => 'Wallet address';
+
+  @override
+  String get streamlabsSubtitle => 'See your Streamlabs donations';
+
+  @override
+  String get streamElementsSubtitle => 'See your StreamElements donations';
+
+  @override
+  String get thirdPartyAuthError =>
+      'Hmm, that didn\'t work. Try again, or ask on Discord?';
+
+  @override
+  String get companionAuthBrowserTooOld =>
+      'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.';
+
+  @override
+  String get companionAuthScanQrCode =>
+      'Scan this QR code with your phone to sign in on another device.';
 }

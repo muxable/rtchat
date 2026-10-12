@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/message.dart';
 import 'package:rtchat/components/style_model_theme.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
@@ -67,7 +68,7 @@ class ChatHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Chat history")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.chatHistory)),
       body: Consumer2<StyleModel, MessagesModel>(
           builder: (context, styleModel, messagesModel, child) {
         return ListView(
@@ -91,7 +92,7 @@ class ChatHistoryScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Font size",
+                    AppLocalizations.of(context)!.fontSize,
                     style: DefaultTextStyle.of(context).style.copyWith(
                           color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
@@ -107,7 +108,7 @@ class ChatHistoryScreen extends StatelessWidget {
                       styleModel.fontSize = value;
                     },
                   ),
-                  Text("Username contrast boost",
+                  Text(AppLocalizations.of(context)!.usernameContrastBoost,
                       style: DefaultTextStyle.of(context).style.copyWith(
                             color: Theme.of(context).colorScheme.secondary,
                             fontWeight: FontWeight.bold,
@@ -125,29 +126,29 @@ class ChatHistoryScreen extends StatelessWidget {
               ),
             ),
             ListTile(
-              title: const Text('Twitch badge settings'),
-              subtitle: const Text("Control which badges are visible"),
+              title: Text(AppLocalizations.of(context)!.twitchBadgeSettings),
+              subtitle: Text(
+                  AppLocalizations.of(context)!.twitchBadgeSettingsSubtitle),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
                 Navigator.pushNamed(context, "/settings/badges");
               },
             ),
             SwitchListTile.adaptive(
-              title: const Text('Show deleted messages'),
+              title: Text(AppLocalizations.of(context)!.showDeletedMessages),
               subtitle: styleModel.isDeletedMessagesVisible
-                  ? const Text("Deleted messages will be greyed out")
-                  : const Text("Deleted messages will be removed"),
+                  ? Text(AppLocalizations.of(context)!.deletedMessagesGreyedOut)
+                  : Text(AppLocalizations.of(context)!.deletedMessagesRemoved),
               value: styleModel.isDeletedMessagesVisible,
               onChanged: (value) {
                 styleModel.isDeletedMessagesVisible = value;
               },
             ),
             SwitchListTile.adaptive(
-              title: const Text('Show login names'),
+              title: Text(AppLocalizations.of(context)!.showLoginNames),
               subtitle: styleModel.isLoginShown
-                  ? const Text(
-                      "Login names will be shown if they are different from the display name")
-                  : const Text("Login names will be hidden"),
+                  ? Text(AppLocalizations.of(context)!.loginNamesShown)
+                  : Text(AppLocalizations.of(context)!.loginNamesHidden),
               value: styleModel.isLoginShown,
               onChanged: (value) {
                 styleModel.isLoginShown = value;
@@ -155,7 +156,7 @@ class ChatHistoryScreen extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text("Compact messages",
+              child: Text(AppLocalizations.of(context)!.compactMessages,
                   style: DefaultTextStyle.of(context).style.copyWith(
                         color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
@@ -168,15 +169,19 @@ class ChatHistoryScreen extends StatelessWidget {
                   styleModel.compactMessages = value;
                 }
               },
-              child: const Column(children: [
+              child: Column(children: [
                 RadioListTile(
-                  title: Text('Don\'t compact messages'),
-                  subtitle: Text("Messages are shown unchanged"),
+                  title:
+                      Text(AppLocalizations.of(context)!.dontCompactMessages),
+                  subtitle: Text(AppLocalizations.of(context)!
+                      .dontCompactMessagesSubtitle),
                   value: CompactMessages.none,
                 ),
                 RadioListTile(
-                  title: Text('Compact individual messages'),
-                  subtitle: Text("Repetitive text in messages is shortened"),
+                  title: Text(
+                      AppLocalizations.of(context)!.compactIndividualMessages),
+                  subtitle: Text(AppLocalizations.of(context)!
+                      .compactIndividualMessagesSubtitle),
                   value: CompactMessages.withinMessage,
                 ),
               ]),
@@ -186,7 +191,7 @@ class ChatHistoryScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Announcement pin duration",
+                  Text(AppLocalizations.of(context)!.announcementPinDuration,
                       style: DefaultTextStyle.of(context).style.copyWith(
                             color: Theme.of(context).colorScheme.secondary,
                             fontWeight: FontWeight.bold,
@@ -197,8 +202,8 @@ class ChatHistoryScreen extends StatelessWidget {
                     min: 0,
                     max: 30,
                     divisions: 15,
-                    label:
-                        "${messagesModel.announcementPinDuration.inSeconds.toDouble()} seconds",
+                    label: AppLocalizations.of(context)!.durationSeconds(
+                        messagesModel.announcementPinDuration.inSeconds),
                     onChanged: (value) {
                       messagesModel.announcementPinDuration =
                           Duration(seconds: value.toInt());
@@ -212,13 +217,14 @@ class ChatHistoryScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Idle message alert duration",
+                  Text(AppLocalizations.of(context)!.idleMessageAlertDuration,
                       style: DefaultTextStyle.of(context).style.copyWith(
                             color: Theme.of(context).colorScheme.secondary,
                             fontWeight: FontWeight.bold,
                           )),
                   Text(
-                      "If there aren't any messages for this amount of time and a new one comes in, an alert sound will play.",
+                      AppLocalizations.of(context)!
+                          .idleMessageAlertDurationSubtitle,
                       style: TextStyle(
                         color: Theme.of(context).textTheme.bodySmall?.color,
                       )),
@@ -233,12 +239,27 @@ class ChatHistoryScreen extends StatelessWidget {
                 }
               },
               child: Column(children: [
-                for (final (label, duration) in const [
-                  ('Disabled', Duration(days: 10000)),
-                  ('30 seconds', Duration(seconds: 30)),
-                  ('1 minute', Duration(minutes: 1)),
-                  ('5 minutes', Duration(minutes: 5)),
-                  ('10 minutes', Duration(minutes: 10)),
+                for (final (label, duration) in [
+                  (
+                    AppLocalizations.of(context)!.disabled,
+                    const Duration(days: 10000)
+                  ),
+                  (
+                    AppLocalizations.of(context)!.durationSeconds(30),
+                    const Duration(seconds: 30)
+                  ),
+                  (
+                    AppLocalizations.of(context)!.durationOneMinute,
+                    const Duration(minutes: 1)
+                  ),
+                  (
+                    AppLocalizations.of(context)!.durationMinutes(5),
+                    const Duration(minutes: 5)
+                  ),
+                  (
+                    AppLocalizations.of(context)!.durationTenMinutes,
+                    const Duration(minutes: 10)
+                  ),
                 ])
                   RadioListTile(title: Text(label), value: duration),
               ]),

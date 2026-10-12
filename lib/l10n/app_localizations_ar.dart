@@ -696,5 +696,315 @@ class AppLocalizationsAr extends AppLocalizations {
   String get textToSpeechDisabled => '  تم تعطيل تحويل النص إلى كلام';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'التنبيهات فقط';
+
+  @override
+  String get pinDuration => 'مدة التثبيت';
+
+  @override
+  String durationSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds ثانية',
+      many: '$seconds ثانية',
+      few: '$seconds ثوانٍ',
+      two: 'ثانيتان',
+      one: 'ثانية واحدة',
+      zero: '0 ثانية',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes دقيقة',
+      many: '$minutes دقيقة',
+      few: '$minutes دقائق',
+      two: 'دقيقتان',
+      one: 'دقيقة واحدة',
+      zero: '0 دقيقة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enableEvent => 'تفعيل الحدث';
+
+  @override
+  String get showEventInChatHistory => 'عرض الحدث في سجل الدردشة';
+
+  @override
+  String get enableShoutouts => 'تفعيل الإشادات';
+
+  @override
+  String get enableShoutoutsSubtitle =>
+      'إرسال رابط القناة المُغيرة إلى الدردشة';
+
+  @override
+  String get raidConfigurationTitle => 'إعدادات الغارات';
+
+  @override
+  String get cheerConfigurationTitle => 'إعدادات التشجيع';
+
+  @override
+  String get followConfigurationTitle => 'إعدادات المتابعة';
+
+  @override
+  String get outgoingRaidConfigurationTitle => 'إعدادات الغارات الصادرة';
+
+  @override
+  String get hostConfigurationTitle => 'إعدادات الاستضافة';
+
+  @override
+  String get channelPointConfigurationTitle => 'إعدادات نقاط القناة';
+
+  @override
+  String get pollConfigurationTitle => 'إعدادات الاستطلاعات';
+
+  @override
+  String get hypetrainConfigurationTitle => 'إعدادات قطار الحماس';
+
+  @override
+  String get subscriptionConfigurationTitle => 'إعدادات الاشتراكات';
+
+  @override
+  String get predictionConfigurationTitle => 'إعدادات التوقعات';
+
+  @override
+  String get unfulfilledRewardsPinDuration =>
+      'مدة تثبيت إضافية للمكافآت غير المنفذة';
+
+  @override
+  String get pollPinDuration => 'مدة التثبيت بعد إعلان النتيجة النهائية';
+
+  @override
+  String get hypetrainPinDuration => 'مدة التثبيت بعد انتهاء قطار الحماس';
+
+  @override
+  String get enableGiftedSubscriptions => 'تفعيل الاشتراكات المُهداة الفردية';
+
+  @override
+  String get enableGiftedSubscriptionsSubtitle => 'عرض كل اشتراك مُهدى';
+
+  @override
+  String get settingsBackupTitle => 'نسخ الإعدادات احتياطيًا واستعادتها';
+
+  @override
+  String get cloudBackup => 'النسخ الاحتياطي السحابي';
+
+  @override
+  String get lastBackupNever => 'آخر نسخة احتياطية: أبدًا';
+
+  @override
+  String get backUp => 'نسخ احتياطي';
+
+  @override
+  String get restore => 'استعادة';
+
+  @override
+  String get localBackup => 'النسخ الاحتياطي المحلي';
+
+  @override
+  String get exportSettings => 'تصدير';
+
+  @override
+  String get importSettings => 'استيراد';
+
+  @override
+  String get showViewerAndFollowerCount => 'عرض عدد المشاهدين والمتابعين';
+
+  @override
+  String get screenOrientation => 'اتجاه الشاشة';
+
+  @override
+  String get appTheme => 'مظهر التطبيق';
+
+  @override
+  String get systemDefault => 'النظام';
+
+  @override
+  String get portrait => 'عمودي';
+
+  @override
+  String get landscape => 'أفقي';
+
+  @override
+  String get lightTheme => 'فاتح';
+
+  @override
+  String get darkTheme => 'داكن';
+
+  @override
+  String get openSourceTitle => 'RealtimeChat مفتوح المصدر';
+
+  @override
+  String get openSourceSubtitle => 'تجدنا على GitHub!';
+
+  @override
+  String get discordSubtitle => 'انضم إلى Discord الخاص بـ Muxable!';
+
+  @override
+  String get earlyTestersThanks =>
+      'شكرًا لجميع المختبرين الأوائل الذين أرسلوا تقارير الأخطاء!';
+
+  @override
+  String get discoModeEnabled => '🕺 تم تفعيل وضع الديسكو! :D';
+
+  @override
+  String get discoModeDisabled => '🕺 تم إيقاف وضع الديسكو D:';
+
+  @override
+  String get cloudTts => 'تحويل النص إلى كلام السحابي';
+
+  @override
+  String get languages => 'اللغات';
+
+  @override
+  String get voices => 'الأصوات';
+
+  @override
+  String get perViewerVoice => 'صوت لكل مشاهد';
+
+  @override
+  String get perViewerVoiceSubtitle => 'تعرّف على مشاهديك من أصواتهم';
+
+  @override
+  String get randomVoice => 'عشوائي';
+
+  @override
+  String get playSampleMessage => 'تشغيل رسالة تجريبية';
+
+  @override
+  String get textToSpeechRate => 'سرعة تحويل النص إلى كلام';
+
+  @override
+  String get textToSpeechPitch => 'طبقة صوت تحويل النص إلى كلام';
+
+  @override
+  String get unlockHighQualityVoices => 'فتح أصوات عالية الجودة';
+
+  @override
+  String get muteBots => 'كتم تحويل النص إلى كلام للبوتات';
+
+  @override
+  String get muteEmotes => 'كتم جميع الرموز التعبيرية في تحويل النص إلى كلام';
+
+  @override
+  String get muteViewerNames => 'كتم أسماء المشاهدين في تحويل النص إلى كلام';
+
+  @override
+  String get subscribersOnly => 'المشتركون فقط';
+
+  @override
+  String get storeNotAvailable => 'المتجر غير متاح';
+
+  @override
+  String get unavailable => 'غير متاح';
+
+  @override
+  String get subscribe => 'اشتراك';
+
+  @override
+  String get pending => 'قيد الانتظار';
+
+  @override
+  String get subscribed => 'مشترك';
+
+  @override
+  String get pleaseSignIn => 'يرجى تسجيل الدخول';
+
+  @override
+  String get searchLanguages => 'البحث في اللغات';
+
+  @override
+  String get closeSearch => 'إغلاق البحث';
+
+  @override
+  String get playSample => 'تشغيل عينة';
+
+  @override
+  String get fontSize => 'حجم الخط';
+
+  @override
+  String get usernameContrastBoost => 'تعزيز تباين أسماء المستخدمين';
+
+  @override
+  String get twitchBadgeSettings => 'إعدادات شارات Twitch';
+
+  @override
+  String get twitchBadgeSettingsSubtitle => 'تحكم في الشارات الظاهرة';
+
+  @override
+  String get showDeletedMessages => 'عرض الرسائل المحذوفة';
+
+  @override
+  String get deletedMessagesGreyedOut =>
+      'ستظهر الرسائل المحذوفة باللون الرمادي';
+
+  @override
+  String get deletedMessagesRemoved => 'ستُزال الرسائل المحذوفة';
+
+  @override
+  String get showLoginNames => 'عرض أسماء تسجيل الدخول';
+
+  @override
+  String get loginNamesShown =>
+      'ستظهر أسماء تسجيل الدخول إذا كانت مختلفة عن الاسم المعروض';
+
+  @override
+  String get loginNamesHidden => 'ستُخفى أسماء تسجيل الدخول';
+
+  @override
+  String get compactMessages => 'ضغط الرسائل';
+
+  @override
+  String get dontCompactMessages => 'عدم ضغط الرسائل';
+
+  @override
+  String get dontCompactMessagesSubtitle => 'تظهر الرسائل دون تغيير';
+
+  @override
+  String get compactIndividualMessages => 'ضغط الرسائل الفردية';
+
+  @override
+  String get compactIndividualMessagesSubtitle =>
+      'يتم اختصار النص المكرر في الرسائل';
+
+  @override
+  String get announcementPinDuration => 'مدة تثبيت الإعلانات';
+
+  @override
+  String get idleMessageAlertDuration => 'مدة تنبيه خمول الدردشة';
+
+  @override
+  String get idleMessageAlertDurationSubtitle =>
+      'إذا لم تصل أي رسائل خلال هذه المدة ثم وصلت رسالة جديدة، فسيتم تشغيل صوت تنبيه.';
+
+  @override
+  String get realtimeCashSubtitle => 'اربط محفظة ETH أو MATIC';
+
+  @override
+  String get walletAddress => 'عنوان المحفظة';
+
+  @override
+  String get streamlabsSubtitle => 'اطلع على تبرعاتك في Streamlabs';
+
+  @override
+  String get streamElementsSubtitle => 'اطلع على تبرعاتك في StreamElements';
+
+  @override
+  String get thirdPartyAuthError =>
+      'لم ينجح ذلك. حاول مرة أخرى أو اسأل على Discord؟';
+
+  @override
+  String get companionAuthBrowserTooOld =>
+      'متصفحك قديم جدًا لتسجيل الدخول مباشرة. امسح رمز QR هذا بهاتفك لتسجيل الدخول على جهاز آخر.';
+
+  @override
+  String get companionAuthScanQrCode =>
+      'امسح رمز QR هذا بهاتفك لتسجيل الدخول على جهاز آخر.';
 }

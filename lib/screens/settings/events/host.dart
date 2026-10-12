@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class HostEventScreen extends StatelessWidget {
@@ -9,7 +10,7 @@ class HostEventScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Host Configuration"),
+          title: Text(AppLocalizations.of(context)!.hostConfigurationTitle),
         ),
         body: Consumer<EventSubConfigurationModel>(
             builder: (context, model, child) {
@@ -20,7 +21,7 @@ class HostEventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Pin Duration",
+                    Text(AppLocalizations.of(context)!.pinDuration,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
@@ -31,16 +32,17 @@ class HostEventScreen extends StatelessWidget {
                       min: 0,
                       max: 30,
                       divisions: 15,
-                      label:
-                          "${model.hostEventConfig.eventDuration.inSeconds} seconds",
+                      label: AppLocalizations.of(context)!.durationSeconds(
+                          model.hostEventConfig.eventDuration.inSeconds),
                       onChanged: (value) {
                         model.setHostEventDuration(
                             Duration(seconds: value.toInt()));
                       },
                     ),
                     SwitchListTile.adaptive(
-                      title: const Text('Enable event'),
-                      subtitle: const Text('Show event in chat history'),
+                      title: Text(AppLocalizations.of(context)!.enableEvent),
+                      subtitle: Text(
+                          AppLocalizations.of(context)!.showEventInChatHistory),
                       value: model.hostEventConfig.showEvent,
                       onChanged: (value) {
                         model.setHostEventShowable(value);

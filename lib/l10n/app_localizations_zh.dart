@@ -686,7 +686,299 @@ class AppLocalizationsZh extends AppLocalizations {
   String get textToSpeechDisabled => '文字轉語音已停用';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => '仅提醒';
+
+  @override
+  String get pinDuration => '置顶时长';
+
+  @override
+  String durationSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds 秒',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes 分钟',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enableEvent => '启用事件';
+
+  @override
+  String get showEventInChatHistory => '在聊天记录中显示事件';
+
+  @override
+  String get enableShoutouts => '启用推荐';
+
+  @override
+  String get enableShoutoutsSubtitle => '在聊天中发送突袭频道的链接';
+
+  @override
+  String get raidConfigurationTitle => '突袭设置';
+
+  @override
+  String get cheerConfigurationTitle => 'Cheer 设置';
+
+  @override
+  String get followConfigurationTitle => '关注设置';
+
+  @override
+  String get outgoingRaidConfigurationTitle => '发起突袭设置';
+
+  @override
+  String get hostConfigurationTitle => '托管设置';
+
+  @override
+  String get channelPointConfigurationTitle => '频道点数设置';
+
+  @override
+  String get pollConfigurationTitle => '投票设置';
+
+  @override
+  String get hypetrainConfigurationTitle => '热力列车设置';
+
+  @override
+  String get subscriptionConfigurationTitle => '订阅设置';
+
+  @override
+  String get predictionConfigurationTitle => '预测设置';
+
+  @override
+  String get unfulfilledRewardsPinDuration => '未兑现奖励的额外置顶时长';
+
+  @override
+  String get pollPinDuration => '结果确定后的置顶时长';
+
+  @override
+  String get hypetrainPinDuration => '热力列车结束后的置顶时长';
+
+  @override
+  String get enableGiftedSubscriptions => '启用单独显示赠送订阅';
+
+  @override
+  String get enableGiftedSubscriptionsSubtitle => '显示每一个赠送的订阅';
+
+  @override
+  String get settingsBackupTitle => '设置备份与恢复';
+
+  @override
+  String get cloudBackup => '云端备份';
+
+  @override
+  String get lastBackupNever => '上次备份：从未';
+
+  @override
+  String get backUp => '备份';
+
+  @override
+  String get restore => '恢复';
+
+  @override
+  String get localBackup => '本地备份';
+
+  @override
+  String get exportSettings => '导出';
+
+  @override
+  String get importSettings => '导入';
+
+  @override
+  String get showViewerAndFollowerCount => '显示观众和关注者数量';
+
+  @override
+  String get screenOrientation => '屏幕方向';
+
+  @override
+  String get appTheme => '应用主题';
+
+  @override
+  String get systemDefault => '跟随系统';
+
+  @override
+  String get portrait => '竖屏';
+
+  @override
+  String get landscape => '横屏';
+
+  @override
+  String get lightTheme => '浅色';
+
+  @override
+  String get darkTheme => '深色';
+
+  @override
+  String get openSourceTitle => 'RealtimeChat 是开源的';
+
+  @override
+  String get openSourceSubtitle => '在 GitHub 上找到我们！';
+
+  @override
+  String get discordSubtitle => '加入 Muxable 的 Discord！';
+
+  @override
+  String get earlyTestersThanks => '感谢所有提交错误报告的早期测试者！';
+
+  @override
+  String get discoModeEnabled => '🕺 迪斯科模式已开启！:D';
+
+  @override
+  String get discoModeDisabled => '🕺 迪斯科模式已关闭 D:';
+
+  @override
+  String get cloudTts => '云端 TTS';
+
+  @override
+  String get languages => '语言';
+
+  @override
+  String get voices => '语音';
+
+  @override
+  String get perViewerVoice => '每位观众的专属语音';
+
+  @override
+  String get perViewerVoiceSubtitle => '通过声音识别你的观众';
+
+  @override
+  String get randomVoice => '随机';
+
+  @override
+  String get playSampleMessage => '播放示例消息';
+
+  @override
+  String get textToSpeechRate => '语音速度';
+
+  @override
+  String get textToSpeechPitch => '语音音调';
+
+  @override
+  String get unlockHighQualityVoices => '解锁高品质语音';
+
+  @override
+  String get muteBots => '静音机器人的语音朗读';
+
+  @override
+  String get muteEmotes => '静音所有表情的语音朗读';
+
+  @override
+  String get muteViewerNames => '静音观众名字的语音朗读';
+
+  @override
+  String get subscribersOnly => '仅限订阅者';
+
+  @override
+  String get storeNotAvailable => '商店不可用';
+
+  @override
+  String get unavailable => '不可用';
+
+  @override
+  String get subscribe => '订阅';
+
+  @override
+  String get pending => '处理中';
+
+  @override
+  String get subscribed => '已订阅';
+
+  @override
+  String get pleaseSignIn => '请登录';
+
+  @override
+  String get searchLanguages => '搜索语言';
+
+  @override
+  String get closeSearch => '关闭搜索';
+
+  @override
+  String get playSample => '播放示例';
+
+  @override
+  String get fontSize => '字体大小';
+
+  @override
+  String get usernameContrastBoost => '用户名对比度增强';
+
+  @override
+  String get twitchBadgeSettings => 'Twitch 徽章设置';
+
+  @override
+  String get twitchBadgeSettingsSubtitle => '控制显示哪些徽章';
+
+  @override
+  String get showDeletedMessages => '显示已删除的消息';
+
+  @override
+  String get deletedMessagesGreyedOut => '已删除的消息将显示为灰色';
+
+  @override
+  String get deletedMessagesRemoved => '已删除的消息将被移除';
+
+  @override
+  String get showLoginNames => '显示登录名';
+
+  @override
+  String get loginNamesShown => '当登录名与显示名称不同时显示登录名';
+
+  @override
+  String get loginNamesHidden => '登录名将被隐藏';
+
+  @override
+  String get compactMessages => '精简消息';
+
+  @override
+  String get dontCompactMessages => '不精简消息';
+
+  @override
+  String get dontCompactMessagesSubtitle => '消息按原样显示';
+
+  @override
+  String get compactIndividualMessages => '精简单条消息';
+
+  @override
+  String get compactIndividualMessagesSubtitle => '消息中的重复文字将被缩短';
+
+  @override
+  String get announcementPinDuration => '公告置顶时长';
+
+  @override
+  String get idleMessageAlertDuration => '聊天空闲提醒时长';
+
+  @override
+  String get idleMessageAlertDurationSubtitle =>
+      '如果在这段时间内没有消息，之后又收到新消息，将播放提示音。';
+
+  @override
+  String get realtimeCashSubtitle => '连接 ETH 或 MATIC 钱包';
+
+  @override
+  String get walletAddress => '钱包地址';
+
+  @override
+  String get streamlabsSubtitle => '查看你的 Streamlabs 捐赠';
+
+  @override
+  String get streamElementsSubtitle => '查看你的 StreamElements 捐赠';
+
+  @override
+  String get thirdPartyAuthError => '嗯，没有成功。再试一次，或者在 Discord 上提问？';
+
+  @override
+  String get companionAuthBrowserTooOld =>
+      '你的浏览器版本过旧，无法直接登录。请用手机扫描此二维码，在其他设备上登录。';
+
+  @override
+  String get companionAuthScanQrCode => '请用手机扫描此二维码，在其他设备上登录。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1369,4 +1661,299 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get textToSpeechDisabled => '已禁用文本转语音';
+
+  @override
+  String get alertsEnabled => '僅提醒';
+
+  @override
+  String get pinDuration => '置頂時長';
+
+  @override
+  String durationSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds 秒',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes 分鐘',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enableEvent => '啟用事件';
+
+  @override
+  String get showEventInChatHistory => '在聊天記錄中顯示事件';
+
+  @override
+  String get enableShoutouts => '啟用推薦';
+
+  @override
+  String get enableShoutoutsSubtitle => '在聊天中傳送突襲頻道的連結';
+
+  @override
+  String get raidConfigurationTitle => '突襲設定';
+
+  @override
+  String get cheerConfigurationTitle => 'Cheer 設定';
+
+  @override
+  String get followConfigurationTitle => '追隨設定';
+
+  @override
+  String get outgoingRaidConfigurationTitle => '發起突襲設定';
+
+  @override
+  String get hostConfigurationTitle => '主持設定';
+
+  @override
+  String get channelPointConfigurationTitle => '頻道點數設定';
+
+  @override
+  String get pollConfigurationTitle => '投票設定';
+
+  @override
+  String get hypetrainConfigurationTitle => '熱力列車設定';
+
+  @override
+  String get subscriptionConfigurationTitle => '訂閱設定';
+
+  @override
+  String get predictionConfigurationTitle => '預測設定';
+
+  @override
+  String get unfulfilledRewardsPinDuration => '未兌現獎勵的額外置頂時長';
+
+  @override
+  String get pollPinDuration => '結果確定後的置頂時長';
+
+  @override
+  String get hypetrainPinDuration => '熱力列車結束後的置頂時長';
+
+  @override
+  String get enableGiftedSubscriptions => '啟用個別顯示贈送訂閱';
+
+  @override
+  String get enableGiftedSubscriptionsSubtitle => '顯示每一個贈送的訂閱';
+
+  @override
+  String get settingsBackupTitle => '設定備份與還原';
+
+  @override
+  String get cloudBackup => '雲端備份';
+
+  @override
+  String get lastBackupNever => '上次備份：從未';
+
+  @override
+  String get backUp => '備份';
+
+  @override
+  String get restore => '還原';
+
+  @override
+  String get localBackup => '本機備份';
+
+  @override
+  String get exportSettings => '匯出';
+
+  @override
+  String get importSettings => '匯入';
+
+  @override
+  String get showViewerAndFollowerCount => '顯示觀眾與追隨者人數';
+
+  @override
+  String get screenOrientation => '螢幕方向';
+
+  @override
+  String get appTheme => '應用程式主題';
+
+  @override
+  String get systemDefault => '跟隨系統';
+
+  @override
+  String get portrait => '直向';
+
+  @override
+  String get landscape => '橫向';
+
+  @override
+  String get lightTheme => '淺色';
+
+  @override
+  String get darkTheme => '深色';
+
+  @override
+  String get openSourceTitle => 'RealtimeChat 是開源的';
+
+  @override
+  String get openSourceSubtitle => '在 GitHub 上找到我們！';
+
+  @override
+  String get discordSubtitle => '加入 Muxable 的 Discord！';
+
+  @override
+  String get earlyTestersThanks => '感謝所有回報錯誤的早期測試者！';
+
+  @override
+  String get discoModeEnabled => '🕺 迪斯可模式已開啟！:D';
+
+  @override
+  String get discoModeDisabled => '🕺 迪斯可模式已關閉 D:';
+
+  @override
+  String get cloudTts => '雲端 TTS';
+
+  @override
+  String get languages => '語言';
+
+  @override
+  String get voices => '語音';
+
+  @override
+  String get perViewerVoice => '每位觀眾的專屬語音';
+
+  @override
+  String get perViewerVoiceSubtitle => '用聲音辨識你的觀眾';
+
+  @override
+  String get randomVoice => '隨機';
+
+  @override
+  String get playSampleMessage => '播放範例訊息';
+
+  @override
+  String get textToSpeechRate => '語音速度';
+
+  @override
+  String get textToSpeechPitch => '語音音調';
+
+  @override
+  String get unlockHighQualityVoices => '解鎖高品質語音';
+
+  @override
+  String get muteBots => '靜音機器人的語音朗讀';
+
+  @override
+  String get muteEmotes => '靜音所有表情符號的語音朗讀';
+
+  @override
+  String get muteViewerNames => '靜音觀眾名稱的語音朗讀';
+
+  @override
+  String get subscribersOnly => '僅限訂閱者';
+
+  @override
+  String get storeNotAvailable => '商店無法使用';
+
+  @override
+  String get unavailable => '無法使用';
+
+  @override
+  String get subscribe => '訂閱';
+
+  @override
+  String get pending => '處理中';
+
+  @override
+  String get subscribed => '已訂閱';
+
+  @override
+  String get pleaseSignIn => '請登入';
+
+  @override
+  String get searchLanguages => '搜尋語言';
+
+  @override
+  String get closeSearch => '關閉搜尋';
+
+  @override
+  String get playSample => '播放範例';
+
+  @override
+  String get fontSize => '字型大小';
+
+  @override
+  String get usernameContrastBoost => '使用者名稱對比度增強';
+
+  @override
+  String get twitchBadgeSettings => 'Twitch 徽章設定';
+
+  @override
+  String get twitchBadgeSettingsSubtitle => '控制要顯示哪些徽章';
+
+  @override
+  String get showDeletedMessages => '顯示已刪除的訊息';
+
+  @override
+  String get deletedMessagesGreyedOut => '已刪除的訊息將顯示為灰色';
+
+  @override
+  String get deletedMessagesRemoved => '已刪除的訊息將被移除';
+
+  @override
+  String get showLoginNames => '顯示登入名稱';
+
+  @override
+  String get loginNamesShown => '當登入名稱與顯示名稱不同時顯示登入名稱';
+
+  @override
+  String get loginNamesHidden => '登入名稱將被隱藏';
+
+  @override
+  String get compactMessages => '精簡訊息';
+
+  @override
+  String get dontCompactMessages => '不精簡訊息';
+
+  @override
+  String get dontCompactMessagesSubtitle => '訊息按原樣顯示';
+
+  @override
+  String get compactIndividualMessages => '精簡單則訊息';
+
+  @override
+  String get compactIndividualMessagesSubtitle => '訊息中的重複文字將被縮短';
+
+  @override
+  String get announcementPinDuration => '公告置頂時長';
+
+  @override
+  String get idleMessageAlertDuration => '聊天閒置提醒時長';
+
+  @override
+  String get idleMessageAlertDurationSubtitle =>
+      '如果在這段時間內沒有訊息，之後又收到新訊息，將播放提示音。';
+
+  @override
+  String get realtimeCashSubtitle => '連結 ETH 或 MATIC 錢包';
+
+  @override
+  String get walletAddress => '錢包地址';
+
+  @override
+  String get streamlabsSubtitle => '查看你的 Streamlabs 斗內';
+
+  @override
+  String get streamElementsSubtitle => '查看你的 StreamElements 斗內';
+
+  @override
+  String get thirdPartyAuthError => '嗯，沒有成功。再試一次，或在 Discord 上提問？';
+
+  @override
+  String get companionAuthBrowserTooOld =>
+      '你的瀏覽器版本過舊，無法直接登入。請用手機掃描此 QR 碼，在其他裝置上登入。';
+
+  @override
+  String get companionAuthScanQrCode => '請用手機掃描此 QR 碼，在其他裝置上登入。';
 }

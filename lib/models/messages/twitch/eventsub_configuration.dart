@@ -245,7 +245,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setChannelPointRedemptionEventUnfulfilledAdditionalDuration(Duration value) {
+  void setChannelPointRedemptionEventUnfulfilledAdditionalDuration(
+      Duration value) {
     channelPointRedemptionEventConfig.unfulfilledAdditionalDuration = value;
     notifyListeners();
   }

@@ -699,5 +699,308 @@ class AppLocalizationsBn extends AppLocalizations {
   String get textToSpeechDisabled => 'টেক্সট টু স্পিচ অক্ষম';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'শুধু সতর্কতা';
+
+  @override
+  String get pinDuration => 'পিন করার সময়কাল';
+
+  @override
+  String durationSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds সেকেন্ড',
+      one: '১ সেকেন্ড',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes মিনিট',
+      one: '১ মিনিট',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enableEvent => 'ইভেন্ট চালু করুন';
+
+  @override
+  String get showEventInChatHistory => 'চ্যাট ইতিহাসে ইভেন্ট দেখান';
+
+  @override
+  String get enableShoutouts => 'শাউটআউট চালু করুন';
+
+  @override
+  String get enableShoutoutsSubtitle => 'রেইডকারী চ্যানেলের লিংক চ্যাটে পাঠান';
+
+  @override
+  String get raidConfigurationTitle => 'রেইড সেটিংস';
+
+  @override
+  String get cheerConfigurationTitle => 'চিয়ার সেটিংস';
+
+  @override
+  String get followConfigurationTitle => 'ফলো সেটিংস';
+
+  @override
+  String get outgoingRaidConfigurationTitle => 'বহির্গামী রেইড সেটিংস';
+
+  @override
+  String get hostConfigurationTitle => 'হোস্ট সেটিংস';
+
+  @override
+  String get channelPointConfigurationTitle => 'চ্যানেল পয়েন্ট সেটিংস';
+
+  @override
+  String get pollConfigurationTitle => 'পোল সেটিংস';
+
+  @override
+  String get hypetrainConfigurationTitle => 'হাইপ ট্রেন সেটিংস';
+
+  @override
+  String get subscriptionConfigurationTitle => 'সাবস্ক্রিপশন সেটিংস';
+
+  @override
+  String get predictionConfigurationTitle => 'প্রেডিকশন সেটিংস';
+
+  @override
+  String get unfulfilledRewardsPinDuration =>
+      'অপূর্ণ পুরস্কারের জন্য অতিরিক্ত পিন সময়কাল';
+
+  @override
+  String get pollPinDuration => 'চূড়ান্ত ফলাফলের পর পিন সময়কাল';
+
+  @override
+  String get hypetrainPinDuration => 'হাইপ ট্রেন শেষ হওয়ার পর পিন সময়কাল';
+
+  @override
+  String get enableGiftedSubscriptions =>
+      'আলাদা আলাদা উপহার সাবস্ক্রিপশন চালু করুন';
+
+  @override
+  String get enableGiftedSubscriptionsSubtitle =>
+      'উপহার দেওয়া প্রতিটি সাবস্ক্রিপশন দেখান';
+
+  @override
+  String get settingsBackupTitle => 'সেটিংস ব্যাকআপ ও পুনরুদ্ধার';
+
+  @override
+  String get cloudBackup => 'ক্লাউড ব্যাকআপ';
+
+  @override
+  String get lastBackupNever => 'শেষ ব্যাকআপ: কখনও না';
+
+  @override
+  String get backUp => 'ব্যাকআপ নিন';
+
+  @override
+  String get restore => 'পুনরুদ্ধার করুন';
+
+  @override
+  String get localBackup => 'লোকাল ব্যাকআপ';
+
+  @override
+  String get exportSettings => 'এক্সপোর্ট';
+
+  @override
+  String get importSettings => 'ইমপোর্ট';
+
+  @override
+  String get showViewerAndFollowerCount => 'দর্শক ও ফলোয়ার সংখ্যা দেখান';
+
+  @override
+  String get screenOrientation => 'স্ক্রিনের দিক';
+
+  @override
+  String get appTheme => 'অ্যাপ থিম';
+
+  @override
+  String get systemDefault => 'সিস্টেম';
+
+  @override
+  String get portrait => 'পোর্ট্রেট';
+
+  @override
+  String get landscape => 'ল্যান্ডস্কেপ';
+
+  @override
+  String get lightTheme => 'লাইট';
+
+  @override
+  String get darkTheme => 'ডার্ক';
+
+  @override
+  String get openSourceTitle => 'RealtimeChat ওপেন সোর্স';
+
+  @override
+  String get openSourceSubtitle => 'GitHub-এ আমাদের খুঁজে নিন!';
+
+  @override
+  String get discordSubtitle => 'Muxable Discord-এ যোগ দিন!';
+
+  @override
+  String get earlyTestersThanks =>
+      'বাগ রিপোর্ট পাঠানো সব প্রথম দিকের টেস্টারদের ধন্যবাদ!';
+
+  @override
+  String get discoModeEnabled => '🕺 ডিস্কো মোড চালু! :D';
+
+  @override
+  String get discoModeDisabled => '🕺 ডিস্কো মোড বন্ধ D:';
+
+  @override
+  String get cloudTts => 'ক্লাউড TTS';
+
+  @override
+  String get languages => 'ভাষা';
+
+  @override
+  String get voices => 'কণ্ঠস্বর';
+
+  @override
+  String get perViewerVoice => 'প্রতি দর্শকের জন্য কণ্ঠ';
+
+  @override
+  String get perViewerVoiceSubtitle => 'কণ্ঠ শুনে আপনার দর্শকদের চিনুন';
+
+  @override
+  String get randomVoice => 'এলোমেলো';
+
+  @override
+  String get playSampleMessage => 'নমুনা বার্তা চালান';
+
+  @override
+  String get textToSpeechRate => 'টেক্সট টু স্পিচের গতি';
+
+  @override
+  String get textToSpeechPitch => 'টেক্সট টু স্পিচের পিচ';
+
+  @override
+  String get unlockHighQualityVoices => 'উচ্চমানের কণ্ঠ আনলক করুন';
+
+  @override
+  String get muteBots => 'বটের জন্য টেক্সট টু স্পিচ মিউট করুন';
+
+  @override
+  String get muteEmotes => 'টেক্সট টু স্পিচে সব ইমোট মিউট করুন';
+
+  @override
+  String get muteViewerNames => 'টেক্সট টু স্পিচে দর্শকদের নাম মিউট করুন';
+
+  @override
+  String get subscribersOnly => 'শুধু সাবস্ক্রাইবার';
+
+  @override
+  String get storeNotAvailable => 'স্টোর উপলব্ধ নয়';
+
+  @override
+  String get unavailable => 'উপলব্ধ নয়';
+
+  @override
+  String get subscribe => 'সাবস্ক্রাইব করুন';
+
+  @override
+  String get pending => 'অপেক্ষমাণ';
+
+  @override
+  String get subscribed => 'সাবস্ক্রাইব করা হয়েছে';
+
+  @override
+  String get pleaseSignIn => 'অনুগ্রহ করে সাইন ইন করুন';
+
+  @override
+  String get searchLanguages => 'ভাষা খুঁজুন';
+
+  @override
+  String get closeSearch => 'খোঁজা বন্ধ করুন';
+
+  @override
+  String get playSample => 'নমুনা চালান';
+
+  @override
+  String get fontSize => 'ফন্টের আকার';
+
+  @override
+  String get usernameContrastBoost => 'ইউজারনেমের কনট্রাস্ট বৃদ্ধি';
+
+  @override
+  String get twitchBadgeSettings => 'Twitch ব্যাজ সেটিংস';
+
+  @override
+  String get twitchBadgeSettingsSubtitle =>
+      'কোন ব্যাজ দেখা যাবে তা নিয়ন্ত্রণ করুন';
+
+  @override
+  String get showDeletedMessages => 'মুছে ফেলা বার্তা দেখান';
+
+  @override
+  String get deletedMessagesGreyedOut => 'মুছে ফেলা বার্তা ধূসর দেখাবে';
+
+  @override
+  String get deletedMessagesRemoved => 'মুছে ফেলা বার্তা সরিয়ে ফেলা হবে';
+
+  @override
+  String get showLoginNames => 'লগইন নাম দেখান';
+
+  @override
+  String get loginNamesShown =>
+      'লগইন নাম প্রদর্শিত নাম থেকে আলাদা হলে দেখানো হবে';
+
+  @override
+  String get loginNamesHidden => 'লগইন নাম লুকানো থাকবে';
+
+  @override
+  String get compactMessages => 'বার্তা সংক্ষিপ্ত করা';
+
+  @override
+  String get dontCompactMessages => 'বার্তা সংক্ষিপ্ত করবেন না';
+
+  @override
+  String get dontCompactMessagesSubtitle => 'বার্তা অপরিবর্তিত দেখানো হয়';
+
+  @override
+  String get compactIndividualMessages => 'আলাদা আলাদা বার্তা সংক্ষিপ্ত করুন';
+
+  @override
+  String get compactIndividualMessagesSubtitle =>
+      'বার্তার পুনরাবৃত্ত লেখা ছোট করা হয়';
+
+  @override
+  String get announcementPinDuration => 'ঘোষণা পিন করার সময়কাল';
+
+  @override
+  String get idleMessageAlertDuration => 'নিষ্ক্রিয় চ্যাট সতর্কতার সময়কাল';
+
+  @override
+  String get idleMessageAlertDurationSubtitle =>
+      'এই সময়ের মধ্যে কোনো বার্তা না এলে এবং তারপর নতুন একটি এলে একটি সতর্কতা শব্দ বাজবে।';
+
+  @override
+  String get realtimeCashSubtitle => 'একটি ETH বা MATIC ওয়ালেট যুক্ত করুন';
+
+  @override
+  String get walletAddress => 'ওয়ালেট ঠিকানা';
+
+  @override
+  String get streamlabsSubtitle => 'আপনার Streamlabs অনুদান দেখুন';
+
+  @override
+  String get streamElementsSubtitle => 'আপনার StreamElements অনুদান দেখুন';
+
+  @override
+  String get thirdPartyAuthError =>
+      'হুম, কাজ হয়নি। আবার চেষ্টা করুন, নাকি Discord-এ জিজ্ঞেস করবেন?';
+
+  @override
+  String get companionAuthBrowserTooOld =>
+      'আপনার ব্রাউজার সরাসরি সাইন ইন করার জন্য অনেক পুরনো। অন্য ডিভাইসে সাইন ইন করতে আপনার ফোন দিয়ে এই QR কোড স্ক্যান করুন।';
+
+  @override
+  String get companionAuthScanQrCode =>
+      'অন্য ডিভাইসে সাইন ইন করতে আপনার ফোন দিয়ে এই QR কোড স্ক্যান করুন।';
 }

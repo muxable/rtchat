@@ -706,5 +706,315 @@ class AppLocalizationsUk extends AppLocalizations {
   String get textToSpeechDisabled => 'Синтез мовлення вимкнено';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Лише сповіщення';
+
+  @override
+  String get pinDuration => 'Час закріплення';
+
+  @override
+  String durationSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds секунди',
+      many: '$seconds секунд',
+      few: '$seconds секунди',
+      one: '$seconds секунда',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes хвилини',
+      many: '$minutes хвилин',
+      few: '$minutes хвилини',
+      one: '$minutes хвилина',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enableEvent => 'Увімкнути подію';
+
+  @override
+  String get showEventInChatHistory => 'Показувати подію в історії чату';
+
+  @override
+  String get enableShoutouts => 'Увімкнути шаутаути';
+
+  @override
+  String get enableShoutoutsSubtitle =>
+      'Надсилати в чат посилання на канал, що робить рейд';
+
+  @override
+  String get raidConfigurationTitle => 'Налаштування рейдів';
+
+  @override
+  String get cheerConfigurationTitle => 'Налаштування чірів';
+
+  @override
+  String get followConfigurationTitle => 'Налаштування відстежень';
+
+  @override
+  String get outgoingRaidConfigurationTitle => 'Налаштування вихідних рейдів';
+
+  @override
+  String get hostConfigurationTitle => 'Налаштування хостів';
+
+  @override
+  String get channelPointConfigurationTitle => 'Налаштування балів каналу';
+
+  @override
+  String get pollConfigurationTitle => 'Налаштування опитувань';
+
+  @override
+  String get hypetrainConfigurationTitle => 'Налаштування Hype Train';
+
+  @override
+  String get subscriptionConfigurationTitle => 'Налаштування підписок';
+
+  @override
+  String get predictionConfigurationTitle => 'Налаштування прогнозів';
+
+  @override
+  String get unfulfilledRewardsPinDuration =>
+      'Додатковий час закріплення для невиконаних нагород';
+
+  @override
+  String get pollPinDuration => 'Час закріплення після остаточного результату';
+
+  @override
+  String get hypetrainPinDuration =>
+      'Час закріплення після завершення Hype Train';
+
+  @override
+  String get enableGiftedSubscriptions =>
+      'Увімкнути окремі подаровані підписки';
+
+  @override
+  String get enableGiftedSubscriptionsSubtitle =>
+      'Показувати кожну подаровану підписку';
+
+  @override
+  String get settingsBackupTitle => 'Резервне копіювання та відновлення';
+
+  @override
+  String get cloudBackup => 'Хмарна копія';
+
+  @override
+  String get lastBackupNever => 'Остання копія: ніколи';
+
+  @override
+  String get backUp => 'Створити копію';
+
+  @override
+  String get restore => 'Відновити';
+
+  @override
+  String get localBackup => 'Локальна копія';
+
+  @override
+  String get exportSettings => 'Експорт';
+
+  @override
+  String get importSettings => 'Імпорт';
+
+  @override
+  String get showViewerAndFollowerCount =>
+      'Показувати кількість глядачів і відстежувачів';
+
+  @override
+  String get screenOrientation => 'Орієнтація екрана';
+
+  @override
+  String get appTheme => 'Тема застосунку';
+
+  @override
+  String get systemDefault => 'Системна';
+
+  @override
+  String get portrait => 'Книжкова';
+
+  @override
+  String get landscape => 'Альбомна';
+
+  @override
+  String get lightTheme => 'Світла';
+
+  @override
+  String get darkTheme => 'Темна';
+
+  @override
+  String get openSourceTitle => 'RealtimeChat має відкритий код';
+
+  @override
+  String get openSourceSubtitle => 'Знайдіть нас на GitHub!';
+
+  @override
+  String get discordSubtitle => 'Приєднуйтеся до Discord Muxable!';
+
+  @override
+  String get earlyTestersThanks =>
+      'Дякуємо всім першим тестувальникам, які надсилали звіти про помилки!';
+
+  @override
+  String get discoModeEnabled => '🕺 Режим диско увімкнено! :D';
+
+  @override
+  String get discoModeDisabled => '🕺 Режим диско вимкнено D:';
+
+  @override
+  String get cloudTts => 'Хмарний TTS';
+
+  @override
+  String get languages => 'Мови';
+
+  @override
+  String get voices => 'Голоси';
+
+  @override
+  String get perViewerVoice => 'Голос для кожного глядача';
+
+  @override
+  String get perViewerVoiceSubtitle => 'Розпізнавайте глядачів за голосом';
+
+  @override
+  String get randomVoice => 'Випадковий';
+
+  @override
+  String get playSampleMessage => 'Відтворити приклад повідомлення';
+
+  @override
+  String get textToSpeechRate => 'Швидкість мовлення';
+
+  @override
+  String get textToSpeechPitch => 'Висота голосу';
+
+  @override
+  String get unlockHighQualityVoices => 'Розблокувати голоси високої якості';
+
+  @override
+  String get muteBots => 'Вимкнути озвучення для ботів';
+
+  @override
+  String get muteEmotes => 'Вимкнути озвучення всіх емоутів';
+
+  @override
+  String get muteViewerNames => 'Вимкнути озвучення імен глядачів';
+
+  @override
+  String get subscribersOnly => 'Лише підписники';
+
+  @override
+  String get storeNotAvailable => 'Магазин недоступний';
+
+  @override
+  String get unavailable => 'Недоступно';
+
+  @override
+  String get subscribe => 'Підписатися';
+
+  @override
+  String get pending => 'Очікування';
+
+  @override
+  String get subscribed => 'Підписано';
+
+  @override
+  String get pleaseSignIn => 'Увійдіть';
+
+  @override
+  String get searchLanguages => 'Пошук мов';
+
+  @override
+  String get closeSearch => 'Закрити пошук';
+
+  @override
+  String get playSample => 'Відтворити приклад';
+
+  @override
+  String get fontSize => 'Розмір шрифту';
+
+  @override
+  String get usernameContrastBoost => 'Посилення контрасту імен';
+
+  @override
+  String get twitchBadgeSettings => 'Налаштування значків Twitch';
+
+  @override
+  String get twitchBadgeSettingsSubtitle => 'Виберіть, які значки показувати';
+
+  @override
+  String get showDeletedMessages => 'Показувати видалені повідомлення';
+
+  @override
+  String get deletedMessagesGreyedOut =>
+      'Видалені повідомлення будуть затемнені';
+
+  @override
+  String get deletedMessagesRemoved => 'Видалені повідомлення буде приховано';
+
+  @override
+  String get showLoginNames => 'Показувати логіни';
+
+  @override
+  String get loginNamesShown =>
+      'Логіни буде показано, якщо вони відрізняються від відображуваного імені';
+
+  @override
+  String get loginNamesHidden => 'Логіни буде приховано';
+
+  @override
+  String get compactMessages => 'Стиснення повідомлень';
+
+  @override
+  String get dontCompactMessages => 'Не стискати повідомлення';
+
+  @override
+  String get dontCompactMessagesSubtitle => 'Повідомлення показуються без змін';
+
+  @override
+  String get compactIndividualMessages => 'Стискати окремі повідомлення';
+
+  @override
+  String get compactIndividualMessagesSubtitle =>
+      'Повторюваний текст у повідомленнях скорочується';
+
+  @override
+  String get announcementPinDuration => 'Час закріплення оголошень';
+
+  @override
+  String get idleMessageAlertDuration => 'Сповіщення про тишу в чаті';
+
+  @override
+  String get idleMessageAlertDurationSubtitle =>
+      'Якщо протягом цього часу не було повідомлень і надходить нове, пролунає сигнал.';
+
+  @override
+  String get realtimeCashSubtitle => 'Підключіть гаманець ETH або MATIC';
+
+  @override
+  String get walletAddress => 'Адреса гаманця';
+
+  @override
+  String get streamlabsSubtitle => 'Переглядайте пожертви Streamlabs';
+
+  @override
+  String get streamElementsSubtitle => 'Переглядайте пожертви StreamElements';
+
+  @override
+  String get thirdPartyAuthError =>
+      'Хм, не вдалося. Спробуйте ще раз або запитайте в Discord?';
+
+  @override
+  String get companionAuthBrowserTooOld =>
+      'Ваш браузер застарий для прямого входу. Відскануйте цей QR-код телефоном, щоб увійти на іншому пристрої.';
+
+  @override
+  String get companionAuthScanQrCode =>
+      'Відскануйте цей QR-код телефоном, щоб увійти на іншому пристрої.';
 }

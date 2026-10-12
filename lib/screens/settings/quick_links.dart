@@ -140,7 +140,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                         TextFormField(
                             controller: _textEditingController,
                             decoration: InputDecoration(
-                                hintText: "URL",
+                                hintText: AppLocalizations.of(context)!.url,
                                 suffixIcon: IconButton(
                                     icon: const Icon(Icons.qr_code_scanner),
                                     onPressed: () {

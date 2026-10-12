@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class HypetrainEventScreen extends StatelessWidget {
@@ -9,7 +10,8 @@ class HypetrainEventScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Hypetrain Configuration"),
+          title:
+              Text(AppLocalizations.of(context)!.hypetrainConfigurationTitle),
         ),
         body: Consumer<EventSubConfigurationModel>(
             builder: (context, model, child) {
@@ -20,7 +22,7 @@ class HypetrainEventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Pin duration after hypetrain is over",
+                    Text(AppLocalizations.of(context)!.hypetrainPinDuration,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
@@ -31,16 +33,17 @@ class HypetrainEventScreen extends StatelessWidget {
                       min: 0,
                       max: 30,
                       divisions: 15,
-                      label:
-                          "${model.hypetrainEventConfig.eventDuration.inSeconds} seconds",
+                      label: AppLocalizations.of(context)!.durationSeconds(
+                          model.hypetrainEventConfig.eventDuration.inSeconds),
                       onChanged: (value) {
                         model.setHypetrainEventDuration(
                             Duration(seconds: value.toInt()));
                       },
                     ),
                     SwitchListTile.adaptive(
-                      title: const Text('Enable event'),
-                      subtitle: const Text('Show event in chat history'),
+                      title: Text(AppLocalizations.of(context)!.enableEvent),
+                      subtitle: Text(
+                          AppLocalizations.of(context)!.showEventInChatHistory),
                       value: model.hypetrainEventConfig.showEvent,
                       onChanged: (value) {
                         model.setHypetrainEventShowable(value);

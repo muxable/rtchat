@@ -4,6 +4,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/bytes_audio_source.dart';
 
@@ -14,7 +15,7 @@ class VoicesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final audioPlayer = AudioPlayer();
     return Scaffold(
-      appBar: AppBar(title: const Text('Voices')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.voices)),
       body: Consumer<TtsModel>(
         builder: (context, model, child) {
           return ListView.builder(
@@ -32,7 +33,7 @@ class VoicesScreen extends StatelessWidget {
                   audioPlayer.play();
                 },
                 icon: const Icon(Icons.play_arrow),
-                tooltip: 'Play sample',
+                tooltip: AppLocalizations.of(context)!.playSample,
               ),
               onTap: () {
                 model.voice = model.voices[index];

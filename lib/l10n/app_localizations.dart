@@ -1115,6 +1115,558 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Alerts only'**
   String get alertsEnabled;
+
+  /// Label for the slider controlling how long an event stays pinned
+  ///
+  /// In en, this message translates to:
+  /// **'Pin Duration'**
+  String get pinDuration;
+
+  /// A duration in seconds
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds,plural, =1{1 second} other{{seconds} seconds}}'**
+  String durationSeconds(int seconds);
+
+  /// A duration in minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes,plural, =1{1 minute} other{{minutes} minutes}}'**
+  String durationMinutes(int minutes);
+
+  /// Title of the switch that enables an event type
+  ///
+  /// In en, this message translates to:
+  /// **'Enable event'**
+  String get enableEvent;
+
+  /// Subtitle of the switch that enables an event type
+  ///
+  /// In en, this message translates to:
+  /// **'Show event in chat history'**
+  String get showEventInChatHistory;
+
+  /// Title of the switch that enables the shoutout button on raids
+  ///
+  /// In en, this message translates to:
+  /// **'Enable shoutouts'**
+  String get enableShoutouts;
+
+  /// Subtitle of the switch that enables the shoutout button on raids
+  ///
+  /// In en, this message translates to:
+  /// **'Send a link to the raiding channel to chat'**
+  String get enableShoutoutsSubtitle;
+
+  /// Title of the raid event settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Raid Configuration'**
+  String get raidConfigurationTitle;
+
+  /// Title of the cheer event settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Cheer Configuration'**
+  String get cheerConfigurationTitle;
+
+  /// Title of the follow event settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Follow Configuration'**
+  String get followConfigurationTitle;
+
+  /// Title of the outgoing raid event settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Outgoing Raid Configuration'**
+  String get outgoingRaidConfigurationTitle;
+
+  /// Title of the host event settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Host Configuration'**
+  String get hostConfigurationTitle;
+
+  /// Title of the channel point event settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Channel Point Configuration'**
+  String get channelPointConfigurationTitle;
+
+  /// Title of the poll event settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Poll Configuration'**
+  String get pollConfigurationTitle;
+
+  /// Title of the hype train event settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Hypetrain Configuration'**
+  String get hypetrainConfigurationTitle;
+
+  /// Title of the subscription event settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription Configuration'**
+  String get subscriptionConfigurationTitle;
+
+  /// Title of the prediction event settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Prediction Configuration'**
+  String get predictionConfigurationTitle;
+
+  /// Label for the slider adding pin time to unfulfilled channel point rewards
+  ///
+  /// In en, this message translates to:
+  /// **'Additional Pin Duration for Unfulfilled Rewards'**
+  String get unfulfilledRewardsPinDuration;
+
+  /// Label for the slider controlling how long a finished poll stays pinned
+  ///
+  /// In en, this message translates to:
+  /// **'Pin duration after the result is finalized'**
+  String get pollPinDuration;
+
+  /// Label for the slider controlling how long a finished hype train stays pinned
+  ///
+  /// In en, this message translates to:
+  /// **'Pin duration after hypetrain is over'**
+  String get hypetrainPinDuration;
+
+  /// Title of the switch that shows each gifted subscription
+  ///
+  /// In en, this message translates to:
+  /// **'Enable individual gifted subscriptions'**
+  String get enableGiftedSubscriptions;
+
+  /// Subtitle of the switch that shows each gifted subscription
+  ///
+  /// In en, this message translates to:
+  /// **'Show every subscription that is gifted'**
+  String get enableGiftedSubscriptionsSubtitle;
+
+  /// Title of the settings backup screen
+  ///
+  /// In en, this message translates to:
+  /// **'Settings backup and restore'**
+  String get settingsBackupTitle;
+
+  /// Heading for cloud backup options
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud backup'**
+  String get cloudBackup;
+
+  /// Shown when no backup has been made
+  ///
+  /// In en, this message translates to:
+  /// **'Last backup: never'**
+  String get lastBackupNever;
+
+  /// Button that backs up settings
+  ///
+  /// In en, this message translates to:
+  /// **'Back up'**
+  String get backUp;
+
+  /// Button that restores settings from a backup
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// Heading for local backup options
+  ///
+  /// In en, this message translates to:
+  /// **'Local backup'**
+  String get localBackup;
+
+  /// Button that exports settings to a file
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get exportSettings;
+
+  /// Button that imports settings from a file
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get importSettings;
+
+  /// Switch that shows viewer and follower counts in the header
+  ///
+  /// In en, this message translates to:
+  /// **'Show viewer and follower count'**
+  String get showViewerAndFollowerCount;
+
+  /// Heading for the screen orientation setting
+  ///
+  /// In en, this message translates to:
+  /// **'Screen orientation'**
+  String get screenOrientation;
+
+  /// Heading for the app theme setting
+  ///
+  /// In en, this message translates to:
+  /// **'App theme'**
+  String get appTheme;
+
+  /// Option to follow the system setting
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get systemDefault;
+
+  /// Portrait screen orientation option
+  ///
+  /// In en, this message translates to:
+  /// **'Portrait'**
+  String get portrait;
+
+  /// Landscape screen orientation option
+  ///
+  /// In en, this message translates to:
+  /// **'Landscape'**
+  String get landscape;
+
+  /// Light theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get lightTheme;
+
+  /// Dark theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get darkTheme;
+
+  /// Title of the link to the source code
+  ///
+  /// In en, this message translates to:
+  /// **'RealtimeChat is open source'**
+  String get openSourceTitle;
+
+  /// Subtitle of the link to the source code
+  ///
+  /// In en, this message translates to:
+  /// **'Find us on GitHub!'**
+  String get openSourceSubtitle;
+
+  /// Subtitle of the link to the Discord server
+  ///
+  /// In en, this message translates to:
+  /// **'Join the Muxable Discord!'**
+  String get discordSubtitle;
+
+  /// Heading above the list of early testers
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks to all the early testers who sent bug reports!'**
+  String get earlyTestersThanks;
+
+  /// Shown when the disco mode easter egg is enabled
+  ///
+  /// In en, this message translates to:
+  /// **'🕺 Disco mode enabled! :D'**
+  String get discoModeEnabled;
+
+  /// Shown when the disco mode easter egg is disabled
+  ///
+  /// In en, this message translates to:
+  /// **'🕺 Disco mode disabled D:'**
+  String get discoModeDisabled;
+
+  /// Title of the cloud text to speech setting
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud TTS'**
+  String get cloudTts;
+
+  /// Title for the text to speech language picker
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get languages;
+
+  /// Title for the text to speech voice picker
+  ///
+  /// In en, this message translates to:
+  /// **'Voices'**
+  String get voices;
+
+  /// Title of the switch that gives each viewer a different voice
+  ///
+  /// In en, this message translates to:
+  /// **'Per-viewer voice'**
+  String get perViewerVoice;
+
+  /// Subtitle of the switch that gives each viewer a different voice
+  ///
+  /// In en, this message translates to:
+  /// **'Identify your viewers by voice'**
+  String get perViewerVoiceSubtitle;
+
+  /// Shown when a random voice is selected
+  ///
+  /// In en, this message translates to:
+  /// **'Random'**
+  String get randomVoice;
+
+  /// Button that plays a sample text to speech message
+  ///
+  /// In en, this message translates to:
+  /// **'Play sample message'**
+  String get playSampleMessage;
+
+  /// Label for the text to speech rate slider
+  ///
+  /// In en, this message translates to:
+  /// **'Text to Speech Rate'**
+  String get textToSpeechRate;
+
+  /// Label for the text to speech pitch slider
+  ///
+  /// In en, this message translates to:
+  /// **'Text to Speech Pitch'**
+  String get textToSpeechPitch;
+
+  /// Prompt to purchase cloud voices
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock high-quality voices'**
+  String get unlockHighQualityVoices;
+
+  /// Switch that skips messages from bots
+  ///
+  /// In en, this message translates to:
+  /// **'Mute text to speech for bots'**
+  String get muteBots;
+
+  /// Switch that skips emotes
+  ///
+  /// In en, this message translates to:
+  /// **'Mute all emotes in text to speech'**
+  String get muteEmotes;
+
+  /// Switch that skips reading viewer names
+  ///
+  /// In en, this message translates to:
+  /// **'Mute viewer names in text to speech'**
+  String get muteViewerNames;
+
+  /// Switch that only reads messages from subscribers
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribers only'**
+  String get subscribersOnly;
+
+  /// Shown when the in-app store can't be reached
+  ///
+  /// In en, this message translates to:
+  /// **'Store not available'**
+  String get storeNotAvailable;
+
+  /// Purchase button state when the product is unavailable
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get unavailable;
+
+  /// Purchase button to subscribe
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get subscribe;
+
+  /// Purchase button state while a purchase is pending
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get pending;
+
+  /// Purchase button state when already subscribed
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribed'**
+  String get subscribed;
+
+  /// Purchase button state when signed out
+  ///
+  /// In en, this message translates to:
+  /// **'Please Sign In'**
+  String get pleaseSignIn;
+
+  /// Tooltip for the button that searches languages
+  ///
+  /// In en, this message translates to:
+  /// **'Search languages'**
+  String get searchLanguages;
+
+  /// Tooltip for the button that closes the search
+  ///
+  /// In en, this message translates to:
+  /// **'Close search'**
+  String get closeSearch;
+
+  /// Tooltip for the button that plays a voice sample
+  ///
+  /// In en, this message translates to:
+  /// **'Play sample'**
+  String get playSample;
+
+  /// Label for the chat font size slider
+  ///
+  /// In en, this message translates to:
+  /// **'Font size'**
+  String get fontSize;
+
+  /// Label for the slider that brightens username colors
+  ///
+  /// In en, this message translates to:
+  /// **'Username contrast boost'**
+  String get usernameContrastBoost;
+
+  /// Title of the link to badge settings
+  ///
+  /// In en, this message translates to:
+  /// **'Twitch badge settings'**
+  String get twitchBadgeSettings;
+
+  /// Subtitle of the link to badge settings
+  ///
+  /// In en, this message translates to:
+  /// **'Control which badges are visible'**
+  String get twitchBadgeSettingsSubtitle;
+
+  /// Switch that keeps deleted messages visible
+  ///
+  /// In en, this message translates to:
+  /// **'Show deleted messages'**
+  String get showDeletedMessages;
+
+  /// Subtitle when deleted messages are shown
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted messages will be greyed out'**
+  String get deletedMessagesGreyedOut;
+
+  /// Subtitle when deleted messages are hidden
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted messages will be removed'**
+  String get deletedMessagesRemoved;
+
+  /// Switch that shows login names next to display names
+  ///
+  /// In en, this message translates to:
+  /// **'Show login names'**
+  String get showLoginNames;
+
+  /// Subtitle when login names are shown
+  ///
+  /// In en, this message translates to:
+  /// **'Login names will be shown if they are different from the display name'**
+  String get loginNamesShown;
+
+  /// Subtitle when login names are hidden
+  ///
+  /// In en, this message translates to:
+  /// **'Login names will be hidden'**
+  String get loginNamesHidden;
+
+  /// Heading for message compaction options
+  ///
+  /// In en, this message translates to:
+  /// **'Compact messages'**
+  String get compactMessages;
+
+  /// Option that leaves messages unchanged
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t compact messages'**
+  String get dontCompactMessages;
+
+  /// Subtitle of the option that leaves messages unchanged
+  ///
+  /// In en, this message translates to:
+  /// **'Messages are shown unchanged'**
+  String get dontCompactMessagesSubtitle;
+
+  /// Option that shortens repetitive text within a message
+  ///
+  /// In en, this message translates to:
+  /// **'Compact individual messages'**
+  String get compactIndividualMessages;
+
+  /// Subtitle of the option that shortens repetitive text
+  ///
+  /// In en, this message translates to:
+  /// **'Repetitive text in messages is shortened'**
+  String get compactIndividualMessagesSubtitle;
+
+  /// Label for the slider controlling how long announcements stay pinned
+  ///
+  /// In en, this message translates to:
+  /// **'Announcement pin duration'**
+  String get announcementPinDuration;
+
+  /// Heading for the idle chat alert setting
+  ///
+  /// In en, this message translates to:
+  /// **'Idle message alert duration'**
+  String get idleMessageAlertDuration;
+
+  /// Explanation of the idle chat alert setting
+  ///
+  /// In en, this message translates to:
+  /// **'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.'**
+  String get idleMessageAlertDurationSubtitle;
+
+  /// Subtitle of the RealtimeCash integration
+  ///
+  /// In en, this message translates to:
+  /// **'Connect an ETH or MATIC wallet'**
+  String get realtimeCashSubtitle;
+
+  /// Hint for the crypto wallet address field
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet address'**
+  String get walletAddress;
+
+  /// Subtitle of the Streamlabs integration
+  ///
+  /// In en, this message translates to:
+  /// **'See your Streamlabs donations'**
+  String get streamlabsSubtitle;
+
+  /// Subtitle of the StreamElements integration
+  ///
+  /// In en, this message translates to:
+  /// **'See your StreamElements donations'**
+  String get streamElementsSubtitle;
+
+  /// Shown when connecting a third-party service fails
+  ///
+  /// In en, this message translates to:
+  /// **'Hmm, that didn\'t work. Try again, or ask on Discord?'**
+  String get thirdPartyAuthError;
+
+  /// Shown when the browser can't sign in directly
+  ///
+  /// In en, this message translates to:
+  /// **'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.'**
+  String get companionAuthBrowserTooOld;
+
+  /// Instructions for signing in with a QR code
+  ///
+  /// In en, this message translates to:
+  /// **'Scan this QR code with your phone to sign in on another device.'**
+  String get companionAuthScanQrCode;
 }
 
 class _AppLocalizationsDelegate
