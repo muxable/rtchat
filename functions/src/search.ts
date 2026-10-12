@@ -2,7 +2,26 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
 import { ClientCredentials } from "simple-oauth2";
-import { getAccessToken, TWITCH_CLIENT_ID, TWITCH_OAUTH_CONFIG } from "./oauth";
+import { searchKickChannel } from "./kick";
+import {
+  getAccessToken,
+  getAppAccessToken,
+  TWITCH_CLIENT_ID,
+  TWITCH_OAUTH_CONFIG,
+} from "./oauth";
+
+// Kick results are best effort: kick may not be configured or reachable.
+async function kickResults(query: string) {
+  try {
+    const token = await getAppAccessToken("kick");
+    return token
+      ? await searchKickChannel(String(token.token.access_token), query)
+      : [];
+  } catch (err) {
+    functions.logger.warn("kick search failed", err);
+    return [];
+  }
+}
 
 export const search = functions.https.onCall(async (data, context) => {
   if (context.auth != null && data == "") {
@@ -49,6 +68,8 @@ export const search = functions.https.onCall(async (data, context) => {
     }
   }
 
+  // look up an exact kick channel while twitch searches.
+  const kick = kickResults(String(data));
   const credentials = await new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken(
     { scopes: [] }
   );
@@ -78,5 +99,6 @@ export const search = functions.https.onCall(async (data, context) => {
         language: channel.broadcaster_language,
       };
     }),
+    ...(await kick),
   ];
 });

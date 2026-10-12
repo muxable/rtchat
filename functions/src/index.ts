@@ -19,6 +19,7 @@ import {
 } from "./kick_actions";
 import { updateKickChannelMetadata } from "./kick_subscriptions";
 import { kickWebhook } from "./kick_webhook";
+import { getKickSlug } from "./kick";
 import { eventsub } from "./eventsub";
 import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
@@ -409,6 +410,20 @@ export const embedRedirect = functions.https.onRequest(async (req, res) => {
         `https://player.twitch.tv/?channel=${login}&controls=false&parent=chat.rtirl.com&muted=true`
       );
       break;
+    case "kick": {
+      const token = await getAppAccessToken("kick");
+      const slug = token
+        ? await getKickSlug(String(token.token.access_token), channelId)
+        : null;
+      if (!slug) {
+        res.status(404).send("channel not found");
+        return;
+      }
+      res.redirect(
+        `https://player.kick.com/${encodeURIComponent(slug)}?muted=true`
+      );
+      break;
+    }
     default:
       throw new functions.https.HttpsError(
         "invalid-argument",
