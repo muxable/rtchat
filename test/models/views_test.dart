@@ -169,4 +169,26 @@ void main() {
       expect(restored.channels, [twitch]);
     });
   });
+
+  group("preview", () {
+    test("is of the first channel unless another was picked", () {
+      final views = signedInAs(twitch)..addChannel(kick);
+      expect(views.previewChannel, twitch);
+      views.previewChannel = kick;
+      expect(views.previewChannel, kick);
+      views.openChannel(other);
+      expect(views.previewChannel, other);
+      // picked again once it's shown again.
+      views.addChannel(kick);
+      expect(views.previewChannel, kick);
+    });
+
+    test("falls back when the picked channel is removed", () {
+      final views = signedInAs(twitch)
+        ..addChannel(kick)
+        ..previewChannel = kick;
+      views.removeChannel(kick);
+      expect(views.previewChannel, twitch);
+    });
+  });
 }
