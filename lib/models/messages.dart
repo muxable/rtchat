@@ -25,6 +25,8 @@ class MessagesModel extends ChangeNotifier {
   List<Channel> _channels = const [];
   // channels whose initial history has loaded, so new events are live.
   final Set<Channel> _liveChannels = {};
+  Set<Channel> _hiddenChannels = const {};
+  List<MessageModel>? _visibleMessages;
 
   // it's a bit odd to have this here, but tts only cares about the delta events
   // so it's easier to wire this way.
@@ -41,6 +43,7 @@ class MessagesModel extends ChangeNotifier {
     }
     _channels = List.unmodifiable(channels);
     _messages = [];
+    _visibleMessages = null;
     _separators = {};
     _events = [];
     _liveChannels.clear();
@@ -65,6 +68,26 @@ class MessagesModel extends ChangeNotifier {
   }
 
   List<Channel> get channels => _channels;
+
+  /// Channels whose messages are left out of [messages].
+  set hiddenChannels(Set<Channel> channels) {
+    if (setEquals(channels, _hiddenChannels)) {
+      return;
+    }
+    _hiddenChannels = Set.unmodifiable(channels);
+    _refresh();
+    notifyListeners();
+  }
+
+  // recomputes what's derived from the message list.
+  void _refresh() {
+    _visibleMessages = _hiddenChannels.isEmpty
+        ? null
+        : _messages
+            .where((message) => !_hiddenChannels.contains(message.channel))
+            .toList();
+    _separators = computeSeparators(messages);
+  }
 
   void _onEvent(Channel channel, DeltaEvent event) {
     _events.add((channel: channel, event: event));
@@ -106,8 +129,10 @@ class MessagesModel extends ChangeNotifier {
         }
       },
     );
-    if (event is AppendDeltaEvent || event is ClearDeltaEvent) {
-      _separators = computeSeparators(_messages);
+    if (_hiddenChannels.isNotEmpty ||
+        event is AppendDeltaEvent ||
+        event is ClearDeltaEvent) {
+      _refresh();
     }
     if (event is ClearDeltaEvent) {
       // in a merged view only the cleared channel's messages are dropped.
@@ -136,7 +161,8 @@ class MessagesModel extends ChangeNotifier {
     super.dispose();
   }
 
-  List<MessageModel> get messages => _messages;
+  /// The merged messages of every visible channel.
+  List<MessageModel> get messages => _visibleMessages ?? _messages;
 
   Set<int> get separators => _separators;
 
@@ -177,7 +203,7 @@ class MessagesModel extends ChangeNotifier {
         ? replayEvents(_events)
         : _events.fold(
             [], (messages, entry) => applyDeltaEvent(messages, entry.event));
-    _separators = computeSeparators(_messages);
+    _refresh();
     notifyListeners();
   }
 
@@ -187,7 +213,7 @@ class MessagesModel extends ChangeNotifier {
       _messages.removeRange(0, _messages.length - 1000);
       _events.removeWhere(
           (entry) => entry.event.timestamp.isBefore(_messages.first.timestamp));
-      _separators = computeSeparators(_messages);
+      _refresh();
     }
   }
 

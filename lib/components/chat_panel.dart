@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/channel_filter_chips.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/chat_history/separator.dart';
 import 'package:rtchat/components/connection_status.dart';
@@ -280,6 +281,13 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
 
   @override
   Widget build(BuildContext context) {
+    return Column(children: [
+      const ChannelFilterChips(),
+      Expanded(child: _buildMessages(context)),
+    ]);
+  }
+
+  Widget _buildMessages(BuildContext context) {
     return Stack(
       alignment: AlignmentDirectional.topCenter,
       children: [
@@ -387,9 +395,17 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                             }
                             // in a merged view, actions like shoutouts go to
                             // the channel the message came from.
-                            final messageWidget = ChatHistoryMessage(
+                            final source = message.channel;
+                            final chatMessage = ChatHistoryMessage(
                                 message: message,
-                                channel: message.channel ?? widget.channel);
+                                channel: source ?? widget.channel);
+                            final Widget messageWidget =
+                                messagesModel.channels.length > 1 &&
+                                        source != null
+                                    ? ChannelAttribution(
+                                        provider: source.provider,
+                                        child: chatMessage)
+                                    : chatMessage;
                             final showSeparator = messagesModel.separators
                                 .contains(messages.length - index - 1);
                             // only show separators after the first 50.
