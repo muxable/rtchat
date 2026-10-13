@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - "public/**"
+      # rewrites to functions live in firebase.json.
+      - "firebase.json"
     branches:
       - main
   workflow_dispatch:
@@ -12,8 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: w9jds/firebase-action@master
+      - uses: google-github-actions/auth@v2
         with:
-          args: deploy --only hosting
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_RTCHAT_47692 }}
+      - run: npx -y firebase-tools@15.33.0 deploy --only hosting --project rtchat-47692 --non-interactive
