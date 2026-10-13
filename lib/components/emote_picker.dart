@@ -40,11 +40,11 @@ class EmotesList extends StatelessWidget {
       categories.insert(0, globalEmotes);
     }
 
-    // ensure channel emotes is second.
+    // ensure channel emotes is second, or first if there are no global ones.
     final channelEmotesIndex = categories.indexOf(channel.displayName);
     if (channelEmotesIndex != -1) {
       categories.removeAt(channelEmotesIndex);
-      categories.insert(1, channel.displayName);
+      categories.insert(globalEmotesIndex == -1 ? 0 : 1, channel.displayName);
     }
 
     return ListView.builder(
