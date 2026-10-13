@@ -71,8 +71,17 @@ async function appToken() {
   return String(token.token.access_token);
 }
 
+// webhooks/{provider}:{id} tracks the channels whose events are pushed to us.
 function subscriptionRef(broadcasterId: string) {
-  return admin.firestore().collection("kick-subscriptions").doc(broadcasterId);
+  return admin.firestore().collection("webhooks").doc(`kick:${broadcasterId}`);
+}
+
+// Returns the kick broadcaster ids among webhooks docs.
+function kickBroadcasterIds(docs: admin.firestore.QueryDocumentSnapshot[]) {
+  return docs
+    .map((doc) => doc.id.split(":"))
+    .filter(([provider]) => provider === "kick")
+    .map(([, id]) => id);
 }
 
 // Makes sure a broadcaster's events are delivered to kickWebhook and marks the
@@ -125,7 +134,8 @@ export async function ensureKickSubscriptions(broadcasterId: string) {
 
   if (!doc.exists) {
     const count = (
-      await admin.firestore().collection("kick-subscriptions").count().get()
+      // only kick channels live in webhooks today.
+      await admin.firestore().collection("webhooks").count().get()
     ).data().count;
     if (count >= CHAT_SUBSCRIPTION_WARNING) {
       functions.logger.warn(
@@ -154,19 +164,19 @@ export async function removeKickSubscriptions(broadcasterId: string) {
 export async function removeIdleKickSubscriptions() {
   const idle = await admin
     .firestore()
-    .collection("kick-subscriptions")
+    .collection("webhooks")
     .where(
       "lastActiveAt",
       "<",
       admin.firestore.Timestamp.fromMillis(Date.now() - IDLE_MS)
     )
     .get();
-  for (const doc of idle.docs) {
+  for (const broadcasterId of kickBroadcasterIds(idle.docs)) {
     try {
-      await removeKickSubscriptions(doc.id);
+      await removeKickSubscriptions(broadcasterId);
     } catch (err) {
       functions.logger.error("failed to remove kick subscriptions", {
-        broadcasterId: doc.id,
+        broadcasterId,
         err,
       });
     }
@@ -179,21 +189,19 @@ export const updateKickChannelMetadata = functions.pubsub
   .onRun(async () => {
     const active = await admin
       .firestore()
-      .collection("kick-subscriptions")
+      .collection("webhooks")
       .where(
         "lastActiveAt",
         ">",
         admin.firestore.Timestamp.fromMillis(Date.now() - 86400 * 1000)
       )
       .get();
-    if (active.empty) {
+    const ids = kickBroadcasterIds(active.docs);
+    if (ids.length === 0) {
       return;
     }
     const token = await appToken();
-    for (const batch of chunk(
-      active.docs.map((doc) => doc.id),
-      50
-    )) {
+    for (const batch of chunk(ids, 50)) {
       const query = batch.map((id) => `broadcaster_user_id=${id}`).join("&");
       const response = await kickApi(token, `/channels?${query}`);
       const writes = admin.firestore().batch();

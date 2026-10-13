@@ -160,7 +160,7 @@ describe("ensureKickSubscriptions", () => {
       events: KICK_EVENTS,
       method: "webhook",
     });
-    expect(store.get("kick-subscriptions/123")!.subscriptionIds).toHaveLength(
+    expect(store.get("webhooks/kick:123")!.subscriptionIds).toHaveLength(
       KICK_EVENTS.length
     );
   });
@@ -177,7 +177,7 @@ describe("ensureKickSubscriptions", () => {
   });
 
   it("re-creates subscriptions kick dropped", async () => {
-    store.set("kick-subscriptions/123", {
+    store.set("webhooks/kick:123", {
       subscriptionIds: ["old"],
       checkedAt: { toMillis: () => 0 },
       lastActiveAt: { toMillis: () => 0 },
@@ -200,11 +200,11 @@ describe("ensureKickSubscriptions", () => {
 describe("removeIdleKickSubscriptions", () => {
   it("unsubscribes channels idle for a week", async () => {
     const day = 86400 * 1000;
-    store.set("kick-subscriptions/idle", {
+    store.set("webhooks/kick:111", {
       subscriptionIds: ["a", "b"],
       lastActiveAt: { toMillis: () => Date.now() - 8 * day },
     });
-    store.set("kick-subscriptions/active", {
+    store.set("webhooks/kick:222", {
       subscriptionIds: ["c"],
       lastActiveAt: { toMillis: () => Date.now() - day },
     });
@@ -215,7 +215,7 @@ describe("removeIdleKickSubscriptions", () => {
       "/events/subscriptions?id=a&id=b",
       { method: "DELETE" }
     );
-    expect(store.has("kick-subscriptions/idle")).toBe(false);
-    expect(store.has("kick-subscriptions/active")).toBe(true);
+    expect(store.has("webhooks/kick:111")).toBe(false);
+    expect(store.has("webhooks/kick:222")).toBe(true);
   });
 });
