@@ -385,8 +385,11 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                                 }
                               }
                             }
+                            // in a merged view, actions like shoutouts go to
+                            // the channel the message came from.
                             final messageWidget = ChatHistoryMessage(
-                                message: message, channel: widget.channel);
+                                message: message,
+                                channel: message.channel ?? widget.channel);
                             final showSeparator = messagesModel.separators
                                 .contains(messages.length - index - 1);
                             // only show separators after the first 50.
