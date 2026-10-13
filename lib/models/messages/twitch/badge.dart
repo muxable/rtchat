@@ -28,7 +28,7 @@ class TwitchBadgeModel extends ChangeNotifier {
       notifyListeners();
     });
     if (channel != null) {
-      if (channel.provider != "twitch") {
+      if (channel.provider != Providers.twitch) {
         return;
       }
       _localBadgeSubscription = ChatStateAdapter.instance
