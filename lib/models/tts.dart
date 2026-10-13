@@ -58,6 +58,7 @@ class TtsModel extends ChangeNotifier {
   static const _maxBacklog = 20;
   var _language = Language();
   List<String> voices = [];
+  final Map<String, List<String>> _voicesByLanguage = {};
   final Map<String, dynamic> _voice = {};
   var _isSupportedLanguage = false;
   var _isRandomVoiceEnabled = true;
@@ -121,26 +122,63 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
+  /// Fetches the names of the cloud voices offered for [languageCode].
+  @visibleForTesting
+  Future<List<String>> Function(String languageCode) fetchVoices = _fetchVoices;
+
+  static Future<List<String>> _fetchVoices(String languageCode) async {
+    final result = await FirebaseFunctions.instance
+        .httpsCallable("getVoices")
+        .call(<String, dynamic>{"language": languageCode});
+    return [for (LinkedHashMap voice in result.data) voice['name']];
+  }
+
   void getVoices() async {
     if (!isCloudTtsEnabled) {
       return;
     }
-    final voicesJson = await FirebaseFunctions.instance
-        .httpsCallable("getVoices")
-        .call(<String, dynamic>{
-      "language": _language.languageCode,
-    });
-    final data = voicesJson.data;
-
-    final List<String> voicesList = [];
-    for (LinkedHashMap voice in data) {
-      voicesList.add(voice['name']);
-    }
+    final voicesList = await fetchVoices(_language.languageCode);
+    _voicesByLanguage[_language.languageCode] = voicesList;
     voices = voicesList;
     if (_voice[language.languageCode] == null) {
       voice = voicesList[0];
     }
     notifyListeners();
+  }
+
+  /// The cloud voices of [languageCode], fetched once per language. Messages
+  /// from the other channels shown can be in languages other than [language].
+  Future<List<String>> _voicesFor(String languageCode) async {
+    final cached = _voicesByLanguage[languageCode];
+    if (cached != null) {
+      return cached;
+    }
+    try {
+      return _voicesByLanguage[languageCode] = await fetchVoices(languageCode);
+    } catch (e) {
+      // leave it uncached so a later message retries.
+      debugPrint("failed to fetch $languageCode voices: $e");
+      return const [];
+    }
+  }
+
+  /// The cloud voice to read [model] with: the chosen voice for its language,
+  /// or else one of that language's voices, as synthesize reads the language
+  /// from the voice name.
+  @visibleForTesting
+  Future<String?> voiceFor(ChatMessage model) async {
+    final languageCode = languageFor(model).languageCode;
+    if (isRandomVoiceEnabled) {
+      final hash = model.author.displayName.hashCode;
+      final options = languageCode == _language.languageCode
+          ? voices
+          : await _voicesFor(languageCode);
+      final pool = options.isEmpty ? voices : options;
+      return pool.isEmpty ? null : pool[hash % pool.length];
+    }
+    return _voice[languageCode] ??
+        (await _voicesFor(languageCode)).firstOrNull ??
+        _voice[_language.languageCode];
   }
 
   String getVocalization(AppLocalizations l10n, MessageModel model,
@@ -511,14 +549,11 @@ class TtsModel extends ChangeNotifier {
         String? voice;
         double? pitch;
         if (model is ChatMessage) {
+          voice = await voiceFor(model);
           if (isRandomVoiceEnabled) {
-            final name = model.author.displayName;
-            final hash = name.hashCode;
-            voice = voices[hash % voices.length];
+            final hash = model.author.displayName.hashCode;
             pitch = (hash % 21) / 5 - 2;
           } else {
-            voice = _voice[languageFor(model).languageCode] ??
-                _voice[_language.languageCode];
             pitch = _pitch * 4 - 2;
           }
         }
