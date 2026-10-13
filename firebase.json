@@ -29,6 +29,10 @@
         "function": "metadata"
       },
       {
+        "source": "/api/kick/webhook",
+        "function": "kickWebhook"
+      },
+      {
         "source": "/embed",
         "function": "embedRedirect"
       }
