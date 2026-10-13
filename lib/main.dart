@@ -18,9 +18,9 @@ import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages.dart';
+import 'package:rtchat/models/messages/chat.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
-import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/purchases.dart';
 import 'package:rtchat/models/qr_code.dart';
 import 'package:rtchat/models/quick_links.dart';
@@ -181,8 +181,7 @@ class _AppState extends State<App> {
               ..addListener(() {
                 if (model.isLive && model.messages.isNotEmpty) {
                   final message = model.messages.last;
-                  if (message is TwitchMessageModel &&
-                      message.message == "!disco") {
+                  if (message is ChatMessage && message.message == "!disco") {
                     _discoModeTimer?.cancel();
                     setState(() => _isDiscoModeRunning = true);
                     _discoModeTimer = Timer(const Duration(seconds: 5), () {

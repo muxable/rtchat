@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:linkify/linkify.dart';
+import 'package:rtchat/models/messages/chat.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
@@ -221,13 +222,16 @@ class TwitchMessageAnnotationsModel {
   }
 }
 
-class TwitchMessageModel extends MessageModel {
+class TwitchMessageModel extends MessageModel implements ChatMessage {
+  @override
   final TwitchUserModel author;
+  @override
   final String message;
   final TwitchMessageReplyModel? reply;
   final Map<String, dynamic> tags;
   final TwitchMessageAnnotationsModel annotations;
   final List<Emote> thirdPartyEmotes;
+  @override
   final bool deleted;
   final String channelId;
 
@@ -247,9 +251,14 @@ class TwitchMessageModel extends MessageModel {
       _badges ??= parseBadges(tags['badges-raw'] ?? "");
   List<BadgeData>? _badges;
 
+  @override
   bool get isAction => annotations.isAction;
 
+  @override
   bool get isCommand => !isAction && message.startsWith("!");
+
+  @override
+  bool get isSubscriber => tags['badges']?['subscriber'] != null;
 
   bool get isVip {
     if (tags['badges'] == null) {
@@ -265,6 +274,7 @@ class TwitchMessageModel extends MessageModel {
     return tags['badges']['moderator'] != null;
   }
 
+  @override
   List<MessageToken> get tokenized => _tokenized ??= tokenize();
   List<MessageToken>? _tokenized;
   List<MessageToken> tokenize() {

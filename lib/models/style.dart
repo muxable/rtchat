@@ -1,7 +1,7 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
-import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/messages/chat.dart';
 
 Color darken(Color color, [double amount = .1]) {
   assert(amount >= 0 && amount <= 1);
@@ -108,7 +108,7 @@ class StyleModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String getTwitchDisplayName(TwitchUserModel user) {
+  String getDisplayName(ChatUser user) {
     final author = user.displayName ?? user.login;
     if (author.toLowerCase() != user.login && isLoginShown) {
       // this is an internationalized name.

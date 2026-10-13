@@ -14,12 +14,12 @@ import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
 import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
+import 'package:rtchat/models/messages/chat.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
-import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/messages/twitch/shoutout_create_event.dart';
@@ -122,7 +122,7 @@ class TtsModel extends ChangeNotifier {
 
   String getVocalization(AppLocalizations l10n, MessageModel model,
       {bool includeAuthorPrelude = false}) {
-    if (model is TwitchMessageModel) {
+    if (model is ChatMessage) {
       final text = model.tokenized
           .where((token) =>
               token is TextToken ||
@@ -360,9 +360,10 @@ class TtsModel extends ChangeNotifier {
   }
 
   // match on login: it's stable and always present, unlike displayName.
-  bool isMuted(TwitchUserModel user) {
+  bool isMuted(ChatUser user) {
     final login = user.login.toLowerCase();
-    return _mutedUsers.any((muted) => muted.login.toLowerCase() == login);
+    return _mutedUsers.any((muted) =>
+        muted.provider == user.provider && muted.login.toLowerCase() == login);
   }
 
   void mute(TwitchUserModel model) {
@@ -385,12 +386,12 @@ class TtsModel extends ChangeNotifier {
       return;
     }
 
-    if (_mode == TtsMode.alertsOnly && model is TwitchMessageModel) {
+    if (_mode == TtsMode.alertsOnly && model is ChatMessage) {
       return;
     }
 
-    if (model is TwitchMessageModel) {
-      if (_isSubscribersOnly && (model.tags['badges']?['subscriber'] == null)) {
+    if (model is ChatMessage) {
+      if (_isSubscribersOnly && !model.isSubscriber) {
         return;
       }
 
@@ -413,8 +414,10 @@ class TtsModel extends ChangeNotifier {
 
     final activeMessage = _activeMessage;
     var includeAuthorPrelude = true;
-    if (activeMessage is TwitchMessageModel && model is TwitchMessageModel) {
-      includeAuthorPrelude = !(activeMessage.author == model.author);
+    if (activeMessage is ChatMessage && model is ChatMessage) {
+      includeAuthorPrelude =
+          !(activeMessage.author.provider == model.author.provider &&
+              activeMessage.author.userId == model.author.userId);
     }
 
     final vocalization = getVocalization(
@@ -453,7 +456,7 @@ class TtsModel extends ChangeNotifier {
       } else {
         String? voice;
         double? pitch;
-        if (model is TwitchMessageModel) {
+        if (model is ChatMessage) {
           if (isRandomVoiceEnabled) {
             final name = model.author.displayName;
             final hash = name.hashCode;
