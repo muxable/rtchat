@@ -20,7 +20,6 @@ import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
-import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/tts_foreground_service.dart';
 import 'package:rtchat/models/user.dart';
@@ -337,15 +336,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             );
                           }
 
-                          return FutureBuilder<List<Emote>>(
-                            future: getEmotes(widget.channel),
-                            builder: (context, snapshot) {
-                              return MessageInputWidget(
-                                emotes: snapshot.data ?? [],
-                                channel: widget.channel,
-                              );
-                            },
-                          );
+                          return MessageInputWidget(channel: widget.channel);
                         },
                       ),
                     );

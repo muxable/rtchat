@@ -148,6 +148,18 @@ class ViewsModel extends ChangeNotifier {
     return [if (chosen != null) chosen else ...postable.take(1)];
   }
 
+  /// The channel whose emotes to offer when composing a message from the
+  /// active view: the send target, or when sending to several channels,
+  /// [primary] if it's one of them, else the first. Null if the user can't
+  /// post to the view.
+  Channel? emoteChannel(Channel? userChannel, Channel? primary) {
+    final targets = sendTargets(userChannel);
+    if (targets.length == 1 || !targets.contains(primary)) {
+      return targets.firstOrNull;
+    }
+    return primary;
+  }
+
   /// Shows a single channel, e.g. one picked from search.
   void openChannel(Channel channel) {
     _openedView = ChannelView(
