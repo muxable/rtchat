@@ -353,20 +353,13 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                             // return Container() if the message is not the first and a merged model
                             // if it is the first. keep in mind that the list is reversed.
                             if (message is TwitchFollowEventModel) {
-                              if (index != messages.length - 1 &&
-                                  messages[index + 1]
-                                      is TwitchFollowEventModel) {
+                              final merged =
+                                  TwitchFollowEventModel.mergeAdjacent(
+                                      messages, index);
+                              if (merged == null) {
                                 return Container();
                               }
-                              // find the last TwitchFollowEventModel
-                              final lastIndex = messages.lastIndexWhere(
-                                  (element) =>
-                                      element is! TwitchFollowEventModel,
-                                  index);
-                              message = TwitchFollowEventModel.merged(messages
-                                  .sublist(lastIndex + 1, index + 1)
-                                  .reversed
-                                  .toList());
+                              message = merged;
                             }
                             // twitch will often send multiple subscription messages in a row.
                             // if we see them, suppress the less informative ones.
