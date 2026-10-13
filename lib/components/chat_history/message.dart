@@ -31,6 +31,7 @@ import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
 import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
+import 'package:rtchat/models/messages/chat.dart';
 import 'package:rtchat/models/messages/kick/event.dart';
 import 'package:rtchat/models/messages/kick/message.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -46,6 +47,7 @@ import 'package:rtchat/models/messages/twitch/shoutout_receive_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
+import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/urls.dart';
@@ -77,145 +79,13 @@ class ChatHistoryMessage extends StatelessWidget {
         if (layoutModel.locked) {
           return child;
         }
-        final userModel = Provider.of<UserModel>(context, listen: false);
-        final loginChannelId = userModel.userChannel?.channelId;
-        final viewingChannelId = m.channelId.split(':')[1];
-        final channel = Channel(Providers.twitch, viewingChannelId, "");
-
-        if (loginChannelId != viewingChannelId) {
-          return child;
-        }
-
-        return Material(
-          child: InkWell(
-              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-              onLongPress: () async {
-                FocusManager.instance.primaryFocus?.unfocus();
-                var showTimeoutDialog = await showDialog<bool>(
-                    context: context,
-                    builder: (context) {
-                      return Dialog(
-                        child: ListView(
-                            shrinkWrap: true,
-                            primary: false,
-                            children: [
-                              if (kDebugMode) Text("DEBUG: id=${m.messageId}"),
-                              ListTile(
-                                  leading: const Icon(Icons.timer,
-                                      color: Colors.grey),
-                                  title: Text(formattedTimestamp)),
-                              Consumer<TtsModel>(
-                                  builder: (context, ttsModel, child) {
-                                if (ttsModel.isMuted(m.author)) {
-                                  return ListTile(
-                                      leading: const Icon(
-                                          Icons.volume_up_rounded,
-                                          color: Colors.deepPurpleAccent),
-                                      title: Text(AppLocalizations.of(context)!
-                                          .unmuteUser(m.author.displayName ??
-                                              m.author.login)),
-                                      onTap: () {
-                                        ttsModel.unmute(m.author);
-                                        Navigator.pop(context);
-                                      });
-                                }
-                                return ListTile(
-                                    leading: const Icon(
-                                        Icons.volume_off_rounded,
-                                        color: Colors.redAccent),
-                                    title: Text(AppLocalizations.of(context)!
-                                        .muteUser(m.author.displayName ??
-                                            m.author.login)),
-                                    onTap: () {
-                                      ttsModel.mute(m.author);
-                                      Navigator.pop(context);
-                                    });
-                              }),
-                              ListTile(
-                                  leading: const Icon(Icons.delete,
-                                      color: Colors.redAccent),
-                                  title: Text(AppLocalizations.of(context)!
-                                      .deleteMessage),
-                                  onTap: () {
-                                    ActionsAdapter.instance
-                                        .delete(channel, m.messageId);
-                                    Navigator.pop(context);
-                                  }),
-                              ListTile(
-                                  leading: const Icon(Icons.timer_outlined,
-                                      color: Colors.orangeAccent),
-                                  title: Text(AppLocalizations.of(context)!
-                                      .timeoutUser(m.author.displayName ??
-                                          m.author.login)),
-                                  onTap: () {
-                                    Navigator.pop(context, true);
-                                  }),
-                              ListTile(
-                                  leading: const Icon(
-                                      Icons.dnd_forwardslash_outlined,
-                                      color: Colors.redAccent),
-                                  title: Text(AppLocalizations.of(context)!
-                                      .banUser(m.author.displayName ??
-                                          m.author.login)),
-                                  onTap: () {
-                                    ActionsAdapter.instance
-                                        .ban(channel, m.author.login);
-                                    Navigator.pop(context);
-                                  }),
-                              ListTile(
-                                  leading: const Icon(Icons.circle_outlined,
-                                      color: Colors.greenAccent),
-                                  title: Text(AppLocalizations.of(context)!
-                                      .unbanUser(m.author.displayName ??
-                                          m.author.login)),
-                                  onTap: () {
-                                    ActionsAdapter.instance
-                                        .unban(channel, m.author.login);
-                                    Navigator.pop(context);
-                                  }),
-                              ListTile(
-                                  leading: const Icon(Icons.copy_outlined,
-                                      color: Colors.greenAccent),
-                                  title: Text(AppLocalizations.of(context)!
-                                      .copyMessage),
-                                  onTap: () {
-                                    Clipboard.setData(
-                                        ClipboardData(text: m.message));
-                                    Navigator.pop(context);
-                                  }),
-                              ListTile(
-                                  leading: const Icon(Icons.link_outlined,
-                                      color: Colors.blueAccent),
-                                  title: Text(AppLocalizations.of(context)!
-                                      .viewProfile(m.author.displayName ??
-                                          m.author.login)),
-                                  onTap: () {
-                                    openUrl(Uri.parse(
-                                        "https://www.twitch.tv/${m.author.displayName}"));
-                                    Navigator.pop(context);
-                                  }),
-                            ]),
-                      );
-                    });
-                if (showTimeoutDialog == true && context.mounted) {
-                  await showDialog(
-                      context: context,
-                      builder: (context) {
-                        return TimeoutDialog(
-                            title: AppLocalizations.of(context)!.timeoutUser(
-                                m.author.displayName ?? m.author.login),
-                            onPressed: (duration) {
-                              ActionsAdapter.instance.timeout(
-                                  channel,
-                                  m.author.login,
-                                  "timed out by streamer",
-                                  duration);
-                              Navigator.pop(context);
-                            });
-                      });
-                }
-              },
-              child: child),
+        return _ModerationActions(
+          message: m,
+          channel: Channel(Providers.twitch, m.channelId.split(':')[1], ""),
+          profileUrl:
+              Uri.parse("https://www.twitch.tv/${m.author.displayName}"),
+          formattedTimestamp: formattedTimestamp,
+          child: child,
         );
       });
     } else if (m is TwitchRaidEventModel) {
@@ -312,10 +182,22 @@ class ChatHistoryMessage extends StatelessWidget {
     } else if (m is TwitchShoutoutReceiveEventModel) {
       return TwitchShoutoutReceiveEventWidget(m);
     } else if (m is KickMessageModel) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: KickMessageWidget(m),
-      );
+      return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+        final child = Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: KickMessageWidget(m),
+        );
+        if (layoutModel.locked) {
+          return child;
+        }
+        return _ModerationActions(
+          message: m,
+          channel: Channel(Providers.kick, m.channelId.split(':')[1], ""),
+          profileUrl: Uri.parse("https://kick.com/${m.author.login}"),
+          formattedTimestamp: formattedTimestamp,
+          child: child,
+        );
+      });
     } else if (m is KickFollowEventModel) {
       return KickFollowEventWidget(m);
     } else if (m is KickSubscriptionEventModel) {
@@ -329,5 +211,151 @@ class ChatHistoryMessage extends StatelessWidget {
     } else {
       throw AssertionError("invalid message type $m");
     }
+  }
+}
+
+/// Long-press moderation for chat messages on channels the user owns.
+class _ModerationActions extends StatelessWidget {
+  final ChatMessage message;
+  final Channel channel;
+  final Uri profileUrl;
+  final String formattedTimestamp;
+  final Widget child;
+
+  const _ModerationActions(
+      {required this.message,
+      required this.channel,
+      required this.profileUrl,
+      required this.formattedTimestamp,
+      required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    if (userModel.userChannel != channel) {
+      return child;
+    }
+    final m = message;
+    final author = m.author;
+    return Material(
+      child: InkWell(
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          onLongPress: () async {
+            FocusManager.instance.primaryFocus?.unfocus();
+            var showTimeoutDialog = await showDialog<bool>(
+                context: context,
+                builder: (context) {
+                  return Dialog(
+                    child:
+                        ListView(shrinkWrap: true, primary: false, children: [
+                      if (kDebugMode) Text("DEBUG: id=${m.messageId}"),
+                      ListTile(
+                          leading: const Icon(Icons.timer, color: Colors.grey),
+                          title: Text(formattedTimestamp)),
+                      // muting kick users needs provider-aware
+                      // persistence, see #1398.
+                      if (author is TwitchUserModel)
+                        Consumer<TtsModel>(builder: (context, ttsModel, child) {
+                          if (ttsModel.isMuted(author)) {
+                            return ListTile(
+                                leading: const Icon(Icons.volume_up_rounded,
+                                    color: Colors.deepPurpleAccent),
+                                title: Text(AppLocalizations.of(context)!
+                                    .unmuteUser(m.author.displayName ??
+                                        m.author.login)),
+                                onTap: () {
+                                  ttsModel.unmute(author);
+                                  Navigator.pop(context);
+                                });
+                          }
+                          return ListTile(
+                              leading: const Icon(Icons.volume_off_rounded,
+                                  color: Colors.redAccent),
+                              title: Text(AppLocalizations.of(context)!
+                                  .muteUser(
+                                      m.author.displayName ?? m.author.login)),
+                              onTap: () {
+                                ttsModel.mute(author);
+                                Navigator.pop(context);
+                              });
+                        }),
+                      ListTile(
+                          leading:
+                              const Icon(Icons.delete, color: Colors.redAccent),
+                          title:
+                              Text(AppLocalizations.of(context)!.deleteMessage),
+                          onTap: () {
+                            ActionsAdapter.instance
+                                .delete(channel, m.messageId);
+                            Navigator.pop(context);
+                          }),
+                      ListTile(
+                          leading: const Icon(Icons.timer_outlined,
+                              color: Colors.orangeAccent),
+                          title: Text(AppLocalizations.of(context)!.timeoutUser(
+                              m.author.displayName ?? m.author.login)),
+                          onTap: () {
+                            Navigator.pop(context, true);
+                          }),
+                      ListTile(
+                          leading: const Icon(Icons.dnd_forwardslash_outlined,
+                              color: Colors.redAccent),
+                          title: Text(AppLocalizations.of(context)!
+                              .banUser(m.author.displayName ?? m.author.login)),
+                          onTap: () {
+                            ActionsAdapter.instance.ban(channel, m.author.login,
+                                userId: m.author.userId);
+                            Navigator.pop(context);
+                          }),
+                      ListTile(
+                          leading: const Icon(Icons.circle_outlined,
+                              color: Colors.greenAccent),
+                          title: Text(AppLocalizations.of(context)!.unbanUser(
+                              m.author.displayName ?? m.author.login)),
+                          onTap: () {
+                            ActionsAdapter.instance.unban(
+                                channel, m.author.login,
+                                userId: m.author.userId);
+                            Navigator.pop(context);
+                          }),
+                      ListTile(
+                          leading: const Icon(Icons.copy_outlined,
+                              color: Colors.greenAccent),
+                          title:
+                              Text(AppLocalizations.of(context)!.copyMessage),
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: m.message));
+                            Navigator.pop(context);
+                          }),
+                      ListTile(
+                          leading: const Icon(Icons.link_outlined,
+                              color: Colors.blueAccent),
+                          title: Text(AppLocalizations.of(context)!.viewProfile(
+                              m.author.displayName ?? m.author.login)),
+                          onTap: () {
+                            openUrl(profileUrl);
+                            Navigator.pop(context);
+                          }),
+                    ]),
+                  );
+                });
+            if (showTimeoutDialog == true && context.mounted) {
+              await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return TimeoutDialog(
+                        title: AppLocalizations.of(context)!.timeoutUser(
+                            m.author.displayName ?? m.author.login),
+                        onPressed: (duration) {
+                          ActionsAdapter.instance.timeout(channel,
+                              m.author.login, "timed out by streamer", duration,
+                              userId: m.author.userId);
+                          Navigator.pop(context);
+                        });
+                  });
+            }
+          },
+          child: child),
+    );
   }
 }
