@@ -259,5 +259,6 @@
   "kickSubscriptionEvent": "<b>{subscriberName}</b> সাবস্ক্রাইব করেছেন!",
   "kickResubscriptionEvent": "<b>{subscriberName}</b> {months} মাসের জন্য আবার সাবস্ক্রাইব করেছেন!",
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> {count}টি সাব উপহার দিয়েছেন!",
-  "kicksGiftedEvent": "<b>{senderName}</b> {amount} Kicks পাঠিয়েছেন!"
+  "kicksGiftedEvent": "<b>{senderName}</b> {amount} Kicks পাঠিয়েছেন!",
+  "signInWithKick": "Kick দিয়ে সাইন ইন করুন"
 }

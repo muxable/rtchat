@@ -1028,4 +1028,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
     return '<b>$senderName</b>さんが$amountString Kicksを送りました！';
   }
+
+  @override
+  String get signInWithKick => 'Kickでサインイン';
 }

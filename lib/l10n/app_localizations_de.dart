@@ -1067,4 +1067,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
     return '<b>$senderName</b> hat $amountString Kicks gesendet!';
   }
+
+  @override
+  String get signInWithKick => 'Mit Kick anmelden';
 }

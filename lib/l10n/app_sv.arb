@@ -259,5 +259,6 @@
   "kickSubscriptionEvent": "<b>{subscriberName}</b> har prenumererat!",
   "kickResubscriptionEvent": "<b>{subscriberName}</b> har förnyat sin prenumeration i {months} månader!",
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> har gett bort {count} prenumerationer!",
-  "kicksGiftedEvent": "<b>{senderName}</b> skickade {amount} Kicks!"
+  "kicksGiftedEvent": "<b>{senderName}</b> skickade {amount} Kicks!",
+  "signInWithKick": "Logga in med Kick"
 }

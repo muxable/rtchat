@@ -259,5 +259,6 @@
   "kickSubscriptionEvent": "<b>{subscriberName}</b> hat abonniert!",
   "kickResubscriptionEvent": "<b>{subscriberName}</b> hat das Abo um {months} Monate verlängert!",
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> hat {count} Abos verschenkt!",
-  "kicksGiftedEvent": "<b>{senderName}</b> hat {amount} Kicks gesendet!"
+  "kicksGiftedEvent": "<b>{senderName}</b> hat {amount} Kicks gesendet!",
+  "signInWithKick": "Mit Kick anmelden"
 }

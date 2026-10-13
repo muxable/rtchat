@@ -1444,5 +1444,9 @@
         "format": "decimalPattern"
       }
     }
+  },
+  "signInWithKick": "Sign in with Kick",
+  "@signInWithKick": {
+    "description": "Button to sign in with a Kick account"
   }
 }

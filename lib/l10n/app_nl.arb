@@ -259,5 +259,6 @@
   "kickSubscriptionEvent": "<b>{subscriberName}</b> heeft geabonneerd!",
   "kickResubscriptionEvent": "<b>{subscriberName}</b> heeft het abonnement verlengd voor {months} maanden!",
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> heeft {count} abonnementen cadeau gegeven!",
-  "kicksGiftedEvent": "<b>{senderName}</b> heeft {amount} Kicks gestuurd!"
+  "kicksGiftedEvent": "<b>{senderName}</b> heeft {amount} Kicks gestuurd!",
+  "signInWithKick": "Log in met Kick"
 }

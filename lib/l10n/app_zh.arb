@@ -259,5 +259,6 @@
   "kickSubscriptionEvent": "<b>{subscriberName}</b> 订阅了！",
   "kickResubscriptionEvent": "<b>{subscriberName}</b> 续订了 {months} 个月！",
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> 赠送了 {count} 个订阅！",
-  "kicksGiftedEvent": "<b>{senderName}</b> 送出了 {amount} Kicks！"
+  "kicksGiftedEvent": "<b>{senderName}</b> 送出了 {amount} Kicks！",
+  "signInWithKick": "使用 Kick 登录"
 }
