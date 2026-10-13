@@ -34,6 +34,21 @@ void main() {
     expect(views.activeView.channels, isEmpty);
   });
 
+  test("my channel picks up a new display name or language, notifying", () {
+    var notifications = 0;
+    final views = ViewsModel()..update(FakeUserModel(userChannel: twitch));
+    views.addListener(() => notifications++);
+    views.update(
+        FakeUserModel(userChannel: Channel(Providers.twitch, '1', 'renamed')));
+    expect(views.activeView.channels.single.displayName, 'renamed');
+    expect(notifications, 1);
+    views.update(FakeUserModel(
+        userChannel:
+            Channel(Providers.twitch, '1', 'renamed', language: 'ja')));
+    expect(views.activeView.channels.single.language, 'ja');
+    expect(notifications, 2);
+  });
+
   test("opening a channel shows just that channel until going back", () {
     final views = ViewsModel()..update(FakeUserModel(userChannel: twitch));
     views.openChannel(other);

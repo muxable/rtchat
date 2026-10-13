@@ -54,6 +54,21 @@ bool _sameChannels(List<Channel> a, List<Channel> b) {
   return true;
 }
 
+// unlike [_sameChannels], also compares the metadata that can change while
+// the channel stays the same, so a renamed channel isn't shown stale.
+bool _sameChannelsAndMetadata(List<Channel> a, List<Channel> b) {
+  if (!_sameChannels(a, b)) {
+    return false;
+  }
+  for (var i = 0; i < a.length; i++) {
+    if (a[i].displayName != b[i].displayName ||
+        a[i].language != b[i].language) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /// What the user is looking at: by default the channel they signed in with
 /// ("My channel"), a channel they opened from search or a raid, or a view they
 /// saved. Views don't need an account, so signed-out users can use them too.
@@ -74,7 +89,7 @@ class ViewsModel extends ChangeNotifier {
   void update(UserModel userModel) {
     final channel = userModel.userChannel;
     final channels = [if (channel != null) channel];
-    if (_sameChannels(channels, _userChannels)) {
+    if (_sameChannelsAndMetadata(channels, _userChannels)) {
       return;
     }
     _userChannels = List.unmodifiable(channels);
