@@ -48,6 +48,17 @@ void main() {
       expect(views.sendTargets(kick), [kick]);
     });
 
+    test("pick whose emotes are offered", () {
+      final views = simulcast();
+      expect(views.emoteChannel(kick, twitch), kick);
+      views.sendTarget = otherKick.toString();
+      expect(views.emoteChannel(kick, kick), otherKick);
+      views.sendTarget = ViewsModel.allChannels;
+      expect(views.emoteChannel(kick, otherKick), otherKick);
+      expect(views.emoteChannel(kick, twitch), kick);
+      expect(views.emoteChannel(null, twitch), isNull);
+    });
+
     test("are remembered per view", () {
       final views = simulcast();
       final id = views.activeView.id;

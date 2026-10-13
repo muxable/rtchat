@@ -123,12 +123,14 @@ class EmoteTextEditingController extends TextEditingController {
 
 class MessageInputWidget extends StatefulWidget {
   final Channel channel;
-  final List<Emote> emotes; // TODO: decouple this from the twitch emote model.
+
+  /// Loads the emotes usable in a channel. Defaults to [getEmotes].
+  final Future<List<Emote>> Function(Channel channel) loadEmotes;
 
   const MessageInputWidget({
     super.key,
     required this.channel,
-    required this.emotes,
+    this.loadEmotes = getEmotes,
   });
 
   @override
@@ -160,11 +162,16 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   final _textSeed = Random().nextDouble();
   final List<String> _pendingSend = [];
 
+  // the channel whose emotes are offered and previewed, and its emotes.
+  Channel? _emoteChannel;
+  Future<List<Emote>> _channelEmotes = Future.value(const []);
+  List<Emote> _loadedEmotes = const [];
+
   @override
   void initState() {
     super.initState();
     final keyboardVisibilityController = KeyboardVisibilityController();
-    _textEditingController = EmoteTextEditingController(widget.emotes);
+    _textEditingController = EmoteTextEditingController(const []);
     // Subscribe to keyboard visibility changes.
     keyboardSubscription =
         keyboardVisibilityController.onChange.listen((visible) {
@@ -180,10 +187,28 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       ..getSharedText().then(_handleSharedData);
   }
 
-  @override
-  void didUpdateWidget(MessageInputWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _textEditingController?.emotes = widget.emotes;
+  /// Starts loading [channel]'s emotes if they aren't already the ones
+  /// offered.
+  void _useEmotesOf(Channel channel) {
+    if (channel == _emoteChannel) {
+      return;
+    }
+    _emoteChannel = channel;
+    // don't keep offering the previous channel's emotes while loading.
+    _loadedEmotes = const [];
+    _textEditingController?.emotes = const [];
+    final emotes = widget.loadEmotes(channel);
+    _channelEmotes = emotes;
+    emotes.then((loaded) {
+      // a later channel may have been picked while these were loading.
+      if (!mounted || _emoteChannel != channel) {
+        return;
+      }
+      setState(() {
+        _loadedEmotes = loaded;
+        _textEditingController?.emotes = loaded;
+      });
+    });
   }
 
   // Handles any shared data we may receive.
@@ -272,6 +297,12 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // offer the emotes of the channel being sent to, which may not be the
+    // one being viewed.
+    final emoteChannel = Provider.of<ViewsModel>(context).emoteChannel(
+            Provider.of<UserModel>(context).userChannel, widget.channel) ??
+        widget.channel;
+    _useEmotesOf(emoteChannel);
     return Material(
       child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -289,7 +320,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                 child: AutocompleteWidget(
                   controller: _textEditingController!,
                   onSend: sendMessage,
-                  channel: widget.channel,
+                  emotes: _channelEmotes,
                 ),
               ),
             Padding(
@@ -391,8 +422,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             ),
             _isEmotePickerVisible
                 ? EmotePickerWidget(
-                    channel: widget.channel,
-                    emotes: widget.emotes,
+                    channel: emoteChannel,
+                    emotes: _loadedEmotes,
                     onEmoteSelected: (emote) {
                       if (emote == null) {
                         setState(() {
