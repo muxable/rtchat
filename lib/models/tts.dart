@@ -85,7 +85,7 @@ class TtsModel extends ChangeNotifier {
       // channels without a metadata document yet have no language.
       final metadata = await ChannelsAdapter.instance.forChannel(channel).first;
       final streamLanguage =
-          metadata is TwitchChannelMetadata ? metadata.language : null;
+          metadata is StreamChannelMetadata ? metadata.language : null;
       if (streamLanguage == null) {
         _isSupportedLanguage = false;
         _language = Language();
