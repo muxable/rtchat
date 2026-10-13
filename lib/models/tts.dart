@@ -598,9 +598,13 @@ class TtsModel extends ChangeNotifier {
     }
     final userJson = json['mutedUsers'];
     if (userJson != null) {
-      for (var user in userJson) {
-        _mutedUsers.add(MutedUser.fromJson(Map<String, dynamic>.from(user)));
-      }
+      // the saved list is a full snapshot, so it replaces the current one.
+      _mutedUsers
+        ..clear()
+        ..addAll([
+          for (var user in userJson)
+            MutedUser.fromJson(Map<String, dynamic>.from(user)),
+        ]);
     }
   }
 

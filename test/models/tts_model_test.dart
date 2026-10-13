@@ -327,6 +327,24 @@ void main() {
       expect(restored.isMuted(user), isFalse);
     });
 
+    test('reloading saved muted users does not duplicate them', () {
+      const user =
+          TwitchUserModel(userId: '1', login: 'muxfd', displayName: 'Muxfd');
+      model.mute(user);
+      final json = model.toJson();
+      model.updateFromJson(json);
+      model.updateFromJson(json);
+      expect(model.toJson()['mutedUsers'], json['mutedUsers']);
+    });
+
+    test('reloading saved muted users drops users unmuted elsewhere', () {
+      const user =
+          TwitchUserModel(userId: '1', login: 'muxfd', displayName: 'Muxfd');
+      model.mute(user);
+      model.updateFromJson({'mutedUsers': []});
+      expect(model.isMuted(user), isFalse);
+    });
+
     test('muting matches on login', () {
       model.mute(const TwitchUserModel(userId: '1', login: 'nodisplayname'));
       expect(model.isMuted(const TwitchUserModel(userId: '2', login: 'other')),
