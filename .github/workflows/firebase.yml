@@ -16,8 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: w9jds/firebase-action@master
+      - uses: google-github-actions/auth@v2
         with:
-          args: deploy --only "firestore,database"
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_RTCHAT_47692 }}
+      - run: npx -y firebase-tools@15.33.0 deploy --only "firestore,database" --project rtchat-47692 --non-interactive
