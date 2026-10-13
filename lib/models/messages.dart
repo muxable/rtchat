@@ -66,16 +66,6 @@ class MessagesModel extends ChangeNotifier {
 
   List<Channel> get channels => _channels;
 
-  @override
-  void dispose() {
-    // otherwise events that arrive later notify a disposed model.
-    for (final subscription in _subscriptions) {
-      subscription.cancel();
-    }
-    _subscriptions.clear();
-    super.dispose();
-  }
-
   void _onEvent(Channel channel, DeltaEvent event) {
     _events.add((channel: channel, event: event));
     _messages = applyDeltaEvent(
@@ -83,6 +73,12 @@ class MessagesModel extends ChangeNotifier {
       event,
       channel: _channels.length > 1 ? channel : null,
       onAppend: (model) {
+        // only messages that arrive live are read out or pinged, not history.
+        // in a merged view a live message can land before a newer one that
+        // another channel already delivered, so where it lands doesn't matter.
+        if (!_liveChannels.contains(channel)) {
+          return;
+        }
         // Pass localizations to the TTS say method
         final localizations = _getLocalizations();
         if (localizations != null) {
@@ -90,7 +86,9 @@ class MessagesModel extends ChangeNotifier {
         } else {
           debugPrint("Localizations not available");
         }
-        if (_liveChannels.contains(channel) && shouldPing()) {
+        // a message landing before a newer one doesn't end a quiet period,
+        // the newer message already did.
+        if (identical(_messages.last, model) && shouldPing()) {
           ProfilesAdapter.instance
               .getIsOnline(channelId: channel.toString())
               .first
@@ -112,7 +110,12 @@ class MessagesModel extends ChangeNotifier {
       _separators = computeSeparators(_messages);
     }
     if (event is ClearDeltaEvent) {
-      _tts?.stop();
+      // in a merged view only the cleared channel's messages are dropped.
+      if (_channels.length > 1) {
+        _tts?.stopChannel(channel);
+      } else {
+        _tts?.stop();
+      }
     } else if (event is LiveStateDeltaEvent) {
       _liveChannels.add(channel);
     }
@@ -271,9 +274,10 @@ class MessagesModel extends ChangeNotifier {
 /// Applies [event] to [messages] in place and returns the resulting list, which
 /// is a new list if the event clears the chat.
 ///
-/// [onAppend] is called when a message is appended to the end of the list, but
-/// not when an out-of-order message is inserted. [onUpdate] is called for each
-/// message replaced by an [UpdateDeltaEvent] or [UpdateAllDeltaEvent].
+/// [onAppend] is called for each message added by an [AppendDeltaEvent],
+/// whether it's appended to the end or inserted out of order. [onUpdate] is
+/// called for each message replaced by an [UpdateDeltaEvent] or
+/// [UpdateAllDeltaEvent].
 ///
 /// When messages from several channels are merged, [channel] is the channel
 /// [event] came from: clearing chat and user-wide updates (bans) then only
@@ -288,9 +292,8 @@ List<MessageModel> applyDeltaEvent(
       onUpdate,
 }) {
   if (event is AppendDeltaEvent) {
-    if (_insert(messages, event.model)) {
-      onAppend?.call(event.model);
-    }
+    _insert(messages, event.model);
+    onAppend?.call(event.model);
   } else if (event is UpdateDeltaEvent) {
     for (var i = 0; i < messages.length; i++) {
       final message = messages[i];
@@ -328,9 +331,8 @@ List<MessageModel> applyDeltaEvent(
   return messages;
 }
 
-/// Inserts [model] in timestamp order, returning whether it was appended to
-/// the end (as opposed to arriving out of order).
-bool _insert(List<MessageModel> messages, MessageModel model) {
+/// Inserts [model] in timestamp order.
+void _insert(List<MessageModel> messages, MessageModel model) {
   // check if this event comes after the last message
   if (messages.isNotEmpty &&
       model.timestamp.isBefore(messages.last.timestamp)) {
@@ -338,10 +340,9 @@ bool _insert(List<MessageModel> messages, MessageModel model) {
     final index = messages
         .indexWhere((element) => element.timestamp.isAfter(model.timestamp));
     messages.insert(index, model);
-    return false;
+  } else {
+    messages.add(model);
   }
-  messages.add(model);
-  return true;
 }
 
 /// An event and the channel it was received on.

@@ -11,6 +11,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/channels.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
 import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
@@ -48,7 +49,8 @@ class TtsModel extends ChangeNotifier {
 
   final audioPlayer = AudioPlayer();
   Future<void> _previousUtterance = Future.value();
-  final Set<String> _pending = {};
+  // the messages waiting to be read out, and the channel they came from.
+  final Map<String, Channel?> _pending = {};
 
   // past these many queued messages tts drops the author prelude, and then
   // turns itself off.
@@ -447,7 +449,7 @@ class TtsModel extends ChangeNotifier {
     final completer = Completer();
 
     _previousUtterance = completer.future;
-    _pending.add(model.messageId);
+    _pending[model.messageId] = model.channel;
 
     // always release the queue: a failed utterance (e.g. a cloud tts error)
     // would otherwise block, and hold on to, every message after it.
@@ -467,7 +469,7 @@ class TtsModel extends ChangeNotifier {
     _activeMessage = model;
 
     if ((_mode != TtsMode.disabled || model is SystemMessageModel) &&
-        _pending.contains(model.messageId)) {
+        _pending.containsKey(model.messageId)) {
       // TODO: replace with subscription logic
       if (!_isCloudTtsEnabled) {
         try {
@@ -529,6 +531,11 @@ class TtsModel extends ChangeNotifier {
 
   void stop() {
     _pending.clear();
+  }
+
+  /// Stops reading out the messages that came from [channel].
+  void stopChannel(Channel channel) {
+    _pending.removeWhere((_, pending) => pending == channel);
   }
 
   void updateFromJson(Map<String, dynamic> json) {
