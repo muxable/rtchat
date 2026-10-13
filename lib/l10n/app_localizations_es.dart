@@ -1027,4 +1027,36 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get companionAuthScanQrCode =>
       'Escanea este código QR con tu teléfono para iniciar sesión en otro dispositivo.';
+
+  @override
+  String kickSubscriptionEvent(String subscriberName) {
+    return '¡<b>$subscriberName</b> se ha suscrito!';
+  }
+
+  @override
+  String kickResubscriptionEvent(String subscriberName, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '¡<b>$subscriberName</b> ha renovado su suscripción por $monthsString meses!';
+  }
+
+  @override
+  String kickGiftedSubscriptionsEvent(String gifterName, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '¡<b>$gifterName</b> ha regalado $countString suscripciones!';
+  }
+
+  @override
+  String kicksGiftedEvent(String senderName, int amount) {
+    final intl.NumberFormat amountNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String amountString = amountNumberFormat.format(amount);
+
+    return '¡<b>$senderName</b> ha enviado $amountString Kicks!';
+  }
 }

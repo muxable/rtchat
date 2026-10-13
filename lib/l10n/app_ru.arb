@@ -255,5 +255,9 @@
   "thirdPartyAuthError": "Хм, не получилось. Попробуйте ещё раз или спросите в Discord?",
   "companionAuthBrowserTooOld": "Ваш браузер слишком старый для прямого входа. Отсканируйте этот QR-код телефоном, чтобы войти на другом устройстве.",
   "companionAuthScanQrCode": "Отсканируйте этот QR-код телефоном, чтобы войти на другом устройстве.",
-  "alertsEnabled": "Только оповещения"
+  "alertsEnabled": "Только оповещения",
+  "kickSubscriptionEvent": "<b>{subscriberName}</b> оформил подписку!",
+  "kickResubscriptionEvent": "<b>{subscriberName}</b> продлил подписку: {months} мес.!",
+  "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> подарил подписки: {count}!",
+  "kicksGiftedEvent": "<b>{senderName}</b> отправил {amount} Kicks!"
 }

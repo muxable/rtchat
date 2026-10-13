@@ -255,5 +255,9 @@
   "thirdPartyAuthError": "Hm, das hat nicht funktioniert. Versuche es erneut oder frag auf Discord?",
   "companionAuthBrowserTooOld": "Dein Browser ist zu alt, um dich direkt anzumelden. Scanne diesen QR-Code mit deinem Handy, um dich auf einem anderen Gerät anzumelden.",
   "companionAuthScanQrCode": "Scanne diesen QR-Code mit deinem Handy, um dich auf einem anderen Gerät anzumelden.",
-  "alertsEnabled": "Nur Benachrichtigungen"
+  "alertsEnabled": "Nur Benachrichtigungen",
+  "kickSubscriptionEvent": "<b>{subscriberName}</b> hat abonniert!",
+  "kickResubscriptionEvent": "<b>{subscriberName}</b> hat das Abo um {months} Monate verlängert!",
+  "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> hat {count} Abos verschenkt!",
+  "kicksGiftedEvent": "<b>{senderName}</b> hat {amount} Kicks gesendet!"
 }

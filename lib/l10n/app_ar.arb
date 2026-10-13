@@ -255,5 +255,9 @@
   "thirdPartyAuthError": "لم ينجح ذلك. حاول مرة أخرى أو اسأل على Discord؟",
   "companionAuthBrowserTooOld": "متصفحك قديم جدًا لتسجيل الدخول مباشرة. امسح رمز QR هذا بهاتفك لتسجيل الدخول على جهاز آخر.",
   "companionAuthScanQrCode": "امسح رمز QR هذا بهاتفك لتسجيل الدخول على جهاز آخر.",
-  "alertsEnabled": "التنبيهات فقط"
+  "alertsEnabled": "التنبيهات فقط",
+  "kickSubscriptionEvent": "اشترك <b>{subscriberName}</b>!",
+  "kickResubscriptionEvent": "جدّد <b>{subscriberName}</b> اشتراكه لمدة {months} شهرًا!",
+  "kickGiftedSubscriptionsEvent": "أهدى <b>{gifterName}</b> {count} اشتراكات!",
+  "kicksGiftedEvent": "أرسل <b>{senderName}</b> {amount} Kicks!"
 }

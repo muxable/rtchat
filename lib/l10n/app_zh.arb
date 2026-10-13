@@ -255,5 +255,9 @@
   "thirdPartyAuthError": "嗯，没有成功。再试一次，或者在 Discord 上提问？",
   "companionAuthBrowserTooOld": "你的浏览器版本过旧，无法直接登录。请用手机扫描此二维码，在其他设备上登录。",
   "companionAuthScanQrCode": "请用手机扫描此二维码，在其他设备上登录。",
-  "alertsEnabled": "仅提醒"
+  "alertsEnabled": "仅提醒",
+  "kickSubscriptionEvent": "<b>{subscriberName}</b> 订阅了！",
+  "kickResubscriptionEvent": "<b>{subscriberName}</b> 续订了 {months} 个月！",
+  "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> 赠送了 {count} 个订阅！",
+  "kicksGiftedEvent": "<b>{senderName}</b> 送出了 {amount} Kicks！"
 }

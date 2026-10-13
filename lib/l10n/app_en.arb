@@ -1392,5 +1392,57 @@
   "companionAuthScanQrCode": "Scan this QR code with your phone to sign in on another device.",
   "@companionAuthScanQrCode": {
     "description": "Instructions for signing in with a QR code"
+  },
+  "kickSubscriptionEvent": "<b>{subscriberName}</b> has subscribed!",
+  "@kickSubscriptionEvent": {
+    "description": "A new Kick subscription",
+    "placeholders": {
+      "subscriberName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "kickResubscriptionEvent": "<b>{subscriberName}</b> has resubscribed for {months} months!",
+  "@kickResubscriptionEvent": {
+    "description": "A renewed Kick subscription",
+    "placeholders": {
+      "subscriberName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "months": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> has gifted {count} subs!",
+  "@kickGiftedSubscriptionsEvent": {
+    "description": "Gifted Kick subscriptions",
+    "placeholders": {
+      "gifterName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "kicksGiftedEvent": "<b>{senderName}</b> sent {amount} Kicks!",
+  "@kicksGiftedEvent": {
+    "description": "Kicks (Kick's virtual currency) sent to the streamer",
+    "placeholders": {
+      "senderName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "amount": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
   }
 }

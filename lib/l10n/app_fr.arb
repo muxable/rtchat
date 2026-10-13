@@ -255,5 +255,9 @@
   "thirdPartyAuthError": "Hmm, ça n'a pas marché. Réessayez, ou demandez sur Discord ?",
   "companionAuthBrowserTooOld": "Votre navigateur est trop ancien pour se connecter directement. Scannez ce code QR avec votre téléphone pour vous connecter sur un autre appareil.",
   "companionAuthScanQrCode": "Scannez ce code QR avec votre téléphone pour vous connecter sur un autre appareil.",
-  "alertsEnabled": "Alertes uniquement"
+  "alertsEnabled": "Alertes uniquement",
+  "kickSubscriptionEvent": "<b>{subscriberName}</b> s'est abonné !",
+  "kickResubscriptionEvent": "<b>{subscriberName}</b> s'est réabonné pour {months} mois !",
+  "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> a offert {count} abonnements !",
+  "kicksGiftedEvent": "<b>{senderName}</b> a envoyé {amount} Kicks !"
 }
