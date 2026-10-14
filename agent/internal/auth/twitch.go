@@ -152,7 +152,9 @@ func NewFirestoreTwitchTokenSource(firestore *firestore.Client, clientID, client
 	if err != nil {
 		return nil, err
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// The token source outlives this function; retain its existing timeout.
+	time.AfterFunc(5*time.Second, cancel)
 	source := cfg.TokenSource(ctx, &oauth2.Token{
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
