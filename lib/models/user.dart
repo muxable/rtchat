@@ -15,8 +15,6 @@ class UserModel extends ChangeNotifier {
 
   User? _user;
   Channel? _userChannel;
-  Channel? _activeChannel;
-  Locale? _channelLocale;
 
   UserModel() {
     _userSubscription =
@@ -32,7 +30,7 @@ class UserModel extends ChangeNotifier {
         return;
       }
       _profileSubscription = ProfilesAdapter.instance
-          .getChannel(userId: user.uid, provider: "twitch")
+          .getChannel(userId: user.uid)
           .listen((channel) {
         _userChannel = channel;
         _isLoading = false;
@@ -61,32 +59,6 @@ class UserModel extends ChangeNotifier {
   User? get user => _user;
 
   Channel? get userChannel => _userChannel;
-
-  Channel? get activeChannel => _activeChannel ?? _userChannel;
-
-  set activeChannel(Channel? channel) {
-    _activeChannel = channel;
-    setChannelLanguage(channel?.language);
-    notifyListeners();
-  }
-
-  void setChannelLanguage(String? languageCode) {
-    if (languageCode != null) {
-      _channelLocale = Locale(normalizeLanguageCode(languageCode));
-    } else {
-      _channelLocale = null;
-    }
-    notifyListeners();
-  }
-
-  Locale getChannelLocale(BuildContext context) {
-    if (_activeChannel?.language != null) {
-      return _channelLocale ??
-          Locale(normalizeLanguageCode(_activeChannel!.language!));
-    }
-    // Fallback to the device locale
-    return Localizations.localeOf(context);
-  }
 
   static String normalizeLanguageCode(String? twitchLang) {
     final mappings = {
@@ -117,7 +89,7 @@ class UserModel extends ChangeNotifier {
       return null;
     }
     switch (channel.provider) {
-      case "twitch":
+      case Providers.twitch:
         return Uri.tryParse(
             "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
     }

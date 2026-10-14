@@ -1,6 +1,10 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { checkEventSubSubscriptions } from "./eventsub";
+import {
+  ensureKickSubscriptions,
+  removeIdleKickSubscriptions,
+} from "./kick_subscriptions";
 import { getTwitchLogin } from "./twitch";
 
 export const subscribe = functions.https.onCall(async (data, context) => {
@@ -125,6 +129,42 @@ export const subscribe = functions.https.onCall(async (data, context) => {
       }
 
       return channel;
+    case "kick": {
+      if (!/^\d+$/.test(String(channelId))) {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "invalid channel"
+        );
+      }
+      await ensureKickSubscriptions(String(channelId));
+      if (context.auth == null) {
+        return channelId;
+      }
+      const profileRef = admin
+        .firestore()
+        .collection("profiles")
+        .doc(context.auth.uid);
+      const kickProfile = (await profileRef.get()).get("kick");
+      if (!kickProfile) {
+        return channelId;
+      }
+      await profileRef.set(
+        { lastActiveAt: admin.firestore.FieldValue.serverTimestamp() },
+        { merge: true }
+      );
+      if (String(kickProfile.id) === String(channelId)) {
+        // owners' channels show up in search like twitch channels do.
+        await admin
+          .firestore()
+          .collection("channels")
+          .doc(`${provider}:${channelId}`)
+          .set(
+            { lastActiveAt: admin.firestore.FieldValue.serverTimestamp() },
+            { merge: true }
+          );
+      }
+      return channelId;
+    }
   }
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
@@ -146,4 +186,5 @@ export const unsubscribe = functions.pubsub
         await assignment.ref.delete();
       }
     }
+    await removeIdleKickSubscriptions();
   });

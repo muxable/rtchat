@@ -1,3 +1,4 @@
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
@@ -43,6 +44,17 @@ class TwitchSubscriptionMessageEventModel extends MessageModel {
       required this.streakMonths,
       required this.emotes,
       required this.text});
+
+  /// The announcement text, which may contain `<b>` tags for the user name.
+  String localizedText(AppLocalizations l10n) {
+    final tier = this.tier.replaceAll("000", "");
+    if (durationMonths > 1) {
+      return l10n.subscriptionMessageMultiMonthEvent(
+          subscriberUserName, tier, durationMonths, cumulativeMonths);
+    }
+    return l10n.subscriptionMessageEvent(
+        subscriberUserName, cumulativeMonths, tier);
+  }
 
   String emotesToString() {
     return emotes.map((e) => '${e.id}:${e.begin}-${e.end}').join('/');

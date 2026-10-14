@@ -26,7 +26,7 @@ class ScannerSettings extends StatelessWidget {
             IconButton(
               onPressed: () => scanController.toggleTorch(),
               icon: Icon(
-                scanController.value.torchState == TorchState.on
+                scanController.value.torchState == TorchState.off
                     ? Icons.flash_off
                     : Icons.flash_on,
                 color: iconColor,

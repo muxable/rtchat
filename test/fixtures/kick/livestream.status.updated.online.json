@@ -1,0 +1,15 @@
+{
+  "broadcaster": {
+    "is_anonymous": false,
+    "user_id": 123456789,
+    "username": "broadcaster_name",
+    "is_verified": true,
+    "profile_picture": "https://example.com/a.jpg",
+    "channel_slug": "broadcaster_channel",
+    "identity": null
+  },
+  "is_live": true,
+  "title": "Stream Title",
+  "started_at": "2025-01-01T11:00:00+11:00",
+  "ended_at": null
+}

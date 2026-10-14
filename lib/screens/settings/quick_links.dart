@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/scanner_error.dart';
 import 'package:rtchat/components/scanner_settings.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/screens/settings/dismissible_delete_background.dart';
 
@@ -73,7 +73,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
           Expanded(child:
               Consumer<QuickLinksModel>(builder: (context, quickLinks, child) {
             return ReorderableListView(
-              onReorder: quickLinks.swapSource,
+              onReorderItem: quickLinks.moveSource,
               children: quickLinks.sources.map((source) {
                 return Dismissible(
                   key: ValueKey(source),
@@ -140,7 +140,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                         TextFormField(
                             controller: _textEditingController,
                             decoration: InputDecoration(
-                                hintText: "URL",
+                                hintText: AppLocalizations.of(context)!.url,
                                 suffixIcon: IconButton(
                                     icon: const Icon(Icons.qr_code_scanner),
                                     onPressed: () {
@@ -154,8 +154,7 @@ class _QuickLinksScreenState extends State<QuickLinksScreen> {
                                           return Stack(
                                             children: [
                                               MobileScanner(
-                                                errorBuilder:
-                                                    (context, error, child) {
+                                                errorBuilder: (context, error) {
                                                   return ScannerErrorWidget(
                                                       error: error);
                                                 },

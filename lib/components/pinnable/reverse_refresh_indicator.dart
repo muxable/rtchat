@@ -539,7 +539,7 @@ class ReverseRefreshIndicatorState extends State<ReverseRefreshIndicator>
             left: 0.0,
             right: 0.0,
             child: SizeTransition(
-              axisAlignment: _isIndicatorAtTop! ? 1.0 : -1.0,
+              alignment: Alignment(-1.0, _isIndicatorAtTop! ? 1.0 : -1.0),
               sizeFactor: _positionFactor, // this is what brings it down
               child: Container(
                 padding: _isIndicatorAtTop!

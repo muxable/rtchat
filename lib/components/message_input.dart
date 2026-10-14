@@ -2,18 +2,19 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/autocomplete.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/style.dart';
+import 'package:rtchat/models/user.dart';
 import 'package:rtchat/share_channel.dart';
 
 class EmoteTextEditingController extends TextEditingController {
@@ -119,13 +120,18 @@ class EmoteTextEditingController extends TextEditingController {
 }
 
 class MessageInputWidget extends StatefulWidget {
-  final Channel channel;
-  final List<Emote> emotes; // TODO: decouple this from the twitch emote model.
+  /// The channel messages are sent to and whose emotes are offered. Null when
+  /// the signed-in account can't post to any of the channels shown, which
+  /// disables the input.
+  final Channel? channel;
+
+  /// Loads the emotes usable in a channel. Defaults to [getEmotes].
+  final Future<List<Emote>> Function(Channel channel) loadEmotes;
 
   const MessageInputWidget({
     super.key,
     required this.channel,
-    required this.emotes,
+    this.loadEmotes = getEmotes,
   });
 
   @override
@@ -157,11 +163,17 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   final _textSeed = Random().nextDouble();
   final List<String> _pendingSend = [];
 
+  // the channel whose emotes are offered, and its emotes.
+  Channel? _emoteChannel;
+  Future<List<Emote>> _channelEmotes = Future.value(const []);
+  List<Emote> _loadedEmotes = const [];
+
   @override
   void initState() {
     super.initState();
     final keyboardVisibilityController = KeyboardVisibilityController();
-    _textEditingController = EmoteTextEditingController(widget.emotes);
+    _textEditingController = EmoteTextEditingController(const []);
+    _useEmotesOf(widget.channel);
     // Subscribe to keyboard visibility changes.
     keyboardSubscription =
         keyboardVisibilityController.onChange.listen((visible) {
@@ -180,11 +192,44 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   @override
   void didUpdateWidget(MessageInputWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _textEditingController?.emotes = widget.emotes;
+    _useEmotesOf(widget.channel);
+  }
+
+  /// Starts loading [channel]'s emotes if they aren't already the ones
+  /// offered.
+  void _useEmotesOf(Channel? channel) {
+    if (channel == _emoteChannel) {
+      return;
+    }
+    _emoteChannel = channel;
+    // don't keep offering the previous channel's emotes while loading.
+    _loadedEmotes = const [];
+    _textEditingController?.emotes = const [];
+    if (channel == null) {
+      _channelEmotes = Future.value(const []);
+      return;
+    }
+    final emotes = widget.loadEmotes(channel);
+    _channelEmotes = emotes;
+    emotes.then((loaded) {
+      // the channel may have changed while these were loading.
+      if (!mounted || _emoteChannel != channel) {
+        return;
+      }
+      setState(() {
+        _loadedEmotes = loaded;
+        _textEditingController?.emotes = loaded;
+      });
+    }, onError: (_) {
+      // without emotes, messages are still sent as typed.
+    });
   }
 
   // Handles any shared data we may receive.
   void _handleSharedData(String sharedData) {
+    if (!mounted || sharedData.isEmpty) {
+      return;
+    }
     setState(() {
       _textEditingController?.text = sharedData;
     });
@@ -200,7 +245,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   void sendMessage(String value) async {
     value = value.trim();
-    if (value.isEmpty) {
+    final channel = widget.channel;
+    if (value.isEmpty || channel == null) {
       return;
     }
     final messenger = ScaffoldMessenger.of(context);
@@ -218,8 +264,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     await Future.wait([
       () async {
         try {
-          final error =
-              await ActionsAdapter.instance.send(widget.channel, value);
+          final error = await ActionsAdapter.instance.send(channel, value);
           if (error != null) {
             messenger.showSnackBar(SnackBar(
               content: Text(error),
@@ -254,6 +299,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final channel = widget.channel;
+    final l10n = AppLocalizations.of(context)!;
     return Material(
       child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -266,12 +313,12 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                   child: Text(e,
                       style: const TextStyle(fontStyle: FontStyle.italic)),
                 )),
-            if (_isKeyboardVisible)
+            if (_isKeyboardVisible && channel != null)
               Flexible(
                 child: AutocompleteWidget(
                   controller: _textEditingController!,
                   onSend: sendMessage,
-                  channel: widget.channel,
+                  emotes: _channelEmotes,
                 ),
               ),
             Padding(
@@ -281,26 +328,38 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                     borderRadius: const BorderRadius.all(Radius.circular(24)),
                     color: Theme.of(context).splashColor),
                 child: TextField(
+                  enabled: channel != null,
                   focusNode: _chatInputFocusNode,
                   controller: _textEditingController,
                   textInputAction: TextInputAction.send,
+                  // kick rejects messages over 500 characters (grapheme
+                  // clusters, which is how maxLength counts too).
+                  maxLength: channel?.provider == Providers.kick ? 500 : null,
+                  buildCounter: (context,
+                          {required currentLength,
+                          required isFocused,
+                          maxLength}) =>
+                      null,
                   maxLines: 6,
                   minLines: 1,
                   textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
                       prefixIcon: IconButton(
-                        onPressed: () {
-                          if (_isEmotePickerVisible) {
-                            setState(() => _isEmotePickerVisible = false);
-                            _chatInputFocusNode.requestFocus();
-                          } else {
-                            _chatInputFocusNode.unfocus();
-                            setState(() {
-                              _isEmotePickerVisible = true;
-                              _emoteIndex = Random().nextInt(_emotes.length);
-                            });
-                          }
-                        },
+                        onPressed: channel == null
+                            ? null
+                            : () {
+                                if (_isEmotePickerVisible) {
+                                  setState(() => _isEmotePickerVisible = false);
+                                  _chatInputFocusNode.requestFocus();
+                                } else {
+                                  _chatInputFocusNode.unfocus();
+                                  setState(() {
+                                    _isEmotePickerVisible = true;
+                                    _emoteIndex =
+                                        Random().nextInt(_emotes.length);
+                                  });
+                                }
+                              },
                         splashRadius: 24,
                         icon: _isEmotePickerVisible
                             ? const Icon(Icons.keyboard_rounded)
@@ -317,13 +376,22 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                         icon: const Icon(Icons.send_rounded),
                         color: Theme.of(context).colorScheme.primary,
                         splashRadius: 24,
-                        onPressed: () =>
-                            sendMessage(_textEditingController?.text ?? ''),
+                        onPressed: channel == null
+                            ? null
+                            : () =>
+                                sendMessage(_textEditingController?.text ?? ''),
                       ),
                       border: InputBorder.none,
                       hintMaxLines: 1,
                       hintText: () {
-                        final l10n = AppLocalizations.of(context)!;
+                        if (channel == null) {
+                          final account = Provider.of<UserModel>(context)
+                              .userChannel
+                              ?.provider;
+                          return account == null
+                              ? l10n.signInToSendMessages
+                              : l10n.cantChatWithAccount(providerName(account));
+                        }
                         if (_textSeed < 0.5) {
                           return l10n.sendAMessage;
                         } else if (_textSeed < 0.9) {
@@ -356,10 +424,10 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                 ),
               ),
             ),
-            _isEmotePickerVisible
+            _isEmotePickerVisible && channel != null
                 ? EmotePickerWidget(
-                    channel: widget.channel,
-                    emotes: widget.emotes,
+                    channel: channel,
+                    emotes: _loadedEmotes,
                     onEmoteSelected: (emote) {
                       if (emote == null) {
                         setState(() {

@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/scanner_error.dart';
 import 'package:rtchat/components/scanner_settings.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/activity_feed.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -100,7 +101,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
             }
           } else if (channel != null) {
             switch (channel.provider) {
-              case "twitch":
+              case Providers.twitch:
                 uri = Uri.tryParse(
                     "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
             }
@@ -112,16 +113,17 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
             _controller.loadHtmlString(" ");
           }
 
-          return Column(children: [
+          final mode = !activityFeedModel.isEnabled
+              ? _FeedMode.disabled
+              : activityFeedModel.isCustom
+                  ? _FeedMode.custom
+                  : _FeedMode.twitch;
+
+          final content = Column(children: [
             if (_showControls)
               RadioListTile(
                 title: Text(AppLocalizations.of(context)!.disabled),
-                value: true,
-                groupValue: !activityFeedModel.isEnabled,
-                onChanged: (value) {
-                  activityFeedModel.isEnabled = false;
-                  layoutModel.isShowNotifications = false;
-                },
+                value: _FeedMode.disabled,
               ),
             if (_showControls)
               RadioListTile(
@@ -129,15 +131,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                 subtitle: userModel.isSignedIn()
                     ? null
                     : Text(AppLocalizations.of(context)!.signInToEnable),
-                value: true,
-                groupValue:
-                    activityFeedModel.isEnabled && !activityFeedModel.isCustom,
-                onChanged: userModel.isSignedIn()
-                    ? (value) {
-                        activityFeedModel.isEnabled = true;
-                        activityFeedModel.isCustom = false;
-                      }
-                    : null,
+                value: _FeedMode.twitch,
+                enabled: userModel.isSignedIn(),
               ),
             if (_showControls)
               RadioListTile(
@@ -159,7 +154,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                                   return Stack(
                                     children: [
                                       MobileScanner(
-                                        errorBuilder: (context, error, child) {
+                                        errorBuilder: (context, error) {
                                           return ScannerErrorWidget(
                                               error: error);
                                         },
@@ -234,14 +229,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                         _formKey.currentState?.validate();
                       }),
                 ),
-                value: true,
-                groupValue:
-                    activityFeedModel.isEnabled && activityFeedModel.isCustom,
-                onChanged: (value) {
-                  final uri = Uri.tryParse(activityFeedModel.customUrl);
-                  activityFeedModel.isEnabled = uri != null;
-                  activityFeedModel.isCustom = true;
-                },
+                value: _FeedMode.custom,
               ),
             GestureDetector(
                 onTap: () {
@@ -275,8 +263,31 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                   )
                 : Container(),
           ]);
+
+          return RadioGroup<_FeedMode>(
+            groupValue: mode,
+            onChanged: (value) {
+              switch (value) {
+                case _FeedMode.disabled:
+                  activityFeedModel.isEnabled = false;
+                  layoutModel.isShowNotifications = false;
+                case _FeedMode.twitch:
+                  activityFeedModel.isEnabled = true;
+                  activityFeedModel.isCustom = false;
+                case _FeedMode.custom:
+                  final uri = Uri.tryParse(activityFeedModel.customUrl);
+                  activityFeedModel.isEnabled = uri != null;
+                  activityFeedModel.isCustom = true;
+                case null:
+                  break;
+              }
+            },
+            child: content,
+          );
         }),
       ),
     );
   }
 }
+
+enum _FeedMode { disabled, twitch, custom }

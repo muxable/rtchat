@@ -44,6 +44,7 @@ class TwitchFollowEventModel extends MessageModel {
     ], messageId: messageId, timestamp: data['timestamp'].toDate());
   }
 
+  /// Combines follow events from the same channel into one.
   static TwitchFollowEventModel merged(List<MessageModel> models) {
     return TwitchFollowEventModel(
         followers: models
@@ -51,7 +52,24 @@ class TwitchFollowEventModel extends MessageModel {
             .expand((element) => element.followers)
             .toList(),
         messageId: models.first.messageId,
-        timestamp: models.last.timestamp);
+        timestamp: models.last.timestamp)
+      ..channel = models.first.channel;
+  }
+
+  /// Merges the run of adjacent follow events from the same channel that
+  /// [index] in [messages] belongs to. Returns null unless [index] is the end
+  /// of its run (the highest index), where the merged event is shown.
+  static TwitchFollowEventModel? mergeAdjacent(
+      List<MessageModel> messages, int index) {
+    final channel = messages[index].channel;
+    bool sameRun(MessageModel element) =>
+        element is TwitchFollowEventModel && element.channel == channel;
+    if (index != messages.length - 1 && sameRun(messages[index + 1])) {
+      return null;
+    }
+    final lastIndex =
+        messages.lastIndexWhere((element) => !sameRun(element), index);
+    return merged(messages.sublist(lastIndex + 1, index + 1).reversed.toList());
   }
 }
 

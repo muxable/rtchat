@@ -60,8 +60,8 @@ class Emote {
     required this.imageUrl,
   });
 
-  get uri =>
-      Uri.tryParse(imageUrl.startsWith("//") ? "https:$imageUrl" : imageUrl);
+  Uri get uri =>
+      Uri.parse(imageUrl.startsWith("//") ? "https:$imageUrl" : imageUrl);
 
   ResilientNetworkImage get image => ResilientNetworkImage(uri);
 

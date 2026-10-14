@@ -1,10 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:styled_text/styled_text.dart';
@@ -25,7 +25,7 @@ class TwitchFollowEventWidget extends StatelessWidget {
           case 1:
             return StyledText(
                 text: AppLocalizations.of(context)!.followingEvent(
-                    styleModel.getTwitchDisplayName(model.followers.first)),
+                    styleModel.getDisplayName(model.followers.first)),
                 tags: {
                   'bold': StyledTextTag(
                       style: Theme.of(context).textTheme.titleSmall),
@@ -34,8 +34,8 @@ class TwitchFollowEventWidget extends StatelessWidget {
             // return x and y are following you.
             return StyledText(
                 text: AppLocalizations.of(context)!.followingEvent2(
-                    styleModel.getTwitchDisplayName(model.followers.first),
-                    styleModel.getTwitchDisplayName(model.followers.last)),
+                    styleModel.getDisplayName(model.followers.first),
+                    styleModel.getDisplayName(model.followers.last)),
                 tags: {
                   'bold': StyledTextTag(
                       style: Theme.of(context).textTheme.titleSmall),
@@ -44,8 +44,8 @@ class TwitchFollowEventWidget extends StatelessWidget {
             // return x, y, and n others are following you.
             return StyledText(
                 text: AppLocalizations.of(context)!.followingEvent3(
-                    styleModel.getTwitchDisplayName(model.followers.first),
-                    styleModel.getTwitchDisplayName(model.followers.last),
+                    styleModel.getDisplayName(model.followers.first),
+                    styleModel.getDisplayName(model.followers.last),
                     model.followers.length - 2),
                 tags: {
                   'bold': StyledTextTag(

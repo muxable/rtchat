@@ -1,0 +1,26 @@
+{
+  "id": "01KBHE78QE4HZY1617DK5FC7YD",
+  "user_input": "unban me",
+  "status": "rejected",
+  "redeemed_at": "2025-12-02T22:54:19.323Z",
+  "reward": {
+    "id": "01KBHE7RZNHB0SKDV1H86CD4F3",
+    "title": "Uban Request",
+    "cost": 1000,
+    "description": "Only good reasons pls"
+  },
+  "redeemer": {
+    "user_id": 123,
+    "username": "naughty-user",
+    "is_verified": false,
+    "profile_picture": "",
+    "channel_slug": "naughty_user"
+  },
+  "broadcaster": {
+    "user_id": 333,
+    "username": "gigachad",
+    "is_verified": true,
+    "profile_picture": "",
+    "channel_slug": "gigachad"
+  }
+}

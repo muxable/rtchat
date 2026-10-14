@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
-import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/views.dart';
 import 'package:styled_text/styled_text.dart';
 
 class TwitchRaidingEventWidget extends StatelessWidget {
   final TwitchRaidingEventModel model;
+  final VoidCallback? onCancel;
 
-  const TwitchRaidingEventWidget(this.model, {super.key});
+  const TwitchRaidingEventWidget(this.model, {super.key, this.onCancel});
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +54,11 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                             : AppLocalizations.of(context)!
                                 .raidingEventTimeRemaining(
                                     remaining.inSeconds + 1),
-                        style: Theme.of(context).textTheme.titleSmall))
+                        style: Theme.of(context).textTheme.titleSmall)),
+                    if (onCancel != null)
+                      TextButton(
+                          onPressed: onCancel,
+                          child: Text(AppLocalizations.of(context)!.cancel)),
                   ])),
             ]);
           });
@@ -82,8 +87,8 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                             ?.primary))),
               ])),
           onTap: () {
-            final userModel = Provider.of<UserModel>(context, listen: false);
-            userModel.activeChannel = model.targetUser.asChannel;
+            Provider.of<ViewsModel>(context, listen: false)
+                .openChannel(model.targetUser.asChannel);
           });
     } else {
       return DecoratedEventWidget.avatar(

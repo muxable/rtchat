@@ -285,7 +285,7 @@
   "@audioSourcesSubtitle": {
     "description": "Subtitle for the audio sources page"
   },
-  "quickLinksSubtitle": "Add shortcuts to commonly-used tools",
+  "quickLinksSubtitle": "Add shortcuts to commonly used tools",
   "@quickLinksSubtitle": {
     "description": "Subtitle for the quick links page"
   },
@@ -775,6 +775,28 @@
       }
     }
   },
+  "subscriptionMessageMultiMonthEvent": "<b>{subscriberUserName}</b> has subscribed at Tier {tier} for {durationMonths} months in advance, {cumulativeMonths} months in total!",
+  "@subscriptionMessageMultiMonthEvent": {
+    "description": "Message displayed when a subscriber pays for multiple months at once",
+    "placeholders": {
+      "subscriberUserName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "tier": {
+        "type": "String",
+        "example": "1"
+      },
+      "durationMonths": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "cumulativeMonths": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "realtimeCashTipWithDonor": "<b>{donor}</b> tipped <b>{value} {currency}</b>.",
   "@realtimeCashTipWithDonor": {
     "description": "Message displayed when a RealtimeCash tip is made with a donor name",
@@ -989,12 +1011,442 @@
   "@textToSpeechDisabled": {
       "description": "Message indicating that text to speech has been disabled"
   },
-  "alertsEnabled" : "Alerts enabled tap again to enable text to speech",
-    "@alertsEnabled" : {
-        "description": "Message indicating that alerts have been enabled"
-    },
-    "alertsDisabled" : "Alerts disabled tap again to enable text to speech",
-    "@alertsDisabled" : {
-        "description": "Message indicating that alerts have been disabled"
+  "alertsEnabled" : "Alerts only",
+  "@alertsEnabled" : {
+      "description": "Message indicating that alerts have been enabled"
+  },
+  "pinDuration": "Pin Duration",
+  "@pinDuration": {
+    "description": "Label for the slider controlling how long an event stays pinned"
+  },
+  "durationSeconds": "{seconds,plural, =1{1 second} other{{seconds} seconds}}",
+  "@durationSeconds": {
+    "description": "A duration in seconds",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
     }
+  },
+  "durationMinutes": "{minutes,plural, =1{1 minute} other{{minutes} minutes}}",
+  "@durationMinutes": {
+    "description": "A duration in minutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "enableEvent": "Enable event",
+  "@enableEvent": {
+    "description": "Title of the switch that enables an event type"
+  },
+  "showEventInChatHistory": "Show event in chat history",
+  "@showEventInChatHistory": {
+    "description": "Subtitle of the switch that enables an event type"
+  },
+  "enableShoutouts": "Enable shoutouts",
+  "@enableShoutouts": {
+    "description": "Title of the switch that enables the shoutout button on raids"
+  },
+  "enableShoutoutsSubtitle": "Send a link to the raiding channel to chat",
+  "@enableShoutoutsSubtitle": {
+    "description": "Subtitle of the switch that enables the shoutout button on raids"
+  },
+  "raidConfigurationTitle": "Raid Configuration",
+  "@raidConfigurationTitle": {
+    "description": "Title of the raid event settings screen"
+  },
+  "cheerConfigurationTitle": "Cheer Configuration",
+  "@cheerConfigurationTitle": {
+    "description": "Title of the cheer event settings screen"
+  },
+  "followConfigurationTitle": "Follow Configuration",
+  "@followConfigurationTitle": {
+    "description": "Title of the follow event settings screen"
+  },
+  "outgoingRaidConfigurationTitle": "Outgoing Raid Configuration",
+  "@outgoingRaidConfigurationTitle": {
+    "description": "Title of the outgoing raid event settings screen"
+  },
+  "hostConfigurationTitle": "Host Configuration",
+  "@hostConfigurationTitle": {
+    "description": "Title of the host event settings screen"
+  },
+  "channelPointConfigurationTitle": "Channel Point Configuration",
+  "@channelPointConfigurationTitle": {
+    "description": "Title of the channel point event settings screen"
+  },
+  "pollConfigurationTitle": "Poll Configuration",
+  "@pollConfigurationTitle": {
+    "description": "Title of the poll event settings screen"
+  },
+  "hypetrainConfigurationTitle": "Hypetrain Configuration",
+  "@hypetrainConfigurationTitle": {
+    "description": "Title of the hype train event settings screen"
+  },
+  "subscriptionConfigurationTitle": "Subscription Configuration",
+  "@subscriptionConfigurationTitle": {
+    "description": "Title of the subscription event settings screen"
+  },
+  "predictionConfigurationTitle": "Prediction Configuration",
+  "@predictionConfigurationTitle": {
+    "description": "Title of the prediction event settings screen"
+  },
+  "unfulfilledRewardsPinDuration": "Additional Pin Duration for Unfulfilled Rewards",
+  "@unfulfilledRewardsPinDuration": {
+    "description": "Label for the slider adding pin time to unfulfilled channel point rewards"
+  },
+  "pollPinDuration": "Pin duration after the result is finalized",
+  "@pollPinDuration": {
+    "description": "Label for the slider controlling how long a finished poll stays pinned"
+  },
+  "hypetrainPinDuration": "Pin duration after hypetrain is over",
+  "@hypetrainPinDuration": {
+    "description": "Label for the slider controlling how long a finished hype train stays pinned"
+  },
+  "enableGiftedSubscriptions": "Enable individual gifted subscriptions",
+  "@enableGiftedSubscriptions": {
+    "description": "Title of the switch that shows each gifted subscription"
+  },
+  "enableGiftedSubscriptionsSubtitle": "Show every subscription that is gifted",
+  "@enableGiftedSubscriptionsSubtitle": {
+    "description": "Subtitle of the switch that shows each gifted subscription"
+  },
+  "settingsBackupTitle": "Settings backup and restore",
+  "@settingsBackupTitle": {
+    "description": "Title of the settings backup screen"
+  },
+  "cloudBackup": "Cloud backup",
+  "@cloudBackup": {
+    "description": "Heading for cloud backup options"
+  },
+  "lastBackupNever": "Last backup: never",
+  "@lastBackupNever": {
+    "description": "Shown when no backup has been made"
+  },
+  "backUp": "Back up",
+  "@backUp": {
+    "description": "Button that backs up settings"
+  },
+  "restore": "Restore",
+  "@restore": {
+    "description": "Button that restores settings from a backup"
+  },
+  "localBackup": "Local backup",
+  "@localBackup": {
+    "description": "Heading for local backup options"
+  },
+  "exportSettings": "Export",
+  "@exportSettings": {
+    "description": "Button that exports settings to a file"
+  },
+  "importSettings": "Import",
+  "@importSettings": {
+    "description": "Button that imports settings from a file"
+  },
+  "showViewerAndFollowerCount": "Show viewer and follower count",
+  "@showViewerAndFollowerCount": {
+    "description": "Switch that shows viewer and follower counts in the header"
+  },
+  "screenOrientation": "Screen orientation",
+  "@screenOrientation": {
+    "description": "Heading for the screen orientation setting"
+  },
+  "appTheme": "App theme",
+  "@appTheme": {
+    "description": "Heading for the app theme setting"
+  },
+  "systemDefault": "System",
+  "@systemDefault": {
+    "description": "Option to follow the system setting"
+  },
+  "portrait": "Portrait",
+  "@portrait": {
+    "description": "Portrait screen orientation option"
+  },
+  "landscape": "Landscape",
+  "@landscape": {
+    "description": "Landscape screen orientation option"
+  },
+  "lightTheme": "Light",
+  "@lightTheme": {
+    "description": "Light theme option"
+  },
+  "darkTheme": "Dark",
+  "@darkTheme": {
+    "description": "Dark theme option"
+  },
+  "openSourceTitle": "RealtimeChat is open source",
+  "@openSourceTitle": {
+    "description": "Title of the link to the source code"
+  },
+  "openSourceSubtitle": "Find us on GitHub!",
+  "@openSourceSubtitle": {
+    "description": "Subtitle of the link to the source code"
+  },
+  "discordSubtitle": "Join the Muxable Discord!",
+  "@discordSubtitle": {
+    "description": "Subtitle of the link to the Discord server"
+  },
+  "earlyTestersThanks": "Thanks to all the early testers who sent bug reports!",
+  "@earlyTestersThanks": {
+    "description": "Heading above the list of early testers"
+  },
+  "discoModeEnabled": "🕺 Disco mode enabled! :D",
+  "@discoModeEnabled": {
+    "description": "Shown when the disco mode easter egg is enabled"
+  },
+  "discoModeDisabled": "🕺 Disco mode disabled D:",
+  "@discoModeDisabled": {
+    "description": "Shown when the disco mode easter egg is disabled"
+  },
+  "playSampleMessage": "Play sample message",
+  "@playSampleMessage": {
+    "description": "Button that plays a sample text to speech message"
+  },
+  "textToSpeechRate": "Text to Speech Rate",
+  "@textToSpeechRate": {
+    "description": "Label for the text to speech rate slider"
+  },
+  "textToSpeechPitch": "Text to Speech Pitch",
+  "@textToSpeechPitch": {
+    "description": "Label for the text to speech pitch slider"
+  },
+  "muteBots": "Mute text to speech for bots",
+  "@muteBots": {
+    "description": "Switch that skips messages from bots"
+  },
+  "muteEmotes": "Mute all emotes in text to speech",
+  "@muteEmotes": {
+    "description": "Switch that skips emotes"
+  },
+  "muteViewerNames": "Mute viewer names in text to speech",
+  "@muteViewerNames": {
+    "description": "Switch that skips reading viewer names"
+  },
+  "subscribersOnly": "Subscribers only",
+  "@subscribersOnly": {
+    "description": "Switch that only reads messages from subscribers"
+  },
+  "fontSize": "Font size",
+  "@fontSize": {
+    "description": "Label for the chat font size slider"
+  },
+  "usernameContrastBoost": "Username contrast boost",
+  "@usernameContrastBoost": {
+    "description": "Label for the slider that brightens username colors"
+  },
+  "twitchBadgeSettings": "Twitch badge settings",
+  "@twitchBadgeSettings": {
+    "description": "Title of the link to badge settings"
+  },
+  "twitchBadgeSettingsSubtitle": "Control which badges are visible",
+  "@twitchBadgeSettingsSubtitle": {
+    "description": "Subtitle of the link to badge settings"
+  },
+  "showDeletedMessages": "Show deleted messages",
+  "@showDeletedMessages": {
+    "description": "Switch that keeps deleted messages visible"
+  },
+  "deletedMessagesGreyedOut": "Deleted messages will be greyed out",
+  "@deletedMessagesGreyedOut": {
+    "description": "Subtitle when deleted messages are shown"
+  },
+  "deletedMessagesRemoved": "Deleted messages will be removed",
+  "@deletedMessagesRemoved": {
+    "description": "Subtitle when deleted messages are hidden"
+  },
+  "showLoginNames": "Show login names",
+  "@showLoginNames": {
+    "description": "Switch that shows login names next to display names"
+  },
+  "loginNamesShown": "Login names will be shown if they are different from the display name",
+  "@loginNamesShown": {
+    "description": "Subtitle when login names are shown"
+  },
+  "loginNamesHidden": "Login names will be hidden",
+  "@loginNamesHidden": {
+    "description": "Subtitle when login names are hidden"
+  },
+  "compactMessages": "Compact messages",
+  "@compactMessages": {
+    "description": "Heading for message compaction options"
+  },
+  "dontCompactMessages": "Don't compact messages",
+  "@dontCompactMessages": {
+    "description": "Option that leaves messages unchanged"
+  },
+  "dontCompactMessagesSubtitle": "Messages are shown unchanged",
+  "@dontCompactMessagesSubtitle": {
+    "description": "Subtitle of the option that leaves messages unchanged"
+  },
+  "compactIndividualMessages": "Compact individual messages",
+  "@compactIndividualMessages": {
+    "description": "Option that shortens repetitive text within a message"
+  },
+  "compactIndividualMessagesSubtitle": "Repetitive text in messages is shortened",
+  "@compactIndividualMessagesSubtitle": {
+    "description": "Subtitle of the option that shortens repetitive text"
+  },
+  "announcementPinDuration": "Announcement pin duration",
+  "@announcementPinDuration": {
+    "description": "Label for the slider controlling how long announcements stay pinned"
+  },
+  "idleMessageAlertDuration": "Idle message alert duration",
+  "@idleMessageAlertDuration": {
+    "description": "Heading for the idle chat alert setting"
+  },
+  "idleMessageAlertDurationSubtitle": "If there aren't any messages for this amount of time and a new one comes in, an alert sound will play.",
+  "@idleMessageAlertDurationSubtitle": {
+    "description": "Explanation of the idle chat alert setting"
+  },
+  "realtimeCashSubtitle": "Connect an ETH or MATIC wallet",
+  "@realtimeCashSubtitle": {
+    "description": "Subtitle of the RealtimeCash integration"
+  },
+  "walletAddress": "Wallet address",
+  "@walletAddress": {
+    "description": "Hint for the crypto wallet address field"
+  },
+  "streamlabsSubtitle": "See your Streamlabs donations",
+  "@streamlabsSubtitle": {
+    "description": "Subtitle of the Streamlabs integration"
+  },
+  "streamElementsSubtitle": "See your StreamElements donations",
+  "@streamElementsSubtitle": {
+    "description": "Subtitle of the StreamElements integration"
+  },
+  "thirdPartyAuthError": "Hmm, that didn't work. Try again, or ask on Discord?",
+  "@thirdPartyAuthError": {
+    "description": "Shown when connecting a third-party service fails"
+  },
+  "companionAuthBrowserTooOld": "Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.",
+  "@companionAuthBrowserTooOld": {
+    "description": "Shown when the browser can't sign in directly"
+  },
+  "companionAuthScanQrCode": "Scan this QR code with your phone to sign in on another device.",
+  "@companionAuthScanQrCode": {
+    "description": "Instructions for signing in with a QR code"
+  },
+  "kickSubscriptionEvent": "<b>{subscriberName}</b> has subscribed!",
+  "@kickSubscriptionEvent": {
+    "description": "A new Kick subscription",
+    "placeholders": {
+      "subscriberName": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "kickResubscriptionEvent": "<b>{subscriberName}</b> has resubscribed for {months} months!",
+  "@kickResubscriptionEvent": {
+    "description": "A renewed Kick subscription",
+    "placeholders": {
+      "subscriberName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "months": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> has gifted {count} subs!",
+  "@kickGiftedSubscriptionsEvent": {
+    "description": "Gifted Kick subscriptions",
+    "placeholders": {
+      "gifterName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "kicksGiftedEvent": "<b>{senderName}</b> sent {amount} Kicks!",
+  "@kicksGiftedEvent": {
+    "description": "Kicks (Kick's virtual currency) sent to the streamer",
+    "placeholders": {
+      "senderName": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "amount": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "signInWithKick": "Sign in with Kick",
+  "@signInWithKick": {
+    "description": "Button to sign in with a Kick account"
+  },
+  "textToSpeechTooManyMessages": "There are too many messages. Text to speech disabled",
+  "@textToSpeechTooManyMessages": {
+    "description": "Spoken when text to speech turns itself off because too many messages are waiting to be read"
+  },
+  "turnOffTextToSpeech": "Turn off",
+  "@turnOffTextToSpeech": {
+    "description": "Button in the text to speech notification that turns text to speech off"
+  },
+  "addChannel": "Add channel",
+  "@addChannel": {
+    "description": "Button to add a channel to the default channels"
+  },
+  "addToChat": "Add to chat",
+  "@addToChat": {
+    "description": "Button on a channel search result that adds the channel to the channels shown in chat"
+  },
+  "defaultChannels": "Default channels",
+  "@defaultChannels": {
+    "description": "Title of the settings page for the channels the app opens with"
+  },
+  "defaultChannelsSubtitle": "The channels shown when the app opens",
+  "@defaultChannelsSubtitle": {
+    "description": "Explains what the default channels are"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Button on the default channels page that saves the channels currently shown as the default channels"
+  },
+  "resetToMyChannel": "Reset to my channel",
+  "@resetToMyChannel": {
+    "description": "Button on the default channels page that clears the picked default channels, so the app opens the signed-in user's own channel, and closes the page"
+  },
+  "inChat": "In chat",
+  "@inChat": {
+    "description": "Heading in the channel search sheet for the channels currently shown in chat"
+  },
+  "removeFromChat": "Remove from chat",
+  "@removeFromChat": {
+    "description": "Button that removes a channel from the channels shown in chat"
+  },
+  "cantChatWithAccount": "Your {provider} account can't chat here",
+  "@cantChatWithAccount": {
+    "description": "Hint in the disabled message input when none of the channels shown are on the platform of the signed-in account",
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Twitch"
+      }
+    }
+  },
+  "replaceChannel": "Replace {channel}",
+  "@replaceChannel": {
+    "description": "Shown while swiping a channel search result whose platform already has a channel in chat: adding it replaces that channel",
+    "placeholders": {
+      "channel": {
+        "type": "String",
+        "example": "xQc"
+      }
+    }
+  },
+  "removeChannel": "Remove",
+  "@removeChannel": {
+    "description": "Shown while swiping a default channel away to remove it from the default channels"
+  }
 }

@@ -1,21 +1,41 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_results.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/user.dart';
+import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
+
+const _providerPreferenceKey = "channel_search_provider";
 
 class ChannelSearchBottomSheetWidget extends StatefulWidget {
   final ScrollController? controller;
   final void Function(Channel) onChannelSelect;
   final void Function(Channel)? onRaid;
   final bool? isRaid;
+  final ChannelSearch search;
+
+  /// Adds a swiped result to [channels] without closing the sheet,
+  /// replacing the one on its provider.
+  final void Function(Channel)? onChannelAdd;
+
+  /// The channels a swiped result is added to.
+  final List<Channel> channels;
+
+  /// Shown above the results.
+  final Widget? header;
 
   const ChannelSearchBottomSheetWidget(
       {super.key,
       this.controller,
       required this.onChannelSelect,
       this.onRaid,
-      this.isRaid});
+      this.isRaid,
+      this.search = searchChannels,
+      this.onChannelAdd,
+      this.channels = const [],
+      this.header});
 
   @override
   State<ChannelSearchBottomSheetWidget> createState() =>
@@ -27,15 +47,62 @@ class _ChannelSearchBottomSheetWidgetState
   final _searchController = TextEditingController();
   var _value = "";
   var _raid = false;
+  var _provider = "twitch";
+  var _providerChosen = false;
 
   @override
   void initState() {
     super.initState();
     _raid = widget.isRaid ?? false;
+    try {
+      final userProvider =
+          Provider.of<UserModel>(context, listen: false).userChannel?.provider;
+      if (searchProviders.containsKey(userProvider)) {
+        _provider = userProvider!;
+      }
+    } on ProviderNotFoundException {
+      // no signed-in user to default to.
+    }
+    _loadProvider();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadProvider() async {
+    try {
+      final prefs = await StreamingSharedPreferences.instance;
+      final saved = prefs.getString(_providerPreferenceKey, defaultValue: "");
+      if (mounted &&
+          !_providerChosen &&
+          searchProviders.containsKey(saved.getValue())) {
+        setState(() => _provider = saved.getValue());
+      }
+    } catch (_) {
+      // storage is best effort.
+    }
+  }
+
+  Future<void> _setProvider(String provider) async {
+    setState(() {
+      _provider = provider;
+      _providerChosen = true;
+    });
+    try {
+      final prefs = await StreamingSharedPreferences.instance;
+      await prefs.setString(_providerPreferenceKey, provider);
+    } catch (_) {
+      // storage is best effort.
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final onChannelAdd =
+        _raid && widget.onRaid != null ? null : widget.onChannelAdd;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -64,9 +131,21 @@ class _ChannelSearchBottomSheetWidgetState
                   filled: true,
                   hintStyle:
                       TextStyle(color: Theme.of(context).colorScheme.primary),
-                  prefixIcon: const Padding(
-                      padding: EdgeInsets.only(left: 16, right: 8),
-                      child: Text("twitch.tv/")),
+                  prefixIcon: PopupMenuButton<String>(
+                      initialValue: _provider,
+                      tooltip: "",
+                      onSelected: _setProvider,
+                      itemBuilder: (context) => [
+                            for (final entry in searchProviders.entries)
+                              PopupMenuItem(
+                                  value: entry.key, child: Text(entry.value)),
+                          ],
+                      child: Padding(
+                          padding: const EdgeInsets.only(left: 16, right: 4),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Text(searchProviders[_provider]!),
+                            const Icon(Icons.arrow_drop_down, size: 20),
+                          ]))),
                   prefixIconConstraints:
                       const BoxConstraints(minWidth: 0, minHeight: 0),
                   suffixIcon: AnimatedScale(
@@ -88,6 +167,8 @@ class _ChannelSearchBottomSheetWidgetState
           Expanded(
               child: ChannelSearchResultsWidget(
             query: _value,
+            provider: _provider,
+            search: widget.search,
             controller: widget.controller,
             onChannelSelect: (channel) {
               if (_raid && widget.onRaid != null) {
@@ -103,6 +184,9 @@ class _ChannelSearchBottomSheetWidgetState
               Navigator.of(context).pop();
             },
             isShowOnlyOnline: _raid && widget.onRaid != null,
+            onChannelAdd: onChannelAdd,
+            channels: widget.channels,
+            header: widget.header,
           ))
         ],
       ),

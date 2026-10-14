@@ -3,8 +3,8 @@ import 'dart:core';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/audio_channel.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
 
@@ -95,7 +95,11 @@ class AudioModel extends ChangeNotifier {
 
   List<AudioSource> get sources => _sources;
 
-  bool get enabled => _isOnline || _isSettingsVisible || _isAlwaysEnabled;
+  // sources only play on the home screen for a signed in streamer, but can
+  // always be previewed from the settings screen.
+  bool get enabled =>
+      _isSettingsVisible ||
+      (_hostChannel != null && (_isOnline || _isAlwaysEnabled));
 
   Future<void> addSource(AudioSource source) async {
     if (_sources.contains(source)) {
@@ -140,7 +144,7 @@ class AudioModel extends ChangeNotifier {
     }
   }
 
-  showAudioPermissionDialog(BuildContext context) {
+  Future<void> showAudioPermissionDialog(BuildContext context) {
     return showDialog<void>(
         context: context,
         barrierDismissible: false, // user must tap button!
@@ -176,7 +180,12 @@ class AudioModel extends ChangeNotifier {
     final player = AudioPlayer();
     _speakerDisconnectTimer = Timer.periodic(
       const Duration(minutes: 5),
-      (_) => player.play(AssetSource("silence.mp3")),
+      (_) => player.play(
+        AssetSource("silence.mp3"),
+        ctx: AudioContextConfig(
+          focus: AudioContextConfigFocus.mixWithOthers,
+        ).build(),
+      ),
     );
     final sources = json['sources'];
     if (sources != null) {

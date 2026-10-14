@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class PredictionEventScreen extends StatelessWidget {
@@ -9,7 +10,8 @@ class PredictionEventScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Prediction Configuration'),
+          title:
+              Text(AppLocalizations.of(context)!.predictionConfigurationTitle),
         ),
         body: Consumer<EventSubConfigurationModel>(
             builder: (context, model, child) {
@@ -20,7 +22,7 @@ class PredictionEventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Pin Duration',
+                    Text(AppLocalizations.of(context)!.pinDuration,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
@@ -31,16 +33,17 @@ class PredictionEventScreen extends StatelessWidget {
                       min: 0,
                       max: 30,
                       divisions: 15,
-                      label:
-                          '${model.predictionEventConfig.eventDuration.inSeconds} seconds',
+                      label: AppLocalizations.of(context)!.durationSeconds(
+                          model.predictionEventConfig.eventDuration.inSeconds),
                       onChanged: (value) {
                         model.setPredictionEventDuration(
                             Duration(seconds: value.toInt()));
                       },
                     ),
                     SwitchListTile.adaptive(
-                      title: const Text('Enable event'),
-                      subtitle: const Text('Show event in chat history'),
+                      title: Text(AppLocalizations.of(context)!.enableEvent),
+                      subtitle: Text(
+                          AppLocalizations.of(context)!.showEventInChatHistory),
                       value: model.predictionEventConfig.showEvent,
                       onChanged: (value) {
                         model.setPredictionEventShowable(value);
