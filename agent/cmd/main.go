@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"io"
 	"math/rand"
 	"net/http"
 	"os"
@@ -57,16 +56,31 @@ var loggerConfig = &zap.Config{
 	ErrorOutputPaths: []string{"stderr"},
 }
 
+type keyedLock struct {
+	mutex sync.Mutex
+	users int
+}
 type KeyedMutex struct {
-	mutexes sync.Map // Zero value is empty and ready for use
+	mu      sync.Mutex
+	mutexes sync.Map
 }
 
 func (m *KeyedMutex) Lock(key string) func() {
-	value, _ := m.mutexes.LoadOrStore(key, &sync.Mutex{})
-	mtx := value.(*sync.Mutex)
-	mtx.Lock()
-
-	return func() { mtx.Unlock() }
+	m.mu.Lock()
+	value, _ := m.mutexes.LoadOrStore(key, &keyedLock{})
+	entry := value.(*keyedLock)
+	entry.users++
+	m.mu.Unlock()
+	entry.mutex.Lock()
+	return func() {
+		entry.mutex.Unlock()
+		m.mu.Lock()
+		entry.users--
+		if entry.users == 0 {
+			m.mutexes.Delete(key)
+		}
+		m.mu.Unlock()
+	}
 }
 
 func main() {
@@ -108,14 +122,12 @@ func main() {
 	// create a new RequestLock
 	subscribeRequests := client.Collection("assignments").Snapshots(context.Background())
 
-	clients := map[string]io.Closer{}
-	locks := &KeyedMutex{}
-
+	manager := newRequestManager(twitch.NewClient)
 	go func() {
 		ticker := time.NewTicker(15 * time.Second)
 		defer ticker.Stop()
 		for range ticker.C {
-			zap.L().Info("active channels", zap.Int("count", len(clients)))
+			zap.L().Info("active channels", zap.Int("count", manager.count()))
 		}
 	}()
 
@@ -161,39 +173,10 @@ func main() {
 			return
 		}
 		for _, change := range snapshot.Changes {
-			if change.Kind != firestore.DocumentRemoved {
-				req := (*agent.Request)(change.Doc.Ref)
-				zap.L().Info("got request", zap.String("id", req.String()))
-				// check if it's in the active channels map
-				go func() {
-					unlock := locks.Lock(req.String())
-					defer unlock()
-					existing := clients[req.String()]
-					switch req.Provider() {
-					case agent.ProviderTwitch:
-						switch existing.(type) {
-						case *handler.AuthenticatedTwitchClient:
-							// skip upgrade with 75% probability
-							if rand.Intn(4) != 0 {
-								zap.L().Info("already authenticated", zap.String("id", req.String()))
-								return
-							}
-						}
-						client, err := twitch.NewClient(req)
-						if err != nil {
-							zap.L().Error("failed to open request", zap.Error(err))
-							return
-						}
-						clients[req.String()] = client
-					}
-					if existing != nil {
-						if err := existing.Close(); err != nil {
-							zap.L().Error("failed to close request", zap.Error(err))
-						}
-					}
-				}()
-				time.Sleep(250 * time.Millisecond)
-			}
+			req := (*agent.Request)(change.Doc.Ref)
+			zap.L().Info("got request", zap.String("id", req.String()))
+			manager.submit(req, change.Kind)
+			time.Sleep(250 * time.Millisecond)
 		}
 	}
 }
