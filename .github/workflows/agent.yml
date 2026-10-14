@@ -109,7 +109,12 @@ jobs:
         # the regional group spans three zones, so surge must be 0 or >= 3.
         # every instance joins every channel, so replacing them with surge
         # keeps chat flowing during the rollout.
+        # instances only pass the health check once their initial channels are
+        # joined, which takes a few minutes, so autohealing must wait longer.
         run: |
+          gcloud compute instance-groups managed update agent-small-us-west1 \
+            --project=rtchat-47692 --region=us-west1 \
+            --health-check=agent --initial-delay=600
           gcloud compute instance-groups managed rolling-action replace agent-small-us-west1 \
             --project=rtchat-47692 --region=us-west1 \
             --max-surge=3 --max-unavailable=0
