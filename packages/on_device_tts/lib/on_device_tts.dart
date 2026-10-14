@@ -6,6 +6,10 @@
 /// * `SystemTtsEngine` speaks with the platform's voices through
 ///   `flutter_tts`.
 ///
+/// Neural voices come in voice packs that are downloaded on demand:
+/// `VoicePackCatalog` lists them and `VoicePackRepository` downloads,
+/// verifies, installs and deletes them.
+///
 /// This package doesn't depend on any app code, so it can move to its own
 /// repository.
 library;
@@ -13,3 +17,9 @@ library;
 export 'src/system_tts_engine.dart';
 export 'src/tts_engine.dart';
 export 'src/tts_voice.dart';
+export 'src/voice_packs/bundled_catalog.dart';
+export 'src/voice_packs/download_policy.dart';
+export 'src/voice_packs/installed_voice_pack.dart';
+export 'src/voice_packs/voice_pack_catalog.dart';
+export 'src/voice_packs/voice_pack_exceptions.dart';
+export 'src/voice_packs/voice_pack_repository.dart';
