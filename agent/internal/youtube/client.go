@@ -1,10 +1,10 @@
 package youtube
 
 import (
-	"bytes"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,7 +19,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type counters struct{ requests, rateLimits, parseFailures, skipped atomic.Int64 }
+type counters struct {
+	requests, rateLimits, parseFailures, skipped atomic.Int64
+	// unrecognizedPages counts /live pages that are neither live nor offline.
+	unrecognizedPages atomic.Int64
+}
 
 // Client owns polling and lease renewal. Close joins all of its goroutines.
 type Client struct {
@@ -99,7 +103,7 @@ func (c *Client) nextBackoff(delay time.Duration) time.Duration {
 	return delay * 2
 }
 func (c *Client) logCounts() {
-	zap.L().Info("YouTube reader counters", zap.String("channel", c.channel), zap.Int64("requests", c.counts.requests.Load()), zap.Int64("429s", c.counts.rateLimits.Load()), zap.Int64("parseFailures", c.counts.parseFailures.Load()), zap.Int64("skippedActions", c.counts.skipped.Load()))
+	zap.L().Info("YouTube reader counters", zap.String("channel", c.channel), zap.Int64("requests", c.counts.requests.Load()), zap.Int64("429s", c.counts.rateLimits.Load()), zap.Int64("parseFailures", c.counts.parseFailures.Load()), zap.Int64("unrecognizedPages", c.counts.unrecognizedPages.Load()), zap.Int64("skippedActions", c.counts.skipped.Load()))
 }
 func (c *Client) acquire(ctx context.Context) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -194,9 +198,11 @@ func (c *Client) read(ctx context.Context) {
 		body, err := c.request(ctx, http.MethodGet, "/channel/"+url.PathEscape(c.channel)+"/live", nil)
 		video := ""
 		if err == nil {
-			video, err = canonicalVideoID(bytes.NewReader(body))
-			if err != nil {
-				c.counts.parseFailures.Add(1)
+			video, err = liveVideoID(body)
+			if errors.As(err, new(*unrecognizedPageError)) {
+				// Not knowing is not offline: keep the channel's state and retry.
+				c.counts.unrecognizedPages.Add(1)
+				zap.L().Error("YouTube /live page unrecognized; channel state unknown", zap.String("channel", c.channel), zap.Int64("unrecognizedPages", c.counts.unrecognizedPages.Load()), zap.Error(err))
 			}
 		}
 		if err == nil && video != "" {
@@ -220,7 +226,9 @@ func (c *Client) read(ctx context.Context) {
 			}
 		}
 		if err != nil {
-			zap.L().Warn("YouTube discovery failed", zap.String("channel", c.channel), zap.Error(err))
+			if !errors.As(err, new(*unrecognizedPageError)) {
+				zap.L().Warn("YouTube discovery failed", zap.String("channel", c.channel), zap.Error(err))
+			}
 			if !wait(ctx, delay) {
 				return
 			}
