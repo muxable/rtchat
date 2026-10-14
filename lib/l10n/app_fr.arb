@@ -261,5 +261,6 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> a offert {count} abonnements !",
   "kicksGiftedEvent": "<b>{senderName}</b> a envoyé {amount} Kicks !",
   "signInWithKick": "Se connecter avec Kick",
-  "textToSpeechTooManyMessages": "Il y a trop de messages. Synthèse vocale désactivée"
+  "textToSpeechTooManyMessages": "Il y a trop de messages. Synthèse vocale désactivée",
+  "turnOffTextToSpeech": "Désactiver"
 }

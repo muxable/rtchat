@@ -1070,4 +1070,7 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get textToSpeechTooManyMessages =>
       'Jest zbyt wiele wiadomości. Zamiana tekstu na mowę wyłączona';
+
+  @override
+  String get turnOffTextToSpeech => 'Wyłącz';
 }

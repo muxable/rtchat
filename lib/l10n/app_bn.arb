@@ -261,5 +261,6 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> {count}টি সাব উপহার দিয়েছেন!",
   "kicksGiftedEvent": "<b>{senderName}</b> {amount} Kicks পাঠিয়েছেন!",
   "signInWithKick": "Kick দিয়ে সাইন ইন করুন",
-  "textToSpeechTooManyMessages": "অনেক বেশি বার্তা আছে। টেক্সট টু স্পিচ বন্ধ করা হয়েছে"
+  "textToSpeechTooManyMessages": "অনেক বেশি বার্তা আছে। টেক্সট টু স্পিচ বন্ধ করা হয়েছে",
+  "turnOffTextToSpeech": "বন্ধ করুন"
 }

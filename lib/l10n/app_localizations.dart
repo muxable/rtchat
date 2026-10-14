@@ -1710,6 +1710,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'There are too many messages. Text to speech disabled'**
   String get textToSpeechTooManyMessages;
+
+  /// Button in the text to speech notification that turns text to speech off
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off'**
+  String get turnOffTextToSpeech;
 }
 
 class _AppLocalizationsDelegate

@@ -261,5 +261,6 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> har gett bort {count} prenumerationer!",
   "kicksGiftedEvent": "<b>{senderName}</b> skickade {amount} Kicks!",
   "signInWithKick": "Logga in med Kick",
-  "textToSpeechTooManyMessages": "Det finns för många meddelanden. Text till tal avstängt"
+  "textToSpeechTooManyMessages": "Det finns för många meddelanden. Text till tal avstängt",
+  "turnOffTextToSpeech": "Stäng av"
 }

@@ -1057,4 +1057,7 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get textToSpeechTooManyMessages =>
       'অনেক বেশি বার্তা আছে। টেক্সট টু স্পিচ বন্ধ করা হয়েছে';
+
+  @override
+  String get turnOffTextToSpeech => 'বন্ধ করুন';
 }

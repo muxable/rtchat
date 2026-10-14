@@ -261,5 +261,6 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> подарил подписки: {count}!",
   "kicksGiftedEvent": "<b>{senderName}</b> отправил {amount} Kicks!",
   "signInWithKick": "Войти через Kick",
-  "textToSpeechTooManyMessages": "Слишком много сообщений. Озвучивание текста отключено"
+  "textToSpeechTooManyMessages": "Слишком много сообщений. Озвучивание текста отключено",
+  "turnOffTextToSpeech": "Выключить"
 }

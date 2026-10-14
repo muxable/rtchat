@@ -57,26 +57,12 @@ import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
-void updateChannelSubscription(String? data) {
-  if (data != null) {
-    channelStreamController.add(data);
-  }
-}
-
-StreamController<String> channelStreamController =
-    StreamController<String>.broadcast();
-
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final prefs = await StreamingSharedPreferences.instance;
-
-  // final currentLocale = PlatformDispatcher.instance.locale;
-
-  // await tts_isolate.isolateMain(
-  //     ReceivePort().sendPort, channelStreamController, prefs, currentLocale);
 
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;

@@ -65,7 +65,6 @@ class TtsModel extends ChangeNotifier {
   var _speed = Platform.isAndroid ? 0.8 : 0.395;
   var _pitch = 1.0;
   var _mode = TtsMode.disabled;
-  var _isNewTTsEnabled = false;
   final Set<TwitchUserModel> _mutedUsers = {};
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
@@ -209,27 +208,12 @@ class TtsModel extends ChangeNotifier {
     return "";
   }
 
-  bool get newTtsEnabled {
-    return _isNewTTsEnabled;
-  }
-
   bool get isSubscribersOnly {
     return _isSubscribersOnly;
   }
 
   set isSubscribersOnly(bool value) {
     _isSubscribersOnly = value;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
-    });
-  }
-
-  set newTtsEnabled(bool value) {
-    if (value == _isNewTTsEnabled) {
-      return;
-    }
-    _isNewTTsEnabled = value;
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });

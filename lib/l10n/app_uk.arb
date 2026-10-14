@@ -261,5 +261,6 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> подарував підписки: {count}!",
   "kicksGiftedEvent": "<b>{senderName}</b> надіслав {amount} Kicks!",
   "signInWithKick": "Увійти через Kick",
-  "textToSpeechTooManyMessages": "Забагато повідомлень. Озвучування тексту вимкнено"
+  "textToSpeechTooManyMessages": "Забагато повідомлень. Озвучування тексту вимкнено",
+  "turnOffTextToSpeech": "Вимкнути"
 }
