@@ -66,6 +66,17 @@ void main() {
     expect(neural.utterances.single.language, 'es');
   });
 
+  test("knows the first channel's language once it is looked up", () async {
+    expect(model.primaryStreamLanguage, isNull);
+    expect(model.readingLanguage.languageCode, 'fr');
+    model.update(views);
+    await answer(spanish, 'es');
+    expect(model.primaryStreamLanguage?.languageCode, 'es');
+    expect(model.readingLanguage.languageCode, 'es');
+    // the saved language stays.
+    expect(model.language.languageCode, 'fr');
+  });
+
   test('looks each channel up once, however often the views change', () async {
     model.update(views);
     model.update(views);

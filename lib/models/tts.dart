@@ -121,6 +121,7 @@ class TtsModel extends ChangeNotifier {
   var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
   var _isSubscribersOnly = false;
+  var _isVoicePackSuggestionDismissed = false;
 
   /// Follows the channels shown, to read each message in its channel's
   /// stream language. Called on every [ViewsModel] change, so it only looks
@@ -184,6 +185,14 @@ class TtsModel extends ChangeNotifier {
     }
     return _channelLanguages[channel] ?? streamLanguage(channel.language);
   }
+
+  /// The language of the first channel shown, if known; chat without a
+  /// known language is read in [language].
+  Language? get primaryStreamLanguage => _knownLanguageOf(_primaryChannel);
+
+  /// The language most chat is read in: the first channel's stream
+  /// language if known, else [language].
+  Language get readingLanguage => primaryStreamLanguage ?? _language;
 
   /// The stream language of [model]'s channel (or of the first channel
   /// shown, for messages without one), if known.
@@ -484,6 +493,43 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Every language the neural voices speak, as the engines' own tags
+  /// (e.g. `en`, `pt`), without repeats; none without a voice pack.
+  Future<List<String>> neuralLanguages() => _router.languages();
+
+  /// Reads [text], a sample in [language], with the neural voice [voiceId],
+  /// after whatever is being read now. Does nothing if no neural engine
+  /// speaks [language]. Throws if the engine fails, so the caller can say
+  /// so.
+  Future<void> previewVoice(
+      String language, String voiceId, String text) async {
+    final route = await _router.route(language);
+    if (route == null) {
+      return;
+    }
+    final previous = _previousUtterance;
+    final completer = Completer<void>();
+    _previousUtterance = completer.future;
+    try {
+      await previous;
+      await route.engine.speak(text,
+          voice: route.voiceWithId(voiceId),
+          rate: _speed,
+          pitch: _pitch,
+          language: route.language);
+    } finally {
+      completer.complete();
+    }
+  }
+
+  /// Whether the suggestion to download a voice pack was dismissed.
+  bool get isVoicePackSuggestionDismissed => _isVoicePackSuggestionDismissed;
+
+  set isVoicePackSuggestionDismissed(bool value) {
+    _isVoicePackSuggestionDismissed = value;
+    notifyListeners();
+  }
+
   void say(AppLocalizations localizations, MessageModel model,
       {bool force = false}) async {
     if (_mode == TtsMode.disabled && !force) {
@@ -637,6 +683,8 @@ class TtsModel extends ChangeNotifier {
     }
     _neuralEngines = List.unmodifiable(engines);
     _router = VoiceRouter(_neuralEngines, onError: _reportError);
+    // the voices and languages on offer changed.
+    notifyListeners();
     final removed = [
       for (final engine in previous)
         if (!engines.any((e) => identical(e, engine))) engine,
@@ -729,6 +777,9 @@ class TtsModel extends ChangeNotifier {
     if (json['language'] != null) {
       _language = Language(json['language']);
     }
+    if (json['isVoicePackSuggestionDismissed'] != null) {
+      _isVoicePackSuggestionDismissed = json['isVoicePackSuggestionDismissed'];
+    }
     // the `voice` key of versions with cloud tts held cloud voice names
     // (e.g. fr-FR-Wavenet-A), which mean nothing to neural voices: it's
     // ignored, and dropped on the next save.
@@ -796,6 +847,7 @@ class TtsModel extends ChangeNotifier {
         "pitch": pitch,
         "speed": speed,
         "neuralVoices": Map.of(_neuralVoices),
+        "isVoicePackSuggestionDismissed": isVoicePackSuggestionDismissed,
         'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
       };
 }

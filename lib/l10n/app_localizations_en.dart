@@ -1048,4 +1048,244 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removeChannel => 'Remove';
+
+  @override
+  String get ttsVoiceSection => 'Voice';
+
+  @override
+  String get ttsEngine => 'Reads chat with';
+
+  @override
+  String get ttsEngineNeural => 'Neural voice (on-device)';
+
+  @override
+  String get ttsEngineSystem => 'System voice';
+
+  @override
+  String get voicePacks => 'Voice packs';
+
+  @override
+  String get voicePacksSubtitleNone =>
+      'Download natural-sounding voices that run on your device';
+
+  @override
+  String voicePacksSubtitleInstalled(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count installed',
+      one: '1 installed',
+    );
+    return '$_temp0 · $size';
+  }
+
+  @override
+  String get voicePacksDescription =>
+      'Voice packs read chat with natural-sounding neural voices. They run on your device and work offline once downloaded.';
+
+  @override
+  String voicePacksStorageUsed(String size) {
+    return 'Storage used: $size';
+  }
+
+  @override
+  String get voicePacksAllowMobileData => 'Download over mobile data';
+
+  @override
+  String get voicePacksAllowMobileDataSubtitle =>
+      'Voice packs are large, so they download over Wi-Fi only unless you allow this';
+
+  @override
+  String get voicePacksLoadError => 'Couldn\'t load the voice packs';
+
+  @override
+  String voicePackLanguageCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count languages',
+      one: '1 language',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String voicePackVoiceCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count voices',
+      one: '1 voice',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String voicePackDownloadSize(String size) {
+    return '$size download';
+  }
+
+  @override
+  String voicePackSizeOnDisk(String size) {
+    return '$size on device';
+  }
+
+  @override
+  String get voicePackInstalled => 'Installed';
+
+  @override
+  String get voicePackUpgradeAvailable => 'Update available';
+
+  @override
+  String get voicePackDownload => 'Download';
+
+  @override
+  String voicePackDownloadLabel(String pack) {
+    return 'Download $pack';
+  }
+
+  @override
+  String get voicePackUpdate => 'Update';
+
+  @override
+  String get voicePackDelete => 'Delete';
+
+  @override
+  String voicePackDeleteLabel(String pack) {
+    return 'Delete $pack';
+  }
+
+  @override
+  String voicePackCancelLabel(String pack) {
+    return 'Cancel downloading $pack';
+  }
+
+  @override
+  String voicePackDeleteTitle(String pack) {
+    return 'Delete $pack?';
+  }
+
+  @override
+  String voicePackDeleteBody(String size) {
+    return 'This frees $size. Languages no other voice pack speaks will be read with the system voice.';
+  }
+
+  @override
+  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+
+  @override
+  String get voicePackWaiting => 'Waiting to download';
+
+  @override
+  String get voicePackUseMobileData => 'Use mobile data';
+
+  @override
+  String voicePackDownloading(String downloaded, String total) {
+    return 'Downloading: $downloaded of $total';
+  }
+
+  @override
+  String voicePackProgressLabel(String pack) {
+    return '$pack download progress';
+  }
+
+  @override
+  String get voicePackVerifying => 'Checking the download';
+
+  @override
+  String get voicePackExtracting => 'Installing';
+
+  @override
+  String voicePackInstallFailed(String pack, String reason) {
+    return 'Couldn\'t install $pack: $reason';
+  }
+
+  @override
+  String voicePackErrorSpace(String size) {
+    return 'there isn\'t enough free storage ($size needed)';
+  }
+
+  @override
+  String get voicePackErrorDownload =>
+      'the download failed; check your connection and try again';
+
+  @override
+  String get voicePackErrorDamaged => 'the download was damaged; try again';
+
+  @override
+  String get voicePackErrorUnsupported => 'it needs a newer version of the app';
+
+  @override
+  String get voicePackErrorUnknown => 'something went wrong';
+
+  @override
+  String voicePackLicense(String license) {
+    return 'License: $license';
+  }
+
+  @override
+  String get voicePackViewLicense => 'View license';
+
+  @override
+  String get voicePackOpenRailNotice =>
+      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+
+  @override
+  String get voicePackMachineGenerated =>
+      'Voices from voice packs are machine-generated: they are made by AI, not recorded by a person.';
+
+  @override
+  String get voices => 'Voices';
+
+  @override
+  String get voicesSubtitle => 'Pick a voice for each language';
+
+  @override
+  String get voicesEmpty => 'Download a voice pack to pick voices';
+
+  @override
+  String get streamLanguage => 'Stream language';
+
+  @override
+  String voicePreviewLabel(String voice) {
+    return 'Play a sample of $voice';
+  }
+
+  @override
+  String get voicePreviewFailed => 'Couldn\'t play the sample';
+
+  @override
+  String get voiceFemale => 'Female';
+
+  @override
+  String get voiceMale => 'Male';
+
+  @override
+  String get perViewerVoice => 'Per-viewer voice';
+
+  @override
+  String get perViewerVoiceOnSubtitle =>
+      'Each viewer gets their own voice. The voices you pick read alerts and system messages.';
+
+  @override
+  String get perViewerVoiceOffSubtitle => 'The voices you pick read everything';
+
+  @override
+  String languageUnsupported(String language) {
+    return '$language isn\'t supported by your voice packs; the system voice will be used';
+  }
+
+  @override
+  String get voicePackSuggestionTitle => 'Try a more natural voice';
+
+  @override
+  String voicePackSuggestionBody(String pack, String size, String language) {
+    return '$pack reads $language chat with a neural voice that runs on your device. It\'s a $size download.';
+  }
+
+  @override
+  String get voicePackRetry => 'Try again';
+
+  @override
+  String get notNow => 'Not now';
 }

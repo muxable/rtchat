@@ -1686,6 +1686,360 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove'**
   String get removeChannel;
+
+  /// Heading of the text to speech settings section about the voice that reads chat
+  ///
+  /// In en, this message translates to:
+  /// **'Voice'**
+  String get ttsVoiceSection;
+
+  /// Title of the row that says which text to speech engine reads chat
+  ///
+  /// In en, this message translates to:
+  /// **'Reads chat with'**
+  String get ttsEngine;
+
+  /// Shown when chat is read with a neural voice pack that runs on the device
+  ///
+  /// In en, this message translates to:
+  /// **'Neural voice (on-device)'**
+  String get ttsEngineNeural;
+
+  /// Shown when chat is read with the voices of the phone's operating system
+  ///
+  /// In en, this message translates to:
+  /// **'System voice'**
+  String get ttsEngineSystem;
+
+  /// Title of the screen that downloads and deletes neural voice packs
+  ///
+  /// In en, this message translates to:
+  /// **'Voice packs'**
+  String get voicePacks;
+
+  /// Subtitle of the voice packs settings row when no voice pack is installed
+  ///
+  /// In en, this message translates to:
+  /// **'Download natural-sounding voices that run on your device'**
+  String get voicePacksSubtitleNone;
+
+  /// Subtitle of the voice packs settings row: how many voice packs are installed and the storage they take
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 installed} other{{count} installed}} · {size}'**
+  String voicePacksSubtitleInstalled(int count, String size);
+
+  /// Explanation at the top of the voice packs screen
+  ///
+  /// In en, this message translates to:
+  /// **'Voice packs read chat with natural-sounding neural voices. They run on your device and work offline once downloaded.'**
+  String get voicePacksDescription;
+
+  /// How much storage the installed voice packs take
+  ///
+  /// In en, this message translates to:
+  /// **'Storage used: {size}'**
+  String voicePacksStorageUsed(String size);
+
+  /// Title of the switch that lets voice packs download without Wi-Fi
+  ///
+  /// In en, this message translates to:
+  /// **'Download over mobile data'**
+  String get voicePacksAllowMobileData;
+
+  /// Subtitle of the switch that lets voice packs download without Wi-Fi
+  ///
+  /// In en, this message translates to:
+  /// **'Voice packs are large, so they download over Wi-Fi only unless you allow this'**
+  String get voicePacksAllowMobileDataSubtitle;
+
+  /// Shown when the list of voice packs couldn't be read
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the voice packs'**
+  String get voicePacksLoadError;
+
+  /// How many languages a voice pack speaks; tapping it shows them all
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 language} other{{count} languages}}'**
+  String voicePackLanguageCount(int count);
+
+  /// How many voices a voice pack or language has
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 voice} other{{count} voices}}'**
+  String voicePackVoiceCount(int count);
+
+  /// The download size of a voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'{size} download'**
+  String voicePackDownloadSize(String size);
+
+  /// The storage an installed voice pack takes
+  ///
+  /// In en, this message translates to:
+  /// **'{size} on device'**
+  String voicePackSizeOnDisk(String size);
+
+  /// Shown on a voice pack that is installed
+  ///
+  /// In en, this message translates to:
+  /// **'Installed'**
+  String get voicePackInstalled;
+
+  /// Shown on an installed voice pack that has a newer version
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get voicePackUpgradeAvailable;
+
+  /// Button that downloads and installs a voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get voicePackDownload;
+
+  /// Accessibility label of the button that downloads a voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'Download {pack}'**
+  String voicePackDownloadLabel(String pack);
+
+  /// Button that downloads the newer version of an installed voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get voicePackUpdate;
+
+  /// Button that deletes an installed voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get voicePackDelete;
+
+  /// Accessibility label of the button that deletes a voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {pack}'**
+  String voicePackDeleteLabel(String pack);
+
+  /// Accessibility label of the button that cancels a voice pack download
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel downloading {pack}'**
+  String voicePackCancelLabel(String pack);
+
+  /// Title of the dialog that confirms deleting a voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {pack}?'**
+  String voicePackDeleteTitle(String pack);
+
+  /// Body of the dialog that confirms deleting a voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'This frees {size}. Languages no other voice pack speaks will be read with the system voice.'**
+  String voicePackDeleteBody(String size);
+
+  /// Shown while a voice pack download waits for a Wi-Fi connection
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for Wi-Fi'**
+  String get voicePackWaitingForWifi;
+
+  /// Shown while a voice pack download is queued
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to download'**
+  String get voicePackWaiting;
+
+  /// Button that downloads a voice pack that is waiting for Wi-Fi over mobile data instead
+  ///
+  /// In en, this message translates to:
+  /// **'Use mobile data'**
+  String get voicePackUseMobileData;
+
+  /// Progress of a voice pack download
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading: {downloaded} of {total}'**
+  String voicePackDownloading(String downloaded, String total);
+
+  /// Accessibility label of a voice pack's download progress bar
+  ///
+  /// In en, this message translates to:
+  /// **'{pack} download progress'**
+  String voicePackProgressLabel(String pack);
+
+  /// Shown while a downloaded voice pack is verified
+  ///
+  /// In en, this message translates to:
+  /// **'Checking the download'**
+  String get voicePackVerifying;
+
+  /// Shown while a downloaded voice pack is unpacked and installed
+  ///
+  /// In en, this message translates to:
+  /// **'Installing'**
+  String get voicePackExtracting;
+
+  /// Shown when installing a voice pack failed, with why
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t install {pack}: {reason}'**
+  String voicePackInstallFailed(String pack, String reason);
+
+  /// Why a voice pack couldn't be installed: not enough storage
+  ///
+  /// In en, this message translates to:
+  /// **'there isn\'t enough free storage ({size} needed)'**
+  String voicePackErrorSpace(String size);
+
+  /// Why a voice pack couldn't be installed: the download failed
+  ///
+  /// In en, this message translates to:
+  /// **'the download failed; check your connection and try again'**
+  String get voicePackErrorDownload;
+
+  /// Why a voice pack couldn't be installed: the download didn't match its checksum or archive
+  ///
+  /// In en, this message translates to:
+  /// **'the download was damaged; try again'**
+  String get voicePackErrorDamaged;
+
+  /// Why a voice pack couldn't be installed: the app is too old
+  ///
+  /// In en, this message translates to:
+  /// **'it needs a newer version of the app'**
+  String get voicePackErrorUnsupported;
+
+  /// Why a voice pack couldn't be installed: an unexpected error
+  ///
+  /// In en, this message translates to:
+  /// **'something went wrong'**
+  String get voicePackErrorUnknown;
+
+  /// The license of a voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'License: {license}'**
+  String voicePackLicense(String license);
+
+  /// Button that opens a voice pack's license
+  ///
+  /// In en, this message translates to:
+  /// **'View license'**
+  String get voicePackViewLicense;
+
+  /// Notice shown on voice packs under an OpenRAIL-M license
+  ///
+  /// In en, this message translates to:
+  /// **'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.'**
+  String get voicePackOpenRailNotice;
+
+  /// Disclosure that neural voices are synthetic
+  ///
+  /// In en, this message translates to:
+  /// **'Voices from voice packs are machine-generated: they are made by AI, not recorded by a person.'**
+  String get voicePackMachineGenerated;
+
+  /// Title of the screen that picks a neural voice for each language
+  ///
+  /// In en, this message translates to:
+  /// **'Voices'**
+  String get voices;
+
+  /// Subtitle of the settings row that opens the voice picker
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a voice for each language'**
+  String get voicesSubtitle;
+
+  /// Shown in the voice picker when no voice pack is installed
+  ///
+  /// In en, this message translates to:
+  /// **'Download a voice pack to pick voices'**
+  String get voicesEmpty;
+
+  /// Marks the language of the stream in the list of languages
+  ///
+  /// In en, this message translates to:
+  /// **'Stream language'**
+  String get streamLanguage;
+
+  /// Accessibility label and tooltip of the button that plays a voice
+  ///
+  /// In en, this message translates to:
+  /// **'Play a sample of {voice}'**
+  String voicePreviewLabel(String voice);
+
+  /// Shown when a voice sample couldn't be played
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t play the sample'**
+  String get voicePreviewFailed;
+
+  /// Describes a female voice
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get voiceFemale;
+
+  /// Describes a male voice
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get voiceMale;
+
+  /// Title of the switch that gives each viewer their own voice
+  ///
+  /// In en, this message translates to:
+  /// **'Per-viewer voice'**
+  String get perViewerVoice;
+
+  /// Subtitle of the per-viewer voice switch while it's on
+  ///
+  /// In en, this message translates to:
+  /// **'Each viewer gets their own voice. The voices you pick read alerts and system messages.'**
+  String get perViewerVoiceOnSubtitle;
+
+  /// Subtitle of the per-viewer voice switch while it's off
+  ///
+  /// In en, this message translates to:
+  /// **'The voices you pick read everything'**
+  String get perViewerVoiceOffSubtitle;
+
+  /// Shown when the stream's language isn't spoken by any installed voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'{language} isn\'t supported by your voice packs; the system voice will be used'**
+  String languageUnsupported(String language);
+
+  /// Title of the suggestion to download a voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'Try a more natural voice'**
+  String get voicePackSuggestionTitle;
+
+  /// Body of the suggestion to download a voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'{pack} reads {language} chat with a neural voice that runs on your device. It\'s a {size} download.'**
+  String voicePackSuggestionBody(String pack, String size, String language);
+
+  /// Button that tries again to install a voice pack, or to load the voice packs, after it failed
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get voicePackRetry;
+
+  /// Dismisses a suggestion
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get notNow;
 }
 
 class _AppLocalizationsDelegate
