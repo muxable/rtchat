@@ -56,13 +56,13 @@ func TestJoinReturnsConnectError(t *testing.T) {
 
 func TestAuthenticatedCloseCleansAllResources(t *testing.T) {
 	first := errors.New("reader closed")
-	sendClosed, canceled := false, false
-	c := &AuthenticatedTwitchClient{client: &fakeChat{disconnect: func() error { return first }}, sendClient: &fakeChat{disconnect: func() error { sendClosed = true; return nil }}, raidCancel: func() { canceled = true }}
+	sendClosed := false
+	c := &AuthenticatedTwitchClient{client: &fakeChat{disconnect: func() error { return first }}, sendClient: &fakeChat{disconnect: func() error { sendClosed = true; return nil }}}
 	if err := c.Close(); !errors.Is(err, first) {
 		t.Fatal(err)
 	}
-	if !sendClosed || !canceled {
-		t.Fatalf("send closed=%v raid canceled=%v", sendClosed, canceled)
+	if !sendClosed {
+		t.Fatal("send client not closed")
 	}
 }
 

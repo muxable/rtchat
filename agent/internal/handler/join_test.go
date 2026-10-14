@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"errors"
 	"testing"
 	"time"
@@ -19,7 +18,7 @@ func testAgent() *TwitchAgent {
 		return map[string]interface{}{"login": "user", "id": "42"}, nil
 	}, tokenSource: func(string) (oauth2.TokenSource, error) {
 		return oauth2.StaticTokenSource(&oauth2.Token{AccessToken: "fresh"}), nil
-	}, raidClient: func(context.Context, string, string) error { return errors.New("fake raid offline") }}
+	}}
 }
 
 func activeChat() (*fakeChat, chan struct{}) {
