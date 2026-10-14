@@ -985,6 +985,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get signInWithKick => 'Kickでサインイン';
 
   @override
+  String get signInWithYouTube => 'YouTubeでサインイン';
+
+  @override
   String get textToSpeechTooManyMessages => 'メッセージが多すぎます。読み上げをオフにしました';
 
   @override

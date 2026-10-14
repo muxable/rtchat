@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/auth/companion_auth.dart';
+import 'package:rtchat/components/provider_icon.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/user.dart';
@@ -27,12 +28,15 @@ class SignInButton extends StatelessWidget {
   static const _colors = {
     Providers.twitch: Color(0xFF6441A5),
     Providers.kick: Color(0xFF53FC18),
+    Providers.youtube: youTubeRed,
   };
 
   String _label(AppLocalizations l10n) {
     switch (provider) {
       case Providers.kick:
         return l10n.signInWithKick;
+      case Providers.youtube:
+        return l10n.signInWithYouTube;
       default:
         return l10n.signInWithTwitch;
     }
@@ -190,4 +194,15 @@ class SignInWithKick extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SignInButton(
       provider: Providers.kick, onStart: onStart, onComplete: onComplete);
+}
+
+class SignInWithYouTube extends StatelessWidget {
+  final void Function()? onStart;
+  final void Function()? onComplete;
+
+  const SignInWithYouTube({super.key, this.onStart, this.onComplete});
+
+  @override
+  Widget build(BuildContext context) => SignInButton(
+      provider: Providers.youtube, onStart: onStart, onComplete: onComplete);
 }

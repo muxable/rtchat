@@ -1011,6 +1011,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get signInWithKick => 'تسجيل الدخول باستخدام Kick';
 
   @override
+  String get signInWithYouTube => 'تسجيل الدخول باستخدام YouTube';
+
+  @override
   String get textToSpeechTooManyMessages =>
       'هناك رسائل كثيرة جدًا. تم تعطيل تحويل النص إلى كلام';
 
