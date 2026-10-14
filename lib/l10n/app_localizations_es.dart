@@ -874,25 +874,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get discoModeDisabled => '🕺 Modo disco desactivado D:';
 
   @override
-  String get cloudTts => 'TTS en la nube';
-
-  @override
-  String get languages => 'Idiomas';
-
-  @override
-  String get voices => 'Voces';
-
-  @override
-  String get perViewerVoice => 'Voz por espectador';
-
-  @override
-  String get perViewerVoiceSubtitle =>
-      'Identifica a tus espectadores por su voz';
-
-  @override
-  String get randomVoice => 'Aleatoria';
-
-  @override
   String get playSampleMessage => 'Reproducir mensaje de ejemplo';
 
   @override
@@ -900,9 +881,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => 'Tono de voz';
-
-  @override
-  String get unlockHighQualityVoices => 'Desbloquear voces de alta calidad';
 
   @override
   String get muteBots => 'Silenciar texto a voz para bots';
@@ -916,33 +894,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get subscribersOnly => 'Solo suscriptores';
-
-  @override
-  String get storeNotAvailable => 'Tienda no disponible';
-
-  @override
-  String get unavailable => 'No disponible';
-
-  @override
-  String get subscribe => 'Suscribirse';
-
-  @override
-  String get pending => 'Pendiente';
-
-  @override
-  String get subscribed => 'Suscrito';
-
-  @override
-  String get pleaseSignIn => 'Inicia sesión';
-
-  @override
-  String get searchLanguages => 'Buscar idiomas';
-
-  @override
-  String get closeSearch => 'Cerrar búsqueda';
-
-  @override
-  String get playSample => 'Reproducir ejemplo';
 
   @override
   String get fontSize => 'Tamaño de fuente';

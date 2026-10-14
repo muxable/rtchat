@@ -851,24 +851,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get discoModeDisabled => '🕺 디스코 모드 꺼짐 D:';
 
   @override
-  String get cloudTts => '클라우드 TTS';
-
-  @override
-  String get languages => '언어';
-
-  @override
-  String get voices => '음성';
-
-  @override
-  String get perViewerVoice => '시청자별 음성';
-
-  @override
-  String get perViewerVoiceSubtitle => '목소리로 시청자 구별하기';
-
-  @override
-  String get randomVoice => '무작위';
-
-  @override
   String get playSampleMessage => '샘플 메시지 재생';
 
   @override
@@ -876,9 +858,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => '음성 높낮이';
-
-  @override
-  String get unlockHighQualityVoices => '고품질 음성 잠금 해제';
 
   @override
   String get muteBots => '봇 메시지 음성 끄기';
@@ -891,33 +870,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get subscribersOnly => '구독자 전용';
-
-  @override
-  String get storeNotAvailable => '스토어를 사용할 수 없음';
-
-  @override
-  String get unavailable => '사용할 수 없음';
-
-  @override
-  String get subscribe => '구독';
-
-  @override
-  String get pending => '대기 중';
-
-  @override
-  String get subscribed => '구독함';
-
-  @override
-  String get pleaseSignIn => '로그인하세요';
-
-  @override
-  String get searchLanguages => '언어 검색';
-
-  @override
-  String get closeSearch => '검색 닫기';
-
-  @override
-  String get playSample => '샘플 재생';
 
   @override
   String get fontSize => '글꼴 크기';

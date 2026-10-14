@@ -18,10 +18,8 @@ void main() {
 
   setUpAll(() async {
     await initializeDateFormatting('en');
-    for (final name in ['flutter_tts', 'com.ryanheise.just_audio.methods']) {
-      messenger.setMockMethodCallHandler(
-          MethodChannel(name), (call) async => null);
-    }
+    messenger.setMockMethodCallHandler(
+        const MethodChannel('flutter_tts'), (call) async => null);
   });
 
   setUp(() {

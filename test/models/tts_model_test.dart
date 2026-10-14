@@ -5,7 +5,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
-import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
@@ -15,7 +14,6 @@ import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts.dart';
-import 'package:rtchat/models/tts/language.dart';
 
 final timestamp = DateTime(2024, 1, 2, 3, 4, 5);
 
@@ -41,13 +39,12 @@ TwitchMessageModel createMessage(String message,
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // TtsModel eagerly creates platform-backed players; stub them out.
+  // TtsModel eagerly creates a platform-backed tts player; stub it out.
   setUpAll(() async {
     await initializeDateFormatting('en');
-    for (final name in ['flutter_tts', 'com.ryanheise.just_audio.methods']) {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(MethodChannel(name), (call) async => null);
-    }
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+            const MethodChannel('flutter_tts'), (call) async => null);
   });
 
   final l10n = lookupAppLocalizations(const Locale('en'));
@@ -266,55 +263,6 @@ void main() {
     });
   });
 
-  group('cloud voices', () {
-    final japanese = Channel(Providers.twitch, '2', 'someone');
-    final fetched = <String>[];
-
-    setUp(() {
-      fetched.clear();
-      model = TtsModel.fromJson({
-        'language': 'en',
-        'voice': {'en': 'en-US-Wavenet-A'},
-      })
-        ..setChannelLanguage(japanese, Language('ja'))
-        ..fetchVoices = (language) async {
-          fetched.add(language);
-          return switch (language) {
-            'en' => ['en-US-Wavenet-A', 'en-US-Wavenet-B'],
-            'ja' => ['ja-JP-Wavenet-A', 'ja-JP-Wavenet-B'],
-            _ => <String>[],
-          };
-        };
-    });
-
-    TwitchMessageModel fromJapanese(String text) =>
-        createMessage(text)..channel = japanese;
-
-    test('use the chosen voice for the primary language', () async {
-      model.isRandomVoiceEnabled = false;
-      expect(await model.voiceFor(createMessage('hello')), 'en-US-Wavenet-A');
-    });
-
-    test('use a voice of the channel language when none is chosen', () async {
-      model.isRandomVoiceEnabled = false;
-      expect(await model.voiceFor(fromJapanese('こんにちは')), 'ja-JP-Wavenet-A');
-      expect(await model.voiceFor(fromJapanese('またね')), 'ja-JP-Wavenet-A');
-      expect(fetched, ['ja'], reason: 'voices are fetched once per language');
-    });
-
-    test('random voices are drawn from the channel language', () async {
-      model.voices = ['en-US-Wavenet-A', 'en-US-Wavenet-B'];
-      expect(await model.voiceFor(fromJapanese('こんにちは')), startsWith('ja-JP-'));
-    });
-
-    test('fall back to the primary voice when voices cannot be fetched',
-        () async {
-      model.isRandomVoiceEnabled = false;
-      model.fetchVoices = (language) async => throw Exception('offline');
-      expect(await model.voiceFor(fromJapanese('こんにちは')), 'en-US-Wavenet-A');
-    });
-  });
-
   group('json', () {
     test('defaults', () {
       expect(model.isBotMuted, isFalse);
@@ -334,7 +282,6 @@ void main() {
         'language': 'fr',
         'pitch': 1.5,
         'speed': 0.6,
-        'voice': {'fr': 'fr-FR-Wavenet-A'},
         'mutedUsers': [
           {
             'provider': 'kick',
@@ -366,6 +313,26 @@ void main() {
       expect(
           restored.isMuted(const TwitchUserModel(userId: '1', login: 'muxfd')),
           isTrue);
+    });
+
+    test('settings saved by versions with cloud tts still load', () {
+      final restored = TtsModel.fromJson({
+        'isBotMuted': true,
+        'isCloudTtsEnabled': true,
+        'isRandomVoiceEnabled': false,
+        'language': 'fr',
+        'pitch': 1.5,
+        'speed': 0.6,
+        'voice': {'fr': 'fr-FR-Wavenet-A'},
+      });
+      expect(restored.isBotMuted, isTrue);
+      expect(restored.isRandomVoiceEnabled, isFalse);
+      expect(restored.language.languageCode, 'fr');
+      expect(restored.pitch, 1.5);
+      expect(restored.speed, 0.6);
+      final json = restored.toJson();
+      expect(json.containsKey('voice'), isFalse);
+      expect(json.containsKey('isCloudTtsEnabled'), isFalse);
     });
 
     test('muted users survive a round trip', () {
@@ -442,10 +409,15 @@ void main() {
 
     test('a failed utterance does not block the ones after it', () async {
       final spoken = <String>[];
+      var failNext = false;
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(const MethodChannel('flutter_tts'),
               (call) async {
         if (call.method == 'speak') {
+          if (failNext) {
+            failNext = false;
+            throw PlatformException(code: 'failed');
+          }
           spoken.add(call.arguments as String);
         }
         return 1;
@@ -455,20 +427,22 @@ void main() {
           .setMockMethodCallHandler(
               const MethodChannel('flutter_tts'), (call) async => null));
 
-      // cloud tts fails here (no firebase app), like a network error would.
+      // the platform fails the first utterance, and reporting the error fails
+      // too (no firebase app in tests).
       await runZonedGuarded(() async {
         model.setMode(l10n, TtsMode.enabled);
-        model.isCloudTtsEnabled = true;
+        await pumpEventQueue();
+        failNext = true;
         model.say(l10n, createMessage('first', messageId: 'first'));
         await pumpEventQueue();
       }, (error, stack) {});
 
-      model.isCloudTtsEnabled = false;
       await runZonedGuarded(() async {
         model.say(l10n, createMessage('second', messageId: 'second'));
         await pumpEventQueue();
       }, (error, stack) {});
 
+      expect(spoken, isNot(contains('Muxfd said: first')));
       expect(spoken, contains('Muxfd said: second'));
     });
   });

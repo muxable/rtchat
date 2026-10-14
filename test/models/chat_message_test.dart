@@ -29,10 +29,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {
-    for (final name in ['flutter_tts', 'com.ryanheise.just_audio.methods']) {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(MethodChannel(name), (call) async => null);
-    }
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+            const MethodChannel('flutter_tts'), (call) async => null);
   });
 
   final l10n = lookupAppLocalizations(const Locale('en'));

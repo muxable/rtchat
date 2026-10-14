@@ -1,14 +1,10 @@
 import 'dart:async';
-import 'dart:collection';
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/channels.dart';
@@ -29,7 +25,6 @@ import 'package:rtchat/models/messages/twitch/shoutout_receive_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
-import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/tts/muted_user.dart';
 import 'package:rtchat/models/views.dart';
@@ -39,7 +34,6 @@ enum TtsMode { disabled, alertsOnly, enabled }
 final _markup = RegExp(r'</?b>');
 
 class TtsModel extends ChangeNotifier {
-  var _isCloudTtsEnabled = false;
   final _tts = FlutterTts()
     ..setSharedInstance(true)
     ..setIosAudioCategory(
@@ -47,7 +41,6 @@ class TtsModel extends ChangeNotifier {
         [IosTextToSpeechAudioCategoryOptions.mixWithOthers],
         IosTextToSpeechAudioMode.voicePrompt);
 
-  final audioPlayer = AudioPlayer();
   Future<void> _previousUtterance = Future.value();
   // the messages waiting to be read out, and the channel they came from.
   final Map<String, Channel?> _pending = {};
@@ -57,10 +50,6 @@ class TtsModel extends ChangeNotifier {
   static const _preludeBacklog = 10;
   static const _maxBacklog = 20;
   var _language = Language();
-  List<String> voices = [];
-  final Map<String, List<String>> _voicesByLanguage = {};
-  final Map<String, dynamic> _voice = {};
-  var _isSupportedLanguage = false;
   var _isRandomVoiceEnabled = true;
   var _isBotMuted = false;
   var _isEmoteMuted = false;
@@ -77,18 +66,11 @@ class TtsModel extends ChangeNotifier {
   MessageModel? _activeMessage;
   var _isSubscribersOnly = false;
 
-  @override
-  void dispose() {
-    audioPlayer.dispose();
-    super.dispose();
-  }
-
   void update(ViewsModel model) async {
     if (kDebugMode) {
       _updateChannelLanguages(model.channels);
       final channel = model.primaryChannel;
       if (channel == null) {
-        _isSupportedLanguage = false;
         _language = Language();
         return;
       }
@@ -97,15 +79,10 @@ class TtsModel extends ChangeNotifier {
       final metadata = await ChannelsAdapter.instance.forChannel(channel).first;
       final streamLanguage =
           metadata is StreamChannelMetadata ? metadata.language : null;
-      if (streamLanguage == null) {
-        _isSupportedLanguage = false;
-        _language = Language();
-        return;
-      }
-
-      _isSupportedLanguage =
-          !(streamLanguage == 'other' || streamLanguage == 'asl');
-      language = _isSupportedLanguage ? Language(streamLanguage) : Language();
+      final isSupported = streamLanguage != null &&
+          streamLanguage != 'other' &&
+          streamLanguage != 'asl';
+      language = isSupported ? Language(streamLanguage) : Language();
       notifyListeners();
     }
   }
@@ -120,65 +97,6 @@ class TtsModel extends ChangeNotifier {
         _channelLanguages[channel] = Language(language);
       }
     }
-  }
-
-  /// Fetches the names of the cloud voices offered for [languageCode].
-  @visibleForTesting
-  Future<List<String>> Function(String languageCode) fetchVoices = _fetchVoices;
-
-  static Future<List<String>> _fetchVoices(String languageCode) async {
-    final result = await FirebaseFunctions.instance
-        .httpsCallable("getVoices")
-        .call(<String, dynamic>{"language": languageCode});
-    return [for (LinkedHashMap voice in result.data) voice['name']];
-  }
-
-  void getVoices() async {
-    if (!isCloudTtsEnabled) {
-      return;
-    }
-    final voicesList = await fetchVoices(_language.languageCode);
-    _voicesByLanguage[_language.languageCode] = voicesList;
-    voices = voicesList;
-    if (_voice[language.languageCode] == null) {
-      voice = voicesList[0];
-    }
-    notifyListeners();
-  }
-
-  /// The cloud voices of [languageCode], fetched once per language. Messages
-  /// from the other channels shown can be in languages other than [language].
-  Future<List<String>> _voicesFor(String languageCode) async {
-    final cached = _voicesByLanguage[languageCode];
-    if (cached != null) {
-      return cached;
-    }
-    try {
-      return _voicesByLanguage[languageCode] = await fetchVoices(languageCode);
-    } catch (e) {
-      // leave it uncached so a later message retries.
-      debugPrint("failed to fetch $languageCode voices: $e");
-      return const [];
-    }
-  }
-
-  /// The cloud voice to read [model] with: the chosen voice for its language,
-  /// or else one of that language's voices, as synthesize reads the language
-  /// from the voice name.
-  @visibleForTesting
-  Future<String?> voiceFor(ChatMessage model) async {
-    final languageCode = languageFor(model).languageCode;
-    if (isRandomVoiceEnabled) {
-      final hash = model.author.displayName.hashCode;
-      final options = languageCode == _language.languageCode
-          ? voices
-          : await _voicesFor(languageCode);
-      final pool = options.isEmpty ? voices : options;
-      return pool.isEmpty ? null : pool[hash % pool.length];
-    }
-    return _voice[languageCode] ??
-        (await _voicesFor(languageCode)).firstOrNull ??
-        _voice[_language.languageCode];
   }
 
   String getVocalization(AppLocalizations l10n, MessageModel model,
@@ -328,25 +246,6 @@ class TtsModel extends ChangeNotifier {
 
   set language(Language language) {
     _language = language;
-    getVoices();
-    notifyListeners();
-  }
-
-  bool get isSupportedLanguage {
-    return _isSupportedLanguage;
-  }
-
-  set isSupportedLanguage(bool isSupportedLanguage) {
-    _isSupportedLanguage = isSupportedLanguage;
-    notifyListeners();
-  }
-
-  String get voice {
-    return _voice[_language.languageCode] ?? voices[0];
-  }
-
-  set voice(String voice) {
-    _voice[_language.languageCode] = voice;
     notifyListeners();
   }
 
@@ -383,18 +282,6 @@ class TtsModel extends ChangeNotifier {
 
   set isPreludeMuted(bool value) {
     _isPreludeMuted = value;
-    notifyListeners();
-  }
-
-  bool get isCloudTtsEnabled {
-    return _isCloudTtsEnabled;
-  }
-
-  set isCloudTtsEnabled(bool value) {
-    _isCloudTtsEnabled = value;
-    if (value) {
-      getVoices();
-    }
     notifyListeners();
   }
 
@@ -516,7 +403,7 @@ class TtsModel extends ChangeNotifier {
     _previousUtterance = completer.future;
     _pending[model.messageId] = model.channel;
 
-    // always release the queue: a failed utterance (e.g. a cloud tts error)
+    // always release the queue: a failed utterance (e.g. a platform error)
     // would otherwise block, and hold on to, every message after it.
     try {
       await previous;
@@ -535,39 +422,13 @@ class TtsModel extends ChangeNotifier {
 
     if ((_mode != TtsMode.disabled || model is SystemMessageModel) &&
         _pending.containsKey(model.messageId)) {
-      // TODO: replace with subscription logic
-      if (!_isCloudTtsEnabled) {
-        try {
-          await _tts.setSpeechRate(_speed);
-          await _tts.setPitch(_pitch);
-          await _tts.awaitSpeakCompletion(true);
-          await _tts.speak(vocalization);
-        } catch (e, st) {
-          FirebaseCrashlytics.instance.recordError(e, st);
-        }
-      } else {
-        String? voice;
-        double? pitch;
-        if (model is ChatMessage) {
-          voice = await voiceFor(model);
-          if (isRandomVoiceEnabled) {
-            final hash = model.author.displayName.hashCode;
-            pitch = (hash % 21) / 5 - 2;
-          } else {
-            pitch = _pitch * 4 - 2;
-          }
-        }
-        final response =
-            await FirebaseFunctions.instance.httpsCallable("synthesize")({
-          "voice": voice ?? "en-US-WaveNet-F",
-          "text": vocalization,
-          "rate": _speed * 1.5 + 0.5,
-          "pitch": pitch ?? 0,
-        });
-        final bytes = const Base64Decoder().convert(response.data);
-        await audioPlayer.setAudioSource(BytesAudioSource(bytes));
-        await audioPlayer.play();
-        await Future.delayed(audioPlayer.duration ?? const Duration());
+      try {
+        await _tts.setSpeechRate(_speed);
+        await _tts.setPitch(_pitch);
+        await _tts.awaitSpeakCompletion(true);
+        await _tts.speak(vocalization);
+      } catch (e, st) {
+        FirebaseCrashlytics.instance.recordError(e, st);
       }
     }
   }
@@ -580,9 +441,6 @@ class TtsModel extends ChangeNotifier {
         force: true);
     // cut off the current utterance; everything queued behind it is dropped.
     _tts.stop().catchError((_) => null);
-    if (_isCloudTtsEnabled) {
-      audioPlayer.stop();
-    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });
@@ -628,9 +486,6 @@ class TtsModel extends ChangeNotifier {
     if (json['language'] != null) {
       _language = Language(json['language']);
     }
-    if (json['voice'] != null) {
-      _voice.addAll(json['voice']);
-    }
     final userJson = json['mutedUsers'];
     if (userJson != null) {
       // the saved list is a full snapshot, so it replaces the current one.
@@ -655,7 +510,6 @@ class TtsModel extends ChangeNotifier {
         "language": language.languageCode,
         "pitch": pitch,
         "speed": speed,
-        "voice": _voice,
         'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
       };
 }

@@ -21,7 +21,6 @@ import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/chat.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
-import 'package:rtchat/models/purchases.dart';
 import 'package:rtchat/models/qr_code.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/stream_preview.dart';
@@ -51,9 +50,6 @@ import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/third_party.dart';
 import 'package:rtchat/screens/settings/tts.dart';
-import 'package:rtchat/screens/settings/tts/cloud_tts_purchases.dart';
-import 'package:rtchat/screens/settings/tts/languages.dart';
-import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
@@ -289,12 +285,6 @@ class _AppState extends State<App> {
                   .setString('stream_preview', jsonEncode(model.toJson()));
             });
         }),
-        ChangeNotifierProvider<Purchases>(
-          create: (context) => Purchases(
-            context.read<TtsModel>(),
-          ),
-          lazy: false,
-        ),
       ],
       child: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return MaterialApp(
@@ -337,12 +327,6 @@ class _AppState extends State<App> {
             '/settings/audio-sources': (context) => const AudioSourcesScreen(),
             '/settings/chat-history': (context) => const ChatHistoryScreen(),
             '/settings/text-to-speech': (context) => const TextToSpeechScreen(),
-            '/settings/text-to-speech/cloud-tts': (context) =>
-                const CloudTtsPurchasesScreen(),
-            '/settings/text-to-speech/languages': (context) =>
-                const LanguagesScreen(),
-            '/settings/text-to-speech/voices': (context) =>
-                const VoicesScreen(),
             '/settings/quick-links': (context) => const QuickLinksScreen(),
             '/settings/backup': (context) => const BackupScreen(),
             '/settings/third-party': (context) => const ThirdPartyScreen(),

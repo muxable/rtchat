@@ -46,9 +46,6 @@ void main() {
       }
       return 1;
     });
-    messenger.setMockMethodCallHandler(
-        const MethodChannel('com.ryanheise.just_audio.methods'),
-        (call) async => null);
   });
 
   late WidgetTester tester;
