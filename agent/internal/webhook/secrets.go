@@ -2,7 +2,6 @@ package webhook
 
 import (
 	"context"
-	"os"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
@@ -20,8 +19,8 @@ type Secrets struct {
 // SecretFetcher receives a full Secret Manager version resource name.
 type SecretFetcher func(context.Context, string) (string, error)
 
-// LoadSecrets prefers environment overrides (including explicitly empty ones).
-// A nil fetcher uses one lazily created Secret Manager client for all reads.
+// LoadSecrets reads every webhook credential from Secret Manager, which the
+// deploy workflow controls. A nil fetcher uses one lazily created client.
 // Failures leave the affected credentials empty so startup can continue.
 func LoadSecrets(ctx context.Context, fetch SecretFetcher) Secrets {
 	var client *secretmanager.Client
@@ -51,20 +50,15 @@ func LoadSecrets(ctx context.Context, fetch SecretFetcher) Secrets {
 
 	var secrets Secrets
 	for _, entry := range []struct {
-		env  string
 		name string
 		dest *string
 	}{
-		{"KICK_CLIENT_ID", "kick-client-id", &secrets.KickClientID},
-		{"KICK_CLIENT_SECRET", "kick-client-secret", &secrets.KickClientSecret},
-		{"TWITCH_EVENTSUB_SECRET", "twitch-eventsub-secret", &secrets.TwitchEventSubSecret},
-		{"ALCHEMY_SIGNING_KEY", "alchemy-signing-key", &secrets.AlchemySigningKey},
-		{"ALCHEMY_ETH_SIGNING_KEY", "alchemy-eth-signing-key", &secrets.AlchemyEthSigningKey},
+		{"kick-client-id", &secrets.KickClientID},
+		{"kick-client-secret", &secrets.KickClientSecret},
+		{"twitch-eventsub-secret", &secrets.TwitchEventSubSecret},
+		{"alchemy-signing-key", &secrets.AlchemySigningKey},
+		{"alchemy-eth-signing-key", &secrets.AlchemyEthSigningKey},
 	} {
-		if value, ok := os.LookupEnv(entry.env); ok {
-			*entry.dest = value
-			continue
-		}
 		value, err := fetch(ctx, "projects/rtchat-47692/secrets/"+entry.name+"/versions/latest")
 		if err != nil {
 			zap.L().Warn("failed to load webhook secret", zap.String("secret", entry.name), zap.Error(err))

@@ -3,7 +3,6 @@ package webhook
 import (
 	"context"
 	"errors"
-	"os"
 	"reflect"
 	"testing"
 
@@ -11,46 +10,7 @@ import (
 	"go.uber.org/zap/zaptest/observer"
 )
 
-var secretEnvs = []string{
-	"KICK_CLIENT_ID", "KICK_CLIENT_SECRET", "TWITCH_EVENTSUB_SECRET",
-	"ALCHEMY_SIGNING_KEY", "ALCHEMY_ETH_SIGNING_KEY",
-}
-
-func clearSecretEnvs(t *testing.T) {
-	t.Helper()
-	for _, name := range secretEnvs {
-		// Setenv arranges to restore the original environment at cleanup.
-		t.Setenv(name, "")
-		if err := os.Unsetenv(name); err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
-func TestLoadSecretsEnvironment(t *testing.T) {
-	for _, name := range secretEnvs {
-		t.Setenv(name, name)
-	}
-	want := Secrets{
-		KickClientID: "KICK_CLIENT_ID", KickClientSecret: "KICK_CLIENT_SECRET",
-		TwitchEventSubSecret: "TWITCH_EVENTSUB_SECRET", AlchemySigningKey: "ALCHEMY_SIGNING_KEY",
-		AlchemyEthSigningKey: "ALCHEMY_ETH_SIGNING_KEY",
-	}
-	got := LoadSecrets(context.Background(), func(context.Context, string) (string, error) {
-		t.Fatal("environment overrides must not fetch from Secret Manager")
-		return "", nil
-	})
-	if got != want {
-		t.Fatalf("got %+v, want %+v", got, want)
-	}
-	// A nil fetcher also skips client creation when every override is present.
-	if got := LoadSecrets(context.Background(), nil); got != want {
-		t.Fatalf("got %+v, want %+v", got, want)
-	}
-}
-
 func TestLoadSecretsMissing(t *testing.T) {
-	clearSecretEnvs(t)
 	core, logs := observer.New(zap.WarnLevel)
 	undo := zap.ReplaceGlobals(zap.New(core))
 	defer undo()
@@ -77,12 +37,11 @@ func TestLoadSecretsMissing(t *testing.T) {
 	}
 }
 
-func TestLoadSecretsMixed(t *testing.T) {
-	clearSecretEnvs(t)
-	t.Setenv("KICK_CLIENT_ID", "override")
-	t.Setenv("KICK_CLIENT_SECRET", "")
+func TestLoadSecretsPartial(t *testing.T) {
 	got := LoadSecrets(context.Background(), func(ctx context.Context, name string) (string, error) {
 		switch name {
+		case "projects/rtchat-47692/secrets/kick-client-id/versions/latest":
+			return "kick", nil
 		case "projects/rtchat-47692/secrets/twitch-eventsub-secret/versions/latest":
 			return "eventsub", nil
 		case "projects/rtchat-47692/secrets/alchemy-signing-key/versions/latest":
@@ -90,11 +49,10 @@ func TestLoadSecretsMixed(t *testing.T) {
 		case "projects/rtchat-47692/secrets/alchemy-eth-signing-key/versions/latest":
 			return "eth", nil
 		default:
-			t.Fatalf("unexpected fetch: %s", name)
-			return "", nil
+			return "", errors.New("secret not found")
 		}
 	})
-	want := Secrets{KickClientID: "override", TwitchEventSubSecret: "eventsub", AlchemyEthSigningKey: "eth"}
+	want := Secrets{KickClientID: "kick", TwitchEventSubSecret: "eventsub", AlchemyEthSigningKey: "eth"}
 	if got != want {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}
