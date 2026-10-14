@@ -19,3 +19,20 @@ jobs:
       - name: Test on_device_tts
         run: flutter test
         working-directory: packages/on_device_tts
+
+  on-device-tts-kotlin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+      # Generates android/local.properties and the Gradle wrapper.
+      - run: flutter build apk --config-only
+      - name: Test the on_device_tts plugin's Kotlin code (JVM)
+        run: ./gradlew :on_device_tts:testDebugUnitTest --console=plain
+        working-directory: android

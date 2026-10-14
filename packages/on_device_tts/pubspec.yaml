@@ -1,7 +1,7 @@
 name: on_device_tts
 description: >-
   Text-to-speech engines that run on the device behind one interface:
-  the platform's system voices today, neural voices later.
+  the platform's system voices, and neural voices on ONNX Runtime.
 version: 0.1.0
 publish_to: "none"
 
@@ -18,3 +18,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.muxable.ondevicetts
+        pluginClass: OnDeviceTtsPlugin
+      ios:
+        pluginClass: OnDeviceTtsPlugin
