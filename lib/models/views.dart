@@ -83,9 +83,6 @@ class ViewsModel extends ChangeNotifier {
   // isn't remembered across restarts.
   ChannelView? _openedView;
 
-  // channels of the active view whose messages are hidden.
-  final Set<Channel> _hiddenChannels = {};
-
   ViewsModel();
 
   /// Keeps "My channel" in sync with the signed-in account.
@@ -113,29 +110,16 @@ class ViewsModel extends ChangeNotifier {
   /// channel at a time (for now) use this one.
   Channel? get primaryChannel => activeView.channels.firstOrNull;
 
-  /// Channels in the active view whose messages are currently hidden.
-  Set<Channel> get hiddenChannels => Set.unmodifiable(_hiddenChannels);
-
-  void setChannelHidden(Channel channel, bool hidden) {
-    if (hidden
-        ? _hiddenChannels.add(channel)
-        : _hiddenChannels.remove(channel)) {
-      notifyListeners();
-    }
-  }
-
   /// Shows a single channel, e.g. one picked from search.
   void openChannel(Channel channel) {
     _openedView = ChannelView(
         id: 'channel:$channel', name: channel.displayName, channels: [channel]);
-    _hiddenChannels.clear();
     notifyListeners();
   }
 
   void showView(String id) {
     _openedView = null;
     _savedViewId = id == myChannelsId ? null : id;
-    _hiddenChannels.clear();
     notifyListeners();
   }
 

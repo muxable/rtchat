@@ -195,7 +195,6 @@ class _AppState extends State<App> {
           },
           update: (context, views, ttsModel, model) {
             model!.channels = views.activeView.channels;
-            model.hiddenChannels = views.hiddenChannels;
             model.tts = ttsModel;
             return model;
           },

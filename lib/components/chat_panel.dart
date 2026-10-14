@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/channel_filter_chips.dart';
+import 'package:rtchat/components/channel_attribution.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/chat_history/separator.dart';
 import 'package:rtchat/components/connection_status.dart';
@@ -281,13 +281,6 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      const ChannelFilterChips(),
-      Expanded(child: _buildMessages(context)),
-    ]);
-  }
-
-  Widget _buildMessages(BuildContext context) {
     return Stack(
       alignment: AlignmentDirectional.topCenter,
       children: [

@@ -283,7 +283,7 @@ void main() {
       expect(model.authors.map((a) => a.userId).toSet(), {'u1', 'u2'});
     });
 
-    group('message alerts with a hidden channel', () {
+    group('message alerts', () {
       final a = Channel('twitch', 'a', 'A');
       final b = Channel('kick', 'b', 'B');
       late MessagesModel model;
@@ -296,8 +296,7 @@ void main() {
         pings = 0;
         model = MessagesModel.fromJson({'pingMinGapDuration': 60})
           ..isOnline = ((_) => Stream.value(true))
-          ..onMessagePing = (() => pings++)
-          ..hiddenChannels = {b};
+          ..onMessagePing = (() => pings++);
         model.addEvent(a, LiveStateDeltaEvent(t0));
         model.addEvent(b, LiveStateDeltaEvent(t0));
       });
@@ -323,23 +322,6 @@ void main() {
             a,
             AppendDeltaEvent(
                 from(a, 'a4', t0.add(const Duration(seconds: 205)))));
-        await pumpEventQueue();
-        expect(pings, 1);
-      });
-
-      test('messages from a hidden channel do not ping', () async {
-        model.addEvent(a, AppendDeltaEvent(from(a, 'a1', t0)));
-        model.addEvent(
-            a,
-            AppendDeltaEvent(
-                from(a, 'a2', t0.add(const Duration(seconds: 200)))));
-        await pumpEventQueue();
-        expect(pings, 1);
-
-        model.addEvent(
-            b,
-            AppendDeltaEvent(
-                from(b, 'b1', t0.add(const Duration(seconds: 500)))));
         await pumpEventQueue();
         expect(pings, 1);
       });
