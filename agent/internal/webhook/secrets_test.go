@@ -28,6 +28,8 @@ func TestLoadSecretsMissing(t *testing.T) {
 		"projects/rtchat-47692/secrets/twitch-eventsub-secret/versions/latest",
 		"projects/rtchat-47692/secrets/alchemy-signing-key/versions/latest",
 		"projects/rtchat-47692/secrets/alchemy-eth-signing-key/versions/latest",
+		"projects/rtchat-47692/secrets/alchemy-matic-webhook-id/versions/latest",
+		"projects/rtchat-47692/secrets/alchemy-eth-webhook-id/versions/latest",
 	}
 	if !reflect.DeepEqual(names, want) {
 		t.Fatalf("got resource names %v, want %v", names, want)

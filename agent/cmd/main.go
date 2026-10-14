@@ -137,6 +137,11 @@ func main() {
 		server := webhook.NewServer(secrets)
 		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
 		server.RegisterProvider("/twitch/", webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client, twitchClientID, twitchClientSecret))
+		server.RegisterProvider("/alchemy/", webhook.NewAlchemyHandler(webhook.AlchemyConfig{
+			Secrets:        secrets,
+			MaticWebhookID: secrets.AlchemyMaticWebhookID,
+			EthWebhookID:   secrets.AlchemyEthWebhookID,
+		}, webhook.AlchemyFirestore{Client: client}, webhook.NewAlchemyRPC()))
 		server.Mux.Handle("/", recycleHandler)
 		zap.L().Info("starting http server")
 		port := os.Getenv("PORT")

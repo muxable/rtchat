@@ -9,11 +9,13 @@ import (
 )
 
 type Secrets struct {
-	KickClientID         string
-	KickClientSecret     string
-	TwitchEventSubSecret string
-	AlchemySigningKey    string
-	AlchemyEthSigningKey string
+	KickClientID          string
+	KickClientSecret      string
+	TwitchEventSubSecret  string
+	AlchemySigningKey     string
+	AlchemyEthSigningKey  string
+	AlchemyMaticWebhookID string
+	AlchemyEthWebhookID   string
 }
 
 // SecretFetcher receives a full Secret Manager version resource name.
@@ -58,6 +60,8 @@ func LoadSecrets(ctx context.Context, fetch SecretFetcher) Secrets {
 		{"twitch-eventsub-secret", &secrets.TwitchEventSubSecret},
 		{"alchemy-signing-key", &secrets.AlchemySigningKey},
 		{"alchemy-eth-signing-key", &secrets.AlchemyEthSigningKey},
+		{"alchemy-matic-webhook-id", &secrets.AlchemyMaticWebhookID},
+		{"alchemy-eth-webhook-id", &secrets.AlchemyEthWebhookID},
 	} {
 		value, err := fetch(ctx, "projects/rtchat-47692/secrets/"+entry.name+"/versions/latest")
 		if err != nil {
