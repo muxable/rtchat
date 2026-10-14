@@ -14,6 +14,29 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.19"
+          cache-dependency-path: agent/go.sum
+
+      - uses: ./.github/actions/twitch-cli
+
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+
+      - run: go vet ./...
+
+      - run: go test -race ./...
+
   build:
     runs-on: ubuntu-latest
     permissions:
@@ -61,7 +84,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    needs: build
+    needs: [test, build]
     concurrency:
       group: deploy
       cancel-in-progress: true
