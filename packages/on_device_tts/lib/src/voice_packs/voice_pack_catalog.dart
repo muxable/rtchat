@@ -23,6 +23,7 @@ enum VoicePackModelType {
   kitten,
   vits,
   matcha,
+  supertonic,
 
   /// A model type this version of the package doesn't know. Packs with it
   /// are kept in the catalog but aren't [VoicePack.isSupported].

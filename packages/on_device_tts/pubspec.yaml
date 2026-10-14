@@ -12,6 +12,8 @@ environment:
 dependencies:
   # 4.4 and later came out days ago; widen once they have settled.
   archive: ">=4.0.7 <4.4.0"
+  # 9.6.4 came out last week.
+  background_downloader: ">=9.6.3 <9.6.4"
   crypto: ^3.0.6
   flutter:
     sdk: flutter

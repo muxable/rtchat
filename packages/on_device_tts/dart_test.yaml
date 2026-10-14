@@ -1,5 +1,0 @@
-tags:
-  # Downloads real voice packs. Run with:
-  #   flutter test --run-skipped -t network
-  network:
-    skip: "downloads from the internet"

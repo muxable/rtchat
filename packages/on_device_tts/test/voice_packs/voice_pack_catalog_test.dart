@@ -35,25 +35,33 @@ void main() {
     final catalog = VoicePackCatalog.parse(bundledVoicePackCatalogJson);
 
     test('parses, and every pack is supported', () {
-      expect(catalog.allPacks, hasLength(7));
-      expect(catalog.packs, hasLength(7));
+      expect(catalog.allPacks, hasLength(1));
+      expect(catalog.packs, hasLength(1));
       expect(catalog.schema, VoicePackCatalog.supportedSchema);
     });
 
-    test('has the seed packs', () {
-      expect(catalog.pack('kitten-nano-en-v0_8-int8')!.modelType,
-          VoicePackModelType.kitten);
-      final kokoro = catalog.pack('kokoro-int8-multi-lang-v1_0')!;
-      expect(kokoro.modelType, VoicePackModelType.kokoro);
-      expect(kokoro.speakers, hasLength(54));
-      expect(kokoro.speakers.last.name, 'em_santa');
-      expect(kokoro.speakers.last.index, 53);
-      expect(kokoro.speaks('ja'), isTrue);
-      expect(kokoro.speaks('en'), isTrue);
-      expect(
-          catalog.packs
-              .where((pack) => pack.modelType == VoicePackModelType.vits),
-          hasLength(5));
+    test('has Supertonic 3', () {
+      final supertonic = catalog.pack('supertonic-3')!;
+      expect(supertonic.modelType, VoicePackModelType.supertonic);
+      expect(supertonic.languages, hasLength(31));
+      expect(supertonic.speaks('ru'), isTrue);
+      expect(supertonic.speakers.map((speaker) => speaker.name),
+          ['F1', 'F2', 'F3', 'F4', 'F5', 'M1', 'M2', 'M3', 'M4', 'M5']);
+      // Loose files from Hugging Face, pinned to a revision.
+      for (final file in supertonic.files) {
+        expect(file.archive, isNull);
+        expect(file.url.host, 'huggingface.co');
+        expect(file.url.path, isNot(contains('/main/')));
+      }
+      // Everything the engine is told about gets downloaded.
+      final paths = supertonic.files.map((file) => file.path).toSet();
+      for (final value in supertonic.config.values) {
+        for (final path in value is List ? value : [value]) {
+          expect(paths, contains(path));
+        }
+      }
+      expect((supertonic.config['voice_styles'] as List).length,
+          supertonic.speakers.length);
     });
 
     test('every file has a size, a checksum and a license', () {
@@ -63,7 +71,7 @@ void main() {
         expect(pack.speakers, isNotEmpty, reason: pack.id);
         for (final file in pack.files) {
           expect(file.url.scheme, 'https');
-          expect(file.size, greaterThan(1000000));
+          expect(file.size, greaterThan(0));
           expect(file.sha256, matches(RegExp(r'^[0-9a-f]{64}$')));
         }
       }

@@ -1,14 +1,16 @@
 // The voice pack catalog the package ships with, used when no newer catalog
 // can be fetched.
 //
-// PROVISIONAL: these packs are a starting point. The benchmark spike (#1500)
-// picks the defaults we ship, and this list changes then.
+// PROVISIONAL. The engines (#1502 on Android, #1517 on iOS) run on ONNX
+// Runtime without a phonemizer, so the only model for now is Supertonic 3,
+// which needs none. Models that need espeak-ng phonemes (Kitten, Piper,
+// Kokoro) come back with #1518.
 //
-// The files are the sherpa-onnx conversions published on GitHub
-// (https://github.com/k2-fsa/sherpa-onnx/releases/tag/tts-models). Hosting
-// them ourselves is tracked in #1510; each file is a URL so the catalog can
-// point anywhere without a format change. Sizes and checksums were computed
-// by downloading every file.
+// The files are the originals on Hugging Face (Supertone/supertonic-3),
+// pinned to revision 3cadd1ee6394adea1bd021217a0e650ede09a323.
+// Hosting them ourselves is tracked in #1510; each file is a URL so the
+// catalog can point anywhere without a format change. Sizes and checksums
+// were computed by downloading every file.
 //
 // Generated from JSON; keep it valid JSON so it can also be served as a
 // remote catalog.
@@ -20,627 +22,177 @@ const bundledVoicePackCatalogJson = r'''
   "version": 1,
   "packs": [
     {
-      "id": "kitten-nano-en-v0_8-int8",
-      "name": "Kitten TTS nano 0.8 (English)",
+      "id": "supertonic-3",
+      "name": "Supertonic 3 (31 languages)",
       "version": 1,
-      "model_type": "kitten",
+      "model_type": "supertonic",
       "languages": [
-        "en-US"
-      ],
-      "speakers": [
-        {
-          "id": 0,
-          "name": "Jasper",
-          "gender": "male"
-        },
-        {
-          "id": 1,
-          "name": "Bella",
-          "gender": "female"
-        },
-        {
-          "id": 2,
-          "name": "Bruno",
-          "gender": "male"
-        },
-        {
-          "id": 3,
-          "name": "Luna",
-          "gender": "female"
-        },
-        {
-          "id": 4,
-          "name": "Hugo",
-          "gender": "male"
-        },
-        {
-          "id": 5,
-          "name": "Rosie",
-          "gender": "female"
-        },
-        {
-          "id": 6,
-          "name": "Leo",
-          "gender": "male"
-        },
-        {
-          "id": 7,
-          "name": "Kiki",
-          "gender": "female"
-        }
-      ],
-      "files": [
-        {
-          "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kitten-nano-en-v0_8-int8.tar.bz2",
-          "size": 31220690,
-          "sha256": "6fa5be852612ce761094ba74ee6123b4fc4acfefa79bf64dc63acae4a83af2fd",
-          "path": "",
-          "archive": "tar.bz2",
-          "strip_components": 1
-        }
-      ],
-      "license": {
-        "name": "Apache-2.0",
-        "url": "https://github.com/KittenML/KittenTTS/blob/main/LICENSE",
-        "attribution": "Kitten TTS by KittenML, converted by sherpa-onnx"
-      },
-      "config": {
-        "model": "model.int8.onnx",
-        "voices": "voices.bin",
-        "tokens": "tokens.txt",
-        "data_dir": "espeak-ng-data"
-      }
-    },
-    {
-      "id": "kokoro-int8-multi-lang-v1_0",
-      "name": "Kokoro 1.0 (multilingual)",
-      "version": 1,
-      "model_type": "kokoro",
-      "languages": [
-        "en-US",
-        "en-GB",
+        "en",
+        "ko",
+        "ja",
+        "ar",
+        "bg",
+        "cs",
+        "da",
+        "de",
+        "el",
         "es",
+        "et",
+        "fi",
         "fr",
         "hi",
+        "hr",
+        "hu",
+        "id",
         "it",
-        "ja",
-        "pt-BR",
-        "zh"
+        "lt",
+        "lv",
+        "nl",
+        "pl",
+        "pt",
+        "ro",
+        "ru",
+        "sk",
+        "sl",
+        "sv",
+        "tr",
+        "uk",
+        "vi"
       ],
       "speakers": [
-        {
-          "id": 0,
-          "name": "af_alloy",
-          "gender": "female",
-          "language": "en-US"
-        },
-        {
-          "id": 1,
-          "name": "af_aoede",
-          "gender": "female",
-          "language": "en-US"
-        },
-        {
-          "id": 2,
-          "name": "af_bella",
-          "gender": "female",
-          "language": "en-US"
-        },
-        {
-          "id": 3,
-          "name": "af_heart",
-          "gender": "female",
-          "language": "en-US"
-        },
-        {
-          "id": 4,
-          "name": "af_jessica",
-          "gender": "female",
-          "language": "en-US"
-        },
-        {
-          "id": 5,
-          "name": "af_kore",
-          "gender": "female",
-          "language": "en-US"
-        },
-        {
-          "id": 6,
-          "name": "af_nicole",
-          "gender": "female",
-          "language": "en-US"
-        },
-        {
-          "id": 7,
-          "name": "af_nova",
-          "gender": "female",
-          "language": "en-US"
-        },
-        {
-          "id": 8,
-          "name": "af_river",
-          "gender": "female",
-          "language": "en-US"
-        },
-        {
-          "id": 9,
-          "name": "af_sarah",
-          "gender": "female",
-          "language": "en-US"
-        },
-        {
-          "id": 10,
-          "name": "af_sky",
-          "gender": "female",
-          "language": "en-US"
-        },
-        {
-          "id": 11,
-          "name": "am_adam",
-          "gender": "male",
-          "language": "en-US"
-        },
-        {
-          "id": 12,
-          "name": "am_echo",
-          "gender": "male",
-          "language": "en-US"
-        },
-        {
-          "id": 13,
-          "name": "am_eric",
-          "gender": "male",
-          "language": "en-US"
-        },
-        {
-          "id": 14,
-          "name": "am_fenrir",
-          "gender": "male",
-          "language": "en-US"
-        },
-        {
-          "id": 15,
-          "name": "am_liam",
-          "gender": "male",
-          "language": "en-US"
-        },
-        {
-          "id": 16,
-          "name": "am_michael",
-          "gender": "male",
-          "language": "en-US"
-        },
-        {
-          "id": 17,
-          "name": "am_onyx",
-          "gender": "male",
-          "language": "en-US"
-        },
-        {
-          "id": 18,
-          "name": "am_puck",
-          "gender": "male",
-          "language": "en-US"
-        },
-        {
-          "id": 19,
-          "name": "am_santa",
-          "gender": "male",
-          "language": "en-US"
-        },
-        {
-          "id": 20,
-          "name": "bf_alice",
-          "gender": "female",
-          "language": "en-GB"
-        },
-        {
-          "id": 21,
-          "name": "bf_emma",
-          "gender": "female",
-          "language": "en-GB"
-        },
-        {
-          "id": 22,
-          "name": "bf_isabella",
-          "gender": "female",
-          "language": "en-GB"
-        },
-        {
-          "id": 23,
-          "name": "bf_lily",
-          "gender": "female",
-          "language": "en-GB"
-        },
-        {
-          "id": 24,
-          "name": "bm_daniel",
-          "gender": "male",
-          "language": "en-GB"
-        },
-        {
-          "id": 25,
-          "name": "bm_fable",
-          "gender": "male",
-          "language": "en-GB"
-        },
-        {
-          "id": 26,
-          "name": "bm_george",
-          "gender": "male",
-          "language": "en-GB"
-        },
-        {
-          "id": 27,
-          "name": "bm_lewis",
-          "gender": "male",
-          "language": "en-GB"
-        },
-        {
-          "id": 28,
-          "name": "ef_dora",
-          "gender": "female",
-          "language": "es"
-        },
-        {
-          "id": 29,
-          "name": "em_alex",
-          "gender": "male",
-          "language": "es"
-        },
-        {
-          "id": 30,
-          "name": "ff_siwis",
-          "gender": "female",
-          "language": "fr"
-        },
-        {
-          "id": 31,
-          "name": "hf_alpha",
-          "gender": "female",
-          "language": "hi"
-        },
-        {
-          "id": 32,
-          "name": "hf_beta",
-          "gender": "female",
-          "language": "hi"
-        },
-        {
-          "id": 33,
-          "name": "hm_omega",
-          "gender": "male",
-          "language": "hi"
-        },
-        {
-          "id": 34,
-          "name": "hm_psi",
-          "gender": "male",
-          "language": "hi"
-        },
-        {
-          "id": 35,
-          "name": "if_sara",
-          "gender": "female",
-          "language": "it"
-        },
-        {
-          "id": 36,
-          "name": "im_nicola",
-          "gender": "male",
-          "language": "it"
-        },
-        {
-          "id": 37,
-          "name": "jf_alpha",
-          "gender": "female",
-          "language": "ja"
-        },
-        {
-          "id": 38,
-          "name": "jf_gongitsune",
-          "gender": "female",
-          "language": "ja"
-        },
-        {
-          "id": 39,
-          "name": "jf_nezumi",
-          "gender": "female",
-          "language": "ja"
-        },
-        {
-          "id": 40,
-          "name": "jf_tebukuro",
-          "gender": "female",
-          "language": "ja"
-        },
-        {
-          "id": 41,
-          "name": "jm_kumo",
-          "gender": "male",
-          "language": "ja"
-        },
-        {
-          "id": 42,
-          "name": "pf_dora",
-          "gender": "female",
-          "language": "pt-BR"
-        },
-        {
-          "id": 43,
-          "name": "pm_alex",
-          "gender": "male",
-          "language": "pt-BR"
-        },
-        {
-          "id": 44,
-          "name": "pm_santa",
-          "gender": "male",
-          "language": "pt-BR"
-        },
-        {
-          "id": 45,
-          "name": "zf_xiaobei",
-          "gender": "female",
-          "language": "zh"
-        },
-        {
-          "id": 46,
-          "name": "zf_xiaoni",
-          "gender": "female",
-          "language": "zh"
-        },
-        {
-          "id": 47,
-          "name": "zf_xiaoxiao",
-          "gender": "female",
-          "language": "zh"
-        },
-        {
-          "id": 48,
-          "name": "zf_xiaoyi",
-          "gender": "female",
-          "language": "zh"
-        },
-        {
-          "id": 49,
-          "name": "zm_yunjian",
-          "gender": "male",
-          "language": "zh"
-        },
-        {
-          "id": 50,
-          "name": "zm_yunxi",
-          "gender": "male",
-          "language": "zh"
-        },
-        {
-          "id": 51,
-          "name": "zm_yunxia",
-          "gender": "male",
-          "language": "zh"
-        },
-        {
-          "id": 52,
-          "name": "zm_yunyang",
-          "gender": "male",
-          "language": "zh"
-        },
-        {
-          "id": 53,
-          "name": "em_santa",
-          "gender": "male",
-          "language": "es"
-        }
+        {"id": 0, "name": "F1", "gender": "female"},
+        {"id": 1, "name": "F2", "gender": "female"},
+        {"id": 2, "name": "F3", "gender": "female"},
+        {"id": 3, "name": "F4", "gender": "female"},
+        {"id": 4, "name": "F5", "gender": "female"},
+        {"id": 5, "name": "M1", "gender": "male"},
+        {"id": 6, "name": "M2", "gender": "male"},
+        {"id": 7, "name": "M3", "gender": "male"},
+        {"id": 8, "name": "M4", "gender": "male"},
+        {"id": 9, "name": "M5", "gender": "male"}
       ],
       "files": [
         {
-          "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-int8-multi-lang-v1_0.tar.bz2",
-          "size": 132303094,
-          "sha256": "4c3052abaa60943a341f193888cf6abd68787dae6ab8ae5c925a706caa247e4e",
-          "path": "",
-          "archive": "tar.bz2",
-          "strip_components": 1
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/onnx/duration_predictor.onnx",
+          "size": 3700147,
+          "sha256": "c3eb91414d5ff8a7a239b7fe9e34e7e2bf8a8140d8375ffb14718b1c639325db",
+          "path": "onnx/duration_predictor.onnx"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/onnx/text_encoder.onnx",
+          "size": 36416150,
+          "sha256": "c7befd5ea8c3119769e8a6c1486c4edc6a3bc8365c67621c881bbb774b9902ff",
+          "path": "onnx/text_encoder.onnx"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/onnx/vector_estimator.onnx",
+          "size": 256534781,
+          "sha256": "883ac868ea0275ef0e991524dc64f16b3c0376efd7c320af6b53f5b780d7c61c",
+          "path": "onnx/vector_estimator.onnx"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/onnx/vocoder.onnx",
+          "size": 101424195,
+          "sha256": "085de76dd8e8d5836d6ca66826601f615939218f90e519f70ee8a36ed2a4c4ba",
+          "path": "onnx/vocoder.onnx"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/onnx/tts.json",
+          "size": 8253,
+          "sha256": "42078d3aef1cd43ab43021f3c54f47d2d75ceb4e75f627f118890128b06a0d09",
+          "path": "onnx/tts.json"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/onnx/unicode_indexer.json",
+          "size": 277676,
+          "sha256": "9bf7346e43883a81f8645c81224f786d43c5b57f3641f6e7671a7d6c493cb24f",
+          "path": "onnx/unicode_indexer.json"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/voice_styles/F1.json",
+          "size": 292046,
+          "sha256": "bbdec6ee00231c2c742ad05483df5334cab3b52fda3ba38e6a07059c4563dbc2",
+          "path": "voice_styles/F1.json"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/voice_styles/F2.json",
+          "size": 292423,
+          "sha256": "7c722c6a72707b1a77f035d67f0d1351ba187738e06f7683e8c72b1df3477fc6",
+          "path": "voice_styles/F2.json"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/voice_styles/F3.json",
+          "size": 290794,
+          "sha256": "12f6ef2573baa2defa1128069cb59f203e3ab67c92af77b42df8a0e3a2f7c6ab",
+          "path": "voice_styles/F3.json"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/voice_styles/F4.json",
+          "size": 291808,
+          "sha256": "c2fa764c1225a76dfc3e2c73e8aa4f70d9ee48793860eb34c295fff01c2e032b",
+          "path": "voice_styles/F4.json"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/voice_styles/F5.json",
+          "size": 291479,
+          "sha256": "45966e73316415626cf41a7d1c6f3b4c70dbc1ba2bee5c1978ef0ce33244fc8d",
+          "path": "voice_styles/F5.json"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/voice_styles/M1.json",
+          "size": 291748,
+          "sha256": "e35604687f5d23694b8e91593a93eec0e4eca6c0b02bb8ed69139ab2ea6b0a5b",
+          "path": "voice_styles/M1.json"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/voice_styles/M2.json",
+          "size": 292055,
+          "sha256": "b76cbf62bac707c710cf0ae5aba5e31eea1a6339a9734bfae33ab98499534a50",
+          "path": "voice_styles/M2.json"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/voice_styles/M3.json",
+          "size": 290198,
+          "sha256": "ea1ac35ccb91b0d7ecad533a2fbd0eec10c91513d8951e3b25fbba99954e159b",
+          "path": "voice_styles/M3.json"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/voice_styles/M4.json",
+          "size": 291522,
+          "sha256": "ca8eefad4fcd989c9379032ff3e50738adc547eeb5e221b82593a6d7b3bac303",
+          "path": "voice_styles/M4.json"
+        },
+        {
+          "url": "https://huggingface.co/Supertone/supertonic-3/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/voice_styles/M5.json",
+          "size": 291469,
+          "sha256": "dd22b92740314321f8ae11c5e87f8dd60d060f15dd3a632b5adf77f471f77af2",
+          "path": "voice_styles/M5.json"
         }
       ],
       "license": {
-        "name": "Apache-2.0",
-        "url": "https://huggingface.co/hexgrad/Kokoro-82M",
-        "attribution": "Kokoro-82M by hexgrad, converted by sherpa-onnx"
+        "name": "LicenseRef-OpenRAIL-M",
+        "url": "https://huggingface.co/Supertone/supertonic-3/blob/3cadd1ee6394adea1bd021217a0e650ede09a323/LICENSE",
+        "attribution": "Supertonic 3 by Supertone Inc. BigScience OpenRAIL-M: its use restrictions apply and must be passed on to users. A maintainer license review is pending."
       },
       "config": {
-        "model": "model.int8.onnx",
-        "voices": "voices.bin",
-        "tokens": "tokens.txt",
-        "data_dir": "espeak-ng-data",
-        "lexicon": "lexicon-us-en.txt,lexicon-zh.txt",
-        "dict_dir": "dict",
-        "rule_fsts": "date-zh.fst,phone-zh.fst,number-zh.fst"
-      }
-    },
-    {
-      "id": "vits-piper-en_us-ljspeech-medium",
-      "name": "Piper ljspeech (English (US))",
-      "version": 1,
-      "model_type": "vits",
-      "languages": [
-        "en-US"
-      ],
-      "speakers": [
-        {
-          "id": 0,
-          "name": "ljspeech",
-          "gender": "female",
-          "language": "en-US"
-        }
-      ],
-      "files": [
-        {
-          "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-ljspeech-medium.tar.bz2",
-          "size": 67169893,
-          "sha256": "3dfb4b759d8be032a4903a9538d128b0fda2a06ab1de6cbc2d93a97e2dd83dba",
-          "path": "",
-          "archive": "tar.bz2",
-          "strip_components": 1
-        }
-      ],
-      "license": {
-        "name": "LicenseRef-public-domain",
-        "url": "https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/ljspeech/medium/MODEL_CARD",
-        "attribution": "Piper voice en_US-ljspeech-medium by the Piper project, trained on https://keithito.com/LJ-Speech-Dataset/, converted by sherpa-onnx"
-      },
-      "config": {
-        "model": "en_US-ljspeech-medium.onnx",
-        "tokens": "tokens.txt",
-        "data_dir": "espeak-ng-data"
-      }
-    },
-    {
-      "id": "vits-piper-es_es-davefx-medium",
-      "name": "Piper davefx (Spanish (Spain))",
-      "version": 1,
-      "model_type": "vits",
-      "languages": [
-        "es-ES"
-      ],
-      "speakers": [
-        {
-          "id": 0,
-          "name": "davefx",
-          "gender": "male",
-          "language": "es-ES"
-        }
-      ],
-      "files": [
-        {
-          "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-es_ES-davefx-medium.tar.bz2",
-          "size": 67184952,
-          "sha256": "a3f6beb54a9cb893279f72978a22f807a4d9fc9c7848157b524d5cc7b7f58b22",
-          "path": "",
-          "archive": "tar.bz2",
-          "strip_components": 1
-        }
-      ],
-      "license": {
-        "name": "CC0-1.0",
-        "url": "https://huggingface.co/rhasspy/piper-voices/blob/main/es/es_ES/davefx/medium/MODEL_CARD",
-        "attribution": "Piper voice es_ES-davefx-medium by the Piper project, trained on https://github.com/NabuCasa/voice-datasets, converted by sherpa-onnx"
-      },
-      "config": {
-        "model": "es_ES-davefx-medium.onnx",
-        "tokens": "tokens.txt",
-        "data_dir": "espeak-ng-data"
-      }
-    },
-    {
-      "id": "vits-piper-de_de-thorsten-medium",
-      "name": "Piper thorsten (German)",
-      "version": 1,
-      "model_type": "vits",
-      "languages": [
-        "de-DE"
-      ],
-      "speakers": [
-        {
-          "id": 0,
-          "name": "thorsten",
-          "gender": "male",
-          "language": "de-DE"
-        }
-      ],
-      "files": [
-        {
-          "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-de_DE-thorsten-medium.tar.bz2",
-          "size": 67214254,
-          "sha256": "50487d9c95fdf2191f31d2588569381063ba1591dcd4c7d4bdd30f12b2191714",
-          "path": "",
-          "archive": "tar.bz2",
-          "strip_components": 1
-        }
-      ],
-      "license": {
-        "name": "CC0-1.0",
-        "url": "https://huggingface.co/rhasspy/piper-voices/blob/main/de/de_DE/thorsten/medium/MODEL_CARD",
-        "attribution": "Piper voice de_DE-thorsten-medium by the Piper project, trained on https://github.com/thorstenMueller/Thorsten-Voice, converted by sherpa-onnx"
-      },
-      "config": {
-        "model": "de_DE-thorsten-medium.onnx",
-        "tokens": "tokens.txt",
-        "data_dir": "espeak-ng-data"
-      }
-    },
-    {
-      "id": "vits-piper-fr_fr-siwis-medium",
-      "name": "Piper siwis (French)",
-      "version": 1,
-      "model_type": "vits",
-      "languages": [
-        "fr-FR"
-      ],
-      "speakers": [
-        {
-          "id": 0,
-          "name": "siwis",
-          "gender": "female",
-          "language": "fr-FR"
-        }
-      ],
-      "files": [
-        {
-          "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-fr_FR-siwis-medium.tar.bz2",
-          "size": 67207459,
-          "sha256": "375909aa30842b3a4efa10b1beb1d761af792960ae6873b4d53889f96c66195b",
-          "path": "",
-          "archive": "tar.bz2",
-          "strip_components": 1
-        }
-      ],
-      "license": {
-        "name": "CC-BY-4.0",
-        "url": "https://huggingface.co/rhasspy/piper-voices/blob/main/fr/fr_FR/siwis/medium/MODEL_CARD",
-        "attribution": "Piper voice fr_FR-siwis-medium by the Piper project, trained on https://datashare.is.ed.ac.uk/handle/10283/2353, converted by sherpa-onnx"
-      },
-      "config": {
-        "model": "fr_FR-siwis-medium.onnx",
-        "tokens": "tokens.txt",
-        "data_dir": "espeak-ng-data"
-      }
-    },
-    {
-      "id": "vits-piper-pt_br-faber-medium",
-      "name": "Piper faber (Portuguese (Brazil))",
-      "version": 1,
-      "model_type": "vits",
-      "languages": [
-        "pt-BR"
-      ],
-      "speakers": [
-        {
-          "id": 0,
-          "name": "faber",
-          "gender": "male",
-          "language": "pt-BR"
-        }
-      ],
-      "files": [
-        {
-          "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-pt_BR-faber-medium.tar.bz2",
-          "size": 67183065,
-          "sha256": "7add3f923ad6bc25ca8a192805fd1a64d1b3893e4611c4a9719545a825039a83",
-          "path": "",
-          "archive": "tar.bz2",
-          "strip_components": 1
-        }
-      ],
-      "license": {
-        "name": "CC0-1.0",
-        "url": "https://huggingface.co/rhasspy/piper-voices/blob/main/pt/pt_BR/faber/medium/MODEL_CARD",
-        "attribution": "Piper voice pt_BR-faber-medium by the Piper project, trained on https://github.com/OHF-Voice/voice-datasets, converted by sherpa-onnx"
-      },
-      "config": {
-        "model": "pt_BR-faber-medium.onnx",
-        "tokens": "tokens.txt",
-        "data_dir": "espeak-ng-data"
+        "duration_predictor": "onnx/duration_predictor.onnx",
+        "text_encoder": "onnx/text_encoder.onnx",
+        "vector_estimator": "onnx/vector_estimator.onnx",
+        "vocoder": "onnx/vocoder.onnx",
+        "tts_json": "onnx/tts.json",
+        "unicode_indexer": "onnx/unicode_indexer.json",
+        "voice_styles": [
+          "voice_styles/F1.json",
+          "voice_styles/F2.json",
+          "voice_styles/F3.json",
+          "voice_styles/F4.json",
+          "voice_styles/F5.json",
+          "voice_styles/M1.json",
+          "voice_styles/M2.json",
+          "voice_styles/M3.json",
+          "voice_styles/M4.json",
+          "voice_styles/M5.json"
+        ]
       }
     }
   ]

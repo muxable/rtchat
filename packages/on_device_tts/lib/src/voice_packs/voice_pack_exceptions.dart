@@ -14,7 +14,7 @@ class VoicePackChecksumException extends VoicePackException {
   const VoicePackChecksumException(super.message);
 }
 
-/// The download failed, after retrying when retrying could help.
+/// The download failed, after the downloader's own retries.
 class VoicePackDownloadException extends VoicePackException {
   /// The HTTP status code, when the server answered with an error.
   final int? statusCode;
@@ -26,12 +26,6 @@ class VoicePackDownloadException extends VoicePackException {
 /// pack's directory.
 class VoicePackArchiveException extends VoicePackException {
   const VoicePackArchiveException(super.message);
-}
-
-/// The network policy doesn't allow the download right now, e.g. a
-/// Wi-Fi-only download while on mobile data.
-class VoicePackDownloadBlockedException extends VoicePackException {
-  const VoicePackDownloadBlockedException(super.message);
 }
 
 /// There isn't enough free space to download and install the pack.
