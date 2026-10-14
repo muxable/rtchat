@@ -53,7 +53,7 @@ void main() {
       expect(ids(appended), ['b']);
     });
 
-    test('inserts out-of-order messages by timestamp without reporting', () {
+    test('inserts out-of-order messages by timestamp and reports them', () {
       final appended = <MessageModel>[];
       var messages = <MessageModel>[
         chat('a', t0),
@@ -64,13 +64,13 @@ void main() {
           AppendDeltaEvent(chat('b', t0.add(const Duration(seconds: 1)))),
           onAppend: appended.add);
       expect(ids(messages), ['a', 'b', 'c', 'd']);
-      expect(appended, isEmpty);
+      expect(ids(appended), ['b']);
 
       messages = applyDeltaEvent(messages,
           AppendDeltaEvent(chat('z', t0.subtract(const Duration(seconds: 1)))),
           onAppend: appended.add);
       expect(ids(messages), ['z', 'a', 'b', 'c', 'd']);
-      expect(appended, isEmpty);
+      expect(ids(appended), ['b', 'z']);
     });
 
     test('UpdateDeltaEvent replaces only the first matching message', () {

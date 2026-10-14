@@ -173,8 +173,9 @@ class _AppState extends State<App> {
                 player.play(AssetSource('message-sound.wav'));
               }
             };
-            model.channel =
-                Provider.of<ViewsModel>(context, listen: false).primaryChannel;
+            model.channels = Provider.of<ViewsModel>(context, listen: false)
+                .activeView
+                .channels;
             model.tts = Provider.of<TtsModel>(context, listen: false);
             return model
               ..addListener(() {
@@ -193,7 +194,7 @@ class _AppState extends State<App> {
               });
           },
           update: (context, views, ttsModel, model) {
-            model!.channel = views.primaryChannel;
+            model!.channels = views.activeView.channels;
             model.tts = ttsModel;
             return model;
           },
