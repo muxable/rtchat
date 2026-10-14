@@ -102,7 +102,14 @@ func (m *requestManager) applyLocked(req *agent.Request, kind firestore.Document
 		}
 		return
 	}
-	if req.Provider() != agent.ProviderTwitch {
+	switch req.Provider() {
+	case agent.ProviderTwitch:
+	case agent.ProviderYouTube:
+		// every subscribe rewrites the assignment; keep the running reader.
+		if existing != nil {
+			return
+		}
+	default:
 		return
 	}
 	if _, ok := existing.(*handler.AuthenticatedTwitchClient); ok && m.skipUpgrade() {

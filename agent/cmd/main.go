@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"math/rand"
 	"net/http"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"github.com/muxable/rtchat/agent/internal/webhook"
+	"github.com/muxable/rtchat/agent/internal/youtube"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -122,7 +124,14 @@ func main() {
 	// create a new RequestLock
 	subscribeRequests := client.Collection("assignments").Snapshots(context.Background())
 
-	manager := newRequestManager(twitch.NewClient)
+	manager := newRequestManager(func(req *agent.Request) (io.Closer, error) {
+		switch req.Provider() {
+		case agent.ProviderYouTube:
+			return youtube.NewClient(req.Channel(), client)
+		default:
+			return twitch.NewClient(req)
+		}
+	})
 	go func() {
 		ticker := time.NewTicker(15 * time.Second)
 		defer ticker.Stop()
@@ -142,7 +151,7 @@ func main() {
 	})
 
 	go func() {
-		// Optional webhook credentials must not delay the IRC snapshot loop.
+		// Optional webhook credentials must not delay the chat snapshot loop.
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		secrets := webhook.LoadSecrets(ctx, nil)
 		cancel()
