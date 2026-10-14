@@ -326,13 +326,17 @@ app.get("/auth/youtube/redirect", (req, res) => {
   res.redirect(redirectUri);
 });
 
+type SignInError = "access_denied" | "sign_in_failed" | "no_youtube_channel";
+
+// only fixed codes are echoed back: the error query parameter is attacker
+// controlled, so it's never reflected.
 function signInError(
   req: express.Request,
   res: express.Response,
-  message: string
+  message: SignInError
 ) {
   if (req.session.companion) {
-    res.status(400).send(message);
+    res.status(400).type("text/plain").send(message);
   } else {
     res.redirect(
       "com.rtirl.chat://error?message=" + encodeURIComponent(message)
@@ -347,7 +351,13 @@ app.get("/auth/youtube/callback", async (req, res) => {
   }
   req.session.state = undefined;
   if (req.query.error || !req.query.code) {
-    signInError(req, res, String(req.query.error ?? "access_denied"));
+    signInError(
+      req,
+      res,
+      !req.query.error || req.query.error === "access_denied"
+        ? "access_denied"
+        : "sign_in_failed"
+    );
     return;
   }
 
