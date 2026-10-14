@@ -9,8 +9,9 @@ import 'package:styled_text/styled_text.dart';
 
 class TwitchRaidingEventWidget extends StatelessWidget {
   final TwitchRaidingEventModel model;
+  final VoidCallback? onCancel;
 
-  const TwitchRaidingEventWidget(this.model, {super.key});
+  const TwitchRaidingEventWidget(this.model, {super.key, this.onCancel});
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +54,11 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                             : AppLocalizations.of(context)!
                                 .raidingEventTimeRemaining(
                                     remaining.inSeconds + 1),
-                        style: Theme.of(context).textTheme.titleSmall))
+                        style: Theme.of(context).textTheme.titleSmall)),
+                    if (onCancel != null)
+                      TextButton(
+                          onPressed: onCancel,
+                          child: Text(AppLocalizations.of(context)!.cancel)),
                   ])),
             ]);
           });

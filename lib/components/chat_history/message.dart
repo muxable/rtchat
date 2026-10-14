@@ -166,8 +166,10 @@ class ChatHistoryMessage extends StatelessWidget {
     } else if (m is TwitchRaidingEventModel) {
       return Selector<EventSubConfigurationModel, RaidingEventConfig>(
         selector: (_, model) => model.raidingEventConfig,
-        builder: (_, config, __) =>
-            config.showEvent ? TwitchRaidingEventWidget(m) : Container(),
+        builder: (_, config, __) => config.showEvent
+            ? TwitchRaidingEventWidget(m,
+                onCancel: () => ActionsAdapter.instance.cancelRaid(channel))
+            : Container(),
       );
     } else if (m is ChatClearedEventModel) {
       return ChatClearedEventWidget(m);
