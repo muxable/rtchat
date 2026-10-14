@@ -1,0 +1,50 @@
+{
+  "playabilityStatus": {
+    "status": "UNPLAYABLE"
+  },
+  "videoDetails": {
+    "videoId": "1-LpQekNa9g",
+    "title": "24/7 halloween ambience 🎃 spooky lofi to get chills to",
+    "lengthSeconds": "0",
+    "isLive": true,
+    "channelId": "UCSJ4gkVC6NrvII8umztf0Ow",
+    "isOwnerViewing": false,
+    "isCrawlable": true,
+    "isLiveDvrEnabled": true,
+    "liveChunkReadahead": 3,
+    "allowRatings": true,
+    "viewCount": "2145027",
+    "author": "Lofi Girl",
+    "isLowLatencyLiveStream": false,
+    "isPrivate": false,
+    "isUnpluggedCorpus": false,
+    "latencyClass": "MDE_STREAM_OPTIMIZATIONS_RENDERER_LATENCY_NORMAL",
+    "isLiveContent": true,
+    "isTvfilmVideo": false
+  },
+  "microformat": {
+    "playerMicroformatRenderer": {
+      "title": {
+        "simpleText": "24/7 halloween ambience 🎃 spooky lofi to get chills to"
+      },
+      "ownerProfileUrl": "http://www.youtube.com/@LofiGirl",
+      "externalChannelId": "UCSJ4gkVC6NrvII8umztf0Ow",
+      "isFamilySafe": true,
+      "isUnlisted": false,
+      "hasYpcMetadata": false,
+      "viewCount": "2145027",
+      "category": "Music",
+      "publishDate": "2026-10-01T05:39:01-07:00",
+      "ownerChannelName": "Lofi Girl",
+      "liveBroadcastDetails": {
+        "isLiveNow": true,
+        "startTimestamp": "2026-10-01T17:00:26+00:00"
+      },
+      "uploadDate": "2026-10-01T05:39:01-07:00",
+      "isShortsEligible": false,
+      "externalVideoId": "1-LpQekNa9g",
+      "likeCount": "20938",
+      "canonicalUrl": "https://www.youtube.com/watch?v=1-LpQekNa9g"
+    }
+  }
+}

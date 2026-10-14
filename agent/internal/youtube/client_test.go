@@ -21,6 +21,7 @@ type memoryStore struct {
 	acquisitions, renewals, releases, writes int
 	messages                                 map[string]map[string]interface{}
 	online                                   []*time.Time
+	channel                                  []map[string]interface{}
 	writeFailures                            int
 	failRenew                                bool
 }
@@ -74,13 +75,20 @@ func (s *memoryStore) Create(ctx context.Context, channel, id string, data map[s
 	s.messages[id] = data
 	return nil
 }
-func (s *memoryStore) SetOnline(ctx context.Context, channel string, at *time.Time) error {
+func (s *memoryStore) Merge(ctx context.Context, channel string, data map[string]interface{}) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.online = append(s.online, at)
+	s.channel = append(s.channel, data)
+	if at, ok := data["onlineAt"]; ok {
+		if t, ok := at.(time.Time); ok {
+			s.online = append(s.online, &t)
+		} else {
+			s.online = append(s.online, nil)
+		}
+	}
 	return nil
 }
 func testClient(t *testing.T, server *testServer, store Store) *Client {
@@ -98,6 +106,7 @@ func testClient(t *testing.T, server *testServer, store Store) *Client {
 	c.leaseTTL = 100 * time.Millisecond
 	c.acquireInterval = 15 * time.Millisecond
 	c.pollInterval = time.Hour
+	c.metadataInterval = time.Hour
 	return c
 }
 func eventually(t *testing.T, predicate func() bool) {
@@ -168,6 +177,9 @@ func TestPollingBackoffAndEnd(t *testing.T) {
 			initialAt = time.Now()
 			mu.Unlock()
 			io.WriteString(w, initial)
+		case "/youtubei/v1/player":
+			// Without metadata the reader assumes a video with chat is live.
+			w.WriteHeader(404)
 		default:
 			mu.Lock()
 			polls = append(polls, time.Now())
@@ -215,6 +227,10 @@ func TestPollingBackoffAndEnd(t *testing.T) {
 	defer store.mu.Unlock()
 	if store.owner != "" || store.renewals == 0 || store.releases != 1 || store.online[0] == nil || len(store.messages) == 0 || store.writes <= len(store.messages) {
 		t.Fatalf("incorrect lifecycle: %+v", store)
+	}
+	online, offline := store.messages["youtube:abcdefghijk:online"], store.messages["youtube:abcdefghijk:offline"]
+	if online["type"] != "stream.online" || offline["type"] != "stream.offline" || !online["timestamp"].(time.Time).Before(offline["timestamp"].(time.Time).Add(time.Millisecond)) {
+		t.Fatalf("stream messages %v %v", online, offline)
 	}
 }
 func TestLeaseExclusionTakeoverAndClose(t *testing.T) {
