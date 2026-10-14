@@ -53,13 +53,14 @@ describe("kick events", () => {
     });
   });
 
-  it("counts follows, timestamped at delivery", () => {
+  it("stores follows, timestamped at delivery", () => {
     const docs = deliver("channel.followed");
     expect(docs.messages[0].data.type).toBe("kick.channel.followed");
     expect(millis(docs.messages[0].data.timestamp)).toBe(
       Date.parse("2026-10-12T00:00:00Z")
     );
-    expect(docs.channel.followerCount).toBeDefined();
+    // kick doesn't expose follower totals, so there's nothing to count from.
+    expect(docs.channel.followerCount).toBeUndefined();
   });
 
   it("stores bans and timeouts at the moderation time", () => {
