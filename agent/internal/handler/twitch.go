@@ -36,29 +36,26 @@ var (
 	errReconnect = errors.New("reconnect")
 )
 
+type raidSocket interface {
+	WriteJSON(interface{}) error
+	ReadJSON(interface{}) error
+	Close() error
+}
+
 func (h *TwitchAgent) bindRaidClient(ctx context.Context, channelID, userID string) error {
-	ws, _, err := websocket.DefaultDialer.Dial("wss://pubsub-edge.twitch.tv", nil)
+	ws, _, err := websocket.DefaultDialer.DialContext(ctx, "wss://pubsub-edge.twitch.tv", nil)
 	if err != nil {
 		return err
 	}
+	return h.bindRaidSession(ctx, ws, channelID, userID, 30*time.Second)
+}
+
+func (h *TwitchAgent) bindRaidSession(ctx context.Context, ws raidSocket, channelID, userID string, pingInterval time.Duration) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	defer ws.Close()
 
-	// start a ping loop
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.After(30 * time.Second):
-				if err := ws.WriteJSON(map[string]interface{}{"type": "PING"}); err != nil {
-					zap.L().Error("failed to send ping", zap.Error(err))
-					return
-				}
-			}
-		}
-	}()
-
-	authProvider, err := auth.NewFirestoreTwitchTokenSource(h.Firestore, h.ClientID, h.ClientSecret, userID)
+	authProvider, err := h.tokens(userID)
 	if err != nil {
 		return err
 	}
@@ -78,6 +75,22 @@ func (h *TwitchAgent) bindRaidClient(ctx context.Context, channelID, userID stri
 	}); err != nil {
 		return err
 	}
+
+	// start a ping loop
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(pingInterval):
+				if err := ws.WriteJSON(map[string]interface{}{"type": "PING"}); err != nil {
+					zap.L().Error("failed to send ping", zap.Error(err))
+					return
+				}
+			}
+		}
+	}()
+
 	zap.L().Info("subscribed to raid events", zap.String("channelId", channelID))
 	go func() {
 		<-ctx.Done()
@@ -92,41 +105,75 @@ func (h *TwitchAgent) bindRaidClient(ctx context.Context, channelID, userID stri
 		if err := ws.ReadJSON(&message); err != nil {
 			return err
 		}
-		if message["type"] == "RESPONSE" && message["error"] != "" {
-			return errors.New(message["error"].(string))
-		}
-		if message["type"] == "MESSAGE" {
-			data := message["data"].(map[string]interface{})
-			if data["topic"] == fmt.Sprintf("raid.%s", channelID) {
-				// parse the message
-				var raid struct {
-					Type string                 `json:"type"`
-					Raid map[string]interface{} `json:"raid"`
-				}
-				if err := json.Unmarshal([]byte(data["message"].(string)), &raid); err != nil {
-					zap.L().Error("failed to unmarshal raid message", zap.Error(err))
-					continue
-				}
-				if !strings.HasPrefix(raid.Type, "raid") {
-					zap.L().Warn("unknown raid type", zap.String("type", raid.Type))
-					continue
-				}
-
-				id := fmt.Sprintf("%s-%s", raid.Type, raid.Raid["id"].(string))
-				zap.L().Info("received raid", zap.String("id", id), zap.Any("raid", raid.Raid))
-				// write this event to firestore
-				go h.write(fmt.Sprintf("twitch:%s", channelID), id, map[string]interface{}{
-					"raid":      raid.Raid,
-					"type":      raid.Type,
-					"timestamp": firestore.ServerTimestamp,
-					"expiresAt": time.Now().Add(time.Hour * 24 * 7 * 2),
-				})
+		doc, err := raidMessageDocument(message, channelID, time.Now())
+		if err != nil {
+			if message["type"] == "RESPONSE" || errors.Is(err, errReconnect) {
+				return err
 			}
+			zap.L().Warn("invalid raid message", zap.Error(err))
+			continue
 		}
-		if message["type"] == "RECONNECT" {
-			return errReconnect
+		go h.writeDocument(doc)
+	}
+}
+
+func raidMessageDocument(message map[string]interface{}, channelID string, now time.Time) (*chatDocument, error) {
+	if message["type"] == "RESPONSE" {
+		value, exists := message["error"]
+		if !exists {
+			return nil, nil
+		}
+		text, ok := value.(string)
+		if !ok {
+			return nil, errors.New("invalid raid response")
+		}
+		if text != "" {
+			return nil, errors.New(text)
 		}
 	}
+	if message["type"] == "MESSAGE" {
+		data, ok := message["data"].(map[string]interface{})
+		if !ok {
+			return nil, errors.New("invalid raid data")
+		}
+		if data["topic"] == fmt.Sprintf("raid.%s", channelID) {
+			// parse the message
+			var raid struct {
+				Type string                 `json:"type"`
+				Raid map[string]interface{} `json:"raid"`
+			}
+			raw, ok := data["message"].(string)
+			if !ok {
+				return nil, errors.New("invalid raid message")
+			}
+			if err := json.Unmarshal([]byte(raw), &raid); err != nil {
+				zap.L().Error("failed to unmarshal raid message", zap.Error(err))
+				return nil, err
+			}
+			if !strings.HasPrefix(raid.Type, "raid") {
+				zap.L().Warn("unknown raid type", zap.String("type", raid.Type))
+				return nil, nil
+			}
+
+			raidID, ok := raid.Raid["id"].(string)
+			if !ok || raidID == "" {
+				return nil, errors.New("invalid raid id")
+			}
+			id := fmt.Sprintf("%s-%s", raid.Type, raidID)
+			zap.L().Info("received raid", zap.String("id", id), zap.Any("raid", raid.Raid))
+			// write this event to firestore
+			return &chatDocument{fmt.Sprintf("twitch:%s", channelID), id, map[string]interface{}{
+				"raid":      raid.Raid,
+				"type":      raid.Type,
+				"timestamp": firestore.ServerTimestamp,
+				"expiresAt": now.Add(time.Hour * 24 * 7 * 2),
+			}}, nil
+		}
+	}
+	if message["type"] == "RECONNECT" {
+		return nil, errReconnect
+	}
+	return nil, nil
 }
 
 type chatConnection interface {
