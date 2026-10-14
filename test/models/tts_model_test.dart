@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,9 +21,10 @@ TwitchMessageModel createMessage(String message,
     {TwitchUserModel author = const TwitchUserModel(
         userId: '1', login: 'muxfd', displayName: 'Muxfd'),
     bool isAction = false,
+    String messageId = 'placeholder',
     List<Emote> thirdPartyEmotes = const []}) {
   return TwitchMessageModel(
-      messageId: 'placeholder',
+      messageId: messageId,
       author: author,
       tags: const {},
       annotations: TwitchMessageAnnotationsModel(
@@ -313,6 +316,67 @@ void main() {
           model.isMuted(
               const TwitchUserModel(userId: '1', login: 'nodisplayname')),
           isFalse);
+    });
+  });
+
+  group('utterance queue', () {
+    test('speaks messages in order', () async {
+      final spoken = <String>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(const MethodChannel('flutter_tts'),
+              (call) async {
+        if (call.method == 'speak') {
+          spoken.add(call.arguments as String);
+        }
+        return 1;
+      });
+      addTearDown(() => TestDefaultBinaryMessengerBinding
+          .instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+              const MethodChannel('flutter_tts'), (call) async => null));
+
+      model.setMode(l10n, TtsMode.enabled);
+      model.say(l10n, createMessage('first', messageId: 'first'));
+      model.say(l10n, createMessage('second', messageId: 'second'));
+      await pumpEventQueue();
+
+      expect(spoken, [
+        'Text to speech enabled',
+        'Muxfd said: first',
+        'Muxfd said: second',
+      ]);
+    });
+
+    test('a failed utterance does not block the ones after it', () async {
+      final spoken = <String>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(const MethodChannel('flutter_tts'),
+              (call) async {
+        if (call.method == 'speak') {
+          spoken.add(call.arguments as String);
+        }
+        return 1;
+      });
+      addTearDown(() => TestDefaultBinaryMessengerBinding
+          .instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+              const MethodChannel('flutter_tts'), (call) async => null));
+
+      // cloud tts fails here (no firebase app), like a network error would.
+      await runZonedGuarded(() async {
+        model.setMode(l10n, TtsMode.enabled);
+        model.isCloudTtsEnabled = true;
+        model.say(l10n, createMessage('first', messageId: 'first'));
+        await pumpEventQueue();
+      }, (error, stack) {});
+
+      model.isCloudTtsEnabled = false;
+      await runZonedGuarded(() async {
+        model.say(l10n, createMessage('second', messageId: 'second'));
+        await pumpEventQueue();
+      }, (error, stack) {});
+
+      expect(spoken, contains('Muxfd said: second'));
     });
   });
 }
