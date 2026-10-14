@@ -53,56 +53,50 @@ async function sendOverIrc(uid: string, channelId: string, message: string) {
   ws.close();
 }
 
-// kept warm: sending is latency sensitive.
-export const send = functions
-  .runWith({ minInstances: 1 })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("permission-denied", "missing auth");
-    }
-    const provider = data?.provider;
-    const channelId = data?.channelId;
-    const message = data?.message;
-    if (!provider || !channelId || !message) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "missing provider, channelId, message"
-      );
-    }
-
-    switch (provider) {
-      case "twitch": {
-        const replyTo = data?.replyToMessageId?.replace(/^twitch:/, "");
-        const result = await twitch.sendChatMessage(
-          context.auth.uid,
-          channelId,
-          message,
-          replyTo
-        );
-        if (result.unauthorized) {
-          await sendOverIrc(context.auth.uid, channelId, message);
-          return;
-        }
-        // the app shows any returned value as an error.
-        return result.error;
-      }
-      case "kick":
-        // like twitch, return nothing on success: the app shows any returned
-        // value as an error.
-        await sendKickMessage(
-          context.auth.uid,
-          channelId,
-          message,
-          data?.replyToMessageId
-        );
-        return;
-    }
-
+export const send = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("permission-denied", "missing auth");
+  }
+  const provider = data?.provider;
+  const channelId = data?.channelId;
+  const message = data?.message;
+  if (!provider || !channelId || !message) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "invalid provider"
+      "missing provider, channelId, message"
     );
-  });
+  }
+
+  switch (provider) {
+    case "twitch": {
+      const replyTo = data?.replyToMessageId?.replace(/^twitch:/, "");
+      const result = await twitch.sendChatMessage(
+        context.auth.uid,
+        channelId,
+        message,
+        replyTo
+      );
+      if (result.unauthorized) {
+        await sendOverIrc(context.auth.uid, channelId, message);
+        return;
+      }
+      // the app shows any returned value as an error.
+      return result.error;
+    }
+    case "kick":
+      // like twitch, return nothing on success: the app shows any returned
+      // value as an error.
+      await sendKickMessage(
+        context.auth.uid,
+        channelId,
+        message,
+        data?.replyToMessageId
+      );
+      return;
+  }
+
+  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
+});
 
 export const ban = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
