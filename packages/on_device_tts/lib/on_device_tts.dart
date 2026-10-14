@@ -5,9 +5,10 @@
 ///
 /// * `SystemTtsEngine` speaks with the platform's voices through
 ///   `flutter_tts`.
-///
-/// `OnnxTts` runs neural TTS models (Supertonic 3) natively on ONNX Runtime;
-/// see `doc/native_contract.md` for its platform channels.
+/// * `NeuralTtsEngine` speaks with an installed voice pack on `OnnxTts`,
+///   which runs neural TTS models (Supertonic 3) natively on ONNX Runtime;
+///   see `doc/native_contract.md` for its platform channels. It splits text
+///   into clauses with `ClauseSplitter` to start playing sooner.
 ///
 /// Neural voices come in voice packs that are downloaded on demand:
 /// `VoicePackCatalog` lists them and `VoicePackRepository` downloads,
@@ -17,6 +18,8 @@
 /// repository.
 library;
 
+export 'src/clause_splitter.dart';
+export 'src/neural_tts_engine.dart';
 export 'src/onnx/onnx_tts.dart';
 export 'src/onnx/onnx_tts_platform.dart';
 export 'src/system_tts_engine.dart';

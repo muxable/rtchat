@@ -21,12 +21,15 @@ class SystemTtsEngine implements TtsEngine {
           IosTextToSpeechAudioMode.voicePrompt);
   }
 
+  /// [language] is ignored: the voice, or the platform's default one,
+  /// decides the language.
   @override
   Future<void> speak(
     String text, {
     TtsVoice? voice,
     double rate = TtsEngine.normalRate,
     double pitch = TtsEngine.normalPitch,
+    String? language,
   }) async {
     await _tts.setSpeechRate(rate);
     await _tts.setPitch(pitch);
