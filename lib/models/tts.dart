@@ -449,8 +449,21 @@ class TtsModel extends ChangeNotifier {
     _previousUtterance = completer.future;
     _pending.add(model.messageId);
 
-    await previous;
+    // always release the queue: a failed utterance (e.g. a cloud tts error)
+    // would otherwise block, and hold on to, every message after it.
+    try {
+      await previous;
+      await _speak(model, vocalization);
+    } catch (e, st) {
+      FirebaseCrashlytics.instance.recordError(e, st);
+    } finally {
+      _activeMessage = null;
+      completer.complete();
+      _pending.remove(model.messageId);
+    }
+  }
 
+  Future<void> _speak(MessageModel model, String vocalization) async {
     _activeMessage = model;
 
     if ((_mode != TtsMode.disabled || model is SystemMessageModel) &&
@@ -492,11 +505,6 @@ class TtsModel extends ChangeNotifier {
         await Future.delayed(audioPlayer.duration ?? const Duration());
       }
     }
-
-    _activeMessage = null;
-
-    completer.complete();
-    _pending.remove(model.messageId);
   }
 
   void unsay(String messageId) {
