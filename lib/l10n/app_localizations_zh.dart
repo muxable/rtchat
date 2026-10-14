@@ -1119,6 +1119,77 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get neuralFallbackLoadFailed =>
       'The neural voice couldn\'t load, so chat is read with the system voice.';
+
+  @override
+  String youtubeSuperChatEvent(String name, String amount) {
+    return '<b>$name</b> 发送了 $amount 的 Super Chat！';
+  }
+
+  @override
+  String youtubeSuperStickerEvent(String name, String amount) {
+    return '<b>$name</b> 发送了 $amount 的 Super Sticker！';
+  }
+
+  @override
+  String youtubeNewMemberEvent(String name) {
+    return '<b>$name</b> 成为了会员！';
+  }
+
+  @override
+  String youtubeMemberUpgradeEvent(String name, String level) {
+    return '<b>$name</b> 升级到了 $level！';
+  }
+
+  @override
+  String youtubeMemberMilestoneEvent(String name, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$name</b> 已成为会员 $monthsString 个月！';
+  }
+
+  @override
+  String youtubeMembershipGiftingEvent(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<b>$name</b> 赠送了 $countString 份会员资格！',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youtubeGiftMembershipReceivedEvent(String name) {
+    return '<b>$name</b> 收到了一份赠送的会员资格！';
+  }
+
+  @override
+  String youtubeGiftEvent(String name, String giftName, int jewels) {
+    final intl.NumberFormat jewelsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String jewelsString = jewelsNumberFormat.format(jewels);
+
+    return '<b>$name</b> 送出了 $giftName（$jewelsString Jewels）！';
+  }
+
+  @override
+  String youtubePollEvent(String question) {
+    return '投票：$question';
+  }
+
+  @override
+  String get youtubeMembersOnlyModeOn => '仅限会员模式已开启';
+
+  @override
+  String get youtubeMembersOnlyModeOff => '仅限会员模式已关闭';
+
+  @override
+  String get youtubeChatEnded => '直播聊天已结束';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2141,4 +2212,75 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get removeChannel => '移除';
+
+  @override
+  String youtubeSuperChatEvent(String name, String amount) {
+    return '<b>$name</b> 傳送了 $amount 的 Super Chat！';
+  }
+
+  @override
+  String youtubeSuperStickerEvent(String name, String amount) {
+    return '<b>$name</b> 傳送了 $amount 的 Super Sticker！';
+  }
+
+  @override
+  String youtubeNewMemberEvent(String name) {
+    return '<b>$name</b> 成為了會員！';
+  }
+
+  @override
+  String youtubeMemberUpgradeEvent(String name, String level) {
+    return '<b>$name</b> 升級到了 $level！';
+  }
+
+  @override
+  String youtubeMemberMilestoneEvent(String name, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$name</b> 已成為會員 $monthsString 個月！';
+  }
+
+  @override
+  String youtubeMembershipGiftingEvent(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<b>$name</b> 贈送了 $countString 份會員資格！',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youtubeGiftMembershipReceivedEvent(String name) {
+    return '<b>$name</b> 收到了一份贈送的會員資格！';
+  }
+
+  @override
+  String youtubeGiftEvent(String name, String giftName, int jewels) {
+    final intl.NumberFormat jewelsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String jewelsString = jewelsNumberFormat.format(jewels);
+
+    return '<b>$name</b> 送出了 $giftName（$jewelsString Jewels）！';
+  }
+
+  @override
+  String youtubePollEvent(String question) {
+    return '投票：$question';
+  }
+
+  @override
+  String get youtubeMembersOnlyModeOn => '僅限會員模式已開啟';
+
+  @override
+  String get youtubeMembersOnlyModeOff => '僅限會員模式已關閉';
+
+  @override
+  String get youtubeChatEnded => '聊天室已結束';
 }

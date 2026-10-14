@@ -10,6 +10,8 @@ import 'package:rtchat/components/chat_history/chat_cleared_event.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/chat_history/kick/events.dart';
 import 'package:rtchat/components/chat_history/kick/message.dart';
+import 'package:rtchat/components/chat_history/youtube/events.dart';
+import 'package:rtchat/components/chat_history/youtube/message.dart';
 import 'package:rtchat/components/chat_history/stream_state_event.dart';
 import 'package:rtchat/components/chat_history/timeout_dialog.dart';
 import 'package:rtchat/components/chat_history/twitch/channel_point_event.dart';
@@ -34,6 +36,8 @@ import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
 import 'package:rtchat/models/messages/chat.dart';
 import 'package:rtchat/models/messages/kick/event.dart';
 import 'package:rtchat/models/messages/kick/message.dart';
+import 'package:rtchat/models/messages/youtube/event.dart';
+import 'package:rtchat/models/messages/youtube/message.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
@@ -219,6 +223,32 @@ class ChatHistoryMessage extends StatelessWidget {
       return KicksGiftedEventWidget(m);
     } else if (m is KickRewardRedemptionEventModel) {
       return KickRewardRedemptionEventWidget(m);
+    } else if (m is YouTubeMessageModel) {
+      // youtube moderation needs signing in with youtube, see #1482.
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: YouTubeMessageWidget(m),
+      );
+    } else if (m is YouTubeSuperChatEventModel) {
+      return YouTubeSuperChatEventWidget(m);
+    } else if (m is YouTubeSuperStickerEventModel) {
+      return YouTubeSuperStickerEventWidget(m);
+    } else if (m is YouTubeNewMemberEventModel) {
+      return YouTubeNewMemberEventWidget(m);
+    } else if (m is YouTubeMemberMilestoneEventModel) {
+      return YouTubeMemberMilestoneEventWidget(m);
+    } else if (m is YouTubeMembershipGiftingEventModel) {
+      return YouTubeMembershipGiftingEventWidget(m);
+    } else if (m is YouTubeGiftMembershipReceivedEventModel) {
+      return YouTubeGiftMembershipReceivedEventWidget(m);
+    } else if (m is YouTubeGiftEventModel) {
+      return YouTubeGiftEventWidget(m);
+    } else if (m is YouTubePollEventModel) {
+      return YouTubePollEventWidget(m);
+    } else if (m is YouTubeMembersOnlyModeEventModel) {
+      return YouTubeMembersOnlyModeEventWidget(m);
+    } else if (m is YouTubeChatEndedEventModel) {
+      return YouTubeChatEndedEventWidget(m);
     } else {
       throw AssertionError("invalid message type $m");
     }

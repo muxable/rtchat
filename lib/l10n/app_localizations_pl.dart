@@ -1158,4 +1158,79 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get neuralFallbackLoadFailed =>
       'The neural voice couldn\'t load, so chat is read with the system voice.';
+
+  @override
+  String youtubeSuperChatEvent(String name, String amount) {
+    return '<b>$name</b> wysłał(a) Super Chat za $amount!';
+  }
+
+  @override
+  String youtubeSuperStickerEvent(String name, String amount) {
+    return '<b>$name</b> wysłał(a) Super Sticker za $amount!';
+  }
+
+  @override
+  String youtubeNewMemberEvent(String name) {
+    return '<b>$name</b> został(a) członkiem!';
+  }
+
+  @override
+  String youtubeMemberUpgradeEvent(String name, String level) {
+    return '<b>$name</b> przeszedł/przeszła na poziom $level!';
+  }
+
+  @override
+  String youtubeMemberMilestoneEvent(String name, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$name</b> jest członkiem od $monthsString mies.!';
+  }
+
+  @override
+  String youtubeMembershipGiftingEvent(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<b>$name</b> podarował(a) $countString członkostw!',
+      few: '<b>$name</b> podarował(a) $countString członkostwa!',
+      one: '<b>$name</b> podarował(a) członkostwo!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youtubeGiftMembershipReceivedEvent(String name) {
+    return '<b>$name</b> otrzymał(a) członkostwo w prezencie!';
+  }
+
+  @override
+  String youtubeGiftEvent(String name, String giftName, int jewels) {
+    final intl.NumberFormat jewelsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String jewelsString = jewelsNumberFormat.format(jewels);
+
+    return '<b>$name</b> wysłał(a) $giftName ($jewelsString Jewels)!';
+  }
+
+  @override
+  String youtubePollEvent(String question) {
+    return 'Ankieta: $question';
+  }
+
+  @override
+  String get youtubeMembersOnlyModeOn =>
+      'Tryb tylko dla członków jest włączony';
+
+  @override
+  String get youtubeMembersOnlyModeOff =>
+      'Tryb tylko dla członków jest wyłączony';
+
+  @override
+  String get youtubeChatEnded => 'Czat na żywo zakończył się';
 }

@@ -1818,6 +1818,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The neural voice couldn\'t load, so chat is read with the system voice.'**
   String get neuralFallbackLoadFailed;
+
+  /// A YouTube Super Chat, a paid chat message
+  ///
+  /// In en, this message translates to:
+  /// **'<b>{name}</b> sent a {amount} Super Chat!'**
+  String youtubeSuperChatEvent(String name, String amount);
+
+  /// A YouTube Super Sticker, a paid sticker
+  ///
+  /// In en, this message translates to:
+  /// **'<b>{name}</b> sent a {amount} Super Sticker!'**
+  String youtubeSuperStickerEvent(String name, String amount);
+
+  /// Someone became a YouTube channel member
+  ///
+  /// In en, this message translates to:
+  /// **'<b>{name}</b> became a member!'**
+  String youtubeNewMemberEvent(String name);
+
+  /// A YouTube channel member upgraded their membership level
+  ///
+  /// In en, this message translates to:
+  /// **'<b>{name}</b> upgraded to {level}!'**
+  String youtubeMemberUpgradeEvent(String name, String level);
+
+  /// A YouTube channel member celebrating how long they've been a member
+  ///
+  /// In en, this message translates to:
+  /// **'<b>{name}</b> has been a member for {months} months!'**
+  String youtubeMemberMilestoneEvent(String name, int months);
+
+  /// Someone gifted YouTube channel memberships to other viewers
+  ///
+  /// In en, this message translates to:
+  /// **'{count,plural, =1{<b>{name}</b> gifted a membership!} other{<b>{name}</b> gifted {count} memberships!}}'**
+  String youtubeMembershipGiftingEvent(String name, int count);
+
+  /// A viewer received a gifted YouTube channel membership
+  ///
+  /// In en, this message translates to:
+  /// **'<b>{name}</b> received a gifted membership!'**
+  String youtubeGiftMembershipReceivedEvent(String name);
+
+  /// A YouTube gift bought with Jewels, YouTube's virtual currency
+  ///
+  /// In en, this message translates to:
+  /// **'<b>{name}</b> sent {giftName} ({jewels} Jewels)!'**
+  String youtubeGiftEvent(String name, String giftName, int jewels);
+
+  /// A YouTube live chat poll
+  ///
+  /// In en, this message translates to:
+  /// **'Poll: {question}'**
+  String youtubePollEvent(String question);
+
+  /// YouTube live chat switched to members-only mode
+  ///
+  /// In en, this message translates to:
+  /// **'Members-only mode is on'**
+  String get youtubeMembersOnlyModeOn;
+
+  /// YouTube live chat left members-only mode
+  ///
+  /// In en, this message translates to:
+  /// **'Members-only mode is off'**
+  String get youtubeMembersOnlyModeOff;
+
+  /// The YouTube live chat ended
+  ///
+  /// In en, this message translates to:
+  /// **'The live chat has ended'**
+  String get youtubeChatEnded;
 }
 
 class _AppLocalizationsDelegate

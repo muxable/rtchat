@@ -257,5 +257,17 @@
   "removeFromChat": "Прибрати з чату",
   "cantChatWithAccount": "Ваш обліковий запис {provider} не може писати тут",
   "replaceChannel": "Замінити {channel}",
-  "removeChannel": "Видалити"
+  "removeChannel": "Видалити",
+  "youtubeSuperChatEvent": "<b>{name}</b> надіслав(ла) Super Chat на {amount}!",
+  "youtubeSuperStickerEvent": "<b>{name}</b> надіслав(ла) Super Sticker на {amount}!",
+  "youtubeNewMemberEvent": "<b>{name}</b> став(ла) спонсором!",
+  "youtubeMemberUpgradeEvent": "<b>{name}</b> перейшов(ла) на рівень {level}!",
+  "youtubeMemberMilestoneEvent": "<b>{name}</b> спонсор уже {months} міс.!",
+  "youtubeMembershipGiftingEvent": "{count,plural, one{<b>{name}</b> подарував(ла) {count} спонсорство!} few{<b>{name}</b> подарував(ла) {count} спонсорства!} many{<b>{name}</b> подарував(ла) {count} спонсорств!} other{<b>{name}</b> подарував(ла) {count} спонсорства!}}",
+  "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> отримав(ла) спонсорство в подарунок!",
+  "youtubeGiftEvent": "<b>{name}</b> надіслав(ла) {giftName} ({jewels} Jewels)!",
+  "youtubePollEvent": "Опитування: {question}",
+  "youtubeMembersOnlyModeOn": "Режим лише для спонсорів увімкнено",
+  "youtubeMembersOnlyModeOff": "Режим лише для спонсорів вимкнено",
+  "youtubeChatEnded": "Чат трансляції завершено"
 }

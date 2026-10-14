@@ -1159,4 +1159,78 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get neuralFallbackLoadFailed =>
       'The neural voice couldn\'t load, so chat is read with the system voice.';
+
+  @override
+  String youtubeSuperChatEvent(String name, String amount) {
+    return '<b>$name</b> надіслав(ла) Super Chat на $amount!';
+  }
+
+  @override
+  String youtubeSuperStickerEvent(String name, String amount) {
+    return '<b>$name</b> надіслав(ла) Super Sticker на $amount!';
+  }
+
+  @override
+  String youtubeNewMemberEvent(String name) {
+    return '<b>$name</b> став(ла) спонсором!';
+  }
+
+  @override
+  String youtubeMemberUpgradeEvent(String name, String level) {
+    return '<b>$name</b> перейшов(ла) на рівень $level!';
+  }
+
+  @override
+  String youtubeMemberMilestoneEvent(String name, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$name</b> спонсор уже $monthsString міс.!';
+  }
+
+  @override
+  String youtubeMembershipGiftingEvent(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<b>$name</b> подарував(ла) $countString спонсорства!',
+      many: '<b>$name</b> подарував(ла) $countString спонсорств!',
+      few: '<b>$name</b> подарував(ла) $countString спонсорства!',
+      one: '<b>$name</b> подарував(ла) $countString спонсорство!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youtubeGiftMembershipReceivedEvent(String name) {
+    return '<b>$name</b> отримав(ла) спонсорство в подарунок!';
+  }
+
+  @override
+  String youtubeGiftEvent(String name, String giftName, int jewels) {
+    final intl.NumberFormat jewelsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String jewelsString = jewelsNumberFormat.format(jewels);
+
+    return '<b>$name</b> надіслав(ла) $giftName ($jewelsString Jewels)!';
+  }
+
+  @override
+  String youtubePollEvent(String question) {
+    return 'Опитування: $question';
+  }
+
+  @override
+  String get youtubeMembersOnlyModeOn => 'Режим лише для спонсорів увімкнено';
+
+  @override
+  String get youtubeMembersOnlyModeOff => 'Режим лише для спонсорів вимкнено';
+
+  @override
+  String get youtubeChatEnded => 'Чат трансляції завершено';
 }

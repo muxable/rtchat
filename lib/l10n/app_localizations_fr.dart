@@ -1162,4 +1162,78 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get neuralFallbackLoadFailed =>
       'The neural voice couldn\'t load, so chat is read with the system voice.';
+
+  @override
+  String youtubeSuperChatEvent(String name, String amount) {
+    return '<b>$name</b> a envoyé un Super Chat de $amount !';
+  }
+
+  @override
+  String youtubeSuperStickerEvent(String name, String amount) {
+    return '<b>$name</b> a envoyé un Super Sticker de $amount !';
+  }
+
+  @override
+  String youtubeNewMemberEvent(String name) {
+    return '<b>$name</b> est devenu membre !';
+  }
+
+  @override
+  String youtubeMemberUpgradeEvent(String name, String level) {
+    return '<b>$name</b> est passé à $level !';
+  }
+
+  @override
+  String youtubeMemberMilestoneEvent(String name, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$name</b> est membre depuis $monthsString mois !';
+  }
+
+  @override
+  String youtubeMembershipGiftingEvent(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<b>$name</b> a offert $countString abonnements de membre !',
+      one: '<b>$name</b> a offert un abonnement de membre !',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youtubeGiftMembershipReceivedEvent(String name) {
+    return '<b>$name</b> a reçu un abonnement de membre offert !';
+  }
+
+  @override
+  String youtubeGiftEvent(String name, String giftName, int jewels) {
+    final intl.NumberFormat jewelsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String jewelsString = jewelsNumberFormat.format(jewels);
+
+    return '<b>$name</b> a envoyé $giftName ($jewelsString Jewels) !';
+  }
+
+  @override
+  String youtubePollEvent(String question) {
+    return 'Sondage : $question';
+  }
+
+  @override
+  String get youtubeMembersOnlyModeOn =>
+      'Le mode réservé aux membres est activé';
+
+  @override
+  String get youtubeMembersOnlyModeOff =>
+      'Le mode réservé aux membres est désactivé';
+
+  @override
+  String get youtubeChatEnded => 'Le chat en direct est terminé';
 }

@@ -1143,4 +1143,76 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get neuralFallbackLoadFailed =>
       'The neural voice couldn\'t load, so chat is read with the system voice.';
+
+  @override
+  String youtubeSuperChatEvent(String name, String amount) {
+    return '<b>$name</b> sent a $amount Super Chat!';
+  }
+
+  @override
+  String youtubeSuperStickerEvent(String name, String amount) {
+    return '<b>$name</b> sent a $amount Super Sticker!';
+  }
+
+  @override
+  String youtubeNewMemberEvent(String name) {
+    return '<b>$name</b> became a member!';
+  }
+
+  @override
+  String youtubeMemberUpgradeEvent(String name, String level) {
+    return '<b>$name</b> upgraded to $level!';
+  }
+
+  @override
+  String youtubeMemberMilestoneEvent(String name, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$name</b> has been a member for $monthsString months!';
+  }
+
+  @override
+  String youtubeMembershipGiftingEvent(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<b>$name</b> gifted $countString memberships!',
+      one: '<b>$name</b> gifted a membership!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youtubeGiftMembershipReceivedEvent(String name) {
+    return '<b>$name</b> received a gifted membership!';
+  }
+
+  @override
+  String youtubeGiftEvent(String name, String giftName, int jewels) {
+    final intl.NumberFormat jewelsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String jewelsString = jewelsNumberFormat.format(jewels);
+
+    return '<b>$name</b> sent $giftName ($jewelsString Jewels)!';
+  }
+
+  @override
+  String youtubePollEvent(String question) {
+    return 'Poll: $question';
+  }
+
+  @override
+  String get youtubeMembersOnlyModeOn => 'Members-only mode is on';
+
+  @override
+  String get youtubeMembersOnlyModeOff => 'Members-only mode is off';
+
+  @override
+  String get youtubeChatEnded => 'The live chat has ended';
 }

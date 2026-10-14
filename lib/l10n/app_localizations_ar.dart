@@ -1148,4 +1148,76 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get neuralFallbackLoadFailed =>
       'The neural voice couldn\'t load, so chat is read with the system voice.';
+
+  @override
+  String youtubeSuperChatEvent(String name, String amount) {
+    return 'أرسل <b>$name</b> Super Chat بقيمة $amount!';
+  }
+
+  @override
+  String youtubeSuperStickerEvent(String name, String amount) {
+    return 'أرسل <b>$name</b> Super Sticker بقيمة $amount!';
+  }
+
+  @override
+  String youtubeNewMemberEvent(String name) {
+    return 'أصبح <b>$name</b> عضوًا!';
+  }
+
+  @override
+  String youtubeMemberUpgradeEvent(String name, String level) {
+    return 'رقّى <b>$name</b> عضويته إلى $level!';
+  }
+
+  @override
+  String youtubeMemberMilestoneEvent(String name, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$name</b> عضو منذ $monthsString أشهر!';
+  }
+
+  @override
+  String youtubeMembershipGiftingEvent(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'أهدى <b>$name</b> $countString عضويات!',
+      one: 'أهدى <b>$name</b> عضوية!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youtubeGiftMembershipReceivedEvent(String name) {
+    return 'تلقّى <b>$name</b> عضوية مُهداة!';
+  }
+
+  @override
+  String youtubeGiftEvent(String name, String giftName, int jewels) {
+    final intl.NumberFormat jewelsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String jewelsString = jewelsNumberFormat.format(jewels);
+
+    return 'أرسل <b>$name</b> $giftName ($jewelsString Jewels)!';
+  }
+
+  @override
+  String youtubePollEvent(String question) {
+    return 'استطلاع: $question';
+  }
+
+  @override
+  String get youtubeMembersOnlyModeOn => 'وضع الأعضاء فقط مفعّل';
+
+  @override
+  String get youtubeMembersOnlyModeOff => 'وضع الأعضاء فقط متوقف';
+
+  @override
+  String get youtubeChatEnded => 'انتهت الدردشة المباشرة';
 }
