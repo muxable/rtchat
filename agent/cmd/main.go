@@ -136,6 +136,7 @@ func main() {
 		cancel()
 		server := webhook.NewServer(secrets)
 		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
+		server.RegisterProvider("/twitch/", webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client, twitchClientID, twitchClientSecret))
 		server.Mux.Handle("/", recycleHandler)
 		zap.L().Info("starting http server")
 		port := os.Getenv("PORT")
