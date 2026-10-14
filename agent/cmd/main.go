@@ -141,9 +141,15 @@ func main() {
 	}()
 
 	isListening := &atomic.Bool{}
+	ready := &atomic.Bool{}
+	initial := newInitialJoins(func() {
+		zap.L().Info("initial channels applied", zap.Int("count", manager.count()))
+		ready.Store(true)
+	})
+	manager.applied = initial.done
 	start := time.Now().Add(time.Duration(rand.Intn(24)) * time.Hour)
 	recycleHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !isListening.Load() || time.Since(start) > 72*time.Hour {
+		if !ready.Load() || !isListening.Load() || time.Since(start) > 72*time.Hour {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
@@ -161,7 +167,6 @@ func main() {
 		server.RegisterProvider("/alchemy/", webhook.NewAlchemyHandler(webhook.AlchemyConfig{
 			Secrets:        secrets,
 			MaticWebhookID: secrets.AlchemyMaticWebhookID,
-			EthWebhookID:   secrets.AlchemyEthWebhookID,
 		}, webhook.AlchemyFirestore{Client: client}, webhook.NewAlchemyRPC()))
 		server.Mux.Handle("/", recycleHandler)
 		zap.L().Info("starting http server")
@@ -174,6 +179,7 @@ func main() {
 		}
 	}()
 
+	first := true
 	for {
 		isListening.Store(true)
 		snapshot, err := subscribeRequests.Next()
@@ -184,8 +190,15 @@ func main() {
 		for _, change := range snapshot.Changes {
 			req := (*agent.Request)(change.Doc.Ref)
 			zap.L().Info("got request", zap.String("id", req.String()))
+			if first {
+				initial.add(req.String())
+			}
 			manager.submit(req, change.Kind)
 			time.Sleep(250 * time.Millisecond)
+		}
+		if first {
+			first = false
+			initial.seal()
 		}
 	}
 }

@@ -885,25 +885,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get discoModeDisabled => '🕺 Mode disco désactivé D:';
 
   @override
-  String get cloudTts => 'TTS cloud';
-
-  @override
-  String get languages => 'Langues';
-
-  @override
-  String get voices => 'Voix';
-
-  @override
-  String get perViewerVoice => 'Voix par spectateur';
-
-  @override
-  String get perViewerVoiceSubtitle =>
-      'Reconnaissez vos spectateurs à leur voix';
-
-  @override
-  String get randomVoice => 'Aléatoire';
-
-  @override
   String get playSampleMessage => 'Lire un message d\'exemple';
 
   @override
@@ -911,9 +892,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => 'Hauteur de la synthèse vocale';
-
-  @override
-  String get unlockHighQualityVoices => 'Débloquer les voix de haute qualité';
 
   @override
   String get muteBots => 'Couper la synthèse vocale pour les bots';
@@ -927,33 +905,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get subscribersOnly => 'Abonnés uniquement';
-
-  @override
-  String get storeNotAvailable => 'Boutique indisponible';
-
-  @override
-  String get unavailable => 'Indisponible';
-
-  @override
-  String get subscribe => 'S\'abonner';
-
-  @override
-  String get pending => 'En attente';
-
-  @override
-  String get subscribed => 'Abonné';
-
-  @override
-  String get pleaseSignIn => 'Veuillez vous connecter';
-
-  @override
-  String get searchLanguages => 'Rechercher des langues';
-
-  @override
-  String get closeSearch => 'Fermer la recherche';
-
-  @override
-  String get playSample => 'Lire un exemple';
 
   @override
   String get fontSize => 'Taille de police';
@@ -1078,4 +1029,42 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Désactiver';
+
+  @override
+  String get addChannel => 'Ajouter une chaîne';
+
+  @override
+  String get addToChat => 'Ajouter au chat';
+
+  @override
+  String get defaultChannels => 'Chaînes par défaut';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'Les chaînes affichées à l\'ouverture de l\'application';
+
+  @override
+  String get save => 'Enregistrer';
+
+  @override
+  String get resetToMyChannel => 'Réinitialiser sur ma chaîne';
+
+  @override
+  String get inChat => 'Dans le chat';
+
+  @override
+  String get removeFromChat => 'Retirer du chat';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Votre compte $provider ne peut pas discuter ici';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return 'Remplacer $channel';
+  }
+
+  @override
+  String get removeChannel => 'Retirer';
 }

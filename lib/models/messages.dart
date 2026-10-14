@@ -66,8 +66,17 @@ class MessagesModel extends ChangeNotifier {
 
   List<Channel> get channels => _channels;
 
+  /// Whether [channel] is streaming, which gates message alerts.
+  @visibleForTesting
+  Stream<bool> Function(Channel channel) isOnline = (channel) =>
+      ProfilesAdapter.instance.getIsOnline(channelId: channel.toString());
+
+  @visibleForTesting
+  void addEvent(Channel channel, DeltaEvent event) => _onEvent(channel, event);
+
   void _onEvent(Channel channel, DeltaEvent event) {
     _events.add((channel: channel, event: event));
+    MessageModel? appended;
     _messages = applyDeltaEvent(
       _messages,
       event,
@@ -86,18 +95,7 @@ class MessagesModel extends ChangeNotifier {
         } else {
           debugPrint("Localizations not available");
         }
-        // a message landing before a newer one doesn't end a quiet period,
-        // the newer message already did.
-        if (identical(_messages.last, model) && shouldPing()) {
-          ProfilesAdapter.instance
-              .getIsOnline(channelId: channel.toString())
-              .first
-              .then((value) {
-            if (value) {
-              onMessagePing?.call();
-            }
-          });
-        }
+        appended = model;
       },
       onUpdate: (event, previous, updated) {
         // stop reading out messages as soon as they're deleted.
@@ -108,6 +106,18 @@ class MessagesModel extends ChangeNotifier {
     );
     if (event is AppendDeltaEvent || event is ClearDeltaEvent) {
       _separators = computeSeparators(_messages);
+    }
+    // decided once the message list includes [appended]. a message landing
+    // before a newer one doesn't end a quiet period, the newer message
+    // already did.
+    if (appended != null &&
+        identical(_messages.last, appended) &&
+        shouldPing()) {
+      isOnline(channel).first.then((value) {
+        if (value) {
+          onMessagePing?.call();
+        }
+      });
     }
     if (event is ClearDeltaEvent) {
       // in a merged view only the cleared channel's messages are dropped.
@@ -136,6 +146,7 @@ class MessagesModel extends ChangeNotifier {
     super.dispose();
   }
 
+  /// The merged messages of every channel.
   List<MessageModel> get messages => _messages;
 
   Set<int> get separators => _separators;

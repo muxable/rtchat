@@ -850,24 +850,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get discoModeDisabled => '🕺 迪斯科模式已关闭 D:';
 
   @override
-  String get cloudTts => '云端 TTS';
-
-  @override
-  String get languages => '语言';
-
-  @override
-  String get voices => '语音';
-
-  @override
-  String get perViewerVoice => '每位观众的专属语音';
-
-  @override
-  String get perViewerVoiceSubtitle => '通过声音识别你的观众';
-
-  @override
-  String get randomVoice => '随机';
-
-  @override
   String get playSampleMessage => '播放示例消息';
 
   @override
@@ -875,9 +857,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => '语音音调';
-
-  @override
-  String get unlockHighQualityVoices => '解锁高品质语音';
 
   @override
   String get muteBots => '静音机器人的语音朗读';
@@ -890,33 +869,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get subscribersOnly => '仅限订阅者';
-
-  @override
-  String get storeNotAvailable => '商店不可用';
-
-  @override
-  String get unavailable => '不可用';
-
-  @override
-  String get subscribe => '订阅';
-
-  @override
-  String get pending => '处理中';
-
-  @override
-  String get subscribed => '已订阅';
-
-  @override
-  String get pleaseSignIn => '请登录';
-
-  @override
-  String get searchLanguages => '搜索语言';
-
-  @override
-  String get closeSearch => '关闭搜索';
-
-  @override
-  String get playSample => '播放示例';
 
   @override
   String get fontSize => '字体大小';
@@ -1035,6 +987,43 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => '关闭';
+
+  @override
+  String get addChannel => '添加频道';
+
+  @override
+  String get addToChat => '添加到聊天';
+
+  @override
+  String get defaultChannels => '默认频道';
+
+  @override
+  String get defaultChannelsSubtitle => '打开应用时显示的频道';
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get resetToMyChannel => '重置为我的频道';
+
+  @override
+  String get inChat => '聊天中';
+
+  @override
+  String get removeFromChat => '从聊天中移除';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return '你的 $provider 账号无法在此聊天';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return '替换 $channel';
+  }
+
+  @override
+  String get removeChannel => '移除';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1883,24 +1872,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get discoModeDisabled => '🕺 迪斯可模式已關閉 D:';
 
   @override
-  String get cloudTts => '雲端 TTS';
-
-  @override
-  String get languages => '語言';
-
-  @override
-  String get voices => '語音';
-
-  @override
-  String get perViewerVoice => '每位觀眾的專屬語音';
-
-  @override
-  String get perViewerVoiceSubtitle => '用聲音辨識你的觀眾';
-
-  @override
-  String get randomVoice => '隨機';
-
-  @override
   String get playSampleMessage => '播放範例訊息';
 
   @override
@@ -1908,9 +1879,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get textToSpeechPitch => '語音音調';
-
-  @override
-  String get unlockHighQualityVoices => '解鎖高品質語音';
 
   @override
   String get muteBots => '靜音機器人的語音朗讀';
@@ -1923,33 +1891,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get subscribersOnly => '僅限訂閱者';
-
-  @override
-  String get storeNotAvailable => '商店無法使用';
-
-  @override
-  String get unavailable => '無法使用';
-
-  @override
-  String get subscribe => '訂閱';
-
-  @override
-  String get pending => '處理中';
-
-  @override
-  String get subscribed => '已訂閱';
-
-  @override
-  String get pleaseSignIn => '請登入';
-
-  @override
-  String get searchLanguages => '搜尋語言';
-
-  @override
-  String get closeSearch => '關閉搜尋';
-
-  @override
-  String get playSample => '播放範例';
 
   @override
   String get fontSize => '字型大小';
@@ -2068,4 +2009,41 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get turnOffTextToSpeech => '關閉';
+
+  @override
+  String get addChannel => '新增頻道';
+
+  @override
+  String get addToChat => '新增至聊天';
+
+  @override
+  String get defaultChannels => '預設頻道';
+
+  @override
+  String get defaultChannelsSubtitle => '開啟應用程式時顯示的頻道';
+
+  @override
+  String get save => '儲存';
+
+  @override
+  String get resetToMyChannel => '重設為我的頻道';
+
+  @override
+  String get inChat => '聊天中';
+
+  @override
+  String get removeFromChat => '從聊天中移除';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return '你的 $provider 帳號無法在此聊天';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return '替換 $channel';
+  }
+
+  @override
+  String get removeChannel => '移除';
 }

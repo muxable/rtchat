@@ -3,7 +3,6 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import {
   alchemyWebhook,
-  ethAlchemyWebhook,
   setRealTimeCashAddress,
 } from "./alchemy_webhook";
 import { app as authApp } from "./auth";
@@ -24,7 +23,6 @@ import { eventsub } from "./eventsub";
 import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
-import { getVoices, synthesize } from "./tts";
 import * as twitch from "./twitch";
 import { WebSocket } from "ws";
 
@@ -457,12 +455,9 @@ export {
   search,
   getEmotes,
   getBadges,
-  synthesize,
-  getVoices,
   getViewerList,
   setRealTimeCashAddress,
   alchemyWebhook,
-  ethAlchemyWebhook,
   updateFollowerAndViewerCount,
 };
 export const auth = functions.https.onRequest(authApp);

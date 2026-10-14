@@ -205,48 +205,6 @@ async function storeDonation(
   functions.logger.info("Payload is stored in messages collection");
 }
 
-const infuraEthURL =
-  "https://mainnet.infura.io/v3/44f12a91c4c146ae83472b2656b4fff6";
-const ethProdProvider = new ethers.providers.JsonRpcProvider(infuraEthURL);
-
-// listen for eth mainnet
-export const ethAlchemyWebhook = functions.https.onRequest(async (req, res) => {
-  const body = req.body;
-  const rawBody = req.rawBody.toString();
-  const headerKey = req.headers["x-alchemy-signature"] as string;
-  const signingKey = functions.config().alchemy.ethsigningkey;
-
-  if (!isValidSignatureForStringBody(rawBody, headerKey, signingKey)) {
-    res.status(403).send("Fail to validate signature");
-    return;
-  }
-
-  const notification: AddressNotification = body as AddressNotification;
-
-  for (const activity of notification.event.activity) {
-    const transaction = contractInterface.parseTransaction(
-      await ethProdProvider.getTransaction(activity.hash)
-    );
-    if (transaction.name === "donate") {
-      functions.logger.info("transaction args", {
-        transaction_args: transaction.args,
-      });
-      const [to, amount, donor, message] = transaction.args;
-      functions.logger.info("donation", {
-        to,
-        amount,
-        donor,
-        message,
-        activity,
-        msg: transaction.args[3],
-      });
-      const toAddr = to.toLowerCase();
-      await storeDonation(notification, activity, toAddr, donor, message);
-    }
-  }
-  res.status(200).send("OK");
-});
-
 const infuraPolyURL =
   "https://polygon-mainnet.infura.io/v3/44f12a91c4c146ae83472b2656b4fff6";
 const polyProvider = new ethers.providers.JsonRpcProvider(infuraPolyURL);
@@ -322,12 +280,10 @@ export const setRealTimeCashAddress = functions.https.onCall(
     functions.logger.info("address valid, calling alchemy api");
 
     const MATICWEBHOOKID = functions.config().alchemy.maticwebhookid;
-    const ETHWEBHOOKID = functions.config().alchemy.ethwebhookid;
 
     functions.logger.info("payload", {
       userId: userId,
       addresses_to_add: address,
-      ethwebhook_id: ETHWEBHOOKID,
       maticwebhook_id: MATICWEBHOOKID,
     });
 
@@ -339,23 +295,6 @@ export const setRealTimeCashAddress = functions.https.onCall(
         {
           address,
           maticWebhookId: MATICWEBHOOKID,
-        },
-        { merge: true }
-      )
-      .catch((error) => {
-        functions.logger.error("Error writing document: ", error);
-        // fail to write to firestore
-        throw new functions.https.HttpsError(error, error.message);
-      });
-
-    await admin
-      .firestore()
-      .collection("realtimecash")
-      .doc(userId)
-      .set(
-        {
-          address,
-          ethWebhookId: ETHWEBHOOKID,
         },
         { merge: true }
       )

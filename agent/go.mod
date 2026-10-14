@@ -6,7 +6,6 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3
 	cloud.google.com/go/firestore v1.9.0
 	github.com/gempir/go-twitch-irc/v3 v3.2.0
-	github.com/gorilla/websocket v1.5.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/oauth2 v0.7.0
 )

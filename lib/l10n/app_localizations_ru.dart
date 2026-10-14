@@ -885,24 +885,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get discoModeDisabled => '🕺 Режим диско выключен D:';
 
   @override
-  String get cloudTts => 'Облачный TTS';
-
-  @override
-  String get languages => 'Языки';
-
-  @override
-  String get voices => 'Голоса';
-
-  @override
-  String get perViewerVoice => 'Голос для каждого зрителя';
-
-  @override
-  String get perViewerVoiceSubtitle => 'Узнавайте зрителей по голосу';
-
-  @override
-  String get randomVoice => 'Случайный';
-
-  @override
   String get playSampleMessage => 'Воспроизвести пример сообщения';
 
   @override
@@ -910,9 +892,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => 'Высота голоса';
-
-  @override
-  String get unlockHighQualityVoices => 'Открыть голоса высокого качества';
 
   @override
   String get muteBots => 'Отключить озвучку для ботов';
@@ -925,33 +904,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get subscribersOnly => 'Только подписчики';
-
-  @override
-  String get storeNotAvailable => 'Магазин недоступен';
-
-  @override
-  String get unavailable => 'Недоступно';
-
-  @override
-  String get subscribe => 'Подписаться';
-
-  @override
-  String get pending => 'Ожидание';
-
-  @override
-  String get subscribed => 'Подписка оформлена';
-
-  @override
-  String get pleaseSignIn => 'Войдите в аккаунт';
-
-  @override
-  String get searchLanguages => 'Поиск языков';
-
-  @override
-  String get closeSearch => 'Закрыть поиск';
-
-  @override
-  String get playSample => 'Воспроизвести пример';
 
   @override
   String get fontSize => 'Размер шрифта';
@@ -1077,4 +1029,42 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Выключить';
+
+  @override
+  String get addChannel => 'Добавить канал';
+
+  @override
+  String get addToChat => 'Добавить в чат';
+
+  @override
+  String get defaultChannels => 'Каналы по умолчанию';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'Каналы, которые показываются при открытии приложения';
+
+  @override
+  String get save => 'Сохранить';
+
+  @override
+  String get resetToMyChannel => 'Сбросить на мой канал';
+
+  @override
+  String get inChat => 'В чате';
+
+  @override
+  String get removeFromChat => 'Убрать из чата';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Ваш аккаунт $provider не может писать здесь';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return 'Заменить $channel';
+  }
+
+  @override
+  String get removeChannel => 'Удалить';
 }

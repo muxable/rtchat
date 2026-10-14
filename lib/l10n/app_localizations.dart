@@ -1387,42 +1387,6 @@ abstract class AppLocalizations {
   /// **'🕺 Disco mode disabled D:'**
   String get discoModeDisabled;
 
-  /// Title of the cloud text to speech setting
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud TTS'**
-  String get cloudTts;
-
-  /// Title for the text to speech language picker
-  ///
-  /// In en, this message translates to:
-  /// **'Languages'**
-  String get languages;
-
-  /// Title for the text to speech voice picker
-  ///
-  /// In en, this message translates to:
-  /// **'Voices'**
-  String get voices;
-
-  /// Title of the switch that gives each viewer a different voice
-  ///
-  /// In en, this message translates to:
-  /// **'Per-viewer voice'**
-  String get perViewerVoice;
-
-  /// Subtitle of the switch that gives each viewer a different voice
-  ///
-  /// In en, this message translates to:
-  /// **'Identify your viewers by voice'**
-  String get perViewerVoiceSubtitle;
-
-  /// Shown when a random voice is selected
-  ///
-  /// In en, this message translates to:
-  /// **'Random'**
-  String get randomVoice;
-
   /// Button that plays a sample text to speech message
   ///
   /// In en, this message translates to:
@@ -1440,12 +1404,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Text to Speech Pitch'**
   String get textToSpeechPitch;
-
-  /// Prompt to purchase cloud voices
-  ///
-  /// In en, this message translates to:
-  /// **'Unlock high-quality voices'**
-  String get unlockHighQualityVoices;
 
   /// Switch that skips messages from bots
   ///
@@ -1470,60 +1428,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Subscribers only'**
   String get subscribersOnly;
-
-  /// Shown when the in-app store can't be reached
-  ///
-  /// In en, this message translates to:
-  /// **'Store not available'**
-  String get storeNotAvailable;
-
-  /// Purchase button state when the product is unavailable
-  ///
-  /// In en, this message translates to:
-  /// **'Unavailable'**
-  String get unavailable;
-
-  /// Purchase button to subscribe
-  ///
-  /// In en, this message translates to:
-  /// **'Subscribe'**
-  String get subscribe;
-
-  /// Purchase button state while a purchase is pending
-  ///
-  /// In en, this message translates to:
-  /// **'Pending'**
-  String get pending;
-
-  /// Purchase button state when already subscribed
-  ///
-  /// In en, this message translates to:
-  /// **'Subscribed'**
-  String get subscribed;
-
-  /// Purchase button state when signed out
-  ///
-  /// In en, this message translates to:
-  /// **'Please Sign In'**
-  String get pleaseSignIn;
-
-  /// Tooltip for the button that searches languages
-  ///
-  /// In en, this message translates to:
-  /// **'Search languages'**
-  String get searchLanguages;
-
-  /// Tooltip for the button that closes the search
-  ///
-  /// In en, this message translates to:
-  /// **'Close search'**
-  String get closeSearch;
-
-  /// Tooltip for the button that plays a voice sample
-  ///
-  /// In en, this message translates to:
-  /// **'Play sample'**
-  String get playSample;
 
   /// Label for the chat font size slider
   ///
@@ -1716,6 +1620,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Turn off'**
   String get turnOffTextToSpeech;
+
+  /// Button to add a channel to the default channels
+  ///
+  /// In en, this message translates to:
+  /// **'Add channel'**
+  String get addChannel;
+
+  /// Button on a channel search result that adds the channel to the channels shown in chat
+  ///
+  /// In en, this message translates to:
+  /// **'Add to chat'**
+  String get addToChat;
+
+  /// Title of the settings page for the channels the app opens with
+  ///
+  /// In en, this message translates to:
+  /// **'Default channels'**
+  String get defaultChannels;
+
+  /// Explains what the default channels are
+  ///
+  /// In en, this message translates to:
+  /// **'The channels shown when the app opens'**
+  String get defaultChannelsSubtitle;
+
+  /// Button on the default channels page that saves the channels currently shown as the default channels
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// Button on the default channels page that clears the picked default channels, so the app opens the signed-in user's own channel, and closes the page
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to my channel'**
+  String get resetToMyChannel;
+
+  /// Heading in the channel search sheet for the channels currently shown in chat
+  ///
+  /// In en, this message translates to:
+  /// **'In chat'**
+  String get inChat;
+
+  /// Button that removes a channel from the channels shown in chat
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from chat'**
+  String get removeFromChat;
+
+  /// Hint in the disabled message input when none of the channels shown are on the platform of the signed-in account
+  ///
+  /// In en, this message translates to:
+  /// **'Your {provider} account can\'t chat here'**
+  String cantChatWithAccount(String provider);
+
+  /// Shown while swiping a channel search result whose platform already has a channel in chat: adding it replaces that channel
+  ///
+  /// In en, this message translates to:
+  /// **'Replace {channel}'**
+  String replaceChannel(String channel);
+
+  /// Shown while swiping a default channel away to remove it from the default channels
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeChannel;
 }
 
 class _AppLocalizationsDelegate

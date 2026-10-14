@@ -1201,30 +1201,6 @@
   "@discoModeDisabled": {
     "description": "Shown when the disco mode easter egg is disabled"
   },
-  "cloudTts": "Cloud TTS",
-  "@cloudTts": {
-    "description": "Title of the cloud text to speech setting"
-  },
-  "languages": "Languages",
-  "@languages": {
-    "description": "Title for the text to speech language picker"
-  },
-  "voices": "Voices",
-  "@voices": {
-    "description": "Title for the text to speech voice picker"
-  },
-  "perViewerVoice": "Per-viewer voice",
-  "@perViewerVoice": {
-    "description": "Title of the switch that gives each viewer a different voice"
-  },
-  "perViewerVoiceSubtitle": "Identify your viewers by voice",
-  "@perViewerVoiceSubtitle": {
-    "description": "Subtitle of the switch that gives each viewer a different voice"
-  },
-  "randomVoice": "Random",
-  "@randomVoice": {
-    "description": "Shown when a random voice is selected"
-  },
   "playSampleMessage": "Play sample message",
   "@playSampleMessage": {
     "description": "Button that plays a sample text to speech message"
@@ -1236,10 +1212,6 @@
   "textToSpeechPitch": "Text to Speech Pitch",
   "@textToSpeechPitch": {
     "description": "Label for the text to speech pitch slider"
-  },
-  "unlockHighQualityVoices": "Unlock high-quality voices",
-  "@unlockHighQualityVoices": {
-    "description": "Prompt to purchase cloud voices"
   },
   "muteBots": "Mute text to speech for bots",
   "@muteBots": {
@@ -1256,42 +1228,6 @@
   "subscribersOnly": "Subscribers only",
   "@subscribersOnly": {
     "description": "Switch that only reads messages from subscribers"
-  },
-  "storeNotAvailable": "Store not available",
-  "@storeNotAvailable": {
-    "description": "Shown when the in-app store can't be reached"
-  },
-  "unavailable": "Unavailable",
-  "@unavailable": {
-    "description": "Purchase button state when the product is unavailable"
-  },
-  "subscribe": "Subscribe",
-  "@subscribe": {
-    "description": "Purchase button to subscribe"
-  },
-  "pending": "Pending",
-  "@pending": {
-    "description": "Purchase button state while a purchase is pending"
-  },
-  "subscribed": "Subscribed",
-  "@subscribed": {
-    "description": "Purchase button state when already subscribed"
-  },
-  "pleaseSignIn": "Please Sign In",
-  "@pleaseSignIn": {
-    "description": "Purchase button state when signed out"
-  },
-  "searchLanguages": "Search languages",
-  "@searchLanguages": {
-    "description": "Tooltip for the button that searches languages"
-  },
-  "closeSearch": "Close search",
-  "@closeSearch": {
-    "description": "Tooltip for the button that closes the search"
-  },
-  "playSample": "Play sample",
-  "@playSample": {
-    "description": "Tooltip for the button that plays a voice sample"
   },
   "fontSize": "Font size",
   "@fontSize": {
@@ -1456,5 +1392,61 @@
   "turnOffTextToSpeech": "Turn off",
   "@turnOffTextToSpeech": {
     "description": "Button in the text to speech notification that turns text to speech off"
+  },
+  "addChannel": "Add channel",
+  "@addChannel": {
+    "description": "Button to add a channel to the default channels"
+  },
+  "addToChat": "Add to chat",
+  "@addToChat": {
+    "description": "Button on a channel search result that adds the channel to the channels shown in chat"
+  },
+  "defaultChannels": "Default channels",
+  "@defaultChannels": {
+    "description": "Title of the settings page for the channels the app opens with"
+  },
+  "defaultChannelsSubtitle": "The channels shown when the app opens",
+  "@defaultChannelsSubtitle": {
+    "description": "Explains what the default channels are"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Button on the default channels page that saves the channels currently shown as the default channels"
+  },
+  "resetToMyChannel": "Reset to my channel",
+  "@resetToMyChannel": {
+    "description": "Button on the default channels page that clears the picked default channels, so the app opens the signed-in user's own channel, and closes the page"
+  },
+  "inChat": "In chat",
+  "@inChat": {
+    "description": "Heading in the channel search sheet for the channels currently shown in chat"
+  },
+  "removeFromChat": "Remove from chat",
+  "@removeFromChat": {
+    "description": "Button that removes a channel from the channels shown in chat"
+  },
+  "cantChatWithAccount": "Your {provider} account can't chat here",
+  "@cantChatWithAccount": {
+    "description": "Hint in the disabled message input when none of the channels shown are on the platform of the signed-in account",
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Twitch"
+      }
+    }
+  },
+  "replaceChannel": "Replace {channel}",
+  "@replaceChannel": {
+    "description": "Shown while swiping a channel search result whose platform already has a channel in chat: adding it replaces that channel",
+    "placeholders": {
+      "channel": {
+        "type": "String",
+        "example": "xQc"
+      }
+    }
+  },
+  "removeChannel": "Remove",
+  "@removeChannel": {
+    "description": "Shown while swiping a default channel away to remove it from the default channels"
   }
 }

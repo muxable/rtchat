@@ -93,14 +93,12 @@ func (s *alchemyFakeStore) Add(_ context.Context, path string, data map[string]i
 }
 
 type alchemyFakeTransactions struct {
-	input    string
-	networks []bool
-	hashes   []string
-	err      error
+	input  string
+	hashes []string
+	err    error
 }
 
-func (tx *alchemyFakeTransactions) Input(_ context.Context, eth bool, hash string) (string, error) {
-	tx.networks = append(tx.networks, eth)
+func (tx *alchemyFakeTransactions) Input(_ context.Context, hash string) (string, error) {
 	tx.hashes = append(tx.hashes, hash)
 	return tx.input, tx.err
 }
@@ -109,33 +107,28 @@ func TestAlchemyRoutes(t *testing.T) {
 	amount := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 256), big.NewInt(1))
 	for _, tc := range []struct {
 		name, path, network, category string
-		eth                           bool
 	}{
-		{"polygon", "/alchemy/webhook", "MATIC_MAINNET", "external", false},
-		{"ethereum", "/alchemy/eth", "ETH_MAINNET", "erc20", true},
+		{"polygon", "/alchemy/webhook", "MATIC_MAINNET", "external"},
+		{"polygon erc20", "/alchemy/webhook", "MATIC_MAINNET", "erc20"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			body := fmt.Sprintf(`{"webhookId":"unfiltered-id","id":"notification","createdAt":"2023-05-01T00:00:00Z","type":"ADDRESS_ACTIVITY","event":{"network":%q,"activity":[{"category":%q,"fromAddress":"0xsender","toAddress":"0xcontract","blockNum":"0x10","value":0.1234567890123456789,"hash":"0xhash","typeTraceAddress":"external","asset":"TOKEN","rawContract":{"rawvalue":"0xffffffffffffffffffffffffffffffff","address":"0xtoken","decimal":18},"log":{"removed":true,"address":"0xtoken","data":"0x00","topics":["0x01"]}}]}}`, tc.network, tc.category)
 			store := &alchemyFakeStore{}
 			tx := &alchemyFakeTransactions{input: alchemyTestInput(amount, "Alice 🌍", "Thanks!")}
-			secrets := Secrets{AlchemySigningKey: "matic-key", AlchemyEthSigningKey: "eth-key"}
-			h := NewAlchemyHandler(AlchemyConfig{Secrets: secrets, MaticWebhookID: "configured-matic", EthWebhookID: "configured-eth"}, store, tx)
+			secrets := Secrets{AlchemySigningKey: "matic-key"}
+			h := NewAlchemyHandler(AlchemyConfig{Secrets: secrets, MaticWebhookID: "configured-matic"}, store, tx)
 			now := time.Date(2023, 5, 1, 12, 0, 0, 123000000, time.UTC)
 			h.now = func() time.Time { return now }
 			server := NewServer(secrets)
 			server.RegisterProvider("/alchemy/", h)
 			req := httptest.NewRequest("POST", tc.path, strings.NewReader(body))
-			key := "matic-key"
-			if tc.eth {
-				key = "eth-key"
-			}
-			req.Header.Set("X-Alchemy-Signature", alchemyTestSignature(body, key))
+			req.Header.Set("X-Alchemy-Signature", alchemyTestSignature(body, "matic-key"))
 			response := httptest.NewRecorder()
 			server.Mux.ServeHTTP(response, req)
 			if response.Code != 200 || response.Body.String() != "OK" {
 				t.Fatalf("response %d %s", response.Code, response.Body)
 			}
-			if !reflect.DeepEqual(tx.networks, []bool{tc.eth}) || !reflect.DeepEqual(tx.hashes, []string{"0xhash"}) {
+			if !reflect.DeepEqual(tx.hashes, []string{"0xhash"}) {
 				t.Fatalf("RPC calls: %+v", tx)
 			}
 			expectedCalls := []string{"realtimecash where address == 0x" + strings.Repeat("ab", 20) + " limit 1", "profiles/user", "channels/twitch:123/messages"}
@@ -168,21 +161,21 @@ func TestAlchemyFailuresAndNonDonations(t *testing.T) {
 		status, writes                                  int
 	}{
 		{name: "disabled polygon", path: "/alchemy/webhook", status: 503},
-		{name: "disabled eth", path: "/alchemy/eth", status: 503},
+		{name: "removed eth route", path: "/alchemy/eth", key: "key", signature: "sign", body: body, status: 404},
 		{name: "missing signature", path: "/alchemy/webhook", key: "key", body: body, status: 403},
-		{name: "wrong signature", path: "/alchemy/eth", key: "key", signature: "bad", body: body, status: 403},
+		{name: "wrong signature", path: "/alchemy/webhook", key: "key", signature: "bad", body: body, status: 403},
 		{name: "bad JSON", path: "/alchemy/webhook", key: "key", signature: "sign", body: `{`, status: 400},
 		{name: "trailing JSON", path: "/alchemy/webhook", key: "key", signature: "sign", body: body + `{}`, status: 400},
 		{name: "unknown route", path: "/alchemy/other", status: 404},
-		{name: "empty", path: "/alchemy/eth", key: "key", signature: "sign", body: `{"event":{"activity":[]}}`, status: 200},
+		{name: "empty", path: "/alchemy/webhook", key: "key", signature: "sign", body: `{"event":{"activity":[]}}`, status: 200},
 		{name: "getBalance", path: "/alchemy/webhook", key: "key", signature: "sign", body: body, input: "0x12065fe0", status: 200},
-		{name: "myAddress", path: "/alchemy/eth", key: "key", signature: "sign", body: body, input: "0x26b85ee1", status: 200},
+		{name: "myAddress", path: "/alchemy/webhook", key: "key", signature: "sign", body: body, input: "0x26b85ee1", status: 200},
 		{name: "unknown selector", path: "/alchemy/webhook", key: "key", signature: "sign", body: body, input: "0xdeadbeef", status: 500},
-		{name: "RPC failure", path: "/alchemy/eth", key: "key", signature: "sign", body: body, rpcError: true, status: 500},
+		{name: "RPC failure", path: "/alchemy/webhook", key: "key", signature: "sign", body: body, rpcError: true, status: 500},
 		{name: "missing recipient", path: "/alchemy/webhook", key: "key", signature: "sign", body: body, failAt: "query", status: 500},
-		{name: "missing profile", path: "/alchemy/eth", key: "key", signature: "sign", body: body, failAt: "profile", status: 500},
+		{name: "missing profile", path: "/alchemy/webhook", key: "key", signature: "sign", body: body, failAt: "profile", status: 500},
 		{name: "missing twitch", path: "/alchemy/webhook", key: "key", signature: "sign", body: body, failAt: "twitch", status: 500},
-		{name: "write failure", path: "/alchemy/eth", key: "key", signature: "sign", body: body, failAt: "write", status: 500},
+		{name: "write failure", path: "/alchemy/webhook", key: "key", signature: "sign", body: body, failAt: "write", status: 500},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			store := &alchemyFakeStore{failAt: tc.failAt}
@@ -194,7 +187,7 @@ func TestAlchemyFailuresAndNonDonations(t *testing.T) {
 			if tc.rpcError {
 				tx.err = errors.New("RPC unavailable")
 			}
-			h := NewAlchemyHandler(AlchemyConfig{Secrets: Secrets{AlchemySigningKey: tc.key, AlchemyEthSigningKey: tc.key}}, store, tx)
+			h := NewAlchemyHandler(AlchemyConfig{Secrets: Secrets{AlchemySigningKey: tc.key}}, store, tx)
 			req := httptest.NewRequest("POST", tc.path, strings.NewReader(tc.body))
 			signature := tc.signature
 			if signature == "sign" {
@@ -206,7 +199,7 @@ func TestAlchemyFailuresAndNonDonations(t *testing.T) {
 			if response.Code != tc.status || len(store.messages) != tc.writes {
 				t.Fatalf("response %d, writes %d", response.Code, len(store.messages))
 			}
-			if tc.status == 403 || tc.status == 503 {
+			if tc.status == 403 || tc.status == 404 || tc.status == 503 {
 				if len(tx.hashes) != 0 || len(store.calls) != 0 {
 					t.Fatal("I/O before authentication")
 				}
@@ -265,14 +258,12 @@ func TestAlchemyRPC(t *testing.T) {
 				}
 				return &http.Response{StatusCode: tc.status, Body: io.NopCloser(strings.NewReader(tc.body)), Header: make(http.Header)}, nil
 			})}
-			rpc := &AlchemyRPC{Client: client, PolygonURL: "https://infura.test/polygon", EthereumURL: "https://infura.test/eth"}
-			for _, eth := range []bool{false, true} {
-				input, err := rpc.Input(context.Background(), eth, "0xhash")
-				if (err != nil) != tc.wantError || (!tc.wantError && input != "0x98701e4c") {
-					t.Fatalf("input %q, error %v", input, err)
-				}
+			rpc := &AlchemyRPC{Client: client, PolygonURL: "https://infura.test/polygon"}
+			input, err := rpc.Input(context.Background(), "0xhash")
+			if (err != nil) != tc.wantError || (!tc.wantError && input != "0x98701e4c") {
+				t.Fatalf("input %q, error %v", input, err)
 			}
-			if !reflect.DeepEqual(paths, []string{"/polygon", "/eth"}) {
+			if !reflect.DeepEqual(paths, []string{"/polygon"}) {
 				t.Fatalf("paths: %v", paths)
 			}
 		})
@@ -305,7 +296,7 @@ func TestAlchemyMultipleActivitiesAndRetries(t *testing.T) {
 	h := NewAlchemyHandler(AlchemyConfig{}, store, tx)
 	// Like the TypeScript Add calls, a repeated delivery creates new documents.
 	for i := 0; i < 2; i++ {
-		if err := h.process(context.Background(), false, notification); err != nil {
+		if err := h.process(context.Background(), notification); err != nil {
 			t.Fatal(err)
 		}
 	}

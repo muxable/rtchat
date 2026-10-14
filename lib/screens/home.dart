@@ -13,17 +13,17 @@ import 'package:rtchat/components/drawer/end_drawer.dart';
 import 'package:rtchat/components/drawer/sidebar.dart';
 import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
-import 'package:rtchat/components/stream_preview.dart';
+import 'package:rtchat/components/view_stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
-import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/tts_foreground_service.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/views.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -337,14 +337,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             );
                           }
 
-                          return FutureBuilder<List<Emote>>(
-                            future: getEmotes(widget.channel),
-                            builder: (context, snapshot) {
-                              return MessageInputWidget(
-                                emotes: snapshot.data ?? [],
-                                channel: widget.channel,
-                              );
-                            },
+                          // an account can only post on its own provider,
+                          // and at most one channel per provider is shown.
+                          return Consumer<ViewsModel>(
+                            builder: (context, views, child) =>
+                                MessageInputWidget(
+                                    channel: views
+                                        .sendChannel(userModel.userChannel)),
                           );
                         },
                       ),
@@ -382,8 +381,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   } else if (layoutModel.isShowPreview) {
                                     return AspectRatio(
                                       aspectRatio: 16 / 9,
-                                      child: StreamPreview(
-                                          channel: widget.channel),
+                                      child: ViewStreamPreview(
+                                          fallback: widget.channel),
                                     );
                                   } else {
                                     return Container();
@@ -419,8 +418,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     if (layoutModel.isShowNotifications) {
                                       return const ActivityFeedPanelWidget();
                                     } else if (layoutModel.isShowPreview) {
-                                      return StreamPreview(
-                                          channel: widget.channel);
+                                      return ViewStreamPreview(
+                                          fallback: widget.channel);
                                     } else {
                                       return Container();
                                     }

@@ -27,6 +27,9 @@ type requestManager struct {
 	// every subscribe rewrites the assignment, so most updates to an already
 	// authenticated channel are skipped instead of reconnecting it.
 	skipUpgrade func() bool
+	// applied, if set, is called with the channel key after each change is
+	// applied, whether or not the join succeeded.
+	applied func(string)
 }
 
 type queuedChange struct {
@@ -83,6 +86,9 @@ func (m *requestManager) submit(req *agent.Request, kind firestore.DocumentChang
 			delete(m.queued, key)
 			m.queueMu.Unlock()
 			m.apply(change.req, change.kind)
+			if m.applied != nil {
+				m.applied(key)
+			}
 		}
 	}()
 }

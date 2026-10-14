@@ -39,13 +39,12 @@ TwitchMessageModel createMessage(String message,
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // TtsModel eagerly creates platform-backed players; stub them out.
+  // TtsModel eagerly creates a platform-backed tts player; stub it out.
   setUpAll(() async {
     await initializeDateFormatting('en');
-    for (final name in ['flutter_tts', 'com.ryanheise.just_audio.methods']) {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(MethodChannel(name), (call) async => null);
-    }
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+            const MethodChannel('flutter_tts'), (call) async => null);
   });
 
   final l10n = lookupAppLocalizations(const Locale('en'));
@@ -283,14 +282,57 @@ void main() {
         'language': 'fr',
         'pitch': 1.5,
         'speed': 0.6,
-        'voice': {'fr': 'fr-FR-Wavenet-A'},
         'mutedUsers': [
-          {'userId': '1', 'login': 'muxfd', 'displayName': 'Muxfd'},
+          {
+            'provider': 'kick',
+            'userId': '1',
+            'login': 'muxfd',
+            'displayName': 'Muxfd'
+          },
         ],
       };
       final roundTripped = TtsModel.fromJson(json).toJson();
       expect(roundTripped, json);
       expect(TtsModel.fromJson(roundTripped).toJson(), json);
+    });
+
+    test('muted users saved before providers existed are twitch users', () {
+      final restored = TtsModel.fromJson({
+        'mutedUsers': [
+          {'userId': '1', 'login': 'muxfd', 'displayName': 'Muxfd'},
+        ],
+      });
+      expect(restored.toJson()['mutedUsers'], [
+        {
+          'provider': 'twitch',
+          'userId': '1',
+          'displayName': 'Muxfd',
+          'login': 'muxfd'
+        },
+      ]);
+      expect(
+          restored.isMuted(const TwitchUserModel(userId: '1', login: 'muxfd')),
+          isTrue);
+    });
+
+    test('settings saved by versions with cloud tts still load', () {
+      final restored = TtsModel.fromJson({
+        'isBotMuted': true,
+        'isCloudTtsEnabled': true,
+        'isRandomVoiceEnabled': false,
+        'language': 'fr',
+        'pitch': 1.5,
+        'speed': 0.6,
+        'voice': {'fr': 'fr-FR-Wavenet-A'},
+      });
+      expect(restored.isBotMuted, isTrue);
+      expect(restored.isRandomVoiceEnabled, isFalse);
+      expect(restored.language.languageCode, 'fr');
+      expect(restored.pitch, 1.5);
+      expect(restored.speed, 0.6);
+      final json = restored.toJson();
+      expect(json.containsKey('voice'), isFalse);
+      expect(json.containsKey('isCloudTtsEnabled'), isFalse);
     });
 
     test('muted users survive a round trip', () {
@@ -301,6 +343,24 @@ void main() {
       expect(restored.isMuted(user), isTrue);
       restored.unmute(user);
       expect(restored.isMuted(user), isFalse);
+    });
+
+    test('reloading saved muted users does not duplicate them', () {
+      const user =
+          TwitchUserModel(userId: '1', login: 'muxfd', displayName: 'Muxfd');
+      model.mute(user);
+      final json = model.toJson();
+      model.updateFromJson(json);
+      model.updateFromJson(json);
+      expect(model.toJson()['mutedUsers'], json['mutedUsers']);
+    });
+
+    test('reloading saved muted users drops users unmuted elsewhere', () {
+      const user =
+          TwitchUserModel(userId: '1', login: 'muxfd', displayName: 'Muxfd');
+      model.mute(user);
+      model.updateFromJson({'mutedUsers': []});
+      expect(model.isMuted(user), isFalse);
     });
 
     test('muting matches on login', () {
@@ -349,10 +409,15 @@ void main() {
 
     test('a failed utterance does not block the ones after it', () async {
       final spoken = <String>[];
+      var failNext = false;
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(const MethodChannel('flutter_tts'),
               (call) async {
         if (call.method == 'speak') {
+          if (failNext) {
+            failNext = false;
+            throw PlatformException(code: 'failed');
+          }
           spoken.add(call.arguments as String);
         }
         return 1;
@@ -362,20 +427,22 @@ void main() {
           .setMockMethodCallHandler(
               const MethodChannel('flutter_tts'), (call) async => null));
 
-      // cloud tts fails here (no firebase app), like a network error would.
+      // the platform fails the first utterance, and reporting the error fails
+      // too (no firebase app in tests).
       await runZonedGuarded(() async {
         model.setMode(l10n, TtsMode.enabled);
-        model.isCloudTtsEnabled = true;
+        await pumpEventQueue();
+        failNext = true;
         model.say(l10n, createMessage('first', messageId: 'first'));
         await pumpEventQueue();
       }, (error, stack) {});
 
-      model.isCloudTtsEnabled = false;
       await runZonedGuarded(() async {
         model.say(l10n, createMessage('second', messageId: 'second'));
         await pumpEventQueue();
       }, (error, stack) {});
 
+      expect(spoken, isNot(contains('Muxfd said: first')));
       expect(spoken, contains('Muxfd said: second'));
     });
   });
