@@ -1704,6 +1704,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in with Kick'**
   String get signInWithKick;
+
+  /// Spoken when text to speech turns itself off because too many messages are waiting to be read
+  ///
+  /// In en, this message translates to:
+  /// **'There are too many messages. Text to speech disabled'**
+  String get textToSpeechTooManyMessages;
 }
 
 class _AppLocalizationsDelegate

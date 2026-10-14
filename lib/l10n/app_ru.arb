@@ -260,5 +260,6 @@
   "kickResubscriptionEvent": "<b>{subscriberName}</b> продлил подписку: {months} мес.!",
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> подарил подписки: {count}!",
   "kicksGiftedEvent": "<b>{senderName}</b> отправил {amount} Kicks!",
-  "signInWithKick": "Войти через Kick"
+  "signInWithKick": "Войти через Kick",
+  "textToSpeechTooManyMessages": "Слишком много сообщений. Озвучивание текста отключено"
 }

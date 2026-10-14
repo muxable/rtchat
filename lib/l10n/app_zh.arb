@@ -260,5 +260,6 @@
   "kickResubscriptionEvent": "<b>{subscriberName}</b> 续订了 {months} 个月！",
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> 赠送了 {count} 个订阅！",
   "kicksGiftedEvent": "<b>{senderName}</b> 送出了 {amount} Kicks！",
-  "signInWithKick": "使用 Kick 登录"
+  "signInWithKick": "使用 Kick 登录",
+  "textToSpeechTooManyMessages": "消息太多了。文字转语音已关闭"
 }

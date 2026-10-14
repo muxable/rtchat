@@ -379,4 +379,77 @@ void main() {
       expect(spoken, contains('Muxfd said: second'));
     });
   });
+
+  group('backlog', () {
+    late List<String> spoken;
+    late List<Completer<void>> speaking;
+
+    setUp(() {
+      spoken = [];
+      speaking = [];
+      // speech never finishes on its own, so messages pile up like they do
+      // when chat outpaces tts. stopping tts ends the current utterance.
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(const MethodChannel('flutter_tts'),
+              (call) async {
+        if (call.method == 'speak') {
+          spoken.add(call.arguments as String);
+          final done = Completer<void>();
+          speaking.add(done);
+          await done.future;
+        } else if (call.method == 'stop') {
+          for (final done in speaking) {
+            if (!done.isCompleted) done.complete();
+          }
+        }
+        return 1;
+      });
+      addTearDown(() {
+        for (final done in speaking) {
+          if (!done.isCompleted) done.complete();
+        }
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(
+                const MethodChannel('flutter_tts'), (call) async => null);
+      });
+    });
+
+    TwitchMessageModel from(int i) => createMessage('message $i',
+        messageId: 'm$i',
+        author: TwitchUserModel(
+            userId: '$i', login: 'user$i', displayName: 'User$i'));
+
+    test('turns tts off and says so when too many messages are queued',
+        () async {
+      model.setMode(l10n, TtsMode.enabled);
+      await pumpEventQueue();
+      for (var i = 0; i < 25; i++) {
+        model.say(l10n, from(i));
+      }
+      await pumpEventQueue();
+
+      expect(model.mode, TtsMode.disabled);
+      expect(spoken.last, l10n.textToSpeechTooManyMessages);
+      expect(spoken.where((s) => s.contains(' said: ')), isEmpty);
+    });
+
+    test('skips the author prelude to catch up on a long backlog', () async {
+      model.setMode(l10n, TtsMode.enabled);
+      await pumpEventQueue();
+      for (var i = 0; i < 12; i++) {
+        model.say(l10n, from(i));
+      }
+      // let the backlog drain.
+      for (var i = 0; i < 20; i++) {
+        for (final done in speaking) {
+          if (!done.isCompleted) done.complete();
+        }
+        await pumpEventQueue();
+      }
+
+      expect(spoken, contains('User1 said: message 1'));
+      expect(spoken, contains('message 11'));
+      expect(model.mode, TtsMode.enabled);
+    });
+  });
 }

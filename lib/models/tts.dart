@@ -49,6 +49,11 @@ class TtsModel extends ChangeNotifier {
   final audioPlayer = AudioPlayer();
   Future<void> _previousUtterance = Future.value();
   final Set<String> _pending = {};
+
+  // past these many queued messages tts drops the author prelude, and then
+  // turns itself off.
+  static const _preludeBacklog = 10;
+  static const _maxBacklog = 20;
   var _language = Language();
   List<String> voices = [];
   final Map<String, dynamic> _voice = {};
@@ -424,12 +429,23 @@ class TtsModel extends ChangeNotifier {
       _lastMessageTime = model.timestamp;
     }
 
+    // chat is outpacing speech: give up rather than fall ever further behind.
+    if (_pending.length >= _maxBacklog && model is! SystemMessageModel) {
+      _turnOffForBacklog(localizations);
+      return;
+    }
+
     final activeMessage = _activeMessage;
     var includeAuthorPrelude = true;
     if (activeMessage is ChatMessage && model is ChatMessage) {
       includeAuthorPrelude =
           !(activeMessage.author.provider == model.author.provider &&
               activeMessage.author.userId == model.author.userId);
+    }
+
+    // skip "X said" to catch up on a long backlog.
+    if (_pending.length >= _preludeBacklog) {
+      includeAuthorPrelude = false;
     }
 
     final vocalization = getVocalization(
@@ -505,6 +521,22 @@ class TtsModel extends ChangeNotifier {
         await Future.delayed(audioPlayer.duration ?? const Duration());
       }
     }
+  }
+
+  void _turnOffForBacklog(AppLocalizations localizations) {
+    _pending.clear();
+    _mode = TtsMode.disabled;
+    say(localizations,
+        SystemMessageModel(text: localizations.textToSpeechTooManyMessages),
+        force: true);
+    // cut off the current utterance; everything queued behind it is dropped.
+    _tts.stop().catchError((_) => null);
+    if (_isCloudTtsEnabled) {
+      audioPlayer.stop();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void unsay(String messageId) {

@@ -1070,4 +1070,8 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get signInWithKick => 'Mit Kick anmelden';
+
+  @override
+  String get textToSpeechTooManyMessages =>
+      'Es gibt zu viele Nachrichten. Sprachausgabe deaktiviert';
 }

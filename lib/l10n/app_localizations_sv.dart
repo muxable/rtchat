@@ -1053,4 +1053,8 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get signInWithKick => 'Logga in med Kick';
+
+  @override
+  String get textToSpeechTooManyMessages =>
+      'Det finns för många meddelanden. Text till tal avstängt';
 }

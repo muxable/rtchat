@@ -1057,4 +1057,8 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get signInWithKick => 'تسجيل الدخول باستخدام Kick';
+
+  @override
+  String get textToSpeechTooManyMessages =>
+      'هناك رسائل كثيرة جدًا. تم تعطيل تحويل النص إلى كلام';
 }
