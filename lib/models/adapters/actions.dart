@@ -83,4 +83,12 @@ class ActionsAdapter {
       "toChannelId": toChannel.channelId,
     });
   }
+
+  Future<void> cancelRaid(Channel channel) async {
+    final call = functions.httpsCallable('cancelRaid');
+    await call({
+      "provider": channel.provider,
+      "channelId": channel.channelId,
+    });
+  }
 }

@@ -10,6 +10,7 @@ import {
   TWITCH_OAUTH_CONFIG,
 } from "./oauth";
 import { runUpdateFollowerAndViewerCount } from "./chat-status";
+import { recordRaidGo } from "./raids";
 
 enum EventsubType {
   ChannelFollow = "channel.follow",
@@ -40,20 +41,48 @@ enum EventsubType {
   ChannelShoutoutReceive = "channel.shoutout.receive",
 }
 
-function createEventsub(token: string, type: string, twitchUserId: string) {
-  var condition: any = { broadcaster_user_id: twitchUserId };
-  if (type === "channel.raid") {
-    condition = { to_broadcaster_user_id: twitchUserId };
-  } else if (
-    type === "channel.shoutout.create" ||
-    type === "channel.shoutout.receive" ||
-    type === "channel.follow"
-  ) {
-    condition = {
-      broadcaster_user_id: twitchUserId,
-      moderator_user_id: twitchUserId,
-    };
+// The subscriptions each channel needs. channel.raid is subscribed twice: to
+// the channel for incoming raids, and from it for outgoing raid completion.
+export function eventsubConditions(twitchUserId: string) {
+  const subscriptions: { type: string; condition: any }[] = [];
+  for (const type of Object.values(EventsubType)) {
+    if (type === EventsubType.ChannelRaid) {
+      subscriptions.push(
+        { type, condition: { to_broadcaster_user_id: twitchUserId } },
+        { type, condition: { from_broadcaster_user_id: twitchUserId } }
+      );
+    } else if (
+      type === EventsubType.ChannelShoutoutCreate ||
+      type === EventsubType.ChannelShoutoutReceive ||
+      type === EventsubType.ChannelFollow
+    ) {
+      subscriptions.push({
+        type,
+        condition: {
+          broadcaster_user_id: twitchUserId,
+          moderator_user_id: twitchUserId,
+        },
+      });
+    } else {
+      subscriptions.push({
+        type,
+        condition: { broadcaster_user_id: twitchUserId },
+      });
+    }
   }
+  return subscriptions;
+}
+
+// The raiding channel's id if the notification is for a raid out of the
+// channel, null otherwise.
+export function outgoingRaidFrom(subscription: any): string | null {
+  if (subscription?.type !== EventsubType.ChannelRaid) {
+    return null;
+  }
+  return subscription?.condition?.from_broadcaster_user_id || null;
+}
+
+function createEventsub(token: string, type: string, condition: any) {
   return fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
     method: "POST",
     headers: {
@@ -92,8 +121,8 @@ export async function checkEventSubSubscriptions(userId: string) {
     console.log("missing twitch user id");
     return;
   }
-  for (const type of Object.values(EventsubType)) {
-    let response = await createEventsub(appAccessToken, type, twitchUserId);
+  for (const { type, condition } of eventsubConditions(twitchUserId)) {
+    let response = await createEventsub(appAccessToken, type, condition);
     if (response.status == 409) {
       // subscription already exists, this is ok.
       console.log("subscription already exists", type, twitchUserId);
@@ -142,6 +171,14 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
 
     if (type === EventsubType.ChannelFollow && version === "1") {
       console.log("rejecting channel.follow v1");
+      return;
+    }
+
+    // raids out of the channel complete the raiding channel's countdown rather
+    // than appearing as an incoming raid in the target channel.
+    if (outgoingRaidFrom(req.body.subscription)) {
+      await recordRaidGo(req.body.event, Date.parse(timestamp), messageId);
+      res.status(200).send();
       return;
     }
 

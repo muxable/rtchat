@@ -267,6 +267,25 @@ export const raid = functions.https.onCall(async (data, context) => {
   }
 });
 
+export const cancelRaid = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("permission-denied", "missing auth");
+  }
+  const provider = data?.provider;
+  const channelId = data?.channelId;
+  if (!provider || !channelId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channelId"
+    );
+  }
+
+  switch (provider) {
+    case "twitch":
+      return await twitch.cancelRaid(context.auth.uid, channelId);
+  }
+});
+
 export const getStatistics = functions.https.onCall(async (data, context) => {
   const provider = data?.provider;
   const channelId = data?.channelId;

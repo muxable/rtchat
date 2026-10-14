@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import fetch from "cross-fetch";
 import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import { recordRaidCancel, recordRaidStart } from "./raids";
 
 // Twitch's API evolves so rapidly that it's not worth using a client like twurple.
 
@@ -246,12 +247,59 @@ export async function raid(
     return;
   }
 
+  const headers = await getHeaders(uid);
   const response = await fetch(
     `https://api.twitch.tv/helix/raids?from_broadcaster_id=${fromBroadcasterId}&to_broadcaster_id=${toBroadcasterId}`,
     {
       method: "POST",
+      headers,
+    },
+  );
+  const json = (await response.json()) as any;
+  const createdAt = json?.data?.[0]?.created_at;
+  if (response.ok && createdAt) {
+    // the raid has started, so failing to show the countdown isn't an error.
+    try {
+      const target = await getRaidTarget(headers, toBroadcasterId);
+      await recordRaidStart(fromBroadcasterId, target, Date.parse(createdAt));
+    } catch (err) {
+      console.error("failed to record raid start", err);
+    }
+  }
+  return json;
+}
+
+async function getRaidTarget(headers: Record<string, string>, id: string) {
+  const response = await fetch(`https://api.twitch.tv/helix/users?id=${id}`, {
+    headers,
+  });
+  const user = ((await response.json()) as any)?.data?.[0];
+  return {
+    id,
+    login: user?.login ?? "",
+    displayName: user?.display_name ?? user?.login ?? "",
+  };
+}
+
+export async function cancelRaid(uid: string, broadcasterId: string) {
+  const profile = await admin.firestore().collection("profiles").doc(uid).get();
+  if (!profile.exists) {
+    return;
+  }
+
+  const response = await fetch(
+    `https://api.twitch.tv/helix/raids?broadcaster_id=${broadcasterId}`,
+    {
+      method: "DELETE",
       headers: await getHeaders(uid),
     }
   );
-  return await response.json();
+  if (response.status === 204) {
+    try {
+      await recordRaidCancel(broadcasterId, Date.now());
+    } catch (err) {
+      console.error("failed to record raid cancel", err);
+    }
+  }
+  return await parseResponse(response);
 }
