@@ -363,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     const Flexible(child: Divider()),
                                   ],
                                 ),
-                                const SignInWithTwitch(),
+                                SignInButton(provider: widget.channel.provider),
                               ],
                             );
                           }
