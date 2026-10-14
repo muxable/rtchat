@@ -7,7 +7,7 @@ The Swift implementation of `native_contract.md`.
 - `ios/on_device_tts/`: the Flutter plugin (`OnDeviceTtsPlugin`), as a Swift
   package for Flutter's Swift Package Manager integration. It only maps
   channel calls to `OnnxTtsEngine`.
-- `ios/OnDeviceTtsCore/`: the engine, as a Swift package without Flutter, so
+- `ios/on_device_tts/OnDeviceTtsCore/`: the engine, as a Swift package without Flutter, so
   it can be built and tested on its own. The plugin package depends on it.
   - `OnnxTtsEngine.swift`: model handles, `speak` (pipelining and playback),
     `synthesize`, `stop`, events.
@@ -32,7 +32,7 @@ On a Mac, with the model from
 (revision `3cadd1ee6394adea1bd021217a0e650ede09a323`) in `$MODEL_DIR`:
 
 ```sh
-cd packages/on_device_tts/ios/OnDeviceTtsCore
+cd packages/on_device_tts/ios/on_device_tts/OnDeviceTtsCore
 TEST_RUNNER_SUPERTONIC_MODEL_DIR="$MODEL_DIR" xcodebuild test \
   -scheme OnDeviceTtsCore -destination 'platform=iOS Simulator,name=iPhone 16'
 ```

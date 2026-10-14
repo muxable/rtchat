@@ -529,7 +529,7 @@ class SynthesisTests: XCTestCase {
         item.lang, item.voice, audio.pcm.count, item.numSamples, maxDiff, correlation, rmsRatio)
       print(line)
       report.append(line)
-      XCTAssertLessThan(maxDiff, 0.05, item.text)
+      XCTAssertLessThan(maxDiff, 1e-3, item.text)
       XCTAssertGreaterThan(correlation, 0.99, item.text)
       XCTAssertEqual(rmsRatio, 1, accuracy: 0.02, item.text)
     }

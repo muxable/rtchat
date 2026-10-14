@@ -2,7 +2,7 @@
 
 // The plugin's Swift core: text processing, the noise generator, the
 // Supertonic 3 pipeline on ONNX Runtime, and audio playback. The Flutter
-// plugin (`../on_device_tts.podspec`) compiles these same sources with
+// plugin (`../../on_device_tts.podspec`) compiles these same sources with
 // CocoaPods; this package exists so they can be tested on their own:
 //
 //   xcodebuild test -scheme OnDeviceTtsCore \

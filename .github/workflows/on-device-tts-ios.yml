@@ -68,7 +68,7 @@ jobs:
           EOF
 
       - name: Resolve the Swift package
-        working-directory: packages/on_device_tts/ios/OnDeviceTtsCore
+        working-directory: packages/on_device_tts/ios/on_device_tts/OnDeviceTtsCore
         run: |
           xcodebuild -resolvePackageDependencies
           xcodebuild -list
@@ -91,7 +91,7 @@ jobs:
           xcrun simctl list devices | grep "$udid"
 
       - name: Run the XCTests
-        working-directory: packages/on_device_tts/ios/OnDeviceTtsCore
+        working-directory: packages/on_device_tts/ios/on_device_tts/OnDeviceTtsCore
         run: |
           status=0
           TEST_RUNNER_SUPERTONIC_MODEL_DIR="$MODEL_DIR" xcodebuild test \
@@ -118,7 +118,7 @@ jobs:
 
       - name: Benchmark the execution providers
         continue-on-error: true
-        working-directory: packages/on_device_tts/ios/OnDeviceTtsCore
+        working-directory: packages/on_device_tts/ios/on_device_tts/OnDeviceTtsCore
         run: |
           echo '### Execution providers (iOS simulator on a macOS runner, not a device)' >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"

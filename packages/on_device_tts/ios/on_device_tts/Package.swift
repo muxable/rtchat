@@ -3,7 +3,8 @@
 import PackageDescription
 
 // The plugin for Flutter's Swift Package Manager integration. The engine is
-// the OnDeviceTtsCore package next to this one; on_device_tts.podspec builds
+// the OnDeviceTtsCore package inside this one (Flutter links only this
+// directory into the app, so it has to be inside); on_device_tts.podspec builds
 // the same sources with CocoaPods.
 let package = Package(
   name: "on_device_tts",
@@ -15,7 +16,7 @@ let package = Package(
   ],
   dependencies: [
     .package(name: "FlutterFramework", path: "../FlutterFramework"),
-    .package(name: "OnDeviceTtsCore", path: "../OnDeviceTtsCore"),
+    .package(name: "OnDeviceTtsCore", path: "OnDeviceTtsCore"),
   ],
   targets: [
     .target(

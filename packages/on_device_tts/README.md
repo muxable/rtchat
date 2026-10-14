@@ -70,7 +70,7 @@ cd <repo>/android && SUPERTONIC_PARITY_DIR=<reference dir> \
 
 ### Swift (iOS simulator)
 
-The engine's Swift code is the `ios/OnDeviceTtsCore` Swift package, with
+The engine's Swift code is the `ios/on_device_tts/OnDeviceTtsCore` Swift package, with
 XCTests that run real synthesis on the simulator, compare it with the
 reference and exercise `speak` and `stop`. On a Mac, see `doc/ios.md`; CI
 runs them in `.github/workflows/on-device-tts-ios.yml`.
