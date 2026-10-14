@@ -3,6 +3,7 @@ import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
 import { ClientCredentials } from "simple-oauth2";
 import { searchKickChannel } from "./kick";
+import { exactMatchesFirst } from "./search_results";
 import {
   getAccessToken,
   getAppAccessToken,
@@ -85,7 +86,7 @@ export const search = functions.https.onCall(async (data, context) => {
     }
   );
   const twitchJson = (await twitchResponse.json()) as any;
-  return [
+  const results = [
     ...(twitchJson.data || []).map((channel: any) => {
       return {
         provider: "twitch",
@@ -101,4 +102,5 @@ export const search = functions.https.onCall(async (data, context) => {
     }),
     ...(await kick),
   ];
+  return exactMatchesFirst(results, String(data));
 });
