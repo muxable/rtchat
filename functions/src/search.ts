@@ -1,6 +1,8 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
+import { defineSecret } from "firebase-functions/params";
+import { searchYouTubeChannel, YouTubeLookupCache } from "./youtube";
 import { ClientCredentials } from "simple-oauth2";
 import { searchKickChannel } from "./kick";
 import { exactMatchesFirst } from "./search_results";
@@ -10,6 +12,8 @@ import {
   TWITCH_CLIENT_ID,
   TWITCH_OAUTH_CONFIG,
 } from "./oauth";
+
+const youtubeApiKey = defineSecret("youtube-api-key");
 
 // Kick results are best effort: kick may not be configured or reachable.
 async function kickResults(query: string) {
@@ -24,7 +28,43 @@ async function kickResults(query: string) {
   }
 }
 
-export type SearchProvider = "twitch" | "kick";
+const YOUTUBE_LOOKUP_TTL_MS = 24 * 60 * 60 * 1000;
+
+const youtubeLookupCache: YouTubeLookupCache = {
+  async get(key) {
+    const doc = await admin
+      .firestore()
+      .collection("youtube-lookups")
+      .doc(encodeURIComponent(key))
+      .get();
+    const cachedAt = doc.get("cachedAt")?.toMillis?.() ?? 0;
+    if (!doc.exists || Date.now() - cachedAt > YOUTUBE_LOOKUP_TTL_MS) {
+      return undefined;
+    }
+    return doc.get("results");
+  },
+  async set(key, results) {
+    await admin
+      .firestore()
+      .collection("youtube-lookups")
+      .doc(encodeURIComponent(key))
+      .set({ results, cachedAt: admin.firestore.FieldValue.serverTimestamp() });
+  },
+};
+
+async function youtubeResults(query: string) {
+  try {
+    return await searchYouTubeChannel(
+      youtubeApiKey.value(),
+      query,
+      youtubeLookupCache
+    );
+  } catch {
+    return [];
+  }
+}
+
+export type SearchProvider = "twitch" | "kick" | "youtube";
 
 export interface SearchRequest {
   query: string;
@@ -32,13 +72,13 @@ export interface SearchRequest {
 }
 
 // The app sends {query, provider}. Older app versions send the raw query
-// string and expect twitch and kick results merged.
+// string and expect twitch and kick results merged, so they never get youtube.
 export function parseSearchRequest(data: unknown): SearchRequest {
   if (typeof data === "string") {
     return { query: data, providers: ["twitch", "kick"] };
   }
   const { query, provider } = (data ?? {}) as any;
-  if (provider !== "twitch" && provider !== "kick") {
+  if (provider !== "twitch" && provider !== "kick" && provider !== "youtube") {
     throw new functions.https.HttpsError(
       "invalid-argument",
       `unsupported provider: ${provider}`
@@ -122,18 +162,26 @@ async function twitchResults(query: string) {
   });
 }
 
-export const search = functions.https.onCall(async (data, context) => {
-  const { query, providers } = parseSearchRequest(data);
+export const search = functions
+  .runWith({ secrets: ["youtube-api-key"] })
+  .https.onCall(async (data, context) => {
+    const { query, providers } = parseSearchRequest(data);
 
-  if (context.auth != null && query == "" && providers.includes("twitch")) {
-    const followed = await followedTwitchChannels(context.auth.uid);
-    if (followed != null) {
-      return followed;
+    if (context.auth != null && query == "" && providers.includes("twitch")) {
+      const followed = await followedTwitchChannels(context.auth.uid);
+      if (followed != null) {
+        return followed;
+      }
     }
-  }
 
-  // kick only has exact slug lookups, so run them alongside twitch's search.
-  const kick = providers.includes("kick") ? kickResults(query) : [];
-  const twitch = providers.includes("twitch") ? await twitchResults(query) : [];
-  return exactMatchesFirst([...twitch, ...(await kick)], query);
-});
+    // kick and youtube only have exact lookups, so run them alongside twitch's search.
+    const kick = providers.includes("kick") ? kickResults(query) : [];
+    const youtube = providers.includes("youtube") ? youtubeResults(query) : [];
+    const twitch = providers.includes("twitch")
+      ? await twitchResults(query)
+      : [];
+    return exactMatchesFirst(
+      [...twitch, ...(await kick), ...(await youtube)],
+      query
+    );
+  });

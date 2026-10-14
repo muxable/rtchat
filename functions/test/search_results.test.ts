@@ -7,13 +7,29 @@ describe("exactMatchesFirst", () => {
       { provider: "twitch", login: "n3on_dj" },
       { provider: "twitch", login: "n3onz1" },
       { provider: "kick", login: "n3on" },
+      { provider: "youtube", login: "n3on" },
     ];
     expect(exactMatchesFirst(results, "N3on").map((r) => r.login)).toEqual([
+      "n3on",
       "n3on",
       "n3on_dj",
       "n3onz1",
     ]);
   });
+
+  it.each(["@N3on", "https://youtube.com/@N3on"])(
+    "prioritizes a YouTube handle in %s",
+    (query) => {
+      const results = [
+        { provider: "twitch", login: "n3on_dj" },
+        { provider: "youtube", login: "n3on" },
+      ];
+      expect(exactMatchesFirst(results, query)).toEqual([
+        results[1],
+        results[0],
+      ]);
+    }
+  );
 
   it("keeps the order of the other results", () => {
     const results = [

@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { fetch } = vi.hoisted(() => ({ fetch: vi.fn() }));
+const { fetch, secretValue } = vi.hoisted(() => ({
+  fetch: vi.fn(),
+  secretValue: vi.fn(),
+}));
 
 vi.mock("cross-fetch", () => ({ default: fetch }));
 vi.mock("simple-oauth2", () => ({
@@ -16,14 +19,26 @@ vi.mock("../src/oauth", () => ({
   getAccessToken: async () => "user-token",
   getAppAccessToken: async () => ({ token: { access_token: "kick-token" } }),
 }));
+vi.mock("firebase-functions/params", () => ({
+  defineSecret: () => ({ value: secretValue }),
+}));
 vi.mock("firebase-admin", () => ({
-  firestore: () => ({
-    collection: () => ({
-      doc: () => ({
-        get: async () => ({ data: () => ({ twitch: { id: "1234" } }) }),
+  firestore: Object.assign(
+    () => ({
+      collection: () => ({
+        doc: () => ({
+          // a profile, and a youtube lookup cache miss.
+          get: async () => ({
+            exists: false,
+            get: () => undefined,
+            data: () => ({ twitch: { id: "1234" } }),
+          }),
+          set: async () => {},
+        }),
       }),
     }),
-  }),
+    { FieldValue: { serverTimestamp: () => "now" } }
+  ),
 }));
 
 import { parseSearchRequest, search } from "../src/search";
@@ -35,7 +50,11 @@ const json = (body: any) => ({
   text: async () => JSON.stringify(body),
 });
 
+const youtubeChannelId = "UCabcdefghijklmnopqr12_-";
+
 beforeEach(() => {
+  secretValue.mockReset();
+  secretValue.mockReturnValue("youtube-key");
   fetch.mockReset();
   fetch.mockImplementation(async (url: string) => {
     if (url.startsWith("https://api.twitch.tv/helix/search/channels")) {
@@ -60,6 +79,17 @@ beforeEach(() => {
     }
     if (url.startsWith("https://api.kick.com/public/v1/users")) {
       return json({ data: [{ name: "xQc" }] });
+    }
+    if (url.startsWith("https://www.googleapis.com/youtube/v3/channels")) {
+      expect(new URL(url).searchParams.get("key")).toBe("youtube-key");
+      return json({
+        items: [
+          {
+            id: youtubeChannelId,
+            snippet: { title: "xQc", customUrl: "@xqc" },
+          },
+        ],
+      });
     }
     return json({ data: [] });
   });
@@ -90,14 +120,49 @@ describe("parseSearchRequest", () => {
     });
   });
 
+  it("searches youtube only when asked", () => {
+    expect(parseSearchRequest({ query: "xqc", provider: "youtube" })).toEqual({
+      query: "xqc",
+      providers: ["youtube"],
+    });
+  });
+
   it("rejects unknown providers", () => {
     expect(() =>
-      parseSearchRequest({ query: "xqc", provider: "youtube" })
+      parseSearchRequest({ query: "xqc", provider: "trovo" })
     ).toThrow();
   });
 });
 
 describe("search", () => {
+  it("binds the youtube secret", () => {
+    expect(
+      (search as any).__endpoint.secretEnvironmentVariables
+    ).toContainEqual({ key: "youtube-api-key" });
+  });
+
+  it("returns only youtube results for provider youtube", async () => {
+    const results = await run({ query: "@xqc", provider: "youtube" });
+    expect(results.map((r: any) => [r.provider, r.channelId])).toEqual([
+      ["youtube", youtubeChannelId],
+    ]);
+    expect(calledHosts()).toEqual(["www.googleapis.com"]);
+  });
+
+  it("returns nothing when youtube fails", async () => {
+    secretValue.mockImplementation(() => {
+      throw new Error("missing secret");
+    });
+    expect(await run({ query: "xqc", provider: "youtube" })).toEqual([]);
+  });
+
+  it("never searches youtube for other providers or legacy payloads", async () => {
+    await run({ query: "xqc", provider: "twitch" });
+    await run({ query: "xqc", provider: "kick" });
+    await run("xqc");
+    expect(calledHosts()).not.toContain("www.googleapis.com");
+  });
+
   it("returns only twitch results for provider twitch", async () => {
     const results = await run({ query: "xqc", provider: "twitch" });
     expect(results.map((r: any) => [r.provider, r.login])).toEqual([

@@ -6,6 +6,7 @@ import {
   removeIdleKickSubscriptions,
 } from "./kick_subscriptions";
 import { getTwitchLogin } from "./twitch";
+import { isYouTubeChannelId } from "./youtube";
 
 export const subscribe = functions.https.onCall(async (data, context) => {
   const provider = data?.provider;
@@ -61,9 +62,12 @@ export const subscribe = functions.https.onCall(async (data, context) => {
       functions.logger.info("updating last active time");
 
       // update the metadata for this channel to indicate the last active time.
-      await profile.ref.set({
-        lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
+      await profile.ref.set(
+        {
+          lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
 
       if (profile.get("twitch") && profile.get("twitch")["id"] == channelId) {
         functions.logger.info("checking eventsub subscriptions.");
@@ -74,9 +78,12 @@ export const subscribe = functions.https.onCall(async (data, context) => {
           .firestore()
           .collection("channels")
           .doc(`${provider}:${channelId}`)
-          .set({
-            lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
-          }, { merge: true });
+          .set(
+            {
+              lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+          );
 
         // if there are no messages logged, this is a new user.
         if (profile.get("lastActiveAt") == null) {
@@ -129,6 +136,22 @@ export const subscribe = functions.https.onCall(async (data, context) => {
       }
 
       return channel;
+    case "youtube": {
+      if (!isYouTubeChannelId(channelId)) {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "invalid channel"
+        );
+      }
+      await admin
+        .firestore()
+        .collection("assignments")
+        .doc(`youtube:${channelId}`)
+        .set({
+          subscribedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      return channelId;
+    }
     case "kick": {
       if (!/^\d+$/.test(String(channelId))) {
         throw new functions.https.HttpsError(
