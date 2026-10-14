@@ -260,5 +260,6 @@
   "kickResubscriptionEvent": "<b>{subscriberName}</b> odnowił subskrypcję na {months} mies.!",
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> podarował {count} subskrypcji!",
   "kicksGiftedEvent": "<b>{senderName}</b> wysłał {amount} Kicks!",
-  "signInWithKick": "Zaloguj się przez Kick"
+  "signInWithKick": "Zaloguj się przez Kick",
+  "textToSpeechTooManyMessages": "Jest zbyt wiele wiadomości. Zamiana tekstu na mowę wyłączona"
 }

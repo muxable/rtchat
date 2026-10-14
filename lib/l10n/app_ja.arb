@@ -260,5 +260,6 @@
   "kickResubscriptionEvent": "<b>{subscriberName}</b>さんが{months}か月目のサブスクを更新しました！",
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b>さんが{count}件のサブスクをギフトしました！",
   "kicksGiftedEvent": "<b>{senderName}</b>さんが{amount} Kicksを送りました！",
-  "signInWithKick": "Kickでサインイン"
+  "signInWithKick": "Kickでサインイン",
+  "textToSpeechTooManyMessages": "メッセージが多すぎます。読み上げをオフにしました"
 }

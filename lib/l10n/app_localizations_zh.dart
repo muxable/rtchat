@@ -1029,6 +1029,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get signInWithKick => '使用 Kick 登录';
+
+  @override
+  String get textToSpeechTooManyMessages => '消息太多了。文字转语音已关闭';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2056,4 +2059,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get signInWithKick => '使用 Kick 登入';
+
+  @override
+  String get textToSpeechTooManyMessages => '訊息太多了。文字轉語音已關閉';
 }

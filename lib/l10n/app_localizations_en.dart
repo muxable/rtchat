@@ -1052,4 +1052,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signInWithKick => 'Sign in with Kick';
+
+  @override
+  String get textToSpeechTooManyMessages =>
+      'There are too many messages. Text to speech disabled';
 }

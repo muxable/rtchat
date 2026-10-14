@@ -1071,4 +1071,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get signInWithKick => 'Se connecter avec Kick';
+
+  @override
+  String get textToSpeechTooManyMessages =>
+      'Il y a trop de messages. Synthèse vocale désactivée';
 }

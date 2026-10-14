@@ -1061,4 +1061,8 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get signInWithKick => 'Log in met Kick';
+
+  @override
+  String get textToSpeechTooManyMessages =>
+      'Er zijn te veel berichten. Tekst-naar-spraak uitgeschakeld';
 }

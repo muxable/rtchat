@@ -1067,4 +1067,8 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get signInWithKick => 'Увійти через Kick';
+
+  @override
+  String get textToSpeechTooManyMessages =>
+      'Забагато повідомлень. Озвучування тексту вимкнено';
 }

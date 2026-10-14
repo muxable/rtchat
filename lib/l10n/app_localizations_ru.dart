@@ -1070,4 +1070,8 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get signInWithKick => 'Войти через Kick';
+
+  @override
+  String get textToSpeechTooManyMessages =>
+      'Слишком много сообщений. Озвучивание текста отключено';
 }

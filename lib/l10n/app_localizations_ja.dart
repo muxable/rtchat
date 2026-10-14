@@ -1031,4 +1031,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get signInWithKick => 'Kickでサインイン';
+
+  @override
+  String get textToSpeechTooManyMessages => 'メッセージが多すぎます。読み上げをオフにしました';
 }

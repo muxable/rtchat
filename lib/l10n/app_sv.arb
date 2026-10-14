@@ -260,5 +260,6 @@
   "kickResubscriptionEvent": "<b>{subscriberName}</b> har förnyat sin prenumeration i {months} månader!",
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> har gett bort {count} prenumerationer!",
   "kicksGiftedEvent": "<b>{senderName}</b> skickade {amount} Kicks!",
-  "signInWithKick": "Logga in med Kick"
+  "signInWithKick": "Logga in med Kick",
+  "textToSpeechTooManyMessages": "Det finns för många meddelanden. Text till tal avstängt"
 }
