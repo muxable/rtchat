@@ -870,24 +870,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get discoModeDisabled => '🕺 Discoläge inaktiverat D:';
 
   @override
-  String get cloudTts => 'Moln-TTS';
-
-  @override
-  String get languages => 'Språk';
-
-  @override
-  String get voices => 'Röster';
-
-  @override
-  String get perViewerVoice => 'Röst per tittare';
-
-  @override
-  String get perViewerVoiceSubtitle => 'Känn igen dina tittare på rösten';
-
-  @override
-  String get randomVoice => 'Slumpmässig';
-
-  @override
   String get playSampleMessage => 'Spela upp exempelmeddelande';
 
   @override
@@ -895,9 +877,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => 'Tonhöjd';
-
-  @override
-  String get unlockHighQualityVoices => 'Lås upp röster av hög kvalitet';
 
   @override
   String get muteBots => 'Stäng av text-till-tal för bottar';
@@ -910,33 +889,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get subscribersOnly => 'Endast prenumeranter';
-
-  @override
-  String get storeNotAvailable => 'Butiken är inte tillgänglig';
-
-  @override
-  String get unavailable => 'Inte tillgänglig';
-
-  @override
-  String get subscribe => 'Prenumerera';
-
-  @override
-  String get pending => 'Väntar';
-
-  @override
-  String get subscribed => 'Prenumererar';
-
-  @override
-  String get pleaseSignIn => 'Logga in';
-
-  @override
-  String get searchLanguages => 'Sök språk';
-
-  @override
-  String get closeSearch => 'Stäng sökning';
-
-  @override
-  String get playSample => 'Spela upp exempel';
 
   @override
   String get fontSize => 'Teckenstorlek';
@@ -1132,4 +1084,41 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get youtubeChatEnded => 'Livechatten har avslutats';
+
+  @override
+  String get addChannel => 'Lägg till kanal';
+
+  @override
+  String get addToChat => 'Lägg till i chatten';
+
+  @override
+  String get defaultChannels => 'Standardkanaler';
+
+  @override
+  String get defaultChannelsSubtitle => 'Kanalerna som visas när appen öppnas';
+
+  @override
+  String get save => 'Spara';
+
+  @override
+  String get resetToMyChannel => 'Återställ till min kanal';
+
+  @override
+  String get inChat => 'I chatten';
+
+  @override
+  String get removeFromChat => 'Ta bort från chatten';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Ditt $provider-konto kan inte chatta här';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return 'Ersätt $channel';
+  }
+
+  @override
+  String get removeChannel => 'Ta bort';
 }

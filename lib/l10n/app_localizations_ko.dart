@@ -851,24 +851,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get discoModeDisabled => '🕺 디스코 모드 꺼짐 D:';
 
   @override
-  String get cloudTts => '클라우드 TTS';
-
-  @override
-  String get languages => '언어';
-
-  @override
-  String get voices => '음성';
-
-  @override
-  String get perViewerVoice => '시청자별 음성';
-
-  @override
-  String get perViewerVoiceSubtitle => '목소리로 시청자 구별하기';
-
-  @override
-  String get randomVoice => '무작위';
-
-  @override
   String get playSampleMessage => '샘플 메시지 재생';
 
   @override
@@ -876,9 +858,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => '음성 높낮이';
-
-  @override
-  String get unlockHighQualityVoices => '고품질 음성 잠금 해제';
 
   @override
   String get muteBots => '봇 메시지 음성 끄기';
@@ -891,33 +870,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get subscribersOnly => '구독자 전용';
-
-  @override
-  String get storeNotAvailable => '스토어를 사용할 수 없음';
-
-  @override
-  String get unavailable => '사용할 수 없음';
-
-  @override
-  String get subscribe => '구독';
-
-  @override
-  String get pending => '대기 중';
-
-  @override
-  String get subscribed => '구독함';
-
-  @override
-  String get pleaseSignIn => '로그인하세요';
-
-  @override
-  String get searchLanguages => '언어 검색';
-
-  @override
-  String get closeSearch => '검색 닫기';
-
-  @override
-  String get playSample => '샘플 재생';
 
   @override
   String get fontSize => '글꼴 크기';
@@ -1108,4 +1060,41 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get youtubeChatEnded => '라이브 채팅이 종료되었습니다';
+
+  @override
+  String get addChannel => '채널 추가';
+
+  @override
+  String get addToChat => '채팅에 추가';
+
+  @override
+  String get defaultChannels => '기본 채널';
+
+  @override
+  String get defaultChannelsSubtitle => '앱을 열 때 표시되는 채널';
+
+  @override
+  String get save => '저장';
+
+  @override
+  String get resetToMyChannel => '내 채널로 재설정';
+
+  @override
+  String get inChat => '채팅에 표시 중';
+
+  @override
+  String get removeFromChat => '채팅에서 제거';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return '$provider 계정으로는 여기서 채팅할 수 없습니다';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return '$channel 대체';
+  }
+
+  @override
+  String get removeChannel => '삭제';
 }

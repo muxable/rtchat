@@ -1,0 +1,17 @@
+name: Install Twitch CLI
+description: Installs the pinned Twitch CLI release and points TWITCH_CLI at it.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        VERSION: 1.1.24
+        SHA256: 9cae4e9cd52e66fb4dda6b633b3276a4450a28a83dea7a4651a42a67372eed8f
+      run: |
+        dir="$RUNNER_TEMP/twitch-cli"
+        mkdir -p "$dir"
+        curl -sSLf -o "$dir/cli.tar.gz" "https://github.com/twitchdev/twitch-cli/releases/download/v$VERSION/twitch-cli_${VERSION}_Linux_x86_64.tar.gz"
+        echo "$SHA256  $dir/cli.tar.gz" | sha256sum -c -
+        tar -xzf "$dir/cli.tar.gz" -C "$dir" --strip-components=1
+        echo "TWITCH_CLI=$dir/twitch" >> "$GITHUB_ENV"
+        "$dir/twitch" version

@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:rtchat/components/channel_attribution.dart';
 import 'package:rtchat/main.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
 import 'package:rtchat/tts_foreground_service.dart';
@@ -27,6 +28,28 @@ Map<String, dynamic> chatMessage(String text, DateTime timestamp) => {
         'color': '#00FF00',
       },
       'annotations': {'isAction': false, 'isFirstTimeChatter': false},
+    };
+
+const kickChannelId = '5678';
+const kickChannelPath = 'channels/kick:$kickChannelId/messages';
+
+/// A Kick chat message as the backend's webhook stores it.
+Map<String, dynamic> kickChatMessage(String text, DateTime timestamp) => {
+      'type': 'kick.chat.message.sent',
+      'channelId': 'kick:$kickChannelId',
+      'timestamp': timestamp,
+      'event': {
+        'message_id': text,
+        'broadcaster': {'user_id': int.parse(kickChannelId)},
+        'sender': {
+          'user_id': 99,
+          'username': 'KickViewer',
+          'channel_slug': 'kickviewer',
+          'identity': {'username_color': '#53FC18', 'badges': []},
+        },
+        'content': text,
+        'emotes': [],
+      },
     };
 
 Finder findRichText(String text) => find.byWidgetPredicate(
@@ -169,5 +192,62 @@ void main() {
 
     await tester.tap(toggle);
     await waitFor(false);
+  });
+
+  testWidgets('signed out users can view twitch and kick chat together',
+      (tester) async {
+    // default channels are saved on the device and need no account.
+    final prefs = await freshPrefs();
+    await prefs.setString(
+        'views',
+        jsonEncode({
+          'defaultChannels': [
+            {
+              'provider': 'twitch',
+              'channelId': channelId,
+              'displayName': 'e2estreamer'
+            },
+            {
+              'provider': 'kick',
+              'channelId': kickChannelId,
+              'displayName': 'E2EKick'
+            },
+          ],
+        }));
+    final start = DateTime.now().subtract(const Duration(minutes: 5));
+    await seeder.setDocument(
+        '$channelPath/t1', chatMessage('twitch first', start));
+    await seeder.setDocument('$kickChannelPath/k1',
+        kickChatMessage('kick second', start.add(const Duration(minutes: 1))));
+    await seeder.setDocument('$channelPath/t2',
+        chatMessage('twitch third', start.add(const Duration(minutes: 2))));
+
+    await tester.pumpWidget(App(prefs: prefs));
+
+    await pumpUntil(tester, find.text('/e2estreamer +1'));
+    await pumpUntil(tester, findRichText('kick second'));
+    await pumpUntil(tester, findRichText('twitch first'));
+    await pumpUntil(tester, findRichText('twitch third'));
+
+    // messages are merged in time order (the chat list is bottom-up).
+    final positions = [
+      'twitch first',
+      'kick second',
+      'twitch third',
+    ].map((text) => tester.getCenter(findRichText(text).first).dy).toList();
+    expect(positions[0], lessThan(positions[1]));
+    expect(positions[1], lessThan(positions[2]));
+
+    // each message shows where it came from.
+    expect(find.byType(ChannelAttribution), findsWidgets);
+
+    // clearing twitch chat doesn't clear kick chat.
+    await seeder.setDocument('$channelPath/clear', {
+      'type': 'clear',
+      'channelId': 'twitch:$channelId',
+      'timestamp': DateTime.now(),
+    });
+    await pumpUntil(tester, findRichText('twitch first'), found: false);
+    expect(findRichText('kick second'), findsOneWidget);
   });
 }

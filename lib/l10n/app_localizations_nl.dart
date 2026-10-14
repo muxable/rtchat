@@ -874,24 +874,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get discoModeDisabled => '🕺 Discomodus uitgeschakeld D:';
 
   @override
-  String get cloudTts => 'Cloud-TTS';
-
-  @override
-  String get languages => 'Talen';
-
-  @override
-  String get voices => 'Stemmen';
-
-  @override
-  String get perViewerVoice => 'Stem per kijker';
-
-  @override
-  String get perViewerVoiceSubtitle => 'Herken je kijkers aan hun stem';
-
-  @override
-  String get randomVoice => 'Willekeurig';
-
-  @override
   String get playSampleMessage => 'Voorbeeldbericht afspelen';
 
   @override
@@ -899,10 +881,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => 'Toonhoogte';
-
-  @override
-  String get unlockHighQualityVoices =>
-      'Stemmen van hoge kwaliteit ontgrendelen';
 
   @override
   String get muteBots => 'Tekst-naar-spraak dempen voor bots';
@@ -915,33 +893,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get subscribersOnly => 'Alleen abonnees';
-
-  @override
-  String get storeNotAvailable => 'Winkel niet beschikbaar';
-
-  @override
-  String get unavailable => 'Niet beschikbaar';
-
-  @override
-  String get subscribe => 'Abonneren';
-
-  @override
-  String get pending => 'In behandeling';
-
-  @override
-  String get subscribed => 'Geabonneerd';
-
-  @override
-  String get pleaseSignIn => 'Log in';
-
-  @override
-  String get searchLanguages => 'Talen zoeken';
-
-  @override
-  String get closeSearch => 'Zoeken sluiten';
-
-  @override
-  String get playSample => 'Voorbeeld afspelen';
 
   @override
   String get fontSize => 'Lettergrootte';
@@ -1140,4 +1091,42 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get youtubeChatEnded => 'De livechat is afgelopen';
+
+  @override
+  String get addChannel => 'Kanaal toevoegen';
+
+  @override
+  String get addToChat => 'Toevoegen aan chat';
+
+  @override
+  String get defaultChannels => 'Standaardkanalen';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'De kanalen die worden getoond wanneer de app opent';
+
+  @override
+  String get save => 'Opslaan';
+
+  @override
+  String get resetToMyChannel => 'Terugzetten naar mijn kanaal';
+
+  @override
+  String get inChat => 'In de chat';
+
+  @override
+  String get removeFromChat => 'Uit de chat verwijderen';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Je $provider-account kan hier niet chatten';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return '$channel vervangen';
+  }
+
+  @override
+  String get removeChannel => 'Verwijderen';
 }

@@ -14,6 +14,29 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.19"
+          cache-dependency-path: agent/go.sum
+
+      - uses: ./.github/actions/twitch-cli
+
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+
+      - run: go vet ./...
+
+      - run: go test -race ./...
+
   build:
     runs-on: ubuntu-latest
     permissions:
@@ -25,10 +48,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -36,7 +59,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v5
         with:
           images: ghcr.io/muxable/rtchat-agent
           tags: |
@@ -46,7 +69,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
           
       - name: Build and push Docker image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: ./agent
           push: true
@@ -61,27 +84,37 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    needs: build
+    needs: [test, build]
     concurrency:
       group: deploy
       cancel-in-progress: true
     environment:
       name: agent
-      url: https://console.cloud.google.com/compute/instanceGroups/details/us-central1-c/agent-small-us-central1?project=rtchat-47692
+      url: https://console.cloud.google.com/compute/instanceGroups/details/us-west1/agent-small-us-west1?project=rtchat-47692
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         
-      - uses: google-github-actions/auth@v1
+      - uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: 'projects/832669896677/locations/global/workloadIdentityPools/github-actions/providers/github-actions'
           service_account: 'github-action-356868763@rtchat-47692.iam.gserviceaccount.com'
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v0
+        uses: google-github-actions/setup-gcloud@v2
 
       - name: Deploy to GCE
         id: deploy
+        # the regional group spans three zones, so surge must be 0 or >= 3.
+        # every instance joins every channel, so replacing them with surge
+        # keeps chat flowing during the rollout.
+        # instances only pass the health check once their initial channels are
+        # joined, which takes a few minutes, so autohealing must wait longer.
         run: |
-          gcloud compute instance-groups managed rolling-action start-update agent-small-us-central1 --project=rtchat-47692 --type='proactive' --max-surge=1 --max-unavailable=1 --minimal-action='replace' --replacement-method='substitute' --version=template=https://www.googleapis.com/compute/beta/projects/rtchat-47692/global/instanceTemplates/agent-e2-small --zone=us-central1-c
+          gcloud compute instance-groups managed update agent-small-us-west1 \
+            --project=rtchat-47692 --region=us-west1 \
+            --health-check=agent --initial-delay=600
+          gcloud compute instance-groups managed rolling-action replace agent-small-us-west1 \
+            --project=rtchat-47692 --region=us-west1 \
+            --max-surge=3 --max-unavailable=0

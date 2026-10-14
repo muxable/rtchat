@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/channel_attribution.dart';
 import 'package:rtchat/components/chat_history/message.dart';
 import 'package:rtchat/components/chat_history/separator.dart';
 import 'package:rtchat/components/connection_status.dart';
@@ -345,20 +346,13 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                             // return Container() if the message is not the first and a merged model
                             // if it is the first. keep in mind that the list is reversed.
                             if (message is TwitchFollowEventModel) {
-                              if (index != messages.length - 1 &&
-                                  messages[index + 1]
-                                      is TwitchFollowEventModel) {
+                              final merged =
+                                  TwitchFollowEventModel.mergeAdjacent(
+                                      messages, index);
+                              if (merged == null) {
                                 return Container();
                               }
-                              // find the last TwitchFollowEventModel
-                              final lastIndex = messages.lastIndexWhere(
-                                  (element) =>
-                                      element is! TwitchFollowEventModel,
-                                  index);
-                              message = TwitchFollowEventModel.merged(messages
-                                  .sublist(lastIndex + 1, index + 1)
-                                  .reversed
-                                  .toList());
+                              message = merged;
                             }
                             // twitch will often send multiple subscription messages in a row.
                             // if we see them, suppress the less informative ones.
@@ -387,9 +381,17 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                             }
                             // in a merged view, actions like shoutouts go to
                             // the channel the message came from.
-                            final messageWidget = ChatHistoryMessage(
+                            final source = message.channel;
+                            final chatMessage = ChatHistoryMessage(
                                 message: message,
-                                channel: message.channel ?? widget.channel);
+                                channel: source ?? widget.channel);
+                            final Widget messageWidget =
+                                messagesModel.channels.length > 1 &&
+                                        source != null
+                                    ? ChannelAttribution(
+                                        provider: source.provider,
+                                        child: chatMessage)
+                                    : chatMessage;
                             final showSeparator = messagesModel.separators
                                 .contains(messages.length - index - 1);
                             // only show separators after the first 50.

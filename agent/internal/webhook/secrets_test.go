@@ -27,7 +27,7 @@ func TestLoadSecretsMissing(t *testing.T) {
 		"projects/rtchat-47692/secrets/kick-client-secret/versions/latest",
 		"projects/rtchat-47692/secrets/twitch-eventsub-secret/versions/latest",
 		"projects/rtchat-47692/secrets/alchemy-signing-key/versions/latest",
-		"projects/rtchat-47692/secrets/alchemy-eth-signing-key/versions/latest",
+		"projects/rtchat-47692/secrets/alchemy-matic-webhook-id/versions/latest",
 	}
 	if !reflect.DeepEqual(names, want) {
 		t.Fatalf("got resource names %v, want %v", names, want)
@@ -46,13 +46,13 @@ func TestLoadSecretsPartial(t *testing.T) {
 			return "eventsub", nil
 		case "projects/rtchat-47692/secrets/alchemy-signing-key/versions/latest":
 			return "discard on error", errors.New("permission denied")
-		case "projects/rtchat-47692/secrets/alchemy-eth-signing-key/versions/latest":
-			return "eth", nil
+		case "projects/rtchat-47692/secrets/alchemy-matic-webhook-id/versions/latest":
+			return "matic", nil
 		default:
 			return "", errors.New("secret not found")
 		}
 	})
-	want := Secrets{KickClientID: "kick", TwitchEventSubSecret: "eventsub", AlchemyEthSigningKey: "eth"}
+	want := Secrets{KickClientID: "kick", TwitchEventSubSecret: "eventsub", AlchemyMaticWebhookID: "matic"}
 	if got != want {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}
