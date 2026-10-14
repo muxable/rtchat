@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -52,7 +53,8 @@ void main() {
   late TtsModel model;
 
   setUp(() {
-    model = TtsModel.fromJson({});
+    // tests run as android; these cover the system tts engine path.
+    model = TtsModel.fromJson({})..synthesizeInProcess = false;
   });
 
   group('getVocalization of chat messages', () {
@@ -450,6 +452,43 @@ void main() {
       expect(spoken, contains('User1 said: message 1'));
       expect(spoken, contains('message 11'));
       expect(model.mode, TtsMode.enabled);
+    });
+  });
+
+  group('in-process audio', () {
+    test('synthesizes to a file and plays it in the app', () async {
+      final calls = <MethodCall>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(const MethodChannel('flutter_tts'),
+              (call) async {
+        calls.add(call);
+        return 1;
+      });
+      addTearDown(() => TestDefaultBinaryMessengerBinding
+          .instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+              const MethodChannel('flutter_tts'), (call) async => null));
+      final dir = await Directory.systemTemp.createTemp('tts');
+      addTearDown(() => dir.delete(recursive: true));
+      final played = <String>[];
+      model
+        ..synthesizeInProcess = true
+        ..tempDirectory = (() async => dir)
+        ..playFile = ((path) async => played.add(path));
+
+      model.setMode(l10n, TtsMode.enabled);
+      model.say(l10n, createMessage('hello', messageId: 'hello'));
+      await pumpEventQueue();
+
+      final synthesized =
+          calls.where((c) => c.method == 'synthesizeToFile').toList();
+      expect(synthesized.map((c) => c.arguments['text']),
+          ['Text to speech enabled', 'Muxfd said: hello']);
+      expect(synthesized.every((c) => c.arguments['isFullPath'] == true),
+          isTrue);
+      expect(played, synthesized.map((c) => c.arguments['fileName']));
+      expect(played.every((path) => path.startsWith(dir.path)), isTrue);
+      expect(calls.where((c) => c.method == 'speak'), isEmpty);
     });
   });
 }

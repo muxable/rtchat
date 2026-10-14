@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
@@ -47,6 +48,23 @@ class TtsModel extends ChangeNotifier {
         IosTextToSpeechAudioMode.voicePrompt);
 
   final audioPlayer = AudioPlayer();
+
+  /// On Android, speech is synthesized to a file and played by the app's own
+  /// player instead of the system tts engine. The engine is a separate app
+  /// that our foreground service doesn't cover, so android flags its audio to
+  /// be muted when we're in the background.
+  @visibleForTesting
+  bool synthesizeInProcess =
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  @visibleForTesting
+  Future<Directory> Function() tempDirectory = getTemporaryDirectory;
+
+  @visibleForTesting
+  late Future<void> Function(String path) playFile =
+      (path) => _playToEnd(() => audioPlayer.setFilePath(path));
+
+  var _utteranceCount = 0;
   Future<void> _previousUtterance = Future.value();
   final Set<String> _pending = {};
 
@@ -473,8 +491,12 @@ class TtsModel extends ChangeNotifier {
         try {
           await _tts.setSpeechRate(_speed);
           await _tts.setPitch(_pitch);
-          await _tts.awaitSpeakCompletion(true);
-          await _tts.speak(vocalization);
+          if (synthesizeInProcess) {
+            await _speakInProcess(vocalization);
+          } else {
+            await _tts.awaitSpeakCompletion(true);
+            await _tts.speak(vocalization);
+          }
         } catch (e, st) {
           FirebaseCrashlytics.instance.recordError(e, st);
         }
@@ -500,9 +522,40 @@ class TtsModel extends ChangeNotifier {
           "pitch": pitch ?? 0,
         });
         final bytes = const Base64Decoder().convert(response.data);
-        await audioPlayer.setAudioSource(BytesAudioSource(bytes));
-        await audioPlayer.play();
-        await Future.delayed(audioPlayer.duration ?? const Duration());
+        await _playToEnd(
+            () => audioPlayer.setAudioSource(BytesAudioSource(bytes)));
+      }
+    }
+  }
+
+  /// Plays one utterance and waits for it to finish. just_audio's play()
+  /// returns immediately while the player is still "playing" from a previous
+  /// utterance, so wait for completion explicitly and stop afterwards.
+  Future<void> _playToEnd(Future<Duration?> Function() load) async {
+    final duration = await load().timeout(const Duration(seconds: 10));
+    final done = audioPlayer.processingStateStream
+        .firstWhere((state) => state == ProcessingState.completed);
+    audioPlayer.play();
+    try {
+      await done.timeout((duration ?? const Duration(seconds: 30)) +
+          const Duration(seconds: 5));
+    } finally {
+      await audioPlayer.stop();
+    }
+  }
+
+  Future<void> _speakInProcess(String vocalization) async {
+    final dir = await tempDirectory();
+    final file = File('${dir.path}/tts-${_utteranceCount++ % 2}.wav');
+    await _tts.awaitSynthCompletion(true);
+    await _tts.synthesizeToFile(vocalization, file.path, true);
+    try {
+      await playFile(file.path);
+    } finally {
+      try {
+        await file.delete();
+      } on FileSystemException {
+        // already gone.
       }
     }
   }
@@ -515,9 +568,7 @@ class TtsModel extends ChangeNotifier {
         force: true);
     // cut off the current utterance; everything queued behind it is dropped.
     _tts.stop().catchError((_) => null);
-    if (_isCloudTtsEnabled) {
-      audioPlayer.stop();
-    }
+    audioPlayer.stop();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });
