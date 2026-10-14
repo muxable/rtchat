@@ -110,7 +110,10 @@ class StyleModel extends ChangeNotifier {
 
   String getDisplayName(ChatUser user) {
     final author = user.displayName ?? user.login;
-    if (author.toLowerCase() != user.login && isLoginShown) {
+    // kick slugs swap underscores for dashes, which isn't worth showing.
+    if (author.toLowerCase().replaceAll('_', '-') !=
+            user.login.replaceAll('_', '-') &&
+        isLoginShown) {
       // this is an internationalized name.
       return "${user.displayName} (${user.login})";
     }
