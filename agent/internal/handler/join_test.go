@@ -84,61 +84,24 @@ func TestAuthenticatedBindsBeforeConnect(t *testing.T) {
 	}
 }
 
-func TestFailedSendJoinClosesReader(t *testing.T) {
+func TestAuthenticatedJoinOpensOneConnection(t *testing.T) {
 	h := testAgent()
-	c, done := activeChat()
+	c, _ := activeChat()
 	defer c.Disconnect()
-	attempt := 0
-	want := errors.New("send login failed")
-	h.newChat = func(string, string) chatConnection {
-		attempt++
-		if attempt == 1 {
-			return c
-		}
-		return &fakeChat{connect: func() error { return want }}
-	}
-	h.bindChat = func(chatConnection) {}
-	_, err := h.JoinAsUser(testRequest(), "uid")
-	if !errors.Is(err, want) {
-		t.Fatal(err)
-	}
-	select {
-	case <-done:
-	default:
-		t.Fatal("reader leaked after send connection failed")
-	}
-}
-
-func TestReconnectOnlyUpdatesCorrectClient(t *testing.T) {
-	h := testAgent()
-	reader, _ := activeChat()
-	sender, _ := activeChat()
-	defer reader.Disconnect()
-	defer sender.Disconnect()
-	attempt := 0
-	h.newChat = func(string, string) chatConnection {
-		attempt++
-		if attempt == 1 {
-			return reader
-		}
-		return sender
-	}
+	opened := 0
+	h.newChat = func(string, string) chatConnection { opened++; return c }
 	h.bindChat = func(chatConnection) {}
 	client, err := h.JoinAsUser(testRequest(), "uid")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer client.Close()
-	sender.onReconnect(twitch.ReconnectMessage{})
-	if sender.token != "oauth:fresh" || reader.token != "" {
-		t.Errorf("sender token=%q reader token=%q", sender.token, reader.token)
+	if opened != 1 {
+		t.Fatalf("opened %d connections; sends go through helix", opened)
 	}
-	if sender.connects != 1 {
-		t.Error("reconnect callback called Connect; IRC library already reconnects")
-	}
-	reader.onReconnect(twitch.ReconnectMessage{})
-	if reader.token != "oauth:fresh" || reader.connects != 1 {
-		t.Errorf("reader token=%q connects=%d", reader.token, reader.connects)
+	c.onReconnect(twitch.ReconnectMessage{})
+	if c.token != "oauth:fresh" || c.connects != 1 {
+		t.Errorf("token=%q connects=%d", c.token, c.connects)
 	}
 }
 

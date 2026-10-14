@@ -33,8 +33,6 @@ type chatConnection interface {
 	Join(...string)
 	Connect() error
 	Disconnect() error
-	Say(string, string)
-	Reply(string, string, string)
 	OnReconnectMessage(func(twitch.ReconnectMessage))
 	SetIRCToken(string)
 }
@@ -144,28 +142,13 @@ func (h *TwitchAgent) bindEvents(client *twitch.Client) {
 
 type AuthenticatedTwitchClient struct {
 	client chatConnection
-
-	sendClient chatConnection
-}
-
-func (c *AuthenticatedTwitchClient) Say(channel string, message string) {
-	c.sendClient.Say(channel, message)
-}
-
-func (c *AuthenticatedTwitchClient) Reply(channel string, parentMessageId string, message string) {
-	c.sendClient.Reply(channel, parentMessageId, message)
 }
 
 func (c *AuthenticatedTwitchClient) Close() error {
-	var first error
-	for _, client := range []chatConnection{c.client, c.sendClient} {
-		if client != nil {
-			if err := client.Disconnect(); err != nil && first == nil {
-				first = err
-			}
-		}
+	if c.client == nil {
+		return nil
 	}
-	return first
+	return c.client.Disconnect()
 }
 
 type AnonymousTwitchClient struct {
@@ -212,15 +195,7 @@ func (h *TwitchAgent) JoinAsUser(r *agent.Request, asUserID string) (io.Closer, 
 	}
 
 	if login != "realtimechat" {
-		sendClient := h.chat(login, fmt.Sprintf("oauth:%s", token.AccessToken))
-
-		installReconnect(sendClient, authProvider)
-		if err := joinWithTimeout(sendClient, r.Channel(), 5*time.Second); err != nil {
-			_ = client.Disconnect()
-			return nil, err
-		}
-
-		return &AuthenticatedTwitchClient{client: client, sendClient: sendClient}, nil
+		return &AuthenticatedTwitchClient{client: client}, nil
 	}
 	return &AnonymousTwitchClient{client: client}, nil
 }
