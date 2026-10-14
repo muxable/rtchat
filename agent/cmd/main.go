@@ -135,6 +135,7 @@ func main() {
 		secrets := webhook.LoadSecrets(ctx, nil)
 		cancel()
 		server := webhook.NewServer(secrets)
+		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
 		server.Mux.Handle("/", recycleHandler)
 		zap.L().Info("starting http server")
 		port := os.Getenv("PORT")
