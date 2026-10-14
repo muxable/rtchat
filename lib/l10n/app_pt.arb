@@ -261,6 +261,7 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> presenteou {count} inscrições!",
   "kicksGiftedEvent": "<b>{senderName}</b> enviou {amount} Kicks!",
   "signInWithKick": "Faça login com o Kick",
+  "signInWithYouTube": "Faça login com o YouTube",
   "textToSpeechTooManyMessages": "Há mensagens demais. Texto para fala desativado",
   "turnOffTextToSpeech": "Desativar",
   "youtubeSuperChatEvent": "<b>{name}</b> enviou um Super Chat de {amount}!",

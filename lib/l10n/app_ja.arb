@@ -261,6 +261,7 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b>さんが{count}件のサブスクをギフトしました！",
   "kicksGiftedEvent": "<b>{senderName}</b>さんが{amount} Kicksを送りました！",
   "signInWithKick": "Kickでサインイン",
+  "signInWithYouTube": "YouTubeでサインイン",
   "textToSpeechTooManyMessages": "メッセージが多すぎます。読み上げをオフにしました",
   "turnOffTextToSpeech": "オフにする",
   "youtubeSuperChatEvent": "<b>{name}</b> さんが {amount} の Super Chat を送りました！",

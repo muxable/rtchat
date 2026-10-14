@@ -1,5 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/channels.dart';
 
 class ActionsAdapter {
@@ -7,9 +8,15 @@ class ActionsAdapter {
 
   ActionsAdapter._({required this.functions});
 
+  @visibleForTesting
+  ActionsAdapter.withFunctions(this.functions);
+
   static ActionsAdapter get instance =>
       _instance ??= ActionsAdapter._(functions: FirebaseFunctions.instance);
   static ActionsAdapter? _instance;
+
+  @visibleForTesting
+  static set instance(ActionsAdapter? adapter) => _instance = adapter;
 
   Future<String?> send(Channel channel, String message) async {
     final call = functions.httpsCallable('send');
@@ -22,6 +29,10 @@ class ActionsAdapter {
         });
         return result.data;
       } catch (e) {
+        final error = userFacingError(e);
+        if (error != null) {
+          return error;
+        }
         FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
       }
     }
@@ -91,4 +102,24 @@ class ActionsAdapter {
       "channelId": channel.channelId,
     });
   }
+}
+
+/// Callable errors whose message is written for the user, like YouTube's quota
+/// running out or the chat having ended. Retrying them only repeats the error.
+const _userFacingErrorCodes = {
+  'failed-precondition',
+  'invalid-argument',
+  'not-found',
+  'permission-denied',
+  'resource-exhausted',
+  'unauthenticated',
+};
+
+/// The message to show for [error], or null if it isn't meant for the user.
+String? userFacingError(Object error) {
+  if (error is FirebaseFunctionsException &&
+      _userFacingErrorCodes.contains(error.code)) {
+    return error.message ?? error.code;
+  }
+  return null;
 }

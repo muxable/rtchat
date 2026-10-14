@@ -261,6 +261,7 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> подарил подписки: {count}!",
   "kicksGiftedEvent": "<b>{senderName}</b> отправил {amount} Kicks!",
   "signInWithKick": "Войти через Kick",
+  "signInWithYouTube": "Войти через YouTube",
   "textToSpeechTooManyMessages": "Слишком много сообщений. Озвучивание текста отключено",
   "turnOffTextToSpeech": "Выключить",
   "youtubeSuperChatEvent": "<b>{name}</b> отправил(а) Super Chat на {amount}!",

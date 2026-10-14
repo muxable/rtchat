@@ -261,6 +261,7 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> 赠送了 {count} 个订阅！",
   "kicksGiftedEvent": "<b>{senderName}</b> 送出了 {amount} Kicks！",
   "signInWithKick": "使用 Kick 登录",
+  "signInWithYouTube": "使用 YouTube 登录",
   "textToSpeechTooManyMessages": "消息太多了。文字转语音已关闭",
   "turnOffTextToSpeech": "关闭",
   "youtubeSuperChatEvent": "<b>{name}</b> 发送了 {amount} 的 Super Chat！",
