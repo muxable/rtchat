@@ -1,0 +1,260 @@
+{
+  "one_run_per_launch": true,
+  "runs": [
+    {
+      "model": "kitten-nano-en-v0_8-int8",
+      "threads": 1
+    },
+    {
+      "model": "kitten-nano-en-v0_8-int8",
+      "threads": 2
+    },
+    {
+      "model": "kitten-nano-en-v0_8-int8",
+      "threads": 4
+    },
+    {
+      "model": "kitten-nano-en-v0_8-fp32",
+      "threads": 2
+    },
+    {
+      "model": "kitten-micro-en-v0_8",
+      "threads": 2
+    },
+    {
+      "model": "kitten-mini-en-v0_8",
+      "threads": 2
+    },
+    {
+      "model": "kokoro-int8-multi-lang-v1_1",
+      "threads": 2
+    },
+    {
+      "model": "kokoro-int8-multi-lang-v1_1",
+      "threads": 4
+    },
+    {
+      "model": "kokoro-multi-lang-v1_1",
+      "threads": 2
+    },
+    {
+      "model": "kokoro-int8-en-v0_19",
+      "threads": 2
+    },
+    {
+      "model": "vits-piper-en_US-libritts_r-medium",
+      "threads": 1
+    },
+    {
+      "model": "vits-piper-en_US-libritts_r-medium",
+      "threads": 2
+    },
+    {
+      "model": "vits-piper-en_US-libritts_r-medium",
+      "threads": 4
+    },
+    {
+      "model": "vits-piper-en_US-libritts_r-medium-int8",
+      "threads": 2
+    },
+    {
+      "model": "sherpa-onnx-supertonic-3-tts-int8-2026-05-11",
+      "threads": 2
+    },
+    {
+      "model": "sherpa-onnx-supertonic-3-tts-int8-2026-05-11",
+      "threads": 4
+    },
+    {
+      "model": "vits-piper-ru_RU-irina-medium",
+      "threads": 2,
+      "corpus": "ru",
+      "lang": "ru"
+    },
+    {
+      "model": "vits-piper-ru_RU-irina-medium-int8",
+      "threads": 2,
+      "corpus": "ru",
+      "lang": "ru"
+    },
+    {
+      "model": "sherpa-onnx-supertonic-3-tts-int8-2026-05-11",
+      "threads": 2,
+      "corpus": "ru",
+      "lang": "ru"
+    },
+    {
+      "model": "kitten-nano-en-v0_8-int8",
+      "threads": 2,
+      "provider": "xnnpack",
+      "limit": 20
+    },
+    {
+      "model": "kitten-nano-en-v0_8-fp32",
+      "threads": 2,
+      "provider": "xnnpack",
+      "limit": 20
+    },
+    {
+      "model": "vits-piper-en_US-libritts_r-medium",
+      "threads": 2,
+      "provider": "xnnpack",
+      "limit": 20
+    },
+    {
+      "model": "kokoro-int8-multi-lang-v1_1",
+      "threads": 2,
+      "provider": "xnnpack",
+      "limit": 20
+    },
+    {
+      "model": "kitten-nano-en-v0_8-int8",
+      "threads": 2,
+      "provider": "nnapi",
+      "limit": 20
+    },
+    {
+      "model": "kitten-nano-en-v0_8-fp32",
+      "threads": 2,
+      "provider": "nnapi",
+      "limit": 20
+    },
+    {
+      "model": "vits-piper-en_US-libritts_r-medium",
+      "threads": 2,
+      "provider": "nnapi",
+      "limit": 20
+    },
+    {
+      "model": "kokoro-int8-multi-lang-v1_1",
+      "threads": 2,
+      "provider": "nnapi",
+      "limit": 20
+    },
+    {
+      "model": "kitten-nano-en-v0_8-int8",
+      "threads": 2,
+      "corpus": "streaming_en"
+    },
+    {
+      "model": "kokoro-int8-multi-lang-v1_1",
+      "threads": 2,
+      "corpus": "streaming_en"
+    },
+    {
+      "model": "vits-piper-en_US-libritts_r-medium",
+      "threads": 2,
+      "corpus": "streaming_en"
+    },
+    {
+      "model": "sherpa-onnx-supertonic-3-tts-int8-2026-05-11",
+      "threads": 2,
+      "corpus": "streaming_en"
+    },
+    {
+      "model": "kitten-nano-en-v0_8-fp32",
+      "threads": 2,
+      "provider": "cpu",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "kitten-nano-en-v0_8-fp32",
+      "threads": 2,
+      "provider": "xnnpack",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "kitten-nano-en-v0_8-fp32",
+      "threads": 2,
+      "provider": "nnapi",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "kitten-nano-en-v0_8-int8",
+      "threads": 2,
+      "provider": "cpu",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "kitten-nano-en-v0_8-int8",
+      "threads": 2,
+      "provider": "xnnpack",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "kitten-nano-en-v0_8-int8",
+      "threads": 2,
+      "provider": "nnapi",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "vits-piper-en_US-libritts_r-medium",
+      "threads": 2,
+      "provider": "cpu",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "vits-piper-en_US-libritts_r-medium",
+      "threads": 2,
+      "provider": "xnnpack",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "vits-piper-en_US-libritts_r-medium",
+      "threads": 2,
+      "provider": "nnapi",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "kokoro-int8-multi-lang-v1_1",
+      "threads": 2,
+      "provider": "cpu",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "kokoro-int8-multi-lang-v1_1",
+      "threads": 2,
+      "provider": "xnnpack",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "kokoro-int8-multi-lang-v1_1",
+      "threads": 2,
+      "provider": "nnapi",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "kokoro-multi-lang-v1_1",
+      "threads": 2,
+      "provider": "cpu",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "kokoro-multi-lang-v1_1",
+      "threads": 2,
+      "provider": "xnnpack",
+      "runtime": "ort",
+      "limit": 20
+    },
+    {
+      "model": "kokoro-multi-lang-v1_1",
+      "threads": 2,
+      "provider": "nnapi",
+      "runtime": "ort",
+      "limit": 20
+    }
+  ]
+}

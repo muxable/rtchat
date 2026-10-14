@@ -12,6 +12,8 @@ analyzer:
     - build/**
     - android/**
     - ios/**
+    # Standalone benchmark app with its own pubspec; see tool/tts_benchmark.
+    - tool/tts_benchmark/**
 include: package:flutter_lints/flutter.yaml
 
 # Additional information about this file can be found at
