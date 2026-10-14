@@ -15,11 +15,19 @@ const (
 type Request firestore.DocumentRef
 
 func (r *Request) Provider() Provider {
-	return Provider(r.ID[:strings.Index(r.ID, ":")])
+	i := strings.Index(r.ID, ":")
+	if i < 0 {
+		return ""
+	}
+	return Provider(r.ID[:i])
 }
 
 func (r *Request) Channel() string {
-	return r.ID[strings.Index(r.ID, ":")+1:]
+	i := strings.Index(r.ID, ":")
+	if i < 0 {
+		return ""
+	}
+	return r.ID[i+1:]
 }
 
 func (r *Request) String() string {
