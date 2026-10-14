@@ -87,12 +87,6 @@ func joinWithTimeout(client chatConnection, channel string, timeout time.Duratio
 	}
 }
 
-func (h *TwitchAgent) metadata(channelID string, data interface{}) {
-	if _, err := h.Firestore.Collection("channels").Doc(channelID).Set(context.Background(), data, firestore.MergeAll); err != nil {
-		zap.L().Error("failed to update channel metadata", zap.Error(err), zap.String("channelId", channelID), zap.Any("data", data))
-	}
-}
-
 func (h *TwitchAgent) write(channelID, messageID string, data interface{}) {
 	if err := createMessage(context.Background(), func(ctx context.Context) error {
 		_, err := h.Firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Create(ctx, data)
@@ -103,18 +97,6 @@ func (h *TwitchAgent) write(channelID, messageID string, data interface{}) {
 }
 
 func (h *TwitchAgent) bindEvents(client *twitch.Client) {
-	client.OnNoticeMessage(func(message twitch.NoticeMessage) {
-		data := noticeMetadata(message)
-		if message.Channel == "*" || data == nil {
-			return
-		}
-		userID, err := auth.TwitchUserIDFromUsername(h.Firestore, h.ClientID, h.ClientSecret, message.Channel)
-		if err != nil {
-			return
-		}
-		go h.metadata(fmt.Sprintf("twitch:%s", userID), data)
-	})
-
 	client.OnUserNoticeMessage(func(message twitch.UserNoticeMessage) {
 		zap.L().Info("user notice", zap.String("message", message.Raw))
 		go h.writeDocument(userNoticeDocument(message, time.Now()))

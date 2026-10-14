@@ -13,53 +13,6 @@ type chatDocument struct {
 	data                 map[string]interface{}
 }
 
-func noticeMetadata(message twitch.NoticeMessage) map[string]interface{} {
-	switch message.MsgID {
-	case "r9k_on", "already_r9k_on":
-		return map[string]interface{}{
-			"isR9k": true,
-		}
-	case "r9k_off", "already_r9k_off":
-		return map[string]interface{}{
-			"isR9k": false,
-		}
-	case "slow_on", "already_slow_on":
-		return map[string]interface{}{
-			"isSlowMode": true,
-		}
-	case "slow_off", "already_slow_off":
-		return map[string]interface{}{
-			"isSlowMode": false,
-		}
-	case "subs_on", "already_subs_on":
-		return map[string]interface{}{
-			"isSubsOnly": true,
-		}
-	case "subs_off", "already_subs_off":
-		return map[string]interface{}{
-			"isSubsOnly": false,
-		}
-	case "followers_on", "already_followers_on":
-		return map[string]interface{}{
-			"isFollowersOnly": true,
-		}
-	case "followers_off", "already_followers_off":
-		return map[string]interface{}{
-			"isFollowersOnly": false,
-		}
-	case "emote_only_on", "already_emote_only_on":
-		return map[string]interface{}{
-			"isEmoteOnly": true,
-		}
-	case "emote_only_off", "already_emote_only_off":
-		return map[string]interface{}{
-			"isEmoteOnly": false,
-		}
-	}
-
-	return nil
-}
-
 func userNoticeDocument(message twitch.UserNoticeMessage, now time.Time) *chatDocument {
 	switch message.MsgID {
 	case "announcement":
