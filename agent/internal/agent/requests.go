@@ -9,7 +9,8 @@ import (
 type Provider string
 
 const (
-	ProviderTwitch Provider = "twitch"
+	ProviderTwitch  Provider = "twitch"
+	ProviderYouTube Provider = "youtube"
 )
 
 type Request firestore.DocumentRef
