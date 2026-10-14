@@ -10,9 +10,6 @@ class FakeUserModel extends ChangeNotifier implements UserModel {
   FakeUserModel({this.userChannel});
 
   @override
-  Channel? get activeChannel => userChannel;
-
-  @override
   bool get isLoading => false;
 
   @override

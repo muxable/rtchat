@@ -31,7 +31,7 @@ import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/tts/language.dart';
-import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/views.dart';
 
 enum TtsMode { disabled, alertsOnly, enabled }
 
@@ -73,9 +73,9 @@ class TtsModel extends ChangeNotifier {
     super.dispose();
   }
 
-  void update(UserModel model) async {
+  void update(ViewsModel model) async {
     if (kDebugMode) {
-      final channel = model.activeChannel;
+      final channel = model.primaryChannel;
       if (channel == null) {
         _isSupportedLanguage = false;
         _language = Language();

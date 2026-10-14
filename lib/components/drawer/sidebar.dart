@@ -11,6 +11,7 @@ import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/qr_code.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/views.dart';
 import 'package:rtchat/screens/settings/qr.dart';
 import 'package:rtchat/urls.dart';
 
@@ -62,9 +63,8 @@ class _DrawerHeader extends StatelessWidget {
                       return InkWell(
                         borderRadius: BorderRadius.circular(10.0),
                         onTap: () {
-                          if (model.activeChannel != userChannel) {
-                            model.activeChannel = userChannel;
-                          }
+                          Provider.of<ViewsModel>(context, listen: false)
+                              .showMyChannels();
                           Navigator.of(context).pop();
                         },
                         child: Row(children: [
@@ -179,25 +179,15 @@ class _DrawerHeader extends StatelessWidget {
                               maxChildSize: 0.9,
                               expand: false,
                               builder: (context, controller) {
-                                final model = Provider.of<UserModel>(context,
+                                final views = Provider.of<ViewsModel>(context,
                                     listen: false);
-                                final userChannel = model.userChannel;
+                                final raidFrom = _raidableChannel(context);
                                 return ChannelSearchBottomSheetWidget(
-                                  onChannelSelect: (channel) {
-                                    model.activeChannel = channel;
-                                  },
-                                  onRaid: userChannel == model.activeChannel &&
-                                          userChannel != null
-                                      ? (channel) {
-                                          final activeChannel =
-                                              model.activeChannel;
-                                          if (activeChannel == null) {
-                                            return;
-                                          }
-                                          ActionsAdapter.instance
-                                              .raid(activeChannel, channel);
-                                        }
-                                      : null,
+                                  onChannelSelect: views.openChannel,
+                                  onRaid: raidFrom == null
+                                      ? null
+                                      : (channel) => ActionsAdapter.instance
+                                          .raid(raidFrom, channel),
                                   controller: controller,
                                 );
                               },
@@ -300,25 +290,16 @@ class _SidebarState extends State<Sidebar> {
                   maxChildSize: 0.9,
                   expand: false,
                   builder: (context, controller) {
-                    final model =
-                        Provider.of<UserModel>(context, listen: false);
-                    final userChannel = model.userChannel;
+                    final views =
+                        Provider.of<ViewsModel>(context, listen: false);
+                    final raidFrom = _raidableChannel(context);
                     return ChannelSearchBottomSheetWidget(
                       isRaid: true,
-                      onChannelSelect: (channel) {
-                        model.activeChannel = channel;
-                      },
-                      onRaid: userChannel == model.activeChannel &&
-                              userChannel != null
-                          ? (channel) {
-                              final activeChannel = model.activeChannel;
-                              if (activeChannel == null) {
-                                return;
-                              }
-                              ActionsAdapter.instance
-                                  .raid(activeChannel, channel);
-                            }
-                          : null,
+                      onChannelSelect: views.openChannel,
+                      onRaid: raidFrom == null
+                          ? null
+                          : (channel) =>
+                              ActionsAdapter.instance.raid(raidFrom, channel),
                       controller: controller,
                     );
                   },
@@ -409,4 +390,18 @@ class _SidebarState extends State<Sidebar> {
       ),
     );
   }
+}
+
+/// The channel the user can raid from: the one they're viewing, if it's their
+/// own Twitch channel (raids are Twitch-only).
+Channel? _raidableChannel(BuildContext context) {
+  final channel =
+      Provider.of<ViewsModel>(context, listen: false).primaryChannel;
+  final userModel = Provider.of<UserModel>(context, listen: false);
+  if (channel == null ||
+      channel.provider != Providers.twitch ||
+      userModel.userChannel != channel) {
+    return null;
+  }
+  return channel;
 }
