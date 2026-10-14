@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/message.dart';
@@ -276,6 +279,23 @@ void main() {
         ..add(chat('c', t0, userId: 'u1'))
         ..add(streamState('s', t0));
       expect(model.authors.map((a) => a.userId).toSet(), {'u1', 'u2'});
+    });
+  });
+
+  group('dispose', () {
+    test('stops listening to the channel', () async {
+      final events = StreamController<DeltaEvent>();
+      final model = MessagesModel.fromJson({})
+        ..forChannel = (channel) => events.stream;
+      model.channel = Channel('twitch', '1', 'one');
+      expect(events.hasListener, isTrue);
+
+      model.dispose();
+
+      // a later event would otherwise notify the disposed model, and the
+      // listener would keep the model and its messages alive.
+      expect(events.hasListener, isFalse);
+      await events.close();
     });
   });
 }
