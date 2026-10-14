@@ -1,7 +1,7 @@
 """Reference outputs for the Swift Supertonic 3 port.
 
 Runs the official `supertonic` PyPI package (CPU) with the noise replaced by
-the cross-platform xorshift64* + Box-Muller generator, and writes a small
+the cross-platform SplitMix64 + Box-Muller generator, and writes a small
 JSON fixture for the XCTests. Development tooling only; nothing ships it.
 
     python3 -m venv venv && venv/bin/pip install supertonic==1.3.1
