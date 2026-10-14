@@ -52,7 +52,11 @@ Future<List<SearchResult>> fastSearch() async {
 }
 
 // The providers channel search can target, with the prefix shown for each.
-const searchProviders = {"twitch": "twitch.tv/", "kick": "kick.com/"};
+const searchProviders = {
+  "twitch": "twitch.tv/",
+  "kick": "kick.com/",
+  "youtube": "youtube.com/@",
+};
 
 typedef ChannelSearch = Stream<List<SearchResult>> Function(
     String query, String provider, bool isShowOnlyOnline);
