@@ -11,6 +11,11 @@ on:
       - main
   workflow_dispatch:
 
+# queue deploys so back-to-back merges don't race each other.
+concurrency:
+  group: firebase-deploy
+  cancel-in-progress: false
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
