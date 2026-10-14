@@ -1070,4 +1070,7 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get textToSpeechTooManyMessages =>
       'Ci sono troppi messaggi. Sintesi vocale disattivata';
+
+  @override
+  String get turnOffTextToSpeech => 'Disattiva';
 }

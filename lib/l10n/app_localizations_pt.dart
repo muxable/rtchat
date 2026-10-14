@@ -1066,4 +1066,7 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get textToSpeechTooManyMessages =>
       'Há mensagens demais. Texto para fala desativado';
+
+  @override
+  String get turnOffTextToSpeech => 'Desativar';
 }

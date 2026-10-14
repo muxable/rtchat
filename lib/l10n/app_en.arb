@@ -1452,5 +1452,9 @@
   "textToSpeechTooManyMessages": "There are too many messages. Text to speech disabled",
   "@textToSpeechTooManyMessages": {
     "description": "Spoken when text to speech turns itself off because too many messages are waiting to be read"
+  },
+  "turnOffTextToSpeech": "Turn off",
+  "@turnOffTextToSpeech": {
+    "description": "Button in the text to speech notification that turns text to speech off"
   }
 }

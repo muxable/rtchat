@@ -1074,4 +1074,7 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get textToSpeechTooManyMessages =>
       'Слишком много сообщений. Озвучивание текста отключено';
+
+  @override
+  String get turnOffTextToSpeech => 'Выключить';
 }

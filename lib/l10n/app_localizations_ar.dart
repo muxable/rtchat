@@ -1061,4 +1061,7 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get textToSpeechTooManyMessages =>
       'هناك رسائل كثيرة جدًا. تم تعطيل تحويل النص إلى كلام';
+
+  @override
+  String get turnOffTextToSpeech => 'إيقاف';
 }

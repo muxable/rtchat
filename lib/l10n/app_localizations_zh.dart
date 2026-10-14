@@ -1032,6 +1032,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get textToSpeechTooManyMessages => '消息太多了。文字转语音已关闭';
+
+  @override
+  String get turnOffTextToSpeech => '关闭';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2062,4 +2065,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get textToSpeechTooManyMessages => '訊息太多了。文字轉語音已關閉';
+
+  @override
+  String get turnOffTextToSpeech => '關閉';
 }

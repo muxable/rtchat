@@ -261,5 +261,6 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> podarował {count} subskrypcji!",
   "kicksGiftedEvent": "<b>{senderName}</b> wysłał {amount} Kicks!",
   "signInWithKick": "Zaloguj się przez Kick",
-  "textToSpeechTooManyMessages": "Jest zbyt wiele wiadomości. Zamiana tekstu na mowę wyłączona"
+  "textToSpeechTooManyMessages": "Jest zbyt wiele wiadomości. Zamiana tekstu na mowę wyłączona",
+  "turnOffTextToSpeech": "Wyłącz"
 }

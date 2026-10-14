@@ -1074,4 +1074,7 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get textToSpeechTooManyMessages =>
       'Es gibt zu viele Nachrichten. Sprachausgabe deaktiviert';
+
+  @override
+  String get turnOffTextToSpeech => 'Ausschalten';
 }

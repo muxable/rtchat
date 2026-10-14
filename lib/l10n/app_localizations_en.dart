@@ -1056,4 +1056,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get textToSpeechTooManyMessages =>
       'There are too many messages. Text to speech disabled';
+
+  @override
+  String get turnOffTextToSpeech => 'Turn off';
 }

@@ -1057,4 +1057,7 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get textToSpeechTooManyMessages =>
       'Det finns för många meddelanden. Text till tal avstängt';
+
+  @override
+  String get turnOffTextToSpeech => 'Stäng av';
 }

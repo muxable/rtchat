@@ -1071,4 +1071,7 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get textToSpeechTooManyMessages =>
       'Забагато повідомлень. Озвучування тексту вимкнено';
+
+  @override
+  String get turnOffTextToSpeech => 'Вимкнути';
 }

@@ -261,5 +261,6 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> presenteou {count} inscrições!",
   "kicksGiftedEvent": "<b>{senderName}</b> enviou {amount} Kicks!",
   "signInWithKick": "Faça login com o Kick",
-  "textToSpeechTooManyMessages": "Há mensagens demais. Texto para fala desativado"
+  "textToSpeechTooManyMessages": "Há mensagens demais. Texto para fala desativado",
+  "turnOffTextToSpeech": "Desativar"
 }

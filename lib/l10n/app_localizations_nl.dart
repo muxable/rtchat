@@ -1065,4 +1065,7 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get textToSpeechTooManyMessages =>
       'Er zijn te veel berichten. Tekst-naar-spraak uitgeschakeld';
+
+  @override
+  String get turnOffTextToSpeech => 'Uitschakelen';
 }

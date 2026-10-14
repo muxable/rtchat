@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:rtchat/main.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
+import 'package:rtchat/tts_foreground_service.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 import 'emulator.dart';
@@ -135,5 +137,37 @@ void main() {
         jsonDecode(prefs.getString('style', defaultValue: '{}').getValue())
             as Map;
     expect(style['compactMessages'], 1);
+  });
+
+  testWidgets('text to speech keeps a foreground service running',
+      skip: !Platform.isAndroid, (tester) async {
+    final credential = await FirebaseAuth.instance.signInAnonymously();
+    await seeder.setDocument('profiles/${credential.user!.uid}', {
+      'twitch': {'id': channelId, 'displayName': 'e2estreamer'},
+    });
+    await tester.pumpWidget(App(prefs: await freshPrefs()));
+    await pumpUntil(tester, find.text('/e2estreamer'));
+
+    Future<bool> isRunning() async =>
+        await TtsForegroundService.channel.invokeMethod<bool>('isRunning') ??
+        false;
+    Future<void> waitFor(bool running) async {
+      final end = DateTime.now().add(const Duration(seconds: 15));
+      while (await isRunning() != running) {
+        if (DateTime.now().isAfter(end)) {
+          throw TestFailure('tts service running != $running');
+        }
+        await tester.pump(const Duration(milliseconds: 250));
+      }
+    }
+
+    expect(await isRunning(), isFalse);
+
+    final toggle = find.byTooltip('Text to speech');
+    await tester.tap(toggle);
+    await waitFor(true);
+
+    await tester.tap(toggle);
+    await waitFor(false);
   });
 }

@@ -1034,4 +1034,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get textToSpeechTooManyMessages => '메시지가 너무 많습니다. 텍스트 음성 변환이 꺼졌습니다';
+
+  @override
+  String get turnOffTextToSpeech => '끄기';
 }

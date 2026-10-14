@@ -261,5 +261,6 @@
   "kickGiftedSubscriptionsEvent": "أهدى <b>{gifterName}</b> {count} اشتراكات!",
   "kicksGiftedEvent": "أرسل <b>{senderName}</b> {amount} Kicks!",
   "signInWithKick": "تسجيل الدخول باستخدام Kick",
-  "textToSpeechTooManyMessages": "هناك رسائل كثيرة جدًا. تم تعطيل تحويل النص إلى كلام"
+  "textToSpeechTooManyMessages": "هناك رسائل كثيرة جدًا. تم تعطيل تحويل النص إلى كلام",
+  "turnOffTextToSpeech": "إيقاف"
 }

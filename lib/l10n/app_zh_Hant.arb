@@ -261,5 +261,6 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> 贈送了 {count} 個訂閱！",
   "kicksGiftedEvent": "<b>{senderName}</b> 送出了 {amount} Kicks！",
   "signInWithKick": "使用 Kick 登入",
-  "textToSpeechTooManyMessages": "訊息太多了。文字轉語音已關閉"
+  "textToSpeechTooManyMessages": "訊息太多了。文字轉語音已關閉",
+  "turnOffTextToSpeech": "關閉"
 }
