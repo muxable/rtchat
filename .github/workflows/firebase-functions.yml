@@ -21,6 +21,6 @@ jobs:
       # functions.config() values are managed in the project with
       # `firebase functions:config:set`, not from CI, until they move to
       # params (#1409). the deploy reads them, which needs this experiment.
-      - run: npx -y firebase-tools@15.33.0 deploy --only functions --project rtchat-47692 --non-interactive
+      - run: npx -y firebase-tools@15.33.0 deploy --only functions --project rtchat-47692 --non-interactive --force
         env:
           FIREBASE_CLI_EXPERIMENTS: legacyRuntimeConfigCommands

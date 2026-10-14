@@ -50,7 +50,7 @@ export async function getTwitchId(login: string) {
         Authorization: `Bearer ${token.token["access_token"]}`,
         "Client-Id": TWITCH_CLIENT_ID,
       },
-    },
+    }
   );
 
   const json = (await response.json()) as any;
@@ -75,7 +75,7 @@ export async function timeout(
   broadcasterId: string,
   userId: string,
   length: number,
-  reason: string,
+  reason: string
 ) {
   const profile = await admin.firestore().collection("profiles").doc(uid).get();
   if (!profile.exists) {
@@ -97,7 +97,7 @@ export async function timeout(
           reason,
         },
       }),
-    },
+    }
   );
   return await response.json();
 }
@@ -114,7 +114,7 @@ async function parseResponse(response: {
 export async function unban(
   uid: string,
   broadcasterId: string,
-  userId: string,
+  userId: string
 ) {
   const profile = await admin.firestore().collection("profiles").doc(uid).get();
   if (!profile.exists) {
@@ -129,7 +129,7 @@ export async function unban(
     {
       method: "DELETE",
       headers: await getHeaders(uid),
-    },
+    }
   );
   return await parseResponse(response);
 }
@@ -153,15 +153,70 @@ export async function ban(uid: string, broadcasterId: string, userId: string) {
           user_id: userId,
         },
       }),
-    },
+    }
   );
   return await response.json();
+}
+
+// https://dev.twitch.tv/docs/api/reference/#send-chat-message
+export async function sendChatMessage(
+  uid: string,
+  broadcasterId: string,
+  message: string,
+  replyParentMessageId?: string
+): Promise<{ sent: boolean; error?: string; unauthorized?: boolean }> {
+  const profile = await admin.firestore().collection("profiles").doc(uid).get();
+  const senderId = profile.get("twitch")?.id;
+  if (!senderId) {
+    return { sent: false, error: "not signed in with twitch" };
+  }
+  const response = await fetch("https://api.twitch.tv/helix/chat/messages", {
+    method: "POST",
+    headers: await getHeaders(uid),
+    body: JSON.stringify({
+      broadcaster_id: broadcasterId,
+      sender_id: senderId,
+      message,
+      ...(replyParentMessageId
+        ? { reply_parent_message_id: replyParentMessageId }
+        : {}),
+    }),
+  });
+  // tokens from before user:write:chat was requested can't use the api.
+  if (response.status === 401 || response.status === 403) {
+    return { sent: false, unauthorized: true };
+  }
+  const json = (await response.json()) as any;
+  const result = json?.data?.[0];
+  if (result?.is_sent) {
+    return { sent: true };
+  }
+  return {
+    sent: false,
+    error: result?.drop_reason?.message ?? json?.message ?? "failed to send",
+  };
+}
+
+export async function clearChat(uid: string, broadcasterId: string) {
+  const profile = await admin.firestore().collection("profiles").doc(uid).get();
+  const moderatorId = profile.get("twitch")?.id;
+  if (!moderatorId) {
+    return;
+  }
+  const response = await fetch(
+    `https://api.twitch.tv/helix/moderation/chat?broadcaster_id=${broadcasterId}&moderator_id=${moderatorId}`,
+    {
+      method: "DELETE",
+      headers: await getHeaders(uid),
+    }
+  );
+  return await parseResponse(response);
 }
 
 export async function deleteMessage(
   uid: string,
   broadcasterId: string,
-  messageId: string,
+  messageId: string
 ) {
   const profile = await admin.firestore().collection("profiles").doc(uid).get();
   if (!profile.exists) {
@@ -176,7 +231,7 @@ export async function deleteMessage(
     {
       method: "DELETE",
       headers: await getHeaders(uid),
-    },
+    }
   );
   return await parseResponse(response);
 }
@@ -184,7 +239,7 @@ export async function deleteMessage(
 export async function raid(
   uid: string,
   fromBroadcasterId: string,
-  toBroadcasterId: string,
+  toBroadcasterId: string
 ) {
   const profile = await admin.firestore().collection("profiles").doc(uid).get();
   if (!profile.exists) {
@@ -196,7 +251,7 @@ export async function raid(
     {
       method: "POST",
       headers: await getHeaders(uid),
-    },
+    }
   );
   return await response.json();
 }

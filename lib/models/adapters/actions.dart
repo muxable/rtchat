@@ -1,26 +1,21 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:rtchat/models/channels.dart';
 
 class ActionsAdapter {
-  final FirebaseFirestore firestore;
   final FirebaseFunctions functions;
 
-  ActionsAdapter._({required this.firestore, required this.functions});
+  ActionsAdapter._({required this.functions});
 
-  static ActionsAdapter get instance => _instance ??= ActionsAdapter._(
-      firestore: FirebaseFirestore.instance,
-      functions: FirebaseFunctions.instance);
+  static ActionsAdapter get instance =>
+      _instance ??= ActionsAdapter._(functions: FirebaseFunctions.instance);
   static ActionsAdapter? _instance;
 
   Future<String?> send(Channel channel, String message) async {
     final call = functions.httpsCallable('send');
-    final key = firestore.collection('actions').doc().id;
     for (var i = 0; i < 3; i++) {
       try {
         final result = await call({
-          "id": key,
           "provider": channel.provider,
           "channelId": channel.channelId,
           "message": message,
