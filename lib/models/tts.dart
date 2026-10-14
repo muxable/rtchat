@@ -33,8 +33,20 @@ enum TtsMode { disabled, alertsOnly, enabled }
 
 final _markup = RegExp(r'</?b>');
 
+/// Records an error that didn't stop speech, e.g. to Crashlytics.
+typedef TtsErrorReporter = void Function(Object error, StackTrace stack);
+
+void _recordToCrashlytics(Object error, StackTrace stack) {
+  FirebaseCrashlytics.instance.recordError(error, stack);
+}
+
 class TtsModel extends ChangeNotifier {
-  final TtsEngine _engine;
+  /// Speaks with the platform's voices, and whenever [_neuralEngine] fails.
+  final TtsEngine _systemEngine;
+  TtsEngine? _neuralEngine;
+  // neural engines that were replaced, disposed between utterances.
+  final List<TtsEngine> _retiredEngines = [];
+  final TtsErrorReporter _reportError;
 
   Future<void> _previousUtterance = Future.value();
   // the messages waiting to be read out, and the channel they came from.
@@ -404,7 +416,7 @@ class TtsModel extends ChangeNotifier {
       await previous;
       await _speak(model, vocalization);
     } catch (e, st) {
-      FirebaseCrashlytics.instance.recordError(e, st);
+      _reportError(e, st);
     } finally {
       _activeMessage = null;
       completer.complete();
@@ -415,12 +427,76 @@ class TtsModel extends ChangeNotifier {
   Future<void> _speak(MessageModel model, String vocalization) async {
     _activeMessage = model;
 
-    if ((_mode != TtsMode.disabled || model is SystemMessageModel) &&
-        _pending.containsKey(model.messageId)) {
+    bool shouldSpeak() =>
+        (_mode != TtsMode.disabled || model is SystemMessageModel) &&
+        _pending.containsKey(model.messageId);
+
+    if (!shouldSpeak()) {
+      return;
+    }
+    // nothing is speaking between utterances, so a replaced engine can go
+    // without cutting anyone off.
+    await _disposeRetiredEngines();
+
+    final language = languageFor(model).languageCode;
+    final neural = _neuralEngine;
+    if (neural != null) {
       try {
-        await _engine.speak(vocalization, rate: _speed, pitch: _pitch);
+        await neural.speak(vocalization,
+            rate: _speed, pitch: _pitch, language: language);
+        return;
       } catch (e, st) {
-        FirebaseCrashlytics.instance.recordError(e, st);
+        _reportError(e, st);
+      }
+      // read this message with the system voice rather than drop it, unless
+      // it was cut off in the meantime.
+      if (!shouldSpeak()) {
+        return;
+      }
+    }
+    try {
+      await _systemEngine.speak(vocalization,
+          rate: _speed, pitch: _pitch, language: language);
+    } catch (e, st) {
+      _reportError(e, st);
+    }
+  }
+
+  /// The engine that speaks with a neural voice pack, or null to speak with
+  /// the platform's voices. When it fails, the message is read with the
+  /// platform's voices instead.
+  TtsEngine? get neuralEngine => _neuralEngine;
+
+  /// Replaces the neural engine; the model owns [engine] from now on. The
+  /// message being read finishes with the old engine, which is then
+  /// disposed before the next message starts, so the two never overlap.
+  set neuralEngine(TtsEngine? engine) {
+    final previous = _neuralEngine;
+    if (identical(previous, engine)) {
+      return;
+    }
+    _neuralEngine = engine;
+    if (previous == null) {
+      return;
+    }
+    _retiredEngines.add(previous);
+    // queue the disposal like an utterance, in case nothing else is queued.
+    final queue = _previousUtterance;
+    final completer = Completer<void>();
+    _previousUtterance = completer.future;
+    queue
+        .then((_) => _disposeRetiredEngines())
+        .whenComplete(completer.complete);
+  }
+
+  Future<void> _disposeRetiredEngines() async {
+    final engines = List.of(_retiredEngines);
+    _retiredEngines.clear();
+    for (final engine in engines) {
+      try {
+        await engine.dispose();
+      } catch (e, st) {
+        _reportError(e, st);
       }
     }
   }
@@ -432,7 +508,8 @@ class TtsModel extends ChangeNotifier {
         SystemMessageModel(text: localizations.textToSpeechTooManyMessages),
         force: true);
     // cut off the current utterance; everything queued behind it is dropped.
-    _engine.stop().catchError((_) {});
+    _neuralEngine?.stop().catchError((_) {});
+    _systemEngine.stop().catchError((_) {});
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });
@@ -490,15 +567,27 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  /// Speaks through [engine], or through the platform's voices by default.
-  TtsModel.fromJson(Map<String, dynamic> json, {TtsEngine? engine})
-      : _engine = engine ?? SystemTtsEngine() {
+  /// Speaks through [engine], or through the platform's voices by default,
+  /// until a [neuralEngine] is set. Errors that don't stop speech go to
+  /// [reportError], Crashlytics by default.
+  TtsModel.fromJson(Map<String, dynamic> json,
+      {TtsEngine? engine, TtsErrorReporter? reportError})
+      : _systemEngine = engine ?? SystemTtsEngine(),
+        _reportError = reportError ?? _recordToCrashlytics {
     _updateFromJsonInternal(json);
   }
 
   @override
   void dispose() {
-    _engine.dispose().catchError((_) {});
+    for (final engine in [
+      _systemEngine,
+      if (_neuralEngine != null) _neuralEngine!,
+      ..._retiredEngines,
+    ]) {
+      engine.dispose().catchError((_) {});
+    }
+    _neuralEngine = null;
+    _retiredEngines.clear();
     super.dispose();
   }
 

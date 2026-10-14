@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,6 +11,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
+import 'package:on_device_tts/on_device_tts.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/firebase_options.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
@@ -26,6 +29,7 @@ import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/tts/neural_engine_selector.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/views.dart';
 import 'package:rtchat/screens/home.dart';
@@ -60,6 +64,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final prefs = await StreamingSharedPreferences.instance;
+  final voicePacks = VoicePackRepository(
+      directory: Directory(
+          '${(await getApplicationSupportDirectory()).path}/voice_packs'));
 
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
@@ -90,16 +97,20 @@ void main() async {
       category: AVAudioSessionCategory.ambient,
     ),
   ));
-  runApp(App(prefs: prefs));
+  runApp(App(prefs: prefs, voicePacks: voicePacks));
 }
 
 class App extends StatefulWidget {
   final StreamingSharedPreferences prefs;
 
+  /// The installed neural voice packs. With one installed, chat is read
+  /// with its voice; without a repository, only with the system voices.
+  final VoicePackRepository? voicePacks;
+
   static final observer =
       FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
 
-  const App({super.key, required this.prefs});
+  const App({super.key, required this.prefs, this.voicePacks});
 
   @override
   State<App> createState() => _AppState();
@@ -108,6 +119,13 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   bool _isDiscoModeRunning = false;
   Timer? _discoModeTimer;
+  NeuralEngineSelector? _neuralEngineSelector;
+
+  @override
+  void dispose() {
+    _neuralEngineSelector?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,10 +162,20 @@ class _AppState extends State<App> {
           },
           update: (context, userModel, model) => model!..update(userModel),
         ),
+        Provider<VoicePackRepository?>.value(value: widget.voicePacks),
         ChangeNotifierProxyProvider<ViewsModel, TtsModel>(
           create: (context) {
             final model = TtsModel.fromJson(jsonDecode(
                 widget.prefs.getString("tts", defaultValue: '{}').getValue()));
+            final voicePacks = widget.voicePacks;
+            if (voicePacks != null) {
+              _neuralEngineSelector = NeuralEngineSelector(
+                repository: voicePacks,
+                tts: model,
+                reportError: (error, stack) =>
+                    FirebaseCrashlytics.instance.recordError(error, stack),
+              )..start();
+            }
             return model
               ..addListener(() {
                 widget.prefs.setString('tts', jsonEncode(model.toJson()));

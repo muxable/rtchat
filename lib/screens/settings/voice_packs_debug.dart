@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
 /// Lists, installs and deletes voice packs. Only reachable in debug builds
 /// until the neural engine can speak with them, so it isn't translated.
@@ -15,6 +16,7 @@ class VoicePacksDebugScreen extends StatefulWidget {
 
 class _VoicePacksDebugScreenState extends State<VoicePacksDebugScreen> {
   VoicePackRepository? _repository;
+  bool _ownsRepository = false;
   List<VoicePack> _packs = const [];
   Map<String, InstalledVoicePack> _installed = const {};
   final _statuses = <String, VoicePackStatus>{};
@@ -29,14 +31,19 @@ class _VoicePacksDebugScreenState extends State<VoicePacksDebugScreen> {
 
   Future<void> _open() async {
     try {
-      final support = await getApplicationSupportDirectory();
+      // The app's repository, so the neural engine follows what is
+      // installed here.
+      final shared = Provider.of<VoicePackRepository?>(context, listen: false);
+      _ownsRepository = shared == null;
       // No connectivity check is wired up yet, so Wi-Fi-only downloads need
       // the switch below.
-      final repository = VoicePackRepository(
-          directory: Directory('${support.path}/voice_packs'));
+      final repository = shared ??
+          VoicePackRepository(
+              directory: Directory(
+                  '${(await getApplicationSupportDirectory()).path}/voice_packs'));
       await repository.cleanUp();
       if (!mounted) {
-        await repository.dispose();
+        if (_ownsRepository) await repository.dispose();
         return;
       }
       _repository = repository;
@@ -84,7 +91,7 @@ class _VoicePacksDebugScreenState extends State<VoicePacksDebugScreen> {
 
   @override
   void dispose() {
-    _repository?.dispose();
+    if (_ownsRepository) _repository?.dispose();
     super.dispose();
   }
 
