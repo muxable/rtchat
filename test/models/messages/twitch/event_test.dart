@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
 import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
 import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
+import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
@@ -103,6 +105,45 @@ void main() {
       expect(merged.followers.map((f) => f.login), ["a", "b", "c"]);
       expect(merged.messageId, "follow-1");
       expect(merged.timestamp, DateTime(2024, 1, 3));
+    });
+
+    group("in a multi-channel view", () {
+      final a = Channel("twitch", "a", "A");
+      final b = Channel("twitch", "b", "B");
+      TwitchFollowEventModel follow(String id, Channel channel) =>
+          TwitchFollowEventModel(
+              followers: [TwitchUserModel(userId: id, login: "login$id")],
+              messageId: "follow-$id",
+              timestamp: DateTime(2024, 1, 1))
+            ..channel = channel;
+      List<String>? logins(TwitchFollowEventModel? model) =>
+          model?.followers.map((f) => f.login).toList();
+
+      test("merged keeps the channel", () {
+        final merged =
+            TwitchFollowEventModel.merged([follow("1", a), follow("2", a)]);
+        expect(merged.channel, a);
+      });
+
+      test("mergeAdjacent only merges follows from the same channel", () {
+        final messages = <MessageModel>[
+          follow("1", a),
+          follow("2", a),
+          follow("3", b),
+          follow("4", b),
+          follow("5", a),
+        ];
+        expect(TwitchFollowEventModel.mergeAdjacent(messages, 0), isNull);
+        expect(logins(TwitchFollowEventModel.mergeAdjacent(messages, 1)),
+            ["login2", "login1"]);
+        expect(TwitchFollowEventModel.mergeAdjacent(messages, 1)!.channel, a);
+        expect(TwitchFollowEventModel.mergeAdjacent(messages, 2), isNull);
+        expect(logins(TwitchFollowEventModel.mergeAdjacent(messages, 3)),
+            ["login4", "login3"]);
+        expect(TwitchFollowEventModel.mergeAdjacent(messages, 3)!.channel, b);
+        expect(logins(TwitchFollowEventModel.mergeAdjacent(messages, 4)),
+            ["login5"]);
+      });
     });
   });
 
