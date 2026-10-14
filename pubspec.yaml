@@ -23,7 +23,8 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_localized_locales: ^2.0.5
-  flutter_tts: ^4.2.5
+  on_device_tts:
+    path: packages/on_device_tts
   flutter_web_auth_2: ^5.1.0
   intl: ^0.20.3
   linkify: ^5.0.0
