@@ -133,8 +133,8 @@ export async function ensureKickSubscriptions(broadcasterId: string) {
   });
 
   if (!doc.exists) {
+    // only kick channels live in webhooks today.
     const count = (
-      // only kick channels live in webhooks today.
       await admin.firestore().collection("webhooks").count().get()
     ).data().count;
     if (count >= CHAT_SUBSCRIPTION_WARNING) {
