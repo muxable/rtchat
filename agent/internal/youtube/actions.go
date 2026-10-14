@@ -57,30 +57,33 @@ func (t thumbnails) largest() string {
 	return best
 }
 
+type badges []struct {
+	Badge struct {
+		Icon struct {
+			Type string `json:"iconType"`
+		} `json:"icon"`
+		Custom  json.RawMessage `json:"customThumbnail"`
+		Tooltip string          `json:"tooltip"`
+	} `json:"liveChatAuthorBadgeRenderer"`
+}
+
 type renderer struct {
-	ID        string     `json:"id"`
-	Timestamp string     `json:"timestampUsec"`
-	Author    text       `json:"authorName"`
-	Channel   string     `json:"authorExternalChannelId"`
-	Photo     thumbnails `json:"authorPhoto"`
-	Badges    []struct {
-		Badge struct {
-			Icon struct {
-				Type string `json:"iconType"`
-			} `json:"icon"`
-			Custom  json.RawMessage `json:"customThumbnail"`
-			Tooltip string          `json:"tooltip"`
-		} `json:"liveChatAuthorBadgeRenderer"`
-	} `json:"authorBadges"`
-	Message       text `json:"message"`
-	Amount        text `json:"purchaseAmountText"`
-	HeaderSubtext text `json:"headerSubtext"`
-	HeaderPrimary text `json:"headerPrimaryText"`
+	ID            string     `json:"id"`
+	Timestamp     string     `json:"timestampUsec"`
+	Author        text       `json:"authorName"`
+	Channel       string     `json:"authorExternalChannelId"`
+	Photo         thumbnails `json:"authorPhoto"`
+	Badges        badges     `json:"authorBadges"`
+	Message       text       `json:"message"`
+	Amount        text       `json:"purchaseAmountText"`
+	HeaderSubtext text       `json:"headerSubtext"`
+	HeaderPrimary text       `json:"headerPrimaryText"`
 	Header        struct {
 		Sponsorship struct {
 			Author  text       `json:"authorName"`
 			Primary text       `json:"primaryText"`
 			Photo   thumbnails `json:"authorPhoto"`
+			Badges  badges     `json:"authorBadges"`
 		} `json:"liveChatSponsorshipsHeaderRenderer"`
 	} `json:"header"`
 	Sticker struct {
@@ -92,9 +95,30 @@ type renderer struct {
 	} `json:"sticker"`
 }
 
-var monthPattern = regexp.MustCompile(`(?i)member for\s+(\d+)\s+months?`)
-var giftPattern = regexp.MustCompile(`\b(\d+)\b`)
-var levelPattern = regexp.MustCompile(`(?i)welcome to (.+?)[!.]?$`)
+var numberPattern = regexp.MustCompile(`\b(\d+)\b`)
+var levelPattern = regexp.MustCompile(`(?i)^(welcome to|upgraded membership to)\s+(.+?)\s*[!.！]?$`)
+
+// membershipLevel reads the level name from a "Welcome to {level}!" or
+// "Upgraded membership to {level}!" header. YouTube sends these as three runs
+// with the level in the middle, which keeps level names ending in "!" intact.
+// A header without a level, e.g. "New member", returns "".
+func membershipLevel(t text) (level string, upgrade bool) {
+	plain := strings.TrimSpace(t.plain())
+	m := levelPattern.FindStringSubmatch(plain)
+	if len(m) < 3 {
+		return "", false
+	}
+	upgrade = strings.EqualFold(m[1], "upgraded membership to")
+	if len(t.Runs) == 3 && t.Runs[0].Emoji == nil && t.Runs[1].Emoji == nil {
+		if last := strings.TrimSpace(t.Runs[2].Text); last == "!" || last == "！" {
+			if level := strings.TrimSpace(t.Runs[1].Text); level != "" {
+				return level, upgrade
+			}
+		}
+	}
+	return m[2], upgrade
+}
+
 var moneyPattern = regexp.MustCompile(`^(USD|EUR|GBP|JPY|CAD|AUD)\s*(\d+)(?:\.(\d{1,6}))?$`)
 
 // actionData returns nil for unsupported or malformed actions. No renderer data
@@ -161,6 +185,9 @@ func actionData(channel, video string, raw json.RawMessage, now time.Time) map[s
 			if len(r.Photo.Items) == 0 {
 				r.Photo = r.Header.Sponsorship.Photo
 			}
+			if len(r.Badges) == 0 {
+				r.Badges = r.Header.Sponsorship.Badges
+			}
 			author["channelId"], author["displayName"], author["profileImageUrl"] = authorID, r.Author.plain(), r.Photo.largest()
 			if authorID != "" {
 				author["channelUrl"] = "https://www.youtube.com/channel/" + authorID
@@ -177,10 +204,6 @@ func actionData(channel, video string, raw json.RawMessage, now time.Time) map[s
 				if len(badge.Badge.Custom) > 0 && string(badge.Badge.Custom) != "null" {
 					author["isChatSponsor"] = true
 				}
-			}
-			level := ""
-			if m := levelPattern.FindStringSubmatch(r.HeaderSubtext.plain()); len(m) > 1 {
-				level = m[1]
 			}
 			switch name {
 			case "liveChatTextMessageRenderer":
@@ -202,27 +225,38 @@ func actionData(channel, video string, raw json.RawMessage, now time.Time) map[s
 			case "liveChatPaidStickerRenderer":
 				kind = "superStickerEvent"
 				display = r.Sticker.Accessibility.Data.Label
+				// InnerTube has no sticker id, only the image and its label, so
+				// stickerId is left out.
 				details["superStickerDetails"] = map[string]interface{}{"amountDisplayString": r.Amount.plain(), "superStickerMetadata": map[string]interface{}{"altText": display}}
 			case "liveChatMembershipItemRenderer":
-				subtext := r.HeaderSubtext.plain()
-				if m := monthPattern.FindStringSubmatch(subtext); len(m) > 1 {
-					months, err := strconv.Atoi(m[1])
-					if err != nil {
-						return nil
-					}
+				// A milestone has "Member for N months" in headerPrimaryText and
+				// the level name in headerSubtext. New members and upgrades only
+				// have headerSubtext: "Welcome to {level}!" or "Upgraded
+				// membership to {level}!".
+				if primary := r.HeaderPrimary.plain(); primary != "" {
 					kind = "memberMilestoneChatEvent"
-					details["memberMilestoneChatDetails"] = map[string]interface{}{"memberMonth": months, "userComment": display, "memberLevelName": r.HeaderPrimary.plain()}
+					d := map[string]interface{}{"memberLevelName": strings.TrimSpace(r.HeaderSubtext.plain()), "userComment": display}
+					if m := numberPattern.FindStringSubmatch(primary); len(m) > 1 {
+						if months, err := strconv.Atoi(m[1]); err == nil {
+							d["memberMonth"] = months
+						}
+					}
+					details["memberMilestoneChatDetails"] = d
+					if display == "" {
+						display = primary
+					}
 				} else {
 					kind = "newSponsorEvent"
-					details["newSponsorDetails"] = map[string]interface{}{"memberLevelName": level}
-				}
-				if display == "" {
-					display = subtext
+					level, upgrade := membershipLevel(r.HeaderSubtext)
+					details["newSponsorDetails"] = map[string]interface{}{"memberLevelName": level, "isUpgrade": upgrade}
+					if display == "" {
+						display = r.HeaderSubtext.plain()
+					}
 				}
 			case "liveChatSponsorshipsGiftPurchaseAnnouncementRenderer":
 				kind = "membershipGiftingEvent"
 				display = r.Header.Sponsorship.Primary.plain()
-				m := giftPattern.FindStringSubmatch(display)
+				m := numberPattern.FindStringSubmatch(display)
 				if len(m) < 2 {
 					return nil
 				}
@@ -230,9 +264,12 @@ func actionData(channel, video string, raw json.RawMessage, now time.Time) map[s
 				if err != nil || count <= 0 {
 					return nil
 				}
+				// The header names the channel ("Gifted 5 {channel} memberships"),
+				// not the level, so giftMembershipsLevelName is left out.
 				details["membershipGiftingDetails"] = map[string]interface{}{"giftMembershipsCount": count}
 			case "liveChatSponsorshipsGiftRedemptionAnnouncementRenderer":
 				kind = "giftMembershipReceivedEvent"
+				level, _ := membershipLevel(r.HeaderSubtext)
 				details["giftMembershipReceivedDetails"] = map[string]interface{}{"memberLevelName": level}
 			}
 			break

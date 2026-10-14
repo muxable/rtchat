@@ -1,0 +1,130 @@
+{
+ "source": "anonymized real capture; the gifter's badges are in the header, which names the channel, not the level",
+ "action": {
+  "clickTrackingParams": "x",
+  "addChatItemAction": {
+   "item": {
+    "liveChatSponsorshipsGiftPurchaseAnnouncementRenderer": {
+     "id": "gift",
+     "timestampUsec": "1700000000123456",
+     "authorExternalChannelId": "UCgifter",
+     "header": {
+      "liveChatSponsorshipsHeaderRenderer": {
+       "authorName": {
+        "simpleText": "@Gifter"
+       },
+       "authorPhoto": {
+        "thumbnails": [
+         {
+          "url": "https://yt3.ggpht.com/gifter=s64",
+          "width": 64,
+          "height": 64
+         }
+        ]
+       },
+       "primaryText": {
+        "runs": [
+         {
+          "text": "Gifted ",
+          "bold": true
+         },
+         {
+          "text": "5",
+          "bold": true
+         },
+         {
+          "text": " ",
+          "bold": true
+         },
+         {
+          "text": "Streamer",
+          "bold": true
+         },
+         {
+          "text": " memberships",
+          "bold": true
+         }
+        ]
+       },
+       "authorBadges": [
+        {
+         "liveChatAuthorBadgeRenderer": {
+          "icon": {
+           "iconType": "MODERATOR"
+          },
+          "tooltip": "Moderator",
+          "accessibility": {
+           "accessibilityData": {
+            "label": "Moderator"
+           }
+          }
+         }
+        },
+        {
+         "liveChatAuthorBadgeRenderer": {
+          "customThumbnail": {
+           "thumbnails": [
+            {
+             "url": "https://yt3.ggpht.com/badge=s16"
+            }
+           ]
+          },
+          "tooltip": "Member (6 months)",
+          "accessibility": {
+           "accessibilityData": {
+            "label": "Member (6 months)"
+           }
+          }
+         }
+        }
+       ],
+       "image": {
+        "thumbnails": [
+         {
+          "url": "https://www.gstatic.com/youtube/img/sponsorships/sponsorships_gift_purchase_announcement_artwork.png"
+         }
+        ]
+       },
+       "contextMenuEndpoint": {
+        "liveChatItemContextMenuEndpoint": {
+         "params": "x"
+        }
+       },
+       "contextMenuAccessibility": {
+        "accessibilityData": {
+         "label": "Chat actions"
+        }
+       },
+       "trackingParams": "x"
+      }
+     }
+    }
+   },
+   "clientId": "x"
+  }
+ },
+ "event": {
+  "id": "gift",
+  "snippet": {
+   "type": "membershipGiftingEvent",
+   "liveChatId": "innertube:video",
+   "authorChannelId": "UCgifter",
+   "publishedAt": "2023-11-14T22:13:20.123456Z",
+   "hasDisplayContent": true,
+   "displayMessage": "Gifted 5 Streamer memberships",
+   "membershipGiftingDetails": {
+    "giftMembershipsCount": 5
+   }
+  },
+  "authorDetails": {
+   "channelId": "UCgifter",
+   "channelUrl": "https://www.youtube.com/channel/UCgifter",
+   "displayName": "@Gifter",
+   "profileImageUrl": "https://yt3.ggpht.com/gifter=s64",
+   "isVerified": false,
+   "isChatOwner": false,
+   "isChatSponsor": true,
+   "isChatModerator": true
+  }
+ }
+}
