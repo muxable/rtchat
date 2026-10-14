@@ -1387,42 +1387,6 @@ abstract class AppLocalizations {
   /// **'🕺 Disco mode disabled D:'**
   String get discoModeDisabled;
 
-  /// Title of the cloud text to speech setting
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud TTS'**
-  String get cloudTts;
-
-  /// Title for the text to speech language picker
-  ///
-  /// In en, this message translates to:
-  /// **'Languages'**
-  String get languages;
-
-  /// Title for the text to speech voice picker
-  ///
-  /// In en, this message translates to:
-  /// **'Voices'**
-  String get voices;
-
-  /// Title of the switch that gives each viewer a different voice
-  ///
-  /// In en, this message translates to:
-  /// **'Per-viewer voice'**
-  String get perViewerVoice;
-
-  /// Subtitle of the switch that gives each viewer a different voice
-  ///
-  /// In en, this message translates to:
-  /// **'Identify your viewers by voice'**
-  String get perViewerVoiceSubtitle;
-
-  /// Shown when a random voice is selected
-  ///
-  /// In en, this message translates to:
-  /// **'Random'**
-  String get randomVoice;
-
   /// Button that plays a sample text to speech message
   ///
   /// In en, this message translates to:
@@ -1440,12 +1404,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Text to Speech Pitch'**
   String get textToSpeechPitch;
-
-  /// Prompt to purchase cloud voices
-  ///
-  /// In en, this message translates to:
-  /// **'Unlock high-quality voices'**
-  String get unlockHighQualityVoices;
 
   /// Switch that skips messages from bots
   ///
@@ -1470,60 +1428,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Subscribers only'**
   String get subscribersOnly;
-
-  /// Shown when the in-app store can't be reached
-  ///
-  /// In en, this message translates to:
-  /// **'Store not available'**
-  String get storeNotAvailable;
-
-  /// Purchase button state when the product is unavailable
-  ///
-  /// In en, this message translates to:
-  /// **'Unavailable'**
-  String get unavailable;
-
-  /// Purchase button to subscribe
-  ///
-  /// In en, this message translates to:
-  /// **'Subscribe'**
-  String get subscribe;
-
-  /// Purchase button state while a purchase is pending
-  ///
-  /// In en, this message translates to:
-  /// **'Pending'**
-  String get pending;
-
-  /// Purchase button state when already subscribed
-  ///
-  /// In en, this message translates to:
-  /// **'Subscribed'**
-  String get subscribed;
-
-  /// Purchase button state when signed out
-  ///
-  /// In en, this message translates to:
-  /// **'Please Sign In'**
-  String get pleaseSignIn;
-
-  /// Tooltip for the button that searches languages
-  ///
-  /// In en, this message translates to:
-  /// **'Search languages'**
-  String get searchLanguages;
-
-  /// Tooltip for the button that closes the search
-  ///
-  /// In en, this message translates to:
-  /// **'Close search'**
-  String get closeSearch;
-
-  /// Tooltip for the button that plays a voice sample
-  ///
-  /// In en, this message translates to:
-  /// **'Play sample'**
-  String get playSample;
 
   /// Label for the chat font size slider
   ///

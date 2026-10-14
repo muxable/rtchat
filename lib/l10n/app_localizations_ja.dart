@@ -851,24 +851,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get discoModeDisabled => '🕺 ディスコモード オフ D:';
 
   @override
-  String get cloudTts => 'クラウドTTS';
-
-  @override
-  String get languages => '言語';
-
-  @override
-  String get voices => '音声';
-
-  @override
-  String get perViewerVoice => '視聴者ごとの音声';
-
-  @override
-  String get perViewerVoiceSubtitle => '声で視聴者を聞き分ける';
-
-  @override
-  String get randomVoice => 'ランダム';
-
-  @override
   String get playSampleMessage => 'サンプルメッセージを再生';
 
   @override
@@ -876,9 +858,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => '読み上げの高さ';
-
-  @override
-  String get unlockHighQualityVoices => '高品質な音声をアンロック';
 
   @override
   String get muteBots => 'ボットの読み上げをミュート';
@@ -891,33 +870,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get subscribersOnly => 'サブスク登録者のみ';
-
-  @override
-  String get storeNotAvailable => 'ストアを利用できません';
-
-  @override
-  String get unavailable => '利用不可';
-
-  @override
-  String get subscribe => '登録する';
-
-  @override
-  String get pending => '保留中';
-
-  @override
-  String get subscribed => '登録済み';
-
-  @override
-  String get pleaseSignIn => 'ログインしてください';
-
-  @override
-  String get searchLanguages => '言語を検索';
-
-  @override
-  String get closeSearch => '検索を閉じる';
-
-  @override
-  String get playSample => 'サンプルを再生';
 
   @override
   String get fontSize => 'フォントサイズ';

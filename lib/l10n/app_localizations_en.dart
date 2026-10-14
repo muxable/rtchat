@@ -869,24 +869,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discoModeDisabled => '🕺 Disco mode disabled D:';
 
   @override
-  String get cloudTts => 'Cloud TTS';
-
-  @override
-  String get languages => 'Languages';
-
-  @override
-  String get voices => 'Voices';
-
-  @override
-  String get perViewerVoice => 'Per-viewer voice';
-
-  @override
-  String get perViewerVoiceSubtitle => 'Identify your viewers by voice';
-
-  @override
-  String get randomVoice => 'Random';
-
-  @override
   String get playSampleMessage => 'Play sample message';
 
   @override
@@ -894,9 +876,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => 'Text to Speech Pitch';
-
-  @override
-  String get unlockHighQualityVoices => 'Unlock high-quality voices';
 
   @override
   String get muteBots => 'Mute text to speech for bots';
@@ -909,33 +888,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get subscribersOnly => 'Subscribers only';
-
-  @override
-  String get storeNotAvailable => 'Store not available';
-
-  @override
-  String get unavailable => 'Unavailable';
-
-  @override
-  String get subscribe => 'Subscribe';
-
-  @override
-  String get pending => 'Pending';
-
-  @override
-  String get subscribed => 'Subscribed';
-
-  @override
-  String get pleaseSignIn => 'Please Sign In';
-
-  @override
-  String get searchLanguages => 'Search languages';
-
-  @override
-  String get closeSearch => 'Close search';
-
-  @override
-  String get playSample => 'Play sample';
 
   @override
   String get fontSize => 'Font size';

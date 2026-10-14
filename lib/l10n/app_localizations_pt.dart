@@ -876,24 +876,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get discoModeDisabled => '🕺 Modo disco desativado D:';
 
   @override
-  String get cloudTts => 'TTS na nuvem';
-
-  @override
-  String get languages => 'Idiomas';
-
-  @override
-  String get voices => 'Vozes';
-
-  @override
-  String get perViewerVoice => 'Voz por espectador';
-
-  @override
-  String get perViewerVoiceSubtitle => 'Identifique seus espectadores pela voz';
-
-  @override
-  String get randomVoice => 'Aleatória';
-
-  @override
   String get playSampleMessage => 'Tocar mensagem de exemplo';
 
   @override
@@ -901,9 +883,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => 'Tom da fala';
-
-  @override
-  String get unlockHighQualityVoices => 'Desbloquear vozes de alta qualidade';
 
   @override
   String get muteBots => 'Silenciar texto para fala de bots';
@@ -917,33 +896,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get subscribersOnly => 'Somente inscritos';
-
-  @override
-  String get storeNotAvailable => 'Loja indisponível';
-
-  @override
-  String get unavailable => 'Indisponível';
-
-  @override
-  String get subscribe => 'Inscrever-se';
-
-  @override
-  String get pending => 'Pendente';
-
-  @override
-  String get subscribed => 'Inscrito';
-
-  @override
-  String get pleaseSignIn => 'Faça login';
-
-  @override
-  String get searchLanguages => 'Pesquisar idiomas';
-
-  @override
-  String get closeSearch => 'Fechar pesquisa';
-
-  @override
-  String get playSample => 'Tocar exemplo';
 
   @override
   String get fontSize => 'Tamanho da fonte';
