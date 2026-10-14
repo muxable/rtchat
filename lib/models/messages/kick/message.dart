@@ -18,6 +18,10 @@ class KickMessageReplyModel {
 
   const KickMessageReplyModel(
       {required this.messageId, required this.content, required this.author});
+
+  /// The replied-to message with emotes shown by name.
+  String get text =>
+      content.replaceAllMapped(_emotePattern, (match) => match.group(2)!);
 }
 
 class KickMessageModel extends MessageModel implements ChatMessage {
