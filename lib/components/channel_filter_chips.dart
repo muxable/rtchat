@@ -48,12 +48,24 @@ class ChannelAttribution extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Padding(
-        padding: const EdgeInsets.only(left: 6, top: 8),
-        child: ProviderIcon(provider, size: 12),
-      ),
-      Expanded(child: child),
-    ]);
+    // the icon sits at the trailing edge, on the message's first line: as a
+    // placeholder in a line of the message's text style it gets that line's
+    // baseline, which the row lines up with the message's first baseline.
+    return Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Expanded(child: child),
+          Padding(
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 8),
+            child: Text.rich(TextSpan(children: [
+              WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: ProviderIcon(provider, size: 12)),
+              // a zero width space gives the line the text style's height.
+              const TextSpan(text: '\u200b'),
+            ])),
+          ),
+        ]);
   }
 }
