@@ -1077,4 +1077,78 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Выключить';
+
+  @override
+  String youtubeSuperChatEvent(String name, String amount) {
+    return '<b>$name</b> отправил(а) Super Chat на $amount!';
+  }
+
+  @override
+  String youtubeSuperStickerEvent(String name, String amount) {
+    return '<b>$name</b> отправил(а) Super Sticker на $amount!';
+  }
+
+  @override
+  String youtubeNewMemberEvent(String name) {
+    return '<b>$name</b> стал(а) спонсором!';
+  }
+
+  @override
+  String youtubeMemberUpgradeEvent(String name, String level) {
+    return '<b>$name</b> перешёл(перешла) на уровень $level!';
+  }
+
+  @override
+  String youtubeMemberMilestoneEvent(String name, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$name</b> спонсор уже $monthsString мес.!';
+  }
+
+  @override
+  String youtubeMembershipGiftingEvent(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<b>$name</b> подарил(а) $countString спонсорства!',
+      many: '<b>$name</b> подарил(а) $countString спонсорств!',
+      few: '<b>$name</b> подарил(а) $countString спонсорства!',
+      one: '<b>$name</b> подарил(а) $countString спонсорство!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youtubeGiftMembershipReceivedEvent(String name) {
+    return '<b>$name</b> получил(а) спонсорство в подарок!';
+  }
+
+  @override
+  String youtubeGiftEvent(String name, String giftName, int jewels) {
+    final intl.NumberFormat jewelsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String jewelsString = jewelsNumberFormat.format(jewels);
+
+    return '<b>$name</b> отправил(а) $giftName ($jewelsString Jewels)!';
+  }
+
+  @override
+  String youtubePollEvent(String question) {
+    return 'Опрос: $question';
+  }
+
+  @override
+  String get youtubeMembersOnlyModeOn => 'Режим только для спонсоров включён';
+
+  @override
+  String get youtubeMembersOnlyModeOff => 'Режим только для спонсоров выключен';
+
+  @override
+  String get youtubeChatEnded => 'Чат трансляции завершён';
 }

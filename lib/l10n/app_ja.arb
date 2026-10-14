@@ -262,5 +262,17 @@
   "kicksGiftedEvent": "<b>{senderName}</b>さんが{amount} Kicksを送りました！",
   "signInWithKick": "Kickでサインイン",
   "textToSpeechTooManyMessages": "メッセージが多すぎます。読み上げをオフにしました",
-  "turnOffTextToSpeech": "オフにする"
+  "turnOffTextToSpeech": "オフにする",
+  "youtubeSuperChatEvent": "<b>{name}</b> さんが {amount} の Super Chat を送りました！",
+  "youtubeSuperStickerEvent": "<b>{name}</b> さんが {amount} の Super Sticker を送りました！",
+  "youtubeNewMemberEvent": "<b>{name}</b> さんがメンバーになりました！",
+  "youtubeMemberUpgradeEvent": "<b>{name}</b> さんが {level} にアップグレードしました！",
+  "youtubeMemberMilestoneEvent": "<b>{name}</b> さんはメンバーになって {months} か月です！",
+  "youtubeMembershipGiftingEvent": "{count,plural, other{<b>{name}</b> さんがメンバーシップを {count} 件ギフトしました！}}",
+  "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> さんがメンバーシップのギフトを受け取りました！",
+  "youtubeGiftEvent": "<b>{name}</b> さんが {giftName} を送りました（{jewels} Jewels）！",
+  "youtubePollEvent": "アンケート: {question}",
+  "youtubeMembersOnlyModeOn": "メンバー限定モードがオンになりました",
+  "youtubeMembersOnlyModeOff": "メンバー限定モードがオフになりました",
+  "youtubeChatEnded": "ライブチャットは終了しました"
 }

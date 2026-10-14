@@ -262,5 +262,17 @@
   "kicksGiftedEvent": "<b>{senderName}</b> {amount} Kicks পাঠিয়েছেন!",
   "signInWithKick": "Kick দিয়ে সাইন ইন করুন",
   "textToSpeechTooManyMessages": "অনেক বেশি বার্তা আছে। টেক্সট টু স্পিচ বন্ধ করা হয়েছে",
-  "turnOffTextToSpeech": "বন্ধ করুন"
+  "turnOffTextToSpeech": "বন্ধ করুন",
+  "youtubeSuperChatEvent": "<b>{name}</b> {amount} এর একটি Super Chat পাঠিয়েছেন!",
+  "youtubeSuperStickerEvent": "<b>{name}</b> {amount} এর একটি Super Sticker পাঠিয়েছেন!",
+  "youtubeNewMemberEvent": "<b>{name}</b> সদস্য হয়েছেন!",
+  "youtubeMemberUpgradeEvent": "<b>{name}</b> {level} এ আপগ্রেড করেছেন!",
+  "youtubeMemberMilestoneEvent": "<b>{name}</b> {months} মাস ধরে সদস্য!",
+  "youtubeMembershipGiftingEvent": "{count,plural, =1{<b>{name}</b> একটি সদস্যপদ উপহার দিয়েছেন!} other{<b>{name}</b> {count}টি সদস্যপদ উপহার দিয়েছেন!}}",
+  "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> একটি উপহার সদস্যপদ পেয়েছেন!",
+  "youtubeGiftEvent": "<b>{name}</b> {giftName} পাঠিয়েছেন ({jewels} Jewels)!",
+  "youtubePollEvent": "পোল: {question}",
+  "youtubeMembersOnlyModeOn": "শুধু সদস্যদের মোড চালু",
+  "youtubeMembersOnlyModeOff": "শুধু সদস্যদের মোড বন্ধ",
+  "youtubeChatEnded": "লাইভ চ্যাট শেষ হয়েছে"
 }

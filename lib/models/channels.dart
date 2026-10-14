@@ -6,8 +6,9 @@ import 'package:rtchat/components/image/resilient_network_image.dart';
 abstract final class Providers {
   static const twitch = 'twitch';
   static const kick = 'kick';
+  static const youtube = 'youtube';
 
-  static const all = [twitch, kick];
+  static const all = [twitch, kick, youtube];
 }
 
 /// The user-facing name of a provider.
@@ -17,6 +18,8 @@ String providerName(String provider) {
       return 'Twitch';
     case Providers.kick:
       return 'Kick';
+    case Providers.youtube:
+      return 'YouTube';
   }
   return provider;
 }
