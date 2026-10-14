@@ -29,6 +29,13 @@ android {
         versionName = flutter.versionName
     }
 
+    packaging {
+        jniLibs {
+            // Not used by the Dart FFI bindings (they use the C API).
+            excludes += "**/libsherpa-onnx-cxx-api.so"
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

@@ -1,0 +1,12 @@
+85faaea7511ca9d1d2f251fed0a4553bdf0d1ee046102fa60ddd8046c751f76f  kitten-micro-en-v0_8.tar.bz2
+518f9b130320f690d5b5476df77bde4215fca67773cda16710318e5081234b9d  kitten-mini-en-v0_8.tar.bz2
+16092117bfe591ddcd58d078e1454603b8e1caea46f85653b2c2efae76bd883e  kitten-nano-en-v0_8-fp32.tar.bz2
+6fa5be852612ce761094ba74ee6123b4fc4acfefa79bf64dc63acae4a83af2fd  kitten-nano-en-v0_8-int8.tar.bz2
+c9f0dd393615805b0bab050c340834d5e684e732aec91c0e860cd30e982c08bd  kokoro-int8-en-v0_19.tar.bz2
+a1e94694776049035c4f2c6529f003aaece993c76aae9a78995831c3c4dcafc6  kokoro-int8-multi-lang-v1_1.tar.bz2
+a3f4c73d043860e3fd2e5b06f36795eb81de0fc8e8de6df703245edddd87dbad  kokoro-multi-lang-v1_1.tar.bz2
+82fa96f91c4ef8abaae3a14a3f4153facf88bed821d1f7331cec2700f432c427  sherpa-onnx-supertonic-3-tts-int8-2026-05-11.tar.bz2
+7e4552e239988f4896872822b56e99e0e9e00958164e3f6bdf5ee14391fbe829  vits-piper-en_US-libritts_r-medium-int8.tar.bz2
+10dc268f3e371696d721486123e2705a9fc1faa113491979fde4d88dba1f1b1c  vits-piper-en_US-libritts_r-medium.tar.bz2
+b0000a509f7551a80742eed5c43b8eb03f469cb9f0a42f6feee96ce0da0ebab8  vits-piper-ru_RU-irina-medium-int8.tar.bz2
+1fc0f54e5e084fe287c07909f2f6e0ba6d857864cf800e3ab80286a4e8233008  vits-piper-ru_RU-irina-medium.tar.bz2

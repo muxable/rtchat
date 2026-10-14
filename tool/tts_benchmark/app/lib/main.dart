@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'bench.dart';
-import 'ort_bench.dart';
 
 /// On-device TTS benchmark for rtchat (#1500).
 ///
@@ -135,14 +134,6 @@ class _BenchPageState extends State<BenchPage> {
       'os_version': Platform.operatingSystemVersion,
       'cpus': Platform.numberOfProcessors,
     };
-    if (spec.runtime == 'ort') {
-      try {
-        return {...header, ...await runOrtBenchmark(spec, modelsDir, lines)};
-      } catch (e) {
-        _say('  ERROR $e');
-        return {...header, 'error': '$e'};
-      }
-    }
     final port = ReceivePort();
     final starts = <int, int>{};
     final firstChunkMain = <int, double>{};

@@ -16,7 +16,6 @@ class RunSpec {
     this.sid = 0,
     this.limit = 0,
     this.maxNumSentences = 1,
-    this.runtime = 'sherpa',
   });
 
   factory RunSpec.fromJson(Map<String, dynamic> j) => RunSpec(
@@ -28,7 +27,6 @@ class RunSpec {
         sid: (j['sid'] as num?)?.toInt() ?? 0,
         limit: (j['limit'] as num?)?.toInt() ?? 0,
         maxNumSentences: (j['max_num_sentences'] as num?)?.toInt() ?? 1,
-        runtime: j['runtime'] as String? ?? 'sherpa',
       );
 
   final String model;
@@ -40,10 +38,6 @@ class RunSpec {
   final int limit;
   final int maxNumSentences;
 
-  /// `sherpa` (sherpa_onnx, full text-to-speech pipeline) or `ort` (raw
-  /// acoustic model through flutter_onnxruntime; see ort_bench.dart).
-  final String runtime;
-
   Map<String, dynamic> toJson() => {
         'model': model,
         'threads': threads,
@@ -53,11 +47,10 @@ class RunSpec {
         'sid': sid,
         'limit': limit,
         'max_num_sentences': maxNumSentences,
-        'runtime': runtime,
       };
 
   @override
-  String toString() => '$runtime $model t=$threads $provider $corpus';
+  String toString() => '$model t=$threads $provider $corpus';
 }
 
 /// Everything the worker isolate needs; must be sendable between isolates.

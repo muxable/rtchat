@@ -15,8 +15,11 @@ tool/tts_benchmark/
   desktop/intelligibility.py   TTS -> ASR round trip, word error rate
   desktop/run_all.sh           the desktop matrix used for #1500
   configs/android_*.json       benchmark configs for the app
-  app/                         Flutter benchmark app (sherpa_onnx +
-                               flutter_onnxruntime), Android and iOS
+  app/                         Flutter benchmark app (sherpa_onnx),
+                               Android and iOS
+  ort_native/                  raw ONNX Runtime CLI for comparing execution
+                               providers (CPU / XNNPACK / NNAPI) on Android
+  results/                     raw results from the #1500 spike
   app/assets/corpus/           50 English and 10 Russian chat messages
 ```
 
@@ -101,11 +104,10 @@ There is no script for iOS; it needs a Mac with Xcode.
    cumulative across runs; run one model per config if you need clean
    numbers.
 
-The benchmark app's deployment target is iOS 16.0 because
-`flutter_onnxruntime` (only used for the `"runtime": "ort"` runs) requires
-it. `sherpa_onnx_ios` itself only needs iOS 13.0. To test on an iOS 15.5
-device, remove `flutter_onnxruntime` and `lib/ort_bench.dart` and set the
-target back to 15.5. To try CoreML, add runs with `"provider": "coreml"`.
+The app's deployment target is iOS 15.5, like rtchat (`sherpa_onnx_ios`
+itself needs 13.0). The sherpa-onnx iOS framework includes ONNX Runtime's
+CoreML execution provider, so CoreML can be tried with
+`"provider": "coreml"` runs; this has not been measured yet.
 
 ## Config format
 
@@ -115,9 +117,7 @@ target back to 15.5. To try CoreML, add runs with `"provider": "coreml"`.
   "runs": [
     {"model": "kitten-nano-en-v0_8-int8", "threads": 2},
     {"model": "kokoro-int8-multi-lang-v1_1", "threads": 4, "provider": "cpu"},
-    {"model": "vits-piper-ru_RU-irina-medium", "corpus": "ru", "lang": "ru"},
-    {"model": "vits-piper-en_US-libritts_r-medium", "runtime": "ort",
-     "provider": "xnnpack", "limit": 20}
+    {"model": "vits-piper-ru_RU-irina-medium", "corpus": "ru", "lang": "ru"}
   ]
 }
 ```
@@ -127,17 +127,35 @@ target back to 15.5. To try CoreML, add runs with `"provider": "coreml"`.
 | `model` | | directory name under `models/` (the archive name) |
 | `threads` | 2 | ONNX Runtime intra-op threads |
 | `provider` | `cpu` | `cpu`, `xnnpack`, `nnapi`, `coreml` |
-| `runtime` | `sherpa` | `sherpa` = full TTS through `sherpa_onnx`; `ort` = raw acoustic model through `flutter_onnxruntime` (official ORT builds, which include XNNPACK/NNAPI/CoreML) with character-level token ids, for comparing execution providers only |
 | `corpus` | `en` | `en`, `ru` or `streaming_en` (asset file name) |
 | `lang` | `en` | language for Supertonic |
 | `sid` | 0 | speaker id |
 | `limit` | 0 | only the first N messages (0 = all) |
 | `max_num_sentences` | 1 | sherpa `max_num_sentences` |
 
-Note that the sherpa-onnx prebuilt Android libraries are built without NNAPI
-or XNNPACK support: `"provider": "nnapi"` or `"xnnpack"` with
-`"runtime": "sherpa"` silently falls back to the CPU (logcat shows the
-fallback warning). Use `"runtime": "ort"` to measure those providers.
+Note that the sherpa-onnx prebuilt Android libraries can't use NNAPI or
+XNNPACK: `"provider": "nnapi"` or `"xnnpack"` silently falls back to the CPU
+(logcat tag `sherpa-onnx` shows "Fallback to cpu!"). Use `ort_native/` to
+measure those providers.
+
+## Execution providers on Android (`ort_native/`)
+
+`ort_tts_bench` runs the raw acoustic model (no phonemizer; token ids are
+character-level, so only the timings are meaningful) against the official
+`onnxruntime-android` build from Maven Central, which has the NNAPI and
+XNNPACK providers. It can't live in the Flutter app: `sherpa_onnx` and
+`onnxruntime-android` both ship `libonnxruntime.so`, and Gradle can package
+only one of them.
+
+```sh
+tool/tts_benchmark/ort_native/build_android.sh ~/.cache/rtchat-ort arm64-v8a
+tool/tts_benchmark/ort_native/run_android.sh ~/.cache/rtchat-ort \
+  ~/.cache/rtchat-tts-spike/models /tmp/ort-<phone>.jsonl [adb-serial]
+```
+
+Environment variables `THREADS`, `PROVIDERS`, `LIMIT` and `ONLY` (model
+names) narrow the matrix. A crash inside a provider is recorded as an
+`"error"` line.
 
 ## Desktop
 
