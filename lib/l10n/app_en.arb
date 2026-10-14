@@ -1505,14 +1505,6 @@
       }
     }
   },
-  "searchSwipeHint": "Tap a channel to switch to it, or swipe right to add it",
-  "@searchSwipeHint": {
-    "description": "Hint in the channel search sheet explaining the gestures on search results"
-  },
-  "swipeToRemoveHint": "Swipe left to remove",
-  "@swipeToRemoveHint": {
-    "description": "Hint that channels in a list are removed by swiping them to the left"
-  },
   "removeChannel": "Remove",
   "@removeChannel": {
     "description": "Shown while swiping a default channel away to remove it from the default channels"

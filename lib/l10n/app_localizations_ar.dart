@@ -1097,12 +1097,5 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get searchSwipeHint =>
-      'اضغط على قناة للانتقال إليها، أو اسحبها لإضافتها';
-
-  @override
-  String get swipeToRemoveHint => 'اسحب للإزالة';
-
-  @override
   String get removeChannel => 'إزالة';
 }

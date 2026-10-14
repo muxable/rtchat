@@ -67,25 +67,13 @@ class InChatChannels extends StatelessWidget {
         return const SizedBox.shrink();
       }
       final l10n = AppLocalizations.of(context)!;
-      final theme = Theme.of(context);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(l10n.inChat, style: theme.textTheme.titleSmall),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(l10n.swipeToRemoveHint,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall),
-                ),
-              ],
-            ),
+            child: Text(l10n.inChat,
+                style: Theme.of(context).textTheme.titleSmall),
           ),
           for (final channel in channels)
             SwipeToRemoveChannelTile(

@@ -1093,12 +1093,5 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get searchSwipeHint =>
-      'Tryck på en kanal för att byta till den eller svep åt höger för att lägga till den';
-
-  @override
-  String get swipeToRemoveHint => 'Svep åt vänster för att ta bort';
-
-  @override
   String get removeChannel => 'Ta bort';
 }

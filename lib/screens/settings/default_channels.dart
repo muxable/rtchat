@@ -60,12 +60,6 @@ class DefaultChannelsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Text(l10n.defaultChannelsSubtitle),
           ),
-          if (views.hasCustomDefaultChannels)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Text(l10n.swipeToRemoveHint,
-                  style: Theme.of(context).textTheme.bodySmall),
-            ),
           for (final channel in defaults)
             SwipeToRemoveChannelTile(
               channel: channel,

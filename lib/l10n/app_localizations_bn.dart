@@ -1094,12 +1094,5 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String get searchSwipeHint =>
-      'চ্যানেলে যেতে ট্যাপ করুন, বা যোগ করতে ডানে সোয়াইপ করুন';
-
-  @override
-  String get swipeToRemoveHint => 'সরাতে বাঁয়ে সোয়াইপ করুন';
-
-  @override
   String get removeChannel => 'সরান';
 }

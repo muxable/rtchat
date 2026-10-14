@@ -164,12 +164,6 @@ class _ChannelSearchBottomSheetWidgetState
                   _value = value;
                 });
               }),
-          if (onChannelAdd != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(AppLocalizations.of(context)!.searchSwipeHint,
-                  style: Theme.of(context).textTheme.bodySmall),
-            ),
           Expanded(
               child: ChannelSearchResultsWidget(
             query: _value,

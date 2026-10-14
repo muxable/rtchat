@@ -1102,12 +1102,5 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get searchSwipeHint =>
-      'Toque em um canal para mudar para ele ou deslize para a direita para adicioná-lo';
-
-  @override
-  String get swipeToRemoveHint => 'Deslize para a esquerda para remover';
-
-  @override
   String get removeChannel => 'Remover';
 }

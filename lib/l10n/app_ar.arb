@@ -272,7 +272,5 @@
   "removeFromChat": "إزالة من الدردشة",
   "cantChatWithAccount": "لا يمكن لحساب {provider} الخاص بك الدردشة هنا",
   "replaceChannel": "استبدال {channel}",
-  "searchSwipeHint": "اضغط على قناة للانتقال إليها، أو اسحبها لإضافتها",
-  "swipeToRemoveHint": "اسحب للإزالة",
   "removeChannel": "إزالة"
 }

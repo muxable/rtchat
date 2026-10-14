@@ -1108,12 +1108,5 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
-  String get searchSwipeHint =>
-      'Торкніться каналу, щоб перейти на нього, або проведіть праворуч, щоб додати';
-
-  @override
-  String get swipeToRemoveHint => 'Проведіть ліворуч, щоб видалити';
-
-  @override
   String get removeChannel => 'Видалити';
 }

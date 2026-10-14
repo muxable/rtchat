@@ -41,7 +41,6 @@ void main() {
     addTearDown(views.dispose);
     await tester.pumpWidget(app(views));
     expect(find.text('In chat'), findsOneWidget);
-    expect(find.text('Swipe left to remove'), findsOneWidget);
     expect(find.byType(ListTile), findsNWidgets(2));
     // no buttons, just the gesture.
     expect(find.byType(IconButton), findsNothing);

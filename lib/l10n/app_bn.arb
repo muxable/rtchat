@@ -272,7 +272,5 @@
   "removeFromChat": "চ্যাট থেকে সরান",
   "cantChatWithAccount": "আপনার {provider} অ্যাকাউন্ট এখানে চ্যাট করতে পারে না",
   "replaceChannel": "{channel} প্রতিস্থাপন করুন",
-  "searchSwipeHint": "চ্যানেলে যেতে ট্যাপ করুন, বা যোগ করতে ডানে সোয়াইপ করুন",
-  "swipeToRemoveHint": "সরাতে বাঁয়ে সোয়াইপ করুন",
   "removeChannel": "সরান"
 }

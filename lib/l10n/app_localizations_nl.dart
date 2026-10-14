@@ -1102,12 +1102,5 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get searchSwipeHint =>
-      'Tik op een kanaal om ernaar over te schakelen of veeg naar rechts om het toe te voegen';
-
-  @override
-  String get swipeToRemoveHint => 'Veeg naar links om te verwijderen';
-
-  @override
   String get removeChannel => 'Verwijderen';
 }

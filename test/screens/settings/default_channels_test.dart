@@ -60,7 +60,6 @@ void main() {
     expect(find.text('TwitchMux'), findsOneWidget);
     // it's the fallback, so there's nothing to remove.
     expect(find.byType(Dismissible), findsNothing);
-    expect(find.text('Swipe left to remove'), findsNothing);
   });
 
   testWidgets("adds channels from search and removes them",
@@ -73,7 +72,6 @@ void main() {
     expect(views.defaultChannels, [twitch, kick]);
     expect(find.text('KickMux'), findsOneWidget);
 
-    expect(find.text('Swipe left to remove'), findsOneWidget);
     expect(find.byType(IconButton), findsNothing);
     await tester.drag(find.text('TwitchMux'), const Offset(-500, 0));
     await tester.pump();
@@ -109,8 +107,6 @@ void main() {
         results: [result(otherTwitch), result(kick), result(otherKick)]));
     await tester.tap(find.text('Add channel'));
     await tester.pumpAndSettle();
-    expect(find.text('Tap a channel to switch to it, or swipe right to add it'),
-        findsOneWidget);
     expect(find.byType(IconButton), findsNothing);
 
     await tester.drag(

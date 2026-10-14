@@ -1771,18 +1771,6 @@ abstract class AppLocalizations {
   /// **'Replace {channel}'**
   String replaceChannel(String channel);
 
-  /// Hint in the channel search sheet explaining the gestures on search results
-  ///
-  /// In en, this message translates to:
-  /// **'Tap a channel to switch to it, or swipe right to add it'**
-  String get searchSwipeHint;
-
-  /// Hint that channels in a list are removed by swiping them to the left
-  ///
-  /// In en, this message translates to:
-  /// **'Swipe left to remove'**
-  String get swipeToRemoveHint;
-
   /// Shown while swiping a default channel away to remove it from the default channels
   ///
   /// In en, this message translates to:

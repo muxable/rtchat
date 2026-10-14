@@ -272,7 +272,5 @@
   "removeFromChat": "チャットから削除",
   "cantChatWithAccount": "{provider}アカウントではここでチャットできません",
   "replaceChannel": "{channel}と入れ替える",
-  "searchSwipeHint": "タップで切り替え、右にスワイプで追加",
-  "swipeToRemoveHint": "左にスワイプで削除",
   "removeChannel": "削除"
 }

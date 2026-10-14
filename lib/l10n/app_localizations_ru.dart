@@ -1111,12 +1111,5 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get searchSwipeHint =>
-      'Нажмите на канал, чтобы переключиться на него, или смахните вправо, чтобы добавить';
-
-  @override
-  String get swipeToRemoveHint => 'Смахните влево, чтобы удалить';
-
-  @override
   String get removeChannel => 'Удалить';
 }

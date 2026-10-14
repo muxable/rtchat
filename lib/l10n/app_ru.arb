@@ -272,7 +272,5 @@
   "removeFromChat": "Убрать из чата",
   "cantChatWithAccount": "Ваш аккаунт {provider} не может писать здесь",
   "replaceChannel": "Заменить {channel}",
-  "searchSwipeHint": "Нажмите на канал, чтобы переключиться на него, или смахните вправо, чтобы добавить",
-  "swipeToRemoveHint": "Смахните влево, чтобы удалить",
   "removeChannel": "Удалить"
 }

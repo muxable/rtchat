@@ -1068,12 +1068,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get searchSwipeHint => '点按频道即可切换，向右滑动即可添加';
-
-  @override
-  String get swipeToRemoveHint => '向左滑动即可移除';
-
-  @override
   String get removeChannel => '移除';
 }
 
@@ -2139,12 +2133,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String replaceChannel(String channel) {
     return '替換 $channel';
   }
-
-  @override
-  String get searchSwipeHint => '點按頻道即可切換，向右滑動即可新增';
-
-  @override
-  String get swipeToRemoveHint => '向左滑動即可移除';
 
   @override
   String get removeChannel => '移除';

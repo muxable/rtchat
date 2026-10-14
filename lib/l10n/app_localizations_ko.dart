@@ -1070,11 +1070,5 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get searchSwipeHint => '탭하여 채널로 전환하거나 오른쪽으로 스와이프하여 추가하세요';
-
-  @override
-  String get swipeToRemoveHint => '왼쪽으로 스와이프하여 삭제';
-
-  @override
   String get removeChannel => '삭제';
 }

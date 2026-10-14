@@ -272,7 +272,5 @@
   "removeFromChat": "Ta bort från chatten",
   "cantChatWithAccount": "Ditt {provider}-konto kan inte chatta här",
   "replaceChannel": "Ersätt {channel}",
-  "searchSwipeHint": "Tryck på en kanal för att byta till den eller svep åt höger för att lägga till den",
-  "swipeToRemoveHint": "Svep åt vänster för att ta bort",
   "removeChannel": "Ta bort"
 }

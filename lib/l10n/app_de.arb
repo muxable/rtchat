@@ -272,7 +272,5 @@
   "removeFromChat": "Aus dem Chat entfernen",
   "cantChatWithAccount": "Ihr {provider}-Konto kann hier nicht chatten",
   "replaceChannel": "{channel} ersetzen",
-  "searchSwipeHint": "Tippen Sie auf einen Kanal, um zu ihm zu wechseln, oder wischen Sie nach rechts, um ihn hinzuzufügen",
-  "swipeToRemoveHint": "Zum Entfernen nach links wischen",
   "removeChannel": "Entfernen"
 }

@@ -272,7 +272,5 @@
   "removeFromChat": "从聊天中移除",
   "cantChatWithAccount": "你的 {provider} 账号无法在此聊天",
   "replaceChannel": "替换 {channel}",
-  "searchSwipeHint": "点按频道即可切换，向右滑动即可添加",
-  "swipeToRemoveHint": "向左滑动即可移除",
   "removeChannel": "移除"
 }

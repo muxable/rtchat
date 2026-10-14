@@ -1070,11 +1070,5 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get searchSwipeHint => 'タップで切り替え、右にスワイプで追加';
-
-  @override
-  String get swipeToRemoveHint => '左にスワイプで削除';
-
-  @override
   String get removeChannel => '削除';
 }
