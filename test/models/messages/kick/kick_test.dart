@@ -61,6 +61,23 @@ void main() {
           'https://files.kick.com/emotes/37226/fullsize');
     });
 
+    test('shows reply emotes by name', () {
+      final message = KickMessageModel.fromEvent(
+          messageId: 'kick:m',
+          timestamp: timestamp,
+          channelId: 'kick:1',
+          event: {
+            'sender': {'user_id': 1, 'username': 'A'},
+            'content': 'lol',
+            'replies_to': {
+              'message_id': 'parent',
+              'content': 'gg [emote:37226:KEKW] [emote:4148074:HYPERCLAP]',
+              'sender': {'user_id': 2, 'username': 'B'},
+            },
+          });
+      expect(message.reply!.text, 'gg KEKW HYPERCLAP');
+    });
+
     test('tokenizes mentions and links', () {
       final message = KickMessageModel.fromEvent(
           messageId: 'kick:m',

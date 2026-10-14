@@ -84,7 +84,7 @@ class KickMessageWidget extends StatelessWidget {
                         text: "@${styleModel.getDisplayName(reply.author)}: ",
                         style: Theme.of(context).textTheme.bodySmall),
                     TextSpan(
-                        text: reply.content,
+                        text: reply.text,
                         style: Theme.of(context).textTheme.bodySmall),
                   ]),
                   maxLines: 1,
