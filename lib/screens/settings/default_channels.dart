@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/components/channel_search_results.dart' as results;
-import 'package:rtchat/components/provider_icon.dart';
+import 'package:rtchat/components/in_chat_channels.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/views.dart';
 
@@ -37,16 +37,11 @@ class DefaultChannelsScreen extends StatelessWidget {
           return ChannelSearchBottomSheetWidget(
             controller: controller,
             search: search,
-            // like the add button, tapping a result whose provider already
-            // has a default channel doesn't add it.
-            onChannelSelect: (channel) {
-              if (views.canAddDefaultChannel(channel)) {
-                views.addDefaultChannel(channel);
-              }
-            },
+            // like in chat, tapping a result switches to just it and
+            // swiping adds it, replacing the one on its provider.
+            onChannelSelect: (channel) => views.defaultChannels = [channel],
             onChannelAdd: views.addDefaultChannel,
-            isAdded: views.defaultChannels.contains,
-            canAdd: views.canAddDefaultChannel,
+            channels: views.defaultChannels,
           );
         },
       ),
@@ -65,19 +60,20 @@ class DefaultChannelsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Text(l10n.defaultChannelsSubtitle),
           ),
+          if (views.hasCustomDefaultChannels)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Text(l10n.swipeToRemoveHint,
+                  style: Theme.of(context).textTheme.bodySmall),
+            ),
           for (final channel in defaults)
-            ListTile(
-              leading: ProviderIcon(channel.provider),
-              title: Text(channel.displayName),
+            SwipeToRemoveChannelTile(
+              channel: channel,
+              label: l10n.removeChannel,
               // without picked channels, the user's own channel is shown and
               // there's nothing to remove.
-              trailing: views.hasCustomDefaultChannels
-                  ? IconButton(
-                      icon: const Icon(Icons.close),
-                      tooltip:
-                          MaterialLocalizations.of(context).deleteButtonTooltip,
-                      onPressed: () => views.removeDefaultChannel(channel),
-                    )
+              onRemove: views.hasCustomDefaultChannels
+                  ? () => views.removeDefaultChannel(channel)
                   : null,
             ),
           ListTile(

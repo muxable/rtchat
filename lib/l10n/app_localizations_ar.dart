@@ -1087,12 +1087,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get removeFromChat => 'إزالة من الدردشة';
 
   @override
-  String oneChannelPerProvider(String provider) {
-    return 'يمكن إضافة قناة $provider واحدة فقط إلى الدردشة';
-  }
-
-  @override
   String cantChatWithAccount(String provider) {
     return 'لا يمكن لحساب $provider الخاص بك الدردشة هنا';
   }
+
+  @override
+  String replaceChannel(String channel) {
+    return 'استبدال $channel';
+  }
+
+  @override
+  String get searchSwipeHint =>
+      'اضغط على قناة للانتقال إليها، أو اسحبها لإضافتها';
+
+  @override
+  String get swipeToRemoveHint => 'اسحب للإزالة';
+
+  @override
+  String get removeChannel => 'إزالة';
 }

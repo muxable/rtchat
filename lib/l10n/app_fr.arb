@@ -270,6 +270,9 @@
   "useCurrentChannels": "Utiliser les chaînes actuelles",
   "inChat": "Dans le chat",
   "removeFromChat": "Retirer du chat",
-  "oneChannelPerProvider": "Un seul canal {provider} peut être dans le chat",
-  "cantChatWithAccount": "Votre compte {provider} ne peut pas discuter ici"
+  "cantChatWithAccount": "Votre compte {provider} ne peut pas discuter ici",
+  "replaceChannel": "Remplacer {channel}",
+  "searchSwipeHint": "Touchez un canal pour y passer, ou balayez vers la droite pour l'ajouter",
+  "swipeToRemoveHint": "Balayez vers la gauche pour retirer",
+  "removeChannel": "Retirer"
 }

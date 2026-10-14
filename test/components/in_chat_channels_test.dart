@@ -9,7 +9,6 @@ import 'package:rtchat/models/views.dart';
 
 final twitch = Channel(Providers.twitch, '1', 'TwitchMux');
 final kick = Channel(Providers.kick, '2', 'KickMux');
-final friend = Channel(Providers.kick, '3', 'Friend');
 
 Widget app(ViewsModel views) => ChangeNotifierProvider<ViewsModel>.value(
       value: views,
@@ -19,10 +18,6 @@ Widget app(ViewsModel views) => ChangeNotifierProvider<ViewsModel>.value(
         home: Material(child: InChatChannels()),
       ),
     );
-
-Finder removeButton(String name) => find.descendant(
-    of: find.widgetWithText(ListTile, name),
-    matching: find.byTooltip('Remove from chat'));
 
 // the twitch icon is an asset image that flutter's image cache keeps.
 final ignoreImages = LeakTesting.settings
@@ -38,27 +33,40 @@ void main() {
     expect(find.byType(ListTile), findsNothing);
   });
 
-  testWidgets("lists the channels in chat and removes them",
+  testWidgets("lists the channels in chat, removed by swiping left",
       experimentalLeakTesting: ignoreImages, (tester) async {
     final views = ViewsModel()
       ..openChannel(twitch)
-      ..addChannel(kick)
-      ..addChannel(friend);
+      ..addChannel(kick);
     addTearDown(views.dispose);
     await tester.pumpWidget(app(views));
     expect(find.text('In chat'), findsOneWidget);
-    expect(find.byType(ListTile), findsNWidgets(3));
+    expect(find.text('Swipe left to remove'), findsOneWidget);
+    expect(find.byType(ListTile), findsNWidgets(2));
+    // no buttons, just the gesture.
+    expect(find.byType(IconButton), findsNothing);
 
-    await tester.tap(removeButton('KickMux'));
-    await tester.pump();
-    expect(views.channels, [twitch, friend]);
-    expect(find.text('KickMux'), findsNothing);
+    // swiping right does nothing.
+    await tester.drag(find.text('KickMux'), const Offset(500, 0));
+    await tester.pumpAndSettle();
+    expect(views.channels, [twitch, kick]);
 
-    // removing the last but one leaves a single channel, which can't be
-    // removed, so the section goes away.
-    await tester.tap(removeButton('Friend'));
+    await tester.drag(find.text('KickMux'), const Offset(-500, 0));
     await tester.pump();
+    expect(find.text('Remove from chat'), findsOneWidget);
+    await tester.pumpAndSettle();
     expect(views.channels, [twitch]);
+    // a single channel can't be removed, so the section goes away.
     expect(find.text('In chat'), findsNothing);
+  });
+
+  testWidgets("a channel that can't be removed can't be swiped",
+      experimentalLeakTesting: ignoreImages, (tester) async {
+    await tester.pumpWidget(MaterialApp(
+        home: Material(
+            child: SwipeToRemoveChannelTile(
+                channel: twitch, onRemove: null, label: 'Remove'))));
+    expect(find.byType(Dismissible), findsNothing);
+    expect(find.text('TwitchMux'), findsOneWidget);
   });
 }

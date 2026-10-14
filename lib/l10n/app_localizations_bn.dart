@@ -1084,12 +1084,22 @@ class AppLocalizationsBn extends AppLocalizations {
   String get removeFromChat => 'চ্যাট থেকে সরান';
 
   @override
-  String oneChannelPerProvider(String provider) {
-    return 'চ্যাটে শুধু একটি $provider চ্যানেল থাকতে পারে';
-  }
-
-  @override
   String cantChatWithAccount(String provider) {
     return 'আপনার $provider অ্যাকাউন্ট এখানে চ্যাট করতে পারে না';
   }
+
+  @override
+  String replaceChannel(String channel) {
+    return '$channel প্রতিস্থাপন করুন';
+  }
+
+  @override
+  String get searchSwipeHint =>
+      'চ্যানেলে যেতে ট্যাপ করুন, বা যোগ করতে ডানে সোয়াইপ করুন';
+
+  @override
+  String get swipeToRemoveHint => 'সরাতে বাঁয়ে সোয়াইপ করুন';
+
+  @override
+  String get removeChannel => 'সরান';
 }

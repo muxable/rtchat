@@ -1058,14 +1058,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String get removeFromChat => '从聊天中移除';
 
   @override
-  String oneChannelPerProvider(String provider) {
-    return '聊天中只能有一个 $provider 频道';
-  }
-
-  @override
   String cantChatWithAccount(String provider) {
     return '你的 $provider 账号无法在此聊天';
   }
+
+  @override
+  String replaceChannel(String channel) {
+    return '替换 $channel';
+  }
+
+  @override
+  String get searchSwipeHint => '点按频道即可切换，向右滑动即可添加';
+
+  @override
+  String get swipeToRemoveHint => '向左滑动即可移除';
+
+  @override
+  String get removeChannel => '移除';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2122,12 +2131,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get removeFromChat => '從聊天中移除';
 
   @override
-  String oneChannelPerProvider(String provider) {
-    return '聊天中只能有一個 $provider 頻道';
-  }
-
-  @override
   String cantChatWithAccount(String provider) {
     return '你的 $provider 帳號無法在此聊天';
   }
+
+  @override
+  String replaceChannel(String channel) {
+    return '替換 $channel';
+  }
+
+  @override
+  String get searchSwipeHint => '點按頻道即可切換，向右滑動即可新增';
+
+  @override
+  String get swipeToRemoveHint => '向左滑動即可移除';
+
+  @override
+  String get removeChannel => '移除';
 }

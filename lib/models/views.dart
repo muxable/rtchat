@@ -34,10 +34,22 @@ List<Channel> _onePerProvider(List<Channel> channels) {
   ];
 }
 
-/// Whether [channel] can join [channels] in the UI: an account is bound to
-/// one provider, so only one channel per provider is shown at a time.
-bool _canAddChannelTo(List<Channel> channels, Channel channel) =>
-    !channels.any((other) => other.provider == channel.provider);
+/// The channel in [channels] on [channel]'s provider, which adding [channel]
+/// replaces. An account is bound to one provider, so at most one channel per
+/// provider is shown at a time.
+Channel? channelReplacedBy(List<Channel> channels, Channel channel) => channels
+    .where((other) => other.provider == channel.provider && other != channel)
+    .firstOrNull;
+
+/// [channels] with [channel] added, in place of the one on its provider.
+List<Channel> _withChannel(List<Channel> channels, Channel channel) {
+  final index =
+      channels.indexWhere((other) => other.provider == channel.provider);
+  if (index == -1) {
+    return [...channels, channel];
+  }
+  return [...channels]..[index] = channel;
+}
 
 /// The channels shown in chat, on any providers. The app opens with the
 /// default channels (the signed-in user's own channel unless others were
@@ -79,15 +91,17 @@ class ViewsModel extends ChangeNotifier {
   bool get hasCustomDefaultChannels => _defaultChannels.isNotEmpty;
 
   set defaultChannels(List<Channel> channels) {
-    _defaultChannels = List.unmodifiable(channels.toSet().toList());
+    _defaultChannels = List.unmodifiable(_onePerProvider(channels));
     notifyListeners();
   }
 
+  /// Adds [channel] to the default channels, replacing the one on its
+  /// provider.
   void addDefaultChannel(Channel channel) {
     if (_defaultChannels.contains(channel)) {
       return;
     }
-    defaultChannels = [...defaultChannels, channel];
+    defaultChannels = _withChannel(defaultChannels, channel);
   }
 
   void removeDefaultChannel(Channel channel) {
@@ -100,18 +114,11 @@ class ViewsModel extends ChangeNotifier {
 
   void useCurrentChannelsAsDefault() => defaultChannels = channels;
 
-  /// Whether the UI lets [channel] be added to the default channels.
-  bool canAddDefaultChannel(Channel channel) =>
-      _canAddChannelTo(defaultChannels, channel);
-
   /// The channels shown in chat.
   List<Channel> get channels =>
       _channels == null ? defaultChannels : List.unmodifiable(_channels!);
 
   bool contains(Channel channel) => channels.contains(channel);
-
-  /// Whether the UI lets [channel] be added to the channels shown.
-  bool canAddChannel(Channel channel) => _canAddChannelTo(channels, channel);
 
   /// The first channel. Features that only support one channel at a time
   /// (for now) use this one.
@@ -125,12 +132,13 @@ class ViewsModel extends ChangeNotifier {
   /// Shows just [channel], e.g. one picked from search or a raid.
   void openChannel(Channel channel) => _setChannels([channel]);
 
-  /// Adds [channel] to the channels shown.
+  /// Adds [channel] to the channels shown, replacing the one on its
+  /// provider.
   void addChannel(Channel channel) {
     if (contains(channel)) {
       return;
     }
-    _setChannels([...channels, channel]);
+    _setChannels(_withChannel(channels, channel));
   }
 
   /// Removes [channel] from the channels shown, unless it's the only one.

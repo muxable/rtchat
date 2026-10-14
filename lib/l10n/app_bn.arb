@@ -270,6 +270,9 @@
   "useCurrentChannels": "বর্তমান চ্যানেলগুলো ব্যবহার করুন",
   "inChat": "চ্যাটে",
   "removeFromChat": "চ্যাট থেকে সরান",
-  "oneChannelPerProvider": "চ্যাটে শুধু একটি {provider} চ্যানেল থাকতে পারে",
-  "cantChatWithAccount": "আপনার {provider} অ্যাকাউন্ট এখানে চ্যাট করতে পারে না"
+  "cantChatWithAccount": "আপনার {provider} অ্যাকাউন্ট এখানে চ্যাট করতে পারে না",
+  "replaceChannel": "{channel} প্রতিস্থাপন করুন",
+  "searchSwipeHint": "চ্যানেলে যেতে ট্যাপ করুন, বা যোগ করতে ডানে সোয়াইপ করুন",
+  "swipeToRemoveHint": "সরাতে বাঁয়ে সোয়াইপ করুন",
+  "removeChannel": "সরান"
 }

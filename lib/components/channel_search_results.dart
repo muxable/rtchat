@@ -8,6 +8,7 @@ import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/components/provider_icon.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/views.dart';
 
 final _search = FirebaseFunctions.instance.httpsCallable("search");
 
@@ -133,16 +134,13 @@ class ChannelSearchResultsWidget extends StatefulWidget {
   final Function(Channel) onChannelSelect;
   final ScrollController? controller;
 
-  /// Adds a result to the channels shown, from a button on each result. No
-  /// button without it.
+  /// Adds a swiped result to [channels], replacing the one on its provider.
+  /// Results can't be swiped without it.
   final void Function(Channel)? onChannelAdd;
 
-  /// Whether a result was already added, which disables its add button.
-  final bool Function(Channel)? isAdded;
-
-  /// Whether a result can be added, e.g. not when a channel on its provider
-  /// already was. Disables its add button when false.
-  final bool Function(Channel)? canAdd;
+  /// The channels a swiped result is added to. A result already in them
+  /// can't be swiped.
+  final List<Channel> channels;
 
   /// Shown above the results, scrolling with them.
   final Widget? header;
@@ -156,8 +154,7 @@ class ChannelSearchResultsWidget extends StatefulWidget {
       required this.isShowOnlyOnline,
       this.controller,
       this.onChannelAdd,
-      this.isAdded,
-      this.canAdd,
+      this.channels = const [],
       this.header});
 
   @override
@@ -226,9 +223,47 @@ class _ChannelSearchResultsWidgetState
   Widget _tile(BuildContext context, SearchResult result) {
     final channel = result.channel;
     final onChannelAdd = widget.onChannelAdd;
-    final isAdded = widget.isAdded?.call(channel) ?? false;
-    final canAdd = !isAdded && (widget.canAdd?.call(channel) ?? true);
+    final tile = _listTile(context, result);
+    if (onChannelAdd == null || widget.channels.contains(channel)) {
+      return tile;
+    }
+    final replaced = channelReplacedBy(widget.channels, channel);
     final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    // swiping right adds the result; it stays in the results.
+    return Dismissible(
+      key: ValueKey(channel.toString()),
+      direction: DismissDirection.startToEnd,
+      // adding isn't destructive, so it takes less of a swipe than removing.
+      dismissThresholds: const {DismissDirection.startToEnd: 0.3},
+      confirmDismiss: (direction) async {
+        onChannelAdd(channel);
+        return false;
+      },
+      background: Container(
+        color: colors.primaryContainer,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        alignment: Alignment.centerLeft,
+        child: Row(children: [
+          Icon(replaced == null ? Icons.add : Icons.swap_horiz,
+              color: colors.onPrimaryContainer),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+                replaced == null
+                    ? l10n.addToChat
+                    : l10n.replaceChannel(replaced.displayName),
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: colors.onPrimaryContainer)),
+          ),
+        ]),
+      ),
+      child: tile,
+    );
+  }
+
+  Widget _listTile(BuildContext context, SearchResult result) {
+    final channel = result.channel;
     return ListTile(
         leading: Container(
             height: 48,
@@ -291,16 +326,6 @@ class _ChannelSearchResultsWidgetState
           ),
         ]),
         subtitle: result.title == null ? null : Text(result.title!),
-        trailing: onChannelAdd == null
-            ? null
-            : IconButton(
-                tooltip: isAdded || canAdd
-                    ? l10n.addToChat
-                    : l10n
-                        .oneChannelPerProvider(providerName(channel.provider)),
-                icon: Icon(isAdded ? Icons.check : Icons.add),
-                onPressed: canAdd ? () => onChannelAdd(channel) : null,
-              ),
         onTap: () => widget.onChannelSelect(channel));
   }
 }

@@ -34,14 +34,14 @@ void main() {
 
     test("can be added to, removed from and replaced", () {
       final views = signedInAs(twitch);
-      views.addDefaultChannel(other);
-      expect(views.defaultChannels, [twitch, other]);
-      views.addDefaultChannel(other);
-      expect(views.defaultChannels, [twitch, other]);
+      views.addDefaultChannel(kick);
+      expect(views.defaultChannels, [twitch, kick]);
+      views.addDefaultChannel(kick);
+      expect(views.defaultChannels, [twitch, kick]);
       views.removeDefaultChannel(twitch);
-      expect(views.defaultChannels, [other]);
+      expect(views.defaultChannels, [kick]);
       // removing the last one goes back to the user's channel.
-      views.removeDefaultChannel(other);
+      views.removeDefaultChannel(kick);
       expect(views.defaultChannels, [twitch]);
       expect(views.hasCustomDefaultChannels, isFalse);
     });
@@ -75,10 +75,10 @@ void main() {
       views.addDefaultChannel(kick);
       expect(views.channels, [twitch, kick]);
       views.removeChannel(kick);
-      views.addDefaultChannel(other);
+      views.addDefaultChannel(otherKick);
       expect(views.channels, [twitch]);
       views.showDefaultChannels();
-      expect(views.channels, [twitch, kick, other]);
+      expect(views.channels, [twitch, otherKick]);
     });
 
     test("old saved views are ignored", () {
@@ -143,14 +143,10 @@ void main() {
     });
 
     test("removing channels keeps at least one", () {
-      final views = signedInAs(twitch)
-        ..addChannel(kick)
-        ..addChannel(other);
+      final views = signedInAs(twitch)..addChannel(kick);
       views.removeChannel(twitch);
-      expect(views.channels, [kick, other]);
-      expect(views.primaryChannel, kick);
-      views.removeChannel(other);
       expect(views.channels, [kick]);
+      expect(views.primaryChannel, kick);
       views.removeChannel(kick);
       expect(views.channels, [kick]);
     });
@@ -186,27 +182,41 @@ void main() {
   });
 
   group("one channel per provider", () {
-    test("the UI can't add a second channel on a provider shown", () {
-      final views = signedInAs(twitch);
-      expect(views.canAddChannel(kick), isTrue);
-      expect(views.canAddChannel(other), isFalse);
-      expect(views.canAddChannel(twitch), isFalse);
-      views.addChannel(kick);
-      expect(views.canAddChannel(otherKick), isFalse);
-      // once twitch is gone, another twitch channel can be added.
-      views.removeChannel(twitch);
-      expect(views.canAddChannel(other), isTrue);
+    test("adding a channel replaces the one on its provider, in place", () {
+      var notifications = 0;
+      final views = signedInAs(twitch)
+        ..addChannel(kick)
+        ..addListener(() => notifications++);
+      views.addChannel(other);
+      expect(views.channels, [other, kick]);
+      views.addChannel(otherKick);
+      expect(views.channels, [other, otherKick]);
+      expect(notifications, 2);
     });
 
-    test("nor a second default channel on a provider", () {
+    test("the channel a channel would replace", () {
+      final channels = [twitch, kick];
+      expect(channelReplacedBy(channels, other), twitch);
+      expect(channelReplacedBy(channels, otherKick), kick);
+      // not itself.
+      expect(channelReplacedBy(channels, kick), isNull);
+      expect(channelReplacedBy([twitch], kick), isNull);
+    });
+
+    test("so does adding a default channel", () {
       final views = signedInAs(twitch);
       // the user's own channel is the default until others are picked.
-      expect(views.canAddDefaultChannel(other), isFalse);
-      expect(views.canAddDefaultChannel(kick), isTrue);
+      views.addDefaultChannel(other);
+      expect(views.defaultChannels, [other]);
       views.addDefaultChannel(kick);
-      expect(views.canAddDefaultChannel(otherKick), isFalse);
-      views.removeDefaultChannel(twitch);
-      expect(views.canAddDefaultChannel(other), isTrue);
+      views.addDefaultChannel(otherKick);
+      expect(views.defaultChannels, [other, otherKick]);
+    });
+
+    test("default channels set together keep the first of each provider", () {
+      final views = signedInAs(twitch);
+      views.defaultChannels = [kick, twitch, otherKick, other];
+      expect(views.defaultChannels, [kick, twitch]);
     });
 
     test("saved defaults keep the first channel of each provider", () {
@@ -226,20 +236,12 @@ void main() {
   });
 
   group("messages are sent", () {
-    test("to the first channel on the account's provider", () {
+    test("to the channel on the account's provider", () {
       final views = signedInAs(kick)
         ..openChannel(twitch)
         ..addChannel(kick);
       expect(views.sendChannel(kick), kick);
       expect(views.sendChannel(twitch), twitch);
-    });
-
-    test("to the first of several on the provider, which the UI prevents", () {
-      final views = signedInAs(kick)
-        ..openChannel(twitch)
-        ..addChannel(otherKick)
-        ..addChannel(kick);
-      expect(views.sendChannel(kick), otherKick);
     });
 
     test("nowhere when no channel shown is on the account's provider", () {

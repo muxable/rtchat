@@ -270,6 +270,9 @@
   "useCurrentChannels": "استخدام القنوات الحالية",
   "inChat": "في الدردشة",
   "removeFromChat": "إزالة من الدردشة",
-  "oneChannelPerProvider": "يمكن إضافة قناة {provider} واحدة فقط إلى الدردشة",
-  "cantChatWithAccount": "لا يمكن لحساب {provider} الخاص بك الدردشة هنا"
+  "cantChatWithAccount": "لا يمكن لحساب {provider} الخاص بك الدردشة هنا",
+  "replaceChannel": "استبدال {channel}",
+  "searchSwipeHint": "اضغط على قناة للانتقال إليها، أو اسحبها لإضافتها",
+  "swipeToRemoveHint": "اسحب للإزالة",
+  "removeChannel": "إزالة"
 }

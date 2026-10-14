@@ -270,6 +270,9 @@
   "useCurrentChannels": "Використати поточні канали",
   "inChat": "У чаті",
   "removeFromChat": "Прибрати з чату",
-  "oneChannelPerProvider": "У чаті може бути лише один канал {provider}",
-  "cantChatWithAccount": "Ваш обліковий запис {provider} не може писати тут"
+  "cantChatWithAccount": "Ваш обліковий запис {provider} не може писати тут",
+  "replaceChannel": "Замінити {channel}",
+  "searchSwipeHint": "Торкніться каналу, щоб перейти на нього, або проведіть праворуч, щоб додати",
+  "swipeToRemoveHint": "Проведіть ліворуч, щоб видалити",
+  "removeChannel": "Видалити"
 }

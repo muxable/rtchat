@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/components/channel_search_results.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
@@ -48,10 +49,6 @@ Widget app(ViewsModel views,
       ),
     );
 
-Finder removeButton(String name) => find.descendant(
-    of: find.widgetWithText(ListTile, name),
-    matching: find.byIcon(Icons.close));
-
 // the twitch icon is an asset image that flutter's image cache keeps.
 final ignoreImages = LeakTesting.settings
     .withIgnored(classes: ['ImageStreamCompleterHandle', '_LiveImage']);
@@ -62,7 +59,8 @@ void main() {
     await tester.pumpWidget(app(signedInAs(twitch)));
     expect(find.text('TwitchMux'), findsOneWidget);
     // it's the fallback, so there's nothing to remove.
-    expect(find.byIcon(Icons.close), findsNothing);
+    expect(find.byType(Dismissible), findsNothing);
+    expect(find.text('Swipe left to remove'), findsNothing);
   });
 
   testWidgets("adds channels from search and removes them",
@@ -75,8 +73,12 @@ void main() {
     expect(views.defaultChannels, [twitch, kick]);
     expect(find.text('KickMux'), findsOneWidget);
 
-    await tester.tap(removeButton('TwitchMux'));
+    expect(find.text('Swipe left to remove'), findsOneWidget);
+    expect(find.byType(IconButton), findsNothing);
+    await tester.drag(find.text('TwitchMux'), const Offset(-500, 0));
     await tester.pump();
+    expect(find.text('Remove'), findsOneWidget);
+    await tester.pumpAndSettle();
     expect(views.defaultChannels, [kick]);
     expect(find.text('TwitchMux'), findsNothing);
   });
@@ -98,24 +100,41 @@ void main() {
     expect(tester.widget<OutlinedButton>(button).onPressed, isNull);
   });
 
-  testWidgets("search can't add a second default channel on a provider",
+  testWidgets("search swipes add or replace by provider, taps switch",
       experimentalLeakTesting: ignoreImages, (tester) async {
     final otherTwitch = Channel(Providers.twitch, '3', 'Friend');
+    final otherKick = Channel(Providers.kick, '4', 'Pal');
     final views = signedInAs(twitch);
-    await tester
-        .pumpWidget(app(views, results: [result(otherTwitch), result(kick)]));
+    await tester.pumpWidget(app(views,
+        results: [result(otherTwitch), result(kick), result(otherKick)]));
     await tester.tap(find.text('Add channel'));
     await tester.pumpAndSettle();
+    expect(find.text('Tap a channel to switch to it, or swipe right to add it'),
+        findsOneWidget);
+    expect(find.byType(IconButton), findsNothing);
 
-    Finder addButton(String name) => find.descendant(
-        of: find.widgetWithText(ListTile, name),
-        matching: find.byType(IconButton));
-    expect(tester.widget<IconButton>(addButton('Friend')).onPressed, isNull);
-    expect(tester.widget<IconButton>(addButton('Friend')).tooltip,
-        'Only one Twitch channel can be in chat');
-
-    await tester.tap(addButton('KickMux'));
-    await tester.pump();
+    await tester.drag(
+        find.widgetWithText(ListTile, 'KickMux').last, const Offset(400, 0));
+    await tester.pumpAndSettle();
     expect(views.defaultChannels, [twitch, kick]);
+
+    await tester.drag(
+        find.widgetWithText(ListTile, 'Friend').last, const Offset(400, 0));
+    await tester.pump();
+    expect(find.text('Replace TwitchMux'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(views.defaultChannels, [otherTwitch, kick]);
+
+    await tester.drag(
+        find.widgetWithText(ListTile, 'Pal').last, const Offset(400, 0));
+    await tester.pumpAndSettle();
+    expect(views.defaultChannels, [otherTwitch, otherKick]);
+
+    // tapping a result makes it the only default channel.
+    tester
+        .widget<ChannelSearchBottomSheetWidget>(
+            find.byType(ChannelSearchBottomSheetWidget))
+        .onChannelSelect(kick);
+    expect(views.defaultChannels, [kick]);
   });
 }

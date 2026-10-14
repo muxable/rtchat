@@ -1092,12 +1092,22 @@ class AppLocalizationsPt extends AppLocalizations {
   String get removeFromChat => 'Remover do chat';
 
   @override
-  String oneChannelPerProvider(String provider) {
-    return 'Só pode haver um canal da $provider no chat';
-  }
-
-  @override
   String cantChatWithAccount(String provider) {
     return 'Sua conta da $provider não pode conversar aqui';
   }
+
+  @override
+  String replaceChannel(String channel) {
+    return 'Substituir $channel';
+  }
+
+  @override
+  String get searchSwipeHint =>
+      'Toque em um canal para mudar para ele ou deslize para a direita para adicioná-lo';
+
+  @override
+  String get swipeToRemoveHint => 'Deslize para a esquerda para remover';
+
+  @override
+  String get removeChannel => 'Remover';
 }

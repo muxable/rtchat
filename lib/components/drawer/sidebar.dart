@@ -185,8 +185,7 @@ class _DrawerHeader extends StatelessWidget {
                                 return ChannelSearchBottomSheetWidget(
                                   onChannelSelect: views.openChannel,
                                   onChannelAdd: views.addChannel,
-                                  isAdded: views.contains,
-                                  canAdd: views.canAddChannel,
+                                  channels: views.channels,
                                   header: const InChatChannels(),
                                   onRaid: raidFrom == null
                                       ? null
@@ -300,8 +299,7 @@ class _SidebarState extends State<Sidebar> {
                       isRaid: true,
                       onChannelSelect: views.openChannel,
                       onChannelAdd: views.addChannel,
-                      isAdded: views.contains,
-                      canAdd: views.canAddChannel,
+                      channels: views.channels,
                       onRaid: raidFrom == null
                           ? null
                           : (channel) =>

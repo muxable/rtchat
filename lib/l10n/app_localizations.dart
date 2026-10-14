@@ -1759,17 +1759,35 @@ abstract class AppLocalizations {
   /// **'Remove from chat'**
   String get removeFromChat;
 
-  /// Why a channel search result can't be added: only one channel per streaming platform can be shown in chat
-  ///
-  /// In en, this message translates to:
-  /// **'Only one {provider} channel can be in chat'**
-  String oneChannelPerProvider(String provider);
-
   /// Hint in the disabled message input when none of the channels shown are on the platform of the signed-in account
   ///
   /// In en, this message translates to:
   /// **'Your {provider} account can\'t chat here'**
   String cantChatWithAccount(String provider);
+
+  /// Shown while swiping a channel search result whose platform already has a channel in chat: adding it replaces that channel
+  ///
+  /// In en, this message translates to:
+  /// **'Replace {channel}'**
+  String replaceChannel(String channel);
+
+  /// Hint in the channel search sheet explaining the gestures on search results
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a channel to switch to it, or swipe right to add it'**
+  String get searchSwipeHint;
+
+  /// Hint that channels in a list are removed by swiping them to the left
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe left to remove'**
+  String get swipeToRemoveHint;
+
+  /// Shown while swiping a default channel away to remove it from the default channels
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeChannel;
 }
 
 class _AppLocalizationsDelegate

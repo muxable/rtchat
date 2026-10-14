@@ -270,6 +270,9 @@
   "useCurrentChannels": "現在のチャンネルを使用",
   "inChat": "チャットに表示中",
   "removeFromChat": "チャットから削除",
-  "oneChannelPerProvider": "チャットに追加できる{provider}チャンネルは1つだけです",
-  "cantChatWithAccount": "{provider}アカウントではここでチャットできません"
+  "cantChatWithAccount": "{provider}アカウントではここでチャットできません",
+  "replaceChannel": "{channel}と入れ替える",
+  "searchSwipeHint": "タップで切り替え、右にスワイプで追加",
+  "swipeToRemoveHint": "左にスワイプで削除",
+  "removeChannel": "削除"
 }

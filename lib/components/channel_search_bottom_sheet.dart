@@ -16,14 +16,12 @@ class ChannelSearchBottomSheetWidget extends StatefulWidget {
   final bool? isRaid;
   final ChannelSearch search;
 
-  /// Adds a channel without closing the sheet, from a button on each result.
+  /// Adds a swiped result to [channels] without closing the sheet,
+  /// replacing the one on its provider.
   final void Function(Channel)? onChannelAdd;
 
-  /// Whether a channel was already added.
-  final bool Function(Channel)? isAdded;
-
-  /// Whether a channel can be added; its add button is disabled otherwise.
-  final bool Function(Channel)? canAdd;
+  /// The channels a swiped result is added to.
+  final List<Channel> channels;
 
   /// Shown above the results.
   final Widget? header;
@@ -36,8 +34,7 @@ class ChannelSearchBottomSheetWidget extends StatefulWidget {
       this.isRaid,
       this.search = searchChannels,
       this.onChannelAdd,
-      this.isAdded,
-      this.canAdd,
+      this.channels = const [],
       this.header});
 
   @override
@@ -104,6 +101,8 @@ class _ChannelSearchBottomSheetWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final onChannelAdd =
+        _raid && widget.onRaid != null ? null : widget.onChannelAdd;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -165,6 +164,12 @@ class _ChannelSearchBottomSheetWidgetState
                   _value = value;
                 });
               }),
+          if (onChannelAdd != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(AppLocalizations.of(context)!.searchSwipeHint,
+                  style: Theme.of(context).textTheme.bodySmall),
+            ),
           Expanded(
               child: ChannelSearchResultsWidget(
             query: _value,
@@ -185,10 +190,8 @@ class _ChannelSearchBottomSheetWidgetState
               Navigator.of(context).pop();
             },
             isShowOnlyOnline: _raid && widget.onRaid != null,
-            onChannelAdd:
-                _raid && widget.onRaid != null ? null : widget.onChannelAdd,
-            isAdded: widget.isAdded,
-            canAdd: widget.canAdd,
+            onChannelAdd: onChannelAdd,
+            channels: widget.channels,
             header: widget.header,
           ))
         ],

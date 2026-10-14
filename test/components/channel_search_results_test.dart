@@ -25,8 +25,7 @@ final results = [
 Widget app(
         {required void Function(Channel) onChannelSelect,
         void Function(Channel)? onChannelAdd,
-        bool Function(Channel)? isAdded,
-        bool Function(Channel)? canAdd,
+        List<Channel> channels = const [],
         Widget? header}) =>
     MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -37,8 +36,7 @@ Widget app(
           isShowOnlyOnline: false,
           onChannelSelect: onChannelSelect,
           onChannelAdd: onChannelAdd,
-          isAdded: isAdded,
-          canAdd: canAdd,
+          channels: channels,
           header: header,
           search: (query, provider, isShowOnlyOnline) => Stream.value(results),
         ),
@@ -59,60 +57,83 @@ void main() {
     expect(selected, [Channel(Providers.kick, '2', 'xQc')]);
   });
 
-  testWidgets("no add buttons unless results can be added",
+  testWidgets("results can't be swiped unless they can be added",
       experimentalLeakTesting: ignoreImages, (tester) async {
     await tester.pumpWidget(app(onChannelSelect: (_) {}));
     await tester.pump();
-    expect(find.byTooltip('Add to chat'), findsNothing);
+    expect(find.byType(Dismissible), findsNothing);
+    expect(find.byType(IconButton), findsNothing);
   });
 
-  testWidgets("the add button adds a result instead of opening it",
+  testWidgets("swiping a result right adds it instead of opening it",
       experimentalLeakTesting: ignoreImages, (tester) async {
     final selected = <Channel>[];
     final added = <Channel>[];
     await tester.pumpWidget(app(
         onChannelSelect: selected.add,
         onChannelAdd: added.add,
-        isAdded: (channel) => channel.provider == Providers.twitch));
+        channels: [Channel(Providers.twitch, '9', 'Someone')]));
     await tester.pump();
-    expect(find.byTooltip('Add to chat'), findsNWidgets(2));
+    // no buttons, just the gesture.
+    expect(find.byType(IconButton), findsNothing);
 
-    // already added: shown as such, and can't be added again.
-    final twitchButton = tester.widget<IconButton>(find
-        .descendant(
-            of: find.byType(ListTile).first, matching: find.byType(IconButton))
-        .first);
-    expect(twitchButton.onPressed, isNull);
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    // swiping left does nothing.
+    await tester.drag(find.byType(ListTile).last, const Offset(-500, 0));
+    await tester.pumpAndSettle();
+    expect(added, isEmpty);
 
-    await tester.tap(find.byIcon(Icons.add));
+    await tester.drag(find.byType(ListTile).last, const Offset(400, 0));
+    await tester.pump();
+    expect(find.text('Add to chat'), findsOneWidget);
+    await tester.pumpAndSettle();
     expect(added, [Channel(Providers.kick, '2', 'xQc')]);
     expect(selected, isEmpty);
+    // the result stays.
+    expect(find.byType(ListTile), findsNWidgets(2));
   });
 
-  testWidgets("a result whose provider is already in chat can't be added",
+  testWidgets("swiping a result whose provider is in chat replaces it",
+      experimentalLeakTesting: ignoreImages, (tester) async {
+    final added = <Channel>[];
+    await tester.pumpWidget(app(
+        onChannelSelect: (_) {},
+        onChannelAdd: added.add,
+        channels: [Channel(Providers.twitch, '9', 'Someone')]));
+    await tester.pump();
+    await tester.drag(find.byType(ListTile).first, const Offset(400, 0));
+    await tester.pump();
+    expect(find.text('Replace Someone'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(added, [Channel(Providers.twitch, '1', 'xQc')]);
+  });
+
+  testWidgets("a result already in chat can't be swiped",
+      experimentalLeakTesting: ignoreImages, (tester) async {
+    await tester.pumpWidget(app(
+        onChannelSelect: (_) {},
+        onChannelAdd: (_) {},
+        channels: [Channel(Providers.twitch, '1', 'xQc')]));
+    await tester.pump();
+    expect(find.byType(Dismissible), findsOneWidget);
+    expect(
+        find.ancestor(
+            of: find.byType(ListTile).first,
+            matching: find.byType(Dismissible)),
+        findsNothing);
+  });
+
+  testWidgets("tapping a result switches to it whatever is in chat",
       experimentalLeakTesting: ignoreImages, (tester) async {
     final selected = <Channel>[];
     final added = <Channel>[];
     await tester.pumpWidget(app(
         onChannelSelect: selected.add,
         onChannelAdd: added.add,
-        canAdd: (channel) => channel.provider != Providers.twitch));
+        channels: [Channel(Providers.twitch, '9', 'Someone')]));
     await tester.pump();
-
-    IconButton addButton(int index) => tester.widget<IconButton>(find
-        .descendant(
-            of: find.byType(ListTile).at(index),
-            matching: find.byType(IconButton))
-        .first);
-    expect(addButton(0).onPressed, isNull);
-    expect(addButton(0).tooltip, 'Only one Twitch channel can be in chat');
-    expect(addButton(1).onPressed, isNotNull);
-    expect(addButton(1).tooltip, 'Add to chat');
-
-    // tapping it still opens it.
-    await tester.tap(find.byType(ListTile).first);
-    expect(selected, [Channel(Providers.twitch, '1', 'xQc')]);
+    await tester.tap(find.byType(ListTile).last);
+    expect(selected, [Channel(Providers.kick, '2', 'xQc')]);
+    expect(added, isEmpty);
   });
 
   testWidgets("a header is shown above the results",

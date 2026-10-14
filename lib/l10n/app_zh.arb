@@ -270,6 +270,9 @@
   "useCurrentChannels": "使用当前频道",
   "inChat": "聊天中",
   "removeFromChat": "从聊天中移除",
-  "oneChannelPerProvider": "聊天中只能有一个 {provider} 频道",
-  "cantChatWithAccount": "你的 {provider} 账号无法在此聊天"
+  "cantChatWithAccount": "你的 {provider} 账号无法在此聊天",
+  "replaceChannel": "替换 {channel}",
+  "searchSwipeHint": "点按频道即可切换，向右滑动即可添加",
+  "swipeToRemoveHint": "向左滑动即可移除",
+  "removeChannel": "移除"
 }
