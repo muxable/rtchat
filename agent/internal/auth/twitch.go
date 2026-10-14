@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -19,19 +18,14 @@ import (
 	"golang.org/x/oauth2/twitch"
 )
 
+// TwitchClientID is public; the secret lives in Secret Manager.
 func TwitchClientID() string {
-	id, ok := os.LookupEnv("TWITCH_CLIENT_ID")
-	if !ok {
-		return "edfnh2q85za8phifif9jxt3ey6t9b9"
-	}
-	return id
+	return "edfnh2q85za8phifif9jxt3ey6t9b9"
 }
 
+// TwitchClientSecret reads the secret from Secret Manager, which the deploy
+// workflow controls.
 func TwitchClientSecret() (string, error) {
-	secret, ok := os.LookupEnv("TWITCH_CLIENT_SECRET")
-	if ok {
-		return secret, nil
-	}
 	ctx := context.Background()
 
 	c, err := secretmanager.NewClient(ctx)
