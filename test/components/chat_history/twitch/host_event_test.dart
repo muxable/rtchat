@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/twitch/host_event.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
@@ -14,6 +15,9 @@ void main() {
   AutomatedTestWidgetsFlutterBinding();
   HttpOverrides.global = null;
   testWidgets('host event should have channel name and viewer count',
+      // the avatar is a real network image that flutter's image cache keeps.
+      experimentalLeakTesting: LeakTesting.settings
+          .withIgnored(classes: ['ImageStreamCompleterHandle', '_LiveImage']),
       (WidgetTester tester) async {
     final model = TwitchHostEventModel(
       timestamp: DateTime.now(),
@@ -36,12 +40,12 @@ void main() {
 
 Widget buildWidget(TwitchHostEventModel model) {
   return TestLocalizations(
-    child: ChangeNotifierProvider<StyleModel>.value(
-        value: StyleModel.fromJson({
-          "fontSize": 20.0,
-          "lightnessBoost": 0.179,
-          "isDeletedMessagesVisible": true
-        }),
+    child: ChangeNotifierProvider<StyleModel>(
+        create: (_) => StyleModel.fromJson({
+              "fontSize": 20.0,
+              "lightnessBoost": 0.179,
+              "isDeletedMessagesVisible": true
+            }),
         child: Directionality(
             textDirection: TextDirection.ltr,
             child: MediaQuery(

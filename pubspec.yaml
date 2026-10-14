@@ -48,6 +48,7 @@ dependencies:
   flutter_markdown_plus: ^1.0.12
 
 dev_dependencies:
+  leak_tracker_flutter_testing: any
   flutter_test:
     sdk: flutter
   integration_test:
