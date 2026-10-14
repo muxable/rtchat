@@ -1,6 +1,7 @@
 import * as crypto from "crypto";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
+import { defineSecret } from "firebase-functions/params";
 import {
   AccessToken,
   AuthorizationCode,
@@ -90,6 +91,35 @@ export const KICK_OAUTH_CONFIG = {
   },
 } as ModuleOptions<"client_id">;
 
+// Google OAuth for YouTube. The client id and secret live only in Secret
+// Manager, so the config is built when a function that declares
+// YOUTUBE_OAUTH_SECRETS runs, never at load time.
+export const YOUTUBE_OAUTH_CLIENT_ID = defineSecret("youtube-oauth-client-id");
+export const YOUTUBE_OAUTH_CLIENT_SECRET = defineSecret(
+  "youtube-oauth-client-secret"
+);
+export const YOUTUBE_OAUTH_SECRETS = [
+  YOUTUBE_OAUTH_CLIENT_ID,
+  YOUTUBE_OAUTH_CLIENT_SECRET,
+];
+
+export function youtubeOAuthConfig(id: string, secret: string) {
+  return {
+    client: { id, secret },
+    auth: {
+      tokenHost: "https://oauth2.googleapis.com",
+      tokenPath: "/token",
+      revokePath: "/revoke",
+      authorizeHost: "https://accounts.google.com",
+      authorizePath: "/o/oauth2/v2/auth",
+    },
+    options: {
+      bodyFormat: "form",
+      authorizationMethod: "body",
+    },
+  } as ModuleOptions<"client_id">;
+}
+
 export function oauthConfig(provider: string) {
   switch (provider) {
     case "twitch":
@@ -99,6 +129,14 @@ export function oauthConfig(provider: string) {
         throw new Error("kick oauth is not configured");
       }
       return KICK_OAUTH_CONFIG;
+    case "youtube": {
+      const id = YOUTUBE_OAUTH_CLIENT_ID.value();
+      const secret = YOUTUBE_OAUTH_CLIENT_SECRET.value();
+      if (!id || !secret) {
+        throw new Error("youtube oauth is not configured");
+      }
+      return youtubeOAuthConfig(id, secret);
+    }
     case "streamlabs":
       return STREAMLABS_OAUTH_CONFIG;
     case "streamelements":
@@ -124,8 +162,19 @@ export function isInvalidRefreshError(err: any) {
   const payload = err?.data?.payload;
   return (
     payload?.message === "Invalid refresh token" || // twitch
-    payload?.error === "invalid_grant" // rfc 6749, used by kick
+    payload?.error === "invalid_grant" // rfc 6749, used by kick and google
   );
+}
+
+// Google only returns a refresh token with the first grant, so a refresh
+// response without one keeps the previous refresh token.
+export function withRefreshToken(
+  previous: { refresh_token?: unknown },
+  refreshed: Record<string, unknown>
+) {
+  return refreshed.refresh_token || !previous.refresh_token
+    ? refreshed
+    : { ...refreshed, refresh_token: previous.refresh_token };
 }
 
 export async function getAccessToken(userId: string, provider: string) {
@@ -141,7 +190,10 @@ export async function getAccessToken(userId: string, provider: string) {
     try {
       // providers like kick rotate refresh tokens, so the refreshed token
       // (including its new refresh token) is persisted below.
-      accessToken = await accessToken.refresh();
+      const refreshed = await accessToken.refresh();
+      accessToken = client.createToken(
+        withRefreshToken(accessToken.token, refreshed.token)
+      );
     } catch (err: any) {
       if (isInvalidRefreshError(err)) {
         await admin

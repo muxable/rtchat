@@ -21,6 +21,7 @@ import {
   TWITCH_OAUTH_CONFIG,
 } from "./oauth";
 import { Store, SessionData } from "express-session";
+import { getYouTubeProfile, YOUTUBE_SCOPES } from "./youtube_actions";
 
 admin.initializeApp();
 
@@ -304,6 +305,63 @@ app.get("/auth/kick/callback", async (req, res) => {
 
   const profile = await getKickProfile(String(results.token.access_token));
   await completeSignIn(req, res, "kick", profile, results.token);
+});
+
+app.get("/auth/youtube/redirect", (req, res) => {
+  const state = crypto.randomBytes(20).toString("hex");
+  req.session.companion = req.query.companion?.toString();
+  req.session.state = state;
+  const redirectUri = new AuthorizationCode(
+    oauthConfig("youtube")
+  ).authorizeURL({
+    redirect_uri: `${HOST}/auth/youtube/callback`,
+    scope: YOUTUBE_SCOPES,
+    state,
+    // a refresh token is only issued with offline access, and only on the
+    // first consent unless consent is prompted again.
+    access_type: "offline",
+    prompt: "consent select_account",
+    include_granted_scopes: "true",
+  } as any);
+  res.redirect(redirectUri);
+});
+
+function signInError(
+  req: express.Request,
+  res: express.Response,
+  message: string
+) {
+  if (req.session.companion) {
+    res.status(400).send(message);
+  } else {
+    res.redirect(
+      "com.rtirl.chat://error?message=" + encodeURIComponent(message)
+    );
+  }
+}
+
+app.get("/auth/youtube/callback", async (req, res) => {
+  if (!isValidState(req.session?.state, req.query.state)) {
+    res.redirect("/auth/youtube/redirect");
+    return;
+  }
+  req.session.state = undefined;
+  if (req.query.error || !req.query.code) {
+    signInError(req, res, String(req.query.error ?? "access_denied"));
+    return;
+  }
+
+  const results = await new AuthorizationCode(oauthConfig("youtube")).getToken({
+    code: String(req.query.code),
+    redirect_uri: `${HOST}/auth/youtube/callback`,
+  });
+
+  const profile = await getYouTubeProfile(String(results.token.access_token));
+  if (!profile) {
+    signInError(req, res, "no_youtube_channel");
+    return;
+  }
+  await completeSignIn(req, res, "youtube", profile, results.token);
 });
 
 app.get("/auth/streamlabs/redirect", (req, res) => {
