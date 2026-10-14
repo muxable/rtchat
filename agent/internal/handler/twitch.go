@@ -163,192 +163,49 @@ func (h *TwitchAgent) metadata(channelID string, data interface{}) {
 }
 
 func (h *TwitchAgent) write(channelID, messageID string, data interface{}) {
-	if _, err := h.Firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Create(context.Background(), data); err != nil && status.Code(err) != codes.AlreadyExists {
+	if err := createMessage(context.Background(), func(ctx context.Context) error {
+		_, err := h.Firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Create(ctx, data)
+		return err
+	}); err != nil {
 		zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID), zap.Any("data", data))
 	}
 }
 
 func (h *TwitchAgent) bindEvents(client *twitch.Client) {
 	client.OnNoticeMessage(func(message twitch.NoticeMessage) {
-		if message.Channel == "*" {
+		data := noticeMetadata(message)
+		if message.Channel == "*" || data == nil {
 			return
 		}
 		userID, err := auth.TwitchUserIDFromUsername(h.Firestore, h.ClientID, h.ClientSecret, message.Channel)
 		if err != nil {
 			return
 		}
-		channelID := fmt.Sprintf("twitch:%s", userID)
-		switch message.MsgID {
-		case "r9k_on", "already_r9k_on":
-			go h.metadata(channelID, map[string]interface{}{
-				"isR9k": true,
-			})
-		case "r9k_off", "already_r9k_off":
-			go h.metadata(channelID, map[string]interface{}{
-				"isR9k": false,
-			})
-		case "slow_on", "already_slow_on":
-			go h.metadata(channelID, map[string]interface{}{
-				"isSlowMode": true,
-			})
-		case "slow_off", "already_slow_off":
-			go h.metadata(channelID, map[string]interface{}{
-				"isSlowMode": false,
-			})
-		case "subs_on", "already_subs_on":
-			go h.metadata(channelID, map[string]interface{}{
-				"isSubsOnly": true,
-			})
-		case "subs_off", "already_subs_off":
-			go h.metadata(channelID, map[string]interface{}{
-				"isSubsOnly": false,
-			})
-		case "followers_on", "already_followers_on":
-			go h.metadata(channelID, map[string]interface{}{
-				"isFollowersOnly": true,
-			})
-		case "followers_off", "already_followers_off":
-			go h.metadata(channelID, map[string]interface{}{
-				"isFollowersOnly": false,
-			})
-		case "emote_only_on", "already_emote_only_on":
-			go h.metadata(channelID, map[string]interface{}{
-				"isEmoteOnly": true,
-			})
-		case "emote_only_off", "already_emote_only_off":
-			go h.metadata(channelID, map[string]interface{}{
-				"isEmoteOnly": false,
-			})
-		}
+		go h.metadata(fmt.Sprintf("twitch:%s", userID), data)
 	})
 
 	client.OnUserNoticeMessage(func(message twitch.UserNoticeMessage) {
 		zap.L().Info("user notice", zap.String("message", message.Raw))
-		switch message.MsgID {
-		case "announcement":
-			channelID := fmt.Sprintf("twitch:%s", message.RoomID)
-			data := map[string]interface{}{
-				"channelId": channelID,
-				"annotations": map[string]interface{}{
-					"isAction":           false,
-					"isFirstTimeChatter": false,
-					"announcement": map[string]interface{}{
-						"color": message.MsgParams["msg-param-color"],
-					},
-				},
-				"author": map[string]interface{}{
-					"displayName": message.User.DisplayName,
-					"userId":      message.User.ID,
-					"color":       message.User.Color,
-				},
-				"message":   message.Message,
-				"timestamp": message.Time,
-				"tags": map[string]interface{}{
-					"user-id":      message.User.ID,
-					"room-id":      message.RoomID,
-					"display-name": message.User.DisplayName,
-					"color":        message.User.Color,
-					"username":     message.User.Name,
-					"badges": map[string]bool{
-						"vip":       message.User.Badges["vip"] > 0,
-						"moderator": message.User.Badges["moderator"] > 0,
-					},
-					"emotes-raw": message.Tags["emotes"],
-				},
-				"type":      "message",
-				"expiresAt": time.Now().Add(time.Hour * 24 * 7 * 2),
-			}
-			go h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
-		}
+		go h.writeDocument(userNoticeDocument(message, time.Now()))
 	})
 
 	// configure handlers
 	client.OnClearChatMessage(func(message twitch.ClearChatMessage) {
-		// handle clear chat message
-		channelID := fmt.Sprintf("twitch:%s", message.RoomID)
-		if message.TargetUserID != "" || message.TargetUsername != "" {
-			data := map[string]interface{}{
-				"channelId":    channelID,
-				"targetUserId": message.TargetUserID,
-				"timestamp":    message.Time,
-				"type":         "userclear",
-				"expiresAt":    time.Now().Add(time.Hour * 24 * 7 * 2),
-			}
-			go h.write(channelID, fmt.Sprintf("twitch:userclear-%s", message.Time.Format(time.RFC3339)), data)
-		} else {
-			data := map[string]interface{}{
-				"channelId": channelID,
-				"timestamp": message.Time,
-				"type":      "clear",
-				"expiresAt": time.Now().Add(time.Hour * 24 * 7 * 2),
-			}
-			go h.write(channelID, fmt.Sprintf("twitch:clear-%s", message.Time.Format(time.RFC3339)), data)
-		}
+		go h.writeDocument(clearChatDocument(message, time.Now()))
 	})
 
 	client.OnClearMessage(func(message twitch.ClearMessage) {
-		// handle deleted message
 		userID, err := auth.TwitchUserIDFromUsername(h.Firestore, h.ClientID, h.ClientSecret, message.Channel)
 		if err != nil {
-			zap.L().Error("failed to get twitch user id", zap.Error(err), zap.String("channel", message.Channel))
+			zap.L().Error("failed to get twitch user id", zap.Error(err))
 			return
 		}
-		channelID := fmt.Sprintf("twitch:%s", userID)
-		data := map[string]interface{}{
-			"channelId": channelID,
-			"timestamp": firestore.ServerTimestamp,
-			"type":      "messagedeleted",
-			"messageId": fmt.Sprintf("twitch:%s", message.TargetMsgID),
-			"expiresAt": time.Now().Add(time.Hour * 24 * 7 * 2),
-		}
-		go h.write(channelID, fmt.Sprintf("twitch:x-%s", message.TargetMsgID), data)
+		go h.writeDocument(clearMessageDocument(message, userID, time.Now()))
 	})
 
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
-		// handle private message
-		channelID := fmt.Sprintf("twitch:%s", message.RoomID)
-		var reply map[string]interface{}
-		if message.Reply != nil {
-			reply = map[string]interface{}{
-				"messageId":   fmt.Sprintf("twitch:%s", message.Reply.ParentMsgID),
-				"displayName": message.Reply.ParentDisplayName,
-				"userLogin":   message.Reply.ParentUserLogin,
-				"userId":      message.Reply.ParentUserID,
-				"message":     message.Reply.ParentMsgBody,
-			}
-		}
-		data := map[string]interface{}{
-			"channelId": channelID,
-			"annotations": map[string]interface{}{
-				"isAction":           message.Action,
-				"isFirstTimeChatter": message.FirstMessage,
-			},
-			"author": map[string]interface{}{
-				"displayName": message.User.DisplayName,
-				"userId":      message.User.ID,
-				"color":       message.User.Color,
-			},
-			"message":   message.Message,
-			"reply":     reply,
-			"timestamp": message.Time,
-			"tags": map[string]interface{}{
-				"user-id":      message.User.ID,
-				"room-id":      message.RoomID,
-				"display-name": message.User.DisplayName,
-				"color":        message.User.Color,
-				"username":     message.User.Name,
-				"badges": map[string]bool{
-					"vip":       message.User.Badges["vip"] > 0,
-					"moderator": message.User.Badges["moderator"] > 0,
-				},
-				"emotes-raw": message.Tags["emotes"],
-				"badges-raw": message.Tags["badges"],
-			},
-			"type":      "message",
-			"expiresAt": time.Now().Add(time.Hour * 24 * 7 * 2),
-		}
-		zap.L().Info("adding message", zap.String("content", message.Message), zap.String("channelId", channelID), zap.String("channel", message.Channel))
-		go h.write(channelID, fmt.Sprintf("twitch:%s", message.ID), data)
+		zap.L().Info("adding message", zap.String("content", message.Message), zap.String("channelId", "twitch:"+message.RoomID), zap.String("channel", message.Channel))
+		go h.writeDocument(privateMessageDocument(message, time.Now()))
 	})
 }
 
@@ -476,4 +333,35 @@ func (h *TwitchAgent) JoinAnonymously(r *agent.Request) (*AnonymousTwitchClient,
 
 	// join the channel
 	return &AnonymousTwitchClient{client: client}, joinWithTimeout(client, r.Channel(), 5*time.Second)
+}
+func (h *TwitchAgent) writeDocument(doc *chatDocument) {
+	if doc != nil {
+		h.write(doc.channelID, doc.messageID, doc.data)
+	}
+}
+
+func createMessage(ctx context.Context, create func(context.Context) error) error {
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	for attempt := 0; ; attempt++ {
+		err := create(ctx)
+		if err == nil || status.Code(err) == codes.AlreadyExists {
+			return nil
+		}
+		switch status.Code(err) {
+		case codes.Unavailable, codes.DeadlineExceeded, codes.Aborted, codes.ResourceExhausted:
+		default:
+			return err
+		}
+		if attempt == 2 {
+			return err
+		}
+		timer := time.NewTimer(time.Duration(attempt+1) * 100 * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return ctx.Err()
+		case <-timer.C:
+		}
+	}
 }
