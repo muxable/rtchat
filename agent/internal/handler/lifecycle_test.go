@@ -30,10 +30,6 @@ func (c *fakeChat) Disconnect() error {
 	return nil
 }
 
-func (c *fakeChat) Say(string, string) {}
-
-func (c *fakeChat) Reply(string, string, string) {}
-
 func TestJoinHonorsTimeout(t *testing.T) {
 	done := make(chan struct{})
 	c := &fakeChat{connect: func() error { <-done; return twitch.ErrClientDisconnected }, disconnect: func() error { close(done); return nil }}
@@ -54,15 +50,11 @@ func TestJoinReturnsConnectError(t *testing.T) {
 	}
 }
 
-func TestAuthenticatedCloseCleansAllResources(t *testing.T) {
+func TestAuthenticatedCloseDisconnects(t *testing.T) {
 	first := errors.New("reader closed")
-	sendClosed, canceled := false, false
-	c := &AuthenticatedTwitchClient{client: &fakeChat{disconnect: func() error { return first }}, sendClient: &fakeChat{disconnect: func() error { sendClosed = true; return nil }}, raidCancel: func() { canceled = true }}
+	c := &AuthenticatedTwitchClient{client: &fakeChat{disconnect: func() error { return first }}}
 	if err := c.Close(); !errors.Is(err, first) {
 		t.Fatal(err)
-	}
-	if !sendClosed || !canceled {
-		t.Fatalf("send closed=%v raid canceled=%v", sendClosed, canceled)
 	}
 }
 

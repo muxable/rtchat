@@ -98,23 +98,3 @@ func TestUserNoticeDocument(t *testing.T) {
 		t.Fatal("unexpected notice mapping")
 	}
 }
-
-func TestNoticeMetadata(t *testing.T) {
-	for _, tc := range []struct{ prefix, key string }{{"r9k", "isR9k"}, {"slow", "isSlowMode"}, {"subs", "isSubsOnly"}, {"followers", "isFollowersOnly"}, {"emote_only", "isEmoteOnly"}} {
-		for _, prefix := range []string{"", "already_"} {
-			for _, enabled := range []bool{true, false} {
-				suffix := "_off"
-				if enabled {
-					suffix = "_on"
-				}
-				got := noticeMetadata(twitch.NoticeMessage{MsgID: prefix + tc.prefix + suffix})
-				if !reflect.DeepEqual(got, map[string]interface{}{tc.key: enabled}) {
-					t.Fatal(got)
-				}
-			}
-		}
-	}
-	if noticeMetadata(twitch.NoticeMessage{MsgID: "unknown"}) != nil {
-		t.Fatal("unexpected metadata")
-	}
-}

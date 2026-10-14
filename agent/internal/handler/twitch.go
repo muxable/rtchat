@@ -2,17 +2,14 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"strings"
 	"sync"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	"github.com/gempir/go-twitch-irc/v3"
-	"github.com/gorilla/websocket"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"go.uber.org/zap"
@@ -29,151 +26,6 @@ type TwitchAgent struct {
 	tokenSource func(string) (oauth2.TokenSource, error)
 	newChat     func(string, string) chatConnection
 	bindChat    func(chatConnection)
-	raidClient  func(context.Context, string, string) error
-}
-
-var (
-	errReconnect = errors.New("reconnect")
-)
-
-type raidSocket interface {
-	WriteJSON(interface{}) error
-	ReadJSON(interface{}) error
-	Close() error
-}
-
-func (h *TwitchAgent) bindRaidClient(ctx context.Context, channelID, userID string) error {
-	ws, _, err := websocket.DefaultDialer.DialContext(ctx, "wss://pubsub-edge.twitch.tv", nil)
-	if err != nil {
-		return err
-	}
-	return h.bindRaidSession(ctx, ws, channelID, userID, 30*time.Second)
-}
-
-func (h *TwitchAgent) bindRaidSession(ctx context.Context, ws raidSocket, channelID, userID string, pingInterval time.Duration) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	defer ws.Close()
-
-	authProvider, err := h.tokens(userID)
-	if err != nil {
-		return err
-	}
-
-	token, err := authProvider.Token()
-	if err != nil {
-		return err
-	}
-
-	// listen on raid events
-	if err := ws.WriteJSON(map[string]interface{}{
-		"type": "LISTEN",
-		"data": map[string]interface{}{
-			"topics":     []string{fmt.Sprintf("raid.%s", channelID)},
-			"auth_token": fmt.Sprintf("oauth:%s", token.AccessToken),
-		},
-	}); err != nil {
-		return err
-	}
-
-	// start a ping loop
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.After(pingInterval):
-				if err := ws.WriteJSON(map[string]interface{}{"type": "PING"}); err != nil {
-					zap.L().Error("failed to send ping", zap.Error(err))
-					return
-				}
-			}
-		}
-	}()
-
-	zap.L().Info("subscribed to raid events", zap.String("channelId", channelID))
-	go func() {
-		<-ctx.Done()
-		if err := ws.Close(); err != nil {
-			zap.L().Error("failed to close websocket", zap.Error(err))
-		}
-	}()
-
-	// listen for messages
-	for {
-		var message map[string]interface{}
-		if err := ws.ReadJSON(&message); err != nil {
-			return err
-		}
-		doc, err := raidMessageDocument(message, channelID, time.Now())
-		if err != nil {
-			if message["type"] == "RESPONSE" || errors.Is(err, errReconnect) {
-				return err
-			}
-			zap.L().Warn("invalid raid message", zap.Error(err))
-			continue
-		}
-		go h.writeDocument(doc)
-	}
-}
-
-func raidMessageDocument(message map[string]interface{}, channelID string, now time.Time) (*chatDocument, error) {
-	if message["type"] == "RESPONSE" {
-		value, exists := message["error"]
-		if !exists {
-			return nil, nil
-		}
-		text, ok := value.(string)
-		if !ok {
-			return nil, errors.New("invalid raid response")
-		}
-		if text != "" {
-			return nil, errors.New(text)
-		}
-	}
-	if message["type"] == "MESSAGE" {
-		data, ok := message["data"].(map[string]interface{})
-		if !ok {
-			return nil, errors.New("invalid raid data")
-		}
-		if data["topic"] == fmt.Sprintf("raid.%s", channelID) {
-			// parse the message
-			var raid struct {
-				Type string                 `json:"type"`
-				Raid map[string]interface{} `json:"raid"`
-			}
-			raw, ok := data["message"].(string)
-			if !ok {
-				return nil, errors.New("invalid raid message")
-			}
-			if err := json.Unmarshal([]byte(raw), &raid); err != nil {
-				zap.L().Error("failed to unmarshal raid message", zap.Error(err))
-				return nil, err
-			}
-			if !strings.HasPrefix(raid.Type, "raid") {
-				zap.L().Warn("unknown raid type", zap.String("type", raid.Type))
-				return nil, nil
-			}
-
-			raidID, ok := raid.Raid["id"].(string)
-			if !ok || raidID == "" {
-				return nil, errors.New("invalid raid id")
-			}
-			id := fmt.Sprintf("%s-%s", raid.Type, raidID)
-			zap.L().Info("received raid", zap.String("id", id), zap.Any("raid", raid.Raid))
-			// write this event to firestore
-			return &chatDocument{fmt.Sprintf("twitch:%s", channelID), id, map[string]interface{}{
-				"raid":      raid.Raid,
-				"type":      raid.Type,
-				"timestamp": firestore.ServerTimestamp,
-				"expiresAt": now.Add(time.Hour * 24 * 7 * 2),
-			}}, nil
-		}
-	}
-	if message["type"] == "RECONNECT" {
-		return nil, errReconnect
-	}
-	return nil, nil
 }
 
 type chatConnection interface {
@@ -181,8 +33,6 @@ type chatConnection interface {
 	Join(...string)
 	Connect() error
 	Disconnect() error
-	Say(string, string)
-	Reply(string, string, string)
 	OnReconnectMessage(func(twitch.ReconnectMessage))
 	SetIRCToken(string)
 }
@@ -237,12 +87,6 @@ func joinWithTimeout(client chatConnection, channel string, timeout time.Duratio
 	}
 }
 
-func (h *TwitchAgent) metadata(channelID string, data interface{}) {
-	if _, err := h.Firestore.Collection("channels").Doc(channelID).Set(context.Background(), data, firestore.MergeAll); err != nil {
-		zap.L().Error("failed to update channel metadata", zap.Error(err), zap.String("channelId", channelID), zap.Any("data", data))
-	}
-}
-
 func (h *TwitchAgent) write(channelID, messageID string, data interface{}) {
 	if err := createMessage(context.Background(), func(ctx context.Context) error {
 		_, err := h.Firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Create(ctx, data)
@@ -253,18 +97,6 @@ func (h *TwitchAgent) write(channelID, messageID string, data interface{}) {
 }
 
 func (h *TwitchAgent) bindEvents(client *twitch.Client) {
-	client.OnNoticeMessage(func(message twitch.NoticeMessage) {
-		data := noticeMetadata(message)
-		if message.Channel == "*" || data == nil {
-			return
-		}
-		userID, err := auth.TwitchUserIDFromUsername(h.Firestore, h.ClientID, h.ClientSecret, message.Channel)
-		if err != nil {
-			return
-		}
-		go h.metadata(fmt.Sprintf("twitch:%s", userID), data)
-	})
-
 	client.OnUserNoticeMessage(func(message twitch.UserNoticeMessage) {
 		zap.L().Info("user notice", zap.String("message", message.Raw))
 		go h.writeDocument(userNoticeDocument(message, time.Now()))
@@ -292,32 +124,13 @@ func (h *TwitchAgent) bindEvents(client *twitch.Client) {
 
 type AuthenticatedTwitchClient struct {
 	client chatConnection
-
-	sendClient chatConnection
-	raidCancel context.CancelFunc
-}
-
-func (c *AuthenticatedTwitchClient) Say(channel string, message string) {
-	c.sendClient.Say(channel, message)
-}
-
-func (c *AuthenticatedTwitchClient) Reply(channel string, parentMessageId string, message string) {
-	c.sendClient.Reply(channel, parentMessageId, message)
 }
 
 func (c *AuthenticatedTwitchClient) Close() error {
-	var first error
-	for _, client := range []chatConnection{c.client, c.sendClient} {
-		if client != nil {
-			if err := client.Disconnect(); err != nil && first == nil {
-				first = err
-			}
-		}
+	if c.client == nil {
+		return nil
 	}
-	if c.raidCancel != nil {
-		c.raidCancel()
-	}
-	return first
+	return c.client.Disconnect()
 }
 
 type AnonymousTwitchClient struct {
@@ -364,30 +177,7 @@ func (h *TwitchAgent) JoinAsUser(r *agent.Request, asUserID string) (io.Closer, 
 	}
 
 	if login != "realtimechat" {
-		sendClient := h.chat(login, fmt.Sprintf("oauth:%s", token.AccessToken))
-
-		installReconnect(sendClient, authProvider)
-		if err := joinWithTimeout(sendClient, r.Channel(), 5*time.Second); err != nil {
-			_ = client.Disconnect()
-			return nil, err
-		}
-
-		raidCtx, raidCancel := context.WithCancel(context.Background())
-
-		go func() {
-			for {
-				if err := h.raid(raidCtx, profileData["id"].(string), asUserID); err != nil {
-					if errors.Is(err, errReconnect) {
-						zap.L().Info("reconnecting raid client due to error", zap.Error(err), zap.String("channel", r.Channel()), zap.String("asUserID", asUserID))
-						continue
-					}
-					zap.L().Error("failed to bind raid client", zap.Error(err), zap.String("channel", r.Channel()), zap.String("asUserID", asUserID))
-					return
-				}
-			}
-		}()
-
-		return &AuthenticatedTwitchClient{client: client, sendClient: sendClient, raidCancel: raidCancel}, nil
+		return &AuthenticatedTwitchClient{client: client}, nil
 	}
 	return &AnonymousTwitchClient{client: client}, nil
 }
@@ -441,13 +231,6 @@ func (h *TwitchAgent) bind(client chatConnection) {
 		return
 	}
 	h.bindEvents(client.(*twitch.Client))
-}
-
-func (h *TwitchAgent) raid(ctx context.Context, channelID, userID string) error {
-	if h.raidClient != nil {
-		return h.raidClient(ctx, channelID, userID)
-	}
-	return h.bindRaidClient(ctx, channelID, userID)
 }
 
 // go-twitch-irc invokes this callback before its own reconnect loop continues.
