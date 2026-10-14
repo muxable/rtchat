@@ -60,6 +60,10 @@ export function toChannelMetadata(channel: any) {
     categoryId: channel.category?.id ?? null,
     categoryName: channel.category?.name ?? null,
     viewerCount: stream.is_live ? stream.viewer_count ?? 0 : 0,
+    // channels subscribed mid-stream never see livestream.status.updated, so
+    // the poll keeps onlineAt in sync too.
+    onlineAt:
+      stream.is_live && stream.start_time ? new Date(stream.start_time) : null,
   };
 }
 

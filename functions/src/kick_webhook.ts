@@ -124,8 +124,6 @@ export function toDocuments(delivery: KickDelivery, now = Date.now()) {
         id: `kick:${delivery.messageId}`,
         data: envelope("kick.channel.followed"),
       });
-      // like twitch, approximate the follower count between metadata polls.
-      channel.followerCount = admin.firestore.FieldValue.increment(1);
       break;
     case "channel.subscription.new":
     case "channel.subscription.renewal":

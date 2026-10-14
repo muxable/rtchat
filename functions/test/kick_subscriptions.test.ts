@@ -124,7 +124,12 @@ describe("helpers", () => {
         slug: "muxfd",
         stream_title: "irl",
         category: { id: 15, name: "IRL" },
-        stream: { is_live: true, viewer_count: 42, language: "en" },
+        stream: {
+          is_live: true,
+          viewer_count: 42,
+          language: "en",
+          start_time: "2025-01-14T16:08:06Z",
+        },
       })
     ).toEqual({
       login: "muxfd",
@@ -133,10 +138,14 @@ describe("helpers", () => {
       categoryId: 15,
       categoryName: "IRL",
       viewerCount: 42,
+      onlineAt: new Date("2025-01-14T16:08:06Z"),
     });
-    expect(
-      toChannelMetadata({ slug: "x", stream: { is_live: false } }).viewerCount
-    ).toBe(0);
+    const offline = toChannelMetadata({
+      slug: "x",
+      stream: { is_live: false, start_time: "0001-01-01T00:00:00Z" },
+    });
+    expect(offline.viewerCount).toBe(0);
+    expect(offline.onlineAt).toBeNull();
   });
 });
 
