@@ -98,14 +98,17 @@ cut the utterance off (also `null`).
 * Segments play back to back, with no silence added between them.
   Empty or blank segments are skipped.
 * Completion follows the audio output's playback position (Android:
-  `AudioTrack.getPlaybackHeadPosition`), not a timer.
+  `AudioTrack.getPlaybackHeadPosition`; iOS: the `AVAudioPlayerNode`'s
+  `dataPlayedBack` completion of the last buffer), not a timer.
 * Only one utterance at a time, across all handles: `speak` while another
   utterance is active fails with `busy` (the active one continues).
 * Audio: mono float PCM at the model's sample rate (44.1 kHz). Android plays
   it as `USAGE_MEDIA` / `CONTENT_TYPE_SPEECH` without requesting audio focus,
   so it mixes with other audio, like the system TTS through `flutter_tts`.
-  iOS should match the app's `flutter_tts` setup (`playback` category with
-  `mixWithOthers`).
+  iOS plays through an `AVAudioPlayerNode` on an `AVAudioEngine` in the app's
+  `flutter_tts` setup: the `playback` category with `mixWithOthers`, in the
+  `voicePrompt` mode. An audio session interruption (a call, Siri) ends the
+  utterance with a `stopped` event.
 
 Errors: `bad_args` (unknown handle or voice, `steps` out of range, missing
 arguments), `busy`, `speak_failed` (synthesis or playback failed after the
@@ -134,7 +137,9 @@ Errors: `bad_args`, `synthesis_failed`.
 
 No arguments; returns `null` at once. Stops the active utterance: playback
 stops and buffered audio is dropped immediately, and the ONNX Runtime run in
-flight is terminated (`RunOptions.setTerminate`). The pending `speak` call
+flight is terminated (`RunOptions.setTerminate`; ONNX Runtime's
+Objective-C API on iOS has no equivalent, so there synthesis stops before
+its next model run instead, and nothing more is played). The pending `speak` call
 then completes normally (`null`), and a `stopped` event is sent. Without an
 active utterance it does nothing.
 
