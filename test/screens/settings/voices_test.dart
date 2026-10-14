@@ -106,8 +106,8 @@ void main() {
     const onText = 'Each viewer gets their own voice. The voices you pick '
         'read alerts and system messages.';
     expect(harness.tts.isRandomVoiceEnabled, isTrue);
-    // the switch's subtitle and the note above the voices.
-    expect(find.text(onText), findsNWidgets(2));
+    // once, as the switch's subtitle.
+    expect(find.text(onText), findsOneWidget);
 
     await tester.tap(find.text('Per-viewer voice'));
     await tester.pumpAndSettle();

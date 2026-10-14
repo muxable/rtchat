@@ -124,7 +124,6 @@ class VoicePickerScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final tts = context.watch<TtsModel>();
     final packs = context.watch<VoicePacksModel>();
-    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(languageName(context, language))),
       body: FutureBuilder<(List<TtsVoice>, TtsVoice?)>(
@@ -148,20 +147,8 @@ class VoicePickerScreen extends StatelessWidget {
           }
           return ListView(
             children: [
+              // its subtitle says what the picked voice reads.
               const PerViewerVoiceSwitch(),
-              if (tts.isRandomVoiceEnabled)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.info_outline,
-                          size: 20, color: theme.colorScheme.primary),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(l10n.perViewerVoiceOnSubtitle)),
-                    ],
-                  ),
-                ),
               const Divider(),
               RadioGroup<String>(
                 groupValue: selected?.id,

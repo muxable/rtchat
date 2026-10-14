@@ -13,9 +13,9 @@ class VoicePacksModel extends ChangeNotifier {
   /// Null when there is nowhere to keep voice packs (e.g. in tests).
   final VoicePackRepository? repository;
 
-  /// Whether this device can speak with neural voice packs. Only Android
-  /// has a native engine so far (iOS is #1517); elsewhere chat is read with
-  /// the system voices and the voice pack settings are hidden.
+  /// Whether this device can speak with neural voice packs (see
+  /// [platformSupportsNeuralVoices]); elsewhere chat is read with the system
+  /// voices and the voice pack settings are hidden.
   final bool isSupported;
 
   List<VoicePack> _packs = const [];
@@ -33,7 +33,12 @@ class VoicePacksModel extends ChangeNotifier {
   var _isDisposed = false;
 
   VoicePacksModel(this.repository, {bool? isSupported})
-      : isSupported = repository != null && (isSupported ?? Platform.isAndroid);
+      : isSupported =
+            repository != null && (isSupported ?? platformSupportsNeuralVoices);
+
+  /// Whether this platform has a native engine for neural voice packs.
+  // TODO(#1519): enable on iOS once the native iOS engine is merged.
+  static bool get platformSupportsNeuralVoices => Platform.isAndroid;
 
   /// Reads the catalog and the installed packs, and follows changes to them.
   /// Safe to call more than once.
