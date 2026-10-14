@@ -1,5 +1,3 @@
-//go:build live
-
 package youtube
 
 import (
@@ -9,7 +7,7 @@ import (
 	"time"
 )
 
-// go test -tags live -v -run TestLiveMetadata ./internal/youtube
+// go test -v -run TestLiveMetadata ./internal/youtube (skipped when CI is set or with -short)
 
 func checkLiveInfo(t *testing.T, source string, info streamInfo) {
 	t.Helper()

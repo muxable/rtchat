@@ -1,5 +1,3 @@
-//go:build live
-
 package youtube
 
 import (
@@ -8,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -32,6 +31,18 @@ type liveStream struct {
 	page  chatPage
 }
 
+// skipLiveInCI keeps the live tests out of CI, where YouTube bot-checks the
+// runners, while still running them with every local go test ./...
+func skipLiveInCI(t *testing.T) {
+	t.Helper()
+	if os.Getenv("CI") != "" {
+		t.Skip("live YouTube tests only run locally")
+	}
+	if testing.Short() {
+		t.Skip("live YouTube tests are skipped with -short")
+	}
+}
+
 func liveHTTPClient() *http.Client { return &http.Client{Timeout: 30 * time.Second} }
 
 // findLiveStream returns the first candidate whose /live page names a video
@@ -42,6 +53,7 @@ func liveHTTPClient() *http.Client { return &http.Client{Timeout: 30 * time.Seco
 // fallbacks for a stream that is offline or has chat turned off.
 func findLiveStream(t *testing.T) liveStream {
 	t.Helper()
+	skipLiveInCI(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	failed := false
