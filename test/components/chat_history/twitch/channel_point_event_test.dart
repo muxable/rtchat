@@ -65,8 +65,8 @@ void main() {
 
 Widget buildWidget(TwitchChannelPointRedemptionEventModel model) {
   return TestLocalizations(
-      child: ChangeNotifierProvider<StyleModel>.value(
-    value: StyleModel.fromJson({
+      child: ChangeNotifierProvider<StyleModel>(
+    create: (_) => StyleModel.fromJson({
       "fontSize": 20.0,
       "lightnessBoost": 0.179,
       "isDeletedMessagesVisible": true
