@@ -25,7 +25,15 @@ class FakeUtterance {
 class FakeTtsEngine implements TtsEngine {
   final List<FakeUtterance> utterances = [];
   var stopCount = 0;
+  var releaseCount = 0;
   var isDisposed = false;
+
+  /// Whether a model is loaded, like `NeuralTtsEngine.isLoaded`: [speak]
+  /// loads it and [release] unloads it.
+  var isLoaded = false;
+
+  /// How many times [speak] had to load the model.
+  var loadCount = 0;
   var holdSpeech = false;
   List<TtsVoice> availableVoices;
 
@@ -56,6 +64,10 @@ class FakeTtsEngine implements TtsEngine {
       failNext = null;
       throw error;
     }
+    if (!isLoaded) {
+      isLoaded = true;
+      loadCount++;
+    }
     utterances.add(FakeUtterance(text,
         voice: voice, rate: rate, pitch: pitch, language: language));
     await onSpeak?.call(text);
@@ -78,6 +90,12 @@ class FakeTtsEngine implements TtsEngine {
   Future<void> stop() async {
     stopCount++;
     finishSpeaking();
+  }
+
+  @override
+  Future<void> release() async {
+    releaseCount++;
+    isLoaded = false;
   }
 
   @override

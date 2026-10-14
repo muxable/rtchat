@@ -14,11 +14,16 @@ typedef NeuralEngineFactory = TtsEngine Function(InstalledVoicePack pack);
 /// its language (see [VoiceRouter]), so their order is the order of
 /// preference between packs that speak the same language: [choose]'s. An
 /// engine whose pack didn't change is kept, with its model loaded.
+///
+/// On a device with too little memory ([DeviceMemory.isTooSmallForNeuralTts])
+/// it tells [tts] to read with the system voices instead
+/// ([NeuralTtsFallback.lowMemoryDevice]), so no model loads by itself.
 class NeuralEngineSelector {
   final VoicePackRepository repository;
   final TtsModel tts;
   final NeuralEngineFactory _createEngine;
   final TtsErrorReporter? _reportError;
+  final Future<DeviceMemory?> Function() _deviceMemory;
 
   StreamSubscription<void>? _changes;
   Future<void> _refreshing = Future.value();
@@ -31,13 +36,29 @@ class NeuralEngineSelector {
     required this.tts,
     NeuralEngineFactory? createEngine,
     TtsErrorReporter? reportError,
+    Future<DeviceMemory?> Function()? deviceMemory,
   })  : _createEngine = createEngine ?? NeuralTtsEngine.new,
-        _reportError = reportError;
+        _reportError = reportError,
+        _deviceMemory = deviceMemory ?? OnnxTtsPlatform.instance.deviceMemory;
 
   /// Picks the engines now and again whenever the installed packs change.
   Future<void> start() {
-    _changes ??= repository.changes.listen((_) => refresh());
+    if (_changes == null) {
+      _changes = repository.changes.listen((_) => refresh());
+      _refreshing = _refreshing.then((_) => _checkDeviceMemory());
+    }
     return refresh();
+  }
+
+  Future<void> _checkDeviceMemory() async {
+    try {
+      final memory = await _deviceMemory();
+      if (!_isDisposed && memory != null && memory.isTooSmallForNeuralTts) {
+        tts.fallBackToSystemVoices(NeuralTtsFallback.lowMemoryDevice);
+      }
+    } catch (e, st) {
+      _report(e, st);
+    }
   }
 
   /// The installed packs to speak with, in order of preference.

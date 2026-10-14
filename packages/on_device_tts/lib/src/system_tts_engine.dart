@@ -115,6 +115,10 @@ class SystemTtsEngine implements TtsEngine {
     return voices.where((voice) => voice.speaks(language)).toList();
   }
 
+  /// The platform's voices live outside the app: nothing to free.
+  @override
+  Future<void> release() async {}
+
   @override
   Future<void> dispose() async {
     await _tts.stop();

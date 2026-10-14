@@ -63,8 +63,10 @@ void main() {
   late List<FakeTtsEngine> engines;
   late NeuralEngineSelector selector;
   late List<Object> errors;
+  DeviceMemory? deviceMemory;
 
   setUp(() {
+    deviceMemory = const DeviceMemory(totalBytes: 8 << 30);
     repository = FakeVoicePackRepository();
     tts = TtsModel.fromJson({},
         engine: FakeTtsEngine(), reportError: (e, _) => errors.add(e));
@@ -81,6 +83,7 @@ void main() {
         return engine;
       },
       reportError: (e, _) => errors.add(e),
+      deviceMemory: () async => deviceMemory,
     );
   });
 
@@ -178,11 +181,59 @@ void main() {
       tts: tts,
       createEngine: (_) => throw const NeuralTtsException('bad layout'),
       reportError: (e, _) => errors.add(e),
+      deviceMemory: () async => deviceMemory,
     );
     await failing.start();
     expect(tts.neuralEngine, isNull);
     expect(errors.single, isA<NeuralTtsException>());
     failing.dispose();
+  });
+
+  group('device memory', () {
+    test('a big enough device loads neural voices', () async {
+      repository.installed['supertonic-3'] = pack('supertonic-3');
+      await selector.start();
+      expect(tts.neuralFallback, isNull);
+    });
+
+    test('a low-RAM device reads with the system voices', () async {
+      deviceMemory =
+          const DeviceMemory(totalBytes: 4 << 30, isLowRamDevice: true);
+      repository.installed['supertonic-3'] = pack('supertonic-3');
+      await selector.start();
+      expect(tts.neuralFallback, NeuralTtsFallback.lowMemoryDevice);
+      expect(tts.isNeuralFallbackNoticePending, isTrue);
+    });
+
+    test('a 2 GB device reads with the system voices', () async {
+      deviceMemory = const DeviceMemory(totalBytes: 1900 << 20);
+      await selector.start();
+      expect(tts.neuralFallback, NeuralTtsFallback.lowMemoryDevice);
+    });
+
+    test('is checked once', () async {
+      var checks = 0;
+      final counting = NeuralEngineSelector(
+        repository: repository,
+        tts: tts,
+        createEngine: (_) => FakeTtsEngine(),
+        deviceMemory: () async {
+          checks++;
+          return deviceMemory;
+        },
+      );
+      await counting.start();
+      await counting.start();
+      await counting.refresh();
+      expect(checks, 1);
+      counting.dispose();
+    });
+
+    test('an unknown device (e.g. no native engine) is allowed', () async {
+      deviceMemory = null;
+      await selector.start();
+      expect(tts.neuralFallback, isNull);
+    });
   });
 
   test('stops following changes once disposed', () async {

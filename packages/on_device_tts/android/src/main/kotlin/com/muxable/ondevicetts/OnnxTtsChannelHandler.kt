@@ -31,8 +31,14 @@ import java.util.concurrent.atomic.AtomicInteger
  * Calls arrive on the main thread. Models load on a loader thread; all
  * inference runs on one synthesis thread; audio is written on a playback
  * thread. Results and events go back on the main thread.
+ *
+ * [activity] keeps the CPU awake while a model loads and while an utterance
+ * is active; [deviceMemory] answers `deviceMemory`.
  */
-internal class OnnxTtsChannelHandler : MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
+internal class OnnxTtsChannelHandler(
+    private val activity: ActivityLock,
+    private val deviceMemory: () -> Map<String, Any>,
+) : MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
     companion object {
         const val METHOD_CHANNEL = "on_device_tts/onnx"
         const val EVENT_CHANNEL = "on_device_tts/onnx/events"
@@ -45,9 +51,17 @@ internal class OnnxTtsChannelHandler : MethodChannel.MethodCallHandler, EventCha
     private val nextHandle = AtomicInteger(1)
     private val random = SecureRandom()
 
-    private val loader = executor("on_device_tts-load", Process.THREAD_PRIORITY_BACKGROUND)
+    // ONNX Runtime starts a session's intra-op threads on the thread that
+    // creates it, and threads inherit its priority: loading at background
+    // priority would leave half of every inference at background priority,
+    // which a busy foreground app (e.g. the streaming app) starves, and
+    // models now reload lazily in the middle of a stream.
+    private val loader = executor("on_device_tts-load", Process.THREAD_PRIORITY_DEFAULT)
     private val synthesis = executor("on_device_tts-synth", Process.THREAD_PRIORITY_DEFAULT)
-    private val playback = executor("on_device_tts-play", Process.THREAD_PRIORITY_URGENT_AUDIO)
+
+    // Mostly blocked in AudioTrack.write; audio priority so it refills the
+    // track on time. URGENT_AUDIO is for the audio system's own threads.
+    private val playback = executor("on_device_tts-play", Process.THREAD_PRIORITY_AUDIO)
 
     /** The utterance being spoken; only touched on the main thread. */
     private var active: Utterance? = null
@@ -65,6 +79,7 @@ internal class OnnxTtsChannelHandler : MethodChannel.MethodCallHandler, EventCha
                     result.success(null)
                 }
                 "unload" -> unload(call, result)
+                "deviceMemory" -> result.success(deviceMemory())
                 else -> result.notImplemented()
             }
         } catch (e: BadArgs) {
@@ -102,6 +117,7 @@ internal class OnnxTtsChannelHandler : MethodChannel.MethodCallHandler, EventCha
             return
         }
         if (numThreads < 1) throw BadArgs("numThreads must be at least 1")
+        val hold = activity.hold()
         loader.execute {
             try {
                 val started = SystemClock.elapsedRealtime()
@@ -121,6 +137,8 @@ internal class OnnxTtsChannelHandler : MethodChannel.MethodCallHandler, EventCha
             } catch (e: Throwable) {
                 Log.e(TAG, "Loading $modelDir failed", e)
                 main.post { result.error("load_failed", e.toString(), null) }
+            } finally {
+                hold.close()
             }
         }
     }
@@ -142,7 +160,7 @@ internal class OnnxTtsChannelHandler : MethodChannel.MethodCallHandler, EventCha
             return
         }
 
-        val utterance = Utterance(utteranceId, requested, result)
+        val utterance = Utterance(utteranceId, requested, result, activity.hold())
         active = utterance
 
         synthesis.execute {
@@ -211,6 +229,7 @@ internal class OnnxTtsChannelHandler : MethodChannel.MethodCallHandler, EventCha
 
     private fun finish(utterance: Utterance, outcome: Outcome) {
         main.post {
+            utterance.hold.close()
             if (active === utterance) active = null
             when (outcome) {
                 Outcome.Done -> {
@@ -340,6 +359,8 @@ internal class OnnxTtsChannelHandler : MethodChannel.MethodCallHandler, EventCha
         val id: String,
         val requestedNanos: Long,
         val result: MethodChannel.Result,
+        /** Keeps the CPU awake until the utterance has finished. */
+        val hold: AutoCloseable,
     ) {
         val queue = LinkedBlockingQueue<Chunk>()
         val runOptions = OrtSession.RunOptions()

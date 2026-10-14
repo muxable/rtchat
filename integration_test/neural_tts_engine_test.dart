@@ -72,6 +72,9 @@ class LoggingEngine implements TtsEngine {
   Future<void> stop() => inner.stop();
 
   @override
+  Future<void> release() => inner.release();
+
+  @override
   Future<List<TtsVoice>> voices({String? language}) =>
       inner.voices(language: language);
 
@@ -96,6 +99,9 @@ class SilentSystemEngine implements TtsEngine {
 
   @override
   Future<void> stop() async {}
+
+  @override
+  Future<void> release() async {}
 
   @override
   Future<List<TtsVoice>> voices({String? language}) async => const [];

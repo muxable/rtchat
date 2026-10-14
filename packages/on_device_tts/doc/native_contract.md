@@ -11,6 +11,7 @@ here; where this document and an implementation disagree, fix one of them.
 |---|---|---|
 | `on_device_tts/onnx` | `MethodChannel` | standard |
 | `on_device_tts/onnx/events` | `EventChannel` | standard |
+| `on_device_tts/memory` | `EventChannel` | standard (Android only) |
 
 Platforms without the engine answer every call with "not implemented"
 (`MissingPluginException` in Dart).
@@ -33,8 +34,9 @@ within a process.
 
 Loads the sessions once; every later call with the handle reuses them.
 `numThreads` is ONNX Runtime's intra-op thread count. With `xnnpack` it is
-XNNPACK's thread pool instead, the session's own pool gets 1 thread and
-`session.intra_op.allow_spinning=0`, as ONNX Runtime recommends.
+XNNPACK's thread pool instead, and the session's own pool gets 1 thread, as
+ONNX Runtime recommends. Every session sets
+`session.intra_op.allow_spinning=0`; see [Threads and power](#threads-and-power).
 
 A provider that is unknown, not available on the platform (`nnapi` on iOS,
 `coreml` on Android) or that fails to take a model **falls back to `cpu`**
@@ -144,6 +146,16 @@ active utterance it does nothing.
 waits for queued synthesis, then releases the sessions. Later calls with the
 handle fail with `bad_args`. Unloading an unknown handle does nothing.
 
+### `deviceMemory`
+
+No arguments. Returns `{totalBytes: int, availableBytes: int?,
+lowRamDevice: bool}`: Android's `ActivityManager.MemoryInfo.totalMem` and
+`availMem`, and `ActivityManager.isLowRamDevice()`. iOS: `totalBytes` is
+`ProcessInfo.physicalMemory`, `availableBytes` `os_proc_available_memory()`,
+`lowRamDevice` false. Platforms without it answer "not implemented", and
+Dart treats that as unknown (`null`). The app uses it to decide whether a
+model loads at all (`DeviceMemory.isTooSmallForNeuralTts`).
+
 ## Events
 
 Each event is a map:
@@ -161,6 +173,56 @@ been written to the audio output (for time-to-first-audio telemetry, #1508);
 `done` when the last audio has played. The terminal event is sent just
 before `speak` returns. Events of other utterances may interleave only
 after it.
+
+## Memory events
+
+Android only: `on_device_tts/memory` sends `{level: int}` for the
+`ComponentCallbacks2.onTrimMemory` levels that mean memory is short:
+`TRIM_MEMORY_RUNNING_CRITICAL` (15) and `TRIM_MEMORY_BACKGROUND` (40) and up,
+and 80 for `onLowMemory`. Not `TRIM_MEMORY_UI_HIDDEN` (20), which only means
+the app went to the background: Flutter turns every level from
+`TRIM_MEMORY_RUNNING_LOW` up, including that one, into
+`didHaveMemoryPressure`, so Dart ignores `didHaveMemoryPressure` on Android
+and listens here instead (`MemoryPressureMonitor`). The native side releases
+nothing itself; Dart unloads (`NeuralTtsEngine.release`) and loads again on
+the next `speak`. iOS sends nothing on this channel: Flutter's
+`didHaveMemoryPressure` there is the real `didReceiveMemoryWarning`.
+
+Reloading Supertonic 3 (fp32) after a release took 0.9 to 1.5 s on the
+x86_64 emulator (first load 1.5 to 1.9 s), which delays the next message's
+first audio by as much. Unloading it lowered the app's PSS by about 400 MB.
+
+## Threads and power
+
+* **Spinning.** ONNX Runtime's intra-op threads busy-wait for work by
+  default. Chat arrives a message at a time, so every session sets
+  `session.intra_op.allow_spinning=0`. On the x86_64 emulator (20 chat
+  messages, Supertonic 3 fp32, 5 steps, `cpu`) spinning off vs on: 0.375 vs
+  0.381 CPU-seconds per second of audio, real-time factor 0.19 vs 0.18; the
+  cost of blocking is within noise.
+* **Thread count.** `numThreads` defaults to 2. Same benchmark, 1 vs 2
+  threads: 0.357 vs 0.375 CPU-s per audio-s (2 threads cost 5% more CPU),
+  but real-time factor 0.35 vs 0.19 and median time to first audio 1.24 s vs
+  0.66 s. A slow phone with 1 thread risks falling behind real time between
+  clauses, which is a gap in the speech, so 2 stays the default.
+* **Priorities (Android).** Models load and synthesize at
+  `THREAD_PRIORITY_DEFAULT`. ONNX Runtime starts a session's intra-op
+  threads on the thread that creates the session, and they inherit its
+  priority, so loading at background priority would leave half of every
+  inference at background priority. The playback thread runs at
+  `THREAD_PRIORITY_AUDIO`.
+* **Wake lock (Android).** A partial wake lock (`on_device_tts:speak`) is
+  held while a model loads and from `speak` until its terminal event, with a
+  10-minute timeout per hold; never between utterances. With the screen off
+  the app's foreground service keeps the process alive but not the CPU
+  awake, and the audio server's own wake lock only covers audio that is
+  playing, not loading or synthesizing the first clause. Needs the
+  `WAKE_LOCK` permission, which the plugin's manifest declares.
+* **Audio (Android).** `USAGE_MEDIA` / `CONTENT_TYPE_SPEECH`, no audio
+  focus. Playback in the background needs the app to run a foreground
+  service of type `mediaPlayback` (the app's `TtsService`, with
+  `FOREGROUND_SERVICE_MEDIA_PLAYBACK` on Android 14 and later); otherwise
+  the cached-app freezer stops the process.
 
 ## Supertonic pipeline
 

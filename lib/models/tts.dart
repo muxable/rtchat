@@ -54,6 +54,18 @@ void _recordToCrashlytics(Object error, StackTrace stack) {
   FirebaseCrashlytics.instance.recordError(error, stack);
 }
 
+/// Why [TtsModel] reads everything with the platform's voices for the rest
+/// of the session, although a neural voice pack is installed.
+enum NeuralTtsFallback {
+  /// The model failed to load, e.g. the device ran out of memory.
+  loadFailed,
+
+  /// The device has too little memory to load a model without risking the
+  /// app (or the streaming app next to it); see
+  /// [DeviceMemory.isTooSmallForNeuralTts].
+  lowMemoryDevice,
+}
+
 /// Reads chat and alerts aloud, one message at a time.
 ///
 /// Each message is read, in this order of preference:
@@ -71,7 +83,22 @@ void _recordToCrashlytics(Object error, StackTrace stack) {
 /// Chat is read in its channel's language ([languageFor]). Alerts and
 /// system messages are read in the language of the app's strings they are
 /// made of, always with the chosen (not a chatter's) voice.
+///
+/// Neural models take a few hundred megabytes, so they don't stay loaded
+/// when they aren't needed ([releaseNeuralModels]): once text to speech is
+/// turned off, after [neuralIdleTimeout] without speech, and on memory
+/// pressure (called by a `MemoryPressureMonitor`). The next message loads
+/// the model again. If a model fails to load, every message is read with the
+/// platform's voices for the rest of the session ([neuralFallback]).
 class TtsModel extends ChangeNotifier {
+  /// How long neural models stay loaded without speech by default.
+  ///
+  /// Reloading takes about a second (see `doc/native_contract.md` in
+  /// on_device_tts), a delay that goes unnoticed after a quiet spell of
+  /// chat, while a loaded model holds 300 to 600 MB that the streaming app
+  /// next to us may need.
+  static const defaultNeuralIdleTimeout = Duration(minutes: 5);
+
   /// Speaks with the platform's voices: messages in languages no neural
   /// engine speaks, and those a neural engine fails to.
   final TtsEngine _systemEngine;
@@ -121,6 +148,19 @@ class TtsModel extends ChangeNotifier {
   var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
   var _isSubscribersOnly = false;
+
+  /// How long neural models stay loaded without speech; see
+  /// [defaultNeuralIdleTimeout].
+  final Duration neuralIdleTimeout;
+  Timer? _idleTimer;
+  // whether a neural engine spoke since the models were last released.
+  var _isNeuralInUse = false;
+  // releases of the neural models; speech waits for them.
+  Future<void> _releasing = Future.value();
+  // a release asked for while a message was being read, done after it.
+  Completer<void>? _releaseAfterUtterance;
+  NeuralTtsFallback? _neuralFallback;
+  var _isNeuralFallbackNoticePending = false;
 
   /// Follows the channels shown, to read each message in its channel's
   /// stream language. Called on every [ViewsModel] change, so it only looks
@@ -322,6 +362,7 @@ class TtsModel extends ChangeNotifier {
         say(localizations,
             SystemMessageModel(text: localizations.textToSpeechDisabled),
             force: true);
+        _releaseNeuralModelsWhenOff();
         break;
     }
     _lastMessageTime = DateTime.now();
@@ -552,6 +593,7 @@ class TtsModel extends ChangeNotifier {
 
     _previousUtterance = completer.future;
     _pending[model.messageId] = model.channel;
+    _idleTimer?.cancel();
 
     // always release the queue: a failed utterance (e.g. a platform error)
     // would otherwise block, and hold on to, every message after it.
@@ -563,8 +605,19 @@ class TtsModel extends ChangeNotifier {
       _reportError(e, st);
     } finally {
       _activeMessage = null;
+      final release = _releaseAfterUtterance;
+      if (release != null) {
+        _releaseAfterUtterance = null;
+        _releaseNeuralModelsNow().whenComplete(release.complete);
+      }
       completer.complete();
       _pending.remove(model.messageId);
+      if (_pending.isEmpty && _isNeuralInUse) {
+        _idleTimer?.cancel();
+        _idleTimer = Timer(neuralIdleTimeout, () {
+          if (_pending.isEmpty) releaseNeuralModels();
+        });
+      }
     }
   }
 
@@ -584,9 +637,13 @@ class TtsModel extends ChangeNotifier {
     // nothing is speaking between utterances, so a replaced engine can go
     // without cutting anyone off.
     await _disposeRetiredEngines();
+    // a model being unloaded can't speak; the engine loads it again.
+    await _releasing;
 
-    // 1. a neural engine that speaks the language.
-    final route = await _router.route(language);
+    // 1. a neural engine that speaks the language, unless the models can't
+    // load on this device.
+    final route =
+        _neuralFallback == null ? await _router.route(language) : null;
     if (route != null) {
       if (!shouldSpeak()) {
         return;
@@ -596,12 +653,16 @@ class TtsModel extends ChangeNotifier {
           ? route.voiceForKey(voiceKey(author))
           : route.voiceWithId(_chosenVoiceId(language, route.language));
       try {
+        _isNeuralInUse = true;
         await route.engine.speak(vocalization,
             voice: voice,
             rate: _speed,
             pitch: _pitch,
             language: route.language);
         return;
+      } on NeuralTtsLoadException catch (e, st) {
+        _reportError(e, st);
+        fallBackToSystemVoices(NeuralTtsFallback.loadFailed);
       } catch (e, st) {
         _reportError(e, st);
       }
@@ -637,6 +698,12 @@ class TtsModel extends ChangeNotifier {
     }
     _neuralEngines = List.unmodifiable(engines);
     _router = VoiceRouter(_neuralEngines, onError: _reportError);
+    // other packs may load where the old ones didn't.
+    if (_neuralFallback == NeuralTtsFallback.loadFailed) {
+      _neuralFallback = null;
+      _isNeuralFallbackNoticePending = false;
+      notifyListeners();
+    }
     final removed = [
       for (final engine in previous)
         if (!engines.any((e) => identical(e, engine))) engine,
@@ -674,12 +741,78 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
+  /// Why every message is read with the platform's voices for the rest of
+  /// the session although neural voices are installed, or null if they
+  /// aren't (or they work).
+  NeuralTtsFallback? get neuralFallback => _neuralFallback;
+
+  /// Whether the user should be told, once, about [neuralFallback]; the UI
+  /// calls [acknowledgeNeuralFallback] once it has.
+  // TODO(#1506): show a one-time notice in the TTS settings / chat screen.
+  bool get isNeuralFallbackNoticePending => _isNeuralFallbackNoticePending;
+
+  void acknowledgeNeuralFallback() {
+    if (!_isNeuralFallbackNoticePending) return;
+    _isNeuralFallbackNoticePending = false;
+    notifyListeners();
+  }
+
+  /// Reads everything with the platform's voices for the rest of the
+  /// session (until the neural engines change, for
+  /// [NeuralTtsFallback.loadFailed]) and frees the neural models.
+  void fallBackToSystemVoices(NeuralTtsFallback reason) {
+    if (_neuralFallback != null) return;
+    _neuralFallback = reason;
+    _isNeuralFallbackNoticePending = true;
+    releaseNeuralModels();
+    notifyListeners();
+  }
+
+  /// Frees the neural engines' models (see [TtsEngine.release]); the next
+  /// message they read loads them again. A message being read finishes
+  /// first, so nothing is cut off. Called on memory pressure; also when
+  /// text to speech is turned off, and after [neuralIdleTimeout] without
+  /// speech.
+  Future<void> releaseNeuralModels() {
+    _idleTimer?.cancel();
+    if (_activeMessage != null) {
+      return (_releaseAfterUtterance ??= Completer<void>()).future;
+    }
+    return _releaseNeuralModelsNow();
+  }
+
+  Future<void> _releaseNeuralModelsNow() {
+    _isNeuralInUse = false;
+    final engines = [..._neuralEngines];
+    return _releasing = _releasing.then((_) async {
+      for (final engine in engines) {
+        try {
+          await engine.release();
+        } catch (e, st) {
+          _reportError(e, st);
+        }
+      }
+    });
+  }
+
+  /// Once what is queued (e.g. "text to speech disabled") has been read,
+  /// releases the neural models if text to speech is still off.
+  void _releaseNeuralModelsWhenOff() {
+    final queue = _previousUtterance;
+    final completer = Completer<void>();
+    _previousUtterance = completer.future;
+    queue.then((_) {
+      if (_mode == TtsMode.disabled) return releaseNeuralModels();
+    }).whenComplete(completer.complete);
+  }
+
   void _turnOffForBacklog(AppLocalizations localizations) {
     _pending.clear();
     _mode = TtsMode.disabled;
     say(localizations,
         SystemMessageModel(text: localizations.textToSpeechTooManyMessages),
         force: true);
+    _releaseNeuralModelsWhenOff();
     // cut off the current utterance; everything queued behind it is dropped.
     for (final engine in [..._neuralEngines, _systemEngine]) {
       engine.stop().catchError((_) {});
@@ -763,7 +896,8 @@ class TtsModel extends ChangeNotifier {
       {TtsEngine? engine,
       TtsErrorReporter? reportError,
       StreamLanguageLookup? lookUpStreamLanguage,
-      DateTime Function()? clock})
+      DateTime Function()? clock,
+      this.neuralIdleTimeout = defaultNeuralIdleTimeout})
       : _systemEngine = engine ?? SystemTtsEngine(),
         _reportError = reportError ?? _recordToCrashlytics,
         _lookUpLanguage = lookUpStreamLanguage ?? _lookUpStreamLanguage,
@@ -774,6 +908,7 @@ class TtsModel extends ChangeNotifier {
   @override
   void dispose() {
     _isDisposed = true;
+    _idleTimer?.cancel();
     for (final engine in [
       _systemEngine,
       ..._neuralEngines,

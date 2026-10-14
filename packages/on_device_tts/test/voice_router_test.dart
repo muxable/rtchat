@@ -37,6 +37,9 @@ class VoicesEngine implements TtsEngine {
   Future<void> stop() async {}
 
   @override
+  Future<void> release() async {}
+
+  @override
   Future<void> dispose() async {}
 }
 

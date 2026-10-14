@@ -61,6 +61,23 @@ for Korean and Japanese) split at whitespace.
 0.7..2.0, the way `flutter_tts` maps it to Android's speech rate. `pitch` is
 ignored: Supertonic has no pitch control.
 
+## Memory
+
+A loaded Supertonic 3 (fp32) model takes 300 to 600 MB. Free it when it isn't
+needed with `release()`; the next `speak` loads it again (about a second, see
+`doc/native_contract.md`).
+
+* `MemoryPressureMonitor(onPressure)` calls back when the system is short of
+  memory. On Android it listens to the plugin's own trim-level events
+  (`TRIM_MEMORY_RUNNING_CRITICAL`, cached-process levels, `onLowMemory`)
+  rather than Flutter's `didHaveMemoryPressure`, which also fires each time
+  the app goes to the background; on iOS it uses `didHaveMemoryPressure`.
+* `OnnxTtsPlatform.instance.deviceMemory()` returns a `DeviceMemory`;
+  `isTooSmallForNeuralTts` is true for low-RAM devices and devices with less
+  than 2.5 GiB, where loading the model risks getting the app killed.
+* A model that fails to load (e.g. out of memory) throws a
+  `NeuralTtsLoadException`.
+
 ## VoiceRouter
 
 ```dart
@@ -147,3 +164,12 @@ splitting as a `TTFA {...}` line.
 `integration_test/on_device_tts_benchmark_test.dart` measures load time,
 time to first audio, real-time factor and CPU time over 20 chat messages;
 pass `--dart-define=PROVIDER=cpu|xnnpack|nnapi` and `THREADS=<n>`.
+
+`integration_test/neural_tts_soak_test.dart` reads about 30 minutes of
+chat-like messages through `TtsModel` with the foreground service running,
+and checks that none is dropped or falls back to the system voice and that
+the model is released (idle, memory pressure) and loaded again.
+`integration_test/neural_tts_soak.sh <supertonic-3 download> [minutes]`
+runs it with the screen off and the app in the background, sends memory
+warnings mid-run (`am send-trim-memory`) and samples memory and CPU into
+`build/neural_tts_soak/samples.csv`.

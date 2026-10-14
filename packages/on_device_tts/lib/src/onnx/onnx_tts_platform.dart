@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../device_memory.dart';
+
 /// The ONNX Runtime execution provider a model runs on.
 ///
 /// Providers the platform doesn't have (e.g. [coreml] on Android) fall back
@@ -134,6 +136,7 @@ class OnnxTtsEvent {
 class OnnxTtsPlatform {
   static const methodChannelName = 'on_device_tts/onnx';
   static const eventChannelName = 'on_device_tts/onnx/events';
+  static const memoryChannelName = 'on_device_tts/memory';
 
   /// The instance `OnnxTts` uses by default;
   /// replace it in tests.
@@ -141,11 +144,15 @@ class OnnxTtsPlatform {
 
   final MethodChannel _methods;
   final EventChannel _eventChannel;
+  final EventChannel _memoryChannel;
   Stream<OnnxTtsEvent>? _events;
+  Stream<int>? _memoryPressure;
 
-  OnnxTtsPlatform({MethodChannel? methods, EventChannel? events})
+  OnnxTtsPlatform(
+      {MethodChannel? methods, EventChannel? events, EventChannel? memory})
       : _methods = methods ?? const MethodChannel(methodChannelName),
-        _eventChannel = events ?? const EventChannel(eventChannelName);
+        _eventChannel = events ?? const EventChannel(eventChannelName),
+        _memoryChannel = memory ?? const EventChannel(memoryChannelName);
 
   /// Loads the model in [modelDir] and returns its handle.
   Future<String> load({
@@ -232,6 +239,24 @@ class OnnxTtsPlatform {
   /// Releases the model; [handle] can't be used afterwards.
   Future<void> unload(String handle) =>
       _methods.invokeMethod<void>('unload', {'handle': handle});
+
+  /// How much memory the device has, or null where the platform doesn't
+  /// say (no `deviceMemory` method).
+  Future<DeviceMemory?> deviceMemory() async {
+    try {
+      final map =
+          await _methods.invokeMapMethod<Object?, Object?>('deviceMemory');
+      return map == null ? null : DeviceMemory.fromMap(map);
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
+  /// The trim level of each memory warning the native side forwards
+  /// (Android only; see `MemoryPressureMonitor`), as a broadcast stream.
+  Stream<int> get memoryPressure =>
+      _memoryPressure ??= _memoryChannel.receiveBroadcastStream().map((event) =>
+          ((event as Map<Object?, Object?>)['level'] as num).toInt());
 
   /// Events of every utterance, as a broadcast stream.
   Stream<OnnxTtsEvent> get events => _events ??= _eventChannel

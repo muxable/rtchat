@@ -120,10 +120,12 @@ class _AppState extends State<App> {
   bool _isDiscoModeRunning = false;
   Timer? _discoModeTimer;
   NeuralEngineSelector? _neuralEngineSelector;
+  MemoryPressureMonitor? _memoryPressureMonitor;
 
   @override
   void dispose() {
     _neuralEngineSelector?.dispose();
+    _memoryPressureMonitor?.dispose();
     super.dispose();
   }
 
@@ -175,6 +177,11 @@ class _AppState extends State<App> {
                 reportError: (error, stack) =>
                     FirebaseCrashlytics.instance.recordError(error, stack),
               )..start();
+              // neural models take hundreds of megabytes: free them when
+              // the system runs short, and load them again for the next
+              // message.
+              _memoryPressureMonitor =
+                  MemoryPressureMonitor(model.releaseNeuralModels)..start();
             }
             return model
               ..addListener(() {

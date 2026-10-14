@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 
 import 'clause_splitter.dart';
@@ -19,6 +20,18 @@ class NeuralTtsException implements Exception {
 
   @override
   String toString() => 'NeuralTtsException: $message';
+}
+
+/// Thrown when a [NeuralTtsEngine]'s model fails to load: the native
+/// engine's `load_failed`, which includes running out of memory, or a
+/// missing or broken model. [cause] is the original error.
+class NeuralTtsLoadException extends NeuralTtsException {
+  final Object cause;
+
+  const NeuralTtsLoadException(super.message, this.cause);
+
+  @override
+  String toString() => 'NeuralTtsLoadException: $message ($cause)';
 }
 
 /// Speaks with a neural voice pack, synthesized on the device by the native
@@ -179,6 +192,12 @@ class NeuralTtsEngine implements TtsEngine {
       numThreads: numThreads,
       provider: provider,
       platform: _platform,
+    ).catchError(
+      (Object error) => throw NeuralTtsLoadException(
+          "Couldn't load ${pack.id}: ${error is PlatformException ? error.message : error}",
+          error),
+      test: (error) =>
+          error is PlatformException && error.code == 'load_failed',
     );
     // Try again next time rather than keep a failure.
     model.then((_) {}, onError: (Object error) {
@@ -195,8 +214,9 @@ class NeuralTtsEngine implements TtsEngine {
   /// speed with [speedForRate]. [pitch] is ignored: the model has no pitch
   /// control.
   ///
-  /// Throws if the model can't load (a `PlatformException` with code
-  /// `load_failed`) or speaking fails (`speak_failed`, `busy`, `bad_args`).
+  /// Throws a [NeuralTtsLoadException] if the model can't load, and a
+  /// `PlatformException` if speaking fails (`speak_failed`, `busy`,
+  /// `bad_args`).
   @override
   Future<void> speak(
     String text, {
@@ -301,10 +321,13 @@ class NeuralTtsEngine implements TtsEngine {
   }
 
   /// Stops speaking and unloads the model to free its memory, e.g. under
-  /// memory pressure. The next [speak] loads it again.
+  /// memory pressure. The next [speak] loads it again, which delays its
+  /// first audio by the load time (Supertonic 3: about 0.9 to 1.5 s on the
+  /// x86_64 emulator; see `doc/native_contract.md`).
   ///
   /// Unloading natively also cuts off whatever utterance is playing, even
   /// another engine's, so don't release while another engine speaks.
+  @override
   Future<void> release() async {
     final model = _model;
     _model = null;

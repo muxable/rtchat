@@ -259,13 +259,22 @@ void main() {
           throwsA(isA<NeuralTtsException>()));
     });
 
+    test('only load failures become NeuralTtsLoadExceptions', () async {
+      native.onLoad = () async => throw PlatformException(code: 'bad_args');
+      await expectLater(
+          engine.load(),
+          throwsA(isA<PlatformException>()
+              .having((e) => e.code, 'code', 'bad_args')));
+    });
+
     test('failures propagate and the next call tries again', () async {
       native.onLoad = () async =>
           throw PlatformException(code: 'load_failed', message: 'missing');
       await expectLater(
           engine.speak('Hello there everyone'),
-          throwsA(isA<PlatformException>()
-              .having((e) => e.code, 'code', 'load_failed')));
+          throwsA(isA<NeuralTtsLoadException>()
+              .having((e) => e.cause, 'cause', isA<PlatformException>())
+              .having((e) => e.message, 'message', contains('missing'))));
       expect(engine.isLoaded, isFalse);
       expect(native.callsTo('speak'), isEmpty);
 
@@ -522,7 +531,7 @@ void main() {
 
     test('release after a failed load does nothing', () async {
       native.onLoad = () async => throw PlatformException(code: 'load_failed');
-      await expectLater(engine.load(), throwsA(isA<PlatformException>()));
+      await expectLater(engine.load(), throwsA(isA<NeuralTtsLoadException>()));
       await engine.release();
       expect(native.callsTo('unload'), isEmpty);
     });
