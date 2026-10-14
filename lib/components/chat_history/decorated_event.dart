@@ -124,9 +124,14 @@ class DecoratedEventWidget extends StatelessWidget {
       {Key? key,
       required Widget child,
       required ImageProvider avatar,
+      Color? accentColor,
       BoxDecoration decoration = const BoxDecoration()})
       : this._(
-            key: key, child: child, avatars: [avatar], decoration: decoration);
+            key: key,
+            child: child,
+            avatars: [avatar],
+            accentColor: accentColor,
+            decoration: decoration);
 
   const DecoratedEventWidget.avatars(
       {Key? key,
@@ -140,8 +145,16 @@ class DecoratedEventWidget extends StatelessWidget {
       {Key? key,
       required Widget child,
       required IconData icon,
+      Color? accentColor,
+      BoxDecoration decoration = const BoxDecoration(),
       EdgeInsets padding = const EdgeInsets.fromLTRB(12, 4, 16, 4)})
-      : this._(key: key, padding: padding, child: child, icon: icon);
+      : this._(
+            key: key,
+            padding: padding,
+            child: child,
+            icon: icon,
+            accentColor: accentColor,
+            decoration: decoration);
 
   const DecoratedEventWidget({
     Key? key,

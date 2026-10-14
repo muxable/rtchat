@@ -262,5 +262,17 @@
   "kicksGiftedEvent": "<b>{senderName}</b> enviou {amount} Kicks!",
   "signInWithKick": "Faça login com o Kick",
   "textToSpeechTooManyMessages": "Há mensagens demais. Texto para fala desativado",
-  "turnOffTextToSpeech": "Desativar"
+  "turnOffTextToSpeech": "Desativar",
+  "youtubeSuperChatEvent": "<b>{name}</b> enviou um Super Chat de {amount}!",
+  "youtubeSuperStickerEvent": "<b>{name}</b> enviou um Super Sticker de {amount}!",
+  "youtubeNewMemberEvent": "<b>{name}</b> virou membro!",
+  "youtubeMemberUpgradeEvent": "<b>{name}</b> fez upgrade para {level}!",
+  "youtubeMemberMilestoneEvent": "<b>{name}</b> é membro há {months} meses!",
+  "youtubeMembershipGiftingEvent": "{count,plural, =1{<b>{name}</b> presenteou uma assinatura!} other{<b>{name}</b> presenteou {count} assinaturas!}}",
+  "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> recebeu uma assinatura de presente!",
+  "youtubeGiftEvent": "<b>{name}</b> enviou {giftName} ({jewels} Jewels)!",
+  "youtubePollEvent": "Enquete: {question}",
+  "youtubeMembersOnlyModeOn": "O modo somente para membros está ativado",
+  "youtubeMembersOnlyModeOff": "O modo somente para membros está desativado",
+  "youtubeChatEnded": "O chat ao vivo terminou"
 }

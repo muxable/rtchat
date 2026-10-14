@@ -1,0 +1,13 @@
+{
+  "kind": "youtube#liveChatMessage",
+  "etag": "etag",
+  "id": "LCC.text",
+  "snippet": {
+    "type": "tombstone",
+    "liveChatId": "Cg0KC2xpdmVjaGF0aWQ",
+    "authorChannelId": "",
+    "publishedAt": "2026-10-14T12:00:00.000000+00:00",
+    "hasDisplayContent": false,
+    "displayMessage": ""
+  }
+}

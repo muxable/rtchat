@@ -1037,4 +1037,75 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => '끄기';
+
+  @override
+  String youtubeSuperChatEvent(String name, String amount) {
+    return '<b>$name</b>님이 $amount Super Chat을 보냈습니다!';
+  }
+
+  @override
+  String youtubeSuperStickerEvent(String name, String amount) {
+    return '<b>$name</b>님이 $amount Super Sticker를 보냈습니다!';
+  }
+
+  @override
+  String youtubeNewMemberEvent(String name) {
+    return '<b>$name</b>님이 멤버가 되었습니다!';
+  }
+
+  @override
+  String youtubeMemberUpgradeEvent(String name, String level) {
+    return '<b>$name</b>님이 $level(으)로 업그레이드했습니다!';
+  }
+
+  @override
+  String youtubeMemberMilestoneEvent(String name, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$name</b>님이 $monthsString개월째 멤버입니다!';
+  }
+
+  @override
+  String youtubeMembershipGiftingEvent(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<b>$name</b>님이 멤버십 $countString개를 선물했습니다!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youtubeGiftMembershipReceivedEvent(String name) {
+    return '<b>$name</b>님이 선물받은 멤버십을 받았습니다!';
+  }
+
+  @override
+  String youtubeGiftEvent(String name, String giftName, int jewels) {
+    final intl.NumberFormat jewelsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String jewelsString = jewelsNumberFormat.format(jewels);
+
+    return '<b>$name</b>님이 $giftName을(를) 보냈습니다 ($jewelsString Jewels)!';
+  }
+
+  @override
+  String youtubePollEvent(String question) {
+    return '투표: $question';
+  }
+
+  @override
+  String get youtubeMembersOnlyModeOn => '멤버 전용 모드가 켜졌습니다';
+
+  @override
+  String get youtubeMembersOnlyModeOff => '멤버 전용 모드가 꺼졌습니다';
+
+  @override
+  String get youtubeChatEnded => '라이브 채팅이 종료되었습니다';
 }

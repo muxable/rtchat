@@ -1060,4 +1060,76 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'বন্ধ করুন';
+
+  @override
+  String youtubeSuperChatEvent(String name, String amount) {
+    return '<b>$name</b> $amount এর একটি Super Chat পাঠিয়েছেন!';
+  }
+
+  @override
+  String youtubeSuperStickerEvent(String name, String amount) {
+    return '<b>$name</b> $amount এর একটি Super Sticker পাঠিয়েছেন!';
+  }
+
+  @override
+  String youtubeNewMemberEvent(String name) {
+    return '<b>$name</b> সদস্য হয়েছেন!';
+  }
+
+  @override
+  String youtubeMemberUpgradeEvent(String name, String level) {
+    return '<b>$name</b> $level এ আপগ্রেড করেছেন!';
+  }
+
+  @override
+  String youtubeMemberMilestoneEvent(String name, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$name</b> $monthsString মাস ধরে সদস্য!';
+  }
+
+  @override
+  String youtubeMembershipGiftingEvent(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<b>$name</b> $countStringটি সদস্যপদ উপহার দিয়েছেন!',
+      one: '<b>$name</b> একটি সদস্যপদ উপহার দিয়েছেন!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youtubeGiftMembershipReceivedEvent(String name) {
+    return '<b>$name</b> একটি উপহার সদস্যপদ পেয়েছেন!';
+  }
+
+  @override
+  String youtubeGiftEvent(String name, String giftName, int jewels) {
+    final intl.NumberFormat jewelsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String jewelsString = jewelsNumberFormat.format(jewels);
+
+    return '<b>$name</b> $giftName পাঠিয়েছেন ($jewelsString Jewels)!';
+  }
+
+  @override
+  String youtubePollEvent(String question) {
+    return 'পোল: $question';
+  }
+
+  @override
+  String get youtubeMembersOnlyModeOn => 'শুধু সদস্যদের মোড চালু';
+
+  @override
+  String get youtubeMembersOnlyModeOff => 'শুধু সদস্যদের মোড বন্ধ';
+
+  @override
+  String get youtubeChatEnded => 'লাইভ চ্যাট শেষ হয়েছে';
 }

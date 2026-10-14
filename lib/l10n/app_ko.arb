@@ -262,5 +262,17 @@
   "kicksGiftedEvent": "<b>{senderName}</b>님이 {amount} Kicks를 보냈습니다!",
   "signInWithKick": "Kick으로 로그인",
   "textToSpeechTooManyMessages": "메시지가 너무 많습니다. 텍스트 음성 변환이 꺼졌습니다",
-  "turnOffTextToSpeech": "끄기"
+  "turnOffTextToSpeech": "끄기",
+  "youtubeSuperChatEvent": "<b>{name}</b>님이 {amount} Super Chat을 보냈습니다!",
+  "youtubeSuperStickerEvent": "<b>{name}</b>님이 {amount} Super Sticker를 보냈습니다!",
+  "youtubeNewMemberEvent": "<b>{name}</b>님이 멤버가 되었습니다!",
+  "youtubeMemberUpgradeEvent": "<b>{name}</b>님이 {level}(으)로 업그레이드했습니다!",
+  "youtubeMemberMilestoneEvent": "<b>{name}</b>님이 {months}개월째 멤버입니다!",
+  "youtubeMembershipGiftingEvent": "{count,plural, other{<b>{name}</b>님이 멤버십 {count}개를 선물했습니다!}}",
+  "youtubeGiftMembershipReceivedEvent": "<b>{name}</b>님이 선물받은 멤버십을 받았습니다!",
+  "youtubeGiftEvent": "<b>{name}</b>님이 {giftName}을(를) 보냈습니다 ({jewels} Jewels)!",
+  "youtubePollEvent": "투표: {question}",
+  "youtubeMembersOnlyModeOn": "멤버 전용 모드가 켜졌습니다",
+  "youtubeMembersOnlyModeOff": "멤버 전용 모드가 꺼졌습니다",
+  "youtubeChatEnded": "라이브 채팅이 종료되었습니다"
 }

@@ -262,5 +262,17 @@
   "kicksGiftedEvent": "<b>{senderName}</b> heeft {amount} Kicks gestuurd!",
   "signInWithKick": "Log in met Kick",
   "textToSpeechTooManyMessages": "Er zijn te veel berichten. Tekst-naar-spraak uitgeschakeld",
-  "turnOffTextToSpeech": "Uitschakelen"
+  "turnOffTextToSpeech": "Uitschakelen",
+  "youtubeSuperChatEvent": "<b>{name}</b> heeft een Super Chat van {amount} gestuurd!",
+  "youtubeSuperStickerEvent": "<b>{name}</b> heeft een Super Sticker van {amount} gestuurd!",
+  "youtubeNewMemberEvent": "<b>{name}</b> is lid geworden!",
+  "youtubeMemberUpgradeEvent": "<b>{name}</b> is geüpgraded naar {level}!",
+  "youtubeMemberMilestoneEvent": "<b>{name}</b> is al {months} maanden lid!",
+  "youtubeMembershipGiftingEvent": "{count,plural, =1{<b>{name}</b> heeft een lidmaatschap cadeau gegeven!} other{<b>{name}</b> heeft {count} lidmaatschappen cadeau gegeven!}}",
+  "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> heeft een cadeaulidmaatschap ontvangen!",
+  "youtubeGiftEvent": "<b>{name}</b> heeft {giftName} gestuurd ({jewels} Jewels)!",
+  "youtubePollEvent": "Poll: {question}",
+  "youtubeMembersOnlyModeOn": "Alleen-leden-modus staat aan",
+  "youtubeMembersOnlyModeOff": "Alleen-leden-modus staat uit",
+  "youtubeChatEnded": "De livechat is afgelopen"
 }

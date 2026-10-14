@@ -1,0 +1,39 @@
+{
+  "kind": "youtube#liveChatMessage",
+  "etag": "etag",
+  "id": "LCC.poll",
+  "snippet": {
+    "type": "pollEvent",
+    "liveChatId": "Cg0KC2xpdmVjaGF0aWQ",
+    "authorChannelId": "UCauthor",
+    "publishedAt": "2026-10-14T12:00:00.000000+00:00",
+    "hasDisplayContent": true,
+    "displayMessage": "Best snack?",
+    "pollDetails": {
+      "metadata": {
+        "questionText": "Best snack?",
+        "options": [
+          {
+            "optionText": "Chips",
+            "tally": "12"
+          },
+          {
+            "optionText": "Popcorn",
+            "tally": "30"
+          }
+        ]
+      },
+      "status": "active"
+    }
+  },
+  "authorDetails": {
+    "channelId": "UCauthor",
+    "channelUrl": "http://www.youtube.com/channel/UCauthor",
+    "displayName": "@Viewer",
+    "profileImageUrl": "https://yt3.ggpht.com/viewer.jpg",
+    "isVerified": false,
+    "isChatOwner": false,
+    "isChatSponsor": true,
+    "isChatModerator": true
+  }
+}
