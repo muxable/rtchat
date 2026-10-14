@@ -511,6 +511,28 @@ void main() {
     await repo.delete('a');
   });
 
+  test('changes fire after an install and a delete', () async {
+    final a = packFor('a', modelArchive);
+    serve(a, modelArchive);
+    final repo = repository(packs: [a]);
+    var changes = 0;
+    final sub = repo.changes.listen((_) => changes++);
+
+    await repo.install(a).done;
+    await pumpEventQueue();
+    expect(changes, 1);
+
+    await repo.delete('a');
+    await pumpEventQueue();
+    expect(changes, 2);
+
+    // Nothing was installed, so nothing changed.
+    await repo.delete('a');
+    await pumpEventQueue();
+    expect(changes, 2);
+    await sub.cancel();
+  });
+
   test('delete cancels an install in progress', () async {
     final pack = packFor('a', modelArchive);
     serve(pack, modelArchive);
