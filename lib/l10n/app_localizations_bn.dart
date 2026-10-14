@@ -996,7 +996,7 @@ class AppLocalizationsBn extends AppLocalizations {
       'এই সময়ের মধ্যে কোনো বার্তা না এলে এবং তারপর নতুন একটি এলে একটি সতর্কতা শব্দ বাজবে।';
 
   @override
-  String get realtimeCashSubtitle => 'একটি MATIC ওয়ালেট যুক্ত করুন';
+  String get realtimeCashSubtitle => 'একটি ETH বা MATIC ওয়ালেট যুক্ত করুন';
 
   @override
   String get walletAddress => 'ওয়ালেট ঠিকানা';
@@ -1060,4 +1060,42 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'বন্ধ করুন';
+
+  @override
+  String get addChannel => 'চ্যানেল যোগ করুন';
+
+  @override
+  String get addToChat => 'চ্যাটে যোগ করুন';
+
+  @override
+  String get defaultChannels => 'ডিফল্ট চ্যানেল';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'অ্যাপ খোলার সময় যে চ্যানেলগুলো দেখানো হয়';
+
+  @override
+  String get save => 'সংরক্ষণ করুন';
+
+  @override
+  String get resetToMyChannel => 'আমার চ্যানেলে রিসেট করুন';
+
+  @override
+  String get inChat => 'চ্যাটে';
+
+  @override
+  String get removeFromChat => 'চ্যাট থেকে সরান';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'আপনার $provider অ্যাকাউন্ট এখানে চ্যাট করতে পারে না';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return '$channel প্রতিস্থাপন করুন';
+  }
+
+  @override
+  String get removeChannel => 'সরান';
 }

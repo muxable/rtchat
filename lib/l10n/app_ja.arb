@@ -248,7 +248,7 @@
   "announcementPinDuration": "アナウンスのピン留め時間",
   "idleMessageAlertDuration": "チャット無音アラートの時間",
   "idleMessageAlertDurationSubtitle": "この時間メッセージがなく、新しいメッセージが届くとアラート音が鳴ります。",
-  "realtimeCashSubtitle": "MATICウォレットを接続",
+  "realtimeCashSubtitle": "ETHまたはMATICウォレットを接続",
   "walletAddress": "ウォレットアドレス",
   "streamlabsSubtitle": "Streamlabsの寄付を表示",
   "streamElementsSubtitle": "StreamElementsの寄付を表示",
@@ -262,5 +262,16 @@
   "kicksGiftedEvent": "<b>{senderName}</b>さんが{amount} Kicksを送りました！",
   "signInWithKick": "Kickでサインイン",
   "textToSpeechTooManyMessages": "メッセージが多すぎます。読み上げをオフにしました",
-  "turnOffTextToSpeech": "オフにする"
+  "turnOffTextToSpeech": "オフにする",
+  "addChannel": "チャンネルを追加",
+  "addToChat": "チャットに追加",
+  "defaultChannels": "デフォルトのチャンネル",
+  "defaultChannelsSubtitle": "アプリを開いたときに表示されるチャンネル",
+  "save": "保存",
+  "resetToMyChannel": "自分のチャンネルに戻す",
+  "inChat": "チャットに表示中",
+  "removeFromChat": "チャットから削除",
+  "cantChatWithAccount": "{provider}アカウントではここでチャットできません",
+  "replaceChannel": "{channel}と入れ替える",
+  "removeChannel": "削除"
 }

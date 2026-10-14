@@ -248,7 +248,7 @@
   "announcementPinDuration": "مدة تثبيت الإعلانات",
   "idleMessageAlertDuration": "مدة تنبيه خمول الدردشة",
   "idleMessageAlertDurationSubtitle": "إذا لم تصل أي رسائل خلال هذه المدة ثم وصلت رسالة جديدة، فسيتم تشغيل صوت تنبيه.",
-  "realtimeCashSubtitle": "اربط محفظة MATIC",
+  "realtimeCashSubtitle": "اربط محفظة ETH أو MATIC",
   "walletAddress": "عنوان المحفظة",
   "streamlabsSubtitle": "اطلع على تبرعاتك في Streamlabs",
   "streamElementsSubtitle": "اطلع على تبرعاتك في StreamElements",
@@ -262,5 +262,16 @@
   "kicksGiftedEvent": "أرسل <b>{senderName}</b> {amount} Kicks!",
   "signInWithKick": "تسجيل الدخول باستخدام Kick",
   "textToSpeechTooManyMessages": "هناك رسائل كثيرة جدًا. تم تعطيل تحويل النص إلى كلام",
-  "turnOffTextToSpeech": "إيقاف"
+  "turnOffTextToSpeech": "إيقاف",
+  "addChannel": "إضافة قناة",
+  "addToChat": "إضافة إلى الدردشة",
+  "defaultChannels": "القنوات الافتراضية",
+  "defaultChannelsSubtitle": "القنوات المعروضة عند فتح التطبيق",
+  "save": "حفظ",
+  "resetToMyChannel": "إعادة التعيين إلى قناتي",
+  "inChat": "في الدردشة",
+  "removeFromChat": "إزالة من الدردشة",
+  "cantChatWithAccount": "لا يمكن لحساب {provider} الخاص بك الدردشة هنا",
+  "replaceChannel": "استبدال {channel}",
+  "removeChannel": "إزالة"
 }

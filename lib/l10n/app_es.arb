@@ -248,7 +248,7 @@
   "announcementPinDuration": "Duración fijada de anuncios",
   "idleMessageAlertDuration": "Alerta por chat inactivo",
   "idleMessageAlertDurationSubtitle": "Si no hay mensajes durante este tiempo y llega uno nuevo, sonará una alerta.",
-  "realtimeCashSubtitle": "Conecta una billetera MATIC",
+  "realtimeCashSubtitle": "Conecta una billetera ETH o MATIC",
   "walletAddress": "Dirección de la billetera",
   "streamlabsSubtitle": "Consulta tus donaciones de Streamlabs",
   "streamElementsSubtitle": "Consulta tus donaciones de StreamElements",
@@ -262,5 +262,16 @@
   "kicksGiftedEvent": "¡<b>{senderName}</b> ha enviado {amount} Kicks!",
   "signInWithKick": "Inicia sesión con Kick",
   "textToSpeechTooManyMessages": "Hay demasiados mensajes. Texto a voz desactivado",
-  "turnOffTextToSpeech": "Desactivar"
+  "turnOffTextToSpeech": "Desactivar",
+  "addChannel": "Añadir canal",
+  "addToChat": "Añadir al chat",
+  "defaultChannels": "Canales predeterminados",
+  "defaultChannelsSubtitle": "Los canales que se muestran al abrir la aplicación",
+  "save": "Guardar",
+  "resetToMyChannel": "Restablecer a mi canal",
+  "inChat": "En el chat",
+  "removeFromChat": "Quitar del chat",
+  "cantChatWithAccount": "Tu cuenta de {provider} no puede chatear aquí",
+  "replaceChannel": "Reemplazar a {channel}",
+  "removeChannel": "Quitar"
 }

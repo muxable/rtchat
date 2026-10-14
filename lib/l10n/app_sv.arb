@@ -248,7 +248,7 @@
   "announcementPinDuration": "Fäst tid för meddelanden",
   "idleMessageAlertDuration": "Varning vid tyst chatt",
   "idleMessageAlertDurationSubtitle": "Om det inte kommer några meddelanden under den här tiden och sedan kommer ett nytt spelas ett varningsljud.",
-  "realtimeCashSubtitle": "Anslut en MATIC-plånbok",
+  "realtimeCashSubtitle": "Anslut en ETH- eller MATIC-plånbok",
   "walletAddress": "Plånboksadress",
   "streamlabsSubtitle": "Se dina Streamlabs-donationer",
   "streamElementsSubtitle": "Se dina StreamElements-donationer",
@@ -262,5 +262,16 @@
   "kicksGiftedEvent": "<b>{senderName}</b> skickade {amount} Kicks!",
   "signInWithKick": "Logga in med Kick",
   "textToSpeechTooManyMessages": "Det finns för många meddelanden. Text till tal avstängt",
-  "turnOffTextToSpeech": "Stäng av"
+  "turnOffTextToSpeech": "Stäng av",
+  "addChannel": "Lägg till kanal",
+  "addToChat": "Lägg till i chatten",
+  "defaultChannels": "Standardkanaler",
+  "defaultChannelsSubtitle": "Kanalerna som visas när appen öppnas",
+  "save": "Spara",
+  "resetToMyChannel": "Återställ till min kanal",
+  "inChat": "I chatten",
+  "removeFromChat": "Ta bort från chatten",
+  "cantChatWithAccount": "Ditt {provider}-konto kan inte chatta här",
+  "replaceChannel": "Ersätt {channel}",
+  "removeChannel": "Ta bort"
 }

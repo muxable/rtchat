@@ -1365,7 +1365,7 @@
   "@idleMessageAlertDurationSubtitle": {
     "description": "Explanation of the idle chat alert setting"
   },
-  "realtimeCashSubtitle": "Connect a MATIC wallet",
+  "realtimeCashSubtitle": "Connect an ETH or MATIC wallet",
   "@realtimeCashSubtitle": {
     "description": "Subtitle of the RealtimeCash integration"
   },
@@ -1456,5 +1456,61 @@
   "turnOffTextToSpeech": "Turn off",
   "@turnOffTextToSpeech": {
     "description": "Button in the text to speech notification that turns text to speech off"
+  },
+  "addChannel": "Add channel",
+  "@addChannel": {
+    "description": "Button to add a channel to the default channels"
+  },
+  "addToChat": "Add to chat",
+  "@addToChat": {
+    "description": "Button on a channel search result that adds the channel to the channels shown in chat"
+  },
+  "defaultChannels": "Default channels",
+  "@defaultChannels": {
+    "description": "Title of the settings page for the channels the app opens with"
+  },
+  "defaultChannelsSubtitle": "The channels shown when the app opens",
+  "@defaultChannelsSubtitle": {
+    "description": "Explains what the default channels are"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Button on the default channels page that saves the channels currently shown as the default channels"
+  },
+  "resetToMyChannel": "Reset to my channel",
+  "@resetToMyChannel": {
+    "description": "Button on the default channels page that clears the picked default channels, so the app opens the signed-in user's own channel, and closes the page"
+  },
+  "inChat": "In chat",
+  "@inChat": {
+    "description": "Heading in the channel search sheet for the channels currently shown in chat"
+  },
+  "removeFromChat": "Remove from chat",
+  "@removeFromChat": {
+    "description": "Button that removes a channel from the channels shown in chat"
+  },
+  "cantChatWithAccount": "Your {provider} account can't chat here",
+  "@cantChatWithAccount": {
+    "description": "Hint in the disabled message input when none of the channels shown are on the platform of the signed-in account",
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Twitch"
+      }
+    }
+  },
+  "replaceChannel": "Replace {channel}",
+  "@replaceChannel": {
+    "description": "Shown while swiping a channel search result whose platform already has a channel in chat: adding it replaces that channel",
+    "placeholders": {
+      "channel": {
+        "type": "String",
+        "example": "xQc"
+      }
+    }
+  },
+  "removeChannel": "Remove",
+  "@removeChannel": {
+    "description": "Shown while swiping a default channel away to remove it from the default channels"
   }
 }

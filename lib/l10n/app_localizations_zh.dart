@@ -974,7 +974,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '如果在这段时间内没有消息，之后又收到新消息，将播放提示音。';
 
   @override
-  String get realtimeCashSubtitle => '连接 MATIC 钱包';
+  String get realtimeCashSubtitle => '连接 ETH 或 MATIC 钱包';
 
   @override
   String get walletAddress => '钱包地址';
@@ -1035,6 +1035,43 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => '关闭';
+
+  @override
+  String get addChannel => '添加频道';
+
+  @override
+  String get addToChat => '添加到聊天';
+
+  @override
+  String get defaultChannels => '默认频道';
+
+  @override
+  String get defaultChannelsSubtitle => '打开应用时显示的频道';
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get resetToMyChannel => '重置为我的频道';
+
+  @override
+  String get inChat => '聊天中';
+
+  @override
+  String get removeFromChat => '从聊天中移除';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return '你的 $provider 账号无法在此聊天';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return '替换 $channel';
+  }
+
+  @override
+  String get removeChannel => '移除';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2007,7 +2044,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '如果在這段時間內沒有訊息，之後又收到新訊息，將播放提示音。';
 
   @override
-  String get realtimeCashSubtitle => '連結 MATIC 錢包';
+  String get realtimeCashSubtitle => '連結 ETH 或 MATIC 錢包';
 
   @override
   String get walletAddress => '錢包地址';
@@ -2068,4 +2105,41 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get turnOffTextToSpeech => '關閉';
+
+  @override
+  String get addChannel => '新增頻道';
+
+  @override
+  String get addToChat => '新增至聊天';
+
+  @override
+  String get defaultChannels => '預設頻道';
+
+  @override
+  String get defaultChannelsSubtitle => '開啟應用程式時顯示的頻道';
+
+  @override
+  String get save => '儲存';
+
+  @override
+  String get resetToMyChannel => '重設為我的頻道';
+
+  @override
+  String get inChat => '聊天中';
+
+  @override
+  String get removeFromChat => '從聊天中移除';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return '你的 $provider 帳號無法在此聊天';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return '替換 $channel';
+  }
+
+  @override
+  String get removeChannel => '移除';
 }

@@ -16,13 +16,26 @@ class ChannelSearchBottomSheetWidget extends StatefulWidget {
   final bool? isRaid;
   final ChannelSearch search;
 
+  /// Adds a swiped result to [channels] without closing the sheet,
+  /// replacing the one on its provider.
+  final void Function(Channel)? onChannelAdd;
+
+  /// The channels a swiped result is added to.
+  final List<Channel> channels;
+
+  /// Shown above the results.
+  final Widget? header;
+
   const ChannelSearchBottomSheetWidget(
       {super.key,
       this.controller,
       required this.onChannelSelect,
       this.onRaid,
       this.isRaid,
-      this.search = searchChannels});
+      this.search = searchChannels,
+      this.onChannelAdd,
+      this.channels = const [],
+      this.header});
 
   @override
   State<ChannelSearchBottomSheetWidget> createState() =>
@@ -88,6 +101,8 @@ class _ChannelSearchBottomSheetWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final onChannelAdd =
+        _raid && widget.onRaid != null ? null : widget.onChannelAdd;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -169,6 +184,9 @@ class _ChannelSearchBottomSheetWidgetState
               Navigator.of(context).pop();
             },
             isShowOnlyOnline: _raid && widget.onRaid != null,
+            onChannelAdd: onChannelAdd,
+            channels: widget.channels,
+            header: widget.header,
           ))
         ],
       ),

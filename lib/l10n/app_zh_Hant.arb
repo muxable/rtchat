@@ -248,7 +248,7 @@
   "announcementPinDuration": "公告置頂時長",
   "idleMessageAlertDuration": "聊天閒置提醒時長",
   "idleMessageAlertDurationSubtitle": "如果在這段時間內沒有訊息，之後又收到新訊息，將播放提示音。",
-  "realtimeCashSubtitle": "連結 MATIC 錢包",
+  "realtimeCashSubtitle": "連結 ETH 或 MATIC 錢包",
   "walletAddress": "錢包地址",
   "streamlabsSubtitle": "查看你的 Streamlabs 斗內",
   "streamElementsSubtitle": "查看你的 StreamElements 斗內",
@@ -262,5 +262,16 @@
   "kicksGiftedEvent": "<b>{senderName}</b> 送出了 {amount} Kicks！",
   "signInWithKick": "使用 Kick 登入",
   "textToSpeechTooManyMessages": "訊息太多了。文字轉語音已關閉",
-  "turnOffTextToSpeech": "關閉"
+  "turnOffTextToSpeech": "關閉",
+  "addChannel": "新增頻道",
+  "addToChat": "新增至聊天",
+  "defaultChannels": "預設頻道",
+  "defaultChannelsSubtitle": "開啟應用程式時顯示的頻道",
+  "save": "儲存",
+  "resetToMyChannel": "重設為我的頻道",
+  "inChat": "聊天中",
+  "removeFromChat": "從聊天中移除",
+  "cantChatWithAccount": "你的 {provider} 帳號無法在此聊天",
+  "replaceChannel": "替換 {channel}",
+  "removeChannel": "移除"
 }

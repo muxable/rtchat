@@ -1636,7 +1636,7 @@ abstract class AppLocalizations {
   /// Subtitle of the RealtimeCash integration
   ///
   /// In en, this message translates to:
-  /// **'Connect a MATIC wallet'**
+  /// **'Connect an ETH or MATIC wallet'**
   String get realtimeCashSubtitle;
 
   /// Hint for the crypto wallet address field
@@ -1716,6 +1716,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Turn off'**
   String get turnOffTextToSpeech;
+
+  /// Button to add a channel to the default channels
+  ///
+  /// In en, this message translates to:
+  /// **'Add channel'**
+  String get addChannel;
+
+  /// Button on a channel search result that adds the channel to the channels shown in chat
+  ///
+  /// In en, this message translates to:
+  /// **'Add to chat'**
+  String get addToChat;
+
+  /// Title of the settings page for the channels the app opens with
+  ///
+  /// In en, this message translates to:
+  /// **'Default channels'**
+  String get defaultChannels;
+
+  /// Explains what the default channels are
+  ///
+  /// In en, this message translates to:
+  /// **'The channels shown when the app opens'**
+  String get defaultChannelsSubtitle;
+
+  /// Button on the default channels page that saves the channels currently shown as the default channels
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// Button on the default channels page that clears the picked default channels, so the app opens the signed-in user's own channel, and closes the page
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to my channel'**
+  String get resetToMyChannel;
+
+  /// Heading in the channel search sheet for the channels currently shown in chat
+  ///
+  /// In en, this message translates to:
+  /// **'In chat'**
+  String get inChat;
+
+  /// Button that removes a channel from the channels shown in chat
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from chat'**
+  String get removeFromChat;
+
+  /// Hint in the disabled message input when none of the channels shown are on the platform of the signed-in account
+  ///
+  /// In en, this message translates to:
+  /// **'Your {provider} account can\'t chat here'**
+  String cantChatWithAccount(String provider);
+
+  /// Shown while swiping a channel search result whose platform already has a channel in chat: adding it replaces that channel
+  ///
+  /// In en, this message translates to:
+  /// **'Replace {channel}'**
+  String replaceChannel(String channel);
+
+  /// Shown while swiping a default channel away to remove it from the default channels
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeChannel;
 }
 
 class _AppLocalizationsDelegate

@@ -1009,7 +1009,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Se non arrivano messaggi per questo intervallo e ne arriva uno nuovo, verrà riprodotto un suono di avviso.';
 
   @override
-  String get realtimeCashSubtitle => 'Collega un wallet MATIC';
+  String get realtimeCashSubtitle => 'Collega un wallet ETH o MATIC';
 
   @override
   String get walletAddress => 'Indirizzo del wallet';
@@ -1073,4 +1073,42 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Disattiva';
+
+  @override
+  String get addChannel => 'Aggiungi canale';
+
+  @override
+  String get addToChat => 'Aggiungi alla chat';
+
+  @override
+  String get defaultChannels => 'Canali predefiniti';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'I canali mostrati all\'apertura dell\'app';
+
+  @override
+  String get save => 'Salva';
+
+  @override
+  String get resetToMyChannel => 'Ripristina il mio canale';
+
+  @override
+  String get inChat => 'Nella chat';
+
+  @override
+  String get removeFromChat => 'Rimuovi dalla chat';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Il tuo account $provider non può chattare qui';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return 'Sostituisci $channel';
+  }
+
+  @override
+  String get removeChannel => 'Rimuovi';
 }

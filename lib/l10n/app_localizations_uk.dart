@@ -1010,7 +1010,7 @@ class AppLocalizationsUk extends AppLocalizations {
       'Якщо протягом цього часу не було повідомлень і надходить нове, пролунає сигнал.';
 
   @override
-  String get realtimeCashSubtitle => 'Підключіть гаманець MATIC';
+  String get realtimeCashSubtitle => 'Підключіть гаманець ETH або MATIC';
 
   @override
   String get walletAddress => 'Адреса гаманця';
@@ -1074,4 +1074,42 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Вимкнути';
+
+  @override
+  String get addChannel => 'Додати канал';
+
+  @override
+  String get addToChat => 'Додати до чату';
+
+  @override
+  String get defaultChannels => 'Канали за замовчуванням';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'Канали, що показуються під час відкриття застосунку';
+
+  @override
+  String get save => 'Зберегти';
+
+  @override
+  String get resetToMyChannel => 'Скинути до мого каналу';
+
+  @override
+  String get inChat => 'У чаті';
+
+  @override
+  String get removeFromChat => 'Прибрати з чату';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Ваш обліковий запис $provider не може писати тут';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return 'Замінити $channel';
+  }
+
+  @override
+  String get removeChannel => 'Видалити';
 }

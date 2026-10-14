@@ -248,7 +248,7 @@
   "announcementPinDuration": "Время закрепления объявлений",
   "idleMessageAlertDuration": "Оповещение о тишине в чате",
   "idleMessageAlertDurationSubtitle": "Если в течение этого времени не было сообщений и приходит новое, прозвучит сигнал.",
-  "realtimeCashSubtitle": "Подключите кошелёк MATIC",
+  "realtimeCashSubtitle": "Подключите кошелёк ETH или MATIC",
   "walletAddress": "Адрес кошелька",
   "streamlabsSubtitle": "Просматривайте пожертвования Streamlabs",
   "streamElementsSubtitle": "Просматривайте пожертвования StreamElements",
@@ -262,5 +262,16 @@
   "kicksGiftedEvent": "<b>{senderName}</b> отправил {amount} Kicks!",
   "signInWithKick": "Войти через Kick",
   "textToSpeechTooManyMessages": "Слишком много сообщений. Озвучивание текста отключено",
-  "turnOffTextToSpeech": "Выключить"
+  "turnOffTextToSpeech": "Выключить",
+  "addChannel": "Добавить канал",
+  "addToChat": "Добавить в чат",
+  "defaultChannels": "Каналы по умолчанию",
+  "defaultChannelsSubtitle": "Каналы, которые показываются при открытии приложения",
+  "save": "Сохранить",
+  "resetToMyChannel": "Сбросить на мой канал",
+  "inChat": "В чате",
+  "removeFromChat": "Убрать из чата",
+  "cantChatWithAccount": "Ваш аккаунт {provider} не может писать здесь",
+  "replaceChannel": "Заменить {channel}",
+  "removeChannel": "Удалить"
 }
