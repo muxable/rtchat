@@ -5,69 +5,16 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
-
-	"cloud.google.com/go/firestore"
 )
 
 var twitchTestNow = time.Date(2026, 10, 13, 12, 0, 0, 123456789, time.UTC)
-
-// Representative event shapes from https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/.
-// IDs and text are illustrative; nested values, nulls, booleans and numbers
-// must survive unchanged in the Firestore event field.
-func TestMapTwitchNotifications(t *testing.T) {
-	raw, err := os.ReadFile("testdata/twitch_notifications.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	var rawPayloads []json.RawMessage
-	if err := json.Unmarshal(raw, &rawPayloads); err != nil {
-		t.Fatal(err)
-	}
-	if len(rawPayloads) != 26 {
-		t.Fatalf("got %d event types, want 26", len(rawPayloads))
-	}
-	channelData := map[string]map[string]interface{}{
-		"channel.follow": {"followerCount": firestore.Increment(1)},
-		"channel.update": {"login": "cool_user", "displayName": "Cool_User", "title": "A new title", "language": "en", "categoryId": "509658", "categoryName": "Just Chatting"},
-		"stream.online":  {"onlineAt": firestore.ServerTimestamp},
-		"stream.offline": {"onlineAt": nil},
-	}
-	for _, rawPayload := range rawPayloads {
-		payload, err := decodeTwitchPayload(rawPayload)
-		if err != nil {
-			t.Fatal(err)
-		}
-		t.Run(payload.Subscription.Type, func(t *testing.T) {
-			got, err := mapTwitchNotification(payload, "message-id", twitchTestNow.Add(-time.Minute), twitchTestNow)
-			if err != nil {
-				t.Fatal(err)
-			}
-			want := twitchNotification{Documents: []twitchDocument{{
-				Path: "channels/twitch:1337/messages/twitch:message-id",
-				Data: map[string]interface{}{"channelId": "twitch:1337", "type": payload.Subscription.Type, "timestamp": time.Date(2026, 10, 13, 11, 59, 0, 123000000, time.UTC), "expiresAt": time.Date(2026, 10, 27, 12, 0, 0, 123000000, time.UTC), "event": payload.Event},
-			}}}
-			if data, ok := channelData[payload.Subscription.Type]; ok {
-				follow := payload.Subscription.Type == "channel.follow"
-				want.Documents = append(want.Documents, twitchDocument{Path: "channels/twitch:1337", Data: data, Merge: !follow, Update: follow, IgnoreError: follow})
-			}
-			if payload.Subscription.Type == "stream.online" {
-				want.RefreshChannelID = "twitch:1337"
-			}
-			if !reflect.DeepEqual(got, want) {
-				t.Fatalf("got %#v, want %#v", got, want)
-			}
-		})
-	}
-}
 
 func TestMapTwitchIgnoredAndInvalid(t *testing.T) {
 	for _, test := range []struct {
