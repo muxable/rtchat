@@ -302,7 +302,7 @@ class _RealTimeKitWidgetState extends State<_RealTimeKitWidget> {
                             return Stack(
                               children: [
                                 MobileScanner(
-                                  errorBuilder: (context, error, child) {
+                                  errorBuilder: (context, error) {
                                     return ScannerErrorWidget(error: error);
                                   },
                                   controller: _scanController,
