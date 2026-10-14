@@ -263,5 +263,12 @@
   "signInWithKick": "Kick으로 로그인",
   "textToSpeechTooManyMessages": "메시지가 너무 많습니다. 텍스트 음성 변환이 꺼졌습니다",
   "turnOffTextToSpeech": "끄기",
-  "sendToAllChannels": "모든 채널로 보내기"
+  "sendToAllChannels": "모든 채널로 보내기",
+  "addChannel": "채널 추가",
+  "addToChat": "채팅에 추가",
+  "defaultChannels": "기본 채널",
+  "defaultChannelsSubtitle": "앱을 열 때 표시되는 채널",
+  "useCurrentChannels": "현재 채널 사용",
+  "inChat": "채팅에 표시 중",
+  "removeFromChat": "채팅에서 제거"
 }

@@ -18,7 +18,7 @@ final twitch = Channel(Providers.twitch, '1', 'TwitchMux');
 final kick = Channel(Providers.kick, '2', 'KickMux');
 final otherKick = Channel(Providers.kick, '3', 'Friend');
 
-/// A view of [twitch], [kick] and [otherKick], seen by a user signed in as
+/// [twitch], [kick] and [otherKick] shown together, to a user signed in as
 /// [kick].
 ViewsModel simulcast() {
   final user = FakeUserModel(userChannel: kick);
@@ -26,7 +26,9 @@ ViewsModel simulcast() {
   addTearDown(views.dispose);
   addTearDown(user.dispose);
   return views
-    ..showView(views.saveView("Simulcast", [twitch, kick, otherKick]).id);
+    ..openChannel(twitch)
+    ..addChannel(kick)
+    ..addChannel(otherKick);
 }
 
 List<Emote> emotesOf(Channel channel) => [

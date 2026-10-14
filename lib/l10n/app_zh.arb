@@ -263,5 +263,12 @@
   "signInWithKick": "使用 Kick 登录",
   "textToSpeechTooManyMessages": "消息太多了。文字转语音已关闭",
   "turnOffTextToSpeech": "关闭",
-  "sendToAllChannels": "发送到所有频道"
+  "sendToAllChannels": "发送到所有频道",
+  "addChannel": "添加频道",
+  "addToChat": "添加到聊天",
+  "defaultChannels": "默认频道",
+  "defaultChannelsSubtitle": "打开应用时显示的频道",
+  "useCurrentChannels": "使用当前频道",
+  "inChat": "聊天中",
+  "removeFromChat": "从聊天中移除"
 }

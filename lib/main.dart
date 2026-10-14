@@ -35,6 +35,7 @@ import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
+import 'package:rtchat/screens/settings/default_channels.dart';
 import 'package:rtchat/screens/settings/events.dart';
 import 'package:rtchat/screens/settings/events/channel_point.dart';
 import 'package:rtchat/screens/settings/events/cheer.dart';
@@ -173,9 +174,8 @@ class _AppState extends State<App> {
                 player.play(AssetSource('message-sound.wav'));
               }
             };
-            model.channels = Provider.of<ViewsModel>(context, listen: false)
-                .activeView
-                .channels;
+            model.channels =
+                Provider.of<ViewsModel>(context, listen: false).channels;
             model.tts = Provider.of<TtsModel>(context, listen: false);
             return model
               ..addListener(() {
@@ -194,7 +194,7 @@ class _AppState extends State<App> {
               });
           },
           update: (context, views, ttsModel, model) {
-            model!.channels = views.activeView.channels;
+            model!.channels = views.channels;
             model.tts = ttsModel;
             return model;
           },
@@ -331,6 +331,8 @@ class _AppState extends State<App> {
             },
             '/settings': (context) => const SettingsScreen(),
             '/settings/badges': (context) => const TwitchBadgesScreen(),
+            '/settings/default-channels': (context) =>
+                const DefaultChannelsScreen(),
             '/settings/activity-feed': (context) => const ActivityFeedScreen(),
             '/settings/audio-sources': (context) => const AudioSourcesScreen(),
             '/settings/chat-history': (context) => const ChatHistoryScreen(),

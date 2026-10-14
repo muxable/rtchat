@@ -1062,4 +1062,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sendToAllChannels => 'Send to all channels';
+
+  @override
+  String get addChannel => 'Add channel';
+
+  @override
+  String get addToChat => 'Add to chat';
+
+  @override
+  String get defaultChannels => 'Default channels';
+
+  @override
+  String get defaultChannelsSubtitle => 'The channels shown when the app opens';
+
+  @override
+  String get useCurrentChannels => 'Use current channels';
+
+  @override
+  String get inChat => 'In chat';
+
+  @override
+  String get removeFromChat => 'Remove from chat';
 }

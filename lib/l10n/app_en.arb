@@ -1460,5 +1460,33 @@
   "sendToAllChannels": "Send to all channels",
   "@sendToAllChannels": {
     "description": "Send a chat message to every channel in the view"
+  },
+  "addChannel": "Add channel",
+  "@addChannel": {
+    "description": "Button to add a channel to the default channels"
+  },
+  "addToChat": "Add to chat",
+  "@addToChat": {
+    "description": "Button on a channel search result that adds the channel to the channels shown in chat"
+  },
+  "defaultChannels": "Default channels",
+  "@defaultChannels": {
+    "description": "Title of the settings page for the channels the app opens with"
+  },
+  "defaultChannelsSubtitle": "The channels shown when the app opens",
+  "@defaultChannelsSubtitle": {
+    "description": "Explains what the default channels are"
+  },
+  "useCurrentChannels": "Use current channels",
+  "@useCurrentChannels": {
+    "description": "Button that makes the channels currently shown the default channels"
+  },
+  "inChat": "In chat",
+  "@inChat": {
+    "description": "Heading in the channel search sheet for the channels currently shown in chat"
+  },
+  "removeFromChat": "Remove from chat",
+  "@removeFromChat": {
+    "description": "Button that removes a channel from the channels shown in chat"
   }
 }

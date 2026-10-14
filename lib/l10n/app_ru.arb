@@ -263,5 +263,12 @@
   "signInWithKick": "Войти через Kick",
   "textToSpeechTooManyMessages": "Слишком много сообщений. Озвучивание текста отключено",
   "turnOffTextToSpeech": "Выключить",
-  "sendToAllChannels": "Отправить во все каналы"
+  "sendToAllChannels": "Отправить во все каналы",
+  "addChannel": "Добавить канал",
+  "addToChat": "Добавить в чат",
+  "defaultChannels": "Каналы по умолчанию",
+  "defaultChannelsSubtitle": "Каналы, которые показываются при открытии приложения",
+  "useCurrentChannels": "Использовать текущие каналы",
+  "inChat": "В чате",
+  "removeFromChat": "Убрать из чата"
 }

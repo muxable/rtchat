@@ -1080,4 +1080,26 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get sendToAllChannels => 'Отправить во все каналы';
+
+  @override
+  String get addChannel => 'Добавить канал';
+
+  @override
+  String get addToChat => 'Добавить в чат';
+
+  @override
+  String get defaultChannels => 'Каналы по умолчанию';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'Каналы, которые показываются при открытии приложения';
+
+  @override
+  String get useCurrentChannels => 'Использовать текущие каналы';
+
+  @override
+  String get inChat => 'В чате';
+
+  @override
+  String get removeFromChat => 'Убрать из чата';
 }

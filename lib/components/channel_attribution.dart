@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/provider_icon.dart';
 
-/// Marks a message with the platform it came from, for views that merge
-/// several channels.
+/// Marks a message with the platform it came from, when messages from several
+/// channels are shown together.
 class ChannelAttribution extends StatelessWidget {
   final String provider;
   final Widget child;

@@ -263,5 +263,12 @@
   "signInWithKick": "Kick দিয়ে সাইন ইন করুন",
   "textToSpeechTooManyMessages": "অনেক বেশি বার্তা আছে। টেক্সট টু স্পিচ বন্ধ করা হয়েছে",
   "turnOffTextToSpeech": "বন্ধ করুন",
-  "sendToAllChannels": "সব চ্যানেলে পাঠান"
+  "sendToAllChannels": "সব চ্যানেলে পাঠান",
+  "addChannel": "চ্যানেল যোগ করুন",
+  "addToChat": "চ্যাটে যোগ করুন",
+  "defaultChannels": "ডিফল্ট চ্যানেল",
+  "defaultChannelsSubtitle": "অ্যাপ খোলার সময় যে চ্যানেলগুলো দেখানো হয়",
+  "useCurrentChannels": "বর্তমান চ্যানেলগুলো ব্যবহার করুন",
+  "inChat": "চ্যাটে",
+  "removeFromChat": "চ্যাট থেকে সরান"
 }

@@ -11,12 +11,13 @@ class ProfilesAdapter {
   static ProfilesAdapter? _instance;
 
   /// The channel of the account [userId] signed in with.
-  Stream<Channel?> getChannel({required String userId}) {
+  /// The channels of the accounts linked to [userId], one per platform.
+  Stream<List<Channel>> getChannels({required String userId}) {
     return db
         .collection("profiles")
         .doc(userId)
         .snapshots()
-        .map((event) => channelFromProfile(event.data()));
+        .map((event) => channelsFromProfile(event.data()));
   }
 
   Stream<bool> getIsOnline({required String channelId}) {
@@ -51,14 +52,19 @@ class ProfilesAdapter {
 
 /// Reads the account stored at `profiles/{uid}.{provider}`. Each user signs in
 /// with one platform, so a profile holds a single account.
-Channel? channelFromProfile(Map<String, dynamic>? data) {
-  for (final provider in Providers.all) {
-    final account = data?[provider];
-    if (account is! Map || account['id'] == null) {
-      continue;
-    }
-    return Channel(provider, account['id'].toString(),
-        account['displayName'] ?? account['slug'] ?? account['login'] ?? '');
-  }
-  return null;
-}
+/// The channels of every account linked to a profile, one per platform.
+List<Channel> channelsFromProfile(Map<String, dynamic>? data) => [
+      for (final provider in Providers.all)
+        if (data?[provider] case {'id': final id} when id != null)
+          Channel(
+              provider,
+              id.toString(),
+              data![provider]['displayName'] ??
+                  data[provider]['slug'] ??
+                  data[provider]['login'] ??
+                  ''),
+    ];
+
+/// The channel the user signed in with: their first linked account.
+Channel? channelFromProfile(Map<String, dynamic>? data) =>
+    channelsFromProfile(data).firstOrNull;

@@ -1040,4 +1040,25 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get sendToAllChannels => 'すべてのチャンネルに送信';
+
+  @override
+  String get addChannel => 'チャンネルを追加';
+
+  @override
+  String get addToChat => 'チャットに追加';
+
+  @override
+  String get defaultChannels => 'デフォルトのチャンネル';
+
+  @override
+  String get defaultChannelsSubtitle => 'アプリを開いたときに表示されるチャンネル';
+
+  @override
+  String get useCurrentChannels => '現在のチャンネルを使用';
+
+  @override
+  String get inChat => 'チャットに表示中';
+
+  @override
+  String get removeFromChat => 'チャットから削除';
 }

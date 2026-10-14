@@ -14,7 +14,7 @@ class UserModel extends ChangeNotifier {
   StreamSubscription<void>? _profileSubscription;
 
   User? _user;
-  Channel? _userChannel;
+  List<Channel> _userChannels = const [];
 
   UserModel() {
     _userSubscription =
@@ -24,15 +24,16 @@ class UserModel extends ChangeNotifier {
       await FirebaseCrashlytics.instance.setUserIdentifier(user?.uid ?? "");
       await FirebaseAnalytics.instance.setUserId(id: user?.uid);
       if (user == null) {
-        _userChannel = null;
+        _userChannels = const [];
         _isLoading = false;
         notifyListeners();
         return;
       }
       _profileSubscription = ProfilesAdapter.instance
-          .getChannel(userId: user.uid)
-          .listen((channel) {
-        _userChannel = channel;
+          .getChannels(userId: user.uid)
+          .listen((channels) {
+        _userChannels = List.unmodifiable(channels);
+        final channel = userChannel;
         _isLoading = false;
         notifyListeners();
         if (channel != null) {
@@ -58,7 +59,11 @@ class UserModel extends ChangeNotifier {
 
   User? get user => _user;
 
-  Channel? get userChannel => _userChannel;
+  /// The channel the user signed in with.
+  Channel? get userChannel => _userChannels.firstOrNull;
+
+  /// The channels of every account the user has linked, one per platform.
+  List<Channel> get userChannels => _userChannels;
 
   static String normalizeLanguageCode(String? twitchLang) {
     final mappings = {
@@ -84,7 +89,7 @@ class UserModel extends ChangeNotifier {
   }
 
   Uri? get activityFeedUri {
-    final channel = _userChannel;
+    final channel = userChannel;
     if (channel == null) {
       return null;
     }

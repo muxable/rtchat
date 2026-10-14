@@ -1038,6 +1038,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sendToAllChannels => '发送到所有频道';
+
+  @override
+  String get addChannel => '添加频道';
+
+  @override
+  String get addToChat => '添加到聊天';
+
+  @override
+  String get defaultChannels => '默认频道';
+
+  @override
+  String get defaultChannelsSubtitle => '打开应用时显示的频道';
+
+  @override
+  String get useCurrentChannels => '使用当前频道';
+
+  @override
+  String get inChat => '聊天中';
+
+  @override
+  String get removeFromChat => '从聊天中移除';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2074,4 +2095,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get sendToAllChannels => '傳送到所有頻道';
+
+  @override
+  String get addChannel => '新增頻道';
+
+  @override
+  String get addToChat => '新增至聊天';
+
+  @override
+  String get defaultChannels => '預設頻道';
+
+  @override
+  String get defaultChannelsSubtitle => '開啟應用程式時顯示的頻道';
+
+  @override
+  String get useCurrentChannels => '使用目前的頻道';
+
+  @override
+  String get inChat => '聊天中';
+
+  @override
+  String get removeFromChat => '從聊天中移除';
 }

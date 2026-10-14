@@ -263,5 +263,12 @@
   "signInWithKick": "Увійти через Kick",
   "textToSpeechTooManyMessages": "Забагато повідомлень. Озвучування тексту вимкнено",
   "turnOffTextToSpeech": "Вимкнути",
-  "sendToAllChannels": "Надіслати в усі канали"
+  "sendToAllChannels": "Надіслати в усі канали",
+  "addChannel": "Додати канал",
+  "addToChat": "Додати до чату",
+  "defaultChannels": "Канали за замовчуванням",
+  "defaultChannelsSubtitle": "Канали, що показуються під час відкриття застосунку",
+  "useCurrentChannels": "Використати поточні канали",
+  "inChat": "У чаті",
+  "removeFromChat": "Прибрати з чату"
 }

@@ -263,5 +263,12 @@
   "signInWithKick": "Zaloguj się przez Kick",
   "textToSpeechTooManyMessages": "Jest zbyt wiele wiadomości. Zamiana tekstu na mowę wyłączona",
   "turnOffTextToSpeech": "Wyłącz",
-  "sendToAllChannels": "Wyślij na wszystkie kanały"
+  "sendToAllChannels": "Wyślij na wszystkie kanały",
+  "addChannel": "Dodaj kanał",
+  "addToChat": "Dodaj do czatu",
+  "defaultChannels": "Domyślne kanały",
+  "defaultChannelsSubtitle": "Kanały wyświetlane po otwarciu aplikacji",
+  "useCurrentChannels": "Użyj bieżących kanałów",
+  "inChat": "W czacie",
+  "removeFromChat": "Usuń z czatu"
 }

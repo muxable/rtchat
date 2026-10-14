@@ -7,7 +7,12 @@ class FakeUserModel extends ChangeNotifier implements UserModel {
   @override
   final Channel? userChannel;
 
-  FakeUserModel({this.userChannel});
+  @override
+  final List<Channel> userChannels;
+
+  /// Signed in as [userChannel], plus any other accounts in [userChannels].
+  FakeUserModel({this.userChannel, List<Channel>? userChannels})
+      : userChannels = userChannels ?? [if (userChannel != null) userChannel];
 
   @override
   bool get isLoading => false;

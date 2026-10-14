@@ -1722,6 +1722,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send to all channels'**
   String get sendToAllChannels;
+
+  /// Button to add a channel to the default channels
+  ///
+  /// In en, this message translates to:
+  /// **'Add channel'**
+  String get addChannel;
+
+  /// Button on a channel search result that adds the channel to the channels shown in chat
+  ///
+  /// In en, this message translates to:
+  /// **'Add to chat'**
+  String get addToChat;
+
+  /// Title of the settings page for the channels the app opens with
+  ///
+  /// In en, this message translates to:
+  /// **'Default channels'**
+  String get defaultChannels;
+
+  /// Explains what the default channels are
+  ///
+  /// In en, this message translates to:
+  /// **'The channels shown when the app opens'**
+  String get defaultChannelsSubtitle;
+
+  /// Button that makes the channels currently shown the default channels
+  ///
+  /// In en, this message translates to:
+  /// **'Use current channels'**
+  String get useCurrentChannels;
+
+  /// Heading in the channel search sheet for the channels currently shown in chat
+  ///
+  /// In en, this message translates to:
+  /// **'In chat'**
+  String get inChat;
+
+  /// Button that removes a channel from the channels shown in chat
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from chat'**
+  String get removeFromChat;
 }
 
 class _AppLocalizationsDelegate

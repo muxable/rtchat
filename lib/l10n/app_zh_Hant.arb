@@ -263,5 +263,12 @@
   "signInWithKick": "使用 Kick 登入",
   "textToSpeechTooManyMessages": "訊息太多了。文字轉語音已關閉",
   "turnOffTextToSpeech": "關閉",
-  "sendToAllChannels": "傳送到所有頻道"
+  "sendToAllChannels": "傳送到所有頻道",
+  "addChannel": "新增頻道",
+  "addToChat": "新增至聊天",
+  "defaultChannels": "預設頻道",
+  "defaultChannelsSubtitle": "開啟應用程式時顯示的頻道",
+  "useCurrentChannels": "使用目前的頻道",
+  "inChat": "聊天中",
+  "removeFromChat": "從聊天中移除"
 }

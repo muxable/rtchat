@@ -263,5 +263,12 @@
   "signInWithKick": "Kickでサインイン",
   "textToSpeechTooManyMessages": "メッセージが多すぎます。読み上げをオフにしました",
   "turnOffTextToSpeech": "オフにする",
-  "sendToAllChannels": "すべてのチャンネルに送信"
+  "sendToAllChannels": "すべてのチャンネルに送信",
+  "addChannel": "チャンネルを追加",
+  "addToChat": "チャットに追加",
+  "defaultChannels": "デフォルトのチャンネル",
+  "defaultChannelsSubtitle": "アプリを開いたときに表示されるチャンネル",
+  "useCurrentChannels": "現在のチャンネルを使用",
+  "inChat": "チャットに表示中",
+  "removeFromChat": "チャットから削除"
 }
