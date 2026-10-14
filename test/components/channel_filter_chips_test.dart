@@ -33,12 +33,14 @@ ViewsModel simulcast() {
 void main() {
   testWidgets("no chips for single channel views", (tester) async {
     final views = ViewsModel()..openChannel(twitch);
+    addTearDown(views.dispose);
     await tester.pumpWidget(app(views));
     expect(find.byType(FilterChip), findsNothing);
   });
 
   testWidgets("chips toggle a channel's visibility", (tester) async {
     final views = simulcast();
+    addTearDown(views.dispose);
     await tester.pumpWidget(app(views));
     expect(find.byType(FilterChip), findsNWidgets(2));
     await tester.tap(find.text('KickMux'));
