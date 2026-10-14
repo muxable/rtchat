@@ -15,6 +15,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"github.com/muxable/rtchat/agent/internal/handler"
+	"github.com/muxable/rtchat/agent/internal/webhook"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -120,21 +121,27 @@ func main() {
 
 	isListening := &atomic.Bool{}
 	start := time.Now().Add(time.Duration(rand.Intn(24)) * time.Hour)
-	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	recycleHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !isListening.Load() || time.Since(start) > 72*time.Hour {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
 		w.Write([]byte((72*time.Hour - time.Since(start)).String()))
-	}))
+	})
 
 	go func() {
+		// Optional webhook credentials must not delay the IRC snapshot loop.
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		secrets := webhook.LoadSecrets(ctx, nil)
+		cancel()
+		server := webhook.NewServer(secrets)
+		server.Mux.Handle("/", recycleHandler)
 		zap.L().Info("starting http server")
 		port := os.Getenv("PORT")
 		if port == "" {
 			port = "8080"
 		}
-		if err := http.ListenAndServe(":"+port, nil); err != nil {
+		if err := http.ListenAndServe(":"+port, server.Mux); err != nil {
 			zap.L().Fatal("failed to start http server", zap.Error(err))
 		}
 	}()
