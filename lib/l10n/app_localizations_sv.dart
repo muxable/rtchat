@@ -996,7 +996,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Om det inte kommer några meddelanden under den här tiden och sedan kommer ett nytt spelas ett varningsljud.';
 
   @override
-  String get realtimeCashSubtitle => 'Anslut en MATIC-plånbok';
+  String get realtimeCashSubtitle => 'Anslut en ETH- eller MATIC-plånbok';
 
   @override
   String get walletAddress => 'Plånboksadress';
@@ -1060,4 +1060,25 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Stäng av';
+
+  @override
+  String get addChannel => 'Lägg till kanal';
+
+  @override
+  String get addToChat => 'Lägg till i chatten';
+
+  @override
+  String get defaultChannels => 'Standardkanaler';
+
+  @override
+  String get defaultChannelsSubtitle => 'Kanalerna som visas när appen öppnas';
+
+  @override
+  String get useCurrentChannels => 'Använd nuvarande kanaler';
+
+  @override
+  String get inChat => 'I chatten';
+
+  @override
+  String get removeFromChat => 'Ta bort från chatten';
 }

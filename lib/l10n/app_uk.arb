@@ -248,7 +248,7 @@
   "announcementPinDuration": "Час закріплення оголошень",
   "idleMessageAlertDuration": "Сповіщення про тишу в чаті",
   "idleMessageAlertDurationSubtitle": "Якщо протягом цього часу не було повідомлень і надходить нове, пролунає сигнал.",
-  "realtimeCashSubtitle": "Підключіть гаманець MATIC",
+  "realtimeCashSubtitle": "Підключіть гаманець ETH або MATIC",
   "walletAddress": "Адреса гаманця",
   "streamlabsSubtitle": "Переглядайте пожертви Streamlabs",
   "streamElementsSubtitle": "Переглядайте пожертви StreamElements",
@@ -262,5 +262,12 @@
   "kicksGiftedEvent": "<b>{senderName}</b> надіслав {amount} Kicks!",
   "signInWithKick": "Увійти через Kick",
   "textToSpeechTooManyMessages": "Забагато повідомлень. Озвучування тексту вимкнено",
-  "turnOffTextToSpeech": "Вимкнути"
+  "turnOffTextToSpeech": "Вимкнути",
+  "addChannel": "Додати канал",
+  "addToChat": "Додати до чату",
+  "defaultChannels": "Канали за замовчуванням",
+  "defaultChannelsSubtitle": "Канали, що показуються під час відкриття застосунку",
+  "useCurrentChannels": "Використати поточні канали",
+  "inChat": "У чаті",
+  "removeFromChat": "Прибрати з чату"
 }

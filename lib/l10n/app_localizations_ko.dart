@@ -975,7 +975,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '이 시간 동안 메시지가 없다가 새 메시지가 오면 알림음이 재생됩니다.';
 
   @override
-  String get realtimeCashSubtitle => 'MATIC 지갑 연결';
+  String get realtimeCashSubtitle => 'ETH 또는 MATIC 지갑 연결';
 
   @override
   String get walletAddress => '지갑 주소';
@@ -1037,4 +1037,25 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => '끄기';
+
+  @override
+  String get addChannel => '채널 추가';
+
+  @override
+  String get addToChat => '채팅에 추가';
+
+  @override
+  String get defaultChannels => '기본 채널';
+
+  @override
+  String get defaultChannelsSubtitle => '앱을 열 때 표시되는 채널';
+
+  @override
+  String get useCurrentChannels => '현재 채널 사용';
+
+  @override
+  String get inChat => '채팅에 표시 중';
+
+  @override
+  String get removeFromChat => '채팅에서 제거';
 }

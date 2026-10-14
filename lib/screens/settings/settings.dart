@@ -26,6 +26,14 @@ class SettingsScreen extends StatelessWidget {
       body: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return ListView(children: [
           ListTile(
+            title: Text(AppLocalizations.of(context)!.defaultChannels),
+            subtitle:
+                Text(AppLocalizations.of(context)!.defaultChannelsSubtitle),
+            onTap: () {
+              Navigator.pushNamed(context, "/settings/default-channels");
+            },
+          ),
+          ListTile(
             title: Text(AppLocalizations.of(context)!.activityFeed),
             subtitle: Text(AppLocalizations.of(context)!.activityFeedSubtitle),
             onTap: () {

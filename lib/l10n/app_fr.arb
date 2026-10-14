@@ -248,7 +248,7 @@
   "announcementPinDuration": "Durée d'épinglage des annonces",
   "idleMessageAlertDuration": "Délai d'alerte d'inactivité",
   "idleMessageAlertDurationSubtitle": "Si aucun message n'arrive pendant cette durée et qu'un nouveau arrive, un son d'alerte sera joué.",
-  "realtimeCashSubtitle": "Connectez un portefeuille MATIC",
+  "realtimeCashSubtitle": "Connectez un portefeuille ETH ou MATIC",
   "walletAddress": "Adresse du portefeuille",
   "streamlabsSubtitle": "Consultez vos dons Streamlabs",
   "streamElementsSubtitle": "Consultez vos dons StreamElements",
@@ -262,5 +262,12 @@
   "kicksGiftedEvent": "<b>{senderName}</b> a envoyé {amount} Kicks !",
   "signInWithKick": "Se connecter avec Kick",
   "textToSpeechTooManyMessages": "Il y a trop de messages. Synthèse vocale désactivée",
-  "turnOffTextToSpeech": "Désactiver"
+  "turnOffTextToSpeech": "Désactiver",
+  "addChannel": "Ajouter une chaîne",
+  "addToChat": "Ajouter au chat",
+  "defaultChannels": "Chaînes par défaut",
+  "defaultChannelsSubtitle": "Les chaînes affichées à l'ouverture de l'application",
+  "useCurrentChannels": "Utiliser les chaînes actuelles",
+  "inChat": "Dans le chat",
+  "removeFromChat": "Retirer du chat"
 }

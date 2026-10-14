@@ -1005,7 +1005,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Se não houver mensagens por esse tempo e chegar uma nova, um som de alerta será tocado.';
 
   @override
-  String get realtimeCashSubtitle => 'Conecte uma carteira MATIC';
+  String get realtimeCashSubtitle => 'Conecte uma carteira ETH ou MATIC';
 
   @override
   String get walletAddress => 'Endereço da carteira';
@@ -1069,4 +1069,25 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Desativar';
+
+  @override
+  String get addChannel => 'Adicionar canal';
+
+  @override
+  String get addToChat => 'Adicionar ao chat';
+
+  @override
+  String get defaultChannels => 'Canais padrão';
+
+  @override
+  String get defaultChannelsSubtitle => 'Os canais exibidos ao abrir o app';
+
+  @override
+  String get useCurrentChannels => 'Usar os canais atuais';
+
+  @override
+  String get inChat => 'No chat';
+
+  @override
+  String get removeFromChat => 'Remover do chat';
 }

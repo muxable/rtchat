@@ -248,7 +248,7 @@
   "announcementPinDuration": "Vastpinduur van aankondigingen",
   "idleMessageAlertDuration": "Melding bij stille chat",
   "idleMessageAlertDurationSubtitle": "Als er zo lang geen berichten zijn en er komt een nieuw bericht binnen, klinkt er een meldingsgeluid.",
-  "realtimeCashSubtitle": "Koppel een MATIC-wallet",
+  "realtimeCashSubtitle": "Koppel een ETH- of MATIC-wallet",
   "walletAddress": "Walletadres",
   "streamlabsSubtitle": "Bekijk je Streamlabs-donaties",
   "streamElementsSubtitle": "Bekijk je StreamElements-donaties",
@@ -262,5 +262,12 @@
   "kicksGiftedEvent": "<b>{senderName}</b> heeft {amount} Kicks gestuurd!",
   "signInWithKick": "Log in met Kick",
   "textToSpeechTooManyMessages": "Er zijn te veel berichten. Tekst-naar-spraak uitgeschakeld",
-  "turnOffTextToSpeech": "Uitschakelen"
+  "turnOffTextToSpeech": "Uitschakelen",
+  "addChannel": "Kanaal toevoegen",
+  "addToChat": "Toevoegen aan chat",
+  "defaultChannels": "Standaardkanalen",
+  "defaultChannelsSubtitle": "De kanalen die worden getoond wanneer de app opent",
+  "useCurrentChannels": "Huidige kanalen gebruiken",
+  "inChat": "In de chat",
+  "removeFromChat": "Uit de chat verwijderen"
 }

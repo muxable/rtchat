@@ -1012,7 +1012,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Wenn so lange keine Nachrichten kommen und dann eine neue eintrifft, wird ein Signalton abgespielt.';
 
   @override
-  String get realtimeCashSubtitle => 'Verbinde eine MATIC-Wallet';
+  String get realtimeCashSubtitle => 'Verbinde eine ETH- oder MATIC-Wallet';
 
   @override
   String get walletAddress => 'Wallet-Adresse';
@@ -1077,4 +1077,26 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Ausschalten';
+
+  @override
+  String get addChannel => 'Kanal hinzufügen';
+
+  @override
+  String get addToChat => 'Zum Chat hinzufügen';
+
+  @override
+  String get defaultChannels => 'Standardkanäle';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'Die Kanäle, die beim Öffnen der App angezeigt werden';
+
+  @override
+  String get useCurrentChannels => 'Aktuelle Kanäle verwenden';
+
+  @override
+  String get inChat => 'Im Chat';
+
+  @override
+  String get removeFromChat => 'Aus dem Chat entfernen';
 }

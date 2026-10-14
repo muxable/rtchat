@@ -1,63 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:uuid/uuid.dart';
 
-/// A set of channels, on any providers, shown together.
-class ChannelView {
-  final String id;
-  final String name;
-  final List<Channel> channels;
-
-  const ChannelView(
-      {required this.id, required this.name, required this.channels});
-
-  ChannelView copyWith({String? name, List<Channel>? channels}) => ChannelView(
-      id: id, name: name ?? this.name, channels: channels ?? this.channels);
-
-  ChannelView.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'] ?? '',
-        channels = [
-          for (final channel in (json['channels'] as List?) ?? const [])
-            Channel(channel['provider'], channel['channelId'],
-                channel['displayName'] ?? '',
-                language: channel['language']),
-        ];
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'channels': channels.map((channel) => channel.toJson()).toList(),
-      };
-
-  @override
-  bool operator ==(other) =>
-      other is ChannelView &&
-      other.id == id &&
-      other.name == name &&
-      _sameChannels(other.channels, channels);
-
-  @override
-  int get hashCode => id.hashCode;
-}
-
-bool _sameChannels(List<Channel> a, List<Channel> b) {
-  if (a.length != b.length) {
-    return false;
-  }
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] != b[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// unlike [_sameChannels], also compares the metadata that can change while
-// the channel stays the same, so a renamed channel isn't shown stale.
+// unlike [listEquals], also compares the metadata that can change while the
+// channel stays the same, so a renamed channel isn't shown stale.
 bool _sameChannelsAndMetadata(List<Channel> a, List<Channel> b) {
-  if (!_sameChannels(a, b)) {
+  if (!listEquals(a, b)) {
     return false;
   }
   for (var i = 0; i < a.length; i++) {
@@ -69,84 +18,108 @@ bool _sameChannelsAndMetadata(List<Channel> a, List<Channel> b) {
   return true;
 }
 
-/// What the user is looking at: by default the channel they signed in with
-/// ("My channel"), a channel they opened from search or a raid, or a view they
-/// saved. Views don't need an account, so signed-out users can use them too.
+List<Channel> _channelsFromJson(dynamic json) => [
+      for (final channel in (json as List?) ?? const [])
+        Channel(channel['provider'], channel['channelId'],
+            channel['displayName'] ?? '',
+            language: channel['language']),
+    ];
+
+/// The channels shown in chat, on any providers. The app opens with the
+/// default channels (the signed-in user's own channel unless others were
+/// picked); channels can then be opened, added and removed. None of this
+/// needs an account, so signed-out users can use it too.
 class ViewsModel extends ChangeNotifier {
-  static const myChannelsId = 'my-channels';
+  Channel? _userChannel;
 
-  List<Channel> _userChannels = const [];
-  final List<ChannelView> _savedViews = [];
-  String? _savedViewId;
+  // the picked default channels; empty means the user's own channel.
+  List<Channel> _defaultChannels = const [];
 
-  // a channel opened from search or a raid. like before views existed, this
-  // isn't remembered across restarts.
-  ChannelView? _openedView;
+  // the current channels once they've been changed from the defaults. like
+  // a channel opened from search before, these aren't remembered across
+  // restarts: the app opens with the default channels.
+  List<Channel>? _channels;
 
   ViewsModel();
 
-  /// Keeps "My channel" in sync with the signed-in account.
+  /// Keeps the user's own channel in sync with the signed-in account.
   void update(UserModel userModel) {
     final channel = userModel.userChannel;
-    final channels = [if (channel != null) channel];
-    if (_sameChannelsAndMetadata(channels, _userChannels)) {
+    if (_sameChannelsAndMetadata([if (channel != null) channel],
+        [if (_userChannel != null) _userChannel!])) {
       return;
     }
-    _userChannels = List.unmodifiable(channels);
+    _userChannel = channel;
     notifyListeners();
   }
 
-  ChannelView get myChannels =>
-      ChannelView(id: myChannelsId, name: '', channels: _userChannels);
+  /// The channels the app opens with.
+  List<Channel> get defaultChannels => _defaultChannels.isNotEmpty
+      ? List.unmodifiable(_defaultChannels)
+      : List.unmodifiable([if (_userChannel != null) _userChannel!]);
 
-  List<ChannelView> get savedViews => List.unmodifiable(_savedViews);
+  /// Whether default channels were picked, rather than being the user's own.
+  bool get hasCustomDefaultChannels => _defaultChannels.isNotEmpty;
 
-  ChannelView get activeView =>
-      _openedView ??
-      _savedViews.where((view) => view.id == _savedViewId).firstOrNull ??
-      myChannels;
-
-  /// The first channel of the active view. Features that only support one
-  /// channel at a time (for now) use this one.
-  Channel? get primaryChannel => activeView.channels.firstOrNull;
-
-  /// Shows a single channel, e.g. one picked from search.
-  void openChannel(Channel channel) {
-    _openedView = ChannelView(
-        id: 'channel:$channel', name: channel.displayName, channels: [channel]);
+  set defaultChannels(List<Channel> channels) {
+    _defaultChannels = List.unmodifiable(channels.toSet().toList());
     notifyListeners();
   }
 
-  void showView(String id) {
-    _openedView = null;
-    _savedViewId = id == myChannelsId ? null : id;
-    notifyListeners();
-  }
-
-  void showMyChannels() => showView(myChannelsId);
-
-  ChannelView saveView(String name, List<Channel> channels) {
-    final view = ChannelView(
-        id: const Uuid().v4(), name: name, channels: List.of(channels));
-    _savedViews.add(view);
-    notifyListeners();
-    return view;
-  }
-
-  void updateView(ChannelView view) {
-    final index = _savedViews.indexWhere((saved) => saved.id == view.id);
-    if (index == -1) {
+  void addDefaultChannel(Channel channel) {
+    if (_defaultChannels.contains(channel)) {
       return;
     }
-    _savedViews[index] = view;
+    defaultChannels = [...defaultChannels, channel];
+  }
+
+  void removeDefaultChannel(Channel channel) {
+    if (!_defaultChannels.contains(channel)) {
+      return;
+    }
+    defaultChannels =
+        _defaultChannels.where((other) => other != channel).toList();
+  }
+
+  void useCurrentChannelsAsDefault() => defaultChannels = channels;
+
+  /// The channels shown in chat.
+  List<Channel> get channels =>
+      _channels == null ? defaultChannels : List.unmodifiable(_channels!);
+
+  bool contains(Channel channel) => channels.contains(channel);
+
+  /// The first channel. Features that only support one channel at a time
+  /// (for now) use this one.
+  Channel? get primaryChannel => channels.firstOrNull;
+
+  void _setChannels(List<Channel> channels) {
+    _channels = List.unmodifiable(channels);
     notifyListeners();
   }
 
-  void deleteView(String id) {
-    _savedViews.removeWhere((view) => view.id == id);
-    if (_savedViewId == id) {
-      _savedViewId = null;
+  /// Shows just [channel], e.g. one picked from search or a raid.
+  void openChannel(Channel channel) => _setChannels([channel]);
+
+  /// Adds [channel] to the channels shown.
+  void addChannel(Channel channel) {
+    if (contains(channel)) {
+      return;
     }
+    _setChannels([...channels, channel]);
+  }
+
+  /// Removes [channel] from the channels shown, unless it's the only one.
+  void removeChannel(Channel channel) {
+    if (!contains(channel) || channels.length < 2) {
+      return;
+    }
+    _setChannels(channels.where((other) => other != channel).toList());
+  }
+
+  /// Goes back to the default channels.
+  void showDefaultChannels() {
+    _channels = null;
     notifyListeners();
   }
 
@@ -159,18 +132,14 @@ class ViewsModel extends ChangeNotifier {
     return Localizations.localeOf(context);
   }
 
+  // saved views from before are ignored: they never shipped.
   ViewsModel.fromJson(Map<String, dynamic> json) {
-    for (final view in (json['views'] as List?) ?? const []) {
-      _savedViews.add(ChannelView.fromJson(Map<String, dynamic>.from(view)));
-    }
-    final id = json['activeViewId'];
-    if (_savedViews.any((view) => view.id == id)) {
-      _savedViewId = id;
-    }
+    _defaultChannels =
+        List.unmodifiable(_channelsFromJson(json['defaultChannels']));
   }
 
   Map<String, dynamic> toJson() => {
-        'views': _savedViews.map((view) => view.toJson()).toList(),
-        'activeViewId': _savedViewId,
+        'defaultChannels':
+            _defaultChannels.map((channel) => channel.toJson()).toList(),
       };
 }

@@ -1004,7 +1004,7 @@ class AppLocalizationsNl extends AppLocalizations {
       'Als er zo lang geen berichten zijn en er komt een nieuw bericht binnen, klinkt er een meldingsgeluid.';
 
   @override
-  String get realtimeCashSubtitle => 'Koppel een MATIC-wallet';
+  String get realtimeCashSubtitle => 'Koppel een ETH- of MATIC-wallet';
 
   @override
   String get walletAddress => 'Walletadres';
@@ -1068,4 +1068,26 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Uitschakelen';
+
+  @override
+  String get addChannel => 'Kanaal toevoegen';
+
+  @override
+  String get addToChat => 'Toevoegen aan chat';
+
+  @override
+  String get defaultChannels => 'Standaardkanalen';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'De kanalen die worden getoond wanneer de app opent';
+
+  @override
+  String get useCurrentChannels => 'Huidige kanalen gebruiken';
+
+  @override
+  String get inChat => 'In de chat';
+
+  @override
+  String get removeFromChat => 'Uit de chat verwijderen';
 }

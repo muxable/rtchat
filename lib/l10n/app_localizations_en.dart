@@ -995,7 +995,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
 
   @override
-  String get realtimeCashSubtitle => 'Connect a MATIC wallet';
+  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
 
   @override
   String get walletAddress => 'Wallet address';
@@ -1059,4 +1059,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Turn off';
+
+  @override
+  String get addChannel => 'Add channel';
+
+  @override
+  String get addToChat => 'Add to chat';
+
+  @override
+  String get defaultChannels => 'Default channels';
+
+  @override
+  String get defaultChannelsSubtitle => 'The channels shown when the app opens';
+
+  @override
+  String get useCurrentChannels => 'Use current channels';
+
+  @override
+  String get inChat => 'In chat';
+
+  @override
+  String get removeFromChat => 'Remove from chat';
 }

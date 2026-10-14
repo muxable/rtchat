@@ -248,7 +248,7 @@
   "announcementPinDuration": "공지 고정 시간",
   "idleMessageAlertDuration": "채팅 무응답 알림 시간",
   "idleMessageAlertDurationSubtitle": "이 시간 동안 메시지가 없다가 새 메시지가 오면 알림음이 재생됩니다.",
-  "realtimeCashSubtitle": "MATIC 지갑 연결",
+  "realtimeCashSubtitle": "ETH 또는 MATIC 지갑 연결",
   "walletAddress": "지갑 주소",
   "streamlabsSubtitle": "Streamlabs 후원 보기",
   "streamElementsSubtitle": "StreamElements 후원 보기",
@@ -262,5 +262,12 @@
   "kicksGiftedEvent": "<b>{senderName}</b>님이 {amount} Kicks를 보냈습니다!",
   "signInWithKick": "Kick으로 로그인",
   "textToSpeechTooManyMessages": "메시지가 너무 많습니다. 텍스트 음성 변환이 꺼졌습니다",
-  "turnOffTextToSpeech": "끄기"
+  "turnOffTextToSpeech": "끄기",
+  "addChannel": "채널 추가",
+  "addToChat": "채팅에 추가",
+  "defaultChannels": "기본 채널",
+  "defaultChannelsSubtitle": "앱을 열 때 표시되는 채널",
+  "useCurrentChannels": "현재 채널 사용",
+  "inChat": "채팅에 표시 중",
+  "removeFromChat": "채팅에서 제거"
 }

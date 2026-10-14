@@ -1012,7 +1012,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Если в течение этого времени не было сообщений и приходит новое, прозвучит сигнал.';
 
   @override
-  String get realtimeCashSubtitle => 'Подключите кошелёк MATIC';
+  String get realtimeCashSubtitle => 'Подключите кошелёк ETH или MATIC';
 
   @override
   String get walletAddress => 'Адрес кошелька';
@@ -1077,4 +1077,26 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Выключить';
+
+  @override
+  String get addChannel => 'Добавить канал';
+
+  @override
+  String get addToChat => 'Добавить в чат';
+
+  @override
+  String get defaultChannels => 'Каналы по умолчанию';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'Каналы, которые показываются при открытии приложения';
+
+  @override
+  String get useCurrentChannels => 'Использовать текущие каналы';
+
+  @override
+  String get inChat => 'В чате';
+
+  @override
+  String get removeFromChat => 'Убрать из чата';
 }
