@@ -22,6 +22,9 @@ class ChannelSearchBottomSheetWidget extends StatefulWidget {
   /// Whether a channel was already added.
   final bool Function(Channel)? isAdded;
 
+  /// Whether a channel can be added; its add button is disabled otherwise.
+  final bool Function(Channel)? canAdd;
+
   /// Shown above the results.
   final Widget? header;
 
@@ -34,6 +37,7 @@ class ChannelSearchBottomSheetWidget extends StatefulWidget {
       this.search = searchChannels,
       this.onChannelAdd,
       this.isAdded,
+      this.canAdd,
       this.header});
 
   @override
@@ -184,6 +188,7 @@ class _ChannelSearchBottomSheetWidgetState
             onChannelAdd:
                 _raid && widget.onRaid != null ? null : widget.onChannelAdd,
             isAdded: widget.isAdded,
+            canAdd: widget.canAdd,
             header: widget.header,
           ))
         ],

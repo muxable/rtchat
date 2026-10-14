@@ -269,5 +269,7 @@
   "defaultChannelsSubtitle": "Los canales que se muestran al abrir la aplicación",
   "useCurrentChannels": "Usar los canales actuales",
   "inChat": "En el chat",
-  "removeFromChat": "Quitar del chat"
+  "removeFromChat": "Quitar del chat",
+  "oneChannelPerProvider": "Solo puede haber un canal de {provider} en el chat",
+  "cantChatWithAccount": "Tu cuenta de {provider} no puede chatear aquí"
 }

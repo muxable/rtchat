@@ -269,5 +269,7 @@
   "defaultChannelsSubtitle": "De kanalen die worden getoond wanneer de app opent",
   "useCurrentChannels": "Huidige kanalen gebruiken",
   "inChat": "In de chat",
-  "removeFromChat": "Uit de chat verwijderen"
+  "removeFromChat": "Uit de chat verwijderen",
+  "oneChannelPerProvider": "Er kan maar één {provider}-kanaal in de chat zijn",
+  "cantChatWithAccount": "Je {provider}-account kan hier niet chatten"
 }

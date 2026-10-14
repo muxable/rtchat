@@ -1095,4 +1095,14 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get removeFromChat => 'Usuń z czatu';
+
+  @override
+  String oneChannelPerProvider(String provider) {
+    return 'W czacie może być tylko jeden kanał $provider';
+  }
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Twoje konto $provider nie może tu czatować';
+  }
 }

@@ -1758,6 +1758,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove from chat'**
   String get removeFromChat;
+
+  /// Why a channel search result can't be added: only one channel per streaming platform can be shown in chat
+  ///
+  /// In en, this message translates to:
+  /// **'Only one {provider} channel can be in chat'**
+  String oneChannelPerProvider(String provider);
+
+  /// Hint in the disabled message input when none of the channels shown are on the platform of the signed-in account
+  ///
+  /// In en, this message translates to:
+  /// **'Your {provider} account can\'t chat here'**
+  String cantChatWithAccount(String provider);
 }
 
 class _AppLocalizationsDelegate

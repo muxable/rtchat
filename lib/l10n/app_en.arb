@@ -1484,5 +1484,25 @@
   "removeFromChat": "Remove from chat",
   "@removeFromChat": {
     "description": "Button that removes a channel from the channels shown in chat"
+  },
+  "oneChannelPerProvider": "Only one {provider} channel can be in chat",
+  "@oneChannelPerProvider": {
+    "description": "Why a channel search result can't be added: only one channel per streaming platform can be shown in chat",
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Twitch"
+      }
+    }
+  },
+  "cantChatWithAccount": "Your {provider} account can't chat here",
+  "@cantChatWithAccount": {
+    "description": "Hint in the disabled message input when none of the channels shown are on the platform of the signed-in account",
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Twitch"
+      }
+    }
   }
 }

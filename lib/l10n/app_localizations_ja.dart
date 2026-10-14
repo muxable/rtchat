@@ -1058,4 +1058,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get removeFromChat => 'チャットから削除';
+
+  @override
+  String oneChannelPerProvider(String provider) {
+    return 'チャットに追加できる$providerチャンネルは1つだけです';
+  }
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return '$providerアカウントではここでチャットできません';
+  }
 }

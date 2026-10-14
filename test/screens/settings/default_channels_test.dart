@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/channel_search_results.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/views.dart';
@@ -20,13 +21,30 @@ ViewsModel signedInAs(Channel channel) {
   return views;
 }
 
-Widget app(ViewsModel views, {void Function(BuildContext)? searchChannels}) =>
+SearchResult result(Channel channel) => SearchResult(
+    channelId: channel.channelId,
+    provider: channel.provider,
+    login: channel.displayName.toLowerCase(),
+    displayName: channel.displayName,
+    isOnline: true,
+    // a data uri, so no network image is fetched.
+    imageUrl: Uri.parse('data:,'),
+    title: null,
+    isPromoted: false,
+    language: 'en');
+
+Widget app(ViewsModel views,
+        {void Function(BuildContext)? searchChannels,
+        List<SearchResult> results = const []}) =>
     ChangeNotifierProvider<ViewsModel>.value(
       value: views,
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: DefaultChannelsScreen(searchChannels: searchChannels),
+        home: DefaultChannelsScreen(
+            searchChannels: searchChannels,
+            search: (query, provider, isShowOnlyOnline) =>
+                Stream.value(results)),
       ),
     );
 
@@ -78,5 +96,26 @@ void main() {
     expect(views.defaultChannels, [twitch, kick]);
     expect(find.text('KickMux'), findsOneWidget);
     expect(tester.widget<OutlinedButton>(button).onPressed, isNull);
+  });
+
+  testWidgets("search can't add a second default channel on a provider",
+      experimentalLeakTesting: ignoreImages, (tester) async {
+    final otherTwitch = Channel(Providers.twitch, '3', 'Friend');
+    final views = signedInAs(twitch);
+    await tester
+        .pumpWidget(app(views, results: [result(otherTwitch), result(kick)]));
+    await tester.tap(find.text('Add channel'));
+    await tester.pumpAndSettle();
+
+    Finder addButton(String name) => find.descendant(
+        of: find.widgetWithText(ListTile, name),
+        matching: find.byType(IconButton));
+    expect(tester.widget<IconButton>(addButton('Friend')).onPressed, isNull);
+    expect(tester.widget<IconButton>(addButton('Friend')).tooltip,
+        'Only one Twitch channel can be in chat');
+
+    await tester.tap(addButton('KickMux'));
+    await tester.pump();
+    expect(views.defaultChannels, [twitch, kick]);
   });
 }

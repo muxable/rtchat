@@ -25,6 +25,20 @@ List<Channel> _channelsFromJson(dynamic json) => [
             language: channel['language']),
     ];
 
+/// [channels] without any after the first on each provider.
+List<Channel> _onePerProvider(List<Channel> channels) {
+  final providers = <String>{};
+  return [
+    for (final channel in channels)
+      if (providers.add(channel.provider)) channel,
+  ];
+}
+
+/// Whether [channel] can join [channels] in the UI: an account is bound to
+/// one provider, so only one channel per provider is shown at a time.
+bool _canAddChannelTo(List<Channel> channels, Channel channel) =>
+    !channels.any((other) => other.provider == channel.provider);
+
 /// The channels shown in chat, on any providers. The app opens with the
 /// default channels (the signed-in user's own channel unless others were
 /// picked); channels can then be opened, added and removed. None of this
@@ -86,11 +100,18 @@ class ViewsModel extends ChangeNotifier {
 
   void useCurrentChannelsAsDefault() => defaultChannels = channels;
 
+  /// Whether the UI lets [channel] be added to the default channels.
+  bool canAddDefaultChannel(Channel channel) =>
+      _canAddChannelTo(defaultChannels, channel);
+
   /// The channels shown in chat.
   List<Channel> get channels =>
       _channels == null ? defaultChannels : List.unmodifiable(_channels!);
 
   bool contains(Channel channel) => channels.contains(channel);
+
+  /// Whether the UI lets [channel] be added to the channels shown.
+  bool canAddChannel(Channel channel) => _canAddChannelTo(channels, channel);
 
   /// The first channel. Features that only support one channel at a time
   /// (for now) use this one.
@@ -126,6 +147,15 @@ class ViewsModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// The channel messages are sent to: the first one shown on [account]'s
+  /// provider, as an account can only post on its own provider. Null if no
+  /// channel shown is on it, or there's no account.
+  Channel? sendChannel(Channel? account) => account == null
+      ? null
+      : channels
+          .where((channel) => channel.provider == account.provider)
+          .firstOrNull;
+
   /// The channel whose stream is previewed: the one picked, while it's
   /// shown, otherwise the first channel.
   Channel? get previewChannel =>
@@ -148,10 +178,11 @@ class ViewsModel extends ChangeNotifier {
     return Localizations.localeOf(context);
   }
 
-  // saved views from before are ignored: they never shipped.
+  // saved views from before are ignored: they never shipped. defaults saved
+  // with several channels on one provider keep only the first of them.
   ViewsModel.fromJson(Map<String, dynamic> json) {
-    _defaultChannels =
-        List.unmodifiable(_channelsFromJson(json['defaultChannels']));
+    _defaultChannels = List.unmodifiable(
+        _onePerProvider(_channelsFromJson(json['defaultChannels'])));
   }
 
   Map<String, dynamic> toJson() => {

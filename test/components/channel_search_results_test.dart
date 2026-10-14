@@ -26,6 +26,7 @@ Widget app(
         {required void Function(Channel) onChannelSelect,
         void Function(Channel)? onChannelAdd,
         bool Function(Channel)? isAdded,
+        bool Function(Channel)? canAdd,
         Widget? header}) =>
     MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -37,6 +38,7 @@ Widget app(
           onChannelSelect: onChannelSelect,
           onChannelAdd: onChannelAdd,
           isAdded: isAdded,
+          canAdd: canAdd,
           header: header,
           search: (query, provider, isShowOnlyOnline) => Stream.value(results),
         ),
@@ -86,6 +88,31 @@ void main() {
     await tester.tap(find.byIcon(Icons.add));
     expect(added, [Channel(Providers.kick, '2', 'xQc')]);
     expect(selected, isEmpty);
+  });
+
+  testWidgets("a result whose provider is already in chat can't be added",
+      experimentalLeakTesting: ignoreImages, (tester) async {
+    final selected = <Channel>[];
+    final added = <Channel>[];
+    await tester.pumpWidget(app(
+        onChannelSelect: selected.add,
+        onChannelAdd: added.add,
+        canAdd: (channel) => channel.provider != Providers.twitch));
+    await tester.pump();
+
+    IconButton addButton(int index) => tester.widget<IconButton>(find
+        .descendant(
+            of: find.byType(ListTile).at(index),
+            matching: find.byType(IconButton))
+        .first);
+    expect(addButton(0).onPressed, isNull);
+    expect(addButton(0).tooltip, 'Only one Twitch channel can be in chat');
+    expect(addButton(1).onPressed, isNotNull);
+    expect(addButton(1).tooltip, 'Add to chat');
+
+    // tapping it still opens it.
+    await tester.tap(find.byType(ListTile).first);
+    expect(selected, [Channel(Providers.twitch, '1', 'xQc')]);
   });
 
   testWidgets("a header is shown above the results",

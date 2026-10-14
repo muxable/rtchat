@@ -269,5 +269,7 @@
   "defaultChannelsSubtitle": "開啟應用程式時顯示的頻道",
   "useCurrentChannels": "使用目前的頻道",
   "inChat": "聊天中",
-  "removeFromChat": "從聊天中移除"
+  "removeFromChat": "從聊天中移除",
+  "oneChannelPerProvider": "聊天中只能有一個 {provider} 頻道",
+  "cantChatWithAccount": "你的 {provider} 帳號無法在此聊天"
 }

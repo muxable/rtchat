@@ -269,5 +269,7 @@
   "defaultChannelsSubtitle": "Les chaînes affichées à l'ouverture de l'application",
   "useCurrentChannels": "Utiliser les chaînes actuelles",
   "inChat": "Dans le chat",
-  "removeFromChat": "Retirer du chat"
+  "removeFromChat": "Retirer du chat",
+  "oneChannelPerProvider": "Un seul canal {provider} peut être dans le chat",
+  "cantChatWithAccount": "Votre compte {provider} ne peut pas discuter ici"
 }

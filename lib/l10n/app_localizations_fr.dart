@@ -1100,4 +1100,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get removeFromChat => 'Retirer du chat';
+
+  @override
+  String oneChannelPerProvider(String provider) {
+    return 'Un seul canal $provider peut être dans le chat';
+  }
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Votre compte $provider ne peut pas discuter ici';
+  }
 }

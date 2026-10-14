@@ -140,6 +140,10 @@ class ChannelSearchResultsWidget extends StatefulWidget {
   /// Whether a result was already added, which disables its add button.
   final bool Function(Channel)? isAdded;
 
+  /// Whether a result can be added, e.g. not when a channel on its provider
+  /// already was. Disables its add button when false.
+  final bool Function(Channel)? canAdd;
+
   /// Shown above the results, scrolling with them.
   final Widget? header;
 
@@ -153,6 +157,7 @@ class ChannelSearchResultsWidget extends StatefulWidget {
       this.controller,
       this.onChannelAdd,
       this.isAdded,
+      this.canAdd,
       this.header});
 
   @override
@@ -222,6 +227,8 @@ class _ChannelSearchResultsWidgetState
     final channel = result.channel;
     final onChannelAdd = widget.onChannelAdd;
     final isAdded = widget.isAdded?.call(channel) ?? false;
+    final canAdd = !isAdded && (widget.canAdd?.call(channel) ?? true);
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
         leading: Container(
             height: 48,
@@ -287,9 +294,12 @@ class _ChannelSearchResultsWidgetState
         trailing: onChannelAdd == null
             ? null
             : IconButton(
-                tooltip: AppLocalizations.of(context)!.addToChat,
+                tooltip: isAdded || canAdd
+                    ? l10n.addToChat
+                    : l10n
+                        .oneChannelPerProvider(providerName(channel.provider)),
                 icon: Icon(isAdded ? Icons.check : Icons.add),
-                onPressed: isAdded ? null : () => onChannelAdd(channel),
+                onPressed: canAdd ? () => onChannelAdd(channel) : null,
               ),
         onTap: () => widget.onChannelSelect(channel));
   }

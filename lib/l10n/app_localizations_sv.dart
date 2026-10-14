@@ -1081,4 +1081,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get removeFromChat => 'Ta bort från chatten';
+
+  @override
+  String oneChannelPerProvider(String provider) {
+    return 'Bara en $provider-kanal kan vara i chatten';
+  }
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Ditt $provider-konto kan inte chatta här';
+  }
 }

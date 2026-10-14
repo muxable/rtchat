@@ -186,6 +186,7 @@ class _DrawerHeader extends StatelessWidget {
                                   onChannelSelect: views.openChannel,
                                   onChannelAdd: views.addChannel,
                                   isAdded: views.contains,
+                                  canAdd: views.canAddChannel,
                                   header: const InChatChannels(),
                                   onRaid: raidFrom == null
                                       ? null
@@ -300,6 +301,7 @@ class _SidebarState extends State<Sidebar> {
                       onChannelSelect: views.openChannel,
                       onChannelAdd: views.addChannel,
                       isAdded: views.contains,
+                      canAdd: views.canAddChannel,
                       onRaid: raidFrom == null
                           ? null
                           : (channel) =>

@@ -184,4 +184,73 @@ void main() {
       expect(views.previewChannel, twitch);
     });
   });
+
+  group("one channel per provider", () {
+    test("the UI can't add a second channel on a provider shown", () {
+      final views = signedInAs(twitch);
+      expect(views.canAddChannel(kick), isTrue);
+      expect(views.canAddChannel(other), isFalse);
+      expect(views.canAddChannel(twitch), isFalse);
+      views.addChannel(kick);
+      expect(views.canAddChannel(otherKick), isFalse);
+      // once twitch is gone, another twitch channel can be added.
+      views.removeChannel(twitch);
+      expect(views.canAddChannel(other), isTrue);
+    });
+
+    test("nor a second default channel on a provider", () {
+      final views = signedInAs(twitch);
+      // the user's own channel is the default until others are picked.
+      expect(views.canAddDefaultChannel(other), isFalse);
+      expect(views.canAddDefaultChannel(kick), isTrue);
+      views.addDefaultChannel(kick);
+      expect(views.canAddDefaultChannel(otherKick), isFalse);
+      views.removeDefaultChannel(twitch);
+      expect(views.canAddDefaultChannel(other), isTrue);
+    });
+
+    test("saved defaults keep the first channel of each provider", () {
+      final restored = ViewsModel.fromJson({
+        'defaultChannels': [
+          kick.toJson(),
+          twitch.toJson(),
+          otherKick.toJson(),
+          other.toJson(),
+        ],
+      });
+      expect(restored.defaultChannels, [kick, twitch]);
+      expect(restored.channels, [kick, twitch]);
+      expect(restored.toJson()['defaultChannels'],
+          [kick.toJson(), twitch.toJson()]);
+    });
+  });
+
+  group("messages are sent", () {
+    test("to the first channel on the account's provider", () {
+      final views = signedInAs(kick)
+        ..openChannel(twitch)
+        ..addChannel(kick);
+      expect(views.sendChannel(kick), kick);
+      expect(views.sendChannel(twitch), twitch);
+    });
+
+    test("to the first of several on the provider, which the UI prevents", () {
+      final views = signedInAs(kick)
+        ..openChannel(twitch)
+        ..addChannel(otherKick)
+        ..addChannel(kick);
+      expect(views.sendChannel(kick), otherKick);
+    });
+
+    test("nowhere when no channel shown is on the account's provider", () {
+      final views = signedInAs(kick)..openChannel(twitch);
+      expect(views.sendChannel(kick), isNull);
+      expect(views.sendChannel(null), isNull);
+    });
+
+    test("to the channel opened, like before views", () {
+      final views = signedInAs(twitch)..openChannel(other);
+      expect(views.sendChannel(twitch), other);
+    });
+  });
 }

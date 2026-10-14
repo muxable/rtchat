@@ -269,5 +269,7 @@
   "defaultChannelsSubtitle": "打开应用时显示的频道",
   "useCurrentChannels": "使用当前频道",
   "inChat": "聊天中",
-  "removeFromChat": "从聊天中移除"
+  "removeFromChat": "从聊天中移除",
+  "oneChannelPerProvider": "聊天中只能有一个 {provider} 频道",
+  "cantChatWithAccount": "你的 {provider} 账号无法在此聊天"
 }

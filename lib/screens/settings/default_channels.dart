@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
+import 'package:rtchat/components/channel_search_results.dart' as results;
 import 'package:rtchat/components/provider_icon.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/views.dart';
@@ -12,10 +13,15 @@ class DefaultChannelsScreen extends StatelessWidget {
   /// overridden.
   final void Function(BuildContext context)? searchChannels;
 
-  const DefaultChannelsScreen(
-      {super.key, @visibleForTesting this.searchChannels});
+  /// Finds the channels shown in the search sheet.
+  final results.ChannelSearch search;
 
-  static void _searchChannels(BuildContext context) {
+  const DefaultChannelsScreen(
+      {super.key,
+      @visibleForTesting this.searchChannels,
+      @visibleForTesting this.search = results.searchChannels});
+
+  void _searchChannels(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -30,9 +36,17 @@ class DefaultChannelsScreen extends StatelessWidget {
           final views = Provider.of<ViewsModel>(context);
           return ChannelSearchBottomSheetWidget(
             controller: controller,
-            onChannelSelect: views.addDefaultChannel,
+            search: search,
+            // like the add button, tapping a result whose provider already
+            // has a default channel doesn't add it.
+            onChannelSelect: (channel) {
+              if (views.canAddDefaultChannel(channel)) {
+                views.addDefaultChannel(channel);
+              }
+            },
             onChannelAdd: views.addDefaultChannel,
             isAdded: views.defaultChannels.contains,
+            canAdd: views.canAddDefaultChannel,
           );
         },
       ),

@@ -269,5 +269,7 @@
   "defaultChannelsSubtitle": "القنوات المعروضة عند فتح التطبيق",
   "useCurrentChannels": "استخدام القنوات الحالية",
   "inChat": "في الدردشة",
-  "removeFromChat": "إزالة من الدردشة"
+  "removeFromChat": "إزالة من الدردشة",
+  "oneChannelPerProvider": "يمكن إضافة قناة {provider} واحدة فقط إلى الدردشة",
+  "cantChatWithAccount": "لا يمكن لحساب {provider} الخاص بك الدردشة هنا"
 }

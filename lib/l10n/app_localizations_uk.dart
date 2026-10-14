@@ -1096,4 +1096,14 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get removeFromChat => 'Прибрати з чату';
+
+  @override
+  String oneChannelPerProvider(String provider) {
+    return 'У чаті може бути лише один канал $provider';
+  }
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Ваш обліковий запис $provider не може писати тут';
+  }
 }

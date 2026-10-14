@@ -269,5 +269,7 @@
   "defaultChannelsSubtitle": "Канали, що показуються під час відкриття застосунку",
   "useCurrentChannels": "Використати поточні канали",
   "inChat": "У чаті",
-  "removeFromChat": "Прибрати з чату"
+  "removeFromChat": "Прибрати з чату",
+  "oneChannelPerProvider": "У чаті може бути лише один канал {provider}",
+  "cantChatWithAccount": "Ваш обліковий запис {provider} не може писати тут"
 }

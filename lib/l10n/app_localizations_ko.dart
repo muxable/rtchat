@@ -1058,4 +1058,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get removeFromChat => '채팅에서 제거';
+
+  @override
+  String oneChannelPerProvider(String provider) {
+    return '채팅에는 $provider 채널을 하나만 추가할 수 있습니다';
+  }
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return '$provider 계정으로는 여기서 채팅할 수 없습니다';
+  }
 }

@@ -269,5 +269,7 @@
   "defaultChannelsSubtitle": "Kanalerna som visas när appen öppnas",
   "useCurrentChannels": "Använd nuvarande kanaler",
   "inChat": "I chatten",
-  "removeFromChat": "Ta bort från chatten"
+  "removeFromChat": "Ta bort från chatten",
+  "oneChannelPerProvider": "Bara en {provider}-kanal kan vara i chatten",
+  "cantChatWithAccount": "Ditt {provider}-konto kan inte chatta här"
 }

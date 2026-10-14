@@ -269,5 +269,7 @@
   "defaultChannelsSubtitle": "アプリを開いたときに表示されるチャンネル",
   "useCurrentChannels": "現在のチャンネルを使用",
   "inChat": "チャットに表示中",
-  "removeFromChat": "チャットから削除"
+  "removeFromChat": "チャットから削除",
+  "oneChannelPerProvider": "チャットに追加できる{provider}チャンネルは1つだけです",
+  "cantChatWithAccount": "{provider}アカウントではここでチャットできません"
 }

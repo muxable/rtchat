@@ -269,5 +269,7 @@
   "defaultChannelsSubtitle": "অ্যাপ খোলার সময় যে চ্যানেলগুলো দেখানো হয়",
   "useCurrentChannels": "বর্তমান চ্যানেলগুলো ব্যবহার করুন",
   "inChat": "চ্যাটে",
-  "removeFromChat": "চ্যাট থেকে সরান"
+  "removeFromChat": "চ্যাট থেকে সরান",
+  "oneChannelPerProvider": "চ্যাটে শুধু একটি {provider} চ্যানেল থাকতে পারে",
+  "cantChatWithAccount": "আপনার {provider} অ্যাকাউন্ট এখানে চ্যাট করতে পারে না"
 }

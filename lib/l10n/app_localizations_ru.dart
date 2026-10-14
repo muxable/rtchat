@@ -1099,4 +1099,14 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get removeFromChat => 'Убрать из чата';
+
+  @override
+  String oneChannelPerProvider(String provider) {
+    return 'В чате может быть только один канал $provider';
+  }
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Ваш аккаунт $provider не может писать здесь';
+  }
 }
