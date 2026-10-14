@@ -1033,6 +1033,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get signInWithKick => 'Kick으로 로그인';
 
   @override
+  String get signInWithYouTube => 'YouTube로 로그인';
+
+  @override
   String get textToSpeechTooManyMessages => '메시지가 너무 많습니다. 텍스트 음성 변환이 꺼졌습니다';
 
   @override

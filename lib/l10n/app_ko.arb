@@ -261,6 +261,7 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b>님이 구독 {count}개를 선물했습니다!",
   "kicksGiftedEvent": "<b>{senderName}</b>님이 {amount} Kicks를 보냈습니다!",
   "signInWithKick": "Kick으로 로그인",
+  "signInWithYouTube": "YouTube로 로그인",
   "textToSpeechTooManyMessages": "메시지가 너무 많습니다. 텍스트 음성 변환이 꺼졌습니다",
   "turnOffTextToSpeech": "끄기",
   "youtubeSuperChatEvent": "<b>{name}</b>님이 {amount} Super Chat을 보냈습니다!",

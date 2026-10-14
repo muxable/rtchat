@@ -261,6 +261,7 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> heeft {count} abonnementen cadeau gegeven!",
   "kicksGiftedEvent": "<b>{senderName}</b> heeft {amount} Kicks gestuurd!",
   "signInWithKick": "Log in met Kick",
+  "signInWithYouTube": "Log in met YouTube",
   "textToSpeechTooManyMessages": "Er zijn te veel berichten. Tekst-naar-spraak uitgeschakeld",
   "turnOffTextToSpeech": "Uitschakelen",
   "youtubeSuperChatEvent": "<b>{name}</b> heeft een Super Chat van {amount} gestuurd!",

@@ -261,6 +261,7 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> har gett bort {count} prenumerationer!",
   "kicksGiftedEvent": "<b>{senderName}</b> skickade {amount} Kicks!",
   "signInWithKick": "Logga in med Kick",
+  "signInWithYouTube": "Logga in med YouTube",
   "textToSpeechTooManyMessages": "Det finns för många meddelanden. Text till tal avstängt",
   "turnOffTextToSpeech": "Stäng av",
   "youtubeSuperChatEvent": "<b>{name}</b> skickade en Super Chat på {amount}!",

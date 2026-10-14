@@ -97,6 +97,19 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
               },
             )),
       ),
+      SizedBox(
+        width: 400,
+        child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: SignInWithYouTube(
+              onStart: () => setState(() => _isLoading = true),
+              onComplete: () {
+                if (mounted) {
+                  setState(() => _isLoading = false);
+                }
+              },
+            )),
+      ),
       Text(AppLocalizations.of(context)!.or,
           style: Theme.of(context)
               .textTheme
