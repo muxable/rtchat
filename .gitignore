@@ -73,3 +73,4 @@ node_modules/
 # Miscellaneous macOS
 .DS_Store
 **/.DS_Store
+android/app/.cxx/

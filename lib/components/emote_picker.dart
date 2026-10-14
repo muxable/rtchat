@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sticky_headers/sticky_headers/widget.dart';
 
 class EmotesList extends StatelessWidget {
@@ -40,11 +40,11 @@ class EmotesList extends StatelessWidget {
       categories.insert(0, globalEmotes);
     }
 
-    // ensure channel emotes is second.
+    // ensure channel emotes is second, or first if there are no global ones.
     final channelEmotesIndex = categories.indexOf(channel.displayName);
     if (channelEmotesIndex != -1) {
       categories.removeAt(channelEmotesIndex);
-      categories.insert(1, channel.displayName);
+      categories.insert(globalEmotesIndex == -1 ? 0 : 1, channel.displayName);
     }
 
     return ListView.builder(

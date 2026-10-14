@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -76,7 +77,7 @@ class _ActivityFeedPanelWidgetState extends State<ActivityFeedPanelWidget> {
       return null;
     }
     switch (channel.provider) {
-      case "twitch":
+      case Providers.twitch:
         return Uri.tryParse(
             "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
     }

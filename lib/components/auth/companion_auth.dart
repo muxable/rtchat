@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:uuid/uuid.dart';
@@ -50,9 +51,8 @@ class _CompanionAuthWidgetState extends State<CompanionAuthWidget> {
             child: Column(children: [
               Text(
                 widget.isTooOld
-                    ? "Your browser is too old to support signing in directly. "
-                        "Scan this QR code with your phone to sign in on another device."
-                    : "Scan this QR code with your phone to sign in on another device.",
+                    ? AppLocalizations.of(context)!.companionAuthBrowserTooOld
+                    : AppLocalizations.of(context)!.companionAuthScanQrCode,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/components/drawer/sliver_search_bar.dart';
 import 'package:rtchat/components/drawer/sliver_title.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/chat_state.dart';
 import 'package:rtchat/models/channels.dart';
 

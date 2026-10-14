@@ -10,6 +10,16 @@ import { app as authApp } from "./auth";
 import { getBadges } from "./badges";
 import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
 import { getEmotes } from "./emotes";
+import {
+  banKickUser,
+  deleteKickMessage,
+  resolveKickUserId,
+  sendKickMessage,
+  unbanKickUser,
+} from "./kick_actions";
+import { updateKickChannelMetadata } from "./kick_subscriptions";
+import { kickWebhook } from "./kick_webhook";
+import { getKickSlug } from "./kick";
 import { eventsub } from "./eventsub";
 import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
@@ -18,27 +28,29 @@ import { getVoices, synthesize } from "./tts";
 import * as twitch from "./twitch";
 import { WebSocket } from "ws";
 
-async function write(
-  channelId: string,
-  targetChannel: string,
-  message: string
-) {
-  const ref = await admin.firestore().collection("actions").add({
-    channelId,
-    targetChannel,
-    message,
-    sentAt: null,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-  // wait for the message to be sent.
-  const error = await new Promise<string | null>((resolve) =>
-    ref.onSnapshot((snapshot) => {
-      if (snapshot.get("isComplete")) {
-        resolve(snapshot.get("error") || null);
-      }
-    })
+// sends over a one-off irc connection: slow, and silent about failures. only
+// used for tokens from before user:write:chat was requested.
+async function sendOverIrc(uid: string, channelId: string, message: string) {
+  const targetChannel = await twitch.getTwitchLogin(channelId);
+  if (!targetChannel) {
+    return;
+  }
+  const token = await getAccessToken(uid, "twitch");
+  if (!token) {
+    throw new functions.https.HttpsError("internal", "auth error");
+  }
+  const userChannel = await twitch.getTwitchLogin(
+    await twitch.getChannelId(uid, "twitch")
   );
-  return error;
+  const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
+  await new Promise<void>((resolve) => {
+    ws.on("open", () => resolve());
+  });
+  ws.send("CAP REQ :twitch.tv/commands");
+  ws.send(`PASS oauth:${token}`);
+  ws.send(`NICK ${userChannel}`);
+  ws.send(`PRIVMSG #${targetChannel} :${message}`);
+  ws.close();
 }
 
 export const send = functions.https.onCall(async (data, context) => {
@@ -56,86 +68,35 @@ export const send = functions.https.onCall(async (data, context) => {
   }
 
   switch (provider) {
-    case "twitch":
-      const targetChannel = await twitch.getTwitchLogin(channelId);
-      if (!targetChannel) {
+    case "twitch": {
+      const replyTo = data?.replyToMessageId?.replace(/^twitch:/, "");
+      const result = await twitch.sendChatMessage(
+        context.auth.uid,
+        channelId,
+        message,
+        replyTo
+      );
+      if (result.unauthorized) {
+        await sendOverIrc(context.auth.uid, channelId, message);
         return;
       }
-      const token = await getAccessToken(context.auth.uid, provider);
-      if (!token) {
-        throw new functions.https.HttpsError("internal", "auth error");
-      }
-      const userChannel = await twitch.getTwitchLogin(
-        await twitch.getChannelId(context.auth.uid, "twitch")
+      // the app shows any returned value as an error.
+      return result.error;
+    }
+    case "kick":
+      // like twitch, return nothing on success: the app shows any returned
+      // value as an error.
+      await sendKickMessage(
+        context.auth.uid,
+        channelId,
+        message,
+        data?.replyToMessageId
       );
-
-      const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
-
-      // wait for connect
-      await new Promise<void>((resolve) => {
-        ws.on("open", () => resolve());
-      });
-
-      ws.send("CAP REQ :twitch.tv/commands");
-      ws.send(`PASS oauth:${token}`);
-      ws.send(`NICK ${userChannel}`);
-      ws.send(`PRIVMSG #${targetChannel} :${message}`);
-      ws.close();
       return;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
-
-export const sendDoc = functions.firestore
-  .document("actions/{docId}")
-  .onCreate(async (snapshot, context) => {
-    const data = snapshot.data();
-    const userId = data?.userId;
-    const provider = data?.provider;
-    const channelId = data?.channelId;
-    const message = data?.message;
-    if (!userId || !provider || !channelId || !message) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "missing provider, channelId, message"
-      );
-    }
-
-    switch (provider) {
-      case "twitch":
-        const targetChannel = await twitch.getTwitchLogin(channelId);
-        if (!targetChannel) {
-          return;
-        }
-        const token = await getAccessToken(userId, provider);
-        if (!token) {
-          throw new functions.https.HttpsError("internal", "auth error");
-        }
-        const userChannel = await twitch.getTwitchLogin(
-          await twitch.getChannelId(userId, "twitch")
-        );
-
-        const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
-
-        // wait for connect
-        await new Promise<void>((resolve) => {
-          ws.on("open", () => resolve());
-        });
-
-        ws.send("CAP REQ :twitch.tv/commands");
-        ws.send(`PASS oauth:${token}`);
-        ws.send(`NICK ${userChannel}`);
-        ws.send(`PRIVMSG #${targetChannel} :${message}`);
-        ws.close();
-
-        await snapshot.ref.update({
-          sentAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        return;
-    }
-  });
 
 export const ban = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -156,6 +117,12 @@ export const ban = functions.https.onCall(async (data, context) => {
     case "twitch":
       const banUserId = userId ? userId : await twitch.getTwitchId(username);
       return await twitch.ban(context.auth.uid, channelId, banUserId);
+    case "kick":
+      return await banKickUser(
+        context.auth.uid,
+        channelId,
+        userId ?? (await resolveKickUserId(username))
+      );
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -180,6 +147,12 @@ export const unban = functions.https.onCall(async (data, context) => {
     case "twitch":
       const banUserId = userId ? userId : await twitch.getTwitchId(username);
       return await twitch.unban(context.auth.uid, channelId, banUserId);
+    case "kick":
+      return await unbanKickUser(
+        context.auth.uid,
+        channelId,
+        userId ?? (await resolveKickUserId(username))
+      );
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -212,6 +185,13 @@ export const timeout = functions.https.onCall(async (data, context) => {
         length,
         reason
       );
+    case "kick":
+      return await banKickUser(
+        context.auth.uid,
+        channelId,
+        userId ?? (await resolveKickUserId(username)),
+        { durationSeconds: length, reason }
+      );
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -233,7 +213,14 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      return await twitch.unban(context.auth.uid, channelId, messageId);
+      // chat message documents are keyed "twitch:<message id>".
+      return await twitch.deleteMessage(
+        context.auth.uid,
+        channelId,
+        messageId.replace(/^twitch:/, "")
+      );
+    case "kick":
+      return await deleteKickMessage(context.auth.uid, messageId);
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -254,16 +241,7 @@ export const clear = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const targetChannel = await twitch.getTwitchLogin(channelId);
-      if (!targetChannel) {
-        return;
-      }
-      const response = await write(
-        await twitch.getChannelId(context.auth.uid, "twitch"),
-        targetChannel,
-        `/clear`
-      );
-      return response;
+      return await twitch.clearChat(context.auth.uid, channelId);
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -286,6 +264,25 @@ export const raid = functions.https.onCall(async (data, context) => {
   switch (provider) {
     case "twitch":
       return await twitch.raid(context.auth.uid, fromChannelId, toChannelId);
+  }
+});
+
+export const cancelRaid = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("permission-denied", "missing auth");
+  }
+  const provider = data?.provider;
+  const channelId = data?.channelId;
+  if (!provider || !channelId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channelId"
+    );
+  }
+
+  switch (provider) {
+    case "twitch":
+      return await twitch.cancelRaid(context.auth.uid, channelId);
   }
 });
 
@@ -364,6 +361,20 @@ export const embedRedirect = functions.https.onRequest(async (req, res) => {
         `https://player.twitch.tv/?channel=${login}&controls=false&parent=chat.rtirl.com&muted=true`
       );
       break;
+    case "kick": {
+      const token = await getAppAccessToken("kick");
+      const slug = token
+        ? await getKickSlug(String(token.token.access_token), channelId)
+        : null;
+      if (!slug) {
+        res.status(404).send("channel not found");
+        return;
+      }
+      res.redirect(
+        `https://player.kick.com/${encodeURIComponent(slug)}?muted=true`
+      );
+      break;
+    }
     default:
       throw new functions.https.HttpsError(
         "invalid-argument",
@@ -441,6 +452,8 @@ export {
   subscribe,
   unsubscribe,
   eventsub,
+  kickWebhook,
+  updateKickChannelMetadata,
   search,
   getEmotes,
   getBadges,

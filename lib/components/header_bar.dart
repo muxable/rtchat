@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
@@ -124,12 +124,15 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                           }
                           final texts = <Widget>[];
                           if (layoutModel.isStatsVisible) {
-                            if (data is TwitchChannelMetadata) {
+                            if (data is StreamChannelMetadata) {
+                              final followerCount = data.followerCount;
                               if (data.onlineAt == null) {
-                                texts.add(Text(
-                                    AppLocalizations.of(context)!
-                                        .followerCount(data.followerCount),
-                                    style: style));
+                                if (followerCount != null) {
+                                  texts.add(Text(
+                                      AppLocalizations.of(context)!
+                                          .followerCount(followerCount),
+                                      style: style));
+                                }
                               } else {
                                 texts.add(Text(
                                     AppLocalizations.of(context)!

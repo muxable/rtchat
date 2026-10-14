@@ -1,8 +1,8 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/components/auth/twitch.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/themes.dart';
 
@@ -81,6 +81,19 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
                 setState(() {
                   _isLoading = false;
                 });
+              },
+            )),
+      ),
+      SizedBox(
+        width: 400,
+        child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: SignInWithKick(
+              onStart: () => setState(() => _isLoading = true),
+              onComplete: () {
+                if (mounted) {
+                  setState(() => _isLoading = false);
+                }
               },
             )),
       ),

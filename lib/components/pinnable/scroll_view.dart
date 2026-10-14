@@ -113,7 +113,7 @@ class PinnableMessageScrollView extends ScrollView {
       axisDirection: axisDirection,
       offset: offset,
       slivers: slivers,
-      cacheExtent: cacheExtent,
+      scrollCacheExtent: scrollCacheExtent,
       center: center,
       anchor: anchor,
       clipBehavior: clipBehavior,

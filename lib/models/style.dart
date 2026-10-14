@@ -1,7 +1,7 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
-import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/messages/chat.dart';
 
 Color darken(Color color, [double amount = .1]) {
   assert(amount >= 0 && amount <= 1);
@@ -24,7 +24,7 @@ Color lighten(Color color, [double amount = .1]) {
 enum CompactMessages { none, withinMessage, acrossMessages }
 
 extension CompactMessagesJson on CompactMessages {
-  static fromJson(dynamic value) {
+  static CompactMessages fromJson(dynamic value) {
     switch (value) {
       case 0:
         return CompactMessages.none;
@@ -37,7 +37,7 @@ extension CompactMessagesJson on CompactMessages {
     }
   }
 
-  toJson() {
+  int toJson() {
     switch (this) {
       case CompactMessages.none:
         return 0;
@@ -108,9 +108,12 @@ class StyleModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String getTwitchDisplayName(TwitchUserModel user) {
+  String getDisplayName(ChatUser user) {
     final author = user.displayName ?? user.login;
-    if (author.toLowerCase() != user.login && isLoginShown) {
+    // kick slugs swap underscores for dashes, which isn't worth showing.
+    if (author.toLowerCase().replaceAll('_', '-') !=
+            user.login.replaceAll('_', '-') &&
+        isLoginShown) {
       // this is an internationalized name.
       return "${user.displayName} (${user.login})";
     }

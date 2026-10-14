@@ -9,18 +9,18 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/firebase_options.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages.dart';
+import 'package:rtchat/models/messages/chat.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
-import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/purchases.dart';
 import 'package:rtchat/models/qr_code.dart';
 import 'package:rtchat/models/quick_links.dart';
@@ -28,6 +28,7 @@ import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/views.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/onboarding.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
@@ -56,26 +57,12 @@ import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
-void updateChannelSubscription(String? data) {
-  if (data != null) {
-    channelStreamController.add(data);
-  }
-}
-
-StreamController<String> channelStreamController =
-    StreamController<String>.broadcast();
-
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final prefs = await StreamingSharedPreferences.instance;
-
-  // final currentLocale = PlatformDispatcher.instance.locale;
-
-  // await tts_isolate.isolateMain(
-  //     ReceivePort().sendPort, channelStreamController, prefs, currentLocale);
 
   if (!kDebugMode) {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
@@ -148,7 +135,19 @@ class _AppState extends State<App> {
               widget.prefs.setString('layout', jsonEncode(model.toJson()));
             });
         }),
-        ChangeNotifierProxyProvider<UserModel, TtsModel>(
+        ChangeNotifierProxyProvider<UserModel, ViewsModel>(
+          create: (context) {
+            final model = ViewsModel.fromJson(jsonDecode(widget.prefs
+                .getString("views", defaultValue: '{}')
+                .getValue()));
+            return model
+              ..addListener(() {
+                widget.prefs.setString('views', jsonEncode(model.toJson()));
+              });
+          },
+          update: (context, userModel, model) => model!..update(userModel),
+        ),
+        ChangeNotifierProxyProvider<ViewsModel, TtsModel>(
           create: (context) {
             final model = TtsModel.fromJson(jsonDecode(
                 widget.prefs.getString("tts", defaultValue: '{}').getValue()));
@@ -157,9 +156,9 @@ class _AppState extends State<App> {
                 widget.prefs.setString('tts', jsonEncode(model.toJson()));
               });
           },
-          update: (context, userModel, model) => model!..update(userModel),
+          update: (context, views, model) => model!..update(views),
         ),
-        ChangeNotifierProxyProvider2<UserModel, TtsModel, MessagesModel>(
+        ChangeNotifierProxyProvider2<ViewsModel, TtsModel, MessagesModel>(
           create: (context) {
             final model = MessagesModel.fromJson(
               jsonDecode(widget.prefs
@@ -167,17 +166,22 @@ class _AppState extends State<App> {
                   .getValue()),
             );
             final player = AudioPlayer();
-            model.onMessagePing =
-                () => player.play(AssetSource('message-sound.wav'));
-            model.channel =
-                Provider.of<UserModel>(context, listen: false).activeChannel;
+            model.onMessagePing = () {
+              // don't play alerts while the app is in the background.
+              if (WidgetsBinding.instance.lifecycleState ==
+                  AppLifecycleState.resumed) {
+                player.play(AssetSource('message-sound.wav'));
+              }
+            };
+            model.channels = Provider.of<ViewsModel>(context, listen: false)
+                .activeView
+                .channels;
             model.tts = Provider.of<TtsModel>(context, listen: false);
             return model
               ..addListener(() {
                 if (model.isLive && model.messages.isNotEmpty) {
                   final message = model.messages.last;
-                  if (message is TwitchMessageModel &&
-                      message.message == "!disco") {
+                  if (message is ChatMessage && message.message == "!disco") {
                     _discoModeTimer?.cancel();
                     setState(() => _isDiscoModeRunning = true);
                     _discoModeTimer = Timer(const Duration(seconds: 5), () {
@@ -189,8 +193,8 @@ class _AppState extends State<App> {
                     .setString("message_config", jsonEncode(model.toJson()));
               });
           },
-          update: (context, userModel, ttsModel, model) {
-            model!.channel = userModel.activeChannel;
+          update: (context, views, ttsModel, model) {
+            model!.channels = views.activeView.channels;
             model.tts = ttsModel;
             return model;
           },
@@ -242,20 +246,20 @@ class _AppState extends State<App> {
                   .setString('event_sub_configs', jsonEncode(model.toJson()));
             });
         }),
-        ChangeNotifierProxyProvider<UserModel, TwitchBadgeModel>(
+        ChangeNotifierProxyProvider<ViewsModel, TwitchBadgeModel>(
             create: (context) {
           final model = TwitchBadgeModel.fromJson(jsonDecode(widget.prefs
               .getString("twitch_badge", defaultValue: '{}')
               .getValue()));
           model.channel =
-              Provider.of<UserModel>(context, listen: false).activeChannel;
+              Provider.of<ViewsModel>(context, listen: false).primaryChannel;
           return model
             ..addListener(() {
               widget.prefs
                   .setString('twitch_badge', jsonEncode(model.toJson()));
             });
-        }, update: (context, userModel, model) {
-          model!.channel = userModel.activeChannel;
+        }, update: (context, views, model) {
+          model!.channel = views.primaryChannel;
           return model;
         }),
         ChangeNotifierProxyProvider<UserModel, AudioModel>(
@@ -308,24 +312,20 @@ class _AppState extends State<App> {
           initialRoute: '/',
           routes: {
             '/': (context) {
-              return Consumer<UserModel>(
-                builder: (context, userModel, child) {
+              return Consumer2<UserModel, ViewsModel>(
+                builder: (context, userModel, views, child) {
                   if (userModel.isLoading) {
                     // don't show anything yet.
                     return Container();
                   }
-                  final activeChannel = userModel.activeChannel;
-                  if (activeChannel == null) {
-                    return OnboardingScreen(onChannelSelect: (channel) {
-                      userModel.activeChannel = channel;
-                    });
+                  final channel = views.primaryChannel;
+                  if (channel == null) {
+                    return OnboardingScreen(onChannelSelect: views.openChannel);
                   }
                   return HomeScreen(
                       isDiscoModeEnabled: _isDiscoModeRunning,
-                      channel: activeChannel,
-                      onChannelSelect: (channel) {
-                        userModel.activeChannel = channel;
-                      });
+                      channel: channel,
+                      onChannelSelect: views.openChannel);
                 },
               );
             },

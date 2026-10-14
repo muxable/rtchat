@@ -7,19 +7,36 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/channels.dart';
+import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
+import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
+import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
+import 'package:rtchat/models/messages/chat.dart';
+import 'package:rtchat/models/messages/kick/event.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/tokens.dart';
-import 'package:rtchat/models/messages/twitch/message.dart';
+import 'package:rtchat/models/messages/twitch/channel_point_redemption_event.dart';
+import 'package:rtchat/models/messages/twitch/event.dart';
+import 'package:rtchat/models/messages/twitch/hype_train_event.dart';
+import 'package:rtchat/models/messages/twitch/prediction_event.dart';
+import 'package:rtchat/models/messages/twitch/raiding_event.dart';
+import 'package:rtchat/models/messages/twitch/shoutout_create_event.dart';
+import 'package:rtchat/models/messages/twitch/shoutout_receive_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
+import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
-import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/tts/bytes_audio_source.dart';
-import 'package:rtchat/models/user.dart';
-import 'package:flutter_tts/flutter_tts.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:rtchat/models/tts/language.dart';
+import 'package:rtchat/models/views.dart';
 
 enum TtsMode { disabled, alertsOnly, enabled }
+
+final _markup = RegExp(r'</?b>');
 
 class TtsModel extends ChangeNotifier {
   var _isCloudTtsEnabled = false;
@@ -32,7 +49,13 @@ class TtsModel extends ChangeNotifier {
 
   final audioPlayer = AudioPlayer();
   Future<void> _previousUtterance = Future.value();
-  final Set<String> _pending = {};
+  // the messages waiting to be read out, and the channel they came from.
+  final Map<String, Channel?> _pending = {};
+
+  // past these many queued messages tts drops the author prelude, and then
+  // turns itself off.
+  static const _preludeBacklog = 10;
+  static const _maxBacklog = 20;
   var _language = Language();
   List<String> voices = [];
   final Map<String, dynamic> _voice = {};
@@ -44,7 +67,6 @@ class TtsModel extends ChangeNotifier {
   var _speed = Platform.isAndroid ? 0.8 : 0.395;
   var _pitch = 1.0;
   var _mode = TtsMode.disabled;
-  var _isNewTTsEnabled = false;
   final Set<TwitchUserModel> _mutedUsers = {};
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
@@ -57,22 +79,19 @@ class TtsModel extends ChangeNotifier {
     super.dispose();
   }
 
-  void update(UserModel model) async {
+  void update(ViewsModel model) async {
     if (kDebugMode) {
-      final channel = model.activeChannel;
+      final channel = model.primaryChannel;
       if (channel == null) {
         _isSupportedLanguage = false;
         _language = Language();
         return;
       }
 
-      String? streamLanguage =
-          await ChannelsAdapter.instance.forChannel(channel).map((event) {
-        if (event is TwitchChannelMetadata) {
-          return event.language;
-        }
-        throw "invalid provider";
-      }).first;
+      // channels without a metadata document yet have no language.
+      final metadata = await ChannelsAdapter.instance.forChannel(channel).first;
+      final streamLanguage =
+          metadata is StreamChannelMetadata ? metadata.language : null;
       if (streamLanguage == null) {
         _isSupportedLanguage = false;
         _language = Language();
@@ -110,7 +129,7 @@ class TtsModel extends ChangeNotifier {
 
   String getVocalization(AppLocalizations l10n, MessageModel model,
       {bool includeAuthorPrelude = false}) {
-    if (model is TwitchMessageModel) {
+    if (model is ChatMessage) {
       final text = model.tokenized
           .where((token) =>
               token is TextToken ||
@@ -138,6 +157,23 @@ class TtsModel extends ChangeNotifier {
       return model.isAction
           ? l10n.actionMessage(author, text)
           : l10n.saidMessage(author, text);
+    }
+    // event strings mark up names with <b> for display; don't read it aloud.
+    return _eventVocalization(l10n, model).replaceAll(_markup, "");
+  }
+
+  String _eventVocalization(AppLocalizations l10n, MessageModel model) {
+    if (model is KickFollowEventModel) {
+      return l10n.followingEvent(model.follower.name);
+    } else if (model is KickSubscriptionEventModel) {
+      return model.isRenewal
+          ? l10n.kickResubscriptionEvent(model.subscriber.name, model.months)
+          : l10n.kickSubscriptionEvent(model.subscriber.name);
+    } else if (model is KickGiftedSubscriptionsEventModel) {
+      return l10n.kickGiftedSubscriptionsEvent(
+          model.gifter?.name ?? l10n.anonymous, model.giftees.length);
+    } else if (model is KicksGiftedEventModel) {
+      return l10n.kicksGiftedEvent(model.sender.name, model.amount);
     } else if (model is StreamStateEventModel) {
       final timestamp = model.timestamp;
       return model.isOnline
@@ -145,12 +181,33 @@ class TtsModel extends ChangeNotifier {
           : l10n.streamOffline(timestamp, timestamp);
     } else if (model is SystemMessageModel) {
       return model.text;
-    }
+    } else if (model is TwitchRaidEventModel) {
+      return l10n.raidEventMessage(model.from.displayName ?? "", model.viewers);
+    } else if (model is TwitchSubscriptionEventModel) {
+      return l10n.subscriptionEvent(
+          model.subscriberUserName, model.tier.replaceAll("000", ""));
+    } else if (model is TwitchSubscriptionGiftEventModel) {
+      return l10n.subscriptionGiftEvent(model.gifterUserName, model.total,
+          model.tier.replaceAll("000", ""), model.cumulativeTotal);
+    } else if (model is TwitchSubscriptionMessageEventModel) {
+      return model.localizedText(l10n);
+    } else if (model is TwitchFollowEventModel) {
+      return l10n.followingEvent(
+          model.followers.first.displayName ?? model.followers.first.login);
+    } else if (model is TwitchCheerEventModel) {
+    } else if (model is TwitchPollEventModel) {
+    } else if (model is TwitchChannelPointRedemptionEventModel) {
+    } else if (model is TwitchHypeTrainEventModel) {
+    } else if (model is TwitchPredictionEventModel) {
+    } else if (model is TwitchHostEventModel) {
+    } else if (model is TwitchRaidingEventModel) {
+    } else if (model is ChatClearedEventModel) {
+    } else if (model is StreamlabsDonationEventModel) {
+    } else if (model is StreamElementsTipEventModel) {
+    } else if (model is SimpleRealtimeCashDonationEventModel) {
+    } else if (model is TwitchShoutoutCreateEventModel) {
+    } else if (model is TwitchShoutoutReceiveEventModel) {}
     return "";
-  }
-
-  bool get newTtsEnabled {
-    return _isNewTTsEnabled;
   }
 
   bool get isSubscribersOnly {
@@ -159,17 +216,6 @@ class TtsModel extends ChangeNotifier {
 
   set isSubscribersOnly(bool value) {
     _isSubscribersOnly = value;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
-    });
-  }
-
-  set newTtsEnabled(bool value) {
-    if (value == _isNewTTsEnabled) {
-      return;
-    }
-    _isNewTTsEnabled = value;
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });
@@ -316,8 +362,11 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool isMuted(TwitchUserModel user) {
-    return _mutedUsers.contains(user);
+  // match on login: it's stable and always present, unlike displayName.
+  bool isMuted(ChatUser user) {
+    final login = user.login.toLowerCase();
+    return _mutedUsers.any((muted) =>
+        muted.provider == user.provider && muted.login.toLowerCase() == login);
   }
 
   void mute(TwitchUserModel model) {
@@ -326,7 +375,10 @@ class TtsModel extends ChangeNotifier {
   }
 
   void unmute(TwitchUserModel model) {
-    if (_mutedUsers.remove(model)) {
+    final login = model.login.toLowerCase();
+    final count = _mutedUsers.length;
+    _mutedUsers.removeWhere((muted) => muted.login.toLowerCase() == login);
+    if (_mutedUsers.length != count) {
       notifyListeners();
     }
   }
@@ -337,18 +389,16 @@ class TtsModel extends ChangeNotifier {
       return;
     }
 
-    if (_mode == TtsMode.alertsOnly && model is TwitchMessageModel) {
+    if (_mode == TtsMode.alertsOnly && model is ChatMessage) {
       return;
     }
 
-    if (model is TwitchMessageModel) {
-      if (_isSubscribersOnly && (model.tags['badges']?['subscriber'] == null)) {
+    if (model is ChatMessage) {
+      if (_isSubscribersOnly && !model.isSubscriber) {
         return;
       }
 
-      if (_mutedUsers.any((user) =>
-          user.displayName?.toLowerCase() ==
-          model.author.displayName?.toLowerCase())) {
+      if (isMuted(model.author)) {
         return;
       }
 
@@ -365,10 +415,23 @@ class TtsModel extends ChangeNotifier {
       _lastMessageTime = model.timestamp;
     }
 
+    // chat is outpacing speech: give up rather than fall ever further behind.
+    if (_pending.length >= _maxBacklog && model is! SystemMessageModel) {
+      _turnOffForBacklog(localizations);
+      return;
+    }
+
     final activeMessage = _activeMessage;
     var includeAuthorPrelude = true;
-    if (activeMessage is TwitchMessageModel && model is TwitchMessageModel) {
-      includeAuthorPrelude = !(activeMessage.author == model.author);
+    if (activeMessage is ChatMessage && model is ChatMessage) {
+      includeAuthorPrelude =
+          !(activeMessage.author.provider == model.author.provider &&
+              activeMessage.author.userId == model.author.userId);
+    }
+
+    // skip "X said" to catch up on a long backlog.
+    if (_pending.length >= _preludeBacklog) {
+      includeAuthorPrelude = false;
     }
 
     final vocalization = getVocalization(
@@ -386,14 +449,27 @@ class TtsModel extends ChangeNotifier {
     final completer = Completer();
 
     _previousUtterance = completer.future;
-    _pending.add(model.messageId);
+    _pending[model.messageId] = model.channel;
 
-    await previous;
+    // always release the queue: a failed utterance (e.g. a cloud tts error)
+    // would otherwise block, and hold on to, every message after it.
+    try {
+      await previous;
+      await _speak(model, vocalization);
+    } catch (e, st) {
+      FirebaseCrashlytics.instance.recordError(e, st);
+    } finally {
+      _activeMessage = null;
+      completer.complete();
+      _pending.remove(model.messageId);
+    }
+  }
 
+  Future<void> _speak(MessageModel model, String vocalization) async {
     _activeMessage = model;
 
     if ((_mode != TtsMode.disabled || model is SystemMessageModel) &&
-        _pending.contains(model.messageId)) {
+        _pending.containsKey(model.messageId)) {
       // TODO: replace with subscription logic
       if (!_isCloudTtsEnabled) {
         try {
@@ -407,7 +483,7 @@ class TtsModel extends ChangeNotifier {
       } else {
         String? voice;
         double? pitch;
-        if (model is TwitchMessageModel) {
+        if (model is ChatMessage) {
           if (isRandomVoiceEnabled) {
             final name = model.author.displayName;
             final hash = name.hashCode;
@@ -431,11 +507,22 @@ class TtsModel extends ChangeNotifier {
         await Future.delayed(audioPlayer.duration ?? const Duration());
       }
     }
+  }
 
-    _activeMessage = null;
-
-    completer.complete();
-    _pending.remove(model.messageId);
+  void _turnOffForBacklog(AppLocalizations localizations) {
+    _pending.clear();
+    _mode = TtsMode.disabled;
+    say(localizations,
+        SystemMessageModel(text: localizations.textToSpeechTooManyMessages),
+        force: true);
+    // cut off the current utterance; everything queued behind it is dropped.
+    _tts.stop().catchError((_) => null);
+    if (_isCloudTtsEnabled) {
+      audioPlayer.stop();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void unsay(String messageId) {
@@ -444,6 +531,11 @@ class TtsModel extends ChangeNotifier {
 
   void stop() {
     _pending.clear();
+  }
+
+  /// Stops reading out the messages that came from [channel].
+  void stopChannel(Channel channel) {
+    _pending.removeWhere((_, pending) => pending == channel);
   }
 
   void updateFromJson(Map<String, dynamic> json) {

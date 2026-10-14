@@ -185,117 +185,118 @@ class EventSubConfigurationModel extends ChangeNotifier {
   // other configs
   // final HypeTrainEventConfig;
 
-  setFollowEventDuration(Duration duration) {
+  void setFollowEventDuration(Duration duration) {
     followEventConfig.eventDuration = duration;
     notifyListeners();
   }
 
-  setFollowEventShowable(bool value) {
+  void setFollowEventShowable(bool value) {
     followEventConfig.showEvent = value;
     notifyListeners();
   }
 
-  setCheerEventDuration(Duration duration) {
+  void setCheerEventDuration(Duration duration) {
     cheerEventConfig.eventDuration = duration;
     notifyListeners();
   }
 
-  setCheerEventShowable(bool value) {
+  void setCheerEventShowable(bool value) {
     cheerEventConfig.showEvent = value;
     notifyListeners();
   }
 
-  setSubscriptionEventDuration(Duration duration) {
+  void setSubscriptionEventDuration(Duration duration) {
     subscriptionEventConfig.eventDuration = duration;
     notifyListeners();
   }
 
-  setSubscriptionEventShowable(bool value) {
+  void setSubscriptionEventShowable(bool value) {
     subscriptionEventConfig.showEvent = value;
     notifyListeners();
   }
 
-  setGiftSubscriptionStatus(bool value) {
+  void setGiftSubscriptionStatus(bool value) {
     subscriptionEventConfig.showIndividualGifts = value;
     notifyListeners();
   }
 
-  setRaidEventDuration(Duration duration) {
+  void setRaidEventDuration(Duration duration) {
     raidEventConfig.eventDuration = duration;
     notifyListeners();
   }
 
-  setRaidEventShowable(bool value) {
+  void setRaidEventShowable(bool value) {
     raidEventConfig.showEvent = value;
     notifyListeners();
   }
 
-  setRaidEventEnableShoutoutButton(bool value) {
+  void setRaidEventEnableShoutoutButton(bool value) {
     raidEventConfig.enableShoutoutButton = value;
     notifyListeners();
   }
 
-  setChannelPointRedemptionEventDuration(Duration value) {
+  void setChannelPointRedemptionEventDuration(Duration value) {
     channelPointRedemptionEventConfig.eventDuration = value;
     notifyListeners();
   }
 
-  setChannelPointRedemptionEventShowable(bool value) {
+  void setChannelPointRedemptionEventShowable(bool value) {
     channelPointRedemptionEventConfig.showEvent = value;
     notifyListeners();
   }
 
-  setChannelPointRedemptionEventUnfulfilledAdditionalDuration(Duration value) {
+  void setChannelPointRedemptionEventUnfulfilledAdditionalDuration(
+      Duration value) {
     channelPointRedemptionEventConfig.unfulfilledAdditionalDuration = value;
     notifyListeners();
   }
 
-  setPollEventDuration(Duration duration) {
+  void setPollEventDuration(Duration duration) {
     pollEventConfig.eventDuration = duration;
     notifyListeners();
   }
 
-  setPollEventShowable(bool value) {
+  void setPollEventShowable(bool value) {
     pollEventConfig.showEvent = value;
     notifyListeners();
   }
 
-  setHostEventDuration(Duration duration) {
+  void setHostEventDuration(Duration duration) {
     hostEventConfig.eventDuration = duration;
     notifyListeners();
   }
 
-  setHostEventShowable(bool value) {
+  void setHostEventShowable(bool value) {
     hostEventConfig.showEvent = value;
     notifyListeners();
   }
 
-  setHypetrainEventDuration(Duration duration) {
+  void setHypetrainEventDuration(Duration duration) {
     hypetrainEventConfig.eventDuration = duration;
     notifyListeners();
   }
 
-  setHypetrainEventShowable(bool value) {
+  void setHypetrainEventShowable(bool value) {
     hypetrainEventConfig.showEvent = value;
     notifyListeners();
   }
 
-  setPredictionEventDuration(Duration duration) {
+  void setPredictionEventDuration(Duration duration) {
     predictionEventConfig.eventDuration = duration;
     notifyListeners();
   }
 
-  setPredictionEventShowable(bool value) {
+  void setPredictionEventShowable(bool value) {
     predictionEventConfig.showEvent = value;
     notifyListeners();
   }
 
-  setRaidingEventDuration(Duration duration) {
+  void setRaidingEventDuration(Duration duration) {
     raidingEventConfig.eventDuration = duration;
     notifyListeners();
   }
 
-  setRaidingEventShowable(bool value) {
+  void setRaidingEventShowable(bool value) {
     raidingEventConfig.showEvent = value;
     notifyListeners();
   }

@@ -3,13 +3,13 @@ import 'package:flutter/services.dart';
 class AudioChannel {
   static const _channel = MethodChannel('com.rtirl.chat/audio');
 
-  static set(List<String> urls) async {
+  static Future<void> set(List<String> urls) async {
     if (await hasPermission()) {
       await _channel.invokeMethod<bool>('set', {"urls": urls});
     }
   }
 
-  static reload(String url) async {
+  static Future<void> reload(String url) async {
     await _channel.invokeMethod<bool>('reload', {"url": url});
   }
 

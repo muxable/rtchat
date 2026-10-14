@@ -1,3 +1,6 @@
+// StreamAudioSource is the only just_audio API for playing in-memory bytes.
+// ignore_for_file: experimental_member_use
+
 import 'package:just_audio/just_audio.dart';
 
 class BytesAudioSource extends StreamAudioSource {

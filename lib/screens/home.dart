@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
@@ -16,14 +15,15 @@ import 'package:rtchat/components/header_bar.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/components/stream_preview.dart';
 import 'package:rtchat/eager_drag_recognizer.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/tts_foreground_service.dart';
 import 'package:rtchat/models/user.dart';
-import 'package:rtchat/notifications_plugin.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -165,6 +165,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   late StreamSubscription<bool> keyboardSubscription;
   bool _isKeyboardVisible = false;
+  TtsForegroundService? _ttsService;
 
   @override
   void initState() {
@@ -174,10 +175,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       debugPrint("Post frame callback executed");
       if (!mounted) return;
       debugPrint("Post frame callback post executed");
+      _ttsService = TtsForegroundService(
+          Provider.of<TtsModel>(context, listen: false),
+          () => AppLocalizations.of(context)!);
       final model = Provider.of<AudioModel>(context, listen: false);
-      final ttsModel = Provider.of<TtsModel>(context, listen: false);
-
-      NotificationsPlugin.listenToTts(ttsModel);
 
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
         return;
@@ -200,6 +201,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _ttsService?.dispose();
     WakelockPlus.disable();
     keyboardSubscription.cancel();
     super.dispose();
@@ -283,40 +285,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             onPressed: () async {
                               final localizations =
                                   AppLocalizations.of(context)!;
-                              if (!ttsModel.newTtsEnabled) {
-                                ttsModel.toggleMode(localizations);
-                              } else {
-                                // if (!ttsModel.enabled) {
-                                //   ttsModel.setAlertsOnly(localizations, true);
-                                //   updateChannelSubscription(
-                                //     "${userModel.activeChannel?.provider}:${userModel.activeChannel?.channelId}",
-                                //   );
-                                //   await TextToSpeechPlugin.speak(
-                                //       localizations.alertsEnabled);
-                                //   NotificationsPlugin.showNotification();
-                                //   NotificationsPlugin.listenToTts(ttsModel);
-                                //   channelStreamController.stream
-                                //       .listen((currentChannel) {
-                                //     if (currentChannel.isEmpty) {
-                                //       ttsModel.setEnabled(localizations, false);
-                                //       ttsModel.setAlertsOnly(
-                                //           localizations, false);
-                                //     }
-                                //   });
-                                // } else if (ttsModel.isAlertsOnly) {
-                                //   ttsModel.setEnabled(localizations, true);
-                                //   ttsModel.setAlertsOnly(localizations, false);
-                                //   await TextToSpeechPlugin.speak(
-                                //       localizations.textToSpeechEnabled);
-                                // } else {
-                                //   ttsModel.setEnabled(localizations, false);
-                                //   updateChannelSubscription("");
-                                //   await TextToSpeechPlugin.speak(
-                                //       localizations.textToSpeechDisabled);
-                                //   await TextToSpeechPlugin.disableTTS();
-                                //   NotificationsPlugin.cancelNotification();
-                                // }
-                              }
+                              ttsModel.toggleMode(localizations);
                             },
                           );
                         },
@@ -363,7 +332,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     const Flexible(child: Divider()),
                                   ],
                                 ),
-                                const SignInWithTwitch(),
+                                SignInButton(provider: widget.channel.provider),
                               ],
                             );
                           }

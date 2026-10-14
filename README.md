@@ -16,6 +16,17 @@ flutter run
 
 If this is your first exposure to Flutter, follow the [install guide](https://flutter.dev/docs/get-started/install) to set up your environment. Optionally, go through the [codelab](https://flutter.dev/docs/get-started/codelab) to learn how Flutter applications are written.
 
+## Testing
+
+Unit and widget tests run with `flutter test`.
+
+End-to-end tests in `integration_test/` run the full app against the Firebase emulator suite on an Android emulator or device:
+
+```
+npx firebase-tools emulators:exec --only auth,firestore,database --project rtchat-47692 \
+  "flutter test integration_test"
+```
+
 ## Contributing
 
 Communication is done through [our Discord server](https://discord.gg/UKHJMQs74u). Come by and say hi! Otherwise, feel free to browse our issues list for contribution ideas.

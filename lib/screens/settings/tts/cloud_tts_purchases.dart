@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/product.dart';
 import 'package:rtchat/models/purchases.dart';
 import 'package:rtchat/models/user.dart';
@@ -23,7 +24,7 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
       case StoreState.notAvailable:
         storeWidget = Center(
           child: Text(
-            "Store not available",
+            AppLocalizations.of(context)!.storeNotAvailable,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
         );
@@ -31,7 +32,7 @@ class CloudTtsPurchasesScreen extends StatelessWidget {
         break;
     }
     return Scaffold(
-      appBar: AppBar(title: const Text("Text to speech")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.textToSpeech)),
       body: storeWidget,
     );
   }
@@ -75,22 +76,23 @@ class _ProductPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Consumer<UserModel>(
                   builder: (context, userModel, child) {
-                    String buttonText = 'Unavailable';
+                    String buttonText =
+                        AppLocalizations.of(context)!.unavailable;
                     switch (product?.status) {
                       case ProductStatus.purchasable:
-                        buttonText = 'Subscribe';
+                        buttonText = AppLocalizations.of(context)!.subscribe;
                         break;
                       case ProductStatus.pending:
-                        buttonText = 'Pending';
+                        buttonText = AppLocalizations.of(context)!.pending;
                         break;
                       case ProductStatus.purchased:
-                        buttonText = 'Subscribed';
+                        buttonText = AppLocalizations.of(context)!.subscribed;
                         break;
                       default:
                         break;
                     }
                     if (!userModel.isSignedIn()) {
-                      buttonText = 'Please Sign In';
+                      buttonText = AppLocalizations.of(context)!.pleaseSignIn;
                     }
 
                     return ElevatedButton(

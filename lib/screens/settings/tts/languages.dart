@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/header_search_bar.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/language.dart';
 
@@ -15,10 +16,8 @@ class LanguagesScreenState extends State<LanguagesScreen> {
   var _isSearching = false;
   late final HeaderSearchBar searchBarWidget;
   List<String> filteredLanguages = [];
-  Widget animatedHeader = const Align(
-    alignment: Alignment.centerLeft,
-    child: Text('Languages'),
-  );
+  // null shows the default title.
+  Widget? animatedHeader;
 
   Future<List<String>> filterList(
       List<String> list, String searchBarText) async {
@@ -62,7 +61,11 @@ class LanguagesScreenState extends State<LanguagesScreen> {
       appBar: AppBar(
         title: AnimatedSwitcher(
           duration: const Duration(milliseconds: 100),
-          child: animatedHeader,
+          child: animatedHeader ??
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(AppLocalizations.of(context)!.languages),
+              ),
         ),
         actions: [
           IconButton(
@@ -73,19 +76,16 @@ class LanguagesScreenState extends State<LanguagesScreen> {
                   animatedHeader = searchBarWidget;
                 } else {
                   filteredLanguages = supportedLanguages;
-                  animatedHeader = const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Languages',
-                    ),
-                  );
+                  animatedHeader = null;
                 }
               });
             },
             icon: !_isSearching
                 ? const Icon(Icons.search)
                 : const Icon(Icons.close),
-            tooltip: !_isSearching ? 'Search languages' : 'Close search',
+            tooltip: !_isSearching
+                ? AppLocalizations.of(context)!.searchLanguages
+                : AppLocalizations.of(context)!.closeSearch,
           )
         ],
       ),

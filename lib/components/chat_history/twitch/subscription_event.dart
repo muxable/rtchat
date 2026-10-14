@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/views.dart';
 import 'package:styled_text/styled_text.dart';
 
 Color tierColor(BuildContext context, String tier) {
@@ -28,8 +29,8 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userModel = Provider.of<UserModel>(context);
-    final channelLocale = userModel.getChannelLocale(context);
+    final channelLocale =
+        Provider.of<ViewsModel>(context).channelLocale(context);
     final localizations = lookupAppLocalizations(channelLocale);
 
     return DecoratedEventWidget.icon(
@@ -56,8 +57,8 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userModel = Provider.of<UserModel>(context);
-    final channelLocale = userModel.getChannelLocale(context);
+    final channelLocale =
+        Provider.of<ViewsModel>(context).channelLocale(context);
     final localizations = lookupAppLocalizations(channelLocale);
 
     return DecoratedEventWidget.icon(
@@ -134,19 +135,15 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme.titleSmall;
-    final userModel = Provider.of<UserModel>(context);
-    final channelLocale = userModel.getChannelLocale(context);
+    final channelLocale =
+        Provider.of<ViewsModel>(context).channelLocale(context);
     final localizations = lookupAppLocalizations(channelLocale);
 
     return DecoratedEventWidget.icon(
       icon: Icons.star,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         StyledText(
-          text: localizations.subscriptionMessageEvent(
-            model.subscriberUserName,
-            model.cumulativeMonths,
-            model.tier.replaceAll("000", ""),
-          ),
+          text: model.localizedText(localizations),
           tags: {
             'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
           },

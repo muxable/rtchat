@@ -7,28 +7,25 @@ on:
       - main
   workflow_dispatch:
 
+# queue deploys so back-to-back merges don't race each other.
+concurrency:
+  group: firebase-functions-deploy
+  cancel-in-progress: false
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: w9jds/firebase-action@master
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          args: functions:config:set alchemy.signingkey="$ALCHEMY_SIGNING_KEY" alchemy.ethsigningkey="$ALCHEMY_ETH_SIGNING_KEY" twitch.id="$TWITCH_CLIENT_ID" twitch.secret="$TWITCH_CLIENT_SECRET" express.secret="$EXPRESS_SESSION_SECRET" streamlabs.id="$STREAMLABS_CLIENT_ID" streamlabs.secret="$STREAMLABS_CLIENT_SECRET" streamelements.id="$STREAMELEMENTS_CLIENT_ID" streamelements.secret="$STREAMELEMENTS_CLIENT_SECRET"
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
-          TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
-          STREAMLABS_CLIENT_ID: ${{ secrets.STREAMLABS_CLIENT_ID }}
-          STREAMLABS_CLIENT_SECRET: ${{ secrets.STREAMLABS_CLIENT_SECRET }}
-          STREAMELEMENTS_CLIENT_ID: ${{ secrets.STREAMELEMENTS_CLIENT_ID }}
-          STREAMELEMENTS_CLIENT_SECRET: ${{ secrets.STREAMELEMENTS_CLIENT_SECRET }}
-          EXPRESS_SESSION_SECRET: ${{ secrets.EXPRESS_SESSION_SECRET }}
-          ALCHEMY_SIGNING_KEY: ${{ secrets.ALCHEMY_SIGNING_KEY }}
-          ALCHEMY_ETH_SIGNING_KEY: ${{ secrets.ALCHEMY_ETH_SIGNING_KEY}}
-
-      - uses: w9jds/firebase-action@master
+          node-version: 22
+      - uses: google-github-actions/auth@v2
         with:
-          args: deploy --only functions
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_RTCHAT_47692 }}
+      # functions.config() values are managed in the project with
+      # `firebase functions:config:set`, not from CI, until they move to
+      # params (#1409). the deploy reads them, which needs this experiment.
+      - run: npx -y firebase-tools@15.33.0 deploy --only functions --project rtchat-47692 --non-interactive --force
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_CLI_EXPERIMENTS: legacyRuntimeConfigCommands

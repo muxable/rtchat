@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/stream_preview.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -70,6 +70,10 @@ class _StreamPreviewState extends State<StreamPreview> {
     } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
       _controller = WebViewController.fromPlatformCreationParams(
           AndroidWebViewControllerCreationParams());
+      // Android blocks unmuted playback that wasn't started by a tap inside
+      // the webview, which leaves the preview muted.
+      (_controller.platform as AndroidWebViewController)
+          .setMediaPlaybackRequiresUserGesture(false);
     } else {
       throw UnsupportedError("Unsupported platform");
     }
@@ -93,6 +97,10 @@ class _StreamPreviewState extends State<StreamPreview> {
       })
       ..setNavigationDelegate(NavigationDelegate(
         onPageFinished: (url) async {
+          // only twitch's player can be driven over the javascript tunnel.
+          if (!_isTwitch) {
+            return;
+          }
           await _controller.runJavaScript(
               await rootBundle.loadString('assets/twitch-tunnel.js'));
           // wait a second for twitch to catch up.
@@ -141,8 +149,15 @@ class _StreamPreviewState extends State<StreamPreview> {
     }
   }
 
+  bool get _isTwitch => widget.channel.provider == Providers.twitch;
+
   @override
   Widget build(BuildContext context) {
+    if (!_isTwitch) {
+      // other players don't report their state, so they use their own
+      // controls rather than our overlay.
+      return WebViewWidget(controller: _controller);
+    }
     return Stack(children: [
       WebViewWidget(controller: _controller),
       if (_playerState == null || _playerState == "Idle")

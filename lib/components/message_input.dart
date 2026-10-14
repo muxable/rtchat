@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/autocomplete.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/commands.dart';
@@ -185,6 +185,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
 
   // Handles any shared data we may receive.
   void _handleSharedData(String sharedData) {
+    if (!mounted || sharedData.isEmpty) {
+      return;
+    }
     setState(() {
       _textEditingController?.text = sharedData;
     });
@@ -284,6 +287,15 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                   focusNode: _chatInputFocusNode,
                   controller: _textEditingController,
                   textInputAction: TextInputAction.send,
+                  // kick rejects messages over 500 characters (grapheme
+                  // clusters, which is how maxLength counts too).
+                  maxLength:
+                      widget.channel.provider == Providers.kick ? 500 : null,
+                  buildCounter: (context,
+                          {required currentLength,
+                          required isFocused,
+                          maxLength}) =>
+                      null,
                   maxLines: 6,
                   minLines: 1,
                   textAlignVertical: TextAlignVertical.center,

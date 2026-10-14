@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/style.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:rtchat/urls.dart';
 
 Widget _iconWithText(IconData icon, String text) {
@@ -76,7 +76,8 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           SwitchListTile.adaptive(
-            title: const Text('Show viewer and follower count'),
+            title:
+                Text(AppLocalizations.of(context)!.showViewerAndFollowerCount),
             value: layoutModel.isStatsVisible,
             onChanged: (value) {
               layoutModel.isStatsVisible = value;
@@ -88,7 +89,7 @@ class SettingsScreen extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Screen orientation",
+                    Text(AppLocalizations.of(context)!.screenOrientation,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
@@ -126,9 +127,12 @@ class SettingsScreen extends StatelessWidget {
                       ],
                       selectedColor: Theme.of(context).colorScheme.secondary,
                       children: [
-                        _iconWithText(Icons.screen_rotation, "System"),
-                        _iconWithText(Icons.screen_lock_portrait, "Portrait"),
-                        _iconWithText(Icons.screen_lock_landscape, "Landscape"),
+                        _iconWithText(Icons.screen_rotation,
+                            AppLocalizations.of(context)!.systemDefault),
+                        _iconWithText(Icons.screen_lock_portrait,
+                            AppLocalizations.of(context)!.portrait),
+                        _iconWithText(Icons.screen_lock_landscape,
+                            AppLocalizations.of(context)!.landscape),
                       ],
                     ),
                   ])),
@@ -138,7 +142,7 @@ class SettingsScreen extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("App theme",
+                    Text(AppLocalizations.of(context)!.appTheme,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
@@ -170,29 +174,32 @@ class SettingsScreen extends StatelessWidget {
                       ],
                       selectedColor: Theme.of(context).colorScheme.secondary,
                       children: [
-                        _iconWithText(Icons.auto_mode, "System"),
-                        _iconWithText(Icons.light_mode, "Light"),
-                        _iconWithText(Icons.dark_mode, "Dark"),
+                        _iconWithText(Icons.auto_mode,
+                            AppLocalizations.of(context)!.systemDefault),
+                        _iconWithText(Icons.light_mode,
+                            AppLocalizations.of(context)!.lightTheme),
+                        _iconWithText(Icons.dark_mode,
+                            AppLocalizations.of(context)!.darkTheme),
                       ],
                     ),
                   ])),
           const Divider(),
           ListTile(
-            title: const Text('RealtimeChat is open source'),
-            subtitle: const Text("Find us on GitHub!"),
+            title: Text(AppLocalizations.of(context)!.openSourceTitle),
+            subtitle: Text(AppLocalizations.of(context)!.openSourceSubtitle),
             trailing: const Icon(Icons.terminal),
             onTap: () =>
                 openUrl(Uri.parse("https://github.com/muxable/rtchat")),
           ),
           ListTile(
             title: const Text('Muxable Discord'),
-            subtitle: const Text("Join the Muxable Discord!"),
+            subtitle: Text(AppLocalizations.of(context)!.discordSubtitle),
             trailing: const Icon(Icons.launch),
             onTap: () => openUrl(Uri.parse("https://discord.gg/UKHJMQs74u")),
           ),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Text("Thanks to all the early testers who sent bug reports!",
+            child: Text(AppLocalizations.of(context)!.earlyTestersThanks,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondary,
                   fontWeight: FontWeight.bold,
@@ -236,8 +243,10 @@ class SettingsScreen extends StatelessWidget {
                     model.isDiscoModeAvailable = !model.isDiscoModeAvailable;
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: model.isDiscoModeAvailable
-                            ? const Text("🕺 Disco mode enabled! :D")
-                            : const Text("🕺 Disco mode disabled D:")));
+                            ? Text(
+                                AppLocalizations.of(context)!.discoModeEnabled)
+                            : Text(AppLocalizations.of(context)!
+                                .discoModeDisabled)));
                   },
                 );
               })

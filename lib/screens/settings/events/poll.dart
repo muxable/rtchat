@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 
 class PollEventScreen extends StatelessWidget {
@@ -9,7 +10,7 @@ class PollEventScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Poll Configuration"),
+          title: Text(AppLocalizations.of(context)!.pollConfigurationTitle),
         ),
         body: Consumer<EventSubConfigurationModel>(
             builder: (context, model, child) {
@@ -20,7 +21,7 @@ class PollEventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Pin duration after the result is finalized",
+                    Text(AppLocalizations.of(context)!.pollPinDuration,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
@@ -31,16 +32,17 @@ class PollEventScreen extends StatelessWidget {
                       min: 0,
                       max: 30,
                       divisions: 15,
-                      label:
-                          "${model.pollEventConfig.eventDuration.inSeconds} seconds",
+                      label: AppLocalizations.of(context)!.durationSeconds(
+                          model.pollEventConfig.eventDuration.inSeconds),
                       onChanged: (value) {
                         model.setPollEventDuration(
                             Duration(seconds: value.toInt()));
                       },
                     ),
                     SwitchListTile.adaptive(
-                      title: const Text('Enable event'),
-                      subtitle: const Text('Show event in chat history'),
+                      title: Text(AppLocalizations.of(context)!.enableEvent),
+                      subtitle: Text(
+                          AppLocalizations.of(context)!.showEventInChatHistory),
                       value: model.pollEventConfig.showEvent,
                       onChanged: (value) {
                         model.setPollEventShowable(value);

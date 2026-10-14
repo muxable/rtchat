@@ -12,8 +12,7 @@ class PinnableMessageViewport extends Viewport {
     super.anchor,
     required super.offset,
     super.center,
-    super.cacheExtent,
-    super.cacheExtentStyle,
+    super.scrollCacheExtent,
     super.clipBehavior,
     super.slivers,
   });
@@ -26,8 +25,7 @@ class PinnableMessageViewport extends Viewport {
           Viewport.getDefaultCrossAxisDirection(context, axisDirection),
       anchor: anchor,
       offset: offset,
-      cacheExtent: cacheExtent,
-      cacheExtentStyle: cacheExtentStyle,
+      scrollCacheExtent: scrollCacheExtent,
       clipBehavior: clipBehavior,
     );
   }
@@ -41,8 +39,7 @@ class PinnableMessageViewport extends Viewport {
           Viewport.getDefaultCrossAxisDirection(context, axisDirection)
       ..anchor = anchor
       ..offset = offset
-      ..cacheExtent = cacheExtent
-      ..cacheExtentStyle = cacheExtentStyle
+      ..scrollCacheExtent = scrollCacheExtent
       ..clipBehavior = clipBehavior;
   }
 }
@@ -55,8 +52,7 @@ class RenderPinnableMessageViewport extends RenderViewport {
     required super.crossAxisDirection,
     required super.offset,
     double anchor = 0.0,
-    super.cacheExtent,
-    super.cacheExtentStyle,
+    super.scrollCacheExtent,
     super.clipBehavior,
   });
 

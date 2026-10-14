@@ -1,13 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/scanner_error.dart';
 import 'package:rtchat/components/scanner_settings.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/donations.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/models/wallet_address.dart';
 import 'package:rtchat/urls.dart';
 
 const streamlabsCurrencies = [
@@ -62,7 +63,7 @@ class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
           ListTile(
             leading: const Image(image: AssetImage('assets/realtimecash.png')),
             title: const Text("RealtimeCash"),
-            subtitle: const Text("Connect an ETH or MATIC wallet"),
+            subtitle: Text(AppLocalizations.of(context)!.realtimeCashSubtitle),
             trailing: SizedBox(
               width: 24,
               height: 24,
@@ -82,7 +83,7 @@ class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
                 controller: TextEditingController()..text = snapshot.data ?? "",
                 readOnly: false,
                 decoration: InputDecoration(
-                    hintText: "Wallet address",
+                    hintText: AppLocalizations.of(context)!.walletAddress,
                     suffixIcon: IconButton(
                         icon: const Icon(Icons.qr_code_scanner),
                         onPressed: () {
@@ -95,39 +96,23 @@ class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
                               return Stack(
                                 children: [
                                   MobileScanner(
-                                    errorBuilder: (context, error, child) {
+                                    errorBuilder: (context, error) {
                                       return ScannerErrorWidget(error: error);
                                     },
                                     controller: _scanController,
                                     onDetect: (capture) {
-                                      final List<Barcode> barcodes =
-                                          capture.barcodes;
-
-                                      if (barcodes.isEmpty) {
+                                      final address = parseWalletAddress(capture
+                                          .barcodes.firstOrNull?.rawValue);
+                                      if (address == null) {
                                         messenger.showSnackBar(SnackBar(
                                             content: Text(
                                                 AppLocalizations.of(context)!
                                                     .invalidUrlErrorText)));
+                                      } else {
+                                        DonationsAdapter.instance
+                                            .setRealtimeCashAddress(
+                                                address: address);
                                       }
-
-                                      final barcode = barcodes.first;
-
-                                      if (barcode.rawValue == null ||
-                                          barcode.rawValue!.isEmpty) {
-                                        messenger.showSnackBar(SnackBar(
-                                            content: Text(
-                                                AppLocalizations.of(context)!
-                                                    .invalidUrlErrorText)));
-
-                                        Navigator.pop(ctx);
-                                      }
-
-                                      DonationsAdapter.instance
-                                          .setRealtimeCashAddress(
-                                              address: barcode.rawBytes
-                                                  .toString()
-                                                  .toLowerCase());
-
                                       Navigator.pop(ctx);
                                     },
                                   ),
@@ -182,9 +167,10 @@ class _StreamlabsWidget extends StatelessWidget {
         ),
       ),
       title: const Text("Streamlabs"),
-      subtitle: const Text("See your Streamlabs donations"),
+      subtitle: Text(AppLocalizations.of(context)!.streamlabsSubtitle),
       onTap: () async {
         final messenger = ScaffoldMessenger.of(context);
+        final l10n = AppLocalizations.of(context)!;
         final userModel = Provider.of<UserModel>(context, listen: false);
         final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
         final provider = userModel.userChannel?.provider;
@@ -200,9 +186,8 @@ class _StreamlabsWidget extends StatelessWidget {
             callbackUrlScheme: "com.rtirl.chat");
         final token = Uri.parse(result).queryParameters['token'];
         if (token == null) {
-          messenger.showSnackBar(const SnackBar(
-            content:
-                Text("Hmm, that didn't work. Try again, or ask on Discord?"),
+          messenger.showSnackBar(SnackBar(
+            content: Text(l10n.thirdPartyAuthError),
           ));
         }
       },
@@ -236,9 +221,10 @@ class _StreamElementsWidget extends StatelessWidget {
         ),
       ),
       title: const Text("StreamElements"),
-      subtitle: const Text("See your StreamElements donations"),
+      subtitle: Text(AppLocalizations.of(context)!.streamElementsSubtitle),
       onTap: () async {
         final messenger = ScaffoldMessenger.of(context);
+        final l10n = AppLocalizations.of(context)!;
         final userModel = Provider.of<UserModel>(context, listen: false);
         final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
         final provider = userModel.userChannel?.provider;
@@ -254,9 +240,8 @@ class _StreamElementsWidget extends StatelessWidget {
             callbackUrlScheme: "com.rtirl.chat");
         final token = Uri.parse(result).queryParameters['token'];
         if (token == null) {
-          messenger.showSnackBar(const SnackBar(
-            content:
-                Text("Hmm, that didn't work. Try again, or ask on Discord?"),
+          messenger.showSnackBar(SnackBar(
+            content: Text(l10n.thirdPartyAuthError),
           ));
         }
       },
@@ -383,7 +368,8 @@ class ThirdPartyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text("Third-party services")),
+        appBar: AppBar(
+            title: Text(AppLocalizations.of(context)!.thirdPartyServices)),
         body: Consumer<UserModel>(
           builder: (context, userModel, child) {
             final userId = userModel.user?.uid;
