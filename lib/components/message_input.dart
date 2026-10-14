@@ -232,7 +232,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
   List<Channel> _targets(BuildContext context) {
     final views = Provider.of<ViewsModel>(context, listen: false);
     final userModel = Provider.of<UserModel>(context, listen: false);
-    final targets = views.sendTargets(userModel.userChannel);
+    final targets = views.sendTargets(userModel.userChannels);
     return targets.isEmpty ? [widget.channel] : targets;
   }
 
@@ -300,7 +300,7 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     // offer the emotes of the channel being sent to, which may not be the
     // one being viewed.
     final emoteChannel = Provider.of<ViewsModel>(context).emoteChannel(
-            Provider.of<UserModel>(context).userChannel, widget.channel) ??
+            Provider.of<UserModel>(context).userChannels, widget.channel) ??
         widget.channel;
     _useEmotesOf(emoteChannel);
     return Material(

@@ -263,5 +263,12 @@
   "signInWithKick": "Mit Kick anmelden",
   "textToSpeechTooManyMessages": "Es gibt zu viele Nachrichten. Sprachausgabe deaktiviert",
   "turnOffTextToSpeech": "Ausschalten",
-  "sendToAllChannels": "An alle Kanäle senden"
+  "sendToAllChannels": "An alle Kanäle senden",
+  "addChannel": "Kanal hinzufügen",
+  "addToChat": "Zum Chat hinzufügen",
+  "defaultChannels": "Standardkanäle",
+  "defaultChannelsSubtitle": "Die Kanäle, die beim Öffnen der App angezeigt werden",
+  "useCurrentChannels": "Aktuelle Kanäle verwenden",
+  "inChat": "Im Chat",
+  "removeFromChat": "Aus dem Chat entfernen"
 }

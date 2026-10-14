@@ -263,5 +263,12 @@
   "signInWithKick": "Log in met Kick",
   "textToSpeechTooManyMessages": "Er zijn te veel berichten. Tekst-naar-spraak uitgeschakeld",
   "turnOffTextToSpeech": "Uitschakelen",
-  "sendToAllChannels": "Naar alle kanalen sturen"
+  "sendToAllChannels": "Naar alle kanalen sturen",
+  "addChannel": "Kanaal toevoegen",
+  "addToChat": "Toevoegen aan chat",
+  "defaultChannels": "Standaardkanalen",
+  "defaultChannelsSubtitle": "De kanalen die worden getoond wanneer de app opent",
+  "useCurrentChannels": "Huidige kanalen gebruiken",
+  "inChat": "In de chat",
+  "removeFromChat": "Uit de chat verwijderen"
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/components/provider_icon.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
 
 final _search = FirebaseFunctions.instance.httpsCallable("search");
@@ -120,6 +121,8 @@ class SearchResult {
       required this.language});
 
   ResilientNetworkImage get image => ResilientNetworkImage(imageUrl);
+
+  Channel get channel => Channel(provider, channelId, displayName);
 }
 
 class ChannelSearchResultsWidget extends StatefulWidget {
@@ -130,6 +133,16 @@ class ChannelSearchResultsWidget extends StatefulWidget {
   final Function(Channel) onChannelSelect;
   final ScrollController? controller;
 
+  /// Adds a result to the channels shown, from a button on each result. No
+  /// button without it.
+  final void Function(Channel)? onChannelAdd;
+
+  /// Whether a result was already added, which disables its add button.
+  final bool Function(Channel)? isAdded;
+
+  /// Shown above the results, scrolling with them.
+  final Widget? header;
+
   const ChannelSearchResultsWidget(
       {super.key,
       required this.query,
@@ -137,7 +150,10 @@ class ChannelSearchResultsWidget extends StatefulWidget {
       this.search = searchChannels,
       required this.onChannelSelect,
       required this.isShowOnlyOnline,
-      this.controller});
+      this.controller,
+      this.onChannelAdd,
+      this.isAdded,
+      this.header});
 
   @override
   State<ChannelSearchResultsWidget> createState() =>
@@ -187,92 +203,94 @@ class _ChannelSearchResultsWidgetState
     return ListView(
       controller: widget.controller,
       children: [
+        if (widget.header != null) widget.header!,
         StreamBuilder<List<SearchResult>>(
           stream: _results,
           builder: (context, snapshot) {
             return Column(
               children: (snapshot.data ?? [])
-                  .map((result) => ListTile(
-                      leading: Container(
-                          height: 48,
-                          width: 48,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: result.isOnline
-                                  ? Theme.of(context).colorScheme.secondary
-                                  : Colors.transparent,
-                              width: 2.0,
-                            ),
-                          ),
-                          child: Stack(
-                              alignment: Alignment.center,
-                              clipBehavior: Clip.none,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(24),
-                                  child: CrossFadeImage(
-                                      placeholder:
-                                          result.image.placeholderImage,
-                                      image: result.image,
-                                      height: 48,
-                                      width: 48),
-                                ),
-                                Positioned(
-                                    right: -4,
-                                    bottom: -4,
-                                    child: result.isPromoted
-                                        ? Container(
-                                            decoration: BoxDecoration(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .tertiary,
-                                              borderRadius:
-                                                  BorderRadius.circular(18.0),
-                                            ),
-                                            child: const Icon(
-                                              Icons.keyboard_double_arrow_up,
-                                              color: Colors.green,
-                                              size: 18.0,
-                                            ),
-                                          )
-                                        : Container())
-                              ])),
-                      title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Row(children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 6),
-                                  child:
-                                      ProviderIcon(result.provider, size: 14),
-                                ),
-                                Flexible(
-                                  child: Text(result.displayName,
-                                      overflow: TextOverflow.ellipsis),
-                                ),
-                              ]),
-                            ),
-                            Text(
-                              result.language ?? "??",
-                              style: Theme.of(context).textTheme.labelSmall,
-                            ),
-                          ]),
-                      subtitle:
-                          result.title == null ? null : Text(result.title!),
-                      onTap: () {
-                        widget.onChannelSelect(Channel(
-                          result.provider,
-                          result.channelId,
-                          result.displayName,
-                        ));
-                      }))
+                  .map((result) => _tile(context, result))
                   .toList(),
             );
           },
         ),
       ],
     );
+  }
+
+  Widget _tile(BuildContext context, SearchResult result) {
+    final channel = result.channel;
+    final onChannelAdd = widget.onChannelAdd;
+    final isAdded = widget.isAdded?.call(channel) ?? false;
+    return ListTile(
+        leading: Container(
+            height: 48,
+            width: 48,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: result.isOnline
+                    ? Theme.of(context).colorScheme.secondary
+                    : Colors.transparent,
+                width: 2.0,
+              ),
+            ),
+            child: Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: CrossFadeImage(
+                        placeholder: result.image.placeholderImage,
+                        image: result.image,
+                        height: 48,
+                        width: 48),
+                  ),
+                  Positioned(
+                      right: -4,
+                      bottom: -4,
+                      child: result.isPromoted
+                          ? Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.tertiary,
+                                borderRadius: BorderRadius.circular(18.0),
+                              ),
+                              child: const Icon(
+                                Icons.keyboard_double_arrow_up,
+                                color: Colors.green,
+                                size: 18.0,
+                              ),
+                            )
+                          : Container())
+                ])),
+        title:
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Expanded(
+            child: Row(children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: ProviderIcon(result.provider, size: 14),
+              ),
+              Flexible(
+                child:
+                    Text(result.displayName, overflow: TextOverflow.ellipsis),
+              ),
+            ]),
+          ),
+          Text(
+            result.language ?? "??",
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+        ]),
+        subtitle: result.title == null ? null : Text(result.title!),
+        trailing: onChannelAdd == null
+            ? null
+            : IconButton(
+                tooltip: AppLocalizations.of(context)!.addToChat,
+                icon: Icon(isAdded ? Icons.check : Icons.add),
+                onPressed: isAdded ? null : () => onChannelAdd(channel),
+              ),
+        onTap: () => widget.onChannelSelect(channel));
   }
 }

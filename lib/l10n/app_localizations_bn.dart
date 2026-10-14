@@ -1063,4 +1063,26 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get sendToAllChannels => 'সব চ্যানেলে পাঠান';
+
+  @override
+  String get addChannel => 'চ্যানেল যোগ করুন';
+
+  @override
+  String get addToChat => 'চ্যাটে যোগ করুন';
+
+  @override
+  String get defaultChannels => 'ডিফল্ট চ্যানেল';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'অ্যাপ খোলার সময় যে চ্যানেলগুলো দেখানো হয়';
+
+  @override
+  String get useCurrentChannels => 'বর্তমান চ্যানেলগুলো ব্যবহার করুন';
+
+  @override
+  String get inChat => 'চ্যাটে';
+
+  @override
+  String get removeFromChat => 'চ্যাট থেকে সরান';
 }

@@ -263,5 +263,12 @@
   "signInWithKick": "تسجيل الدخول باستخدام Kick",
   "textToSpeechTooManyMessages": "هناك رسائل كثيرة جدًا. تم تعطيل تحويل النص إلى كلام",
   "turnOffTextToSpeech": "إيقاف",
-  "sendToAllChannels": "إرسال إلى كل القنوات"
+  "sendToAllChannels": "إرسال إلى كل القنوات",
+  "addChannel": "إضافة قناة",
+  "addToChat": "إضافة إلى الدردشة",
+  "defaultChannels": "القنوات الافتراضية",
+  "defaultChannelsSubtitle": "القنوات المعروضة عند فتح التطبيق",
+  "useCurrentChannels": "استخدام القنوات الحالية",
+  "inChat": "في الدردشة",
+  "removeFromChat": "إزالة من الدردشة"
 }

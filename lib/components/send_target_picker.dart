@@ -5,7 +5,7 @@ import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/views.dart';
 
-/// Picks which of a multi-channel view's channels a message is sent to.
+/// Picks which of the channels shown a message is sent to.
 class SendTargetPicker extends StatelessWidget {
   const SendTargetPicker({super.key});
 
@@ -13,11 +13,11 @@ class SendTargetPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer2<ViewsModel, UserModel>(
         builder: (context, views, userModel, child) {
-      final postable = views.postableChannels(userModel.userChannel);
+      final postable = views.postableChannels(userModel.userChannels);
       if (postable.length < 2) {
         return const SizedBox();
       }
-      final targets = views.sendTargets(userModel.userChannel);
+      final targets = views.sendTargets(userModel.userChannels);
       final isAll = views.sendTarget == ViewsModel.allChannels;
       final l10n = AppLocalizations.of(context)!;
       return PopupMenuButton<String>(

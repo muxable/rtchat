@@ -1067,4 +1067,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sendToAllChannels => 'إرسال إلى كل القنوات';
+
+  @override
+  String get addChannel => 'إضافة قناة';
+
+  @override
+  String get addToChat => 'إضافة إلى الدردشة';
+
+  @override
+  String get defaultChannels => 'القنوات الافتراضية';
+
+  @override
+  String get defaultChannelsSubtitle => 'القنوات المعروضة عند فتح التطبيق';
+
+  @override
+  String get useCurrentChannels => 'استخدام القنوات الحالية';
+
+  @override
+  String get inChat => 'في الدردشة';
+
+  @override
+  String get removeFromChat => 'إزالة من الدردشة';
 }

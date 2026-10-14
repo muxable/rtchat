@@ -263,5 +263,12 @@
   "signInWithKick": "Faça login com o Kick",
   "textToSpeechTooManyMessages": "Há mensagens demais. Texto para fala desativado",
   "turnOffTextToSpeech": "Desativar",
-  "sendToAllChannels": "Enviar para todos os canais"
+  "sendToAllChannels": "Enviar para todos os canais",
+  "addChannel": "Adicionar canal",
+  "addToChat": "Adicionar ao chat",
+  "defaultChannels": "Canais padrão",
+  "defaultChannelsSubtitle": "Os canais exibidos ao abrir o app",
+  "useCurrentChannels": "Usar os canais atuais",
+  "inChat": "No chat",
+  "removeFromChat": "Remover do chat"
 }

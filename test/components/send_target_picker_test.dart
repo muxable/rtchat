@@ -13,7 +13,7 @@ final twitch = Channel(Providers.twitch, '1', 'TwitchMux');
 final kick = Channel(Providers.kick, '2', 'KickMux');
 final otherKick = Channel(Providers.kick, '3', 'Friend');
 
-/// A view of [twitch], [kick] and [otherKick], seen by a user signed in as
+/// [twitch], [kick] and [otherKick] shown together, to a user signed in as
 /// [kick].
 ViewsModel simulcast() {
   final user = FakeUserModel(userChannel: kick);
@@ -21,55 +21,61 @@ ViewsModel simulcast() {
   addTearDown(views.dispose);
   addTearDown(user.dispose);
   return views
-    ..showView(views.saveView("Simulcast", [twitch, kick, otherKick]).id);
+    ..openChannel(twitch)
+    ..addChannel(kick)
+    ..addChannel(otherKick);
 }
 
 void main() {
   group("send targets", () {
-    test("are the channels on the signed-in user's platform", () {
+    test("are the channels on the platforms the user has accounts on", () {
       final views = simulcast();
-      expect(views.postableChannels(kick), [kick, otherKick]);
-      expect(views.postableChannels(twitch), [twitch]);
-      expect(views.postableChannels(null), isEmpty);
+      expect(views.postableChannels([kick]), [kick, otherKick]);
+      expect(views.postableChannels([twitch]), [twitch]);
+      expect(views.postableChannels([]), isEmpty);
+      // accounts are independent per platform: a twitch account doesn't have
+      // to be the twitch channel being shown.
+      expect(
+          views.postableChannels([Channel(Providers.twitch, '9', 'me'), kick]),
+          [twitch, kick, otherKick]);
     });
 
     test("default to the first channel the user can post to", () {
-      expect(simulcast().sendTargets(kick), [kick]);
+      expect(simulcast().sendTargets([kick]), [kick]);
     });
 
     test("can be one channel or all of them", () {
       final views = simulcast();
       views.sendTarget = otherKick.toString();
-      expect(views.sendTargets(kick), [otherKick]);
+      expect(views.sendTargets([kick]), [otherKick]);
       views.sendTarget = ViewsModel.allChannels;
-      expect(views.sendTargets(kick), [kick, otherKick]);
+      expect(views.sendTargets([kick]), [kick, otherKick]);
     });
 
     test("fall back when the chosen channel isn't postable", () {
       final views = simulcast();
       views.sendTarget = twitch.toString();
-      expect(views.sendTargets(kick), [kick]);
+      expect(views.sendTargets([kick]), [kick]);
     });
 
     test("pick whose emotes are offered", () {
       final views = simulcast();
-      expect(views.emoteChannel(kick, twitch), kick);
+      expect(views.emoteChannel([kick], twitch), kick);
       views.sendTarget = otherKick.toString();
-      expect(views.emoteChannel(kick, kick), otherKick);
+      expect(views.emoteChannel([kick], kick), otherKick);
       views.sendTarget = ViewsModel.allChannels;
-      expect(views.emoteChannel(kick, otherKick), otherKick);
-      expect(views.emoteChannel(kick, twitch), kick);
-      expect(views.emoteChannel(null, twitch), isNull);
+      expect(views.emoteChannel([kick], otherKick), otherKick);
+      expect(views.emoteChannel([kick], twitch), kick);
+      expect(views.emoteChannel([], twitch), isNull);
     });
 
-    test("are remembered per view", () {
-      final views = simulcast();
-      final id = views.activeView.id;
-      views.sendTarget = otherKick.toString();
+    test("are one setting that survives a restart", () {
+      final views = simulcast()..sendTarget = ViewsModel.allChannels;
       views.openChannel(otherKick);
-      expect(views.sendTarget, isNull);
-      views.showView(id);
-      expect(views.sendTarget, otherKick.toString());
+      expect(views.sendTarget, ViewsModel.allChannels);
+      final restored = ViewsModel.fromJson(views.toJson());
+      expect(restored.sendTarget, ViewsModel.allChannels);
+      restored.dispose();
     });
   });
 

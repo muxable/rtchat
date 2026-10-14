@@ -1077,4 +1077,26 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get sendToAllChannels => 'Надіслати в усі канали';
+
+  @override
+  String get addChannel => 'Додати канал';
+
+  @override
+  String get addToChat => 'Додати до чату';
+
+  @override
+  String get defaultChannels => 'Канали за замовчуванням';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'Канали, що показуються під час відкриття застосунку';
+
+  @override
+  String get useCurrentChannels => 'Використати поточні канали';
+
+  @override
+  String get inChat => 'У чаті';
+
+  @override
+  String get removeFromChat => 'Прибрати з чату';
 }

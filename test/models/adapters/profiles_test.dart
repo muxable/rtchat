@@ -32,4 +32,17 @@ void main() {
     expect(channelFromProfile(null), isNull);
     expect(channelFromProfile({'twitch': null, 'claims': {}}), isNull);
   });
+
+  test("every linked account has a channel", () {
+    expect(
+        channelsFromProfile({
+          'twitch': {'id': '123', 'displayName': 'Muxfd'},
+          'kick': {'id': 9, 'slug': 'muxfd'},
+        }),
+        [
+          Channel(Providers.twitch, '123', 'Muxfd'),
+          Channel(Providers.kick, '9', 'muxfd'),
+        ]);
+    expect(channelsFromProfile(null), isEmpty);
+  });
 }

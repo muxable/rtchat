@@ -263,5 +263,12 @@
   "signInWithKick": "Logga in med Kick",
   "textToSpeechTooManyMessages": "Det finns för många meddelanden. Text till tal avstängt",
   "turnOffTextToSpeech": "Stäng av",
-  "sendToAllChannels": "Skicka till alla kanaler"
+  "sendToAllChannels": "Skicka till alla kanaler",
+  "addChannel": "Lägg till kanal",
+  "addToChat": "Lägg till i chatten",
+  "defaultChannels": "Standardkanaler",
+  "defaultChannelsSubtitle": "Kanalerna som visas när appen öppnas",
+  "useCurrentChannels": "Använd nuvarande kanaler",
+  "inChat": "I chatten",
+  "removeFromChat": "Ta bort från chatten"
 }
