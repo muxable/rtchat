@@ -1012,7 +1012,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Если в течение этого времени не было сообщений и приходит новое, прозвучит сигнал.';
 
   @override
-  String get realtimeCashSubtitle => 'Подключите кошелёк ETH или MATIC';
+  String get realtimeCashSubtitle => 'Подключите кошелёк MATIC';
 
   @override
   String get walletAddress => 'Адрес кошелька';

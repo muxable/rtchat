@@ -975,7 +975,7 @@ class AppLocalizationsJa extends AppLocalizations {
       'この時間メッセージがなく、新しいメッセージが届くとアラート音が鳴ります。';
 
   @override
-  String get realtimeCashSubtitle => 'ETHまたはMATICウォレットを接続';
+  String get realtimeCashSubtitle => 'MATICウォレットを接続';
 
   @override
   String get walletAddress => 'ウォレットアドレス';

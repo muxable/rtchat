@@ -248,7 +248,7 @@
   "announcementPinDuration": "ঘোষণা পিন করার সময়কাল",
   "idleMessageAlertDuration": "নিষ্ক্রিয় চ্যাট সতর্কতার সময়কাল",
   "idleMessageAlertDurationSubtitle": "এই সময়ের মধ্যে কোনো বার্তা না এলে এবং তারপর নতুন একটি এলে একটি সতর্কতা শব্দ বাজবে।",
-  "realtimeCashSubtitle": "একটি ETH বা MATIC ওয়ালেট যুক্ত করুন",
+  "realtimeCashSubtitle": "একটি MATIC ওয়ালেট যুক্ত করুন",
   "walletAddress": "ওয়ালেট ঠিকানা",
   "streamlabsSubtitle": "আপনার Streamlabs অনুদান দেখুন",
   "streamElementsSubtitle": "আপনার StreamElements অনুদান দেখুন",

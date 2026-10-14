@@ -1005,7 +1005,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Se não houver mensagens por esse tempo e chegar uma nova, um som de alerta será tocado.';
 
   @override
-  String get realtimeCashSubtitle => 'Conecte uma carteira ETH ou MATIC';
+  String get realtimeCashSubtitle => 'Conecte uma carteira MATIC';
 
   @override
   String get walletAddress => 'Endereço da carteira';

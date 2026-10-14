@@ -975,7 +975,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '이 시간 동안 메시지가 없다가 새 메시지가 오면 알림음이 재생됩니다.';
 
   @override
-  String get realtimeCashSubtitle => 'ETH 또는 MATIC 지갑 연결';
+  String get realtimeCashSubtitle => 'MATIC 지갑 연결';
 
   @override
   String get walletAddress => '지갑 주소';

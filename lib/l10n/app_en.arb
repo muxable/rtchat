@@ -1365,7 +1365,7 @@
   "@idleMessageAlertDurationSubtitle": {
     "description": "Explanation of the idle chat alert setting"
   },
-  "realtimeCashSubtitle": "Connect an ETH or MATIC wallet",
+  "realtimeCashSubtitle": "Connect a MATIC wallet",
   "@realtimeCashSubtitle": {
     "description": "Subtitle of the RealtimeCash integration"
   },

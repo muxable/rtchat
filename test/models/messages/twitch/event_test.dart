@@ -347,16 +347,16 @@ void main() {
       final model =
           SimpleRealtimeCashDonationEventModel.fromDocumentData("d3", {
         "timestamp": Timestamp.fromDate(timestamp),
-        "activity": {"asset": "ETH", "value": 0.5, "hash": "0xabc"},
+        "activity": {"asset": "MATIC", "value": 0.5, "hash": "0xabc"},
         "donor": "anon",
         "message": "hi",
       });
-      expect(model.currency, "ETH");
+      expect(model.currency, "MATIC");
       expect(model.value, 0.5);
       expect(model.hash, "0xabc");
       expect(model.donor, "anon");
       expect(model.message, "hi");
-      expect(model.image.assetName, "assets/ETH.png");
+      expect(model.image.assetName, "assets/MATIC.png");
     });
 
     test("realtimecash defaults unknown asset and parses string values", () {

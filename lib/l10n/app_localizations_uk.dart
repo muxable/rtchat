@@ -1010,7 +1010,7 @@ class AppLocalizationsUk extends AppLocalizations {
       'Якщо протягом цього часу не було повідомлень і надходить нове, пролунає сигнал.';
 
   @override
-  String get realtimeCashSubtitle => 'Підключіть гаманець ETH або MATIC';
+  String get realtimeCashSubtitle => 'Підключіть гаманець MATIC';
 
   @override
   String get walletAddress => 'Адреса гаманця';

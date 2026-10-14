@@ -152,7 +152,6 @@ func main() {
 		server.RegisterProvider("/alchemy/", webhook.NewAlchemyHandler(webhook.AlchemyConfig{
 			Secrets:        secrets,
 			MaticWebhookID: secrets.AlchemyMaticWebhookID,
-			EthWebhookID:   secrets.AlchemyEthWebhookID,
 		}, webhook.AlchemyFirestore{Client: client}, webhook.NewAlchemyRPC()))
 		server.Mux.Handle("/", recycleHandler)
 		zap.L().Info("starting http server")

@@ -996,7 +996,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Om det inte kommer några meddelanden under den här tiden och sedan kommer ett nytt spelas ett varningsljud.';
 
   @override
-  String get realtimeCashSubtitle => 'Anslut en ETH- eller MATIC-plånbok';
+  String get realtimeCashSubtitle => 'Anslut en MATIC-plånbok';
 
   @override
   String get walletAddress => 'Plånboksadress';

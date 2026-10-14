@@ -1000,7 +1000,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'إذا لم تصل أي رسائل خلال هذه المدة ثم وصلت رسالة جديدة، فسيتم تشغيل صوت تنبيه.';
 
   @override
-  String get realtimeCashSubtitle => 'اربط محفظة ETH أو MATIC';
+  String get realtimeCashSubtitle => 'اربط محفظة MATIC';
 
   @override
   String get walletAddress => 'عنوان المحفظة';

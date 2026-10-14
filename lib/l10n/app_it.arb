@@ -248,7 +248,7 @@
   "announcementPinDuration": "Durata fissata degli annunci",
   "idleMessageAlertDuration": "Durata avviso di inattività",
   "idleMessageAlertDurationSubtitle": "Se non arrivano messaggi per questo intervallo e ne arriva uno nuovo, verrà riprodotto un suono di avviso.",
-  "realtimeCashSubtitle": "Collega un wallet ETH o MATIC",
+  "realtimeCashSubtitle": "Collega un wallet MATIC",
   "walletAddress": "Indirizzo del wallet",
   "streamlabsSubtitle": "Vedi le tue donazioni Streamlabs",
   "streamElementsSubtitle": "Vedi le tue donazioni StreamElements",

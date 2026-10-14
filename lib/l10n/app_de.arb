@@ -248,7 +248,7 @@
   "announcementPinDuration": "Anheftdauer für Ankündigungen",
   "idleMessageAlertDuration": "Dauer für Inaktivitätsalarm",
   "idleMessageAlertDurationSubtitle": "Wenn so lange keine Nachrichten kommen und dann eine neue eintrifft, wird ein Signalton abgespielt.",
-  "realtimeCashSubtitle": "Verbinde eine ETH- oder MATIC-Wallet",
+  "realtimeCashSubtitle": "Verbinde eine MATIC-Wallet",
   "walletAddress": "Wallet-Adresse",
   "streamlabsSubtitle": "Sieh dir deine Streamlabs-Spenden an",
   "streamElementsSubtitle": "Sieh dir deine StreamElements-Spenden an",

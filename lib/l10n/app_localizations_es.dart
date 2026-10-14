@@ -1004,7 +1004,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Si no hay mensajes durante este tiempo y llega uno nuevo, sonará una alerta.';
 
   @override
-  String get realtimeCashSubtitle => 'Conecta una billetera ETH o MATIC';
+  String get realtimeCashSubtitle => 'Conecta una billetera MATIC';
 
   @override
   String get walletAddress => 'Dirección de la billetera';

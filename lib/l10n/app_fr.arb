@@ -248,7 +248,7 @@
   "announcementPinDuration": "Durée d'épinglage des annonces",
   "idleMessageAlertDuration": "Délai d'alerte d'inactivité",
   "idleMessageAlertDurationSubtitle": "Si aucun message n'arrive pendant cette durée et qu'un nouveau arrive, un son d'alerte sera joué.",
-  "realtimeCashSubtitle": "Connectez un portefeuille ETH ou MATIC",
+  "realtimeCashSubtitle": "Connectez un portefeuille MATIC",
   "walletAddress": "Adresse du portefeuille",
   "streamlabsSubtitle": "Consultez vos dons Streamlabs",
   "streamElementsSubtitle": "Consultez vos dons StreamElements",

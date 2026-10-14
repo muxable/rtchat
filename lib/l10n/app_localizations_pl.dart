@@ -1008,7 +1008,7 @@ class AppLocalizationsPl extends AppLocalizations {
       'Jeśli przez ten czas nie będzie wiadomości, a potem pojawi się nowa, zostanie odtworzony dźwięk alertu.';
 
   @override
-  String get realtimeCashSubtitle => 'Połącz portfel ETH lub MATIC';
+  String get realtimeCashSubtitle => 'Połącz portfel MATIC';
 
   @override
   String get walletAddress => 'Adres portfela';

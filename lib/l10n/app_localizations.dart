@@ -1636,7 +1636,7 @@ abstract class AppLocalizations {
   /// Subtitle of the RealtimeCash integration
   ///
   /// In en, this message translates to:
-  /// **'Connect an ETH or MATIC wallet'**
+  /// **'Connect a MATIC wallet'**
   String get realtimeCashSubtitle;
 
   /// Hint for the crypto wallet address field

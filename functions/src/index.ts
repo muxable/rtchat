@@ -3,7 +3,6 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import {
   alchemyWebhook,
-  ethAlchemyWebhook,
   setRealTimeCashAddress,
 } from "./alchemy_webhook";
 import { app as authApp } from "./auth";
@@ -462,7 +461,6 @@ export {
   getViewerList,
   setRealTimeCashAddress,
   alchemyWebhook,
-  ethAlchemyWebhook,
   updateFollowerAndViewerCount,
 };
 export const auth = functions.https.onRequest(authApp);

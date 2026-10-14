@@ -530,12 +530,12 @@ void main() {
     test('realtimecash.donation', () {
       final model = append<SimpleRealtimeCashDonationEventModel>(
           doc('realtimecash.donation', {
-        'activity': {'asset': 'ETH', 'value': '0.5', 'hash': '0xabc'},
+        'activity': {'asset': 'MATIC', 'value': '0.5', 'hash': '0xabc'},
         'donor': 'Donor',
         'message': 'gm',
       }));
       expect(model.messageId, 'doc-id');
-      expect(model.currency, 'ETH');
+      expect(model.currency, 'MATIC');
       expect(model.value, 0.5);
       expect(model.hash, '0xabc');
       expect(model.donor, 'Donor');

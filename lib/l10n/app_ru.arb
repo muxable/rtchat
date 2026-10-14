@@ -248,7 +248,7 @@
   "announcementPinDuration": "Время закрепления объявлений",
   "idleMessageAlertDuration": "Оповещение о тишине в чате",
   "idleMessageAlertDurationSubtitle": "Если в течение этого времени не было сообщений и приходит новое, прозвучит сигнал.",
-  "realtimeCashSubtitle": "Подключите кошелёк ETH или MATIC",
+  "realtimeCashSubtitle": "Подключите кошелёк MATIC",
   "walletAddress": "Адрес кошелька",
   "streamlabsSubtitle": "Просматривайте пожертвования Streamlabs",
   "streamElementsSubtitle": "Просматривайте пожертвования StreamElements",

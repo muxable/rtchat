@@ -248,7 +248,7 @@
   "announcementPinDuration": "アナウンスのピン留め時間",
   "idleMessageAlertDuration": "チャット無音アラートの時間",
   "idleMessageAlertDurationSubtitle": "この時間メッセージがなく、新しいメッセージが届くとアラート音が鳴ります。",
-  "realtimeCashSubtitle": "ETHまたはMATICウォレットを接続",
+  "realtimeCashSubtitle": "MATICウォレットを接続",
   "walletAddress": "ウォレットアドレス",
   "streamlabsSubtitle": "Streamlabsの寄付を表示",
   "streamElementsSubtitle": "StreamElementsの寄付を表示",

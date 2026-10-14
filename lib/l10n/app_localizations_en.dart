@@ -995,7 +995,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
 
   @override
-  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+  String get realtimeCashSubtitle => 'Connect a MATIC wallet';
 
   @override
   String get walletAddress => 'Wallet address';

@@ -248,7 +248,7 @@
   "announcementPinDuration": "공지 고정 시간",
   "idleMessageAlertDuration": "채팅 무응답 알림 시간",
   "idleMessageAlertDurationSubtitle": "이 시간 동안 메시지가 없다가 새 메시지가 오면 알림음이 재생됩니다.",
-  "realtimeCashSubtitle": "ETH 또는 MATIC 지갑 연결",
+  "realtimeCashSubtitle": "MATIC 지갑 연결",
   "walletAddress": "지갑 주소",
   "streamlabsSubtitle": "Streamlabs 후원 보기",
   "streamElementsSubtitle": "StreamElements 후원 보기",

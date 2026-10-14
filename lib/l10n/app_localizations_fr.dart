@@ -1014,7 +1014,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Si aucun message n\'arrive pendant cette durée et qu\'un nouveau arrive, un son d\'alerte sera joué.';
 
   @override
-  String get realtimeCashSubtitle => 'Connectez un portefeuille ETH ou MATIC';
+  String get realtimeCashSubtitle => 'Connectez un portefeuille MATIC';
 
   @override
   String get walletAddress => 'Adresse du portefeuille';
