@@ -1,0 +1,139 @@
+{
+ "source": "anonymized real capture",
+ "action": {
+  "clickTrackingParams": "x",
+  "addChatItemAction": {
+   "item": {
+    "liveChatMembershipItemRenderer": {
+     "id": "milestone",
+     "timestampUsec": "1700000000123456",
+     "authorName": {
+      "simpleText": "@Viewer"
+     },
+     "authorExternalChannelId": "UCviewer",
+     "authorPhoto": {
+      "thumbnails": [
+       {
+        "url": "https://yt3.ggpht.com/viewer=s32",
+        "width": 32,
+        "height": 32
+       },
+       {
+        "url": "https://yt3.ggpht.com/viewer=s64",
+        "width": 64,
+        "height": 64
+       }
+      ]
+     },
+     "authorBadges": [
+      {
+       "liveChatAuthorBadgeRenderer": {
+        "customThumbnail": {
+         "thumbnails": [
+          {
+           "url": "https://yt3.ggpht.com/badge=s16"
+          }
+         ]
+        },
+        "tooltip": "Member (6 months)",
+        "accessibility": {
+         "accessibilityData": {
+          "label": "Member (6 months)"
+         }
+        }
+       }
+      }
+     ],
+     "contextMenuEndpoint": {
+      "liveChatItemContextMenuEndpoint": {
+       "params": "x"
+      }
+     },
+     "contextMenuAccessibility": {
+      "accessibilityData": {
+       "label": "Chat actions"
+      }
+     },
+     "trackingParams": "x",
+     "headerPrimaryText": {
+      "runs": [
+       {
+        "text": "Member for "
+       },
+       {
+        "text": "8"
+       },
+       {
+        "text": " months"
+       }
+      ]
+     },
+     "headerSubtext": {
+      "simpleText": "Gold"
+     },
+     "message": {
+      "runs": [
+       {
+        "emoji": {
+         "emojiId": "UCchannel/emoji",
+         "shortcuts": [
+          ":_wave:",
+          ":wave:"
+         ],
+         "searchTerms": [
+          "wave"
+         ],
+         "image": {
+          "thumbnails": [
+           {
+            "url": "https://yt3.ggpht.com/emoji=w24-h24",
+            "width": 24,
+            "height": 24
+           }
+          ],
+          "accessibility": {
+           "accessibilityData": {
+            "label": "wave"
+           }
+          }
+         },
+         "isCustomEmoji": true
+        }
+       },
+       {
+        "text": "eight months already"
+       }
+      ]
+     }
+    }
+   },
+   "clientId": "x"
+  }
+ },
+ "event": {
+  "id": "milestone",
+  "snippet": {
+   "type": "memberMilestoneChatEvent",
+   "liveChatId": "innertube:video",
+   "authorChannelId": "UCviewer",
+   "publishedAt": "2023-11-14T22:13:20.123456Z",
+   "hasDisplayContent": true,
+   "displayMessage": ":_wave:eight months already",
+   "memberMilestoneChatDetails": {
+    "memberMonth": 8,
+    "memberLevelName": "Gold",
+    "userComment": ":_wave:eight months already"
+   }
+  },
+  "authorDetails": {
+   "channelId": "UCviewer",
+   "channelUrl": "https://www.youtube.com/channel/UCviewer",
+   "displayName": "@Viewer",
+   "profileImageUrl": "https://yt3.ggpht.com/viewer=s64",
+   "isVerified": false,
+   "isChatOwner": false,
+   "isChatSponsor": true,
+   "isChatModerator": false
+  }
+ }
+}
