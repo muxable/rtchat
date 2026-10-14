@@ -28,6 +28,7 @@ class PinnableMessageSliver extends SingleChildRenderObjectWidget {
 
 class RenderPinnableMessageSliver extends RenderSliverToBoxAdapter {
   late final AnimationController _controller;
+  late final CurvedAnimation _animation;
   bool _pinned;
 
   RenderPinnableMessageSliver(
@@ -39,8 +40,8 @@ class RenderPinnableMessageSliver extends RenderSliverToBoxAdapter {
         value: pinned ? 1.0 : 0.0,
         duration: const Duration(milliseconds: 300),
         reverseDuration: const Duration(milliseconds: 300));
-    CurvedAnimation(parent: _controller, curve: Curves.easeOut)
-        .addListener(markNeedsLayout);
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOut)
+      ..addListener(markNeedsLayout);
   }
 
   TickerProvider get vsync => _vsync;
@@ -61,6 +62,15 @@ class RenderPinnableMessageSliver extends RenderSliverToBoxAdapter {
   void detach() {
     _controller.stop();
     super.detach();
+  }
+
+  // the ticker provider holds on to every ticker until it's disposed, so a
+  // dropped sliver would otherwise keep itself and its child alive.
+  @override
+  void dispose() {
+    _animation.dispose();
+    _controller.dispose();
+    super.dispose();
   }
 
   double get pinFraction => _controller.value;
