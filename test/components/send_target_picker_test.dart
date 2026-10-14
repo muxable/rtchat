@@ -16,7 +16,10 @@ final otherKick = Channel(Providers.kick, '3', 'Friend');
 /// A view of [twitch], [kick] and [otherKick], seen by a user signed in as
 /// [kick].
 ViewsModel simulcast() {
-  final views = ViewsModel()..update(FakeUserModel(userChannel: kick));
+  final user = FakeUserModel(userChannel: kick);
+  final views = ViewsModel()..update(user);
+  addTearDown(views.dispose);
+  addTearDown(user.dispose);
   return views
     ..showView(views.saveView("Simulcast", [twitch, kick, otherKick]).id);
 }
@@ -73,8 +76,8 @@ void main() {
   Widget app(ViewsModel views, Channel userChannel) => MultiProvider(
         providers: [
           ChangeNotifierProvider<ViewsModel>.value(value: views),
-          ChangeNotifierProvider<UserModel>.value(
-              value: FakeUserModel(userChannel: userChannel)),
+          ChangeNotifierProvider<UserModel>(
+              create: (context) => FakeUserModel(userChannel: userChannel)),
         ],
         child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,

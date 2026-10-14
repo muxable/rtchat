@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/components/message_input.dart';
@@ -20,7 +21,10 @@ final otherKick = Channel(Providers.kick, '3', 'Friend');
 /// A view of [twitch], [kick] and [otherKick], seen by a user signed in as
 /// [kick].
 ViewsModel simulcast() {
-  final views = ViewsModel()..update(FakeUserModel(userChannel: kick));
+  final user = FakeUserModel(userChannel: kick);
+  final views = ViewsModel()..update(user);
+  addTearDown(views.dispose);
+  addTearDown(user.dispose);
   return views
     ..showView(views.saveView("Simulcast", [twitch, kick, otherKick]).id);
 }
@@ -58,13 +62,18 @@ void main() {
 
     setUp(() => loaded = []);
 
+    // the emote picker shows real network images that flutter's image cache
+    // keeps.
+    final ignoreImages = LeakTesting.settings
+        .withIgnored(classes: ['ImageStreamCompleterHandle', '_LiveImage']);
+
     Widget app(ViewsModel views, Channel primary) => MultiProvider(
           providers: [
             ChangeNotifierProvider<ViewsModel>.value(value: views),
-            ChangeNotifierProvider<UserModel>.value(
-                value: FakeUserModel(userChannel: kick)),
-            ChangeNotifierProvider<StyleModel>.value(
-                value: StyleModel.fromJson({})),
+            ChangeNotifierProvider<UserModel>(
+                create: (context) => FakeUserModel(userChannel: kick)),
+            ChangeNotifierProvider<StyleModel>(
+                create: (context) => StyleModel.fromJson({})),
           ],
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -86,7 +95,7 @@ void main() {
     }
 
     testWidgets("are the destination's when sending to one other channel",
-        (tester) async {
+        experimentalLeakTesting: ignoreImages, (tester) async {
       final views = simulcast()..sendTarget = otherKick.toString();
       await tester.pumpWidget(app(views, twitch));
       await tester.pump();
@@ -97,7 +106,8 @@ void main() {
       expect(picker.emotes.map((e) => e.code), ['Kappa', 'emote3']);
     });
 
-    testWidgets("follow the send target when it changes", (tester) async {
+    testWidgets("follow the send target when it changes",
+        experimentalLeakTesting: ignoreImages, (tester) async {
       final views = simulcast()..sendTarget = otherKick.toString();
       await tester.pumpWidget(app(views, kick));
       await tester.pump();
@@ -112,7 +122,7 @@ void main() {
     });
 
     testWidgets("are the primary channel's when sending to it and others",
-        (tester) async {
+        experimentalLeakTesting: ignoreImages, (tester) async {
       final views = simulcast()..sendTarget = ViewsModel.allChannels;
       await tester.pumpWidget(app(views, kick));
       await tester.pump();
