@@ -13,6 +13,10 @@ import 'package:rtchat/models/tts.dart';
 
 class MessagesModel extends ChangeNotifier {
   StreamSubscription<void>? _subscription;
+
+  @visibleForTesting
+  Stream<DeltaEvent> Function(Channel channel) forChannel =
+      (channel) => MessagesAdapter.instance.forChannel(channel);
   List<DeltaEvent> _events = [];
   List<MessageModel> _messages = [];
   Set<int> _separators = {};
@@ -46,8 +50,7 @@ class MessagesModel extends ChangeNotifier {
 
     _subscription?.cancel();
     if (channel != null) {
-      _subscription =
-          MessagesAdapter.instance.forChannel(channel).listen((event) {
+      _subscription = forChannel(channel).listen((event) {
         _events.add(event);
         _messages = applyDeltaEvent(
           _messages,
@@ -91,6 +94,18 @@ class MessagesModel extends ChangeNotifier {
     }
   }
 
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    // the listener would otherwise keep notifying (and holding on to) a
+    // disposed model.
+    _disposed = true;
+    _subscription?.cancel();
+    _subscription = null;
+    super.dispose();
+  }
+
   List<MessageModel> get messages => _messages;
 
   Set<int> get separators => _separators;
@@ -115,7 +130,7 @@ class MessagesModel extends ChangeNotifier {
     }
     final events = await MessagesAdapter.instance
         .forChannelHistory(channel, futureEvents.first.timestamp);
-    if (events.isEmpty) {
+    if (events.isEmpty || _disposed) {
       return;
     }
     List<MessageModel> messages = []; // rebuild a new message set.
