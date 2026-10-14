@@ -5,8 +5,11 @@ package youtube
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
+	"strings"
 	"testing"
 	"time"
 )
@@ -32,10 +35,11 @@ type liveStream struct {
 func liveHTTPClient() *http.Client { return &http.Client{Timeout: 30 * time.Second} }
 
 // findLiveStream returns the first candidate whose /live page names a video
-// and whose live_chat page parses. It skips only if no candidate is live. If
-// some are live but none can be read, it fails: a /live page that is live
-// without a canonical video, or a chat page we cannot parse, is YouTube
-// changing its format (or a stream with chat turned off, hence the fallbacks).
+// and whose live_chat page parses. It skips only if every candidate's /live
+// page is its offline channel page. Anything else fails: a failed request, a
+// page we do not recognize (e.g. a consent or bot check), a live page without
+// a canonical video, or a chat page we cannot parse. The later candidates are
+// fallbacks for a stream that is offline or has chat turned off.
 func findLiveStream(t *testing.T) liveStream {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
@@ -49,15 +53,26 @@ func findLiveStream(t *testing.T) liveStream {
 		body, err := c.request(ctx, http.MethodGet, "/channel/"+url.PathEscape(candidate.id)+"/live", nil)
 		if err != nil {
 			t.Logf("%s: /live: %v", candidate.name, err)
+			failed = true
 			continue
 		}
 		video, err := canonicalVideoID(bytes.NewReader(body))
 		if err != nil || video == "" {
-			if bytes.Contains(body, []byte(`"isLiveNow":true`)) {
+			switch {
+			case bytes.Contains(body, []byte(`"isLiveNow":true`)):
 				t.Logf("%s: /live page is live but has no canonical video (err %v)", candidate.name, err)
 				failed = true
-			} else {
+			case bytes.Contains(body, []byte(`"channelMetadataRenderer"`)):
 				t.Logf("%s: not live", candidate.name)
+			default:
+				t.Logf("%s: unrecognized /live page: %s", candidate.name, describePage(body))
+				failed = true
+				// A bot check hides the canonical link. Report whether chat
+				// would still be readable through the video in ytInitialData.
+				if m := watchEndpointPattern.FindSubmatch(body); m != nil {
+					_, _, _, err := c.initial(ctx, string(m[1]))
+					t.Logf("%s: live_chat for %s from ytInitialData: error %v", candidate.name, m[1], err)
+				}
 			}
 			continue
 		}
@@ -76,8 +91,31 @@ func findLiveStream(t *testing.T) liveStream {
 		return liveStream{name: candidate.name, channel: candidate.id, video: video, key: key, version: version, watch: body, page: page}
 	}
 	if failed {
-		t.Fatal("candidates are live, but none of them could be read")
+		t.Fatal("no live candidate could be read")
 	}
 	t.Skip("none of the candidate channels is live")
 	return liveStream{}
+}
+
+var titlePattern = regexp.MustCompile(`(?s)<title[^>]*>(.*?)</title>`)
+var playabilityPattern = regexp.MustCompile(`"playabilityStatus":\{"status":"([A-Z_]+)"(?:,"reason":"([^"]{0,200})")?`)
+var watchEndpointPattern = regexp.MustCompile(`"currentVideoEndpoint":\{.{0,400}?"watchEndpoint":\{"videoId":"([A-Za-z0-9_-]{11})"`)
+var pageVideoPattern = regexp.MustCompile(`"videoDetails":\{"videoId":"([A-Za-z0-9_-]{11})"`)
+
+// describePage summarizes an unexpected page for the test log.
+func describePage(body []byte) string {
+	first := func(p *regexp.Regexp) []string {
+		m := p.FindSubmatch(body)
+		s := make([]string, p.NumSubexp())
+		for i := range s {
+			if m != nil {
+				s[i] = strings.TrimSpace(string(m[i+1]))
+			}
+		}
+		return s
+	}
+	playability := first(playabilityPattern)
+	return fmt.Sprintf("%d bytes, title %q, ytInitialData %v, consent %v, videoDetails.videoId %q, playability %q %q",
+		len(body), first(titlePattern)[0], initialPattern.Match(body), bytes.Contains(body, []byte("consent.youtube.com")),
+		first(pageVideoPattern)[0], playability[0], playability[1])
 }
