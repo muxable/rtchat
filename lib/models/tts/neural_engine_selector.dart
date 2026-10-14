@@ -6,13 +6,14 @@ import 'package:rtchat/models/tts.dart';
 /// Makes a neural engine for an installed voice pack.
 typedef NeuralEngineFactory = TtsEngine Function(InstalledVoicePack pack);
 
-/// Gives [tts] a neural engine for an installed voice pack, if there is one,
-/// at startup and whenever packs are installed, upgraded or deleted. Without
-/// a pack it speaks with the system voices.
+/// Gives [tts] a neural engine for each installed voice pack it can speak
+/// with, at startup and whenever packs are installed, upgraded or deleted.
+/// Without a pack it speaks with the system voices.
 ///
-/// Picking a pack per language, and a voice per chatter, is left to the
-/// voice selection work (#1505): this uses the first pack the engine can
-/// speak with, by id.
+/// [TtsModel] routes each message to the first of these engines that speaks
+/// its language (see [VoiceRouter]), so their order is the order of
+/// preference between packs that speak the same language: [choose]'s. An
+/// engine whose pack didn't change is kept, with its model loaded.
 class NeuralEngineSelector {
   final VoicePackRepository repository;
   final TtsModel tts;
@@ -21,8 +22,8 @@ class NeuralEngineSelector {
 
   StreamSubscription<void>? _changes;
   Future<void> _refreshing = Future.value();
-  // identifies the installed pack the current engine speaks with.
-  String? _installed;
+  // the engine of each installed pack, by what identifies its install.
+  Map<String, TtsEngine> _engines = {};
   var _isDisposed = false;
 
   NeuralEngineSelector({
@@ -33,45 +34,48 @@ class NeuralEngineSelector {
   })  : _createEngine = createEngine ?? NeuralTtsEngine.new,
         _reportError = reportError;
 
-  /// Picks the engine now and again whenever the installed packs change.
+  /// Picks the engines now and again whenever the installed packs change.
   Future<void> start() {
     _changes ??= repository.changes.listen((_) => refresh());
     return refresh();
   }
 
-  /// The installed pack to speak with, if any.
-  static InstalledVoicePack? choose(Iterable<InstalledVoicePack> installed) {
-    final usable = installed
-        .where((pack) => NeuralTtsEngine.canSpeak(pack.pack))
-        .toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
-    return usable.firstOrNull;
-  }
+  /// The installed packs to speak with, in order of preference.
+  ///
+  /// With Supertonic 3 as the only model this is by id; when packs of other
+  /// models arrive (#1518), e.g. an English-only pack that sounds better than
+  /// a multilingual one, this is where they are ranked ahead of it.
+  static List<InstalledVoicePack> choose(
+          Iterable<InstalledVoicePack> installed) =>
+      installed.where((pack) => NeuralTtsEngine.canSpeak(pack.pack)).toList()
+        ..sort((a, b) => a.id.compareTo(b.id));
 
-  /// Looks at the installed packs again and swaps the engine if the pack to
-  /// speak with changed.
+  /// Looks at the installed packs again and swaps the engines of packs that
+  /// changed.
   Future<void> refresh() =>
       _refreshing = _refreshing.then((_) => _refresh()).catchError(_report);
 
   Future<void> _refresh() async {
     if (_isDisposed) return;
-    final pack = choose((await repository.installedPacks()).values);
+    final packs = choose((await repository.installedPacks()).values);
     if (_isDisposed) return;
-    final installed = pack == null
-        ? null
-        : '${pack.id}@${pack.pack.version}@${pack.directory}@'
-            '${pack.installedAt.toIso8601String()}';
-    if (installed == _installed) return;
-    _installed = installed;
-    TtsEngine? engine;
-    if (pack != null) {
+    final engines = <String, TtsEngine>{};
+    for (final pack in packs) {
+      final key = '${pack.id}@${pack.pack.version}@${pack.directory}@'
+          '${pack.installedAt.toIso8601String()}';
+      final existing = _engines[key];
+      if (existing != null) {
+        engines[key] = existing;
+        continue;
+      }
       try {
-        engine = _createEngine(pack);
+        engines[key] = _createEngine(pack);
       } catch (e, st) {
         _report(e, st);
       }
     }
-    tts.neuralEngine = engine;
+    _engines = engines;
+    tts.neuralEngines = engines.values.toList();
   }
 
   void _report(Object error, StackTrace stack) {
@@ -81,8 +85,8 @@ class NeuralEngineSelector {
     }
   }
 
-  /// Stops following pack changes. The engine stays with [tts], which
-  /// disposes it.
+  /// Stops following pack changes. The engines stay with [tts], which
+  /// disposes them.
   void dispose() {
     _isDisposed = true;
     _changes?.cancel();

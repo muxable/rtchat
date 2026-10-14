@@ -91,3 +91,19 @@ class FakeTtsEngine implements TtsEngine {
     finishSpeaking();
   }
 }
+
+/// The speakers of Supertonic 3, in its order.
+const supertonicSpeakers = [
+  'F1', 'F2', 'F3', 'F4', 'F5', //
+  'M1', 'M2', 'M3', 'M4', 'M5',
+];
+
+/// Voices like a multilingual pack's: every one of [speakers] in each of
+/// [languages], as `NeuralTtsEngine.voices` lists them.
+List<TtsVoice> packVoices(List<String> languages,
+        {List<String> speakers = supertonicSpeakers}) =>
+    [
+      for (final speaker in speakers)
+        for (final language in languages)
+          TtsVoice(id: speaker, name: speaker, locale: language),
+    ];

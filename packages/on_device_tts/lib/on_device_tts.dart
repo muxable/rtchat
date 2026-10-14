@@ -10,6 +10,10 @@
 ///   see `doc/native_contract.md` for its platform channels. It splits text
 ///   into clauses with `ClauseSplitter` to start playing sooner.
 ///
+/// `VoiceRouter` picks which engine (e.g. which installed pack) reads text in
+/// a language, matching tags with `LanguageTag`, and a stable voice per key
+/// (such as a chatter) with `fnv1a32`.
+///
 /// Neural voices come in voice packs that are downloaded on demand:
 /// `VoicePackCatalog` lists them and `VoicePackRepository` downloads,
 /// verifies, installs and deletes them.
@@ -19,12 +23,15 @@
 library;
 
 export 'src/clause_splitter.dart';
+export 'src/language_tags.dart';
 export 'src/neural_tts_engine.dart';
 export 'src/onnx/onnx_tts.dart';
 export 'src/onnx/onnx_tts_platform.dart';
+export 'src/stable_hash.dart';
 export 'src/system_tts_engine.dart';
 export 'src/tts_engine.dart';
 export 'src/tts_voice.dart';
+export 'src/voice_router.dart';
 export 'src/voice_packs/bundled_catalog.dart';
 export 'src/voice_packs/download_policy.dart';
 export 'src/voice_packs/installed_voice_pack.dart';

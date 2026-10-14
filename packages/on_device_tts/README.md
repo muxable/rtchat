@@ -61,6 +61,31 @@ for Korean and Japanese) split at whitespace.
 0.7..2.0, the way `flutter_tts` maps it to Android's speech rate. `pitch` is
 ignored: Supertonic has no pitch control.
 
+## VoiceRouter
+
+```dart
+final router = VoiceRouter([kokoroEngine, supertonicEngine]); // preferred first
+final route = await router.route('pt-BR'); // null: no engine speaks it
+if (route == null) {
+  await systemEngine.speak(text, language: 'pt-BR');
+} else {
+  final voice = route.voiceForKey('twitch:1234'); // same key, same voice
+  await route.engine.speak(text, voice: voice, language: route.language);
+}
+```
+
+`route` sends a language to the first engine with a voice for it, reading
+each engine's languages from the locales of its `voices()`. Tags match with
+`LanguageTag.matchScore`: a `pt` voice reads `pt-BR`, an `en-US` voice reads
+`en`, and a `pt-PT` voice reads `pt-BR` when nothing closer exists, but a
+`zh-Hans` voice never reads `zh-Hant` (or `zh-TW`). `voiceForKey` hashes the
+key with `fnv1a32` (FNV-1a, 32-bit, over UTF-8), which unlike
+`String.hashCode` is the same on every run and platform.
+
+`SystemTtsEngine.speak` sets the platform's language when given one (falling
+back to the primary language, then the default voice), unless a `voice` is
+given.
+
 ## Tests
 
 ### Dart

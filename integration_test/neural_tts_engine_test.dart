@@ -9,6 +9,9 @@
 //         --dart-define=ON_DEVICE_TTS_MODEL_DIR=/data/user/0/com.rtirl.chat/files/supertonic-3
 //
 // It prints one `TTFA {...}` JSON line with the measurements.
+//
+// The mixed-language test also reads with the platform's own voices (Google
+// TTS on the emulator) for the language Supertonic doesn't speak.
 
 import 'dart:async';
 import 'dart:convert';
@@ -20,9 +23,12 @@ import 'package:integration_test/integration_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/tts/language.dart';
 
 /// The model directory on the device; the tests skip themselves without it.
 const modelDir = String.fromEnvironment('ON_DEVICE_TTS_MODEL_DIR');
@@ -31,9 +37,11 @@ const modelDir = String.fromEnvironment('ON_DEVICE_TTS_MODEL_DIR');
 class Spoken {
   final String text;
   final Duration start;
+  final TtsVoice? voice;
+  final String? language;
   Duration? end;
 
-  Spoken(this.text, this.start);
+  Spoken(this.text, this.start, {this.voice, this.language});
 }
 
 /// Passes speech on to [inner] and logs when each utterance starts and ends.
@@ -50,7 +58,7 @@ class LoggingEngine implements TtsEngine {
       double rate = TtsEngine.normalRate,
       double pitch = TtsEngine.normalPitch,
       String? language}) async {
-    final entry = Spoken(text, clock.elapsed);
+    final entry = Spoken(text, clock.elapsed, voice: voice, language: language);
     spoken.add(entry);
     try {
       await inner.speak(text,
@@ -96,18 +104,21 @@ class SilentSystemEngine implements TtsEngine {
   Future<void> dispose() async {}
 }
 
-TwitchMessageModel chat(String text, int i) => TwitchMessageModel(
-    messageId: 'm$i-${DateTime.now().microsecondsSinceEpoch}',
-    author: TwitchUserModel(
-        userId: '$i', login: 'user$i', displayName: 'Chatter$i'),
-    tags: const {},
-    annotations: const TwitchMessageAnnotationsModel(
-        isAction: false, isFirstTimeChatter: false, announcement: null),
-    thirdPartyEmotes: const [],
-    timestamp: DateTime.now(),
-    message: text,
-    deleted: false,
-    channelId: 'placeholder');
+TwitchMessageModel chat(String text, int i, {int? userId}) =>
+    TwitchMessageModel(
+        messageId: 'm$i-${DateTime.now().microsecondsSinceEpoch}',
+        author: TwitchUserModel(
+            userId: '${userId ?? i}',
+            login: 'user${userId ?? i}',
+            displayName: 'Chatter${userId ?? i}'),
+        tags: const {},
+        annotations: const TwitchMessageAnnotationsModel(
+            isAction: false, isFirstTimeChatter: false, announcement: null),
+        thirdPartyEmotes: const [],
+        timestamp: DateTime.now(),
+        message: text,
+        deleted: false,
+        channelId: 'placeholder');
 
 Future<void> waitFor(bool Function() condition,
     {Duration timeout = const Duration(seconds: 60)}) async {
@@ -233,6 +244,103 @@ void main() {
     // TtsModel notifies its listeners after the next frame.
     await tester.pump();
     tts.dispose();
+  });
+
+  testWidgets(
+      'routes a mixed-language queue: Supertonic for en and es, the system '
+      'voice for zh, a voice per chatter', (tester) async {
+    final clock = Stopwatch()..start();
+    final neural = LoggingEngine(engine, clock);
+    final platform = SystemTtsEngine();
+    final system = LoggingEngine(platform, clock);
+    final errors = <Object>[];
+    final tts = TtsModel.fromJson({'language': 'en'},
+        engine: system, reportError: (e, _) => errors.add(e));
+    tts.neuralEngine = neural;
+    final english = Channel(Providers.twitch, 'en', 'en');
+    final spanish = Channel(Providers.twitch, 'es', 'es');
+    final chinese = Channel(Providers.kick, 'zh', 'zh');
+    tts.setChannelLanguage(english, Language('en'));
+    tts.setChannelLanguage(spanish, Language('es'));
+    tts.setChannelLanguage(chinese, Language('zh'));
+
+    // (text, channel, chatter): chatters 1, 2 and 4 hash to M1, F5 and F3.
+    final messages = [
+      ('hello chat, how is everyone doing today?', english, 1),
+      ('hola a todos, ¿cómo están hoy?', spanish, 2),
+      ('大家好，今天怎么样？', chinese, 3),
+      ('that clutch was insane', english, 4),
+      ('qué buena jugada, de verdad', spanish, 1),
+      ('谢谢大家', chinese, 2),
+    ];
+    tts.setMode(l10n, TtsMode.enabled);
+    for (final (i, (text, channel, user)) in messages.indexed) {
+      tts.say(l10n, chat(text, i, userId: user)..channel = channel);
+    }
+    final total = messages.length + 1; // and "Text to speech enabled"
+    await waitFor(
+        () =>
+            [...neural.spoken, ...system.spoken]
+                .where((s) => s.end != null)
+                .length ==
+            total,
+        timeout: const Duration(seconds: 120));
+    await pumpEventQueue();
+
+    expect(errors, isEmpty);
+    final all = [...neural.spoken, ...system.spoken]
+      ..sort((a, b) => a.start.compareTo(b.start));
+    // In order, whichever engine read each one.
+    String said((String, Channel, int) m) =>
+        l10n.saidMessage('Chatter${m.$3}', m.$1);
+    expect(all.map((s) => s.text), [
+      'Text to speech enabled',
+      for (final m in messages) said(m),
+    ]);
+    // No overlap, across both engines.
+    for (var i = 1; i < all.length; i++) {
+      expect(all[i].start, greaterThanOrEqualTo(all[i - 1].end!),
+          reason: '"${all[i].text}" started before "${all[i - 1].text}" '
+              'ended');
+    }
+    // Supertonic for en and es, in that language.
+    expect(neural.spoken.map((s) => (s.text, s.language)), [
+      ('Text to speech enabled', 'en'),
+      (said(messages[0]), 'en'),
+      (said(messages[1]), 'es'),
+      (said(messages[3]), 'en'),
+      (said(messages[4]), 'es'),
+    ]);
+    // The system voice for zh, told the language.
+    expect(system.spoken.map((s) => (s.text, s.language)), [
+      (said(messages[2]), 'zh'),
+      (said(messages[5]), 'zh'),
+    ]);
+    // A voice per chatter: chatter 1 keeps theirs across languages, and
+    // chatters 1, 2 and 4 each have their own.
+    final voices = [for (final s in neural.spoken.skip(1)) s.voice?.id];
+    expect(voices, ['M1', 'F5', 'F3', 'M1']);
+    // And Supertonic played each of its utterances, one after the other.
+    final ids = <String>[];
+    for (final event in events) {
+      if (!ids.contains(event.utteranceId)) ids.add(event.utteranceId);
+    }
+    expect(ids, hasLength(neural.spoken.length));
+    expect(events.map((e) => '${e.utteranceId}:${e.type.name}'), [
+      for (final id in ids) ...['$id:firstAudio', '$id:done'],
+    ]);
+    final zhVoices = await platform.voices(language: 'zh');
+    // ignore: avoid_print
+    print('mixed: ${[
+      for (final s in all)
+        '${neural.spoken.contains(s) ? 'neural' : 'system'}'
+            '/${s.language}/${s.voice?.id ?? '-'} '
+            '${(s.end! - s.start).inMilliseconds} ms',
+    ]}, system zh voices: ${zhVoices.length}');
+    // TtsModel notifies its listeners after the next frame.
+    await tester.pump();
+    tts.dispose();
+    await platform.dispose();
   });
 
   testWidgets('the backlog cutoff cuts the neural voice off', (tester) async {

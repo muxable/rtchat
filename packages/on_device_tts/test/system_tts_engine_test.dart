@@ -101,6 +101,94 @@ void main() {
     expect(methods(), contains('clearVoice'));
   });
 
+  group('language', () {
+    // the languages the fake platform has voices for.
+    var available = {'en', 'es', 'ja', 'pt'};
+
+    setUp(() {
+      available = {'en', 'es', 'ja', 'pt'};
+      handler = (call) async {
+        if (call.method == 'setLanguage') {
+          return available.contains(call.arguments) ? 1 : 0;
+        }
+        return 1;
+      };
+    });
+
+    List<Object?> languageCalls() => [
+          for (final call in calls)
+            if (call.method == 'setLanguage' || call.method == 'clearVoice')
+              call.method == 'clearVoice' ? 'clearVoice' : call.arguments,
+        ];
+
+    test('sets the language only when it changes', () async {
+      final engine = SystemTtsEngine(platformLanguage: () => null);
+      await pumpEventQueue();
+      calls.clear();
+
+      await engine.speak('hola', language: 'es');
+      await engine.speak('otra vez', language: 'es');
+      await engine.speak('konnichiwa', language: 'ja');
+      expect(languageCalls(), ['es', 'ja']);
+      // set before speaking.
+      expect(methods().indexOf('setLanguage'),
+          lessThan(methods().indexOf('speak')));
+    });
+
+    test('falls back to the primary language, then the default voice',
+        () async {
+      final engine = SystemTtsEngine(platformLanguage: () => null);
+      await pumpEventQueue();
+      calls.clear();
+
+      await engine.speak('oi', language: 'pt-BR');
+      expect(languageCalls(), ['pt-BR', 'pt']);
+
+      calls.clear();
+      await engine.speak('ni hao', language: 'zh');
+      expect(languageCalls(), ['zh', 'clearVoice']);
+    });
+
+    test('goes back to the default voice without a language', () async {
+      final engine = SystemTtsEngine(platformLanguage: () => null);
+      await pumpEventQueue();
+      calls.clear();
+
+      await engine.speak('hello');
+      expect(languageCalls(), isEmpty, reason: 'already the default');
+
+      await engine.speak('hola', language: 'es');
+      await engine.speak('hello');
+      expect(languageCalls(), ['es', 'clearVoice']);
+    });
+
+    test('restores the platform language where clearing the voice does not',
+        () async {
+      final engine = SystemTtsEngine(platformLanguage: () => 'en-US');
+      await pumpEventQueue();
+      calls.clear();
+
+      await engine.speak('hola', language: 'es');
+      await engine.speak('hello');
+      expect(languageCalls(), ['es', 'clearVoice', 'en-US']);
+    });
+
+    test('a voice wins over the language', () async {
+      final engine = SystemTtsEngine(platformLanguage: () => null);
+      await pumpEventQueue();
+      calls.clear();
+      const voice = TtsVoice(id: 'en-gb-x', name: 'en-gb-x', locale: 'en-GB');
+
+      await engine.speak('one', voice: voice, language: 'es');
+      expect(methods(), isNot(contains('setLanguage')));
+      expect(methods(), contains('setVoice'));
+
+      calls.clear();
+      await engine.speak('dos', language: 'es');
+      expect(languageCalls(), ['es']);
+    });
+  });
+
   test('stop and dispose stop the platform', () async {
     final engine = SystemTtsEngine();
     await pumpEventQueue();

@@ -141,15 +141,34 @@ void main() {
     expect(tts.neuralEngine, isNull);
   });
 
-  test('picks the first usable pack by id', () {
+  test('orders the usable packs by id', () {
     expect(
         NeuralEngineSelector.choose([
-          pack('b'),
-          pack('a', modelType: 'kitten'),
           pack('c'),
-        ])?.id,
-        'b');
-    expect(NeuralEngineSelector.choose([]), isNull);
+          pack('a', modelType: 'kitten'),
+          pack('b'),
+        ]).map((pack) => pack.id),
+        ['b', 'c']);
+    expect(NeuralEngineSelector.choose([]), isEmpty);
+  });
+
+  test('gives every usable pack an engine, keeping unchanged ones', () async {
+    repository.installed['b'] = pack('b');
+    await selector.start();
+    expect(tts.neuralEngines, [same(engines[0])]);
+
+    repository.add(pack('a'));
+    await pumpEventQueue();
+    expect(created, ['b@1', 'a@1']);
+    // In order of preference, and b's engine (with its model) stays.
+    expect(tts.neuralEngines, [same(engines[1]), same(engines[0])]);
+    expect(engines[0].isDisposed, isFalse);
+
+    repository.remove('a');
+    await pumpEventQueue();
+    expect(tts.neuralEngines, [same(engines[0])]);
+    expect(engines[1].isDisposed, isTrue);
+    expect(engines[0].isDisposed, isFalse);
   });
 
   test('keeps the system voices when the engine cannot be made', () async {

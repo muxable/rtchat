@@ -25,8 +25,9 @@ abstract class TtsEngine {
   /// [normalPitch] as the voice's own pitch; engines that can't change the
   /// pitch ignore it. [language] is the BCP-47 tag of the text's language,
   /// if known: engines whose voices speak several languages read the text
-  /// as that language, and others (whose voice decides the language) ignore
-  /// it.
+  /// as that language, the platform's voices switch to a voice for it when
+  /// no [voice] is given, and engines whose voice decides the language
+  /// ignore it.
   ///
   /// Throws if the engine fails to speak.
   Future<void> speak(

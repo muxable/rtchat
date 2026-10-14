@@ -281,6 +281,7 @@ void main() {
         'language': 'fr',
         'pitch': 1.5,
         'speed': 0.6,
+        'neuralVoices': {'ja': 'M3', 'pt-br': 'F2'},
         'mutedUsers': [
           {
             'provider': 'kick',
@@ -330,7 +331,9 @@ void main() {
       expect(restored.pitch, 1.5);
       expect(restored.speed, 0.6);
       final json = restored.toJson();
+      // cloud voice names mean nothing to neural voices.
       expect(json.containsKey('voice'), isFalse);
+      expect(json['neuralVoices'], isEmpty);
       expect(json.containsKey('isCloudTtsEnabled'), isFalse);
     });
 

@@ -26,7 +26,7 @@ class LoggingEngine extends FakeTtsEngine {
   final String name;
   final SpeechLog log;
 
-  LoggingEngine(this.name, this.log);
+  LoggingEngine(this.name, this.log, {super.availableVoices});
 
   @override
   Future<void> speak(
@@ -87,7 +87,8 @@ void main() {
   setUp(() {
     log = SpeechLog();
     system = LoggingEngine('system', log);
-    neural = LoggingEngine('neural', log);
+    neural = LoggingEngine('neural', log,
+        availableVoices: packVoices(['en', 'es', 'ja']));
     errors = [];
     model = TtsModel.fromJson({'language': 'es'},
         engine: system, reportError: (error, _) => errors.add(error));
@@ -134,7 +135,8 @@ void main() {
     model.say(l10n, message('hola', 2));
     await pumpEventQueue();
 
-    expect(neural.utterances.map((u) => u.language), ['es', 'ja', 'es']);
+    // "Text to speech enabled" is in the app's language.
+    expect(neural.utterances.map((u) => u.language), ['en', 'ja', 'es']);
   });
 
   test('falls back to the system voice for a message the neural engine fails',
@@ -181,7 +183,8 @@ void main() {
   test(
       'a replaced engine finishes its message and is disposed before the '
       'next one starts', () async {
-    final next = LoggingEngine('next', log);
+    final next =
+        LoggingEngine('next', log, availableVoices: packVoices(['en', 'es']));
     model.neuralEngine = neural;
     neural.holdSpeech = true;
     next.holdSpeech = true;
