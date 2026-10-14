@@ -7,6 +7,14 @@ export function isYouTubeChannelId(value: unknown): value is string {
   return typeof value === "string" && CHANNEL_ID_PATTERN.test(value);
 }
 
+// The player for a channel's current live stream, muted like the other embeds.
+export function youTubeEmbedUrl(channelId: string): string | null {
+  if (!isYouTubeChannelId(channelId)) {
+    return null;
+  }
+  return `https://www.youtube.com/embed/live_stream?channel=${channelId}&autoplay=1&mute=1`;
+}
+
 export function parseYouTubeQuery(
   query: string
 ): { channelId: string } | { handle: string } | null {
