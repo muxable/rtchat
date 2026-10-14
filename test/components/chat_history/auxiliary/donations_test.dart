@@ -71,8 +71,8 @@ void main() {
     SimpleRealtimeCashDonationEventModel donation(
             {String? donor, String? message}) =>
         SimpleRealtimeCashDonationEventModel(
-            currency: 'ETH',
-            image: const AssetImage('assets/ETH.png'),
+            currency: 'MATIC',
+            image: const AssetImage('assets/MATIC.png'),
             value: 0.5,
             hash: '0xabc',
             donor: donor,
@@ -86,7 +86,7 @@ void main() {
           buildEventWidget(RealtimeCashDonationEventWidget(
               donation(donor: 'muxfd', message: 'gm'))));
 
-      expect(findRichText('muxfd tipped 0.5 ETH.'), findsOneWidget);
+      expect(findRichText('muxfd tipped 0.5 MATIC.'), findsOneWidget);
       expect(find.text('gm'), findsOneWidget);
     });
 
@@ -96,7 +96,7 @@ void main() {
           buildEventWidget(
               RealtimeCashDonationEventWidget(donation(donor: ''))));
 
-      expect(findRichText('Anonymous tipped 0.5 ETH.'), findsOneWidget);
+      expect(findRichText('Anonymous tipped 0.5 MATIC.'), findsOneWidget);
     });
   });
 }

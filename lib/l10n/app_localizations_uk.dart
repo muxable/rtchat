@@ -883,24 +883,6 @@ class AppLocalizationsUk extends AppLocalizations {
   String get discoModeDisabled => '🕺 Режим диско вимкнено D:';
 
   @override
-  String get cloudTts => 'Хмарний TTS';
-
-  @override
-  String get languages => 'Мови';
-
-  @override
-  String get voices => 'Голоси';
-
-  @override
-  String get perViewerVoice => 'Голос для кожного глядача';
-
-  @override
-  String get perViewerVoiceSubtitle => 'Розпізнавайте глядачів за голосом';
-
-  @override
-  String get randomVoice => 'Випадковий';
-
-  @override
   String get playSampleMessage => 'Відтворити приклад повідомлення';
 
   @override
@@ -908,9 +890,6 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => 'Висота голосу';
-
-  @override
-  String get unlockHighQualityVoices => 'Розблокувати голоси високої якості';
 
   @override
   String get muteBots => 'Вимкнути озвучення для ботів';
@@ -923,33 +902,6 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get subscribersOnly => 'Лише підписники';
-
-  @override
-  String get storeNotAvailable => 'Магазин недоступний';
-
-  @override
-  String get unavailable => 'Недоступно';
-
-  @override
-  String get subscribe => 'Підписатися';
-
-  @override
-  String get pending => 'Очікування';
-
-  @override
-  String get subscribed => 'Підписано';
-
-  @override
-  String get pleaseSignIn => 'Увійдіть';
-
-  @override
-  String get searchLanguages => 'Пошук мов';
-
-  @override
-  String get closeSearch => 'Закрити пошук';
-
-  @override
-  String get playSample => 'Відтворити приклад';
 
   @override
   String get fontSize => 'Розмір шрифту';
@@ -1148,4 +1100,42 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get youtubeChatEnded => 'Чат трансляції завершено';
+
+  @override
+  String get addChannel => 'Додати канал';
+
+  @override
+  String get addToChat => 'Додати до чату';
+
+  @override
+  String get defaultChannels => 'Канали за замовчуванням';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'Канали, що показуються під час відкриття застосунку';
+
+  @override
+  String get save => 'Зберегти';
+
+  @override
+  String get resetToMyChannel => 'Скинути до мого каналу';
+
+  @override
+  String get inChat => 'У чаті';
+
+  @override
+  String get removeFromChat => 'Прибрати з чату';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Ваш обліковий запис $provider не може писати тут';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return 'Замінити $channel';
+  }
+
+  @override
+  String get removeChannel => 'Видалити';
 }

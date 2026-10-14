@@ -873,24 +873,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get discoModeDisabled => '🕺 تم إيقاف وضع الديسكو D:';
 
   @override
-  String get cloudTts => 'تحويل النص إلى كلام السحابي';
-
-  @override
-  String get languages => 'اللغات';
-
-  @override
-  String get voices => 'الأصوات';
-
-  @override
-  String get perViewerVoice => 'صوت لكل مشاهد';
-
-  @override
-  String get perViewerVoiceSubtitle => 'تعرّف على مشاهديك من أصواتهم';
-
-  @override
-  String get randomVoice => 'عشوائي';
-
-  @override
   String get playSampleMessage => 'تشغيل رسالة تجريبية';
 
   @override
@@ -898,9 +880,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => 'طبقة صوت تحويل النص إلى كلام';
-
-  @override
-  String get unlockHighQualityVoices => 'فتح أصوات عالية الجودة';
 
   @override
   String get muteBots => 'كتم تحويل النص إلى كلام للبوتات';
@@ -913,33 +892,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get subscribersOnly => 'المشتركون فقط';
-
-  @override
-  String get storeNotAvailable => 'المتجر غير متاح';
-
-  @override
-  String get unavailable => 'غير متاح';
-
-  @override
-  String get subscribe => 'اشتراك';
-
-  @override
-  String get pending => 'قيد الانتظار';
-
-  @override
-  String get subscribed => 'مشترك';
-
-  @override
-  String get pleaseSignIn => 'يرجى تسجيل الدخول';
-
-  @override
-  String get searchLanguages => 'البحث في اللغات';
-
-  @override
-  String get closeSearch => 'إغلاق البحث';
-
-  @override
-  String get playSample => 'تشغيل عينة';
 
   @override
   String get fontSize => 'حجم الخط';
@@ -1136,4 +1088,41 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get youtubeChatEnded => 'انتهت الدردشة المباشرة';
+
+  @override
+  String get addChannel => 'إضافة قناة';
+
+  @override
+  String get addToChat => 'إضافة إلى الدردشة';
+
+  @override
+  String get defaultChannels => 'القنوات الافتراضية';
+
+  @override
+  String get defaultChannelsSubtitle => 'القنوات المعروضة عند فتح التطبيق';
+
+  @override
+  String get save => 'حفظ';
+
+  @override
+  String get resetToMyChannel => 'إعادة التعيين إلى قناتي';
+
+  @override
+  String get inChat => 'في الدردشة';
+
+  @override
+  String get removeFromChat => 'إزالة من الدردشة';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'لا يمكن لحساب $provider الخاص بك الدردشة هنا';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return 'استبدال $channel';
+  }
+
+  @override
+  String get removeChannel => 'إزالة';
 }
