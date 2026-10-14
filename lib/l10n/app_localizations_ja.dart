@@ -1051,7 +1051,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get defaultChannelsSubtitle => 'アプリを開いたときに表示されるチャンネル';
 
   @override
-  String get useCurrentChannels => '現在のチャンネルを使用';
+  String get save => '保存';
+
+  @override
+  String get resetToMyChannel => '自分のチャンネルに戻す';
 
   @override
   String get inChat => 'チャットに表示中';

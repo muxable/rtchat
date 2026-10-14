@@ -1089,7 +1089,10 @@ class AppLocalizationsUk extends AppLocalizations {
       'Канали, що показуються під час відкриття застосунку';
 
   @override
-  String get useCurrentChannels => 'Використати поточні канали';
+  String get save => 'Зберегти';
+
+  @override
+  String get resetToMyChannel => 'Скинути до мого каналу';
 
   @override
   String get inChat => 'У чаті';

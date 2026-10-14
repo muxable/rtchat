@@ -1078,7 +1078,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get defaultChannelsSubtitle => 'القنوات المعروضة عند فتح التطبيق';
 
   @override
-  String get useCurrentChannels => 'استخدام القنوات الحالية';
+  String get save => 'حفظ';
+
+  @override
+  String get resetToMyChannel => 'إعادة التعيين إلى قناتي';
 
   @override
   String get inChat => 'في الدردشة';

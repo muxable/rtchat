@@ -1741,11 +1741,17 @@ abstract class AppLocalizations {
   /// **'The channels shown when the app opens'**
   String get defaultChannelsSubtitle;
 
-  /// Button that makes the channels currently shown the default channels
+  /// Button on the default channels page that saves the channels currently shown as the default channels
   ///
   /// In en, this message translates to:
-  /// **'Use current channels'**
-  String get useCurrentChannels;
+  /// **'Save'**
+  String get save;
+
+  /// Button on the default channels page that clears the picked default channels, so the app opens the signed-in user's own channel, and closes the page
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to my channel'**
+  String get resetToMyChannel;
 
   /// Heading in the channel search sheet for the channels currently shown in chat
   ///

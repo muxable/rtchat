@@ -1074,7 +1074,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get defaultChannelsSubtitle => 'Kanalerna som visas när appen öppnas';
 
   @override
-  String get useCurrentChannels => 'Använd nuvarande kanaler';
+  String get save => 'Spara';
+
+  @override
+  String get resetToMyChannel => 'Återställ till min kanal';
 
   @override
   String get inChat => 'I chatten';

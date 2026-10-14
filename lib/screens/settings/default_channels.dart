@@ -77,12 +77,24 @@ class DefaultChannelsScreen extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: OutlinedButton(
-              onPressed:
-                  views.channels.isEmpty || listEquals(views.channels, defaults)
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                OutlinedButton(
+                  onPressed: views.channels.isEmpty ||
+                          listEquals(views.channels, defaults)
                       ? null
                       : views.useCurrentChannelsAsDefault,
-              child: Text(l10n.useCurrentChannels),
+                  child: Text(l10n.save),
+                ),
+                TextButton(
+                  onPressed: () {
+                    views.resetDefaultChannels();
+                    Navigator.of(context).maybePop();
+                  },
+                  child: Text(l10n.resetToMyChannel),
+                ),
+              ],
             ),
           ),
         ]);

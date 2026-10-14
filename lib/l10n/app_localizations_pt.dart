@@ -1083,7 +1083,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get defaultChannelsSubtitle => 'Os canais exibidos ao abrir o app';
 
   @override
-  String get useCurrentChannels => 'Usar os canais atuais';
+  String get save => 'Salvar';
+
+  @override
+  String get resetToMyChannel => 'Redefinir para meu canal';
 
   @override
   String get inChat => 'No chat';

@@ -1092,7 +1092,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Kanäle, die beim Öffnen der App angezeigt werden';
 
   @override
-  String get useCurrentChannels => 'Aktuelle Kanäle verwenden';
+  String get save => 'Speichern';
+
+  @override
+  String get resetToMyChannel => 'Auf meinen Kanal zurücksetzen';
 
   @override
   String get inChat => 'Im Chat';

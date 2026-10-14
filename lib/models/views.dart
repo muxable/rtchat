@@ -114,6 +114,9 @@ class ViewsModel extends ChangeNotifier {
 
   void useCurrentChannelsAsDefault() => defaultChannels = channels;
 
+  /// Opens with the user's own channel again.
+  void resetDefaultChannels() => defaultChannels = const [];
+
   /// The channels shown in chat.
   List<Channel> get channels =>
       _channels == null ? defaultChannels : List.unmodifiable(_channels!);

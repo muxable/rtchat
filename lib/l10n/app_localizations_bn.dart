@@ -1075,7 +1075,10 @@ class AppLocalizationsBn extends AppLocalizations {
       'অ্যাপ খোলার সময় যে চ্যানেলগুলো দেখানো হয়';
 
   @override
-  String get useCurrentChannels => 'বর্তমান চ্যানেলগুলো ব্যবহার করুন';
+  String get save => 'সংরক্ষণ করুন';
+
+  @override
+  String get resetToMyChannel => 'আমার চ্যানেলে রিসেট করুন';
 
   @override
   String get inChat => 'চ্যাটে';

@@ -85,7 +85,7 @@ void main() {
       experimentalLeakTesting: ignoreImages, (tester) async {
     final views = signedInAs(twitch);
     await tester.pumpWidget(app(views));
-    final button = find.widgetWithText(OutlinedButton, 'Use current channels');
+    final button = find.widgetWithText(OutlinedButton, 'Save');
     // already the same.
     expect(tester.widget<OutlinedButton>(button).onPressed, isNull);
 
@@ -96,6 +96,34 @@ void main() {
     expect(views.defaultChannels, [twitch, kick]);
     expect(find.text('KickMux'), findsOneWidget);
     expect(tester.widget<OutlinedButton>(button).onPressed, isNull);
+  });
+
+  testWidgets("resets to the user's channel and closes",
+      experimentalLeakTesting: ignoreImages, (tester) async {
+    final views = signedInAs(twitch)..defaultChannels = [kick];
+    await tester.pumpWidget(ChangeNotifierProvider<ViewsModel>.value(
+      value: views,
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const DefaultChannelsScreen())),
+            child: const Text('open'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    expect(find.text('KickMux'), findsOneWidget);
+
+    await tester.tap(find.text('Reset to my channel'));
+    await tester.pumpAndSettle();
+    expect(views.hasCustomDefaultChannels, isFalse);
+    expect(views.defaultChannels, [twitch]);
+    expect(find.byType(DefaultChannelsScreen), findsNothing);
   });
 
   testWidgets("search swipes add or replace by provider, taps switch",

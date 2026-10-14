@@ -1051,7 +1051,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get defaultChannelsSubtitle => '앱을 열 때 표시되는 채널';
 
   @override
-  String get useCurrentChannels => '현재 채널 사용';
+  String get save => '저장';
+
+  @override
+  String get resetToMyChannel => '내 채널로 재설정';
 
   @override
   String get inChat => '채팅에 표시 중';

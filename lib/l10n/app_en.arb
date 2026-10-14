@@ -1473,9 +1473,13 @@
   "@defaultChannelsSubtitle": {
     "description": "Explains what the default channels are"
   },
-  "useCurrentChannels": "Use current channels",
-  "@useCurrentChannels": {
-    "description": "Button that makes the channels currently shown the default channels"
+  "save": "Save",
+  "@save": {
+    "description": "Button on the default channels page that saves the channels currently shown as the default channels"
+  },
+  "resetToMyChannel": "Reset to my channel",
+  "@resetToMyChannel": {
+    "description": "Button on the default channels page that clears the picked default channels, so the app opens the signed-in user's own channel, and closes the page"
   },
   "inChat": "In chat",
   "@inChat": {

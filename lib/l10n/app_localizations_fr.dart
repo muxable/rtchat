@@ -1093,7 +1093,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Les chaînes affichées à l\'ouverture de l\'application';
 
   @override
-  String get useCurrentChannels => 'Utiliser les chaînes actuelles';
+  String get save => 'Enregistrer';
+
+  @override
+  String get resetToMyChannel => 'Réinitialiser sur ma chaîne';
 
   @override
   String get inChat => 'Dans le chat';

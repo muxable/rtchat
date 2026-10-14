@@ -1088,7 +1088,10 @@ class AppLocalizationsPl extends AppLocalizations {
       'Kanały wyświetlane po otwarciu aplikacji';
 
   @override
-  String get useCurrentChannels => 'Użyj bieżących kanałów';
+  String get save => 'Zapisz';
+
+  @override
+  String get resetToMyChannel => 'Przywróć mój kanał';
 
   @override
   String get inChat => 'W czacie';

@@ -1083,7 +1083,10 @@ class AppLocalizationsNl extends AppLocalizations {
       'De kanalen die worden getoond wanneer de app opent';
 
   @override
-  String get useCurrentChannels => 'Huidige kanalen gebruiken';
+  String get save => 'Opslaan';
+
+  @override
+  String get resetToMyChannel => 'Terugzetten naar mijn kanaal';
 
   @override
   String get inChat => 'In de chat';

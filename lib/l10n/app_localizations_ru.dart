@@ -1092,7 +1092,10 @@ class AppLocalizationsRu extends AppLocalizations {
       'Каналы, которые показываются при открытии приложения';
 
   @override
-  String get useCurrentChannels => 'Использовать текущие каналы';
+  String get save => 'Сохранить';
+
+  @override
+  String get resetToMyChannel => 'Сбросить на мой канал';
 
   @override
   String get inChat => 'В чате';

@@ -1049,7 +1049,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get defaultChannelsSubtitle => '打开应用时显示的频道';
 
   @override
-  String get useCurrentChannels => '使用当前频道';
+  String get save => '保存';
+
+  @override
+  String get resetToMyChannel => '重置为我的频道';
 
   @override
   String get inChat => '聊天中';
@@ -2116,7 +2119,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get defaultChannelsSubtitle => '開啟應用程式時顯示的頻道';
 
   @override
-  String get useCurrentChannels => '使用目前的頻道';
+  String get save => '儲存';
+
+  @override
+  String get resetToMyChannel => '重設為我的頻道';
 
   @override
   String get inChat => '聊天中';
