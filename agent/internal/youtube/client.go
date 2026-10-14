@@ -238,8 +238,13 @@ func (c *Client) stream(ctx context.Context, video, key, version string, page ch
 				c.counts.skipped.Add(1)
 				continue
 			}
-			id := data["event"].(map[string]interface{})["id"].(string)
-			if !c.retryWrite(ctx, func() error { return c.store.Create(ctx, "youtube:"+c.channel, "youtube:"+id, data) }) {
+			id := "youtube:" + data["event"].(map[string]interface{})["id"].(string)
+			if data["type"] == "youtube.tombstone" {
+				// the tombstone keeps the deleted message's id in its event, but
+				// needs its own document or the create is a no-op.
+				id += ":tombstone"
+			}
+			if !c.retryWrite(ctx, func() error { return c.store.Create(ctx, "youtube:"+c.channel, id, data) }) {
 				return
 			}
 		}

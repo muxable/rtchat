@@ -390,3 +390,25 @@ func TestRenewalErrorStopsReader(t *testing.T) {
 		t.Fatal("failed to release lease after renewal error")
 	}
 }
+
+func TestTombstoneDoesNotCollideWithMessage(t *testing.T) {
+	server := newTestServer(t, http.NotFoundHandler())
+	defer server.Close()
+	store := &memoryStore{}
+	c := testClient(t, server, store)
+	var page chatPage
+	json.Unmarshal([]byte(`{"actions":[
+		{"addChatItemAction":{"item":{"liveChatTextMessageRenderer":{"id":"item","timestampUsec":"1700000000000000","message":{"runs":[{"text":"hi"}]}}}}},
+		{"markChatItemAsDeletedAction":{"targetItemId":"item"}}
+	]}`), &page)
+	c.stream(context.Background(), "video", "key", "version", page)
+	store.mu.Lock()
+	defer store.mu.Unlock()
+	if store.messages["youtube:item"]["type"] != "youtube.textMessageEvent" {
+		t.Fatal("message not written", store.messages)
+	}
+	tombstone := store.messages["youtube:item:tombstone"]
+	if tombstone == nil || tombstone["event"].(map[string]interface{})["id"] != "item" {
+		t.Fatal("tombstone not written with the deleted message's id", store.messages)
+	}
+}
