@@ -996,7 +996,7 @@ class AppLocalizationsBn extends AppLocalizations {
       'এই সময়ের মধ্যে কোনো বার্তা না এলে এবং তারপর নতুন একটি এলে একটি সতর্কতা শব্দ বাজবে।';
 
   @override
-  String get realtimeCashSubtitle => 'একটি ETH বা MATIC ওয়ালেট যুক্ত করুন';
+  String get realtimeCashSubtitle => 'একটি MATIC ওয়ালেট যুক্ত করুন';
 
   @override
   String get walletAddress => 'ওয়ালেট ঠিকানা';

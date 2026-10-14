@@ -87,27 +87,19 @@ func alchemyFirestoreValue(value interface{}) (interface{}, error) {
 	}
 }
 
-const (
-	alchemyPolygonRPC  = "https://polygon-mainnet.infura.io/v3/44f12a91c4c146ae83472b2656b4fff6"
-	alchemyEthereumRPC = "https://mainnet.infura.io/v3/44f12a91c4c146ae83472b2656b4fff6"
-)
+const alchemyPolygonRPC = "https://polygon-mainnet.infura.io/v3/44f12a91c4c146ae83472b2656b4fff6"
 
-// AlchemyRPC uses the same Infura endpoints as the TypeScript functions.
+// AlchemyRPC uses the same Infura endpoint as the TypeScript functions.
 type AlchemyRPC struct {
-	Client      *http.Client
-	PolygonURL  string
-	EthereumURL string
+	Client     *http.Client
+	PolygonURL string
 }
 
 func NewAlchemyRPC() *AlchemyRPC {
-	return &AlchemyRPC{Client: &http.Client{Timeout: 30 * time.Second}, PolygonURL: alchemyPolygonRPC, EthereumURL: alchemyEthereumRPC}
+	return &AlchemyRPC{Client: &http.Client{Timeout: 30 * time.Second}, PolygonURL: alchemyPolygonRPC}
 }
 
-func (rpc *AlchemyRPC) Input(ctx context.Context, eth bool, hash string) (string, error) {
-	endpoint := rpc.PolygonURL
-	if eth {
-		endpoint = rpc.EthereumURL
-	}
+func (rpc *AlchemyRPC) Input(ctx context.Context, hash string) (string, error) {
 	body, err := json.Marshal(struct {
 		JSONRPC string   `json:"jsonrpc"`
 		ID      int      `json:"id"`
@@ -117,7 +109,7 @@ func (rpc *AlchemyRPC) Input(ctx context.Context, eth bool, hash string) (string
 	if err != nil {
 		return "", err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, rpc.PolygonURL, bytes.NewReader(body))
 	if err != nil {
 		return "", err
 	}

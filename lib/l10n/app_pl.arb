@@ -248,7 +248,7 @@
   "announcementPinDuration": "Czas przypięcia ogłoszeń",
   "idleMessageAlertDuration": "Alert przy cichym czacie",
   "idleMessageAlertDurationSubtitle": "Jeśli przez ten czas nie będzie wiadomości, a potem pojawi się nowa, zostanie odtworzony dźwięk alertu.",
-  "realtimeCashSubtitle": "Połącz portfel ETH lub MATIC",
+  "realtimeCashSubtitle": "Połącz portfel MATIC",
   "walletAddress": "Adres portfela",
   "streamlabsSubtitle": "Zobacz swoje darowizny ze Streamlabs",
   "streamElementsSubtitle": "Zobacz swoje darowizny ze StreamElements",

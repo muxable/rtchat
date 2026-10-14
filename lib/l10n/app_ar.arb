@@ -248,7 +248,7 @@
   "announcementPinDuration": "مدة تثبيت الإعلانات",
   "idleMessageAlertDuration": "مدة تنبيه خمول الدردشة",
   "idleMessageAlertDurationSubtitle": "إذا لم تصل أي رسائل خلال هذه المدة ثم وصلت رسالة جديدة، فسيتم تشغيل صوت تنبيه.",
-  "realtimeCashSubtitle": "اربط محفظة ETH أو MATIC",
+  "realtimeCashSubtitle": "اربط محفظة MATIC",
   "walletAddress": "عنوان المحفظة",
   "streamlabsSubtitle": "اطلع على تبرعاتك في Streamlabs",
   "streamElementsSubtitle": "اطلع على تبرعاتك في StreamElements",

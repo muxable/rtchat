@@ -1009,7 +1009,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Se non arrivano messaggi per questo intervallo e ne arriva uno nuovo, verrà riprodotto un suono di avviso.';
 
   @override
-  String get realtimeCashSubtitle => 'Collega un wallet ETH o MATIC';
+  String get realtimeCashSubtitle => 'Collega un wallet MATIC';
 
   @override
   String get walletAddress => 'Indirizzo del wallet';

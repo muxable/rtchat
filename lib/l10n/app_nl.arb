@@ -248,7 +248,7 @@
   "announcementPinDuration": "Vastpinduur van aankondigingen",
   "idleMessageAlertDuration": "Melding bij stille chat",
   "idleMessageAlertDurationSubtitle": "Als er zo lang geen berichten zijn en er komt een nieuw bericht binnen, klinkt er een meldingsgeluid.",
-  "realtimeCashSubtitle": "Koppel een ETH- of MATIC-wallet",
+  "realtimeCashSubtitle": "Koppel een MATIC-wallet",
   "walletAddress": "Walletadres",
   "streamlabsSubtitle": "Bekijk je Streamlabs-donaties",
   "streamElementsSubtitle": "Bekijk je StreamElements-donaties",

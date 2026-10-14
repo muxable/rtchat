@@ -1012,7 +1012,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Wenn so lange keine Nachrichten kommen und dann eine neue eintrifft, wird ein Signalton abgespielt.';
 
   @override
-  String get realtimeCashSubtitle => 'Verbinde eine ETH- oder MATIC-Wallet';
+  String get realtimeCashSubtitle => 'Verbinde eine MATIC-Wallet';
 
   @override
   String get walletAddress => 'Wallet-Adresse';

@@ -248,7 +248,7 @@
   "announcementPinDuration": "公告置顶时长",
   "idleMessageAlertDuration": "聊天空闲提醒时长",
   "idleMessageAlertDurationSubtitle": "如果在这段时间内没有消息，之后又收到新消息，将播放提示音。",
-  "realtimeCashSubtitle": "连接 ETH 或 MATIC 钱包",
+  "realtimeCashSubtitle": "连接 MATIC 钱包",
   "walletAddress": "钱包地址",
   "streamlabsSubtitle": "查看你的 Streamlabs 捐赠",
   "streamElementsSubtitle": "查看你的 StreamElements 捐赠",

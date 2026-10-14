@@ -248,7 +248,7 @@
   "announcementPinDuration": "Fäst tid för meddelanden",
   "idleMessageAlertDuration": "Varning vid tyst chatt",
   "idleMessageAlertDurationSubtitle": "Om det inte kommer några meddelanden under den här tiden och sedan kommer ett nytt spelas ett varningsljud.",
-  "realtimeCashSubtitle": "Anslut en ETH- eller MATIC-plånbok",
+  "realtimeCashSubtitle": "Anslut en MATIC-plånbok",
   "walletAddress": "Plånboksadress",
   "streamlabsSubtitle": "Se dina Streamlabs-donationer",
   "streamElementsSubtitle": "Se dina StreamElements-donationer",

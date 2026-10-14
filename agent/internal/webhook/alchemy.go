@@ -20,7 +20,6 @@ import (
 type AlchemyConfig struct {
 	Secrets        Secrets
 	MaticWebhookID string
-	EthWebhookID   string
 }
 
 // AlchemyStore captures the three Firestore operations used by the webhooks.
@@ -30,9 +29,9 @@ type AlchemyStore interface {
 	Add(context.Context, string, map[string]interface{}) error
 }
 
-// AlchemyTransactions fetches transaction calldata on the selected network.
+// AlchemyTransactions fetches transaction calldata on Polygon.
 type AlchemyTransactions interface {
-	Input(context.Context, bool, string) (string, error)
+	Input(context.Context, string) (string, error)
 }
 
 type AlchemyHandler struct {
@@ -64,18 +63,11 @@ type alchemyNotification struct {
 }
 
 func (h *AlchemyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var eth bool
-	var key string
-	switch r.URL.Path {
-	case "/alchemy/webhook":
-		key = h.config.Secrets.AlchemySigningKey
-	case "/alchemy/eth":
-		eth = true
-		key = h.config.Secrets.AlchemyEthSigningKey
-	default:
+	if r.URL.Path != "/alchemy/webhook" {
 		http.NotFound(w, r)
 		return
 	}
+	key := h.config.Secrets.AlchemySigningKey
 	if key == "" {
 		http.Error(w, "Alchemy signing key unavailable", http.StatusServiceUnavailable)
 		return
@@ -102,7 +94,7 @@ func (h *AlchemyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid notification", http.StatusBadRequest)
 		return
 	}
-	if err := h.process(r.Context(), eth, notification); err != nil {
+	if err := h.process(r.Context(), notification); err != nil {
 		zap.L().Error("alchemy webhook failed", zap.Error(err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
@@ -110,13 +102,13 @@ func (h *AlchemyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "OK")
 }
 
-func (h *AlchemyHandler) process(ctx context.Context, eth bool, notification alchemyNotification) error {
+func (h *AlchemyHandler) process(ctx context.Context, notification alchemyNotification) error {
 	for _, activity := range notification.Event.Activity {
 		hash, ok := activity["hash"].(string)
 		if !ok {
 			return fmt.Errorf("activity missing transaction hash")
 		}
-		input, err := h.transactions.Input(ctx, eth, hash)
+		input, err := h.transactions.Input(ctx, hash)
 		if err != nil {
 			return err
 		}

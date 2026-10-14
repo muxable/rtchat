@@ -1004,7 +1004,7 @@ class AppLocalizationsNl extends AppLocalizations {
       'Als er zo lang geen berichten zijn en er komt een nieuw bericht binnen, klinkt er een meldingsgeluid.';
 
   @override
-  String get realtimeCashSubtitle => 'Koppel een ETH- of MATIC-wallet';
+  String get realtimeCashSubtitle => 'Koppel een MATIC-wallet';
 
   @override
   String get walletAddress => 'Walletadres';

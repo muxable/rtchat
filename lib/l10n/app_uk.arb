@@ -248,7 +248,7 @@
   "announcementPinDuration": "Час закріплення оголошень",
   "idleMessageAlertDuration": "Сповіщення про тишу в чаті",
   "idleMessageAlertDurationSubtitle": "Якщо протягом цього часу не було повідомлень і надходить нове, пролунає сигнал.",
-  "realtimeCashSubtitle": "Підключіть гаманець ETH або MATIC",
+  "realtimeCashSubtitle": "Підключіть гаманець MATIC",
   "walletAddress": "Адреса гаманця",
   "streamlabsSubtitle": "Переглядайте пожертви Streamlabs",
   "streamElementsSubtitle": "Переглядайте пожертви StreamElements",

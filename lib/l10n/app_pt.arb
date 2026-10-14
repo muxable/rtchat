@@ -248,7 +248,7 @@
   "announcementPinDuration": "Duração fixada de anúncios",
   "idleMessageAlertDuration": "Alerta de chat inativo",
   "idleMessageAlertDurationSubtitle": "Se não houver mensagens por esse tempo e chegar uma nova, um som de alerta será tocado.",
-  "realtimeCashSubtitle": "Conecte uma carteira ETH ou MATIC",
+  "realtimeCashSubtitle": "Conecte uma carteira MATIC",
   "walletAddress": "Endereço da carteira",
   "streamlabsSubtitle": "Veja suas doações do Streamlabs",
   "streamElementsSubtitle": "Veja suas doações do StreamElements",

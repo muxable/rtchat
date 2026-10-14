@@ -974,7 +974,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '如果在这段时间内没有消息，之后又收到新消息，将播放提示音。';
 
   @override
-  String get realtimeCashSubtitle => '连接 ETH 或 MATIC 钱包';
+  String get realtimeCashSubtitle => '连接 MATIC 钱包';
 
   @override
   String get walletAddress => '钱包地址';
@@ -2007,7 +2007,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '如果在這段時間內沒有訊息，之後又收到新訊息，將播放提示音。';
 
   @override
-  String get realtimeCashSubtitle => '連結 ETH 或 MATIC 錢包';
+  String get realtimeCashSubtitle => '連結 MATIC 錢包';
 
   @override
   String get walletAddress => '錢包地址';
