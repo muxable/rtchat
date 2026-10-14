@@ -49,17 +49,32 @@ Future<List<SearchResult>> fastSearch() async {
   }).toList();
 }
 
-Stream<List<SearchResult>> search(String query, bool isShowOnlyOnline) async* {
-  final fast = await fastSearch();
-  final fastFiltered = fast.where((result) =>
-      result.displayName.toLowerCase().contains(query.toLowerCase()) ||
-      result.login.toLowerCase().contains(query.toLowerCase()));
-  final fastRanked = [
-    ...fastFiltered.where((element) => element.isOnline),
-    ...fastFiltered.where((element) => !element.isOnline)
-  ].take(5);
-  yield fastRanked.toList();
-  final slow = await _search(query).then((result) {
+// The providers channel search can target, with the prefix shown for each.
+const searchProviders = {"twitch": "twitch.tv/", "kick": "kick.com/"};
+
+typedef ChannelSearch = Stream<List<SearchResult>> Function(
+    String query, String provider, bool isShowOnlyOnline);
+
+// Recently active channels for [provider] matching [query], online first.
+List<SearchResult> filterRecentChannels(
+    List<SearchResult> results, String query, String provider) {
+  final needle = query.toLowerCase();
+  final matches = results.where((result) =>
+      result.provider == provider &&
+      (result.displayName.toLowerCase().contains(needle) ||
+          result.login.toLowerCase().contains(needle)));
+  return [
+    ...matches.where((element) => element.isOnline),
+    ...matches.where((element) => !element.isOnline)
+  ].take(5).toList();
+}
+
+Stream<List<SearchResult>> searchChannels(
+    String query, String provider, bool isShowOnlyOnline) async* {
+  final fastRanked = filterRecentChannels(await fastSearch(), query, provider);
+  yield fastRanked;
+  final slow =
+      await _search({"query": query, "provider": provider}).then((result) {
     return (result.data as List<dynamic>)
         .map((data) => SearchResult(
             channelId: data['channelId'],
@@ -74,9 +89,8 @@ Stream<List<SearchResult>> search(String query, bool isShowOnlyOnline) async* {
         .toList();
   });
   final slowFiltered = slow.where((result) =>
-      !fastFiltered.any((element) =>
-          element.provider == result.provider &&
-          element.channelId == result.channelId) &&
+      result.provider == provider &&
+      !fastRanked.any((element) => element.channelId == result.channelId) &&
       (!isShowOnlyOnline || result.isOnline));
   yield [...fastRanked, ...slowFiltered];
 }
@@ -110,13 +124,17 @@ class SearchResult {
 
 class ChannelSearchResultsWidget extends StatefulWidget {
   final String query;
+  final String provider;
   final bool isShowOnlyOnline;
+  final ChannelSearch search;
   final Function(Channel) onChannelSelect;
   final ScrollController? controller;
 
   const ChannelSearchResultsWidget(
       {super.key,
       required this.query,
+      this.provider = "twitch",
+      this.search = searchChannels,
       required this.onChannelSelect,
       required this.isShowOnlyOnline,
       this.controller});
@@ -134,18 +152,25 @@ class _ChannelSearchResultsWidgetState
   @override
   void initState() {
     super.initState();
-    _results = search(widget.query, widget.isShowOnlyOnline);
+    _results =
+        widget.search(widget.query, widget.provider, widget.isShowOnlyOnline);
   }
 
   @override
   void didUpdateWidget(covariant ChannelSearchResultsWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.query != widget.query ||
+    if (oldWidget.provider != widget.provider) {
+      // switching provider searches right away.
+      _debounce?.cancel();
+      _results =
+          widget.search(widget.query, widget.provider, widget.isShowOnlyOnline);
+    } else if (oldWidget.query != widget.query ||
         oldWidget.isShowOnlyOnline != widget.isShowOnlyOnline) {
       _debounce?.cancel();
       _debounce = Timer(const Duration(milliseconds: 500), () {
         setState(() {
-          _results = search(widget.query, widget.isShowOnlyOnline);
+          _results = widget.search(
+              widget.query, widget.provider, widget.isShowOnlyOnline);
         });
       });
     }
