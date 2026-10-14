@@ -6,7 +6,10 @@ import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/kick/event.dart';
 import 'package:rtchat/models/messages/kick/user.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/tts/language.dart';
 
 import '../fakes/fake_chat.dart';
 
@@ -90,5 +93,15 @@ void main() {
                 amount: 50,
                 giftName: 'Hype')),
         "Kicker sent 50 Kicks!");
+  });
+
+  test("messages are read in their channel's language", () {
+    final model = TtsModel.fromJson({'language': 'en'});
+    final japanese = Channel(Providers.kick, '9', 'jp');
+    model.setChannelLanguage(japanese, Language('ja'));
+    final fromJapanese = fakeMessage("konnichiwa")..channel = japanese;
+    expect(model.languageFor(fromJapanese).languageCode, 'ja');
+    // messages from channels without a known language use the default.
+    expect(model.languageFor(fakeMessage("hi")).languageCode, 'en');
   });
 }
