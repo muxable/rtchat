@@ -166,10 +166,19 @@ class ChatHistoryMessage extends StatelessWidget {
     } else if (m is TwitchRaidingEventModel) {
       return Selector<EventSubConfigurationModel, RaidingEventConfig>(
         selector: (_, model) => model.raidingEventConfig,
-        builder: (_, config, __) => config.showEvent
-            ? TwitchRaidingEventWidget(m,
-                onCancel: () => ActionsAdapter.instance.cancelRaid(channel))
-            : Container(),
+        builder: (context, config, __) {
+          if (!config.showEvent) {
+            return Container();
+          }
+          // only the raiding streamer can cancel, so only they see the button.
+          final isHost =
+              Provider.of<UserModel>(context, listen: false).userChannel ==
+                  channel;
+          return TwitchRaidingEventWidget(m,
+              onCancel: isHost
+                  ? () => ActionsAdapter.instance.cancelRaid(channel)
+                  : null);
+        },
       );
     } else if (m is ChatClearedEventModel) {
       return ChatClearedEventWidget(m);
