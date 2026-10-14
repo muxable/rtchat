@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
@@ -14,6 +15,7 @@ import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/tts/language.dart';
 
 final timestamp = DateTime(2024, 1, 2, 3, 4, 5);
 
@@ -264,6 +266,55 @@ void main() {
     });
   });
 
+  group('cloud voices', () {
+    final japanese = Channel(Providers.twitch, '2', 'someone');
+    final fetched = <String>[];
+
+    setUp(() {
+      fetched.clear();
+      model = TtsModel.fromJson({
+        'language': 'en',
+        'voice': {'en': 'en-US-Wavenet-A'},
+      })
+        ..setChannelLanguage(japanese, Language('ja'))
+        ..fetchVoices = (language) async {
+          fetched.add(language);
+          return switch (language) {
+            'en' => ['en-US-Wavenet-A', 'en-US-Wavenet-B'],
+            'ja' => ['ja-JP-Wavenet-A', 'ja-JP-Wavenet-B'],
+            _ => <String>[],
+          };
+        };
+    });
+
+    TwitchMessageModel fromJapanese(String text) =>
+        createMessage(text)..channel = japanese;
+
+    test('use the chosen voice for the primary language', () async {
+      model.isRandomVoiceEnabled = false;
+      expect(await model.voiceFor(createMessage('hello')), 'en-US-Wavenet-A');
+    });
+
+    test('use a voice of the channel language when none is chosen', () async {
+      model.isRandomVoiceEnabled = false;
+      expect(await model.voiceFor(fromJapanese('こんにちは')), 'ja-JP-Wavenet-A');
+      expect(await model.voiceFor(fromJapanese('またね')), 'ja-JP-Wavenet-A');
+      expect(fetched, ['ja'], reason: 'voices are fetched once per language');
+    });
+
+    test('random voices are drawn from the channel language', () async {
+      model.voices = ['en-US-Wavenet-A', 'en-US-Wavenet-B'];
+      expect(await model.voiceFor(fromJapanese('こんにちは')), startsWith('ja-JP-'));
+    });
+
+    test('fall back to the primary voice when voices cannot be fetched',
+        () async {
+      model.isRandomVoiceEnabled = false;
+      model.fetchVoices = (language) async => throw Exception('offline');
+      expect(await model.voiceFor(fromJapanese('こんにちは')), 'en-US-Wavenet-A');
+    });
+  });
+
   group('json', () {
     test('defaults', () {
       expect(model.isBotMuted, isFalse);
@@ -285,12 +336,36 @@ void main() {
         'speed': 0.6,
         'voice': {'fr': 'fr-FR-Wavenet-A'},
         'mutedUsers': [
-          {'userId': '1', 'login': 'muxfd', 'displayName': 'Muxfd'},
+          {
+            'provider': 'kick',
+            'userId': '1',
+            'login': 'muxfd',
+            'displayName': 'Muxfd'
+          },
         ],
       };
       final roundTripped = TtsModel.fromJson(json).toJson();
       expect(roundTripped, json);
       expect(TtsModel.fromJson(roundTripped).toJson(), json);
+    });
+
+    test('muted users saved before providers existed are twitch users', () {
+      final restored = TtsModel.fromJson({
+        'mutedUsers': [
+          {'userId': '1', 'login': 'muxfd', 'displayName': 'Muxfd'},
+        ],
+      });
+      expect(restored.toJson()['mutedUsers'], [
+        {
+          'provider': 'twitch',
+          'userId': '1',
+          'displayName': 'Muxfd',
+          'login': 'muxfd'
+        },
+      ]);
+      expect(
+          restored.isMuted(const TwitchUserModel(userId: '1', login: 'muxfd')),
+          isTrue);
     });
 
     test('muted users survive a round trip', () {
@@ -301,6 +376,24 @@ void main() {
       expect(restored.isMuted(user), isTrue);
       restored.unmute(user);
       expect(restored.isMuted(user), isFalse);
+    });
+
+    test('reloading saved muted users does not duplicate them', () {
+      const user =
+          TwitchUserModel(userId: '1', login: 'muxfd', displayName: 'Muxfd');
+      model.mute(user);
+      final json = model.toJson();
+      model.updateFromJson(json);
+      model.updateFromJson(json);
+      expect(model.toJson()['mutedUsers'], json['mutedUsers']);
+    });
+
+    test('reloading saved muted users drops users unmuted elsewhere', () {
+      const user =
+          TwitchUserModel(userId: '1', login: 'muxfd', displayName: 'Muxfd');
+      model.mute(user);
+      model.updateFromJson({'mutedUsers': []});
+      expect(model.isMuted(user), isFalse);
     });
 
     test('muting matches on login', () {
