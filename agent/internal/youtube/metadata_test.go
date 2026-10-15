@@ -297,3 +297,20 @@ func TestUpcomingStreamGoesLive(t *testing.T) {
 		t.Fatalf("online message %v", online)
 	}
 }
+
+func TestPageInfoBotCheck(t *testing.T) {
+	// The bot-check page has no videoDetails; the title and viewers still render.
+	info, err := pageInfo(fixture(t, "discovery_botcheck.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Live != nil {
+		t.Error("live state should be unknown without videoDetails")
+	}
+	if info.Title == nil || *info.Title != "24/7 halloween ambience 🎃 spooky lofi to get chills to" {
+		t.Errorf("title = %v", info.Title)
+	}
+	if info.ViewerCount == nil || *info.ViewerCount <= 0 {
+		t.Errorf("viewers = %v", info.ViewerCount)
+	}
+}

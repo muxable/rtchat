@@ -237,7 +237,7 @@ func TestLeaseExclusionTakeoverAndClose(t *testing.T) {
 	requests := make(chan struct{}, 100)
 	server := newTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests <- struct{}{}
-		io.WriteString(w, `<html>offline</html>`)
+		io.WriteString(w, offlinePage)
 	}))
 	defer server.Close()
 	store := &memoryStore{}
@@ -326,7 +326,7 @@ func TestDiscoveryBackoffAndOfflineInterval(t *testing.T) {
 			w.WriteHeader(503)
 			return
 		}
-		io.WriteString(w, `<html>offline</html>`)
+		io.WriteString(w, offlinePage)
 	}))
 	defer server.Close()
 	c := testClient(t, server, &memoryStore{})

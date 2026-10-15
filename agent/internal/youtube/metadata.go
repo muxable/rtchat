@@ -215,6 +215,7 @@ func pageInfo(html []byte) (streamInfo, error) {
 					Results struct {
 						Contents []struct {
 							Primary *struct {
+								Title     *text      `json:"title"`
 								ViewCount *viewCount `json:"viewCount"`
 							} `json:"videoPrimaryInfoRenderer"`
 						} `json:"contents"`
@@ -237,6 +238,11 @@ func pageInfo(html []byte) (streamInfo, error) {
 			viewers := content.Primary.ViewCount.info()
 			viewers.Live = nil // videoDetails decides whether the stream is live.
 			info.merge(viewers)
+			// A bot-checked page has no videoDetails, but still renders the title.
+			if info.Title == nil && content.Primary.Title != nil {
+				title := content.Primary.Title.plain()
+				info.Title = nonEmpty(&title)
+			}
 		}
 	}
 	if channel := data.Metadata.Channel; channel != nil {
