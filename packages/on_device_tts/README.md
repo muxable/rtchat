@@ -6,6 +6,8 @@ Text-to-speech that runs on the device, behind one `TtsEngine` interface:
 * `OnnxTts`: neural TTS models (Supertonic 3 today) run natively on the
   official [ONNX Runtime](https://onnxruntime.ai) (MIT), in Kotlin on
   Android and in Swift on iOS.
+* `NeuralTtsEngine`: a `TtsEngine` that speaks with an installed voice pack
+  on `OnnxTts`.
 
 The package doesn't import any app code, so it can move to its own
 repository.
@@ -37,6 +39,25 @@ ONNX Runtime (`onnxruntime-objc` 1.24.2, which needs iOS 15.1) is linked
 statically: through Flutter's Swift Package Manager integration it was
 embedded as an `onnxruntime.framework` that App Store Connect rejects
 (ITMS-90208). `doc/ios.md` describes the iOS side.
+
+## NeuralTtsEngine
+
+```dart
+final engine = NeuralTtsEngine(installedPack); // nothing loads yet
+engine.events.listen(print); // firstAudio, done, stopped, error
+await engine.speak('Muxfd said: hello chat, thanks for the raid!',
+    language: 'en', rate: 0.5); // loads the model, which stays loaded
+await engine.release(); // frees the model; the next speak loads it again
+await engine.dispose();
+```
+
+`speak` passes the whole message to the native `speak` as one segment; the
+native engine splits text over 300 code units (120 for Japanese and Korean)
+itself and streams the audio out as it is synthesized.
+
+`rate` (0..1, 0.5 normal) maps to the native speed as `2 × rate` clamped to
+0.7..2.0, the way `flutter_tts` maps it to Android's speech rate. `pitch` is
+ignored: Supertonic has no pitch control.
 
 ## Tests
 
