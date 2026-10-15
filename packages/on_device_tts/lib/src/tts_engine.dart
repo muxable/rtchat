@@ -22,7 +22,10 @@ abstract class TtsEngine {
   /// [voice] is one of this engine's [voices]; when null the engine uses its
   /// default voice. [rate] goes from 0.0 (slowest) to 1.0 (fastest), with
   /// [normalRate] as the normal speed. [pitch] goes from 0.5 to 2.0, with
-  /// [normalPitch] as the voice's own pitch.
+  /// [normalPitch] as the voice's own pitch. [language] is the BCP-47 tag
+  /// of the text's language, if known: without a [voice], engines with
+  /// voices for several languages speak it with one for [language]; when
+  /// null they use their default.
   ///
   /// Throws if the engine fails to speak.
   Future<void> speak(
@@ -30,6 +33,7 @@ abstract class TtsEngine {
     TtsVoice? voice,
     double rate = normalRate,
     double pitch = normalPitch,
+    String? language,
   });
 
   /// Stops the current utterance, if any.
