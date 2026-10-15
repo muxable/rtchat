@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
@@ -33,6 +32,20 @@ enum TtsMode { disabled, alertsOnly, enabled }
 
 final _markup = RegExp(r'</?b>');
 
+/// Looks up the language [channel] streams in, as its platform reports it
+/// (e.g. `es`, `other`), or null if it isn't known.
+typedef StreamLanguageLookup = Future<String?> Function(Channel channel);
+
+/// Reads the language from the channel's metadata document, once: `first`
+/// opens a Firestore listener and closes it after the first snapshot.
+Future<String?> _lookUpStreamLanguage(Channel channel) async {
+  final metadata = await ChannelsAdapter.instance
+      .forChannel(channel)
+      .first
+      .timeout(const Duration(seconds: 20));
+  return metadata is StreamChannelMetadata ? metadata.language : null;
+}
+
 class TtsModel extends ChangeNotifier {
   final TtsEngine _engine;
 
@@ -54,44 +67,89 @@ class TtsModel extends ChangeNotifier {
   var _mode = TtsMode.disabled;
   final List<MutedUser> _mutedUsers = [];
   // languages of the channels being watched, for reading messages in the
-  // language of the channel they came from.
+  // language of the channel they came from: their stream language, looked
+  // up once per channel while it's shown.
   final Map<Channel, Language> _channelLanguages = {};
+  // when each shown channel's language was last looked up (or is being
+  // looked up), so channels aren't looked up again on every views change.
+  final Map<Channel, DateTime> _languageLookedUpAt = {};
+  List<Channel> _channels = const [];
+  Channel? _primaryChannel;
+  final StreamLanguageLookup _lookUpLanguage;
+  final DateTime Function() _now;
+  var _isDisposed = false;
+
+  /// How long until a channel whose language couldn't be found (no metadata
+  /// yet, offline, an error) is looked up again.
+  static const languageRetryInterval = Duration(minutes: 5);
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
   var _isSubscribersOnly = false;
 
-  void update(ViewsModel model) async {
-    if (kDebugMode) {
-      _updateChannelLanguages(model.channels);
-      final channel = model.primaryChannel;
-      if (channel == null) {
-        _language = Language();
-        return;
-      }
-
-      // channels without a metadata document yet have no language.
-      final metadata = await ChannelsAdapter.instance.forChannel(channel).first;
-      final streamLanguage =
-          metadata is StreamChannelMetadata ? metadata.language : null;
-      final isSupported = streamLanguage != null &&
-          streamLanguage != 'other' &&
-          streamLanguage != 'asl';
-      language = isSupported ? Language(streamLanguage) : Language();
-      notifyListeners();
+  /// Follows the channels shown, to read each message in its channel's
+  /// stream language. Called on every [ViewsModel] change, so it only looks
+  /// up channels it doesn't know the language of yet: each once, and those
+  /// it couldn't find again after [languageRetryInterval]. Nothing here
+  /// changes the saved [language].
+  void update(ViewsModel model) {
+    final channels = model.channels;
+    _channels = channels;
+    _primaryChannel = model.primaryChannel;
+    _channelLanguages.removeWhere((channel, _) => !channels.contains(channel));
+    _languageLookedUpAt
+        .removeWhere((channel, _) => !channels.contains(channel));
+    for (final channel in channels) {
+      _lookUpLanguageOf(channel);
     }
   }
 
-  Future<void> _updateChannelLanguages(List<Channel> channels) async {
-    _channelLanguages.removeWhere((channel, _) => !channels.contains(channel));
-    for (final channel in channels) {
-      final metadata = await ChannelsAdapter.instance.forChannel(channel).first;
-      final language =
-          metadata is StreamChannelMetadata ? metadata.language : null;
-      if (language != null && language != 'other' && language != 'asl') {
-        _channelLanguages[channel] = Language(language);
-      }
+  void _lookUpLanguageOf(Channel channel) {
+    if (_channelLanguages.containsKey(channel)) {
+      return;
     }
+    final now = _now();
+    final last = _languageLookedUpAt[channel];
+    if (last != null && now.difference(last) < languageRetryInterval) {
+      return;
+    }
+    _languageLookedUpAt[channel] = now;
+    Future.sync(() => _lookUpLanguage(channel)).then((code) {
+      final language = streamLanguage(code);
+      // the channel may have been closed in the meantime.
+      if (_isDisposed || language == null || !_channels.contains(channel)) {
+        return;
+      }
+      _channelLanguages[channel] = language;
+    }, onError: (Object error) {
+      // e.g. offline: the channel's language stays unknown for now.
+      debugPrint('no stream language for $channel: $error');
+    });
+  }
+
+  /// The language to read a stream's chat in, from the language its
+  /// platform reports: null when it's unknown, including `other` and `asl`
+  /// (sign language), which say nothing about the spoken language.
+  static Language? streamLanguage(String? code) {
+    final trimmed = code?.trim();
+    if (trimmed == null ||
+        trimmed.isEmpty ||
+        trimmed == 'other' ||
+        trimmed == 'asl') {
+      return null;
+    }
+    return Language(trimmed.toLowerCase());
+  }
+
+  /// The stream language of [model]'s channel (or of the first channel
+  /// shown, for messages without one), if known: looked up, else as it was
+  /// when the channel was found (e.g. in search).
+  Language? _knownLanguageFor(MessageModel model) {
+    final channel = model.channel ?? _primaryChannel;
+    if (channel == null) {
+      return null;
+    }
+    return _channelLanguages[channel] ?? streamLanguage(channel.language);
   }
 
   String getVocalization(AppLocalizations l10n, MessageModel model,
@@ -235,6 +293,8 @@ class TtsModel extends ChangeNotifier {
     });
   }
 
+  /// The language to read chat in when its channel's stream language isn't
+  /// known. Saved with the settings; the stream languages never change it.
   Language get language {
     return _language;
   }
@@ -324,11 +384,10 @@ class TtsModel extends ChangeNotifier {
   void setChannelLanguage(Channel channel, Language language) =>
       _channelLanguages[channel] = language;
 
-  /// The language to read [model] in: its channel's, if known.
-  Language languageFor(MessageModel model) {
-    final channel = model.channel;
-    return (channel == null ? null : _channelLanguages[channel]) ?? _language;
-  }
+  /// The language to read [model] in: its channel's stream language, if
+  /// known, else [language].
+  Language languageFor(MessageModel model) =>
+      _knownLanguageFor(model) ?? _language;
 
   void say(AppLocalizations localizations, MessageModel model,
       {bool force = false}) async {
@@ -418,7 +477,11 @@ class TtsModel extends ChangeNotifier {
     if ((_mode != TtsMode.disabled || model is SystemMessageModel) &&
         _pending.containsKey(model.messageId)) {
       try {
-        await _engine.speak(vocalization, rate: _speed, pitch: _pitch);
+        // chat is in its channel's language, when known; otherwise, and for
+        // alerts (in the app's language), the voice keeps its default.
+        final language = model is ChatMessage ? _knownLanguageFor(model) : null;
+        await _engine.speak(vocalization,
+            rate: _speed, pitch: _pitch, language: language?.languageCode);
       } catch (e, st) {
         FirebaseCrashlytics.instance.recordError(e, st);
       }
@@ -491,13 +554,22 @@ class TtsModel extends ChangeNotifier {
   }
 
   /// Speaks through [engine], or through the platform's voices by default.
-  TtsModel.fromJson(Map<String, dynamic> json, {TtsEngine? engine})
-      : _engine = engine ?? SystemTtsEngine() {
+  /// [lookUpStreamLanguage] finds a channel's stream language, from its
+  /// Firestore metadata by default; [clock] tells the time for retrying
+  /// lookups.
+  TtsModel.fromJson(Map<String, dynamic> json,
+      {TtsEngine? engine,
+      StreamLanguageLookup? lookUpStreamLanguage,
+      DateTime Function()? clock})
+      : _engine = engine ?? SystemTtsEngine(),
+        _lookUpLanguage = lookUpStreamLanguage ?? _lookUpStreamLanguage,
+        _now = clock ?? DateTime.now {
     _updateFromJsonInternal(json);
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     _engine.dispose().catchError((_) {});
     super.dispose();
   }
