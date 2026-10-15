@@ -2040,6 +2040,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not now'**
   String get notNow;
+
+  /// Title of a one-time notice: neural voices are off because the phone has too little memory
+  ///
+  /// In en, this message translates to:
+  /// **'Using the system voice'**
+  String get neuralFallbackLowMemoryTitle;
+
+  /// One-time notice: neural voices are off because the phone has too little memory, and the phone's own text-to-speech voice reads chat instead
+  ///
+  /// In en, this message translates to:
+  /// **'This device doesn\'t have enough memory for neural voices, so chat is read with your phone\'s system voice.'**
+  String get neuralFallbackLowMemoryBody;
+
+  /// Title of a one-time notice: the neural voice failed to load (e.g. it ran out of memory)
+  ///
+  /// In en, this message translates to:
+  /// **'Neural voice couldn\'t start'**
+  String get neuralFallbackLoadFailedTitle;
+
+  /// One-time notice: the neural voice failed to load, and the phone's own text-to-speech voice reads chat for the rest of this session
+  ///
+  /// In en, this message translates to:
+  /// **'The neural voice couldn\'t be loaded, so chat is read with your phone\'s system voice until the app restarts.'**
+  String get neuralFallbackLoadFailedBody;
+
+  /// Short one-time message at the bottom of the chat screen when neural voices are off because the phone has too little memory
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough memory for neural voices: chat is read with the system voice'**
+  String get neuralFallbackLowMemorySnackBar;
+
+  /// Short one-time message at the bottom of the chat screen when the neural voice failed to load
+  ///
+  /// In en, this message translates to:
+  /// **'The neural voice couldn\'t start: chat is read with the system voice'**
+  String get neuralFallbackLoadFailedSnackBar;
+
+  /// Dismisses a notice the user has read
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get gotIt;
+
+  /// Shown on a voice pack card when the phone has too little memory to use neural voices
+  ///
+  /// In en, this message translates to:
+  /// **'This device doesn\'t have enough memory for neural voices'**
+  String get voicePackLowMemory;
+
+  /// Shown on a voice pack card when the neural voice failed to load in this session
+  ///
+  /// In en, this message translates to:
+  /// **'Neural voices couldn\'t be loaded on this device this time; the system voice is reading chat'**
+  String get voicePackLoadFailed;
 }
 
 class _AppLocalizationsDelegate

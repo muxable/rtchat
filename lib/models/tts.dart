@@ -27,6 +27,7 @@ import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/tts/muted_user.dart';
+import 'package:rtchat/models/tts/telemetry.dart';
 import 'package:rtchat/models/views.dart';
 
 enum TtsMode { disabled, alertsOnly, enabled }
@@ -111,6 +112,9 @@ class TtsModel extends ChangeNotifier {
   final Map<String, String> _neuralVoices = {};
   final TtsErrorReporter _reportError;
 
+  /// Told which engine reads each message, and why the system voice does.
+  final TtsTelemetry telemetry;
+
   Future<void> _previousUtterance = Future.value();
   // the messages waiting to be read out, and the channel they came from.
   final Map<String, Channel?> _pending = {};
@@ -162,6 +166,8 @@ class TtsModel extends ChangeNotifier {
   Completer<void>? _releaseAfterUtterance;
   NeuralTtsFallback? _neuralFallback;
   var _isNeuralFallbackNoticePending = false;
+  // the fallbacks the user has been told about, saved so each is told once.
+  final Set<NeuralTtsFallback> _acknowledgedFallbacks = {};
 
   /// Follows the channels shown, to read each message in its channel's
   /// stream language. Called on every [ViewsModel] change, so it only looks
@@ -688,8 +694,13 @@ class TtsModel extends ChangeNotifier {
 
     // 1. a neural engine that speaks the language, unless the models can't
     // load on this device.
-    final route =
-        _neuralFallback == null ? await _router.route(language) : null;
+    final fallback = _neuralFallback;
+    final route = fallback == null ? await _router.route(language) : null;
+    var reason = _neuralEngines.isEmpty
+        ? TtsSystemVoiceReason.noVoicePack
+        : fallback != null
+            ? TtsSystemVoiceReason.forFallback(fallback)
+            : TtsSystemVoiceReason.unsupportedLanguage;
     if (route != null) {
       if (!shouldSpeak()) {
         return;
@@ -705,12 +716,15 @@ class TtsModel extends ChangeNotifier {
             rate: _speed,
             pitch: _pitch,
             language: route.language);
+        telemetry.utteranceRead(TtsEngineKind.neural);
         return;
       } on NeuralTtsLoadException catch (e, st) {
         _reportError(e, st);
         fallBackToSystemVoices(NeuralTtsFallback.loadFailed);
+        reason = TtsSystemVoiceReason.loadFailed;
       } catch (e, st) {
         _reportError(e, st);
+        reason = TtsSystemVoiceReason.neuralError;
       }
       // 3. read this message with the system voice rather than drop it,
       // unless it was cut off in the meantime.
@@ -722,6 +736,7 @@ class TtsModel extends ChangeNotifier {
     try {
       await _systemEngine.speak(vocalization,
           rate: _speed, pitch: _pitch, language: systemLanguage);
+      telemetry.utteranceRead(TtsEngineKind.system, reason: reason);
     } catch (e, st) {
       _reportError(e, st);
     }
@@ -748,6 +763,7 @@ class TtsModel extends ChangeNotifier {
     if (_neuralFallback == NeuralTtsFallback.loadFailed) {
       _neuralFallback = null;
       _isNeuralFallbackNoticePending = false;
+      telemetry.neuralFallbackChanged(null);
     }
     // the voices and languages on offer changed.
     notifyListeners();
@@ -793,14 +809,18 @@ class TtsModel extends ChangeNotifier {
   /// aren't (or they work).
   NeuralTtsFallback? get neuralFallback => _neuralFallback;
 
-  /// Whether the user should be told, once, about [neuralFallback]; the UI
-  /// calls [acknowledgeNeuralFallback] once it has.
-  // TODO(#1506): show a one-time notice in the TTS settings / chat screen.
+  /// Whether the user should be told about [neuralFallback]: once per
+  /// reason, ever (the acknowledgement is saved). The UI (the
+  /// `NeuralFallbackBanner` in the settings and the
+  /// `NeuralFallbackSnackBarListener` on the chat screen) calls
+  /// [acknowledgeNeuralFallback] once it has.
   bool get isNeuralFallbackNoticePending => _isNeuralFallbackNoticePending;
 
   void acknowledgeNeuralFallback() {
     if (!_isNeuralFallbackNoticePending) return;
     _isNeuralFallbackNoticePending = false;
+    final fallback = _neuralFallback;
+    if (fallback != null) _acknowledgedFallbacks.add(fallback);
     notifyListeners();
   }
 
@@ -810,7 +830,8 @@ class TtsModel extends ChangeNotifier {
   void fallBackToSystemVoices(NeuralTtsFallback reason) {
     if (_neuralFallback != null) return;
     _neuralFallback = reason;
-    _isNeuralFallbackNoticePending = true;
+    _isNeuralFallbackNoticePending = !_acknowledgedFallbacks.contains(reason);
+    telemetry.neuralFallbackChanged(reason);
     releaseNeuralModels();
     notifyListeners();
   }
@@ -925,6 +946,13 @@ class TtsModel extends ChangeNotifier {
             if (key is String && value is String) _voiceKeyFor(key): value,
         });
     }
+    final acknowledgedJson = json['acknowledgedNeuralFallbacks'];
+    if (acknowledgedJson is List) {
+      _acknowledgedFallbacks
+        ..clear()
+        ..addAll(NeuralTtsFallback.values
+            .where((reason) => acknowledgedJson.contains(reason.name)));
+    }
     final userJson = json['mutedUsers'];
     if (userJson != null) {
       // the saved list is a full snapshot, so it replaces the current one.
@@ -941,12 +969,14 @@ class TtsModel extends ChangeNotifier {
   /// until a [neuralEngine] is set. Errors that don't stop speech go to
   /// [reportError], Crashlytics by default. [lookUpStreamLanguage] finds
   /// a channel's stream language, from its Firestore metadata by default;
-  /// [clock] tells the time for retrying lookups.
+  /// [clock] tells the time for retrying lookups. [telemetry] hears which
+  /// engine read each message.
   TtsModel.fromJson(Map<String, dynamic> json,
       {TtsEngine? engine,
       TtsErrorReporter? reportError,
       StreamLanguageLookup? lookUpStreamLanguage,
       DateTime Function()? clock,
+      this.telemetry = TtsTelemetry.none,
       this.neuralIdleTimeout = defaultNeuralIdleTimeout})
       : _systemEngine = engine ?? SystemTtsEngine(),
         _reportError = reportError ?? _recordToCrashlytics,
@@ -982,6 +1012,11 @@ class TtsModel extends ChangeNotifier {
         "speed": speed,
         "neuralVoices": Map.of(_neuralVoices),
         "isVoicePackSuggestionDismissed": isVoicePackSuggestionDismissed,
+        if (_acknowledgedFallbacks.isNotEmpty)
+          "acknowledgedNeuralFallbacks": [
+            for (final reason in NeuralTtsFallback.values)
+              if (_acknowledgedFallbacks.contains(reason)) reason.name,
+          ],
         'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
       };
 }

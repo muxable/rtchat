@@ -24,6 +24,7 @@ import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/tts_foreground_service.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/views.dart';
+import 'package:rtchat/screens/settings/tts/fallback_notice.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class ResizableWidget extends StatefulWidget {
@@ -213,7 +214,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final orientation = mediaQuery.orientation;
     final width = mediaQuery.size.width;
 
-    return GestureDetector(
+    return NeuralFallbackSnackBarListener(
+        child: GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Consumer<UserModel>(
         builder: (context, userModel, child) {
@@ -452,6 +454,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           );
         },
       ),
-    );
+    ));
   }
 }

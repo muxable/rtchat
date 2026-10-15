@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/tts/telemetry.dart';
 
 /// Makes a neural engine for an installed voice pack.
 typedef NeuralEngineFactory = TtsEngine Function(InstalledVoicePack pack);
@@ -25,6 +26,9 @@ class NeuralEngineSelector {
   final TtsErrorReporter? _reportError;
   final Future<DeviceMemory?> Function() _deviceMemory;
 
+  /// Told the device's memory.
+  final TtsTelemetry telemetry;
+
   StreamSubscription<void>? _changes;
   Future<void> _refreshing = Future.value();
   // the engine of each installed pack, by what identifies its install.
@@ -37,6 +41,7 @@ class NeuralEngineSelector {
     NeuralEngineFactory? createEngine,
     TtsErrorReporter? reportError,
     Future<DeviceMemory?> Function()? deviceMemory,
+    this.telemetry = TtsTelemetry.none,
   })  : _createEngine = createEngine ?? NeuralTtsEngine.new,
         _reportError = reportError,
         _deviceMemory = deviceMemory ?? OnnxTtsPlatform.instance.deviceMemory;
@@ -53,6 +58,7 @@ class NeuralEngineSelector {
   Future<void> _checkDeviceMemory() async {
     try {
       final memory = await _deviceMemory();
+      if (memory != null) telemetry.deviceMemory(memory);
       if (!_isDisposed && memory != null && memory.isTooSmallForNeuralTts) {
         tts.fallBackToSystemVoices(NeuralTtsFallback.lowMemoryDevice);
       }

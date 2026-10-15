@@ -85,6 +85,30 @@ class _VoicePacksScreenState extends State<VoicePacksScreen> {
   }
 }
 
+/// A line on a [VoicePackCard] about why its voices can't be used.
+class _Note extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _Note({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: colors.tertiary),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text)),
+        ],
+      ),
+    );
+  }
+}
+
 /// One voice pack: its name, size, languages and license, and what can be
 /// done with it.
 class VoicePackCard extends StatelessWidget {
@@ -150,6 +174,13 @@ class VoicePackCard extends StatelessWidget {
             ),
             VoicePackLanguages(
                 pack: pack, highlightLanguage: highlightLanguage),
+            switch (context.watch<TtsModel>().neuralFallback) {
+              NeuralTtsFallback.lowMemoryDevice =>
+                _Note(icon: Icons.memory, text: l10n.voicePackLowMemory),
+              NeuralTtsFallback.loadFailed when installed != null => _Note(
+                  icon: Icons.warning_amber, text: l10n.voicePackLoadFailed),
+              _ => const SizedBox.shrink(),
+            },
             if (task != null)
               _InstallProgress(pack: pack, task: task)
             else if (error != null)

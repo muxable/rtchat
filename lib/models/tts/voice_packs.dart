@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:on_device_tts/on_device_tts.dart';
+import 'package:rtchat/models/tts/telemetry.dart';
 
 /// The voice packs for the settings screens: the catalog, what is installed,
 /// and the installs in progress, kept up to date as packs come and go.
@@ -18,6 +19,13 @@ class VoicePacksModel extends ChangeNotifier {
   /// voices and the voice pack settings are hidden.
   final bool isSupported;
 
+  /// Told each step of the installs started here: the install funnel.
+  final TtsTelemetry telemetry;
+
+  /// How long an install waits for Wi-Fi before it counts as waiting for it
+  /// ([PackInstallStage.waitingForWifi]); downloads queue briefly anyway.
+  final Duration wifiWaitThreshold;
+
   List<VoicePack> _packs = const [];
   Map<String, InstalledVoicePack> _installed = const {};
   final _statuses = <String, VoicePackStatus>{};
@@ -31,8 +39,16 @@ class VoicePacksModel extends ChangeNotifier {
   StreamSubscription<void>? _changes;
   Future<void>? _loading;
   var _isDisposed = false;
+  // when each install started here began, for its duration; kept across a
+  // restart over mobile data.
+  final _installStarts = <String, Stopwatch>{};
+  // installs being restarted over mobile data: their cancellation isn't one.
+  final _restarting = <String>{};
 
-  VoicePacksModel(this.repository, {bool? isSupported})
+  VoicePacksModel(this.repository,
+      {bool? isSupported,
+      this.telemetry = TtsTelemetry.none,
+      this.wifiWaitThreshold = const Duration(seconds: 5)})
       : isSupported =
             repository != null && (isSupported ?? platformSupportsNeuralVoices);
 
@@ -139,9 +155,11 @@ class VoicePacksModel extends ChangeNotifier {
     if (repository == null) return null;
     _errors.remove(pack.id);
     final metered = allowMetered ?? _allowMobileData;
-    if (repository.task(pack.id) == null) _metered[pack.id] = metered;
+    final isNew = repository.task(pack.id) == null;
+    if (isNew) _metered[pack.id] = metered;
     final task = repository.install(pack, allowMetered: metered);
     _statuses[pack.id] = VoicePackStatus.installing;
+    if (isNew) _measure(task, metered);
     _follow(task);
     _notify();
     return task;
@@ -152,11 +170,13 @@ class VoicePacksModel extends ChangeNotifier {
   Future<void> installOverMobileData(VoicePack pack) async {
     final running = task(pack.id);
     if (running != null) {
+      _restarting.add(pack.id);
       running.cancel();
       await running.done.then((_) {}, onError: (_) {});
     }
     if (_isDisposed) return;
     install(pack, allowMetered: true);
+    _restarting.remove(pack.id);
   }
 
   /// Cancels the install of pack [id]. An installed version stays.
@@ -167,8 +187,61 @@ class VoicePacksModel extends ChangeNotifier {
     final repository = this.repository;
     if (repository == null) return;
     _errors.remove(id);
+    final installed = _installed[id];
     await repository.delete(id);
+    if (installed != null) {
+      telemetry.packInstall(PackInstallStage.deleted,
+          packId: id, sizeBytes: installed.sizeOnDisk);
+    }
     await refresh();
+  }
+
+  /// Tells [telemetry] how the install [task], started here, goes.
+  void _measure(VoicePackInstallTask task, bool metered) {
+    final pack = task.pack;
+    // a restart over mobile data carries on the same install.
+    final isRestart = _restarting.contains(pack.id);
+    final stopwatch = isRestart
+        ? (_installStarts[pack.id] ??= Stopwatch()..start())
+        : (_installStarts[pack.id] = Stopwatch()..start());
+    void send(PackInstallStage stage, {String? error}) =>
+        telemetry.packInstall(stage,
+            packId: pack.id,
+            sizeBytes: pack.downloadSize,
+            duration: stage == PackInstallStage.started ||
+                    stage == PackInstallStage.waitingForWifi
+                ? null
+                : stopwatch.elapsed,
+            error: error,
+            overMobileData: metered);
+    if (!isRestart) send(PackInstallStage.started);
+
+    Timer? waiting;
+    var waitedForWifi = false;
+    final progress = task.progress.listen((progress) {
+      if (progress.phase != VoicePackInstallPhase.waiting) {
+        waiting?.cancel();
+        waiting = null;
+      } else if (!waitedForWifi && waiting == null && waitsForWifi(pack.id)) {
+        waiting = Timer(wifiWaitThreshold, () {
+          waitedForWifi = true;
+          send(PackInstallStage.waitingForWifi);
+        });
+      }
+    }, onError: (Object _) {});
+    task.done.then((_) {
+      send(PackInstallStage.completed);
+    }, onError: (Object e) {
+      if (e is VoicePackCancelledException) {
+        if (!_restarting.contains(pack.id)) send(PackInstallStage.cancelled);
+      } else {
+        send(PackInstallStage.failed, error: installErrorType(e));
+      }
+    }).whenComplete(() {
+      waiting?.cancel();
+      progress.cancel();
+      if (!_restarting.contains(pack.id)) _installStarts.remove(pack.id);
+    });
   }
 
   void _follow(VoicePackInstallTask task) {

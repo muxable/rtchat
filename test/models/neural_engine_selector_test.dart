@@ -5,6 +5,7 @@ import 'package:on_device_tts/on_device_tts.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/neural_engine_selector.dart';
 
+import '../fakes/fake_telemetry.dart';
 import '../fakes/fake_tts_engine.dart';
 
 /// A [VoicePackRepository] with packs installed in memory.
@@ -227,6 +228,20 @@ void main() {
       await counting.refresh();
       expect(checks, 1);
       counting.dispose();
+    });
+
+    test('is told to the telemetry', () async {
+      final telemetry = FakeTtsTelemetry();
+      final told = NeuralEngineSelector(
+        repository: repository,
+        tts: tts,
+        createEngine: (_) => FakeTtsEngine(),
+        deviceMemory: () async => deviceMemory,
+        telemetry: telemetry,
+      );
+      await told.start();
+      expect(telemetry.memory, [const DeviceMemory(totalBytes: 8 << 30)]);
+      told.dispose();
     });
 
     test('an unknown device (e.g. no native engine) is allowed', () async {

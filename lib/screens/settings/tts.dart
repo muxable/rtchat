@@ -5,6 +5,7 @@ import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/voice_packs.dart';
+import 'package:rtchat/screens/settings/tts/fallback_notice.dart';
 import 'package:rtchat/screens/settings/tts/labels.dart';
 import 'package:rtchat/screens/settings/tts/voice_packs.dart';
 import 'package:rtchat/screens/settings/tts/voices.dart';
@@ -32,7 +33,10 @@ class _TextToSpeechScreenState extends State<TextToSpeechScreen> {
       body: Consumer<TtsModel>(builder: (context, model, child) {
         return ListView(
           children: [
-            if (voicePacks.isSupported) const VoicePackSuggestion(),
+            if (voicePacks.isSupported) ...[
+              const NeuralFallbackBanner(),
+              const VoicePackSuggestion(),
+            ],
             const SizedBox(height: 8),
             Center(
               child: ElevatedButton(
@@ -133,7 +137,8 @@ class VoiceSettings extends StatelessWidget {
     final theme = Theme.of(context);
     final installedCount = packs.installed.length;
     final streamLanguage = tts.readingLanguage.languageCode;
-    final isNeural = packs.hasInstalledPack;
+    // a voice pack is installed and neural voices can run on this device.
+    final isNeural = packs.hasInstalledPack && tts.neuralFallback == null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -164,7 +169,7 @@ class VoiceSettings extends StatelessWidget {
           onTap: () => Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => const VoicePacksScreen())),
         ),
-        if (isNeural) ...[
+        if (packs.hasInstalledPack) ...[
           ListTile(
             leading: const Icon(Icons.person_outline),
             title: Text(l10n.voices),

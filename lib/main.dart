@@ -29,6 +29,8 @@ import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/tts/telemetry.dart';
+import 'package:rtchat/models/tts/telemetry_engine.dart';
 import 'package:rtchat/models/tts/neural_engine_selector.dart';
 import 'package:rtchat/models/tts/voice_packs.dart';
 import 'package:rtchat/models/user.dart';
@@ -98,7 +100,11 @@ void main() async {
       category: AVAudioSessionCategory.ambient,
     ),
   ));
-  runApp(App(prefs: prefs, voicePacks: voicePacks));
+  runApp(App(
+    prefs: prefs,
+    voicePacks: voicePacks,
+    ttsTelemetry: SessionTtsTelemetry(FirebaseTelemetrySink()),
+  ));
 }
 
 class App extends StatefulWidget {
@@ -108,10 +114,17 @@ class App extends StatefulWidget {
   /// with its voice; without a repository, only with the system voices.
   final VoicePackRepository? voicePacks;
 
+  /// Measures text to speech: engines, latency, fallbacks, pack installs.
+  final TtsTelemetry ttsTelemetry;
+
   static final observer =
       FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance);
 
-  const App({super.key, required this.prefs, this.voicePacks});
+  const App(
+      {super.key,
+      required this.prefs,
+      this.voicePacks,
+      this.ttsTelemetry = TtsTelemetry.none});
 
   @override
   State<App> createState() => _AppState();
@@ -122,11 +135,23 @@ class _AppState extends State<App> {
   Timer? _discoModeTimer;
   NeuralEngineSelector? _neuralEngineSelector;
   MemoryPressureMonitor? _memoryPressureMonitor;
+  // sends the text to speech summary as the app goes to the background,
+  // where it may be killed.
+  late final _lifecycleListener = AppLifecycleListener(
+      onHide: widget.ttsTelemetry.flush, onDetach: widget.ttsTelemetry.flush);
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycleListener;
+  }
 
   @override
   void dispose() {
+    _lifecycleListener.dispose();
     _neuralEngineSelector?.dispose();
     _memoryPressureMonitor?.dispose();
+    widget.ttsTelemetry.dispose();
     super.dispose();
   }
 
@@ -166,18 +191,32 @@ class _AppState extends State<App> {
           update: (context, userModel, model) => model!..update(userModel),
         ),
         ChangeNotifierProvider<VoicePacksModel>(
-            create: (context) => VoicePacksModel(widget.voicePacks)),
+            create: (context) => VoicePacksModel(widget.voicePacks,
+                telemetry: widget.ttsTelemetry)),
         ChangeNotifierProxyProvider<ViewsModel, TtsModel>(
           create: (context) {
-            final model = TtsModel.fromJson(jsonDecode(
-                widget.prefs.getString("tts", defaultValue: '{}').getValue()));
+            final telemetry = widget.ttsTelemetry;
+            final model = TtsModel.fromJson(
+                jsonDecode(widget.prefs
+                    .getString("tts", defaultValue: '{}')
+                    .getValue()),
+                // rate-limited, and without what was being read.
+                reportError: telemetry == TtsTelemetry.none
+                    ? null
+                    : telemetry.recordError,
+                telemetry: telemetry);
             final voicePacks = widget.voicePacks;
             if (voicePacks != null) {
               _neuralEngineSelector = NeuralEngineSelector(
                 repository: voicePacks,
                 tts: model,
-                reportError: (error, stack) =>
-                    FirebaseCrashlytics.instance.recordError(error, stack),
+                createEngine: (pack) =>
+                    TelemetryTtsEngine.neural(NeuralTtsEngine(pack), telemetry),
+                reportError: telemetry == TtsTelemetry.none
+                    ? (error, stack) =>
+                        FirebaseCrashlytics.instance.recordError(error, stack)
+                    : telemetry.recordError,
+                telemetry: telemetry,
               )..start();
               // neural models take hundreds of megabytes: free them when
               // the system runs short, and load them again for the next

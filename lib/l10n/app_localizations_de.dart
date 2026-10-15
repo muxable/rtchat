@@ -1306,4 +1306,37 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get notNow => 'Not now';
+
+  @override
+  String get neuralFallbackLowMemoryTitle => 'Using the system voice';
+
+  @override
+  String get neuralFallbackLowMemoryBody =>
+      'This device doesn\'t have enough memory for neural voices, so chat is read with your phone\'s system voice.';
+
+  @override
+  String get neuralFallbackLoadFailedTitle => 'Neural voice couldn\'t start';
+
+  @override
+  String get neuralFallbackLoadFailedBody =>
+      'The neural voice couldn\'t be loaded, so chat is read with your phone\'s system voice until the app restarts.';
+
+  @override
+  String get neuralFallbackLowMemorySnackBar =>
+      'Not enough memory for neural voices: chat is read with the system voice';
+
+  @override
+  String get neuralFallbackLoadFailedSnackBar =>
+      'The neural voice couldn\'t start: chat is read with the system voice';
+
+  @override
+  String get gotIt => 'Got it';
+
+  @override
+  String get voicePackLowMemory =>
+      'This device doesn\'t have enough memory for neural voices';
+
+  @override
+  String get voicePackLoadFailed =>
+      'Neural voices couldn\'t be loaded on this device this time; the system voice is reading chat';
 }

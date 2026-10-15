@@ -1815,5 +1815,41 @@
   "notNow": "Not now",
   "@notNow": {
     "description": "Dismisses a suggestion"
+    },
+  "neuralFallbackLowMemoryTitle": "Using the system voice",
+  "@neuralFallbackLowMemoryTitle": {
+    "description": "Title of a one-time notice: neural voices are off because the phone has too little memory"
+  },
+  "neuralFallbackLowMemoryBody": "This device doesn't have enough memory for neural voices, so chat is read with your phone's system voice.",
+  "@neuralFallbackLowMemoryBody": {
+    "description": "One-time notice: neural voices are off because the phone has too little memory, and the phone's own text-to-speech voice reads chat instead"
+  },
+  "neuralFallbackLoadFailedTitle": "Neural voice couldn't start",
+  "@neuralFallbackLoadFailedTitle": {
+    "description": "Title of a one-time notice: the neural voice failed to load (e.g. it ran out of memory)"
+  },
+  "neuralFallbackLoadFailedBody": "The neural voice couldn't be loaded, so chat is read with your phone's system voice until the app restarts.",
+  "@neuralFallbackLoadFailedBody": {
+    "description": "One-time notice: the neural voice failed to load, and the phone's own text-to-speech voice reads chat for the rest of this session"
+  },
+  "neuralFallbackLowMemorySnackBar": "Not enough memory for neural voices: chat is read with the system voice",
+  "@neuralFallbackLowMemorySnackBar": {
+    "description": "Short one-time message at the bottom of the chat screen when neural voices are off because the phone has too little memory"
+  },
+  "neuralFallbackLoadFailedSnackBar": "The neural voice couldn't start: chat is read with the system voice",
+  "@neuralFallbackLoadFailedSnackBar": {
+    "description": "Short one-time message at the bottom of the chat screen when the neural voice failed to load"
+  },
+  "gotIt": "Got it",
+  "@gotIt": {
+    "description": "Dismisses a notice the user has read"
+  },
+  "voicePackLowMemory": "This device doesn't have enough memory for neural voices",
+  "@voicePackLowMemory": {
+    "description": "Shown on a voice pack card when the phone has too little memory to use neural voices"
+  },
+  "voicePackLoadFailed": "Neural voices couldn't be loaded on this device this time; the system voice is reading chat",
+  "@voicePackLoadFailed": {
+    "description": "Shown on a voice pack card when the neural voice failed to load in this session"
   }
 }
