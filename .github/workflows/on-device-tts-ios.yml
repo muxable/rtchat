@@ -168,8 +168,6 @@ jobs:
           pod repo update
           flutter pub get
           flutter build ios --release --no-codesign
-          # pod install adds missing pods to the lock file; show it if it did.
-          git diff --exit-code ios/Podfile.lock || echo "::warning::ios/Podfile.lock is out of date (diff above)"
 
       - name: Check the embedded frameworks
         run: |
