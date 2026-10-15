@@ -21,7 +21,9 @@
 /// repository.
 library;
 
+export 'src/device_memory.dart';
 export 'src/language_tags.dart';
+export 'src/memory_pressure.dart';
 export 'src/neural_tts_engine.dart';
 export 'src/onnx/onnx_tts.dart';
 export 'src/onnx/onnx_tts_platform.dart';

@@ -59,6 +59,17 @@ itself and streams the audio out as it is synthesized.
 0.7..2.0, the way `flutter_tts` maps it to Android's speech rate. `pitch` is
 ignored: Supertonic has no pitch control.
 
+### Memory
+
+A loaded Supertonic 3 model takes 300 to 600 MB. `MemoryPressureMonitor`
+calls back when the system is short of memory, so the app can `release()`
+its engines: on Android it listens to the plugin's critical trim levels
+(not to going to the background), elsewhere to Flutter's
+`didHaveMemoryPressure`. `OnnxTtsPlatform.deviceMemory()` reports the
+device's memory (Android), and `DeviceMemory.isTooSmallForNeuralTts` is true
+on low-RAM devices and under 2.5 GiB. A model that fails to load throws a
+`NeuralTtsLoadException`.
+
 ## VoiceRouter
 
 ```dart
