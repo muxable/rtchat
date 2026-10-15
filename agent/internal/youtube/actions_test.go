@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+// TestActionContract checks the full event mapping for each renderer. Its
+// actions are hand-built; TestLiveChat checks real ones.
 func TestActionContract(t *testing.T) {
 	now := time.Unix(1700000000, 0).UTC()
 	common := `"id":"item","timestampUsec":"1700000000123456","authorName":{"simpleText":"@Given"},"authorExternalChannelId":"author","authorPhoto":{"thumbnails":[{"url":"large","width":64,"height":64},{"url":"small","width":32,"height":32}]},"authorBadges":[{"liveChatAuthorBadgeRenderer":{"icon":{"iconType":"OWNER"}}},{"liveChatAuthorBadgeRenderer":{"icon":{"iconType":"MODERATOR"}}},{"liveChatAuthorBadgeRenderer":{"icon":{"iconType":"VERIFIED"}}},{"liveChatAuthorBadgeRenderer":{"customThumbnail":{"thumbnails":[{"url":"member"}]}}}],`
@@ -41,8 +43,11 @@ func TestActionContract(t *testing.T) {
 	}
 }
 
-// testdata/actions holds InnerTube actions, mostly anonymized real captures,
-// with the LiveChatMessage the app parser expects for each.
+// testdata/actions holds InnerTube actions with the LiveChatMessage the app
+// parser expects for each. Each file's "source" says whether it is an
+// anonymized real capture or was constructed by hand; the constructed ones
+// pin down shapes we have not captured, so they assert behavior, not that
+// YouTube sends them. TestLiveChat checks real traffic.
 func TestActionTestdata(t *testing.T) {
 	now := time.Unix(1700000000, 0).UTC()
 	files, err := filepath.Glob("testdata/actions/*.json")
@@ -56,11 +61,18 @@ func TestActionTestdata(t *testing.T) {
 				t.Fatal(err)
 			}
 			var tc struct {
+				Source string          `json:"source"`
 				Action json.RawMessage `json:"action"`
 				Event  json.RawMessage `json:"event"`
 			}
 			if err := json.Unmarshal(b, &tc); err != nil {
 				t.Fatal(err)
+			}
+			switch {
+			case strings.HasPrefix(tc.Source, "constructed"):
+				t.Logf("hand-built: %s", tc.Source)
+			case !strings.HasPrefix(tc.Source, "anonymized real capture"):
+				t.Fatalf("source %q must start with \"anonymized real capture\" or \"constructed\"", tc.Source)
 			}
 			data := actionData("channel", "video", tc.Action, now)
 			if data == nil {
