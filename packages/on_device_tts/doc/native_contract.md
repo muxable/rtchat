@@ -33,8 +33,11 @@ within a process.
 
 Loads the sessions once; every later call with the handle reuses them.
 `numThreads` is ONNX Runtime's intra-op thread count. With `xnnpack` it is
-XNNPACK's thread pool instead, the session's own pool gets 1 thread and
-`session.intra_op.allow_spinning=0`, as ONNX Runtime recommends.
+XNNPACK's thread pool instead, and the session's own pool gets 1 thread, as
+ONNX Runtime recommends. Every session sets
+`session.intra_op.allow_spinning=0`, whatever the provider, so idle intra-op
+threads block instead of busy-waiting between messages (iOS here; Android
+from #1531).
 
 A provider that is unknown, not available on the platform (`nnapi` on iOS,
 `coreml` on Android) or that fails to take a model **falls back to `cpu`**
@@ -107,8 +110,20 @@ cut the utterance off (also `null`).
   so it mixes with other audio, like the system TTS through `flutter_tts`.
   iOS plays through an `AVAudioPlayerNode` on an `AVAudioEngine` in the app's
   `flutter_tts` setup: the `playback` category with `mixWithOthers`, in the
-  `voicePrompt` mode. An audio session interruption (a call, Siri) ends the
-  utterance with a `stopped` event.
+  `voicePrompt` mode, asserted and activated before every utterance (other
+  audio in the app changes the shared session) and never deactivated, as
+  `flutter_tts` leaves it.
+* The audio output can end an utterance early. iOS: an audio session
+  interruption (a call, Siri), a configuration change that stops the audio
+  engine (a route or format change, e.g. AirPods connecting) and the
+  playing device going away (headphones unplugged) end it with a `stopped`
+  event carrying a `message`; `speak` returns `null`. While a call holds the
+  session, `speak` ends the same way at once, without audio. A media services
+  reset ends it with `error` (`speak_failed`). The engine rebuilds its audio
+  graph on the next `speak`; it never resumes the cut-off utterance.
+* A watchdog ends an utterance with `error` (`speak_failed`) if the audio
+  written so far hasn't been reported as played a few seconds (iOS: 5) after
+  it should have, so a lost completion can't leave the engine `busy`.
 
 Errors: `bad_args` (unknown handle or voice, `steps` out of range, missing
 arguments), `busy`, `speak_failed` (synthesis or playback failed after the
@@ -158,7 +173,7 @@ Each event is a map:
 | `utteranceId` | `String` | from `speak` |
 | `type` | `String` | `firstAudio`, `done`, `stopped` or `error` |
 | `elapsedMs` | `int` | milliseconds since the native side received the `speak` call |
-| `message` | `String?` | for `error` |
+| `message` | `String?` | for `error`, and for `stopped` when the engine stopped the utterance itself |
 
 Per utterance: at most one `firstAudio`, then exactly one of `done`,
 `stopped` or `error`. `firstAudio` is sent once the first block of PCM has

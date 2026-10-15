@@ -209,11 +209,26 @@ public final class SupertonicModel {
     vocoder = sessions[3]
   }
 
-  private static func sessionOptions(numThreads: Int, provider: String, variant: String?) throws
-    -> ORTSessionOptions
-  {
+  /// Session config entries set for every provider. ONNX Runtime's
+  /// intra-op threads busy-wait for work by default, after each parallel
+  /// section and for a while after a run. Chat arrives a message at a time
+  /// with idle gaps, so spinning only burns the battery; blocking costs
+  /// little latency (see `doc/native_contract.md`). Sessions run
+  /// sequentially, so there is no inter-op pool to configure.
+  static let sessionConfig = ["session.intra_op.allow_spinning": "0"]
+
+  /// The options for a session on `provider`. `configEntry` sees each
+  /// config entry set (ONNX Runtime can't read them back), for tests.
+  static func sessionOptions(
+    numThreads: Int, provider: String, variant: String?,
+    configEntry: ((String, String) -> Void)? = nil
+  ) throws -> ORTSessionOptions {
     let options = try ORTSessionOptions()
     try options.setGraphOptimizationLevel(.all)
+    for (key, value) in sessionConfig.sorted(by: { $0.key < $1.key }) {
+      try options.addConfigEntry(withKey: key, value: value)
+      configEntry?(key, value)
+    }
     switch provider {
     case "cpu":
       try options.setIntraOpNumThreads(Int32(numThreads))
@@ -228,9 +243,8 @@ public final class SupertonicModel {
       ])
     case "xnnpack":
       // As ONNX Runtime recommends: XNNPACK gets the threads, the session's
-      // own pool one thread that doesn't spin.
+      // own pool one thread.
       try options.setIntraOpNumThreads(1)
-      try options.addConfigEntry(withKey: "session.intra_op.allow_spinning", value: "0")
       let xnnpack = ORTXnnpackExecutionProviderOptions()
       xnnpack.intra_op_num_threads = Int32(numThreads)
       try options.appendXnnpackExecutionProvider(with: xnnpack)

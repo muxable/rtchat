@@ -2,10 +2,12 @@ import Foundation
 
 /// Where `OnnxTtsEngine` plays audio. `AudioOutput` is the real one.
 protocol PcmOutput: AnyObject {
-  var onInterrupted: ((String) -> Void)? { get set }
+  var onEvent: ((AudioOutputEvent) -> Void)? { get set }
+  /// After a media services reset; the engine then makes a new output.
+  var invalidated: Bool { get }
   func start(sampleRate: Int) throws
   func schedule(_ pcm: [Float], completion: @escaping () -> Void)
-  func play()
+  func play() throws
   func stop()
   func idle()
 }
@@ -42,9 +44,15 @@ public final class OnnxTtsEngine {
     label: "on_device_tts.load", qos: .userInitiated, attributes: .concurrent)
   /// Runs all synthesis, for `speak` and `synthesize`, in order.
   private let inferenceQueue = DispatchQueue(label: "on_device_tts.inference", qos: .userInitiated)
-  private var output: PcmOutput?
+  /// Built on the first `speak`, and again after a media services reset.
+  private(set) var output: PcmOutput?
   private let makeOutput: () -> PcmOutput
   private var current: SpeakJob?
+  /// How long past the end of the audio scheduled so far the engine waits
+  /// for the player to report it played, before it gives up on the
+  /// utterance with an `error` (so a lost completion can't leave the engine
+  /// `busy` for good).
+  var watchdogMargin: TimeInterval = 5
 
   public convenience init() {
     self.init(makeOutput: { AudioOutput() })
@@ -202,12 +210,20 @@ public final class OnnxTtsEngine {
       completion(OnnxTtsError("busy", "Already speaking \(active.utteranceId)"))
       return
     }
-    let job = SpeakJob(utteranceId: utteranceId, start: received, completion: completion)
+    let job = SpeakJob(
+      utteranceId: utteranceId, start: received, sampleRate: model.sampleRate,
+      completion: completion)
     current = job
 
     let output: PcmOutput
     do {
       output = try startOutput(sampleRate: model.sampleRate)
+    } catch let error as AudioSessionInterrupted {
+      // A call holds the session: nothing can play until it ends. Not a
+      // failure of the engine, so the message is skipped quietly.
+      OnnxTtsEngine.log("not speaking \(utteranceId): \(error.localizedDescription)")
+      finish(job, type: "stopped", message: error.localizedDescription)
+      return
     } catch {
       finish(job, type: "error", message: "audio output failed: \(error.localizedDescription)")
       return
@@ -242,13 +258,13 @@ public final class OnnxTtsEngine {
   }
 
   private func startOutput(sampleRate: Int) throws -> PcmOutput {
+    if let stale = output, stale.invalidated {
+      output = nil
+    }
     let output = self.output ?? makeOutput()
     if self.output == nil {
-      output.onInterrupted = { [weak self] reason in
-        guard let self = self, let job = self.current else { return }
-        OnnxTtsEngine.log("stopping \(job.utteranceId): \(reason)")
-        self.cancel(job)
-        self.finish(job, type: "stopped", message: reason)
+      output.onEvent = { [weak self, weak output] event in
+        self?.handle(event, from: output)
       }
       self.output = output
     }
@@ -256,8 +272,39 @@ public final class OnnxTtsEngine {
     return output
   }
 
+  /// Ends the active utterance when the audio output cut it off. The output
+  /// rebuilds itself on the next `speak`; after a media services reset it is
+  /// dropped and a new one is made.
+  private func handle(_ event: AudioOutputEvent, from source: PcmOutput?) {
+    if event == .mediaServicesReset, let source = source, source === output {
+      // Its audio objects are invalid: don't touch them again.
+      output = nil
+    }
+    guard let job = current else { return }
+    let (type, message) = OnnxTtsEngine.outcome(of: event)
+    OnnxTtsEngine.log("ending \(job.utteranceId) (\(type)): \(message)")
+    cancel(job)
+    finish(job, type: type, message: message)
+  }
+
+  /// The terminal event type and message for an utterance that `event`
+  /// cut off.
+  static func outcome(of event: AudioOutputEvent) -> (type: String, message: String) {
+    switch event {
+    case .interrupted: return ("stopped", "audio session interrupted")
+    case .configurationChanged: return ("stopped", "audio configuration changed")
+    case .deviceRemoved: return ("stopped", "audio device removed")
+    case .mediaServicesReset: return ("error", "media services were reset")
+    }
+  }
+
   private func enqueue(_ pcm: [Float], for job: SpeakJob, on output: PcmOutput) {
     guard current === job, !job.cancellation.isCancelled else { return }
+    // When this buffer should have finished playing: after what is still
+    // queued, or from now if nothing is.
+    let now = DispatchTime.now()
+    let startsAt = job.pendingBuffers > 0 ? max(job.playedBy, now) : now
+    job.playedBy = startsAt + Double(pcm.count) / Double(job.sampleRate)
     job.pendingBuffers += 1
     output.schedule(pcm) {
       DispatchQueue.main.async {
@@ -266,11 +313,37 @@ public final class OnnxTtsEngine {
         self.finishIfPlayed(job)
       }
     }
+    // Every time, not just for the first buffer: if the engine stopped
+    // since, this starts it again (or fails) instead of queueing audio that
+    // never plays.
+    do {
+      try output.play()
+    } catch {
+      cancel(job)
+      finish(job, type: "error", message: "audio output failed: \(error.localizedDescription)")
+      return
+    }
+    armWatchdog(job)
     if !job.startedAudio {
       job.startedAudio = true
-      output.play()
       emit(job, type: "firstAudio")
     }
+  }
+
+  /// Fails the utterance if the audio queued so far hasn't been reported as
+  /// played `watchdogMargin` seconds after it should have.
+  private func armWatchdog(_ job: SpeakJob) {
+    job.watchdog?.cancel()
+    let watchdog = DispatchWorkItem { [weak self, weak job] in
+      guard let self = self, let job = job, self.current === job, job.pendingBuffers > 0 else {
+        return
+      }
+      OnnxTtsEngine.log("\(job.utteranceId): playback stalled, giving up")
+      self.cancel(job)
+      self.finish(job, type: "error", message: "audio playback stalled")
+    }
+    job.watchdog = watchdog
+    DispatchQueue.main.asyncAfter(deadline: job.playedBy + watchdogMargin, execute: watchdog)
   }
 
   private func finishIfPlayed(_ job: SpeakJob) {
@@ -298,6 +371,8 @@ public final class OnnxTtsEngine {
   private func finish(_ job: SpeakJob, type: String, message: String? = nil) {
     guard current === job else { return }
     current = nil
+    job.watchdog?.cancel()
+    job.watchdog = nil
     if type != "done" {
       output?.stop()
     }
@@ -391,13 +466,21 @@ final class SpeakJob {
   let start: DispatchTime
   let cancellation = Cancellation()
   let ahead = Gate(limit: 2)
+  let sampleRate: Int
   var pendingBuffers = 0
+  /// When the audio scheduled so far should have finished playing.
+  var playedBy = DispatchTime.now()
+  var watchdog: DispatchWorkItem?
   var synthesisDone = false
   var startedAudio = false
 
-  init(utteranceId: String, start: DispatchTime, completion: @escaping (OnnxTtsError?) -> Void) {
+  init(
+    utteranceId: String, start: DispatchTime, sampleRate: Int,
+    completion: @escaping (OnnxTtsError?) -> Void
+  ) {
     self.utteranceId = utteranceId
     self.start = start
+    self.sampleRate = sampleRate
     self.completion = completion
   }
 }

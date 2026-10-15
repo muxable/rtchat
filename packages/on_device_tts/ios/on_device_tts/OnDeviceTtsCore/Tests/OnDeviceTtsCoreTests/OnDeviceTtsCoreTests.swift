@@ -1,3 +1,4 @@
+import AVFoundation
 import XCTest
 
 @testable import OnDeviceTtsCore
@@ -270,13 +271,14 @@ struct ChannelFailure: Error {
 /// Drives `OnnxTtsEngine` with the channel contract's method names and
 /// arguments, as `OnDeviceTtsPlugin` does for Dart.
 class ChannelHarness {
-  let engine = OnnxTtsEngine()
+  let engine: OnnxTtsEngine
   var events = [[String: Any]]()
   var onEvent: (([String: Any]) -> Void)?
   let test: XCTestCase
 
-  init(_ test: XCTestCase) {
+  init(_ test: XCTestCase, engine: OnnxTtsEngine = OnnxTtsEngine()) {
     self.test = test
+    self.engine = engine
     engine.onEvent = { [weak self] event in
       guard let self = self else { return }
       self.events.append(event)
@@ -609,6 +611,276 @@ class SpeakTests: XCTestCase {
       harness.events.filter { $0["utteranceId"] as? String == "next" }.map { $0["type"] as! String },
       ["firstAudio", "done"])
     XCTAssertFalse(harness.events.dropFirst(2).contains { $0["utteranceId"] as? String == "long" })
+  }
+}
+
+extension ChannelHarness {
+  /// The event types sent for `utteranceId`, in order.
+  func types(_ utteranceId: String) -> [String] {
+    events.filter { $0["utteranceId"] as? String == utteranceId }.map { $0["type"] as! String }
+  }
+
+  func speakArgs(_ utteranceId: String, _ handle: String, segments: [String]) -> [String: Any] {
+    [
+      "handle": handle, "utteranceId": utteranceId, "segments": segments, "language": "en",
+      "voiceId": "F1", "steps": 2,
+    ]
+  }
+
+  /// Speaks a short message and checks that it plays to the end.
+  func speaksToTheEnd(_ utteranceId: String, _ handle: String, file: StaticString = #filePath, line: UInt = #line) {
+    let result = call("speak", speakArgs(utteranceId, handle, segments: ["Okay."]))
+    XCTAssertNil(result as? ChannelFailure, "\(String(describing: result))", file: file, line: line)
+    XCTAssertEqual(types(utteranceId), ["firstAudio", "done"], file: file, line: line)
+  }
+}
+
+/// A `PcmOutput` whose buffers never finish playing, or whose `play` fails.
+final class FakeOutput: PcmOutput {
+  var onEvent: ((AudioOutputEvent) -> Void)?
+  var invalidated = false
+  var playError: Error?
+  private(set) var scheduled = 0
+
+  func start(sampleRate: Int) throws {}
+  func schedule(_ pcm: [Float], completion: @escaping () -> Void) {
+    // Dropped: the completion never runs, as if the player lost it.
+    scheduled += 1
+  }
+  func play() throws {
+    if let error = playError { throw error }
+  }
+  func stop() {}
+  func idle() {}
+}
+
+/// `AudioOutput` on its own, without the model.
+class AudioOutputTests: XCTestCase {
+  func testPlayRestartsAStoppedEngineInsteadOfCrashing() throws {
+    let output = AudioOutput()
+    // Before `start` there is nothing to play on.
+    XCTAssertThrowsError(try output.play())
+    try output.start(sampleRate: 44100)
+    output.schedule([Float](repeating: 0, count: 4410)) {}
+    // As an interruption or a configuration change would.
+    output.engine.stop()
+    XCTAssertFalse(output.engine.isRunning)
+    // `AVAudioPlayerNode.play()` on a stopped engine raises an exception
+    // that would end the test process.
+    XCTAssertNoThrow(try output.play())
+    XCTAssertTrue(output.engine.isRunning)
+    XCTAssertTrue(output.player.isPlaying)
+    output.idle()
+  }
+
+  func testRebuildsTheGraphAfterAConfigurationChange() throws {
+    let output = AudioOutput()
+    var events = [AudioOutputEvent]()
+    output.onEvent = { events.append($0) }
+    try output.start(sampleRate: 44100)
+    let engine = output.engine
+    engine.stop()
+    NotificationCenter.default.post(name: .AVAudioEngineConfigurationChange, object: engine)
+    XCTAssertEqual(events, [.configurationChanged])
+    XCTAssertTrue(output.stale)
+    // Another engine's change isn't ours.
+    NotificationCenter.default.post(name: .AVAudioEngineConfigurationChange, object: AVAudioEngine())
+    XCTAssertEqual(events, [.configurationChanged])
+    output.idle()
+    try output.start(sampleRate: 44100)
+    XCTAssertFalse(output.engine === engine)
+    XCTAssertTrue(output.engine.isRunning)
+    XCTAssertFalse(output.stale)
+    output.idle()
+  }
+
+  func testInterruptions() throws {
+    let output = AudioOutput()
+    var events = [AudioOutputEvent]()
+    output.onEvent = { events.append($0) }
+    try output.start(sampleRate: 44100)
+    func post(_ type: AVAudioSession.InterruptionType, _ extra: [AnyHashable: Any] = [:]) {
+      NotificationCenter.default.post(
+        name: AVAudioSession.interruptionNotification, object: nil,
+        userInfo: extra.merging([AVAudioSessionInterruptionTypeKey: type.rawValue]) { $1 })
+    }
+    // A stale `.began` delivered on resume from suspension is ignored.
+    post(.began, [AVAudioSessionInterruptionReasonKey: AVAudioSession.InterruptionReason.appWasSuspended.rawValue])
+    post(.began, ["AVAudioSessionInterruptionWasSuspendedKey": true])
+    XCTAssertEqual(events, [])
+    XCTAssertFalse(output.interrupted)
+
+    post(.began)
+    XCTAssertEqual(events, [.interrupted])
+    XCTAssertTrue(output.interrupted)
+    output.idle()
+    // Not resumed on `.ended`; the next start works.
+    post(.ended)
+    XCTAssertFalse(output.interrupted)
+    XCTAssertEqual(events, [.interrupted])
+    try output.start(sampleRate: 44100)
+    XCTAssertTrue(output.engine.isRunning)
+    output.idle()
+
+    // Between utterances an interruption sends nothing.
+    post(.began)
+    XCTAssertEqual(events, [.interrupted])
+    post(.ended)
+  }
+
+  func testActivationRefusedDuringACallIsTransient() {
+    let output = AudioOutput()
+    output.configureSession = {
+      throw NSError(
+        domain: NSOSStatusErrorDomain, code: AVAudioSession.ErrorCode.cannotInterruptOthers.rawValue)
+    }
+    XCTAssertThrowsError(try output.start(sampleRate: 44100)) {
+      XCTAssertTrue($0 is AudioSessionInterrupted, "\($0)")
+    }
+    output.configureSession = { throw NSError(domain: "other", code: 1) }
+    XCTAssertThrowsError(try output.start(sampleRate: 44100)) {
+      XCTAssertFalse($0 is AudioSessionInterrupted, "\($0)")
+    }
+  }
+
+  func testMediaServicesResetInvalidatesTheOutput() throws {
+    let output = AudioOutput()
+    var events = [AudioOutputEvent]()
+    output.onEvent = { events.append($0) }
+    NotificationCenter.default.post(name: AVAudioSession.mediaServicesWereResetNotification, object: nil)
+    XCTAssertEqual(events, [.mediaServicesReset])
+    XCTAssertTrue(output.invalidated)
+    XCTAssertThrowsError(try output.start(sampleRate: 44100))
+  }
+
+  func testSessionOptionsDisableSpinningForEveryProvider() throws {
+    for provider in ["cpu", "xnnpack", "coreml"] {
+      var entries = [String: String]()
+      do {
+        _ = try SupertonicModel.sessionOptions(
+          numThreads: 2, provider: provider, variant: nil, configEntry: { entries[$0] = $1 })
+      } catch where provider == "coreml" {
+        // Only if CoreML isn't built in; the entries are set before that.
+      }
+      XCTAssertEqual(entries["session.intra_op.allow_spinning"], "0", provider)
+    }
+  }
+}
+
+/// How `speak` recovers when the audio output fails under it.
+class AudioRecoveryTests: XCTestCase {
+  func testConfigurationChangeMidSpeakEndsItAndClearsBusy() throws {
+    let harness = ChannelHarness(self)
+    let handle = try harness.load()
+    let segments = (1...4).map { "This is sentence number \($0) of a message that keeps going." }
+    var result: Any? = "unset"
+    harness.onEvent = { event in
+      guard event["type"] as? String == "firstAudio" else { return }
+      // What the system does on a route or format change: stop the engine,
+      // then post the notification.
+      let output = harness.engine.output as! AudioOutput
+      output.engine.stop()
+      NotificationCenter.default.post(name: .AVAudioEngineConfigurationChange, object: output.engine)
+    }
+    let done = harness.start("speak", harness.speakArgs("u1", handle, segments: segments)) {
+      result = $0
+    }
+    wait(for: [done], timeout: 120)
+    harness.onEvent = nil
+    XCTAssertNil(result as? ChannelFailure)
+    XCTAssertEqual(harness.types("u1"), ["firstAudio", "stopped"])
+    XCTAssertEqual(
+      harness.events.last?["message"] as? String, "audio configuration changed")
+    // Not `busy`: the next message plays on a rebuilt engine.
+    harness.speaksToTheEnd("u2", handle)
+  }
+
+  func testSpeaksAfterMediaServicesReset() throws {
+    let harness = ChannelHarness(self)
+    let handle = try harness.load()
+    harness.speaksToTheEnd("before", handle)
+    let first = try XCTUnwrap(harness.engine.output)
+
+    // Mid-utterance: it fails, and the output is dropped.
+    let segments = (1...4).map { "This is sentence number \($0) of a message that keeps going." }
+    harness.onEvent = { event in
+      guard event["type"] as? String == "firstAudio" else { return }
+      NotificationCenter.default.post(
+        name: AVAudioSession.mediaServicesWereResetNotification, object: nil)
+    }
+    let result = harness.call("speak", harness.speakArgs("during", handle, segments: segments))
+    harness.onEvent = nil
+    XCTAssertEqual((result as? ChannelFailure)?.code, "speak_failed")
+    XCTAssertEqual(harness.types("during"), ["firstAudio", "error"])
+    XCTAssertNil(harness.engine.output)
+
+    // Between utterances.
+    harness.speaksToTheEnd("after", handle)
+    let second = try XCTUnwrap(harness.engine.output)
+    XCTAssertFalse(second === first)
+    NotificationCenter.default.post(name: AVAudioSession.mediaServicesWereResetNotification, object: nil)
+    XCTAssertNil(harness.engine.output)
+    harness.speaksToTheEnd("again", handle)
+    XCTAssertFalse(harness.engine.output === second)
+  }
+
+  func testWatchdogFailsAnUtteranceWhosePlaybackNeverFinishes() throws {
+    let output = FakeOutput()
+    let engine = OnnxTtsEngine(makeOutput: { output })
+    engine.watchdogMargin = 0.5
+    let harness = ChannelHarness(self, engine: engine)
+    let handle = try harness.load()
+    let start = Date()
+    let result = harness.call("speak", harness.speakArgs("stalled", handle, segments: ["Hello there."]))
+    let elapsed = Date().timeIntervalSince(start)
+    XCTAssertEqual((result as? ChannelFailure)?.code, "speak_failed")
+    XCTAssertEqual(harness.types("stalled"), ["firstAudio", "error"])
+    XCTAssertEqual(harness.events.last?["message"] as? String, "audio playback stalled")
+    XCTAssertGreaterThan(output.scheduled, 0)
+    print("WATCHDOG fired after \(Int(elapsed * 1000)) ms")
+    XCTAssertLessThan(elapsed, 30)
+    // Not `busy` afterwards.
+    let again = harness.call("speak", harness.speakArgs("again", handle, segments: ["Hi."]))
+    XCTAssertEqual((again as? ChannelFailure)?.code, "speak_failed")
+    XCTAssertEqual(harness.types("again"), ["firstAudio", "error"])
+  }
+
+  func testPlayFailureFailsTheUtterance() throws {
+    let output = FakeOutput()
+    output.playError = NSError(
+      domain: "on_device_tts", code: 9, userInfo: [NSLocalizedDescriptionKey: "engine won't start"])
+    let engine = OnnxTtsEngine(makeOutput: { output })
+    engine.watchdogMargin = 0.2
+    let harness = ChannelHarness(self, engine: engine)
+    let handle = try harness.load()
+    let result = harness.call("speak", harness.speakArgs("u1", handle, segments: ["Hi.", "There."]))
+    XCTAssertEqual((result as? ChannelFailure)?.code, "speak_failed")
+    XCTAssertEqual(harness.types("u1"), ["error"])
+    XCTAssertEqual(
+      harness.events.last?["message"] as? String, "audio output failed: engine won't start")
+    output.playError = nil
+    // Not `busy` (it then stalls on the fake output, which is fine here).
+    let next = harness.call("speak", harness.speakArgs("u2", handle, segments: ["Hi."]))
+    XCTAssertNotEqual((next as? ChannelFailure)?.code, "busy")
+  }
+
+  func testSpeakDuringACallIsStoppedNotFailed() throws {
+    let engine = OnnxTtsEngine(makeOutput: {
+      let output = AudioOutput()
+      output.configureSession = {
+        throw NSError(
+          domain: NSOSStatusErrorDomain, code: AVAudioSession.ErrorCode.insufficientPriority.rawValue)
+      }
+      return output
+    })
+    let harness = ChannelHarness(self, engine: engine)
+    let handle = try harness.load()
+    let result = harness.call("speak", harness.speakArgs("call", handle, segments: ["Hi."]))
+    XCTAssertNil(result as? ChannelFailure)
+    XCTAssertEqual(harness.types("call"), ["stopped"])
+    // Once the call is over, speaking works again.
+    (engine.output as! AudioOutput).configureSession = AudioOutput.configureSharedSession
+    harness.speaksToTheEnd("after", handle)
   }
 }
 
