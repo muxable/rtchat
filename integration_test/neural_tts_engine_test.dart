@@ -146,13 +146,10 @@ void main() {
     // The pack exactly as the bundled catalog describes it, so the engine
     // finds the model through the catalog's config paths.
     final catalogPack =
-        VoicePackCatalog.parse(bundledVoicePackCatalogJson).packs.singleWhere(
-              (pack) => pack.id == 'supertonic-3',
-            );
+        bundledVoicePacks.singleWhere((pack) => pack.id == 'supertonic-3');
     engine = NeuralTtsEngine(InstalledVoicePack(
       pack: catalogPack,
       directory: modelDir,
-      catalogVersion: 1,
       sizeOnDisk: 0,
       installedAt: DateTime.now(),
     ));

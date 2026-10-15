@@ -1,19 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 
-import 'archive_extractor.dart';
 import 'bundled_catalog.dart';
-import 'download_policy.dart';
 import 'installed_voice_pack.dart';
 import 'pack_downloader.dart';
-import 'voice_pack_catalog.dart';
+import 'voice_pack.dart';
 import 'voice_pack_exceptions.dart';
 
 /// Where a pack stands on this device.
@@ -25,7 +21,6 @@ enum VoicePackInstallPhase {
   waiting,
   downloading,
   verifying,
-  extracting,
   done,
 }
 
@@ -107,116 +102,44 @@ class VoicePackInstallTask {
 ///   finished while the app wasn't running is used by the next install.
 /// * `staging/`, `trash/`: where packs are put together and taken apart, so
 ///   `packs/<id>` is always either the old pack or the new one.
-/// * `catalog.json`: the last catalog fetched from [catalogUrl].
 class VoicePackRepository {
   /// The directory everything is stored in.
   final Directory directory;
-
-  /// Where to fetch the latest catalog from, or null to only use the
-  /// bundled one.
-  final Uri? catalogUrl;
 
   /// Whether downloads wait for Wi-Fi unless the caller allows mobile data
   /// for one install.
   final bool wifiOnly;
 
-  /// The app's version, e.g. `1.4.0`, to leave out packs that need a newer
-  /// app. Null to not check.
-  final String? appVersion;
-
-  final http.Client _client;
-  final bool _ownsClient;
+  final List<VoicePack> _packs;
   final PackDownloader _downloader;
-  final String _bundledCatalogJson;
-  final FreeSpaceCheck? _freeSpace;
-  final bool _extractInIsolate;
 
   final _tasks = <String, VoicePackInstallTask>{};
   final _changes = StreamController<void>.broadcast();
   Future<void> _manifestLock = Future.value();
-  Future<VoicePackCatalog>? _catalog;
   Future<void>? _started;
 
-  /// [client] fetches the catalog. Files download in the background with
-  /// [BackgroundPackDownloader] unless [downloader] says otherwise, which is
-  /// for tests. [freeSpace], when given, is checked before downloading.
+  /// Offers [packs], [bundledVoicePacks] by default. Files download in the
+  /// background with [BackgroundPackDownloader] unless [downloader] says
+  /// otherwise, which is for tests.
   VoicePackRepository({
     required this.directory,
-    this.catalogUrl,
     this.wifiOnly = true,
-    this.appVersion,
-    http.Client? client,
+    List<VoicePack>? packs,
     @visibleForTesting PackDownloader? downloader,
-    String bundledCatalogJson = bundledVoicePackCatalogJson,
-    FreeSpaceCheck? freeSpace,
-    bool extractInIsolate = true,
-  })  : _client = client ?? http.Client(),
-        _ownsClient = client == null,
-        _downloader = downloader ?? BackgroundPackDownloader(),
-        _bundledCatalogJson = bundledCatalogJson,
-        _freeSpace = freeSpace,
-        _extractInIsolate = extractInIsolate;
+  })  : _packs = packs ?? bundledVoicePacks,
+        _downloader = downloader ?? BackgroundPackDownloader();
 
   Directory get _packsDir => Directory(p.join(directory.path, 'packs'));
   Directory get _downloadsDir => Directory(p.join(directory.path, 'downloads'));
   Directory get _stagingDir => Directory(p.join(directory.path, 'staging'));
   Directory get _trashDir => Directory(p.join(directory.path, 'trash'));
   File get _manifestFile => File(p.join(directory.path, 'installed.json'));
-  File get _catalogFile => File(p.join(directory.path, 'catalog.json'));
 
   /// The directory pack [id] is or would be installed in.
   Directory packDirectory(String id) => Directory(p.join(_packsDir.path, id));
 
-  /// The catalog the package ships with.
-  VoicePackCatalog get bundledCatalog =>
-      VoicePackCatalog.parse(_bundledCatalogJson);
-
-  /// The newest catalog among the bundled one, the last one fetched, and,
-  /// with [refresh] or on the first call, the one at [catalogUrl].
-  Future<VoicePackCatalog> catalog({bool refresh = false}) {
-    if (refresh || _catalog == null) _catalog = _loadCatalog();
-    return _catalog!;
-  }
-
-  Future<VoicePackCatalog> _loadCatalog() async {
-    var best = bundledCatalog;
-    void consider(VoicePackCatalog candidate) {
-      if (candidate.version > best.version) best = candidate;
-    }
-
-    try {
-      if (await _catalogFile.exists()) {
-        consider(VoicePackCatalog.parse(await _catalogFile.readAsString()));
-      }
-    } on Exception catch (e) {
-      debugPrint('ignoring the saved voice pack catalog: $e');
-    }
-    final url = catalogUrl;
-    if (url != null) {
-      try {
-        final response =
-            await _client.get(url).timeout(const Duration(seconds: 20));
-        if (response.statusCode != 200) {
-          throw HttpException('HTTP ${response.statusCode}', uri: url);
-        }
-        final body = utf8.decode(response.bodyBytes);
-        consider(VoicePackCatalog.parse(body));
-        await _writeAtomically(_catalogFile, body);
-      } on Exception catch (e) {
-        debugPrint('using a local voice pack catalog: $e');
-      }
-    }
-    return best;
-  }
-
-  /// The catalog's packs that this package and app can install.
-  Future<List<VoicePack>> availablePacks({bool refresh = false}) async {
-    final version = appVersion;
-    return (await catalog(refresh: refresh))
-        .packs
-        .where((pack) => version == null || pack.isCompatibleWith(version))
-        .toList();
-  }
+  /// The packs that can be installed.
+  Future<List<VoicePack>> availablePacks() async => _packs;
 
   /// The installed packs, by id.
   Future<Map<String, InstalledVoicePack>> installedPacks() async {
@@ -251,16 +174,6 @@ class VoicePackRepository {
     return installed.isOutdatedBy(pack)
         ? VoicePackStatus.upgradeAvailable
         : VoicePackStatus.installed;
-  }
-
-  /// The installed packs that [catalog] has a newer version of.
-  Future<List<VoicePack>> upgrades({VoicePackCatalog? catalog}) async {
-    final latest = catalog ?? await this.catalog();
-    final installed = await installedPacks();
-    return [
-      for (final pack in latest.packs)
-        if (installed[pack.id]?.isOutdatedBy(pack) ?? false) pack,
-    ];
   }
 
   /// The install of pack [id] in progress, or null.
@@ -301,14 +214,11 @@ class VoicePackRepository {
   Future<InstalledVoicePack> _install(
       VoicePackInstallTask task, bool allowMetered) async {
     final pack = task.pack;
-    if (!pack.isSupported) {
-      throw VoicePackUnsupportedException(
-          '${pack.id} has an unsupported model type or archive format');
-    }
-    final version = appVersion;
-    if (version != null && !pack.isCompatibleWith(version)) {
-      throw VoicePackUnsupportedException(
-          '${pack.id} needs app version ${pack.minAppVersion}');
+    for (final file in pack.files) {
+      if (!isSafeRelativePath(file.path)) {
+        throw VoicePackUnsupportedException(
+            '${pack.id} has a file outside its directory: ${file.path}');
+      }
     }
     await _start();
     task._throwIfCancelled();
@@ -317,7 +227,6 @@ class VoicePackRepository {
       for (final file in pack.files)
         File(p.join(_downloadsDir.path, file.sha256)),
     ];
-    await _checkFreeSpace(pack, downloads);
 
     final staging = Directory(p.join(_stagingDir.path, pack.id));
     try {
@@ -345,35 +254,17 @@ class VoicePackRepository {
       }
 
       task._throwIfCancelled();
-      report(VoicePackInstallPhase.extracting);
       if (await staging.exists()) await staging.delete(recursive: true);
-      await staging.create(recursive: true);
       for (var i = 0; i < pack.files.length; i++) {
-        task._throwIfCancelled();
-        final file = pack.files[i];
-        final target = p.join(staging.path, file.path);
-        final archive = file.archive;
-        if (archive == null) {
-          await Directory(p.dirname(target)).create(recursive: true);
-          await downloads[i].rename(target);
-        } else {
-          await _extract(
-            archivePath: downloads[i].path,
-            type: archive,
-            destination: target,
-            scratchPath: p.join(_stagingDir.path, '${pack.id}.tar'),
-            stripComponents: file.stripComponents,
-            inIsolate: _extractInIsolate,
-          );
-          await downloads[i].delete();
-        }
+        final target = p.join(staging.path, pack.files[i].path);
+        await Directory(p.dirname(target)).create(recursive: true);
+        await downloads[i].rename(target);
       }
       task._throwIfCancelled();
 
       final installed = InstalledVoicePack(
         pack: pack,
         directory: packDirectory(pack.id).path,
-        catalogVersion: (await catalog()).version,
         sizeOnDisk: await _sizeOf(staging),
         installedAt: DateTime.now(),
       );
@@ -385,12 +276,6 @@ class VoicePackRepository {
       });
       return installed;
     } on VoicePackCancelledException {
-      for (final download in downloads) {
-        await _deleteQuietly(download);
-      }
-      rethrow;
-    } on VoicePackArchiveException {
-      // The archive matched its checksum, so downloading it again won't help.
       for (final download in downloads) {
         await _deleteQuietly(download);
       }
@@ -505,51 +390,6 @@ class VoicePackRepository {
     }
   }
 
-  // Static so the closure sent to the isolate captures only its arguments.
-  static Future<void> _extract({
-    required String archivePath,
-    required VoicePackArchiveType type,
-    required String destination,
-    required String scratchPath,
-    required int stripComponents,
-    required bool inIsolate,
-  }) async {
-    void extract() => extractArchive(
-          archivePath: archivePath,
-          type: type,
-          destination: destination,
-          scratchPath: scratchPath,
-          stripComponents: stripComponents,
-        );
-    if (inIsolate) {
-      await Isolate.run(extract);
-    } else {
-      extract();
-    }
-  }
-
-  Future<void> _checkFreeSpace(VoicePack pack, List<File> downloads) async {
-    final freeSpace = _freeSpace;
-    if (freeSpace == null) return;
-    final available = await freeSpace(directory.path);
-    if (available == null) return;
-    var required = 0;
-    for (var i = 0; i < pack.files.length; i++) {
-      final file = pack.files[i];
-      final have = await _isDownloaded(file, downloads[i]) ? file.size : 0;
-      // An archive also needs room for the decompressed tar and the
-      // extracted files; this guesses each at twice the download.
-      required +=
-          (file.size - have) + (file.archive == null ? 0 : 4 * file.size);
-    }
-    if (available < required) {
-      throw VoicePackInsufficientSpaceException(
-          '${pack.id} needs $required bytes, $available are free',
-          required,
-          available);
-    }
-  }
-
   /// Puts [staging] at [target], keeping the old [target] until the new one
   /// is in place.
   Future<void> _swapIn(Directory staging, Directory target) async {
@@ -606,8 +446,7 @@ class VoicePackRepository {
     if (all) await _deleteQuietly(_downloadsDir);
   }
 
-  /// Cancels running installs and closes the HTTP client if the repository
-  /// created it.
+  /// Cancels running installs.
   Future<void> dispose() async {
     final running = _tasks.values.toList();
     for (final task in running) {
@@ -616,7 +455,6 @@ class VoicePackRepository {
     for (final task in running) {
       await task.done.then((_) {}, onError: (_) {});
     }
-    if (_ownsClient) _client.close();
     await _changes.close();
   }
 
