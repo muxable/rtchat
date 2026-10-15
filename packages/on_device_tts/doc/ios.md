@@ -4,11 +4,10 @@ The Swift implementation of `native_contract.md`.
 
 ## Layout
 
-- `ios/on_device_tts/`: the Flutter plugin (`OnDeviceTtsPlugin`), as a Swift
-  package for Flutter's Swift Package Manager integration. It only maps
-  channel calls to `OnnxTtsEngine`.
-- `ios/on_device_tts/OnDeviceTtsCore/`: the engine, as a Swift package without Flutter, so
-  it can be built and tested on its own. The plugin package depends on it.
+- `ios/on_device_tts/Sources/on_device_tts/`: the Flutter plugin class
+  (`OnDeviceTtsPlugin`). It only maps channel calls to `OnnxTtsEngine`.
+- `ios/on_device_tts/OnDeviceTtsCore/`: the engine, as a Swift package without
+  Flutter, so it can be built and tested on its own.
   - `OnnxTtsEngine.swift`: model handles, `speak` (pipelining and playback),
     `synthesize`, `stop`, events.
   - `AudioOutput.swift`: `AVAudioEngine` and `AVAudioPlayerNode`.
@@ -18,12 +17,37 @@ The Swift implementation of `native_contract.md`.
   - `Tests/`: XCTests, including real synthesis.
   - `tool/make_parity_fixture.py`: makes the tests' small reference fixture
     with the official `supertonic` Python package.
-- `ios/on_device_tts.podspec`: the same sources for CocoaPods.
+- `ios/on_device_tts.podspec`: how the app builds the plugin. It compiles the
+  plugin class and the engine's sources into one module.
+
+### Why CocoaPods, not Swift Package Manager
+
+The plugin deliberately has no `ios/on_device_tts/Package.swift`, so
+Flutter's Swift Package Manager integration falls back to the podspec. With
+one, build 202610151321 of 2.10.10 was rejected by App Store Connect:
+
+> ITMS-90208: Invalid Bundle - The bundle Runner.app/Frameworks/onnxruntime.framework
+> does not support the minimum OS Version specified in the Info.plist.
+
+Microsoft's Swift package ships ONNX Runtime as a *static* xcframework. Xcode
+linked it into the app binary but also embedded an empty dynamic
+`onnxruntime.framework` wrapper, built for the app's deployment target
+(binary minos 15.5) with the xcframework's `Info.plist`
+(`MinimumOSVersion` 15.1), and App Store Connect rejects a framework whose
+binary needs a newer iOS than its plist says. With CocoaPods
+(`static_framework = true`, the static `onnxruntime-c` pod) ONNX Runtime is
+linked into the app binary and no framework is embedded for it.
+
+Nothing in CI catches this: the app builds and runs fine, and only App Store
+processing after upload rejects it. So don't add a `Package.swift` to this
+plugin (for example to silence Flutter's "do not support Swift Package
+Manager" warning) unless ONNX Runtime ships as a dynamic framework whose
+`Info.plist` matches its binary.
 
 ONNX Runtime is the official build (MIT), pinned to **1.24.2** in both the
-podspec (`onnxruntime-objc`) and the Swift package (Microsoft's
-`onnxruntime-swift-package-manager`, whose newest release is 1.24.2), so the
-tests run the binary the app ships. It needs iOS 15.1; the app targets 15.5.
+podspec (`onnxruntime-objc`) and the `OnDeviceTtsCore` Swift package
+(Microsoft's `onnxruntime-swift-package-manager`, whose newest release is
+1.24.2), so the tests run the same ONNX Runtime version the app ships. It needs iOS 15.1; the app targets 15.5.
 
 ## Running the tests
 

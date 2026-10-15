@@ -32,9 +32,11 @@ Android and iOS implementations share.
 
 On Android the plugin depends on `com.microsoft.onnxruntime:onnxruntime-android`
 (pinned in `android/build.gradle.kts`), which adds its native library to
-every ABI. On iOS it depends on `onnxruntime-objc` 1.24.2 (CocoaPods) or
-Microsoft's `onnxruntime-swift-package-manager` 1.24.2 (Swift Package
-Manager), which need iOS 15.1; `doc/ios.md` describes the iOS side.
+every ABI. On iOS the app builds the plugin with CocoaPods only, so that
+ONNX Runtime (`onnxruntime-objc` 1.24.2, which needs iOS 15.1) is linked
+statically: through Flutter's Swift Package Manager integration it was
+embedded as an `onnxruntime.framework` that App Store Connect rejects
+(ITMS-90208). `doc/ios.md` describes the iOS side.
 
 ## Tests
 

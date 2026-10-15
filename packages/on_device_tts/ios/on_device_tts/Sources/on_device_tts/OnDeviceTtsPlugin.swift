@@ -1,16 +1,13 @@
 import Flutter
 import Foundation
 
-// With Swift Package Manager the engine is the OnDeviceTtsCore package; with
-// CocoaPods its sources are compiled into this module.
-#if canImport(OnDeviceTtsCore)
-  import OnDeviceTtsCore
-#endif
+// The engine (OnDeviceTtsCore's sources) is compiled into this module by
+// on_device_tts.podspec, so there is nothing to import.
 
 /// The iOS side of `on_device_tts`'s ONNX Runtime engine: the
 /// `on_device_tts/onnx` method channel and the `on_device_tts/onnx/events`
 /// event channel. See `doc/native_contract.md`; the engine itself is
-/// `OnnxTtsEngine` in `ios/OnDeviceTtsCore`.
+/// `OnnxTtsEngine` in `ios/on_device_tts/OnDeviceTtsCore`.
 public class OnDeviceTtsPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   let engine = OnnxTtsEngine()
   private var eventSink: FlutterEventSink?
