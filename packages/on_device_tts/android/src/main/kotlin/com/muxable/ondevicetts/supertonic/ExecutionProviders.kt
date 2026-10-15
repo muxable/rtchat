@@ -12,6 +12,8 @@ internal object ExecutionProviders {
     const val NNAPI = "nnapi"
     const val COREML = "coreml"
 
+    const val ALLOW_SPINNING = "session.intra_op.allow_spinning"
+
     /**
      * Creates a session for [file] on `settings.provider` and returns it with
      * the provider it really uses. A provider that's unknown, unavailable
@@ -38,14 +40,19 @@ internal object ExecutionProviders {
         val options = OrtSession.SessionOptions()
         try {
             val threads = settings.numThreads.coerceAtLeast(1)
+            // By default the intra-op threads busy-wait for more work after
+            // each parallel section, and for a while after a run ends. Chat
+            // comes a message at a time with idle gaps, so spinning burns the
+            // battery for nothing; blocking costs little latency (see
+            // doc/native_contract.md, "Threads").
+            options.addConfigEntry(ALLOW_SPINNING, "0")
             when (settings.provider) {
                 CPU -> options.setIntraOpNumThreads(threads)
                 XNNPACK -> {
                     // As ONNX Runtime recommends for XNNPACK: it gets the
-                    // threads, and the CPU provider's pool doesn't spin.
+                    // threads, and the CPU provider's pool has none.
                     options.addXnnpack(mapOf("intra_op_num_threads" to threads.toString()))
                     options.setIntraOpNumThreads(1)
-                    options.addConfigEntry("session.intra_op.allow_spinning", "0")
                 }
                 NNAPI -> {
                     options.setIntraOpNumThreads(threads)
