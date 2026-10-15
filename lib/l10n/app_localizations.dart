@@ -1764,6 +1764,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t install {pack}. Check your connection and try again.'**
   String voicePackInstallFailed(String pack);
+
+  /// Title of the screen that picks the neural voice for each language, and of the row in the text to speech settings that opens it
+  ///
+  /// In en, this message translates to:
+  /// **'Voices'**
+  String get voices;
+
+  /// Switch that gives each viewer in chat their own neural voice
+  ///
+  /// In en, this message translates to:
+  /// **'Per-viewer voice'**
+  String get perViewerVoice;
+
+  /// Explains the per-viewer voice switch and what the voice picked for a language reads
+  ///
+  /// In en, this message translates to:
+  /// **'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.'**
+  String get perViewerVoiceSubtitle;
+
+  /// Marks the language of the stream being watched in a list of languages
+  ///
+  /// In en, this message translates to:
+  /// **'Stream language'**
+  String get streamLanguage;
 }
 
 class _AppLocalizationsDelegate

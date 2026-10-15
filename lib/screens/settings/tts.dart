@@ -5,6 +5,7 @@ import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/voice_packs.dart';
 import 'package:rtchat/screens/settings/tts/voice_packs.dart';
+import 'package:rtchat/screens/settings/tts/voices.dart';
 
 class TextToSpeechScreen extends StatelessWidget {
   const TextToSpeechScreen({super.key});
@@ -38,6 +39,15 @@ class TextToSpeechScreen extends StatelessWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => const VoicePacksScreen())),
+              ),
+            if (context.watch<VoicePacksModel>().isSupported &&
+                model.neuralEngine != null)
+              ListTile(
+                leading: const Icon(Icons.person_outline),
+                title: Text(AppLocalizations.of(context)!.voices),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const VoiceLanguagesScreen())),
               ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
