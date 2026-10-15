@@ -9,6 +9,13 @@ Neural text-to-speech that runs on the device with ONNX Runtime.
   s.license          = { :type => 'Apache-2.0' }
   s.author           = { 'Muxable' => 'https://github.com/muxable' }
   s.source           = { :path => '.' }
+  # The only way the app builds this plugin: there is deliberately no
+  # on_device_tts/Package.swift for Flutter's Swift Package Manager
+  # integration, which embedded ONNX Runtime as a dynamic onnxruntime.framework
+  # that App Store Connect rejects (ITMS-90208, see doc/ios.md). With
+  # static_framework and the static onnxruntime-c pod, ONNX Runtime is linked
+  # into the app binary.
+  #
   # The plugin class, plus the engine, which on_device_tts/OnDeviceTtsCore/Package.swift
   # also builds and tests on its own.
   s.source_files = 'on_device_tts/Sources/on_device_tts/**/*.swift',
