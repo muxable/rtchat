@@ -2,6 +2,8 @@ package youtube
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -17,8 +19,9 @@ func TestActionContract(t *testing.T) {
 		{"paid", "liveChatPaidMessageRenderer", message + `,"purchaseAmountText":{"simpleText":"$5.00"}`, "superChatEvent", "hello :wave:🙂", `"superChatDetails":{"amountDisplayString":"$5.00","userComment":"hello :wave:🙂"}`},
 		{"explicit currency", "liveChatPaidMessageRenderer", message + `,"purchaseAmountText":{"simpleText":"USD 5.25"}`, "superChatEvent", "hello :wave:🙂", `"superChatDetails":{"amountDisplayString":"USD 5.25","userComment":"hello :wave:🙂","currency":"USD","amountMicros":"5250000"}`},
 		{"sticker", "liveChatPaidStickerRenderer", `"purchaseAmountText":{"simpleText":"€3.00"},"sticker":{"accessibility":{"accessibilityData":{"label":"Happy fox"}}}`, "superStickerEvent", "Happy fox", `"superStickerDetails":{"amountDisplayString":"€3.00","superStickerMetadata":{"altText":"Happy fox"}}`},
-		{"member", "liveChatMembershipItemRenderer", `"headerSubtext":{"runs":[{"text":"Welcome to Gold!"}]}`, "newSponsorEvent", "Welcome to Gold!", `"newSponsorDetails":{"memberLevelName":"Gold"}`},
-		{"milestone", "liveChatMembershipItemRenderer", message + `,"headerSubtext":{"runs":[{"text":"Member for 12 months"}]},"headerPrimaryText":{"simpleText":"Gold"}`, "memberMilestoneChatEvent", "hello :wave:🙂", `"memberMilestoneChatDetails":{"memberMonth":12,"userComment":"hello :wave:🙂","memberLevelName":"Gold"}`},
+		{"member", "liveChatMembershipItemRenderer", `"headerSubtext":{"runs":[{"text":"Welcome to Gold!"}]}`, "newSponsorEvent", "Welcome to Gold!", `"newSponsorDetails":{"memberLevelName":"Gold","isUpgrade":false}`},
+		{"upgrade", "liveChatMembershipItemRenderer", `"headerSubtext":{"runs":[{"text":"Upgraded membership to "},{"text":"Gold"},{"text":"!"}]}`, "newSponsorEvent", "Upgraded membership to Gold!", `"newSponsorDetails":{"memberLevelName":"Gold","isUpgrade":true}`},
+		{"milestone", "liveChatMembershipItemRenderer", message + `,"headerPrimaryText":{"runs":[{"text":"Member for "},{"text":"12"},{"text":" months"}]},"headerSubtext":{"simpleText":"Gold"}`, "memberMilestoneChatEvent", "hello :wave:🙂", `"memberMilestoneChatDetails":{"memberMonth":12,"userComment":"hello :wave:🙂","memberLevelName":"Gold"}`},
 		{"gifting", "liveChatSponsorshipsGiftPurchaseAnnouncementRenderer", `"header":{"liveChatSponsorshipsHeaderRenderer":{"primaryText":{"runs":[{"text":"Gifted "},{"text":"5"},{"text":" memberships"}]}}}`, "membershipGiftingEvent", "Gifted 5 memberships", `"membershipGiftingDetails":{"giftMembershipsCount":5}`},
 		{"redemption", "liveChatSponsorshipsGiftRedemptionAnnouncementRenderer", message + `,"headerSubtext":{"simpleText":"Welcome to Gold!"}`, "giftMembershipReceivedEvent", "hello :wave:🙂", `"giftMembershipReceivedDetails":{"memberLevelName":"Gold"}`},
 	}
@@ -37,6 +40,60 @@ func TestActionContract(t *testing.T) {
 		})
 	}
 }
+
+// testdata/actions holds InnerTube actions, mostly anonymized real captures,
+// with the LiveChatMessage the app parser expects for each.
+func TestActionTestdata(t *testing.T) {
+	now := time.Unix(1700000000, 0).UTC()
+	files, err := filepath.Glob("testdata/actions/*.json")
+	if err != nil || len(files) == 0 {
+		t.Fatal("missing testdata", err)
+	}
+	for _, file := range files {
+		t.Run(filepath.Base(file), func(t *testing.T) {
+			b, err := os.ReadFile(file)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var tc struct {
+				Action json.RawMessage `json:"action"`
+				Event  json.RawMessage `json:"event"`
+			}
+			if err := json.Unmarshal(b, &tc); err != nil {
+				t.Fatal(err)
+			}
+			data := actionData("channel", "video", tc.Action, now)
+			if data == nil {
+				t.Fatal("skipped valid action")
+			}
+			assertJSON(t, data["event"], string(tc.Event))
+		})
+	}
+}
+
+func TestMembershipLevel(t *testing.T) {
+	for _, tc := range []struct {
+		header, level string
+		upgrade       bool
+	}{
+		{`{"runs":[{"text":"Welcome to "},{"text":"Gold"},{"text":"!"}]}`, "Gold", false},
+		{`{"runs":[{"text":"Welcome to "},{"text":"Rat Boss!"},{"text":"!"}]}`, "Rat Boss!", false},
+		{`{"simpleText":"Welcome to Rat Boss!!"}`, "Rat Boss!", false},
+		{`{"simpleText":"Upgraded membership to Platinum!"}`, "Platinum", true},
+		{`{"runs":[{"text":"Upgraded membership to "},{"text":"Platinum"},{"text":"!"}]}`, "Platinum", true},
+		{`{"simpleText":"New member"}`, "", false},
+		{`{}`, "", false},
+	} {
+		var header text
+		if err := json.Unmarshal([]byte(tc.header), &header); err != nil {
+			t.Fatal(err)
+		}
+		if level, upgrade := membershipLevel(header); level != tc.level || upgrade != tc.upgrade {
+			t.Errorf("%s: got %q %v, want %q %v", tc.header, level, upgrade, tc.level, tc.upgrade)
+		}
+	}
+}
+
 func assertJSON(t *testing.T, got interface{}, want string) {
 	t.Helper()
 	b, err := json.Marshal(got)
