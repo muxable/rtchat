@@ -1,11 +1,16 @@
 #!/bin/bash
-# Runs the integration tests on the booted Android emulator. Starting the test
-# app on CI emulators occasionally hangs before any test runs, so each attempt
-# is time limited and retried once; the emulator log is dumped on failure.
+# Runs the end-to-end tests (integration_test/app_test.dart) on the booted
+# Android emulator. Starting the test app on CI emulators occasionally hangs
+# or drops the emulator before any test runs, so each attempt is time limited
+# and retried once; the emulator log is dumped on failure.
+#
+# Only app_test.dart runs here: every file is a separate build, install and
+# launch on the emulator, and the other files (the on-device TTS tests) skip
+# themselves without a model, so they only added launches that could flake.
 set -u
 
 attempt() {
-  timeout 20m flutter test integration_test --reporter expanded
+  timeout 20m flutter test integration_test/app_test.dart --reporter expanded
 }
 
 if attempt; then

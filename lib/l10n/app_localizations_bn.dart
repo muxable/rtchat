@@ -869,24 +869,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String get discoModeDisabled => '🕺 ডিস্কো মোড বন্ধ D:';
 
   @override
-  String get cloudTts => 'ক্লাউড TTS';
-
-  @override
-  String get languages => 'ভাষা';
-
-  @override
-  String get voices => 'কণ্ঠস্বর';
-
-  @override
-  String get perViewerVoice => 'প্রতি দর্শকের জন্য কণ্ঠ';
-
-  @override
-  String get perViewerVoiceSubtitle => 'কণ্ঠ শুনে আপনার দর্শকদের চিনুন';
-
-  @override
-  String get randomVoice => 'এলোমেলো';
-
-  @override
   String get playSampleMessage => 'নমুনা বার্তা চালান';
 
   @override
@@ -894,9 +876,6 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => 'টেক্সট টু স্পিচের পিচ';
-
-  @override
-  String get unlockHighQualityVoices => 'উচ্চমানের কণ্ঠ আনলক করুন';
 
   @override
   String get muteBots => 'বটের জন্য টেক্সট টু স্পিচ মিউট করুন';
@@ -909,33 +888,6 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get subscribersOnly => 'শুধু সাবস্ক্রাইবার';
-
-  @override
-  String get storeNotAvailable => 'স্টোর উপলব্ধ নয়';
-
-  @override
-  String get unavailable => 'উপলব্ধ নয়';
-
-  @override
-  String get subscribe => 'সাবস্ক্রাইব করুন';
-
-  @override
-  String get pending => 'অপেক্ষমাণ';
-
-  @override
-  String get subscribed => 'সাবস্ক্রাইব করা হয়েছে';
-
-  @override
-  String get pleaseSignIn => 'অনুগ্রহ করে সাইন ইন করুন';
-
-  @override
-  String get searchLanguages => 'ভাষা খুঁজুন';
-
-  @override
-  String get closeSearch => 'খোঁজা বন্ধ করুন';
-
-  @override
-  String get playSample => 'নমুনা চালান';
 
   @override
   String get fontSize => 'ফন্টের আকার';
@@ -1060,4 +1012,42 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'বন্ধ করুন';
+
+  @override
+  String get addChannel => 'চ্যানেল যোগ করুন';
+
+  @override
+  String get addToChat => 'চ্যাটে যোগ করুন';
+
+  @override
+  String get defaultChannels => 'ডিফল্ট চ্যানেল';
+
+  @override
+  String get defaultChannelsSubtitle =>
+      'অ্যাপ খোলার সময় যে চ্যানেলগুলো দেখানো হয়';
+
+  @override
+  String get save => 'সংরক্ষণ করুন';
+
+  @override
+  String get resetToMyChannel => 'আমার চ্যানেলে রিসেট করুন';
+
+  @override
+  String get inChat => 'চ্যাটে';
+
+  @override
+  String get removeFromChat => 'চ্যাট থেকে সরান';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'আপনার $provider অ্যাকাউন্ট এখানে চ্যাট করতে পারে না';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return '$channel প্রতিস্থাপন করুন';
+  }
+
+  @override
+  String get removeChannel => 'সরান';
 }

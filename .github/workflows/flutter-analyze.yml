@@ -16,5 +16,11 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
       - run: flutter pub get
+      # the analyzer resolves the package's files with its own dependencies.
+      - run: flutter pub get
+        working-directory: packages/on_device_tts
       - name: Run flutter analyze
         uses: invertase/github-action-dart-analyzer@v3
+      - name: Analyze on_device_tts
+        run: flutter analyze
+        working-directory: packages/on_device_tts

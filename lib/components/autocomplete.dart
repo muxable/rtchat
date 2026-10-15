@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
-import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/chat_mode.dart';
 import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/models/messages.dart';
@@ -35,13 +34,13 @@ extension _AutocompleteModeExtension on _AutocompleteMode {
 class AutocompleteWidget extends StatefulWidget {
   final TextEditingController controller;
   final Function(String) onSend;
-  final Channel channel;
+  final Future<List<Emote>> emotes;
 
   const AutocompleteWidget({
     super.key,
     required this.controller,
     required this.onSend,
-    required this.channel,
+    required this.emotes,
   });
 
   @override
@@ -50,13 +49,10 @@ class AutocompleteWidget extends StatefulWidget {
 
 class _AutocompleteWidgetState extends State<AutocompleteWidget> {
   var _autocompleteMode = _AutocompleteMode.none;
-  late Future<List<Emote>> _emotes;
 
   @override
   void initState() {
     super.initState();
-
-    _emotes = getEmotes(widget.channel);
 
     setState(() => _autocompleteMode =
         _AutocompleteModeExtension.forText(widget.controller.text));
@@ -84,7 +80,7 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
         return Container();
       case _AutocompleteMode.emote:
         return FutureBuilder(
-          future: _emotes,
+          future: widget.emotes,
           builder: (context, snapshot) {
             final lastToken = text.split(" ").last;
             if (!snapshot.hasData || lastToken.isEmpty) {

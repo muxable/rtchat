@@ -21,7 +21,6 @@ import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/chat.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
-import 'package:rtchat/models/purchases.dart';
 import 'package:rtchat/models/qr_code.dart';
 import 'package:rtchat/models/quick_links.dart';
 import 'package:rtchat/models/stream_preview.dart';
@@ -35,6 +34,7 @@ import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
+import 'package:rtchat/screens/settings/default_channels.dart';
 import 'package:rtchat/screens/settings/events.dart';
 import 'package:rtchat/screens/settings/events/channel_point.dart';
 import 'package:rtchat/screens/settings/events/cheer.dart';
@@ -50,9 +50,6 @@ import 'package:rtchat/screens/settings/quick_links.dart';
 import 'package:rtchat/screens/settings/settings.dart';
 import 'package:rtchat/screens/settings/third_party.dart';
 import 'package:rtchat/screens/settings/tts.dart';
-import 'package:rtchat/screens/settings/tts/cloud_tts_purchases.dart';
-import 'package:rtchat/screens/settings/tts/languages.dart';
-import 'package:rtchat/screens/settings/tts/voices.dart';
 import 'package:rtchat/screens/settings/twitch/badges.dart';
 import 'package:rtchat/themes.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
@@ -173,8 +170,8 @@ class _AppState extends State<App> {
                 player.play(AssetSource('message-sound.wav'));
               }
             };
-            model.channel =
-                Provider.of<ViewsModel>(context, listen: false).primaryChannel;
+            model.channels =
+                Provider.of<ViewsModel>(context, listen: false).channels;
             model.tts = Provider.of<TtsModel>(context, listen: false);
             return model
               ..addListener(() {
@@ -193,7 +190,7 @@ class _AppState extends State<App> {
               });
           },
           update: (context, views, ttsModel, model) {
-            model!.channel = views.primaryChannel;
+            model!.channels = views.channels;
             model.tts = ttsModel;
             return model;
           },
@@ -288,12 +285,6 @@ class _AppState extends State<App> {
                   .setString('stream_preview', jsonEncode(model.toJson()));
             });
         }),
-        ChangeNotifierProvider<Purchases>(
-          create: (context) => Purchases(
-            context.read<TtsModel>(),
-          ),
-          lazy: false,
-        ),
       ],
       child: Consumer<LayoutModel>(builder: (context, layoutModel, child) {
         return MaterialApp(
@@ -330,16 +321,12 @@ class _AppState extends State<App> {
             },
             '/settings': (context) => const SettingsScreen(),
             '/settings/badges': (context) => const TwitchBadgesScreen(),
+            '/settings/default-channels': (context) =>
+                const DefaultChannelsScreen(),
             '/settings/activity-feed': (context) => const ActivityFeedScreen(),
             '/settings/audio-sources': (context) => const AudioSourcesScreen(),
             '/settings/chat-history': (context) => const ChatHistoryScreen(),
             '/settings/text-to-speech': (context) => const TextToSpeechScreen(),
-            '/settings/text-to-speech/cloud-tts': (context) =>
-                const CloudTtsPurchasesScreen(),
-            '/settings/text-to-speech/languages': (context) =>
-                const LanguagesScreen(),
-            '/settings/text-to-speech/voices': (context) =>
-                const VoicesScreen(),
             '/settings/quick-links': (context) => const QuickLinksScreen(),
             '/settings/backup': (context) => const BackupScreen(),
             '/settings/third-party': (context) => const ThirdPartyScreen(),

@@ -876,24 +876,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get discoModeDisabled => '🕺 Modo disco desativado D:';
 
   @override
-  String get cloudTts => 'TTS na nuvem';
-
-  @override
-  String get languages => 'Idiomas';
-
-  @override
-  String get voices => 'Vozes';
-
-  @override
-  String get perViewerVoice => 'Voz por espectador';
-
-  @override
-  String get perViewerVoiceSubtitle => 'Identifique seus espectadores pela voz';
-
-  @override
-  String get randomVoice => 'Aleatória';
-
-  @override
   String get playSampleMessage => 'Tocar mensagem de exemplo';
 
   @override
@@ -901,9 +883,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get textToSpeechPitch => 'Tom da fala';
-
-  @override
-  String get unlockHighQualityVoices => 'Desbloquear vozes de alta qualidade';
 
   @override
   String get muteBots => 'Silenciar texto para fala de bots';
@@ -917,33 +896,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get subscribersOnly => 'Somente inscritos';
-
-  @override
-  String get storeNotAvailable => 'Loja indisponível';
-
-  @override
-  String get unavailable => 'Indisponível';
-
-  @override
-  String get subscribe => 'Inscrever-se';
-
-  @override
-  String get pending => 'Pendente';
-
-  @override
-  String get subscribed => 'Inscrito';
-
-  @override
-  String get pleaseSignIn => 'Faça login';
-
-  @override
-  String get searchLanguages => 'Pesquisar idiomas';
-
-  @override
-  String get closeSearch => 'Fechar pesquisa';
-
-  @override
-  String get playSample => 'Tocar exemplo';
 
   @override
   String get fontSize => 'Tamanho da fonte';
@@ -1069,4 +1021,41 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get turnOffTextToSpeech => 'Desativar';
+
+  @override
+  String get addChannel => 'Adicionar canal';
+
+  @override
+  String get addToChat => 'Adicionar ao chat';
+
+  @override
+  String get defaultChannels => 'Canais padrão';
+
+  @override
+  String get defaultChannelsSubtitle => 'Os canais exibidos ao abrir o app';
+
+  @override
+  String get save => 'Salvar';
+
+  @override
+  String get resetToMyChannel => 'Redefinir para meu canal';
+
+  @override
+  String get inChat => 'No chat';
+
+  @override
+  String get removeFromChat => 'Remover do chat';
+
+  @override
+  String cantChatWithAccount(String provider) {
+    return 'Sua conta da $provider não pode conversar aqui';
+  }
+
+  @override
+  String replaceChannel(String channel) {
+    return 'Substituir $channel';
+  }
+
+  @override
+  String get removeChannel => 'Remover';
 }

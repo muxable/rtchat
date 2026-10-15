@@ -20,12 +20,14 @@ If this is your first exposure to Flutter, follow the [install guide](https://fl
 
 Unit and widget tests run with `flutter test`.
 
-End-to-end tests in `integration_test/` run the full app against the Firebase emulator suite on an Android emulator or device:
+End-to-end tests in `integration_test/app_test.dart` run the full app against the Firebase emulator suite on an Android emulator or device:
 
 ```
 npx firebase-tools emulators:exec --only auth,firestore,database --project rtchat-47692 \
-  "flutter test integration_test"
+  "flutter test integration_test/app_test.dart"
 ```
+
+The other files in `integration_test/` are on-device text-to-speech tests that need a downloaded model; see `packages/on_device_tts/README.md`.
 
 ## Contributing
 

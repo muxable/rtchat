@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/adapters/messages.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/message.dart';
@@ -31,6 +31,8 @@ List<String> ids(List<MessageModel> messages) =>
     messages.map((m) => m.messageId).toList();
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('applyDeltaEvent', () {
     test('appends in-order messages and reports them', () {
       final appended = <MessageModel>[];
@@ -53,7 +55,7 @@ void main() {
       expect(ids(appended), ['b']);
     });
 
-    test('inserts out-of-order messages by timestamp without reporting', () {
+    test('inserts out-of-order messages by timestamp and reports them', () {
       final appended = <MessageModel>[];
       var messages = <MessageModel>[
         chat('a', t0),
@@ -64,13 +66,13 @@ void main() {
           AppendDeltaEvent(chat('b', t0.add(const Duration(seconds: 1)))),
           onAppend: appended.add);
       expect(ids(messages), ['a', 'b', 'c', 'd']);
-      expect(appended, isEmpty);
+      expect(ids(appended), ['b']);
 
       messages = applyDeltaEvent(messages,
           AppendDeltaEvent(chat('z', t0.subtract(const Duration(seconds: 1)))),
           onAppend: appended.add);
       expect(ids(messages), ['z', 'a', 'b', 'c', 'd']);
-      expect(appended, isEmpty);
+      expect(ids(appended), ['b', 'z']);
     });
 
     test('UpdateDeltaEvent replaces only the first matching message', () {
@@ -279,6 +281,50 @@ void main() {
         ..add(chat('c', t0, userId: 'u1'))
         ..add(streamState('s', t0));
       expect(model.authors.map((a) => a.userId).toSet(), {'u1', 'u2'});
+    });
+
+    group('message alerts', () {
+      final a = Channel('twitch', 'a', 'A');
+      final b = Channel('kick', 'b', 'B');
+      late MessagesModel model;
+      late int pings;
+
+      MessageModel from(Channel channel, String id, DateTime timestamp) =>
+          chat(id, timestamp)..channel = channel;
+
+      setUp(() {
+        pings = 0;
+        model = MessagesModel.fromJson({'pingMinGapDuration': 60})
+          ..isOnline = ((_) => Stream.value(true))
+          ..onMessagePing = (() => pings++);
+        model.addEvent(a, LiveStateDeltaEvent(t0));
+        model.addEvent(b, LiveStateDeltaEvent(t0));
+      });
+
+      test('ping on the appended message, not the previous ones', () async {
+        model.addEvent(a, AppendDeltaEvent(from(a, 'a1', t0)));
+        model.addEvent(
+            a,
+            AppendDeltaEvent(
+                from(a, 'a2', t0.add(const Duration(seconds: 10)))));
+        await pumpEventQueue();
+        expect(pings, 0);
+
+        model.addEvent(
+            a,
+            AppendDeltaEvent(
+                from(a, 'a3', t0.add(const Duration(seconds: 200)))));
+        await pumpEventQueue();
+        expect(pings, 1);
+
+        // the gap is small, so no ping even though the previous one had one.
+        model.addEvent(
+            a,
+            AppendDeltaEvent(
+                from(a, 'a4', t0.add(const Duration(seconds: 205)))));
+        await pumpEventQueue();
+        expect(pings, 1);
+      });
     });
   });
 

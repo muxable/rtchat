@@ -1,0 +1,469 @@
+{
+ "contents": {
+  "liveChatRenderer": {
+   "continuations": [
+    {
+     "invalidationContinuationData": {
+      "invalidationId": {
+       "objectSource": 1056,
+       "objectId": "Y2hhdH4xLUxwUWVrTmE5Zw==",
+       "topic": "chat~1-LpQekNa9g",
+       "subscribeToGcmTopics": true,
+       "protoCreationTimestampMs": "1791955869236"
+      },
+      "timeoutMs": 10000,
+      "continuation": "0ofMyAPOAhqeAUNpa3FKd29ZVlVOVFNqUm5hMVpETms1eWRrbEpPSFZ0ZW5SbU1FOTNFZ3N4TFV4d1VXVnJUbUU1WnhwRHFybkJ2UUU5Q2p0b2RIUndjem92TDNkM2R5NTViM1YwZFdKbExtTnZiUzlzYVhabFgyTm9ZWFFfZGoweExVeHdVV1ZyVG1FNVp5WnBjMTl3YjNCdmRYUTlNU0FDTUFBJTNEKIG9vdTjuJcDMABAAkpqCAEYACAASggQABgAIAAwAFD06aXo47iXA1gDeACiAQCqAQwQABoAIgAqBAgAEACwAQDAAQDIAfTppejjuJcD4gELCJ2nvNYGEODxk2DoAQD4AQCIAgCQAgCaAgsInae81gYQ4PGTYIgDAFDt7svU47iXA1iE8MnMuqiXA4IBBggEGAEwAIgBAKAB0f2n6OO4lwO6AQIICtABm6e81gY%3D",
+      "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg=="
+     }
+    }
+   ],
+   "actions": [
+    {
+     "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg==",
+     "addBannerToLiveChatCommand": {
+      "bannerRenderer": {
+       "liveChatBannerRenderer": {
+        "header": {
+         "liveChatBannerHeaderRenderer": {
+          "icon": {
+           "iconType": "KEEP"
+          },
+          "text": {
+           "runs": [
+            {
+             "text": "Pinned by "
+            },
+            {
+             "text": "Lofi Girl"
+            }
+           ]
+          },
+          "contextMenuButton": {
+           "buttonRenderer": {
+            "icon": {
+             "iconType": "MORE_VERT"
+            },
+            "accessibility": {
+             "label": "Chat actions"
+            },
+            "trackingParams": "CCgQ8FsiEwiM06Xo47iXAxWH1T8EHcE2MyQ=",
+            "accessibilityData": {
+             "accessibilityData": {
+              "label": "Chat actions"
+             }
+            },
+            "command": {
+             "clickTrackingParams": "CCgQ8FsiEwiM06Xo47iXAxWH1T8EHcE2MyTKAQSXN71y",
+             "commandMetadata": {
+              "webCommandMetadata": {
+               "ignoreNavigation": true
+              }
+             },
+             "liveChatItemContextMenuEndpoint": {
+              "params": "Q2g0S0hBb2FRMUEzYTJnNWNYQnRXbU5FUmxwMlNGQjNVV1JyUlVsM2EwRWFLU29uQ2hoVlExTktOR2RyVmtNMlRuSjJTVWs0ZFcxNmRHWXdUM2NTQ3pFdFRIQlJaV3RPWVRsbklBSW9CRElhQ2hoVlExTktOR2RyVmtNMlRuSjJTVWs0ZFcxNmRHWXdUM2M0QVVnQVVBRSUzRA=="
+             }
+            }
+           }
+          }
+         }
+        },
+        "contents": {
+         "liveChatTextMessageRenderer": {
+          "message": {
+           "runs": [
+            {
+             "text": "New spooky vinyl available "
+            },
+            {
+             "emoji": {
+              "emojiId": "\ud83c\udf83",
+              "shortcuts": [
+               ":jack_o_lantern:"
+              ],
+              "searchTerms": [
+               "jack",
+               "o",
+               "lantern"
+              ],
+              "image": {
+               "thumbnails": [
+                {
+                 "url": "https://fonts.gstatic.com/s/e/notoemoji/15.1/1f383/72.png"
+                }
+               ],
+               "accessibility": {
+                "accessibilityData": {
+                 "label": "\ud83c\udf83"
+                }
+               }
+              }
+             }
+            },
+            {
+             "text": " Pick your edition and pre-order yours before it's too late: "
+            },
+            {
+             "text": "https://lofigirlshop.com/en-fr/collec...",
+             "navigationEndpoint": {
+              "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg==",
+              "commandMetadata": {
+               "webCommandMetadata": {
+                "url": "https://www.youtube.com/redirect?event=live_chat&redir_token=QUZZTVljR3dMM3NMU2tCZm1td0p1cEtoOGdxN3xBSTVJdTV0eTBfcGhtMHJwUEE0blZFMFJNVHVEMjBBWWx1cXN6SkpscVVKMS1wRkVhOENjUmJvOW0yM2xoZVRUbG5laEo0YldLU29lSTZnQWVWbS1OdzJoZDdfOFZuakJfYTlP&q=https%3A%2F%2Flofigirlshop.com%2Fen-fr%2Fcollections%2Fvinyls%2Fproducts%2Fhalloween-2026-liquid-limited-edition-vinyl",
+                "webPageType": "WEB_PAGE_TYPE_UNKNOWN",
+                "rootVe": 83769
+               }
+              },
+              "urlEndpoint": {
+               "url": "https://www.youtube.com/redirect?event=live_chat&redir_token=QUZZTVljR3dMM3NMU2tCZm1td0p1cEtoOGdxN3xBSTVJdTV0eTBfcGhtMHJwUEE0blZFMFJNVHVEMjBBWWx1cXN6SkpscVVKMS1wRkVhOENjUmJvOW0yM2xoZVRUbG5laEo0YldLU29lSTZnQWVWbS1OdzJoZDdfOFZuakJfYTlP&q=https%3A%2F%2Flofigirlshop.com%2Fen-fr%2Fcollections%2Fvinyls%2Fproducts%2Fhalloween-2026-liquid-limited-edition-vinyl",
+               "target": "TARGET_NEW_WINDOW",
+               "nofollow": true
+              }
+             }
+            }
+           ]
+          },
+          "authorName": {
+           "simpleText": "Lofi Girl"
+          },
+          "authorPhoto": {
+           "thumbnails": [
+            {
+             "url": "https://yt4.ggpht.com/IcZW-YBFLCGKQ7BvC8yevab9YAG1SmkEwCd80kcYrhwb0dH39Trfp3DMsI5ZJCsp9wTE60OH428=s32-c-k-c0x00ffffff-no-rj",
+             "width": 32,
+             "height": 32
+            },
+            {
+             "url": "https://yt4.ggpht.com/IcZW-YBFLCGKQ7BvC8yevab9YAG1SmkEwCd80kcYrhwb0dH39Trfp3DMsI5ZJCsp9wTE60OH428=s64-c-k-c0x00ffffff-no-rj",
+             "width": 64,
+             "height": 64
+            }
+           ]
+          },
+          "id": "ChwKGkNQN2toOXFwbVpjREZadkhQd1Fka0VJd2tB",
+          "timestampUsec": "1790875118209398",
+          "authorBadges": [
+           {
+            "liveChatAuthorBadgeRenderer": {
+             "icon": {
+              "iconType": "VERIFIED"
+             },
+             "tooltip": "Verified",
+             "accessibility": {
+              "accessibilityData": {
+               "label": "Verified"
+              }
+             }
+            }
+           },
+           {
+            "liveChatAuthorBadgeRenderer": {
+             "icon": {
+              "iconType": "OWNER"
+             },
+             "tooltip": "Owner",
+             "accessibility": {
+              "accessibilityData": {
+               "label": "Owner"
+              }
+             }
+            }
+           }
+          ],
+          "authorExternalChannelId": "UCSJ4gkVC6NrvII8umztf0Ow",
+          "trackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMk"
+         }
+        },
+        "actionId": "ChwKGkNLTzAzdDZwbVpjREZZWG5Qd1FkTmxrc2Z3",
+        "viewerIsCreator": false,
+        "targetId": "live-chat-banner",
+        "isStackable": false,
+        "backgroundType": "LIVE_CHAT_BANNER_BACKGROUND_TYPE_STATIC",
+        "bannerProperties": {
+         "autoCollapseDelay": {
+          "seconds": "7"
+         },
+         "bannerCollapsedStateEntityKey": "EihDaHdLR2tOTFR6QXpkRFp3YlZwalJFWlpXRzVRZDFGa1RteHJjMlozIIsBKAE%3D"
+        },
+        "bannerType": "LIVE_CHAT_BANNER_TYPE_PINNED_MESSAGE"
+       }
+      }
+     }
+    },
+    {
+     "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg==",
+     "addChatItemAction": {
+      "item": {
+       "liveChatTextMessageRenderer": {
+        "message": {
+         "runs": [
+          {
+           "text": "some butterbeer sounds nice rn"
+          }
+         ]
+        },
+        "authorName": {
+         "simpleText": "@Ninjajelly09"
+        },
+        "authorPhoto": {
+         "thumbnails": [
+          {
+           "url": "https://yt4.ggpht.com/3SLvMf8qR2FLjD5E6G1uDdHbteNrzvHSaZXsDZJOQxNDJ2y6pmYPrYGOYzY97bTgEn-_0LyM=s32-c-k-c0x00ffffff-no-rj",
+           "width": 32,
+           "height": 32
+          },
+          {
+           "url": "https://yt4.ggpht.com/3SLvMf8qR2FLjD5E6G1uDdHbteNrzvHSaZXsDZJOQxNDJ2y6pmYPrYGOYzY97bTgEn-_0LyM=s64-c-k-c0x00ffffff-no-rj",
+           "width": 64,
+           "height": 64
+          }
+         ]
+        },
+        "contextMenuEndpoint": {
+         "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg==",
+         "commandMetadata": {
+          "webCommandMetadata": {
+           "ignoreNavigation": true
+          }
+         },
+         "liveChatItemContextMenuEndpoint": {
+          "params": "Q2g0S0hBb2FRMGxIZFcxeGRsVjFTbU5FUm1WaVEzZG5VV1JUUWtrNWIxRWFLU29uQ2hoVlExTktOR2RyVmtNMlRuSjJTVWs0ZFcxNmRHWXdUM2NTQ3pFdFRIQlJaV3RPWVRsbklBSW9CRElhQ2hoVlEwTmhVakpOUVhGek1WZ3lNVGhyUzJwbk1qaEVPR2M0QWtnQVVBRSUzRA=="
+         }
+        },
+        "id": "ChwKGkNJR3VtcXZVdUpjREZlYkN3Z1FkU0JJOW9R",
+        "timestampUsec": "1791951714563374",
+        "authorExternalChannelId": "UCCaR2MAqs1X218kKjg28D8g",
+        "contextMenuAccessibility": {
+         "accessibilityData": {
+          "label": "Chat actions"
+         }
+        },
+        "trackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMk"
+       }
+      },
+      "clientId": "CIGumqvUuJcDFebCwgQdSBI9oQ"
+     }
+    },
+    {
+     "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg==",
+     "addChatItemAction": {
+      "item": {
+       "liveChatTextMessageRenderer": {
+        "message": {
+         "runs": [
+          {
+           "text": "yoo"
+          }
+         ]
+        },
+        "authorName": {
+         "simpleText": "@theylostkrishna"
+        },
+        "authorPhoto": {
+         "thumbnails": [
+          {
+           "url": "https://yt4.ggpht.com/nQxzEwpZXBJSHMia2A2fZvOrZm5GEWIZQhcxETNtxg-kM1Be8wINuMPiJyR-g4qgVT0kryUk=s32-c-k-c0x00ffffff-no-rj",
+           "width": 32,
+           "height": 32
+          },
+          {
+           "url": "https://yt4.ggpht.com/nQxzEwpZXBJSHMia2A2fZvOrZm5GEWIZQhcxETNtxg-kM1Be8wINuMPiJyR-g4qgVT0kryUk=s64-c-k-c0x00ffffff-no-rj",
+           "width": 64,
+           "height": 64
+          }
+         ]
+        },
+        "contextMenuEndpoint": {
+         "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg==",
+         "commandMetadata": {
+          "webCommandMetadata": {
+           "ignoreNavigation": true
+          }
+         },
+         "liveChatItemContextMenuEndpoint": {
+          "params": "Q2g0S0hBb2FRMHcyVVdsWk0xWjFTbU5FUmxnM1VIZG5VV1JVV0RCMFVWRWFLU29uQ2hoVlExTktOR2RyVmtNMlRuSjJTVWs0ZFcxNmRHWXdUM2NTQ3pFdFRIQlJaV3RPWVRsbklBSW9CRElhQ2hoVlEySldVVm8wVHpCeFlXTnBZbXg2YjJKV2JsTjRWWGM0QWtnQVVBRSUzRA=="
+         }
+        },
+        "id": "ChwKGkNMNlFpWTNWdUpjREZYN1B3Z1FkVFgwdFFR",
+        "timestampUsec": "1791951919803701",
+        "authorExternalChannelId": "UCbVQZ4O0qaciblzobVnSxUw",
+        "contextMenuAccessibility": {
+         "accessibilityData": {
+          "label": "Chat actions"
+         }
+        },
+        "trackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMk"
+       }
+      },
+      "clientId": "CL6QiY3VuJcDFX7PwgQdTX0tQQ"
+     }
+    },
+    {
+     "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg==",
+     "addChatItemAction": {
+      "item": {
+       "liveChatTextMessageRenderer": {
+        "message": {
+         "runs": [
+          {
+           "text": "theylostkrishna!!! "
+          }
+         ]
+        },
+        "authorName": {
+         "simpleText": "@Ninjajelly09"
+        },
+        "authorPhoto": {
+         "thumbnails": [
+          {
+           "url": "https://yt4.ggpht.com/3SLvMf8qR2FLjD5E6G1uDdHbteNrzvHSaZXsDZJOQxNDJ2y6pmYPrYGOYzY97bTgEn-_0LyM=s32-c-k-c0x00ffffff-no-rj",
+           "width": 32,
+           "height": 32
+          },
+          {
+           "url": "https://yt4.ggpht.com/3SLvMf8qR2FLjD5E6G1uDdHbteNrzvHSaZXsDZJOQxNDJ2y6pmYPrYGOYzY97bTgEn-_0LyM=s64-c-k-c0x00ffffff-no-rj",
+           "width": 64,
+           "height": 64
+          }
+         ]
+        },
+        "contextMenuEndpoint": {
+         "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg==",
+         "commandMetadata": {
+          "webCommandMetadata": {
+           "ignoreNavigation": true
+          }
+         },
+         "liveChatItemContextMenuEndpoint": {
+          "params": "Q2g0S0hBb2FRMDVZWDJweFVGWjFTbU5FUm1FeE4xUkJaMlJ6VUZGVVEwRWFLU29uQ2hoVlExTktOR2RyVmtNMlRuSjJTVWs0ZFcxNmRHWXdUM2NTQ3pFdFRIQlJaV3RPWVRsbklBSW9CRElhQ2hoVlEwTmhVakpOUVhGek1WZ3lNVGhyUzJwbk1qaEVPR2M0QWtnQVVBRSUzRA=="
+         }
+        },
+        "id": "ChwKGkNOWF9qcVBWdUpjREZhMTdUQWdkc1BRVENB",
+        "timestampUsec": "1791951966035057",
+        "authorExternalChannelId": "UCCaR2MAqs1X218kKjg28D8g",
+        "contextMenuAccessibility": {
+         "accessibilityData": {
+          "label": "Chat actions"
+         }
+        },
+        "trackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMk"
+       }
+      },
+      "clientId": "CNX_jqPVuJcDFa17TAgdsPQTCA"
+     }
+    },
+    {
+     "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg==",
+     "addChatItemAction": {
+      "item": {
+       "liveChatTextMessageRenderer": {
+        "message": {
+         "runs": [
+          {
+           "text": "Hey how r ya"
+          }
+         ]
+        },
+        "authorName": {
+         "simpleText": "@Ninjajelly09"
+        },
+        "authorPhoto": {
+         "thumbnails": [
+          {
+           "url": "https://yt4.ggpht.com/3SLvMf8qR2FLjD5E6G1uDdHbteNrzvHSaZXsDZJOQxNDJ2y6pmYPrYGOYzY97bTgEn-_0LyM=s32-c-k-c0x00ffffff-no-rj",
+           "width": 32,
+           "height": 32
+          },
+          {
+           "url": "https://yt4.ggpht.com/3SLvMf8qR2FLjD5E6G1uDdHbteNrzvHSaZXsDZJOQxNDJ2y6pmYPrYGOYzY97bTgEn-_0LyM=s64-c-k-c0x00ffffff-no-rj",
+           "width": 64,
+           "height": 64
+          }
+         ]
+        },
+        "contextMenuEndpoint": {
+         "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg==",
+         "commandMetadata": {
+          "webCommandMetadata": {
+           "ignoreNavigation": true
+          }
+         },
+         "liveChatItemContextMenuEndpoint": {
+          "params": "Q2g0S0hBb2FRMHR1Wm05TFdGWjFTbU5FUmxKTlgzSlJXV1JHZFhkUFNuY2FLU29uQ2hoVlExTktOR2RyVmtNMlRuSjJTVWs0ZFcxNmRHWXdUM2NTQ3pFdFRIQlJaV3RPWVRsbklBSW9CRElhQ2hoVlEwTmhVakpOUVhGek1WZ3lNVGhyUzJwbk1qaEVPR2M0QWtnQVVBRSUzRA=="
+         }
+        },
+        "id": "ChwKGkNLbmZvS1hWdUpjREZSTV9yUVlkRnV3T0p3",
+        "timestampUsec": "1791951970514066",
+        "authorExternalChannelId": "UCCaR2MAqs1X218kKjg28D8g",
+        "contextMenuAccessibility": {
+         "accessibilityData": {
+          "label": "Chat actions"
+         }
+        },
+        "trackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMk"
+       }
+      },
+      "clientId": "CKnfoKXVuJcDFRM_rQYdFuwOJw"
+     }
+    },
+    {
+     "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg==",
+     "removeChatItemAction": {
+      "targetItemId": "ChwKGkNJSEFqOUhqdUpjREZabnhsQWtkMkFJUjFn"
+     }
+    },
+    {
+     "clickTrackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMkygEElze9cg==",
+     "addChatItemAction": {
+      "item": {
+       "liveChatViewerEngagementMessageRenderer": {
+        "id": "CjEKL0NPTU1VTklUWV9HVUlERUxJTkVTX1ZFTTIwMjYvMTAvMTMtMjI6MzE6MDkuMjM2",
+        "timestampUsec": "1791955869236918",
+        "icon": {
+         "iconType": "YOUTUBE_ROUND"
+        },
+        "message": {
+         "runs": [
+          {
+           "text": "Welcome to live chat! Remember to guard your privacy and abide by our community guidelines."
+          }
+         ]
+        },
+        "actionButton": {
+         "buttonRenderer": {
+          "style": "STYLE_BLUE_TEXT",
+          "size": "SIZE_DEFAULT",
+          "isDisabled": false,
+          "text": {
+           "simpleText": "Learn more"
+          },
+          "navigationEndpoint": {
+           "clickTrackingParams": "CCQQ8FsiEwiM06Xo47iXAxWH1T8EHcE2MyTKAQSXN71y",
+           "commandMetadata": {
+            "webCommandMetadata": {
+             "url": "//support.google.com/youtube/answer/2853856?hl=en#safe",
+             "webPageType": "WEB_PAGE_TYPE_UNKNOWN",
+             "rootVe": 83769
+            }
+           },
+           "urlEndpoint": {
+            "url": "//support.google.com/youtube/answer/2853856?hl=en#safe",
+            "target": "TARGET_NEW_WINDOW"
+           }
+          },
+          "trackingParams": "CCQQ8FsiEwiM06Xo47iXAxWH1T8EHcE2MyQ=",
+          "accessibilityData": {
+           "accessibilityData": {
+            "label": "Welcome to live chat! Remember to guard your privacy and abide by our community guidelines. Learn more"
+           }
+          }
+         }
+        },
+        "trackingParams": "CAEQl98BIhMIjNOl6OO4lwMVh9U_BB3BNjMk"
+       }
+      }
+     }
+    }
+   ]
+  }
+ }
+}

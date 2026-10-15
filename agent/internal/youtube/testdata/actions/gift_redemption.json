@@ -1,0 +1,96 @@
+{
+ "source": "anonymized real capture; no level name is sent",
+ "action": {
+  "clickTrackingParams": "x",
+  "addChatItemAction": {
+   "item": {
+    "liveChatSponsorshipsGiftRedemptionAnnouncementRenderer": {
+     "id": "redeem",
+     "timestampUsec": "1700000000123456",
+     "authorExternalChannelId": "UCviewer",
+     "authorName": {
+      "simpleText": "@Viewer"
+     },
+     "authorPhoto": {
+      "thumbnails": [
+       {
+        "url": "https://yt3.ggpht.com/viewer=s32",
+        "width": 32,
+        "height": 32
+       },
+       {
+        "url": "https://yt3.ggpht.com/viewer=s64",
+        "width": 64,
+        "height": 64
+       }
+      ]
+     },
+     "message": {
+      "runs": [
+       {
+        "text": "was gifted a membership by ",
+        "italics": true
+       },
+       {
+        "text": "@Gifter",
+        "bold": true,
+        "italics": true
+       }
+      ]
+     },
+     "authorBadges": [
+      {
+       "liveChatAuthorBadgeRenderer": {
+        "icon": {
+         "iconType": "MODERATOR"
+        },
+        "tooltip": "Moderator",
+        "accessibility": {
+         "accessibilityData": {
+          "label": "Moderator"
+         }
+        }
+       }
+      }
+     ],
+     "contextMenuEndpoint": {
+      "liveChatItemContextMenuEndpoint": {
+       "params": "x"
+      }
+     },
+     "contextMenuAccessibility": {
+      "accessibilityData": {
+       "label": "Chat actions"
+      }
+     },
+     "trackingParams": "x"
+    }
+   },
+   "clientId": "x"
+  }
+ },
+ "event": {
+  "id": "redeem",
+  "snippet": {
+   "type": "giftMembershipReceivedEvent",
+   "liveChatId": "innertube:video",
+   "authorChannelId": "UCviewer",
+   "publishedAt": "2023-11-14T22:13:20.123456Z",
+   "hasDisplayContent": true,
+   "displayMessage": "was gifted a membership by @Gifter",
+   "giftMembershipReceivedDetails": {
+    "memberLevelName": ""
+   }
+  },
+  "authorDetails": {
+   "channelId": "UCviewer",
+   "channelUrl": "https://www.youtube.com/channel/UCviewer",
+   "displayName": "@Viewer",
+   "profileImageUrl": "https://yt3.ggpht.com/viewer=s64",
+   "isVerified": false,
+   "isChatOwner": false,
+   "isChatSponsor": false,
+   "isChatModerator": true
+  }
+ }
+}

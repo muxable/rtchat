@@ -6,6 +6,8 @@ import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/tts_foreground_service.dart';
 
+import 'fakes/fake_tts_engine.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final messenger =
@@ -18,10 +20,6 @@ void main() {
 
   setUpAll(() async {
     await initializeDateFormatting('en');
-    for (final name in ['flutter_tts', 'com.ryanheise.just_audio.methods']) {
-      messenger.setMockMethodCallHandler(
-          MethodChannel(name), (call) async => null);
-    }
   });
 
   setUp(() {
@@ -31,7 +29,7 @@ void main() {
       calls.add(call);
       return null;
     });
-    model = TtsModel.fromJson({});
+    model = TtsModel.fromJson({}, engine: FakeTtsEngine());
     service = TtsForegroundService(model, () => l10n, enabled: true);
   });
 

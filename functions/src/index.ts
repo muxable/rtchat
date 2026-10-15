@@ -3,7 +3,6 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import {
   alchemyWebhook,
-  ethAlchemyWebhook,
   setRealTimeCashAddress,
 } from "./alchemy_webhook";
 import { app as authApp } from "./auth";
@@ -24,31 +23,32 @@ import { eventsub } from "./eventsub";
 import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
 import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
-import { getVoices, synthesize } from "./tts";
 import * as twitch from "./twitch";
 import { WebSocket } from "ws";
 
-async function write(
-  channelId: string,
-  targetChannel: string,
-  message: string
-) {
-  const ref = await admin.firestore().collection("actions").add({
-    channelId,
-    targetChannel,
-    message,
-    sentAt: null,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-  // wait for the message to be sent.
-  const error = await new Promise<string | null>((resolve) =>
-    ref.onSnapshot((snapshot) => {
-      if (snapshot.get("isComplete")) {
-        resolve(snapshot.get("error") || null);
-      }
-    })
+// sends over a one-off irc connection: slow, and silent about failures. only
+// used for tokens from before user:write:chat was requested.
+async function sendOverIrc(uid: string, channelId: string, message: string) {
+  const targetChannel = await twitch.getTwitchLogin(channelId);
+  if (!targetChannel) {
+    return;
+  }
+  const token = await getAccessToken(uid, "twitch");
+  if (!token) {
+    throw new functions.https.HttpsError("internal", "auth error");
+  }
+  const userChannel = await twitch.getTwitchLogin(
+    await twitch.getChannelId(uid, "twitch")
   );
-  return error;
+  const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
+  await new Promise<void>((resolve) => {
+    ws.on("open", () => resolve());
+  });
+  ws.send("CAP REQ :twitch.tv/commands");
+  ws.send(`PASS oauth:${token}`);
+  ws.send(`NICK ${userChannel}`);
+  ws.send(`PRIVMSG #${targetChannel} :${message}`);
+  ws.close();
 }
 
 export const send = functions.https.onCall(async (data, context) => {
@@ -66,32 +66,21 @@ export const send = functions.https.onCall(async (data, context) => {
   }
 
   switch (provider) {
-    case "twitch":
-      const targetChannel = await twitch.getTwitchLogin(channelId);
-      if (!targetChannel) {
+    case "twitch": {
+      const replyTo = data?.replyToMessageId?.replace(/^twitch:/, "");
+      const result = await twitch.sendChatMessage(
+        context.auth.uid,
+        channelId,
+        message,
+        replyTo
+      );
+      if (result.unauthorized) {
+        await sendOverIrc(context.auth.uid, channelId, message);
         return;
       }
-      const token = await getAccessToken(context.auth.uid, provider);
-      if (!token) {
-        throw new functions.https.HttpsError("internal", "auth error");
-      }
-      const userChannel = await twitch.getTwitchLogin(
-        await twitch.getChannelId(context.auth.uid, "twitch")
-      );
-
-      const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
-
-      // wait for connect
-      await new Promise<void>((resolve) => {
-        ws.on("open", () => resolve());
-      });
-
-      ws.send("CAP REQ :twitch.tv/commands");
-      ws.send(`PASS oauth:${token}`);
-      ws.send(`NICK ${userChannel}`);
-      ws.send(`PRIVMSG #${targetChannel} :${message}`);
-      ws.close();
-      return;
+      // the app shows any returned value as an error.
+      return result.error;
+    }
     case "kick":
       // like twitch, return nothing on success: the app shows any returned
       // value as an error.
@@ -106,56 +95,6 @@ export const send = functions.https.onCall(async (data, context) => {
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
-
-export const sendDoc = functions.firestore
-  .document("actions/{docId}")
-  .onCreate(async (snapshot, context) => {
-    const data = snapshot.data();
-    const userId = data?.userId;
-    const provider = data?.provider;
-    const channelId = data?.channelId;
-    const message = data?.message;
-    if (!userId || !provider || !channelId || !message) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "missing provider, channelId, message"
-      );
-    }
-
-    switch (provider) {
-      case "twitch":
-        const targetChannel = await twitch.getTwitchLogin(channelId);
-        if (!targetChannel) {
-          return;
-        }
-        const token = await getAccessToken(userId, provider);
-        if (!token) {
-          throw new functions.https.HttpsError("internal", "auth error");
-        }
-        const userChannel = await twitch.getTwitchLogin(
-          await twitch.getChannelId(userId, "twitch")
-        );
-
-        const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
-
-        // wait for connect
-        await new Promise<void>((resolve) => {
-          ws.on("open", () => resolve());
-        });
-
-        ws.send("CAP REQ :twitch.tv/commands");
-        ws.send(`PASS oauth:${token}`);
-        ws.send(`NICK ${userChannel}`);
-        ws.send(`PRIVMSG #${targetChannel} :${message}`);
-        ws.close();
-
-        await snapshot.ref.update({
-          sentAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        return;
-    }
-  });
 
 export const ban = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -300,16 +239,7 @@ export const clear = functions.https.onCall(async (data, context) => {
 
   switch (provider) {
     case "twitch":
-      const targetChannel = await twitch.getTwitchLogin(channelId);
-      if (!targetChannel) {
-        return;
-      }
-      const response = await write(
-        await twitch.getChannelId(context.auth.uid, "twitch"),
-        targetChannel,
-        `/clear`
-      );
-      return response;
+      return await twitch.clearChat(context.auth.uid, channelId);
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -332,6 +262,25 @@ export const raid = functions.https.onCall(async (data, context) => {
   switch (provider) {
     case "twitch":
       return await twitch.raid(context.auth.uid, fromChannelId, toChannelId);
+  }
+});
+
+export const cancelRaid = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("permission-denied", "missing auth");
+  }
+  const provider = data?.provider;
+  const channelId = data?.channelId;
+  if (!provider || !channelId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "missing provider, channelId"
+    );
+  }
+
+  switch (provider) {
+    case "twitch":
+      return await twitch.cancelRaid(context.auth.uid, channelId);
   }
 });
 
@@ -506,12 +455,9 @@ export {
   search,
   getEmotes,
   getBadges,
-  synthesize,
-  getVoices,
   getViewerList,
   setRealTimeCashAddress,
   alchemyWebhook,
-  ethAlchemyWebhook,
   updateFollowerAndViewerCount,
 };
 export const auth = functions.https.onRequest(authApp);

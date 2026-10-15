@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/components/drawer/quicklinks_listview.dart';
+import 'package:rtchat/components/in_chat_channels.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/actions.dart';
@@ -64,7 +65,7 @@ class _DrawerHeader extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10.0),
                         onTap: () {
                           Provider.of<ViewsModel>(context, listen: false)
-                              .showMyChannels();
+                              .showDefaultChannels();
                           Navigator.of(context).pop();
                         },
                         child: Row(children: [
@@ -179,11 +180,13 @@ class _DrawerHeader extends StatelessWidget {
                               maxChildSize: 0.9,
                               expand: false,
                               builder: (context, controller) {
-                                final views = Provider.of<ViewsModel>(context,
-                                    listen: false);
+                                final views = Provider.of<ViewsModel>(context);
                                 final raidFrom = _raidableChannel(context);
                                 return ChannelSearchBottomSheetWidget(
                                   onChannelSelect: views.openChannel,
+                                  onChannelAdd: views.addChannel,
+                                  channels: views.channels,
+                                  header: const InChatChannels(),
                                   onRaid: raidFrom == null
                                       ? null
                                       : (channel) => ActionsAdapter.instance
@@ -290,12 +293,13 @@ class _SidebarState extends State<Sidebar> {
                   maxChildSize: 0.9,
                   expand: false,
                   builder: (context, controller) {
-                    final views =
-                        Provider.of<ViewsModel>(context, listen: false);
+                    final views = Provider.of<ViewsModel>(context);
                     final raidFrom = _raidableChannel(context);
                     return ChannelSearchBottomSheetWidget(
                       isRaid: true,
                       onChannelSelect: views.openChannel,
+                      onChannelAdd: views.addChannel,
+                      channels: views.channels,
                       onRaid: raidFrom == null
                           ? null
                           : (channel) =>

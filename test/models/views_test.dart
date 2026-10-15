@@ -9,94 +9,250 @@ import '../fakes/fake_user_model.dart';
 final twitch = Channel(Providers.twitch, '1', 'muxfd');
 final kick = Channel(Providers.kick, '2', 'muxfd');
 final other = Channel(Providers.twitch, '3', 'someone', language: 'ja');
+final otherKick = Channel(Providers.kick, '4', 'friend');
+
+ViewsModel signedInAs(Channel? channel) =>
+    ViewsModel()..update(FakeUserModel(userChannel: channel));
+
+ViewsModel restart(ViewsModel views) => ViewsModel.fromJson(
+    jsonDecode(jsonEncode(views.toJson())) as Map<String, dynamic>);
 
 void main() {
-  test("shows the signed-in user's channel by default", () {
-    final views = ViewsModel()..update(FakeUserModel(userChannel: kick));
-    expect(views.activeView.id, ViewsModel.myChannelsId);
-    expect(views.activeView.channels, [kick]);
-    expect(views.primaryChannel, kick);
+  group("default channels", () {
+    test("are the signed-in user's channel until picked", () {
+      final views = signedInAs(kick);
+      expect(views.defaultChannels, [kick]);
+      expect(views.channels, [kick]);
+      expect(views.primaryChannel, kick);
+    });
+
+    test("are empty for signed-out users until picked", () {
+      final views = signedInAs(null);
+      expect(views.defaultChannels, isEmpty);
+      expect(views.primaryChannel, isNull);
+    });
+
+    test("can be added to, removed from and replaced", () {
+      final views = signedInAs(twitch);
+      views.addDefaultChannel(kick);
+      expect(views.defaultChannels, [twitch, kick]);
+      views.addDefaultChannel(kick);
+      expect(views.defaultChannels, [twitch, kick]);
+      views.removeDefaultChannel(twitch);
+      expect(views.defaultChannels, [kick]);
+      // removing the last one goes back to the user's channel.
+      views.removeDefaultChannel(kick);
+      expect(views.defaultChannels, [twitch]);
+      expect(views.hasCustomDefaultChannels, isFalse);
+    });
+
+    test("can be copied from the current channels", () {
+      final views = signedInAs(twitch)
+        ..openChannel(other)
+        ..addChannel(kick);
+      views.useCurrentChannelsAsDefault();
+      expect(views.defaultChannels, [other, kick]);
+    });
+
+    test("are what the app opens with after a restart", () {
+      final views = signedInAs(twitch)
+        ..addDefaultChannel(kick)
+        ..addChannel(other);
+      final restored = restart(views)
+        ..update(FakeUserModel(userChannel: twitch));
+      expect(restored.defaultChannels, [twitch, kick]);
+      expect(restored.channels, [twitch, kick]);
+      expect(restored.channels.first.displayName, 'muxfd');
+    });
+
+    test("keep a channel's language across a restart", () {
+      final views = signedInAs(null)..addDefaultChannel(other);
+      expect(restart(views).channels.single.language, 'ja');
+    });
+
+    test("the current channels follow the defaults until changed", () {
+      final views = signedInAs(twitch);
+      views.addDefaultChannel(kick);
+      expect(views.channels, [twitch, kick]);
+      views.removeChannel(kick);
+      views.addDefaultChannel(otherKick);
+      expect(views.channels, [twitch]);
+      views.showDefaultChannels();
+      expect(views.channels, [twitch, otherKick]);
+    });
+
+    test("old saved views are ignored", () {
+      final restored = ViewsModel.fromJson({
+        'views': [
+          {
+            'id': 'simulcast',
+            'name': 'Simulcast',
+            'channels': [twitch.toJson(), kick.toJson()],
+          }
+        ],
+        'activeViewId': 'simulcast',
+      })
+        ..update(FakeUserModel(userChannel: kick));
+      expect(restored.channels, [kick]);
+      expect(restored.toJson().containsKey('views'), isFalse);
+    });
   });
 
-  test("signed-out users start with nothing to show", () {
-    final views = ViewsModel()..update(FakeUserModel());
-    expect(views.primaryChannel, isNull);
+  group("current channels", () {
+    test("follow the signed-in account, notifying on change", () {
+      var notifications = 0;
+      final views = ViewsModel()..addListener(() => notifications++);
+      views.update(FakeUserModel(userChannel: twitch));
+      views.update(FakeUserModel(userChannel: twitch));
+      expect(notifications, 1);
+      views.update(FakeUserModel());
+      expect(notifications, 2);
+      expect(views.channels, isEmpty);
+    });
+
+    test("pick up a new display name or language, notifying", () {
+      var notifications = 0;
+      final views = signedInAs(twitch)..addListener(() => notifications++);
+      views.update(FakeUserModel(
+          userChannel: Channel(Providers.twitch, '1', 'renamed')));
+      expect(views.channels.single.displayName, 'renamed');
+      expect(notifications, 1);
+      views.update(FakeUserModel(
+          userChannel:
+              Channel(Providers.twitch, '1', 'renamed', language: 'ja')));
+      expect(views.channels.single.language, 'ja');
+      expect(notifications, 2);
+    });
+
+    test("opening a channel shows just that channel", () {
+      final views = signedInAs(twitch)..addChannel(kick);
+      views.openChannel(other);
+      expect(views.channels, [other]);
+      expect(views.primaryChannel, other);
+    });
+
+    test("channels can be added once", () {
+      var notifications = 0;
+      final views = signedInAs(twitch)..addListener(() => notifications++);
+      views.addChannel(kick);
+      views.addChannel(kick);
+      expect(views.channels, [twitch, kick]);
+      expect(notifications, 1);
+      expect(views.contains(kick), isTrue);
+      expect(views.contains(other), isFalse);
+    });
+
+    test("removing channels keeps at least one", () {
+      final views = signedInAs(twitch)..addChannel(kick);
+      views.removeChannel(twitch);
+      expect(views.channels, [kick]);
+      expect(views.primaryChannel, kick);
+      views.removeChannel(kick);
+      expect(views.channels, [kick]);
+    });
+
+    test("aren't remembered across a restart", () {
+      final views = signedInAs(twitch)..openChannel(other);
+      final restored = restart(views)
+        ..update(FakeUserModel(userChannel: twitch));
+      expect(restored.channels, [twitch]);
+    });
   });
 
-  test("my channel follows the signed-in account, notifying on change", () {
-    var notifications = 0;
-    final views = ViewsModel()..addListener(() => notifications++);
-    views.update(FakeUserModel(userChannel: twitch));
-    views.update(FakeUserModel(userChannel: twitch));
-    expect(notifications, 1);
-    views.update(FakeUserModel());
-    expect(notifications, 2);
-    expect(views.activeView.channels, isEmpty);
+  group("preview", () {
+    test("is of the first channel unless another was picked", () {
+      final views = signedInAs(twitch)..addChannel(kick);
+      expect(views.previewChannel, twitch);
+      views.previewChannel = kick;
+      expect(views.previewChannel, kick);
+      views.openChannel(other);
+      expect(views.previewChannel, other);
+      // picked again once it's shown again.
+      views.addChannel(kick);
+      expect(views.previewChannel, kick);
+    });
+
+    test("falls back when the picked channel is removed", () {
+      final views = signedInAs(twitch)
+        ..addChannel(kick)
+        ..previewChannel = kick;
+      views.removeChannel(kick);
+      expect(views.previewChannel, twitch);
+    });
   });
 
-  test("my channel picks up a new display name or language, notifying", () {
-    var notifications = 0;
-    final views = ViewsModel()..update(FakeUserModel(userChannel: twitch));
-    views.addListener(() => notifications++);
-    views.update(
-        FakeUserModel(userChannel: Channel(Providers.twitch, '1', 'renamed')));
-    expect(views.activeView.channels.single.displayName, 'renamed');
-    expect(notifications, 1);
-    views.update(FakeUserModel(
-        userChannel:
-            Channel(Providers.twitch, '1', 'renamed', language: 'ja')));
-    expect(views.activeView.channels.single.language, 'ja');
-    expect(notifications, 2);
+  group("one channel per provider", () {
+    test("adding a channel replaces the one on its provider, in place", () {
+      var notifications = 0;
+      final views = signedInAs(twitch)
+        ..addChannel(kick)
+        ..addListener(() => notifications++);
+      views.addChannel(other);
+      expect(views.channels, [other, kick]);
+      views.addChannel(otherKick);
+      expect(views.channels, [other, otherKick]);
+      expect(notifications, 2);
+    });
+
+    test("the channel a channel would replace", () {
+      final channels = [twitch, kick];
+      expect(channelReplacedBy(channels, other), twitch);
+      expect(channelReplacedBy(channels, otherKick), kick);
+      // not itself.
+      expect(channelReplacedBy(channels, kick), isNull);
+      expect(channelReplacedBy([twitch], kick), isNull);
+    });
+
+    test("so does adding a default channel", () {
+      final views = signedInAs(twitch);
+      // the user's own channel is the default until others are picked.
+      views.addDefaultChannel(other);
+      expect(views.defaultChannels, [other]);
+      views.addDefaultChannel(kick);
+      views.addDefaultChannel(otherKick);
+      expect(views.defaultChannels, [other, otherKick]);
+    });
+
+    test("default channels set together keep the first of each provider", () {
+      final views = signedInAs(twitch);
+      views.defaultChannels = [kick, twitch, otherKick, other];
+      expect(views.defaultChannels, [kick, twitch]);
+    });
+
+    test("saved defaults keep the first channel of each provider", () {
+      final restored = ViewsModel.fromJson({
+        'defaultChannels': [
+          kick.toJson(),
+          twitch.toJson(),
+          otherKick.toJson(),
+          other.toJson(),
+        ],
+      });
+      expect(restored.defaultChannels, [kick, twitch]);
+      expect(restored.channels, [kick, twitch]);
+      expect(restored.toJson()['defaultChannels'],
+          [kick.toJson(), twitch.toJson()]);
+    });
   });
 
-  test("opening a channel shows just that channel until going back", () {
-    final views = ViewsModel()..update(FakeUserModel(userChannel: twitch));
-    views.openChannel(other);
-    expect(views.activeView.channels, [other]);
-    expect(views.primaryChannel, other);
-    views.showMyChannels();
-    expect(views.primaryChannel, twitch);
-  });
+  group("messages are sent", () {
+    test("to the channel on the account's provider", () {
+      final views = signedInAs(kick)
+        ..openChannel(twitch)
+        ..addChannel(kick);
+      expect(views.sendChannel(kick), kick);
+      expect(views.sendChannel(twitch), twitch);
+    });
 
-  test("saved views can be shown, edited and deleted", () {
-    final views = ViewsModel()..update(FakeUserModel(userChannel: twitch));
-    final simulcast = views.saveView("Simulcast", [twitch, kick]);
-    views.showView(simulcast.id);
-    expect(views.activeView, simulcast);
+    test("nowhere when no channel shown is on the account's provider", () {
+      final views = signedInAs(kick)..openChannel(twitch);
+      expect(views.sendChannel(kick), isNull);
+      expect(views.sendChannel(null), isNull);
+    });
 
-    views.updateView(simulcast.copyWith(name: "IRL", channels: [kick]));
-    expect(views.activeView.name, "IRL");
-    expect(views.primaryChannel, kick);
-
-    views.deleteView(simulcast.id);
-    expect(views.savedViews, isEmpty);
-    expect(views.activeView.id, ViewsModel.myChannelsId);
-  });
-
-  test("saved views and the active one survive a restart", () {
-    final views = ViewsModel()..update(FakeUserModel(userChannel: twitch));
-    final saved = views.saveView("Simulcast", [twitch, other]);
-    views.showView(saved.id);
-    // opened channels aren't remembered, like before views existed.
-    final restored = ViewsModel.fromJson(
-        jsonDecode(jsonEncode(views.toJson())) as Map<String, dynamic>);
-    expect(restored.savedViews, [saved]);
-    expect(restored.activeView, saved);
-    expect(restored.activeView.channels.last.language, 'ja');
-  });
-
-  test("signed-out users can save and show views", () {
-    final views = ViewsModel()..update(FakeUserModel());
-    final simulcast = views.saveView("Simulcast", [twitch, kick]);
-    views.showView(simulcast.id);
-    expect(views.activeView.channels, [twitch, kick]);
-    expect(views.primaryChannel, twitch);
-  });
-
-  test("a missing active view falls back to my channels", () {
-    final restored = ViewsModel.fromJson({'views': [], 'activeViewId': 'gone'})
-      ..update(FakeUserModel(userChannel: kick));
-    expect(restored.activeView.id, ViewsModel.myChannelsId);
-    expect(restored.primaryChannel, kick);
+    test("to the channel opened, like before views", () {
+      final views = signedInAs(twitch)..openChannel(other);
+      expect(views.sendChannel(twitch), other);
+    });
   });
 }

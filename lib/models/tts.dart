@@ -1,17 +1,12 @@
 import 'dart:async';
-import 'dart:collection';
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_tts/flutter_tts.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:on_device_tts/on_device_tts.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/channels.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
 import 'package:rtchat/models/messages/auxiliary/streamlabs.dart';
@@ -29,53 +24,40 @@ import 'package:rtchat/models/messages/twitch/shoutout_receive_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
-import 'package:rtchat/models/messages/twitch/user.dart';
-import 'package:rtchat/models/tts/bytes_audio_source.dart';
 import 'package:rtchat/models/tts/language.dart';
+import 'package:rtchat/models/tts/muted_user.dart';
 import 'package:rtchat/models/views.dart';
 
 enum TtsMode { disabled, alertsOnly, enabled }
 
 final _markup = RegExp(r'</?b>');
 
+/// Looks up the language [channel] streams in, as its platform reports it
+/// (e.g. `es`, `other`), or null if it isn't known.
+typedef StreamLanguageLookup = Future<String?> Function(Channel channel);
+
+/// Reads the language from the channel's metadata document, once: `first`
+/// opens a Firestore listener and closes it after the first snapshot.
+Future<String?> _lookUpStreamLanguage(Channel channel) async {
+  final metadata = await ChannelsAdapter.instance
+      .forChannel(channel)
+      .first
+      .timeout(const Duration(seconds: 20));
+  return metadata is StreamChannelMetadata ? metadata.language : null;
+}
+
 class TtsModel extends ChangeNotifier {
-  var _isCloudTtsEnabled = false;
-  final _tts = FlutterTts()
-    ..setSharedInstance(true)
-    ..setIosAudioCategory(
-        IosTextToSpeechAudioCategory.playback,
-        [IosTextToSpeechAudioCategoryOptions.mixWithOthers],
-        IosTextToSpeechAudioMode.voicePrompt);
+  final TtsEngine _engine;
 
-  final audioPlayer = AudioPlayer();
-
-  /// On Android, speech is synthesized to a file and played by the app's own
-  /// player instead of the system tts engine. The engine is a separate app
-  /// that our foreground service doesn't cover, so android flags its audio to
-  /// be muted when we're in the background.
-  @visibleForTesting
-  bool synthesizeInProcess =
-      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
-
-  @visibleForTesting
-  Future<Directory> Function() tempDirectory = getTemporaryDirectory;
-
-  @visibleForTesting
-  late Future<void> Function(String path) playFile =
-      (path) => _playToEnd(() => audioPlayer.setFilePath(path));
-
-  var _utteranceCount = 0;
   Future<void> _previousUtterance = Future.value();
-  final Set<String> _pending = {};
+  // the messages waiting to be read out, and the channel they came from.
+  final Map<String, Channel?> _pending = {};
 
   // past these many queued messages tts drops the author prelude, and then
   // turns itself off.
   static const _preludeBacklog = 10;
   static const _maxBacklog = 20;
   var _language = Language();
-  List<String> voices = [];
-  final Map<String, dynamic> _voice = {};
-  var _isSupportedLanguage = false;
   var _isRandomVoiceEnabled = true;
   var _isBotMuted = false;
   var _isEmoteMuted = false;
@@ -83,64 +65,91 @@ class TtsModel extends ChangeNotifier {
   var _speed = Platform.isAndroid ? 0.8 : 0.395;
   var _pitch = 1.0;
   var _mode = TtsMode.disabled;
-  final Set<TwitchUserModel> _mutedUsers = {};
+  final List<MutedUser> _mutedUsers = [];
+  // languages of the channels being watched, for reading messages in the
+  // language of the channel they came from: their stream language, looked
+  // up once per channel while it's shown.
+  final Map<Channel, Language> _channelLanguages = {};
+  // when each shown channel's language was last looked up (or is being
+  // looked up), so channels aren't looked up again on every views change.
+  final Map<Channel, DateTime> _languageLookedUpAt = {};
+  List<Channel> _channels = const [];
+  Channel? _primaryChannel;
+  final StreamLanguageLookup _lookUpLanguage;
+  final DateTime Function() _now;
+  var _isDisposed = false;
+
+  /// How long until a channel whose language couldn't be found (no metadata
+  /// yet, offline, an error) is looked up again.
+  static const languageRetryInterval = Duration(minutes: 5);
   // this is used to ignore messages in the past.
   var _lastMessageTime = DateTime.now();
   MessageModel? _activeMessage;
   var _isSubscribersOnly = false;
 
-  @override
-  void dispose() {
-    audioPlayer.dispose();
-    super.dispose();
-  }
-
-  void update(ViewsModel model) async {
-    if (kDebugMode) {
-      final channel = model.primaryChannel;
-      if (channel == null) {
-        _isSupportedLanguage = false;
-        _language = Language();
-        return;
-      }
-
-      // channels without a metadata document yet have no language.
-      final metadata = await ChannelsAdapter.instance.forChannel(channel).first;
-      final streamLanguage =
-          metadata is StreamChannelMetadata ? metadata.language : null;
-      if (streamLanguage == null) {
-        _isSupportedLanguage = false;
-        _language = Language();
-        return;
-      }
-
-      _isSupportedLanguage =
-          !(streamLanguage == 'other' || streamLanguage == 'asl');
-      language = _isSupportedLanguage ? Language(streamLanguage) : Language();
-      notifyListeners();
+  /// Follows the channels shown, to read each message in its channel's
+  /// stream language. Called on every [ViewsModel] change, so it only looks
+  /// up channels it doesn't know the language of yet: each once, and those
+  /// it couldn't find again after [languageRetryInterval]. Nothing here
+  /// changes the saved [language].
+  void update(ViewsModel model) {
+    final channels = model.channels;
+    _channels = channels;
+    _primaryChannel = model.primaryChannel;
+    _channelLanguages.removeWhere((channel, _) => !channels.contains(channel));
+    _languageLookedUpAt
+        .removeWhere((channel, _) => !channels.contains(channel));
+    for (final channel in channels) {
+      _lookUpLanguageOf(channel);
     }
   }
 
-  void getVoices() async {
-    if (!isCloudTtsEnabled) {
+  void _lookUpLanguageOf(Channel channel) {
+    if (_channelLanguages.containsKey(channel)) {
       return;
     }
-    final voicesJson = await FirebaseFunctions.instance
-        .httpsCallable("getVoices")
-        .call(<String, dynamic>{
-      "language": _language.languageCode,
+    final now = _now();
+    final last = _languageLookedUpAt[channel];
+    if (last != null && now.difference(last) < languageRetryInterval) {
+      return;
+    }
+    _languageLookedUpAt[channel] = now;
+    Future.sync(() => _lookUpLanguage(channel)).then((code) {
+      final language = streamLanguage(code);
+      // the channel may have been closed in the meantime.
+      if (_isDisposed || language == null || !_channels.contains(channel)) {
+        return;
+      }
+      _channelLanguages[channel] = language;
+    }, onError: (Object error) {
+      // e.g. offline: the channel's language stays unknown for now.
+      debugPrint('no stream language for $channel: $error');
     });
-    final data = voicesJson.data;
+  }
 
-    final List<String> voicesList = [];
-    for (LinkedHashMap voice in data) {
-      voicesList.add(voice['name']);
+  /// The language to read a stream's chat in, from the language its
+  /// platform reports: null when it's unknown, including `other` and `asl`
+  /// (sign language), which say nothing about the spoken language.
+  static Language? streamLanguage(String? code) {
+    final trimmed = code?.trim();
+    if (trimmed == null ||
+        trimmed.isEmpty ||
+        trimmed == 'other' ||
+        trimmed == 'asl') {
+      return null;
     }
-    voices = voicesList;
-    if (_voice[language.languageCode] == null) {
-      voice = voicesList[0];
+    return Language(trimmed.toLowerCase());
+  }
+
+  /// The stream language of [model]'s channel (or of the first channel
+  /// shown, for messages without one), if known: looked up, else as it was
+  /// when the channel was found (e.g. in search).
+  Language? _knownLanguageFor(MessageModel model) {
+    final channel = model.channel ?? _primaryChannel;
+    if (channel == null) {
+      return null;
     }
-    notifyListeners();
+    return _channelLanguages[channel] ?? streamLanguage(channel.language);
   }
 
   String getVocalization(AppLocalizations l10n, MessageModel model,
@@ -284,31 +293,14 @@ class TtsModel extends ChangeNotifier {
     });
   }
 
+  /// The language to read chat in when its channel's stream language isn't
+  /// known. Saved with the settings; the stream languages never change it.
   Language get language {
     return _language;
   }
 
   set language(Language language) {
     _language = language;
-    getVoices();
-    notifyListeners();
-  }
-
-  bool get isSupportedLanguage {
-    return _isSupportedLanguage;
-  }
-
-  set isSupportedLanguage(bool isSupportedLanguage) {
-    _isSupportedLanguage = isSupportedLanguage;
-    notifyListeners();
-  }
-
-  String get voice {
-    return _voice[_language.languageCode] ?? voices[0];
-  }
-
-  set voice(String voice) {
-    _voice[_language.languageCode] = voice;
     notifyListeners();
   }
 
@@ -348,18 +340,6 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool get isCloudTtsEnabled {
-    return _isCloudTtsEnabled;
-  }
-
-  set isCloudTtsEnabled(bool value) {
-    _isCloudTtsEnabled = value;
-    if (value) {
-      getVoices();
-    }
-    notifyListeners();
-  }
-
   double get speed {
     return _speed;
   }
@@ -378,26 +358,36 @@ class TtsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // match on login: it's stable and always present, unlike displayName.
-  bool isMuted(ChatUser user) {
-    final login = user.login.toLowerCase();
-    return _mutedUsers.any((muted) =>
-        muted.provider == user.provider && muted.login.toLowerCase() == login);
-  }
+  // match on provider and login: logins are stable and always present,
+  // unlike display names, and the same login on another provider is someone
+  // else.
+  bool isMuted(ChatUser user) =>
+      _mutedUsers.any((muted) => muted.matches(user));
 
-  void mute(TwitchUserModel model) {
-    _mutedUsers.add(model);
+  void mute(ChatUser user) {
+    if (isMuted(user)) {
+      return;
+    }
+    _mutedUsers.add(MutedUser.from(user));
     notifyListeners();
   }
 
-  void unmute(TwitchUserModel model) {
-    final login = model.login.toLowerCase();
+  void unmute(ChatUser user) {
     final count = _mutedUsers.length;
-    _mutedUsers.removeWhere((muted) => muted.login.toLowerCase() == login);
+    _mutedUsers.removeWhere((muted) => muted.matches(user));
     if (_mutedUsers.length != count) {
       notifyListeners();
     }
   }
+
+  @visibleForTesting
+  void setChannelLanguage(Channel channel, Language language) =>
+      _channelLanguages[channel] = language;
+
+  /// The language to read [model] in: its channel's stream language, if
+  /// known, else [language].
+  Language languageFor(MessageModel model) =>
+      _knownLanguageFor(model) ?? _language;
 
   void say(AppLocalizations localizations, MessageModel model,
       {bool force = false}) async {
@@ -465,9 +455,9 @@ class TtsModel extends ChangeNotifier {
     final completer = Completer();
 
     _previousUtterance = completer.future;
-    _pending.add(model.messageId);
+    _pending[model.messageId] = model.channel;
 
-    // always release the queue: a failed utterance (e.g. a cloud tts error)
+    // always release the queue: a failed utterance (e.g. a platform error)
     // would otherwise block, and hold on to, every message after it.
     try {
       await previous;
@@ -485,77 +475,15 @@ class TtsModel extends ChangeNotifier {
     _activeMessage = model;
 
     if ((_mode != TtsMode.disabled || model is SystemMessageModel) &&
-        _pending.contains(model.messageId)) {
-      // TODO: replace with subscription logic
-      if (!_isCloudTtsEnabled) {
-        try {
-          await _tts.setSpeechRate(_speed);
-          await _tts.setPitch(_pitch);
-          if (synthesizeInProcess) {
-            await _speakInProcess(vocalization);
-          } else {
-            await _tts.awaitSpeakCompletion(true);
-            await _tts.speak(vocalization);
-          }
-        } catch (e, st) {
-          FirebaseCrashlytics.instance.recordError(e, st);
-        }
-      } else {
-        String? voice;
-        double? pitch;
-        if (model is ChatMessage) {
-          if (isRandomVoiceEnabled) {
-            final name = model.author.displayName;
-            final hash = name.hashCode;
-            voice = voices[hash % voices.length];
-            pitch = (hash % 21) / 5 - 2;
-          } else {
-            voice = _voice[_language.languageCode];
-            pitch = _pitch * 4 - 2;
-          }
-        }
-        final response =
-            await FirebaseFunctions.instance.httpsCallable("synthesize")({
-          "voice": voice ?? "en-US-WaveNet-F",
-          "text": vocalization,
-          "rate": _speed * 1.5 + 0.5,
-          "pitch": pitch ?? 0,
-        });
-        final bytes = const Base64Decoder().convert(response.data);
-        await _playToEnd(
-            () => audioPlayer.setAudioSource(BytesAudioSource(bytes)));
-      }
-    }
-  }
-
-  /// Plays one utterance and waits for it to finish. just_audio's play()
-  /// returns immediately while the player is still "playing" from a previous
-  /// utterance, so wait for completion explicitly and stop afterwards.
-  Future<void> _playToEnd(Future<Duration?> Function() load) async {
-    final duration = await load().timeout(const Duration(seconds: 10));
-    final done = audioPlayer.processingStateStream
-        .firstWhere((state) => state == ProcessingState.completed);
-    audioPlayer.play();
-    try {
-      await done.timeout((duration ?? const Duration(seconds: 30)) +
-          const Duration(seconds: 5));
-    } finally {
-      await audioPlayer.stop();
-    }
-  }
-
-  Future<void> _speakInProcess(String vocalization) async {
-    final dir = await tempDirectory();
-    final file = File('${dir.path}/tts-${_utteranceCount++ % 2}.wav');
-    await _tts.awaitSynthCompletion(true);
-    await _tts.synthesizeToFile(vocalization, file.path, true);
-    try {
-      await playFile(file.path);
-    } finally {
+        _pending.containsKey(model.messageId)) {
       try {
-        await file.delete();
-      } on FileSystemException {
-        // already gone.
+        // chat is in its channel's language, when known; otherwise, and for
+        // alerts (in the app's language), the voice keeps its default.
+        final language = model is ChatMessage ? _knownLanguageFor(model) : null;
+        await _engine.speak(vocalization,
+            rate: _speed, pitch: _pitch, language: language?.languageCode);
+      } catch (e, st) {
+        FirebaseCrashlytics.instance.recordError(e, st);
       }
     }
   }
@@ -567,8 +495,7 @@ class TtsModel extends ChangeNotifier {
         SystemMessageModel(text: localizations.textToSpeechTooManyMessages),
         force: true);
     // cut off the current utterance; everything queued behind it is dropped.
-    _tts.stop().catchError((_) => null);
-    audioPlayer.stop();
+    _engine.stop().catchError((_) {});
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });
@@ -580,6 +507,11 @@ class TtsModel extends ChangeNotifier {
 
   void stop() {
     _pending.clear();
+  }
+
+  /// Stops reading out the messages that came from [channel].
+  void stopChannel(Channel channel) {
+    _pending.removeWhere((_, pending) => pending == channel);
   }
 
   void updateFromJson(Map<String, dynamic> json) {
@@ -609,19 +541,37 @@ class TtsModel extends ChangeNotifier {
     if (json['language'] != null) {
       _language = Language(json['language']);
     }
-    if (json['voice'] != null) {
-      _voice.addAll(json['voice']);
-    }
     final userJson = json['mutedUsers'];
     if (userJson != null) {
-      for (var user in userJson) {
-        _mutedUsers.add(TwitchUserModel.fromJson(user));
-      }
+      // the saved list is a full snapshot, so it replaces the current one.
+      _mutedUsers
+        ..clear()
+        ..addAll([
+          for (var user in userJson)
+            MutedUser.fromJson(Map<String, dynamic>.from(user)),
+        ]);
     }
   }
 
-  TtsModel.fromJson(Map<String, dynamic> json) {
+  /// Speaks through [engine], or through the platform's voices by default.
+  /// [lookUpStreamLanguage] finds a channel's stream language, from its
+  /// Firestore metadata by default; [clock] tells the time for retrying
+  /// lookups.
+  TtsModel.fromJson(Map<String, dynamic> json,
+      {TtsEngine? engine,
+      StreamLanguageLookup? lookUpStreamLanguage,
+      DateTime Function()? clock})
+      : _engine = engine ?? SystemTtsEngine(),
+        _lookUpLanguage = lookUpStreamLanguage ?? _lookUpStreamLanguage,
+        _now = clock ?? DateTime.now {
     _updateFromJsonInternal(json);
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    _engine.dispose().catchError((_) {});
+    super.dispose();
   }
 
   Map<String, dynamic> toJson() => {
@@ -632,7 +582,6 @@ class TtsModel extends ChangeNotifier {
         "language": language.languageCode,
         "pitch": pitch,
         "speed": speed,
-        "voice": _voice,
         'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
       };
 }

@@ -1,0 +1,101 @@
+{
+ "source": "anonymized real capture; InnerTube has no sticker id",
+ "action": {
+  "clickTrackingParams": "x",
+  "addChatItemAction": {
+   "item": {
+    "liveChatPaidStickerRenderer": {
+     "id": "sticker",
+     "timestampUsec": "1700000000123456",
+     "authorName": {
+      "simpleText": "@Viewer"
+     },
+     "authorExternalChannelId": "UCviewer",
+     "authorPhoto": {
+      "thumbnails": [
+       {
+        "url": "https://yt3.ggpht.com/viewer=s32",
+        "width": 32,
+        "height": 32
+       },
+       {
+        "url": "https://yt3.ggpht.com/viewer=s64",
+        "width": 64,
+        "height": 64
+       }
+      ]
+     },
+     "authorBadges": [],
+     "contextMenuEndpoint": {
+      "liveChatItemContextMenuEndpoint": {
+       "params": "x"
+      }
+     },
+     "contextMenuAccessibility": {
+      "accessibilityData": {
+       "label": "Chat actions"
+      }
+     },
+     "trackingParams": "x",
+     "sticker": {
+      "thumbnails": [
+       {
+        "url": "//lh3.googleusercontent.com/sticker=s104-rwa",
+        "width": 104,
+        "height": 104
+       },
+       {
+        "url": "//lh3.googleusercontent.com/sticker=s208-rwa",
+        "width": 208,
+        "height": 208
+       }
+      ],
+      "accessibility": {
+       "accessibilityData": {
+        "label": "Shiba dog waving Japanese fans"
+       }
+      }
+     },
+     "moneyChipBackgroundColor": 4294953512,
+     "moneyChipTextColor": 3741319168,
+     "purchaseAmountText": {
+      "simpleText": "NT$150.00"
+     },
+     "stickerDisplayWidth": 104,
+     "stickerDisplayHeight": 104,
+     "backgroundColor": 4294953512,
+     "authorNameTextColor": 2315255808,
+     "isV2Style": true
+    }
+   },
+   "clientId": "x"
+  }
+ },
+ "event": {
+  "id": "sticker",
+  "snippet": {
+   "type": "superStickerEvent",
+   "liveChatId": "innertube:video",
+   "authorChannelId": "UCviewer",
+   "publishedAt": "2023-11-14T22:13:20.123456Z",
+   "hasDisplayContent": true,
+   "displayMessage": "Shiba dog waving Japanese fans",
+   "superStickerDetails": {
+    "amountDisplayString": "NT$150.00",
+    "superStickerMetadata": {
+     "altText": "Shiba dog waving Japanese fans"
+    }
+   }
+  },
+  "authorDetails": {
+   "channelId": "UCviewer",
+   "channelUrl": "https://www.youtube.com/channel/UCviewer",
+   "displayName": "@Viewer",
+   "profileImageUrl": "https://yt3.ggpht.com/viewer=s64",
+   "isVerified": false,
+   "isChatOwner": false,
+   "isChatSponsor": false,
+   "isChatModerator": false
+  }
+ }
+}
