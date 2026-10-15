@@ -1,16 +1,27 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'tts_engine.dart';
 import 'tts_voice.dart';
 
 /// Speaks with the platform's own voices through `flutter_tts`.
 ///
+/// On Android, synthesizes a temporary WAV and plays it inside this process,
+/// so the app's foreground service covers background audio playback.
 /// On iOS speech plays in the playback audio category, mixed with other
 /// audio, so it keeps going in the background and doesn't pause music.
 class SystemTtsEngine implements TtsEngine {
   final FlutterTts _tts;
   final String? Function() _platformLanguage;
+  final Future<Directory> Function() _tempDirectory;
+  AudioPlayer? _player;
+  _Utterance? _utterance;
+  bool _disposed = false;
 
   // What the platform was last asked to speak with: a voice, else a
   // language, else (both null) its default voice.
@@ -23,9 +34,15 @@ class SystemTtsEngine implements TtsEngine {
   /// another one, on platforms where clearing the voice doesn't restore it:
   /// by default the device's language on iOS and macOS, and nothing
   /// elsewhere (Android's default voice carries its language).
-  SystemTtsEngine({FlutterTts? tts, String? Function()? platformLanguage})
-      : _tts = tts ?? FlutterTts(),
-        _platformLanguage = platformLanguage ?? _devicePlatformLanguage {
+  SystemTtsEngine({
+    FlutterTts? tts,
+    String? Function()? platformLanguage,
+    @visibleForTesting AudioPlayer? audioPlayer,
+    @visibleForTesting Future<Directory> Function()? tempDirectory,
+  })  : _tts = tts ?? FlutterTts(),
+        _platformLanguage = platformLanguage ?? _devicePlatformLanguage,
+        _player = audioPlayer,
+        _tempDirectory = tempDirectory ?? getTemporaryDirectory {
     _tts
       ..setSharedInstance(true)
       ..setIosAudioCategory(
@@ -53,6 +70,20 @@ class SystemTtsEngine implements TtsEngine {
     double pitch = TtsEngine.normalPitch,
     String? language,
   }) async {
+    if (_disposed) throw StateError('The TTS engine has been disposed');
+    final utterance = _Utterance();
+    _utterance = utterance;
+    try {
+      await _speak(text, voice, rate, pitch, language, utterance);
+    } on _SpeechCanceled {
+      // stop() releases the queue even if the platform never completes synthesis.
+    } finally {
+      if (identical(_utterance, utterance)) _utterance = null;
+    }
+  }
+
+  Future<void> _speak(String text, TtsVoice? voice, double rate, double pitch,
+      String? language, _Utterance utterance) async {
     await _tts.setSpeechRate(rate);
     await _tts.setPitch(pitch);
     if (voice != null) {
@@ -72,8 +103,70 @@ class SystemTtsEngine implements TtsEngine {
       _voice = null;
       _language = null;
     }
-    await _tts.awaitSpeakCompletion(true);
-    await _tts.speak(text);
+    utterance.checkCanceled();
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      await _speakInProcess(text, utterance);
+    } else {
+      await _tts.awaitSpeakCompletion(true);
+      utterance.checkCanceled();
+      await utterance.wait(_tts.speak(text));
+    }
+  }
+
+  Future<void> _speakInProcess(String text, _Utterance utterance) async {
+    final directory = await _tempDirectory();
+    utterance.checkCanceled();
+    // Unique paths prevent a late platform callback from overwriting later audio.
+    final temporary = await directory.createTemp('tts-');
+    final file = File('${temporary.path}/speech.wav');
+    try {
+      await _tts.awaitSynthCompletion(true);
+      utterance.checkCanceled();
+      Object? result;
+      try {
+        result = await utterance.wait(_tts
+            .synthesizeToFile(text, file.path, true)
+            .timeout(const Duration(seconds: 30)));
+      } catch (_) {
+        // Reset flutter_tts's synthesis state after a timeout or platform error.
+        // Cancellation already stops the platform before releasing this wait.
+        if (!utterance.canceled) await _tts.stop();
+        rethrow;
+      }
+      if (result != 1) throw StateError('TTS synthesis failed: $result');
+      utterance.checkCanceled();
+      final player = _player ??= AudioPlayer();
+      try {
+        final duration = await utterance.wait(
+            player.setFilePath(file.path).timeout(const Duration(seconds: 10)));
+        utterance.checkCanceled();
+        final completed = Completer<void>();
+        final subscription = player.processingStateStream.listen((state) {
+          if (state == ProcessingState.completed && !completed.isCompleted) {
+            completed.complete();
+          }
+        }, onError: (Object error, StackTrace stack) {
+          if (!completed.isCompleted) completed.completeError(error, stack);
+        });
+        try {
+          // play() can complete immediately if the player is already playing.
+          // Observe completion separately, and surface errors from either future.
+          final playback = Future.wait([
+            player.play(),
+            completed.future,
+          ], eagerError: true);
+          await utterance.wait(playback.timeout(
+              (duration ?? const Duration(seconds: 30)) +
+                  const Duration(seconds: 5)));
+        } finally {
+          await subscription.cancel();
+        }
+      } finally {
+        await player.stop();
+      }
+    } finally {
+      await temporary.delete(recursive: true);
+    }
   }
 
   Future<void> _setLanguage(String language) async {
@@ -93,7 +186,18 @@ class SystemTtsEngine implements TtsEngine {
 
   @override
   Future<void> stop() async {
-    await _tts.stop();
+    final utterance = _utterance;
+    utterance?.canceled = true;
+    try {
+      await Future.wait([
+        _tts.stop(),
+        if (_player != null) _player!.stop(),
+      ]);
+    } finally {
+      if (utterance != null && !utterance.stopped.isCompleted) {
+        utterance.stopped.complete();
+      }
+    }
   }
 
   @override
@@ -117,6 +221,41 @@ class SystemTtsEngine implements TtsEngine {
 
   @override
   Future<void> dispose() async {
-    await _tts.stop();
+    _disposed = true;
+    try {
+      await stop();
+    } finally {
+      await _player?.dispose();
+    }
+  }
+}
+
+class _SpeechCanceled implements Exception {}
+
+class _Utterance {
+  bool canceled = false;
+  final stopped = Completer<void>();
+
+  void checkCanceled() {
+    if (canceled) throw _SpeechCanceled();
+  }
+
+  Future<T> wait<T>(Future<T> operation) async {
+    try {
+      final result = await Future.any([
+        operation,
+        stopped.future.then<T>((_) => throw _SpeechCanceled()),
+      ]);
+      checkCanceled();
+      return result;
+    } catch (_) {
+      // A platform operation may fail as stop() interrupts it. Wait until
+      // stopping finishes before cleanup, and treat it as cancellation.
+      if (canceled) {
+        await stopped.future;
+        throw _SpeechCanceled();
+      }
+      rethrow;
+    }
   }
 }

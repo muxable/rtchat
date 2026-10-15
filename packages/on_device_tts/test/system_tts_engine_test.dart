@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:on_device_tts/on_device_tts.dart';
+import 'package:just_audio/just_audio.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +17,7 @@ void main() {
   late Future<Object?> Function(MethodCall call) handler;
 
   setUp(() {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     calls = [];
     handler = (call) async => 1;
     messenger.setMockMethodCallHandler(channel, (call) {
@@ -22,7 +26,10 @@ void main() {
     });
   });
 
-  tearDown(() => messenger.setMockMethodCallHandler(channel, null));
+  tearDown(() {
+    debugDefaultTargetPlatformOverride = null;
+    messenger.setMockMethodCallHandler(channel, null);
+  });
 
   List<String> methods() => calls.map((call) => call.method).toList();
 
@@ -179,6 +186,177 @@ void main() {
     expect(methods(), ['stop']);
   });
 
+  group('Android in-process audio', () {
+    late Directory directory;
+    late FakeAudioPlayer player;
+    late SystemTtsEngine engine;
+
+    setUp(() async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      directory = await Directory.systemTemp.createTemp('system-tts-test-');
+      player = FakeAudioPlayer();
+      engine = SystemTtsEngine(
+          audioPlayer: player, tempDirectory: () async => directory);
+      handler = (call) async {
+        if (call.method == 'synthesizeToFile') {
+          await File(call.arguments['fileName'] as String).writeAsBytes([1, 2]);
+        }
+        return 1;
+      };
+    });
+
+    tearDown(() async {
+      await engine.dispose();
+      await player.states.close();
+      await directory.delete(recursive: true);
+    });
+
+    test('synthesizes full paths with the selected language, rate and pitch',
+        () async {
+      final speaking =
+          engine.speak('hola', language: 'es', rate: 0.8, pitch: 1.5);
+      await pumpEventQueue(times: 100);
+      expect(player.paths, hasLength(1));
+      final synthesis =
+          calls.singleWhere((c) => c.method == 'synthesizeToFile');
+      expect(synthesis.arguments, {
+        'text': 'hola',
+        'fileName': player.paths.single,
+        'isFullPath': true,
+      });
+      expect(File(player.paths.single).existsSync(), isTrue);
+      expect(
+          calls.singleWhere((c) => c.method == 'setLanguage').arguments, 'es');
+      expect(
+          calls.singleWhere((c) => c.method == 'setSpeechRate').arguments, 0.8);
+      expect(calls.singleWhere((c) => c.method == 'setPitch').arguments, 1.5);
+      expect(methods(), isNot(contains('speak')));
+      expect(methods().indexOf('awaitSynthCompletion'),
+          lessThan(methods().indexOf('synthesizeToFile')));
+      player.complete();
+      await speaking;
+      expect(player.stopCount, 1);
+      expect(directory.listSync(), isEmpty);
+    });
+
+    test('waits for completion even when play returns immediately, repeatedly',
+        () async {
+      for (var i = 0; i < 3; i++) {
+        var finished = false;
+        final speaking = engine.speak('hello $i').then((_) => finished = true);
+        await pumpEventQueue(times: 100);
+        expect(player.playCount, i + 1);
+        expect(finished, isFalse);
+        player.complete();
+        await speaking;
+        expect(player.stopCount, i + 1);
+        expect(directory.listSync(), isEmpty);
+      }
+      expect(player.paths.toSet(), hasLength(3));
+    });
+
+    test('stop releases playback and the next utterance can speak', () async {
+      final speaking = engine.speak('first');
+      await pumpEventQueue(times: 100);
+      await engine.stop();
+      await speaking;
+      expect(directory.listSync(), isEmpty);
+      final next = engine.speak('next');
+      await pumpEventQueue(times: 100);
+      expect(player.playCount, 2);
+      player.complete();
+      await next;
+    });
+
+    test('stop releases stalled synthesis without playing it later', () async {
+      final synthesis = Completer<Object?>();
+      final normalHandler = handler;
+      handler = (call) => call.method == 'synthesizeToFile'
+          ? synthesis.future
+          : normalHandler(call);
+      final speaking = engine.speak('canceled');
+      await pumpEventQueue(times: 100);
+      expect(methods(), contains('synthesizeToFile'));
+      await engine.stop();
+      await speaking;
+      expect(player.playCount, 0);
+      expect(directory.listSync(), isEmpty);
+      synthesis.complete(1);
+      await pumpEventQueue();
+      expect(player.playCount, 0);
+      handler = normalHandler;
+      final next = engine.speak('next');
+      await pumpEventQueue(times: 100);
+      player.complete();
+      await next;
+      expect(player.playCount, 1);
+    });
+
+    test('synthesis failure throws and removes the temporary file', () async {
+      handler = (call) async => call.method == 'synthesizeToFile' ? 0 : 1;
+      await expectLater(engine.speak('failed'), throwsStateError);
+      expect(player.playCount, 0);
+      expect(directory.listSync(), isEmpty);
+    });
+
+    test('playback failure stops the player and removes the file', () async {
+      player.playError = StateError('play failed');
+      await expectLater(engine.speak('failed'), throwsStateError);
+      expect(player.stopCount, 1);
+      expect(directory.listSync(), isEmpty);
+    });
+
+    test('synthesis timeout stops the platform and permits the next utterance',
+        () async {
+      final synthesis = Completer<Object?>();
+      final normalHandler = handler;
+      handler = (call) => call.method == 'synthesizeToFile'
+          ? synthesis.future
+          : normalHandler(call);
+      await expectLater(
+          engine.speak('stalled'), throwsA(isA<TimeoutException>()));
+      expect(methods(), contains('stop'));
+      expect(player.playCount, 0);
+      expect(directory.listSync(), isEmpty);
+      synthesis.complete(1);
+      handler = normalHandler;
+      final next = engine.speak('next');
+      await pumpEventQueue(times: 100);
+      player.complete();
+      await next;
+      expect(player.playCount, 1);
+    }, timeout: const Timeout(Duration(seconds: 45)));
+
+    test('playback timeout releases the queue and cleans up', () async {
+      await expectLater(
+          engine.speak('stalled'), throwsA(isA<TimeoutException>()));
+      expect(player.stopCount, 1);
+      expect(directory.listSync(), isEmpty);
+      final next = engine.speak('next');
+      await pumpEventQueue(times: 100);
+      player.complete();
+      await next;
+      expect(player.playCount, 2);
+    });
+
+    test('load failure stops the player and cleans up', () async {
+      player.loadError = StateError('load failed');
+      await expectLater(engine.speak('failed'), throwsStateError);
+      expect(player.stopCount, 1);
+      expect(directory.listSync(), isEmpty);
+    });
+
+    test('dispose releases stalled playback and disposes the player', () async {
+      final speaking = engine.speak('hello');
+      await pumpEventQueue(times: 100);
+      await engine.dispose();
+      await speaking;
+      expect(player.disposed, isTrue);
+      expect(directory.listSync(), isEmpty);
+      await expectLater(engine.speak('after dispose'), throwsStateError);
+    });
+  });
+
   group('voices', () {
     setUp(() {
       handler = (call) async {
@@ -217,4 +395,47 @@ void main() {
       expect(await SystemTtsEngine().voices(), isEmpty);
     });
   });
+}
+
+/// Models play() returning immediately while audio is still playing.
+class FakeAudioPlayer implements AudioPlayer {
+  final states = StreamController<ProcessingState>.broadcast(sync: true);
+  final paths = <String>[];
+  int playCount = 0;
+  int stopCount = 0;
+  bool disposed = false;
+  Object? playError;
+  Object? loadError;
+
+  @override
+  Stream<ProcessingState> get processingStateStream => states.stream;
+
+  @override
+  Future<Duration?> setFilePath(String filePath,
+      {Duration? initialPosition, bool preload = true, dynamic tag}) async {
+    paths.add(filePath);
+    if (loadError != null) throw loadError!;
+    return const Duration(seconds: 1);
+  }
+
+  @override
+  Future<void> play() async {
+    playCount++;
+    if (playError != null) throw playError!;
+  }
+
+  void complete() => states.add(ProcessingState.completed);
+
+  @override
+  Future<void> stop() async {
+    stopCount++;
+  }
+
+  @override
+  Future<void> dispose() async {
+    disposed = true;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
