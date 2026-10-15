@@ -188,8 +188,8 @@ nothing itself; Dart unloads (`NeuralTtsEngine.release`) and loads again on
 the next `speak`. iOS sends nothing on this channel: Flutter's
 `didHaveMemoryPressure` there is the real `didReceiveMemoryWarning`.
 
-Reloading Supertonic 3 (fp32) after a release took 0.9 to 1.5 s on the
-x86_64 emulator (first load 1.5 to 1.9 s), which delays the next message's
+Reloading Supertonic 3 (fp32) after a release took 0.7 to 1.2 s on the
+x86_64 emulator (first load 1.4 to 1.9 s), which delays the next message's
 first audio by as much. Unloading it lowered the app's PSS by about 400 MB.
 
 ## Threads and power

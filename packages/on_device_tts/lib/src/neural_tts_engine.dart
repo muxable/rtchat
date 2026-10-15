@@ -322,7 +322,7 @@ class NeuralTtsEngine implements TtsEngine {
 
   /// Stops speaking and unloads the model to free its memory, e.g. under
   /// memory pressure. The next [speak] loads it again, which delays its
-  /// first audio by the load time (Supertonic 3: about 0.9 to 1.5 s on the
+  /// first audio by the load time (Supertonic 3: about 0.7 to 1.2 s on the
   /// x86_64 emulator; see `doc/native_contract.md`).
   ///
   /// Unloading natively also cuts off whatever utterance is playing, even
