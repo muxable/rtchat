@@ -1208,16 +1208,11 @@ class AppLocalizationsPl extends AppLocalizations {
   String get voicePackVerifying => 'Checking the download';
 
   @override
-  String get voicePackExtracting => 'Installing';
+  String get voicePackInstalling => 'Installing';
 
   @override
   String voicePackInstallFailed(String pack, String reason) {
     return 'Couldn\'t install $pack: $reason';
-  }
-
-  @override
-  String voicePackErrorSpace(String size) {
-    return 'there isn\'t enough free storage ($size needed)';
   }
 
   @override
@@ -1226,9 +1221,6 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get voicePackErrorDamaged => 'the download was damaged; try again';
-
-  @override
-  String get voicePackErrorUnsupported => 'it needs a newer version of the app';
 
   @override
   String get voicePackErrorUnknown => 'something went wrong';

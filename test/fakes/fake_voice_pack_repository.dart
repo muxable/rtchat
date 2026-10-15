@@ -97,7 +97,7 @@ class FakeVoicePackRepository implements VoicePackRepository {
   Future<void> cleanUp({bool all = false}) async {}
 
   @override
-  Future<List<VoicePack>> availablePacks({bool refresh = false}) async {
+  Future<List<VoicePack>> availablePacks() async {
     final error = catalogError;
     if (error != null) throw error;
     return List.of(catalogPacks);
@@ -166,7 +166,6 @@ InstalledVoicePack installedPack0(VoicePack pack, {int sizeOnDisk = 1}) =>
     InstalledVoicePack(
       pack: pack,
       directory: '/voice_packs/packs/${pack.id}',
-      catalogVersion: 1,
       sizeOnDisk: sizeOnDisk,
       installedAt: DateTime(2026),
     );
@@ -188,7 +187,7 @@ VoicePack testPack({
     VoicePack(
       id: id,
       name: name,
-      modelTypeName: 'supertonic',
+      modelType: VoicePackModelType.supertonic,
       languages: languages,
       speakers: [
         for (final (i, name) in const [

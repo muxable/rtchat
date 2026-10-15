@@ -33,14 +33,12 @@ class FakeVoicePackRepository implements VoicePackRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-InstalledVoicePack pack(String id,
-        {String modelType = 'supertonic', int version = 1}) =>
-    InstalledVoicePack(
+InstalledVoicePack pack(String id, {int version = 1}) => InstalledVoicePack(
       pack: VoicePack(
         id: id,
         name: id,
         version: version,
-        modelTypeName: modelType,
+        modelType: VoicePackModelType.supertonic,
         languages: const ['en'],
         files: [
           VoicePackFile(
@@ -51,7 +49,6 @@ InstalledVoicePack pack(String id,
         ],
       ),
       directory: '/packs/$id',
-      catalogVersion: 1,
       sizeOnDisk: 1,
       installedAt: DateTime(2026),
     );
@@ -118,9 +115,6 @@ void main() {
     await pumpEventQueue();
     expect(tts.neuralEngine, same(engines.last));
 
-    // An unrelated change keeps the engine, and the model it loaded.
-    repository.add(pack('kokoro', modelType: 'kokoro'));
-    await pumpEventQueue();
     expect(created, ['supertonic-3@1']);
 
     repository.add(pack('supertonic-3', version: 2));
@@ -135,20 +129,11 @@ void main() {
     expect(engines.last.isDisposed, isTrue);
   });
 
-  test('ignores packs the neural engine cannot speak with', () async {
-    repository.installed['kokoro'] = pack('kokoro', modelType: 'kokoro');
-    await selector.start();
-    expect(tts.neuralEngine, isNull);
-  });
-
-  test('orders the usable packs by id', () {
+  test('orders the packs by id', () {
     expect(
-        NeuralEngineSelector.choose([
-          pack('c'),
-          pack('a', modelType: 'kitten'),
-          pack('b'),
-        ]).map((pack) => pack.id),
-        ['b', 'c']);
+        NeuralEngineSelector.choose([pack('c'), pack('a'), pack('b')])
+            .map((pack) => pack.id),
+        ['a', 'b', 'c']);
     expect(NeuralEngineSelector.choose([]), isEmpty);
   });
 

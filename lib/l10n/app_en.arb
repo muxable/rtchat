@@ -1660,9 +1660,9 @@
   "@voicePackVerifying": {
     "description": "Shown while a downloaded voice pack is verified"
   },
-  "voicePackExtracting": "Installing",
-  "@voicePackExtracting": {
-    "description": "Shown while a downloaded voice pack is unpacked and installed"
+  "voicePackInstalling": "Installing",
+  "@voicePackInstalling": {
+    "description": "Shown while a downloaded voice pack is installed"
   },
   "voicePackInstallFailed": "Couldn't install {pack}: {reason}",
   "@voicePackInstallFailed": {
@@ -1678,27 +1678,13 @@
       }
     }
   },
-  "voicePackErrorSpace": "there isn't enough free storage ({size} needed)",
-  "@voicePackErrorSpace": {
-    "description": "Why a voice pack couldn't be installed: not enough storage",
-    "placeholders": {
-      "size": {
-        "type": "String",
-        "example": "2 GB"
-      }
-    }
-  },
   "voicePackErrorDownload": "the download failed; check your connection and try again",
   "@voicePackErrorDownload": {
     "description": "Why a voice pack couldn't be installed: the download failed"
   },
   "voicePackErrorDamaged": "the download was damaged; try again",
   "@voicePackErrorDamaged": {
-    "description": "Why a voice pack couldn't be installed: the download didn't match its checksum or archive"
-  },
-  "voicePackErrorUnsupported": "it needs a newer version of the app",
-  "@voicePackErrorUnsupported": {
-    "description": "Why a voice pack couldn't be installed: the app is too old"
+    "description": "Why a voice pack couldn't be installed: the download didn't match its checksum"
   },
   "voicePackErrorUnknown": "something went wrong",
   "@voicePackErrorUnknown": {

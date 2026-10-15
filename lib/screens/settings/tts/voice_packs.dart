@@ -357,9 +357,7 @@ class _InstallProgress extends StatelessWidget {
               formatBytes(context, progress.downloadedBytes),
               formatBytes(context, progress.totalBytes)),
           VoicePackInstallPhase.verifying => l10n.voicePackVerifying,
-          VoicePackInstallPhase.extracting ||
-          VoicePackInstallPhase.done =>
-            l10n.voicePackExtracting,
+          VoicePackInstallPhase.done => l10n.voicePackInstalling,
         };
         final determinate = progress.phase == VoicePackInstallPhase.downloading;
         final percent = (progress.fraction * 100).round();
