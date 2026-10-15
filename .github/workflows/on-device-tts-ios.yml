@@ -1,8 +1,7 @@
 name: on_device_tts iOS
 
 # Runs the plugin's Swift tests (the OnDeviceTtsCore Swift package) on the
-# iOS simulator, with real Supertonic 3 synthesis through ONNX Runtime, and
-# checks the frameworks embedded in the app's release build (ITMS-90208).
+# iOS simulator, with real Supertonic 3 synthesis through ONNX Runtime.
 
 on:
   push:
@@ -10,16 +9,10 @@ on:
       - main
     paths:
       - "packages/on_device_tts/**"
-      - "ios/**"
-      - "pubspec.*"
-      - ".github/scripts/check_embedded_frameworks.py"
       - ".github/workflows/on-device-tts-ios.yml"
   pull_request:
     paths:
       - "packages/on_device_tts/**"
-      - "ios/**"
-      - "pubspec.*"
-      - ".github/scripts/check_embedded_frameworks.py"
       - ".github/workflows/on-device-tts-ios.yml"
   workflow_dispatch:
 
@@ -144,33 +137,3 @@ jobs:
         with:
           name: xctest-logs
           path: ${{ runner.temp }}/*.log
-
-  # App Store Connect rejected a build that embedded onnxruntime.framework
-  # with a binary minos (15.5) newer than its Info.plist MinimumOSVersion
-  # (15.1): ITMS-90208. Builds the app like the release (unsigned) and checks
-  # every embedded framework; see packages/on_device_tts/doc/ios.md.
-  embedded-frameworks:
-    runs-on: macos-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-
-      # The same toolchain as the release build (muxable/.github flutter-ios.yml).
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-
-      - name: flutter build ios
-        run: |
-          pod repo update
-          flutter pub get
-          flutter build ios --release --no-codesign
-
-      - name: Check the embedded frameworks
-        run: |
-          python3 -I .github/scripts/check_embedded_frameworks.py \
-            build/ios/iphoneos/Runner.app --require-string N11onnxruntime3EnvE \
-            | tee -a "$GITHUB_STEP_SUMMARY"

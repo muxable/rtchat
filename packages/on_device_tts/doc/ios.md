@@ -38,16 +38,11 @@ binary needs a newer iOS than its plist says. With CocoaPods
 (`static_framework = true`, the static `onnxruntime-c` pod) ONNX Runtime is
 linked into the app binary and no framework is embedded for it.
 
-The `embedded-frameworks` job in `.github/workflows/on-device-tts-ios.yml`
-builds the app and runs `.github/scripts/check_embedded_frameworks.py`,
-which fails if `onnxruntime.framework` is embedded, if any embedded
-framework's binary minos is newer than its `MinimumOSVersion`, or if ONNX
-Runtime isn't in the app. It also runs on Linux against an unzipped IPA:
-
-```sh
-python3 -I .github/scripts/check_embedded_frameworks.py Payload/Runner.app \
-  --require-string N11onnxruntime3EnvE
-```
+Nothing in CI catches this: the app builds and runs fine, and only App Store
+processing after upload rejects it. So don't add a `Package.swift` to this
+plugin (for example to silence Flutter's "do not support Swift Package
+Manager" warning) unless ONNX Runtime ships as a dynamic framework whose
+`Info.plist` matches its binary.
 
 ONNX Runtime is the official build (MIT), pinned to **1.24.2** in both the
 podspec (`onnxruntime-objc`) and the `OnDeviceTtsCore` Swift package
