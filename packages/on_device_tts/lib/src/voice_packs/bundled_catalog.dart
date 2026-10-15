@@ -11,8 +11,9 @@
 // anywhere. Sizes and checksums were computed by downloading every file.
 //
 // Supertonic 3 is under the BigScience OpenRAIL-M license: its use
-// restrictions apply and must be passed on to users. A maintainer license
-// review is pending.
+// restrictions apply and must be passed on to users (the app shows them with
+// the pack). A maintainer license review is pending. `name` and
+// `attribution` are shown to users, so keep notes like these out of them.
 
 import 'voice_pack.dart';
 
@@ -27,7 +28,7 @@ VoicePackFile _file(String path, int size, String sha256) => VoicePackFile(
 final bundledVoicePacks = List<VoicePack>.unmodifiable([
   VoicePack(
     id: 'supertonic-3',
-    name: 'Supertonic 3 (31 languages)',
+    name: 'Supertonic 3',
     version: 1,
     modelType: VoicePackModelType.supertonic,
     languages: const [
@@ -113,8 +114,7 @@ final bundledVoicePacks = List<VoicePack>.unmodifiable([
       name: 'LicenseRef-OpenRAIL-M',
       url: Uri.parse(
           'https://huggingface.co/Supertone/supertonic-3/blob/$_revision/LICENSE'),
-      attribution:
-          'Supertonic 3 by Supertone Inc. BigScience OpenRAIL-M: its use restrictions apply and must be passed on to users. A maintainer license review is pending.',
+      attribution: 'Supertonic 3 by Supertone Inc.',
     ),
     config: const {
       'duration_predictor': 'onnx/duration_predictor.onnx',

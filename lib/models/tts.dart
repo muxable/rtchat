@@ -454,6 +454,16 @@ class TtsModel extends ChangeNotifier {
   Language languageFor(MessageModel model) =>
       _knownLanguageFor(model) ?? _language;
 
+  /// The language most chat is read in: the first channel's stream
+  /// language if known, else [language].
+  Language get readingLanguage {
+    final channel = _primaryChannel;
+    return (channel == null
+            ? null
+            : _channelLanguages[channel] ?? streamLanguage(channel.language)) ??
+        _language;
+  }
+
   /// Identifies [user] for picking their voice: their provider and user id,
   /// or login if there's no id. Hashed with [fnv1a32], so a chatter keeps
   /// their voice across restarts and devices.
