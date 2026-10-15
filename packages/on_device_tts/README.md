@@ -96,7 +96,3 @@ flutter test integration_test/on_device_tts_test.dart --no-uninstall \
 the next run. To also compare the device's audio with the reference, push
 the reference directory (`push_model.sh <reference dir> reference`) and add
 `--dart-define=ON_DEVICE_TTS_REFERENCE_DIR=/data/user/0/com.rtirl.chat/files/reference`.
-
-`integration_test/on_device_tts_benchmark_test.dart` measures load time,
-time to first audio, real-time factor and CPU time over 20 chat messages;
-pass `--dart-define=PROVIDER=cpu|xnnpack|nnapi` and `THREADS=<n>`.
