@@ -4,8 +4,8 @@ Text-to-speech that runs on the device, behind one `TtsEngine` interface:
 
 * `SystemTtsEngine`: the platform's voices, through `flutter_tts`.
 * `OnnxTts`: neural TTS models (Supertonic 3 today) run natively on the
-  official [ONNX Runtime](https://onnxruntime.ai) (MIT). Android is
-  implemented in Kotlin; iOS is a stub until #1517 lands.
+  official [ONNX Runtime](https://onnxruntime.ai) (MIT), in Kotlin on
+  Android and in Swift on iOS.
 * `NeuralTtsEngine`: a `TtsEngine` that speaks with an installed voice pack
   on `OnnxTts`, splitting the text into clauses with `ClauseSplitter`.
 
@@ -34,7 +34,9 @@ Android and iOS implementations share.
 
 On Android the plugin depends on `com.microsoft.onnxruntime:onnxruntime-android`
 (pinned in `android/build.gradle.kts`), which adds its native library to
-every ABI.
+every ABI. On iOS it depends on `onnxruntime-objc` 1.24.2 (CocoaPods) or
+Microsoft's `onnxruntime-swift-package-manager` 1.24.2 (Swift Package
+Manager), which need iOS 15.1; `doc/ios.md` describes the iOS side.
 
 ## NeuralTtsEngine
 
@@ -92,6 +94,13 @@ venv/bin/python -I <repo>/packages/on_device_tts/tool/supertonic_reference.py \
 cd <repo>/android && SUPERTONIC_PARITY_DIR=<reference dir> \
     ./gradlew :on_device_tts:testDebugUnitTest --tests '*ReferenceParityTest*'
 ```
+
+### Swift (iOS simulator)
+
+The engine's Swift code is the `ios/on_device_tts/OnDeviceTtsCore` Swift package, with
+XCTests that run real synthesis on the simulator, compare it with the
+reference and exercise `speak` and `stop`. On a Mac, see `doc/ios.md`; CI
+runs them in `.github/workflows/on-device-tts-ios.yml`.
 
 ### On a device
 
