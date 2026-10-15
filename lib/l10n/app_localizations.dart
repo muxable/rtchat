@@ -1722,6 +1722,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete {pack}? This frees {size}.'**
   String voicePackDeleteConfirm(String pack, String size);
+
+  /// Button that downloads and installs a voice pack, or tries again after a failed download
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get voicePackDownload;
+
+  /// Button that downloads a newer version of an installed voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get voicePackUpdate;
+
+  /// A voice pack download waits for a Wi-Fi connection to start
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for Wi-Fi'**
+  String get voicePackWaitingForWifi;
+
+  /// Button that downloads a voice pack over mobile data instead of waiting for Wi-Fi
+  ///
+  /// In en, this message translates to:
+  /// **'Use mobile data'**
+  String get voicePackUseMobileData;
+
+  /// Progress of a voice pack download
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading: {downloaded} of {total}'**
+  String voicePackDownloading(String downloaded, String total);
+
+  /// A downloaded voice pack is being checked and installed
+  ///
+  /// In en, this message translates to:
+  /// **'Installing'**
+  String get voicePackInstalling;
+
+  /// A voice pack failed to download or install
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t install {pack}. Check your connection and try again.'**
+  String voicePackInstallFailed(String pack);
 }
 
 class _AppLocalizationsDelegate

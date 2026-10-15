@@ -1502,5 +1502,49 @@
         "example": "401 MB"
       }
     }
+  },
+  "voicePackDownload": "Download",
+  "@voicePackDownload": {
+    "description": "Button that downloads and installs a voice pack, or tries again after a failed download"
+  },
+  "voicePackUpdate": "Update",
+  "@voicePackUpdate": {
+    "description": "Button that downloads a newer version of an installed voice pack"
+  },
+  "voicePackWaitingForWifi": "Waiting for Wi-Fi",
+  "@voicePackWaitingForWifi": {
+    "description": "A voice pack download waits for a Wi-Fi connection to start"
+  },
+  "voicePackUseMobileData": "Use mobile data",
+  "@voicePackUseMobileData": {
+    "description": "Button that downloads a voice pack over mobile data instead of waiting for Wi-Fi"
+  },
+  "voicePackDownloading": "Downloading: {downloaded} of {total}",
+  "@voicePackDownloading": {
+    "description": "Progress of a voice pack download",
+    "placeholders": {
+      "downloaded": {
+        "type": "String",
+        "example": "120 MB"
+      },
+      "total": {
+        "type": "String",
+        "example": "401 MB"
+      }
+    }
+  },
+  "voicePackInstalling": "Installing",
+  "@voicePackInstalling": {
+    "description": "A downloaded voice pack is being checked and installed"
+  },
+  "voicePackInstallFailed": "Couldn't install {pack}. Check your connection and try again.",
+  "@voicePackInstallFailed": {
+    "description": "A voice pack failed to download or install",
+    "placeholders": {
+      "pack": {
+        "type": "String",
+        "example": "Supertonic 3"
+      }
+    }
   }
 }

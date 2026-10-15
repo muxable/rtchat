@@ -42,6 +42,15 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> tap(WidgetTester tester, Finder finder) async {
+    await tester.ensureVisible(finder);
+    await tester.pump();
+    await tester.tap(finder);
+    await tester.pump();
+  }
+
+  FakeInstallTask task() => repository.tasks['supertonic-3']!;
+
   testWidgets('lists a pack with its size, languages and license',
       (tester) async {
     await open(tester);
@@ -77,12 +86,61 @@ void main() {
     expect(find.text('Voice packs'), findsNothing);
   });
 
+  testWidgets('shows progress, waits for Wi-Fi, and cancels', (tester) async {
+    await open(tester);
+
+    await tap(tester, find.text('Download'));
+    expect(task().allowMetered, isFalse);
+    expect(find.text('Waiting for Wi-Fi'), findsOneWidget);
+    expect(find.text('Download'), findsNothing);
+
+    task().emit(VoicePackInstallPhase.downloading, 100000000);
+    await tester.pump();
+    expect(find.text('Downloading: 100 MB of 401 MB'), findsOneWidget);
+    expect(
+        tester
+            .widget<LinearProgressIndicator>(
+                find.byType(LinearProgressIndicator))
+            .value,
+        closeTo(100 / 401, 0.001));
+
+    task().emit(VoicePackInstallPhase.verifying, 401000000);
+    await tester.pump();
+    expect(find.text('Installing'), findsOneWidget);
+
+    final cancelled = task();
+    await tap(tester, find.byTooltip('Cancel'));
+    await tester.pumpAndSettle();
+    expect(cancelled.isCancelled, isTrue);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.text('Download'), findsOneWidget);
+    // cancelling isn't an error.
+    expect(find.textContaining("Couldn't install"), findsNothing);
+  });
+
+  testWidgets('a download waiting for Wi-Fi can use mobile data',
+      (tester) async {
+    await open(tester);
+    await tap(tester, find.text('Download'));
+    final first = task();
+
+    await tap(tester, find.text('Use mobile data'));
+    await tester.pump();
+    expect(first.isCancelled, isTrue);
+    expect(task(), isNot(same(first)));
+    expect(task().allowMetered, isTrue);
+    expect(find.text('Downloading: 0 MB of 401 MB'), findsOneWidget);
+    expect(find.text('Use mobile data'), findsNothing);
+  });
+
   testWidgets('an installed pack can be deleted', (tester) async {
     await open(tester);
     expect(find.text('Delete'), findsNothing);
-    repository
-        .add(installedPackOf(bundledVoicePacks.single, sizeOnDisk: 402000000));
+    await tap(tester, find.text('Download'));
+    repository.completeInstall('supertonic-3');
     await tester.pumpAndSettle();
+    expect(find.text('10 voices · 402 MB'), findsOneWidget);
+    expect(find.text('Download'), findsNothing);
 
     Future<void> tapDelete() async {
       await tester.ensureVisible(find.byType(OutlinedButton));
@@ -103,5 +161,35 @@ void main() {
     expect(repository.deleted, ['supertonic-3']);
     expect(find.text('10 voices · 401 MB'), findsOneWidget);
     expect(find.text('Delete'), findsNothing);
+    expect(find.text('Download'), findsOneWidget);
+  });
+
+  testWidgets('a failed install says so and can be tried again',
+      (tester) async {
+    await open(tester);
+    await tap(tester, find.text('Download'));
+    task().fail(const VoicePackDownloadException('boom'));
+    await tester.pumpAndSettle();
+    expect(
+        find.text(
+            "Couldn't install Supertonic 3. Check your connection and try again."),
+        findsOneWidget);
+
+    await tap(tester, find.text('Download'));
+    expect(repository.tasks, contains('supertonic-3'));
+    expect(find.textContaining("Couldn't install"), findsNothing);
+  });
+
+  testWidgets('offers an update for an outdated pack', (tester) async {
+    await open(tester);
+    final pack = bundledVoicePacks.single;
+    repository.add(installedPackOf(pack));
+    repository.catalog = [
+      VoicePack.fromJson({...pack.toJson(), 'version': 2}),
+    ];
+    await tester.pumpAndSettle();
+
+    await tap(tester, find.text('Update'));
+    expect(repository.tasks, contains('supertonic-3'));
   });
 }
