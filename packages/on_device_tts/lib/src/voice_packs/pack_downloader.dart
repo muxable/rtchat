@@ -53,7 +53,7 @@ class PackDownloadResult {
   const PackDownloadResult(this.state, {this.message, this.httpStatusCode});
 }
 
-/// Downloads files for voice packs. [VoicePackRepository] checks, extracts
+/// Downloads files for voice packs. [VoicePackRepository] checks
 /// and installs what this downloads.
 ///
 /// [BackgroundPackDownloader] is the implementation; tests use a fake,

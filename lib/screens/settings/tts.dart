@@ -1,10 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
-import 'package:rtchat/screens/settings/voice_packs_debug.dart';
 
 class TextToSpeechScreen extends StatelessWidget {
   const TextToSpeechScreen({super.key});
@@ -95,13 +93,6 @@ class TextToSpeechScreen extends StatelessWidget {
                 model.isSubscribersOnly = value;
               },
             ),
-            if (kDebugMode)
-              ListTile(
-                title: const Text('Voice packs (debug)'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const VoicePacksDebugScreen())),
-              ),
           ],
         );
       }),
