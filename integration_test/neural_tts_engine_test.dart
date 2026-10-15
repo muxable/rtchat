@@ -29,6 +29,8 @@ import 'package:rtchat/models/messages/twitch/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/language.dart';
+import 'package:rtchat/models/tts/telemetry.dart';
+import 'package:rtchat/models/tts/telemetry_engine.dart';
 
 /// The model directory on the device; the tests skip themselves without it.
 const modelDir = String.fromEnvironment('ON_DEVICE_TTS_MODEL_DIR');
@@ -135,6 +137,31 @@ Future<void> waitFor(bool Function() condition,
     }
     await Future<void>.delayed(const Duration(milliseconds: 20));
   }
+}
+
+/// Keeps what telemetry would send to Firebase, and prints it.
+class RecordingSink implements TelemetrySink {
+  final events = <(String, Map<String, Object>)>[];
+  final keys = <String, Object>{};
+  final sent = <String>[];
+
+  @override
+  void event(String name, Map<String, Object> parameters) {
+    events.add((name, parameters));
+    sent.add('$name $parameters');
+  }
+
+  @override
+  void setKey(String key, Object value) {
+    keys[key] = value;
+    sent.add('$key=$value');
+  }
+
+  @override
+  void log(String message) => sent.add(message);
+
+  @override
+  void recordNonFatal(Object error, StackTrace stack) => sent.add('$error');
 }
 
 int median(List<int> values) {
@@ -475,5 +502,80 @@ void main() {
     await unsplit.dispose();
     // ignore: avoid_print
     print('TTFA ${jsonEncode(results)}');
+  });
+
+  testWidgets('telemetry: loads, reloads, first audio and engine share',
+      (tester) async {
+    // start unloaded, to time the load.
+    await engine.release();
+    final sink = RecordingSink();
+    final telemetry = SessionTtsTelemetry(sink, summaryInterval: null);
+    final clock = Stopwatch()..start();
+    final measured = TelemetryTtsEngine(
+      engine: LoggingEngine(engine, clock),
+      telemetry: telemetry,
+      info: NeuralEngineInfo.of(engine),
+      events: engine.events,
+      isLoaded: () => engine.isLoaded,
+      load: engine.load,
+    );
+    final system = SilentSystemEngine();
+    final errors = <Object>[];
+    final tts = TtsModel.fromJson({'language': 'en'},
+        engine: system,
+        reportError: (e, _) => errors.add(e),
+        telemetry: telemetry);
+    tts.neuralEngine = measured;
+    final english = Channel(Providers.twitch, 'en', 'SecretStreamer');
+    final chinese = Channel(Providers.kick, 'zh', 'SecretStreamer');
+    tts.setChannelLanguage(english, Language('en'));
+    tts.setChannelLanguage(chinese, Language('zh'));
+
+    const secret = 'my very secret message';
+    tts.setMode(l10n, TtsMode.enabled);
+    for (var i = 0; i < 3; i++) {
+      tts.say(l10n, chat('$secret number $i', i)..channel = english);
+    }
+    tts.say(l10n, chat('大家好', 3)..channel = chinese);
+    await waitFor(() =>
+        events.where((e) => e.type == OnnxTtsEventType.done).length == 4 &&
+        system.spoken.length == 1);
+    // released while idle, the next message loads the model again.
+    await tts.releaseNeuralModels();
+    tts.say(l10n, chat('$secret again', 4)..channel = english);
+    await waitFor(
+        () => events.where((e) => e.type == OnnxTtsEventType.done).length == 5);
+    await pumpEventQueue();
+    telemetry.flush();
+
+    expect(errors, isEmpty);
+    final summary = sink.events.singleWhere((e) => e.$1 == 'tts_summary').$2;
+    // ignore: avoid_print
+    print('TELEMETRY summary $summary keys ${sink.keys}');
+    expect(summary['utterances'], 6);
+    expect(summary['neural'], 5);
+    expect(summary['fallback_unsupported_language'], 1);
+    expect(summary['neural_pct'], 83);
+    expect(summary['first_audio_count'], 5);
+    expect(summary['first_audio_p50_ms'] as int, inExclusiveRange(0, 10000));
+    expect(summary['first_audio_p90_ms'] as int,
+        greaterThanOrEqualTo(summary['first_audio_p50_ms'] as int));
+    expect(summary['model_loads'], 2);
+    expect(summary['model_reloads'], 1);
+    expect(summary['model_load_failures'], 0);
+    expect(summary['model_load_p50_ms'] as int, inExclusiveRange(10, 30000));
+    expect(sink.keys, {
+      'tts_engine': 'neural',
+      'tts_pack_id': 'supertonic-3',
+      'tts_model_type': 'supertonic',
+      'tts_provider': 'cpu',
+      'tts_threads': 2,
+    });
+    final everything = sink.sent.join('\n');
+    for (final private in [secret, 'Chatter', 'user0', 'SecretStreamer']) {
+      expect(everything, isNot(contains(private)));
+    }
+    await tester.pump();
+    tts.dispose();
   });
 }
