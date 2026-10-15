@@ -1562,5 +1562,31 @@
   "streamLanguage": "Stream language",
   "@streamLanguage": {
     "description": "Marks the language of the stream being watched in a list of languages"
+  },
+  "ttsEngineNeural": "Neural voice (on-device)",
+  "@ttsEngineNeural": {
+    "description": "In the text to speech settings: chat is read with a neural voice from a voice pack, which runs on the device"
+  },
+  "ttsEngineSystem": "System voice",
+  "@ttsEngineSystem": {
+    "description": "In the text to speech settings: chat is read with the device's own text to speech voice"
+  },
+  "languageUnsupported": "{language} isn't supported by your voice packs; the system voice will be used",
+  "@languageUnsupported": {
+    "description": "The installed voice packs don't speak the stream's language, so the device's own voice reads it",
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "Thai"
+      }
+    }
+  },
+  "neuralFallbackLowMemory": "This device doesn't have enough memory for neural voices, so chat is read with the system voice.",
+  "@neuralFallbackLowMemory": {
+    "description": "Shown once in the text to speech settings when a voice pack is installed but the device has too little memory to run it"
+  },
+  "neuralFallbackLoadFailed": "The neural voice couldn't load, so chat is read with the system voice.",
+  "@neuralFallbackLoadFailed": {
+    "description": "Shown once in the text to speech settings when the installed voice pack failed to load, e.g. for lack of memory"
   }
 }

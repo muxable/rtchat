@@ -4,8 +4,7 @@ import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/voice_packs.dart';
-import 'package:rtchat/screens/settings/tts/voice_packs.dart';
-import 'package:rtchat/screens/settings/tts/voices.dart';
+import 'package:rtchat/screens/settings/tts/voice_settings.dart';
 
 class TextToSpeechScreen extends StatelessWidget {
   const TextToSpeechScreen({super.key});
@@ -33,22 +32,7 @@ class TextToSpeechScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             if (context.watch<VoicePacksModel>().isSupported)
-              ListTile(
-                leading: const Icon(Icons.download_for_offline_outlined),
-                title: Text(AppLocalizations.of(context)!.voicePacks),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const VoicePacksScreen())),
-              ),
-            if (context.watch<VoicePacksModel>().isSupported &&
-                model.neuralEngine != null)
-              ListTile(
-                leading: const Icon(Icons.person_outline),
-                title: Text(AppLocalizations.of(context)!.voices),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const VoiceLanguagesScreen())),
-              ),
+              const VoiceSettings(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(

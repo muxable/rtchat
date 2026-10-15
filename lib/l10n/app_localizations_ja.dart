@@ -1102,4 +1102,23 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get streamLanguage => 'Stream language';
+
+  @override
+  String get ttsEngineNeural => 'Neural voice (on-device)';
+
+  @override
+  String get ttsEngineSystem => 'System voice';
+
+  @override
+  String languageUnsupported(String language) {
+    return '$language isn\'t supported by your voice packs; the system voice will be used';
+  }
+
+  @override
+  String get neuralFallbackLowMemory =>
+      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+
+  @override
+  String get neuralFallbackLoadFailed =>
+      'The neural voice couldn\'t load, so chat is read with the system voice.';
 }
