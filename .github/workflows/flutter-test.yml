@@ -16,3 +16,6 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
       - run: flutter test
+      - name: Test on_device_tts
+        run: flutter test
+        working-directory: packages/on_device_tts

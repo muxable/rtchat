@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -14,6 +13,8 @@ import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts.dart';
+
+import '../fakes/fake_tts_engine.dart';
 
 final timestamp = DateTime(2024, 1, 2, 3, 4, 5);
 
@@ -39,19 +40,17 @@ TwitchMessageModel createMessage(String message,
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // TtsModel eagerly creates a platform-backed tts player; stub it out.
   setUpAll(() async {
     await initializeDateFormatting('en');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-            const MethodChannel('flutter_tts'), (call) async => null);
   });
 
   final l10n = lookupAppLocalizations(const Locale('en'));
+  late FakeTtsEngine engine;
   late TtsModel model;
 
   setUp(() {
-    model = TtsModel.fromJson({});
+    engine = FakeTtsEngine();
+    model = TtsModel.fromJson({}, engine: engine);
   });
 
   group('getVocalization of chat messages', () {
@@ -291,9 +290,9 @@ void main() {
           },
         ],
       };
-      final roundTripped = TtsModel.fromJson(json).toJson();
+      final roundTripped = TtsModel.fromJson(json, engine: engine).toJson();
       expect(roundTripped, json);
-      expect(TtsModel.fromJson(roundTripped).toJson(), json);
+      expect(TtsModel.fromJson(roundTripped, engine: engine).toJson(), json);
     });
 
     test('muted users saved before providers existed are twitch users', () {
@@ -301,7 +300,7 @@ void main() {
         'mutedUsers': [
           {'userId': '1', 'login': 'muxfd', 'displayName': 'Muxfd'},
         ],
-      });
+      }, engine: engine);
       expect(restored.toJson()['mutedUsers'], [
         {
           'provider': 'twitch',
@@ -316,7 +315,7 @@ void main() {
     });
 
     test('settings saved by versions with cloud tts still load', () {
-      final restored = TtsModel.fromJson({
+      final restored = TtsModel.fromJson(engine: engine, {
         'isBotMuted': true,
         'isCloudTtsEnabled': true,
         'isRandomVoiceEnabled': false,
@@ -339,7 +338,7 @@ void main() {
       const user =
           TwitchUserModel(userId: '1', login: 'muxfd', displayName: 'Muxfd');
       model.mute(user);
-      final restored = TtsModel.fromJson(model.toJson());
+      final restored = TtsModel.fromJson(model.toJson(), engine: engine);
       expect(restored.isMuted(user), isTrue);
       restored.unmute(user);
       expect(restored.isMuted(user), isFalse);
@@ -381,58 +380,81 @@ void main() {
 
   group('utterance queue', () {
     test('speaks messages in order', () async {
-      final spoken = <String>[];
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(const MethodChannel('flutter_tts'),
-              (call) async {
-        if (call.method == 'speak') {
-          spoken.add(call.arguments as String);
-        }
-        return 1;
-      });
-      addTearDown(() => TestDefaultBinaryMessengerBinding
-          .instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(
-              const MethodChannel('flutter_tts'), (call) async => null));
-
       model.setMode(l10n, TtsMode.enabled);
       model.say(l10n, createMessage('first', messageId: 'first'));
       model.say(l10n, createMessage('second', messageId: 'second'));
       await pumpEventQueue();
 
-      expect(spoken, [
+      expect(engine.spoken, [
         'Text to speech enabled',
         'Muxfd said: first',
         'Muxfd said: second',
       ]);
     });
 
-    test('a failed utterance does not block the ones after it', () async {
-      final spoken = <String>[];
-      var failNext = false;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(const MethodChannel('flutter_tts'),
-              (call) async {
-        if (call.method == 'speak') {
-          if (failNext) {
-            failNext = false;
-            throw PlatformException(code: 'failed');
-          }
-          spoken.add(call.arguments as String);
-        }
-        return 1;
-      });
-      addTearDown(() => TestDefaultBinaryMessengerBinding
-          .instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(
-              const MethodChannel('flutter_tts'), (call) async => null));
+    test('waits for each utterance to finish before the next', () async {
+      engine.holdSpeech = true;
+      model.setMode(l10n, TtsMode.enabled);
+      model.say(l10n, createMessage('first', messageId: 'first'));
+      await pumpEventQueue();
+      expect(engine.spoken, ['Text to speech enabled']);
 
-      // the platform fails the first utterance, and reporting the error fails
+      engine.finishSpeaking();
+      await pumpEventQueue();
+      expect(engine.spoken, ['Text to speech enabled', 'Muxfd said: first']);
+    });
+
+    test('drops the author prelude for consecutive messages by one chatter',
+        () async {
+      engine.holdSpeech = true;
+      model.setMode(l10n, TtsMode.enabled);
+      await pumpEventQueue();
+      engine.finishSpeaking();
+      model.say(l10n, createMessage('first', messageId: 'first'));
+      await pumpEventQueue();
+      model.say(l10n, createMessage('second', messageId: 'second'));
+      for (var i = 0; i < 3; i++) {
+        engine.finishSpeaking();
+        await pumpEventQueue();
+      }
+
+      expect(engine.spoken.skip(1), ['Muxfd said: first', 'second']);
+    });
+
+    test('speaks with the rate and pitch from the settings', () async {
+      model.speed = 0.3;
+      model.pitch = 1.7;
+      model.setMode(l10n, TtsMode.enabled);
+      await pumpEventQueue();
+
+      final utterance = engine.utterances.single;
+      expect(utterance.rate, 0.3);
+      expect(utterance.pitch, 1.7);
+      expect(utterance.voice, isNull);
+    });
+
+    test('unsaid messages are skipped', () async {
+      engine.holdSpeech = true;
+      model.setMode(l10n, TtsMode.enabled);
+      model.say(l10n, createMessage('first', messageId: 'first'));
+      model.say(l10n, createMessage('second', messageId: 'second'));
+      await pumpEventQueue();
+      model.unsay('first');
+      for (var i = 0; i < 3; i++) {
+        engine.finishSpeaking();
+        await pumpEventQueue();
+      }
+
+      expect(engine.spoken, ['Text to speech enabled', 'Muxfd said: second']);
+    });
+
+    test('a failed utterance does not block the ones after it', () async {
+      // the engine fails the first utterance, and reporting the error fails
       // too (no firebase app in tests).
       await runZonedGuarded(() async {
         model.setMode(l10n, TtsMode.enabled);
         await pumpEventQueue();
-        failNext = true;
+        engine.failNext = Exception('tts failed');
         model.say(l10n, createMessage('first', messageId: 'first'));
         await pumpEventQueue();
       }, (error, stack) {});
@@ -442,44 +464,21 @@ void main() {
         await pumpEventQueue();
       }, (error, stack) {});
 
-      expect(spoken, isNot(contains('Muxfd said: first')));
-      expect(spoken, contains('Muxfd said: second'));
+      expect(engine.spoken, isNot(contains('Muxfd said: first')));
+      expect(engine.spoken, contains('Muxfd said: second'));
+    });
+
+    test('disposing the model disposes the engine', () {
+      model.dispose();
+      expect(engine.isDisposed, isTrue);
     });
   });
 
   group('backlog', () {
-    late List<String> spoken;
-    late List<Completer<void>> speaking;
-
-    setUp(() {
-      spoken = [];
-      speaking = [];
-      // speech never finishes on its own, so messages pile up like they do
-      // when chat outpaces tts. stopping tts ends the current utterance.
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(const MethodChannel('flutter_tts'),
-              (call) async {
-        if (call.method == 'speak') {
-          spoken.add(call.arguments as String);
-          final done = Completer<void>();
-          speaking.add(done);
-          await done.future;
-        } else if (call.method == 'stop') {
-          for (final done in speaking) {
-            if (!done.isCompleted) done.complete();
-          }
-        }
-        return 1;
-      });
-      addTearDown(() {
-        for (final done in speaking) {
-          if (!done.isCompleted) done.complete();
-        }
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(
-                const MethodChannel('flutter_tts'), (call) async => null);
-      });
-    });
+    // speech never finishes on its own, so messages pile up like they do
+    // when chat outpaces tts. stopping tts ends the current utterance.
+    setUp(() => engine.holdSpeech = true);
+    tearDown(() => engine.finishSpeaking());
 
     TwitchMessageModel from(int i) => createMessage('message $i',
         messageId: 'm$i',
@@ -496,8 +495,9 @@ void main() {
       await pumpEventQueue();
 
       expect(model.mode, TtsMode.disabled);
-      expect(spoken.last, l10n.textToSpeechTooManyMessages);
-      expect(spoken.where((s) => s.contains(' said: ')), isEmpty);
+      expect(engine.stopCount, 1);
+      expect(engine.spoken.last, l10n.textToSpeechTooManyMessages);
+      expect(engine.spoken.where((s) => s.contains(' said: ')), isEmpty);
     });
 
     test('skips the author prelude to catch up on a long backlog', () async {
@@ -508,15 +508,14 @@ void main() {
       }
       // let the backlog drain.
       for (var i = 0; i < 20; i++) {
-        for (final done in speaking) {
-          if (!done.isCompleted) done.complete();
-        }
+        engine.finishSpeaking();
         await pumpEventQueue();
       }
 
-      expect(spoken, contains('User1 said: message 1'));
-      expect(spoken, contains('message 11'));
+      expect(engine.spoken, contains('User1 said: message 1'));
+      expect(engine.spoken, contains('message 11'));
       expect(model.mode, TtsMode.enabled);
+      expect(engine.stopCount, 0);
     });
   });
 }

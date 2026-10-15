@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_tts/flutter_tts.dart';
+import 'package:on_device_tts/on_device_tts.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/channels.dart';
@@ -34,12 +34,7 @@ enum TtsMode { disabled, alertsOnly, enabled }
 final _markup = RegExp(r'</?b>');
 
 class TtsModel extends ChangeNotifier {
-  final _tts = FlutterTts()
-    ..setSharedInstance(true)
-    ..setIosAudioCategory(
-        IosTextToSpeechAudioCategory.playback,
-        [IosTextToSpeechAudioCategoryOptions.mixWithOthers],
-        IosTextToSpeechAudioMode.voicePrompt);
+  final TtsEngine _engine;
 
   Future<void> _previousUtterance = Future.value();
   // the messages waiting to be read out, and the channel they came from.
@@ -423,10 +418,7 @@ class TtsModel extends ChangeNotifier {
     if ((_mode != TtsMode.disabled || model is SystemMessageModel) &&
         _pending.containsKey(model.messageId)) {
       try {
-        await _tts.setSpeechRate(_speed);
-        await _tts.setPitch(_pitch);
-        await _tts.awaitSpeakCompletion(true);
-        await _tts.speak(vocalization);
+        await _engine.speak(vocalization, rate: _speed, pitch: _pitch);
       } catch (e, st) {
         FirebaseCrashlytics.instance.recordError(e, st);
       }
@@ -440,7 +432,7 @@ class TtsModel extends ChangeNotifier {
         SystemMessageModel(text: localizations.textToSpeechTooManyMessages),
         force: true);
     // cut off the current utterance; everything queued behind it is dropped.
-    _tts.stop().catchError((_) => null);
+    _engine.stop().catchError((_) {});
     WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
     });
@@ -498,8 +490,16 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  TtsModel.fromJson(Map<String, dynamic> json) {
+  /// Speaks through [engine], or through the platform's voices by default.
+  TtsModel.fromJson(Map<String, dynamic> json, {TtsEngine? engine})
+      : _engine = engine ?? SystemTtsEngine() {
     _updateFromJsonInternal(json);
+  }
+
+  @override
+  void dispose() {
+    _engine.dispose().catchError((_) {});
+    super.dispose();
   }
 
   Map<String, dynamic> toJson() => {
