@@ -185,19 +185,6 @@ void main() {
     expect(find.textContaining("Couldn't install"), findsNothing);
   });
 
-  testWidgets('says when there is not enough storage', (tester) async {
-    final harness = await open(tester);
-    await tap(tester, find.bySemanticsLabel('Download Supertonic 3'));
-    await tester.pump();
-    taskOf(harness).fail(
-        const VoicePackInsufficientSpaceException('full', 2000000000, 100));
-    await tester.pumpAndSettle();
-    expect(
-        find.text("Couldn't install Supertonic 3: there isn't enough free "
-            'storage (2 GB needed)'),
-        findsOneWidget);
-  });
-
   testWidgets('says when the catalog cannot be read', (tester) async {
     final harness = await open(tester,
         setUp: (harness) => harness.repository.catalogError = Exception('x'));

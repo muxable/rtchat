@@ -59,13 +59,8 @@ bool isOpenRail(VoicePackLicense? license) =>
 String installErrorReason(BuildContext context, Object error) {
   final l10n = AppLocalizations.of(context)!;
   return switch (error) {
-    VoicePackInsufficientSpaceException(:final requiredBytes) =>
-      l10n.voicePackErrorSpace(formatBytes(context, requiredBytes)),
     VoicePackDownloadException() => l10n.voicePackErrorDownload,
-    VoicePackChecksumException() ||
-    VoicePackArchiveException() =>
-      l10n.voicePackErrorDamaged,
-    VoicePackUnsupportedException() => l10n.voicePackErrorUnsupported,
+    VoicePackChecksumException() => l10n.voicePackErrorDamaged,
     _ => l10n.voicePackErrorUnknown,
   };
 }

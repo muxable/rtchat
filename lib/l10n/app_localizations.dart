@@ -1879,11 +1879,11 @@ abstract class AppLocalizations {
   /// **'Checking the download'**
   String get voicePackVerifying;
 
-  /// Shown while a downloaded voice pack is unpacked and installed
+  /// Shown while a downloaded voice pack is installed
   ///
   /// In en, this message translates to:
   /// **'Installing'**
-  String get voicePackExtracting;
+  String get voicePackInstalling;
 
   /// Shown when installing a voice pack failed, with why
   ///
@@ -1891,29 +1891,17 @@ abstract class AppLocalizations {
   /// **'Couldn\'t install {pack}: {reason}'**
   String voicePackInstallFailed(String pack, String reason);
 
-  /// Why a voice pack couldn't be installed: not enough storage
-  ///
-  /// In en, this message translates to:
-  /// **'there isn\'t enough free storage ({size} needed)'**
-  String voicePackErrorSpace(String size);
-
   /// Why a voice pack couldn't be installed: the download failed
   ///
   /// In en, this message translates to:
   /// **'the download failed; check your connection and try again'**
   String get voicePackErrorDownload;
 
-  /// Why a voice pack couldn't be installed: the download didn't match its checksum or archive
+  /// Why a voice pack couldn't be installed: the download didn't match its checksum
   ///
   /// In en, this message translates to:
   /// **'the download was damaged; try again'**
   String get voicePackErrorDamaged;
-
-  /// Why a voice pack couldn't be installed: the app is too old
-  ///
-  /// In en, this message translates to:
-  /// **'it needs a newer version of the app'**
-  String get voicePackErrorUnsupported;
 
   /// Why a voice pack couldn't be installed: an unexpected error
   ///
