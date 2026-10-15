@@ -67,7 +67,7 @@ class NeuralEngineInfo {
 
   factory NeuralEngineInfo.of(NeuralTtsEngine engine) => NeuralEngineInfo(
         packId: engine.pack.id,
-        modelType: engine.pack.pack.modelTypeName,
+        modelType: engine.pack.pack.modelType.name,
         provider: engine.provider.name,
         threads: engine.numThreads,
       );
@@ -256,11 +256,9 @@ class TtsErrorReport implements Exception {
 
 /// The kind of [error] an install failed with, for the install funnel.
 String installErrorType(Object error) => switch (error) {
-      VoicePackInsufficientSpaceException() => 'no_space',
       VoicePackDownloadException(:final statusCode) =>
         statusCode == null ? 'download' : 'download_http_$statusCode',
       VoicePackChecksumException() => 'checksum',
-      VoicePackArchiveException() => 'archive',
       VoicePackUnsupportedException() => 'unsupported',
       VoicePackCancelledException() => 'cancelled',
       _ => 'other',

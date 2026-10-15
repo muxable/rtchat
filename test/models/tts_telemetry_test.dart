@@ -224,7 +224,7 @@ void main() {
           packId: 'supertonic-3',
           sizeBytes: 401000000,
           duration: const Duration(seconds: 75),
-          error: 'no_space',
+          error: 'checksum',
           overMobileData: true);
       telemetry.packInstall(PackInstallStage.deleted,
           packId: 'supertonic-3', sizeBytes: 402000000);
@@ -239,7 +239,7 @@ void main() {
           'pack_id': 'supertonic-3',
           'size_mb': 401,
           'duration_s': 75,
-          'error': 'no_space',
+          'error': 'checksum',
           'mobile_data': 1,
         },
         {'pack_id': 'supertonic-3', 'size_mb': 402},
@@ -248,9 +248,6 @@ void main() {
 
     test('names install errors by kind', () {
       expect(
-          installErrorType(const VoicePackInsufficientSpaceException('', 2, 1)),
-          'no_space');
-      expect(
           installErrorType(const VoicePackDownloadException('')), 'download');
       expect(
           installErrorType(
@@ -258,7 +255,6 @@ void main() {
           'download_http_404');
       expect(
           installErrorType(const VoicePackChecksumException('')), 'checksum');
-      expect(installErrorType(const VoicePackArchiveException('')), 'archive');
       expect(installErrorType(const VoicePackUnsupportedException('')),
           'unsupported');
       expect(installErrorType(Exception('?')), 'other');
