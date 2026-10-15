@@ -36,8 +36,8 @@ Loads the sessions once; every later call with the handle reuses them.
 XNNPACK's thread pool instead, and the session's own pool gets 1 thread, as
 ONNX Runtime recommends. Every session sets
 `session.intra_op.allow_spinning=0`, whatever the provider, so idle intra-op
-threads block instead of busy-waiting between messages (iOS here; Android
-from #1531).
+threads block instead of busy-waiting between messages; see
+[Threads and power](#threads-and-power).
 
 A provider that is unknown, not available on the platform (`nnapi` on iOS,
 `coreml` on Android) or that fails to take a model **falls back to `cpu`**
@@ -181,6 +181,25 @@ been written to the audio output (for time-to-first-audio telemetry, #1508);
 `done` when the last audio has played. The terminal event is sent just
 before `speak` returns. Events of other utterances may interleave only
 after it.
+
+## Threads and power
+
+* **Spinning.** ONNX Runtime's intra-op threads busy-wait for work by
+  default. Chat arrives a message at a time, so every session sets
+  `session.intra_op.allow_spinning=0`.
+* **Priorities (Android).** Models load and synthesize at
+  `THREAD_PRIORITY_DEFAULT`. ONNX Runtime starts a session's intra-op
+  threads on the thread that creates the session, and they inherit its
+  priority, so loading at background priority would leave half of every
+  inference at background priority. The playback thread runs at
+  `THREAD_PRIORITY_AUDIO`.
+* **Wake lock (Android).** A partial wake lock (`on_device_tts:speak`) is
+  held while a model loads and from `speak` until its terminal event, with a
+  10-minute timeout per hold; never between utterances. With the screen off
+  a foreground service keeps the process alive but not the CPU awake, and
+  the audio server's own wake lock only covers audio that is playing, not
+  loading or synthesizing the first clause. Needs the `WAKE_LOCK`
+  permission, which the plugin's manifest declares.
 
 ## Supertonic pipeline
 

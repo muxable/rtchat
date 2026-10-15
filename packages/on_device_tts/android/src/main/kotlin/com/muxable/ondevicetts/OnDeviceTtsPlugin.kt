@@ -1,5 +1,7 @@
 package com.muxable.ondevicetts
 
+import android.content.Context
+import android.os.PowerManager
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
@@ -14,7 +16,16 @@ class OnDeviceTtsPlugin : FlutterPlugin {
     private var engine: OnnxTtsChannelHandler? = null
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        val handler = OnnxTtsChannelHandler()
+        val power = binding.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val wakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "on_device_tts:speak").apply {
+            setReferenceCounted(false)
+        }
+        val activity = ActivityLock(
+            ActivityLock.DEFAULT_TIMEOUT_MS,
+            acquire = { wakeLock.acquire(it) },
+            release = { if (wakeLock.isHeld) wakeLock.release() },
+        )
+        val handler = OnnxTtsChannelHandler(activity)
         methods = MethodChannel(binding.binaryMessenger, OnnxTtsChannelHandler.METHOD_CHANNEL).also {
             it.setMethodCallHandler(handler)
         }
