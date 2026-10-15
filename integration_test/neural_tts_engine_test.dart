@@ -132,6 +132,19 @@ void main() {
     await tester.pump(); // TtsModel notifies after the next frame.
   });
 
+  testWidgets('releases the model, and the next message loads it again',
+      (tester) async {
+    expect(await OnnxTtsPlatform.instance.deviceMemory(), isNotNull);
+    tts.setMode(l10n, TtsMode.enabled);
+    await waitFor(() => eventsOf(OnnxTtsEventType.done).length == 1);
+    await tts.releaseNeuralModels();
+    expect(engine.isLoaded, isFalse);
+    tts.say(l10n, chat('hello again, after a release', 1));
+    await waitFor(() => eventsOf(OnnxTtsEventType.done).length == 2);
+    expect(engine.isLoaded, isTrue);
+    await tester.pump(); // TtsModel notifies after the next frame.
+  });
+
   testWidgets('stop cuts the utterance off at once', (_) async {
     final speaking = engine.speak('This message goes on, and on, and on, for '
         'a good long while, until somebody finally stops it.');

@@ -6,7 +6,11 @@ import 'package:rtchat/models/tts/neural_engine_selector.dart';
 import '../fakes/fake_tts_engine.dart';
 import '../fakes/fake_voice_pack_repository.dart';
 
+const lowMemory = NeuralTtsFallback.lowMemoryDevice;
+
 void main() {
+  // the default device memory check asks the (missing) native engine.
+  TestWidgetsFlutterBinding.ensureInitialized();
   late FakeVoicePackRepository repository;
   late TtsModel tts;
   late List<Object> errors;
@@ -73,6 +77,35 @@ void main() {
     await selector.start();
     expect(tts.neuralEngine, isNull);
     expect(errors.single, isA<NeuralTtsException>());
+  });
+
+  test('a low-RAM or 2 GB device reads with the system voices', () async {
+    for (final (memory, fallback) in [
+      (const DeviceMemory(totalBytes: 8 << 30), null),
+      (null, null), // unknown, e.g. no native engine
+      (const DeviceMemory(totalBytes: 1900 << 20), lowMemory),
+      (
+        const DeviceMemory(totalBytes: 8 << 30, isLowRamDevice: true),
+        lowMemory
+      ),
+    ]) {
+      final tts = TtsModel.fromJson({}, engine: FakeTtsEngine());
+      var checks = 0;
+      final selector = NeuralEngineSelector(
+          repository: repository,
+          tts: tts,
+          reportError: (e, _) => fail('$e'),
+          createEngine: (_) => FakeTtsEngine(),
+          deviceMemory: () async {
+            checks++;
+            return memory;
+          });
+      await selector.start();
+      await selector.start();
+      expect((tts.neuralFallback, checks), (fallback, 1), reason: '$memory');
+      selector.dispose();
+      tts.dispose();
+    }
   });
 
   test('stops following changes once disposed', () async {

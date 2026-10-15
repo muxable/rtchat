@@ -9,11 +9,17 @@ typedef NeuralEngineFactory = TtsEngine Function(InstalledVoicePack pack);
 /// Gives [tts] a neural engine for an installed voice pack, if there is one,
 /// at startup and whenever packs are installed, upgraded or deleted. Without
 /// a pack, [tts] speaks with the system voices.
+///
+/// On a device with too little memory
+/// ([DeviceMemory.isTooSmallForNeuralTts]), it tells [tts] to read with the
+/// system voices instead ([NeuralTtsFallback.lowMemoryDevice]), so no model
+/// loads.
 class NeuralEngineSelector {
   final VoicePackRepository repository;
   final TtsModel tts;
   final NeuralEngineFactory _createEngine;
   final TtsErrorReporter _reportError;
+  final Future<DeviceMemory?> Function() _deviceMemory;
 
   StreamSubscription<void>? _changes;
   Future<void> _refreshing = Future.value();
@@ -26,13 +32,30 @@ class NeuralEngineSelector {
     required this.tts,
     required TtsErrorReporter reportError,
     NeuralEngineFactory? createEngine,
+    Future<DeviceMemory?> Function()? deviceMemory,
   })  : _createEngine = createEngine ?? NeuralTtsEngine.new,
-        _reportError = reportError;
+        _reportError = reportError,
+        _deviceMemory = deviceMemory ?? OnnxTtsPlatform.instance.deviceMemory;
 
-  /// Picks the engine now and again whenever the installed packs change.
+  /// Checks the device's memory, then picks the engine now and again
+  /// whenever the installed packs change.
   Future<void> start() {
-    _changes ??= repository.changes.listen((_) => refresh());
+    if (_changes == null) {
+      _changes = repository.changes.listen((_) => refresh());
+      _refreshing = _checkDeviceMemory();
+    }
     return refresh();
+  }
+
+  Future<void> _checkDeviceMemory() async {
+    try {
+      final memory = await _deviceMemory();
+      if (!_isDisposed && memory != null && memory.isTooSmallForNeuralTts) {
+        tts.fallBackToSystemVoices(NeuralTtsFallback.lowMemoryDevice);
+      }
+    } catch (e, st) {
+      _reportError(e, st);
+    }
   }
 
   /// The installed pack to speak with: the first, by id, that a
