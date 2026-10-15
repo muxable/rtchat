@@ -101,6 +101,71 @@ void main() {
     expect(methods(), contains('clearVoice'));
   });
 
+  group('language', () {
+    setUp(() {
+      // the platform has voices for these languages.
+      handler = (call) async => call.method != 'setLanguage' ||
+              {'en', 'es', 'ja', 'pt'}.contains(call.arguments)
+          ? 1
+          : 0;
+    });
+
+    List<Object?> languageCalls() => [
+          for (final call in calls)
+            if (call.method == 'setLanguage')
+              call.arguments
+            else if (call.method == 'clearVoice')
+              'clearVoice',
+        ];
+
+    Future<SystemTtsEngine> engine({String? platformLanguage}) async {
+      final engine = SystemTtsEngine(platformLanguage: () => platformLanguage);
+      await pumpEventQueue();
+      calls.clear();
+      return engine;
+    }
+
+    test('sets the language before speaking, only when it changes', () async {
+      final tts = await engine();
+      await tts.speak('hola', language: 'es');
+      await tts.speak('otra vez', language: 'es');
+      await tts.speak('konnichiwa', language: 'ja');
+      expect(languageCalls(), ['es', 'ja']);
+      expect(methods().indexOf('setLanguage'),
+          lessThan(methods().indexOf('speak')));
+    });
+
+    test('falls back to the primary language, then the default voice',
+        () async {
+      final tts = await engine();
+      await tts.speak('oi', language: 'pt-BR');
+      expect(languageCalls(), ['pt-BR', 'pt']);
+
+      calls.clear();
+      await tts.speak('ni hao', language: 'zh');
+      expect(languageCalls(), ['zh', 'clearVoice']);
+    });
+
+    test('goes back to the default voice and platform language without one',
+        () async {
+      final tts = await engine(platformLanguage: 'en-US');
+      await tts.speak('hello');
+      expect(languageCalls(), isEmpty, reason: 'already the default');
+
+      await tts.speak('hola', language: 'es');
+      await tts.speak('hello');
+      expect(languageCalls(), ['es', 'clearVoice', 'en-US']);
+    });
+
+    test('a voice wins over the language', () async {
+      final tts = await engine();
+      const voice = TtsVoice(id: 'en-gb-x', name: 'en-gb-x', locale: 'en-GB');
+      await tts.speak('one', voice: voice, language: 'es');
+      expect(methods(), isNot(contains('setLanguage')));
+      expect(methods(), contains('setVoice'));
+    });
+  });
+
   test('stop and dispose stop the platform', () async {
     final engine = SystemTtsEngine();
     await pumpEventQueue();

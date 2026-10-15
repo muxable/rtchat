@@ -8,9 +8,10 @@ class FakeUtterance {
   final TtsVoice? voice;
   final double rate;
   final double pitch;
+  final String? language;
 
   FakeUtterance(this.text,
-      {this.voice, required this.rate, required this.pitch});
+      {this.voice, required this.rate, required this.pitch, this.language});
 
   @override
   String toString() => 'FakeUtterance($text, rate: $rate, pitch: $pitch)';
@@ -48,13 +49,15 @@ class FakeTtsEngine implements TtsEngine {
     TtsVoice? voice,
     double rate = TtsEngine.normalRate,
     double pitch = TtsEngine.normalPitch,
+    String? language,
   }) async {
     final error = failNext;
     if (error != null) {
       failNext = null;
       throw error;
     }
-    utterances.add(FakeUtterance(text, voice: voice, rate: rate, pitch: pitch));
+    utterances.add(FakeUtterance(text,
+        voice: voice, rate: rate, pitch: pitch, language: language));
     await onSpeak?.call(text);
     if (holdSpeech) {
       final done = Completer<void>();
