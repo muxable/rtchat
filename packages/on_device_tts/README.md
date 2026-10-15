@@ -117,3 +117,8 @@ flutter test integration_test/on_device_tts_test.dart --no-uninstall \
 the next run. To also compare the device's audio with the reference, push
 the reference directory (`push_model.sh <reference dir> reference`) and add
 `--dart-define=ON_DEVICE_TTS_REFERENCE_DIR=/data/user/0/com.rtirl.chat/files/reference`.
+
+`integration_test/neural_tts_engine_test.dart` takes the same
+`ON_DEVICE_TTS_MODEL_DIR` and reads chat through the app's `TtsModel` queue
+with `NeuralTtsEngine`: order, `firstAudio`/`done` events, `stop` and the
+backlog cutoff.
