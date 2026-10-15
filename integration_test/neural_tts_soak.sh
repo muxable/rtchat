@@ -12,11 +12,12 @@
 #    the screen off;
 # 3. every 30 s samples the app's memory (dumpsys meminfo), CPU time
 #    (/proc/<pid>/stat), process state and wake locks into samples.csv;
-# 4. sends TRIM_MEMORY_RUNNING_CRITICAL at 10 and 22 min, which must release
-#    the model (and TRIM_MEMORY_RUNNING_MODERATE at 11 min, which mustn't,
-#    and without which am refuses the second RUNNING_CRITICAL). (Pressing HOME already sent TRIM_MEMORY_UI_HIDDEN, which
-#    Flutter reports as memory pressure and which must not release it. `am
-#    send-trim-memory HIDDEN` is refused for a foreground-service process.)
+# 4. sends TRIM_MEMORY_RUNNING_CRITICAL at 10 min, which must release the
+#    model. (am refuses to send it again, or a lower level, to the same
+#    process. Pressing HOME already sent TRIM_MEMORY_UI_HIDDEN, which Flutter
+#    reports as memory pressure and which must not release the model; am
+#    refuses HIDDEN for a foreground-service process.) The idle timeout
+#    releases it again during a quiet spell at 15 min;
 # 5. prints the test's SOAK_RESULT line, and uninstalls the app.
 #
 # Emulator numbers say nothing about a real phone's battery or heat.
@@ -66,21 +67,11 @@ adb shell input keyevent KEYCODE_SLEEP
 note "home pressed, screen off: $(adb shell dumpsys power | grep -m1 mWakefulness= | tr -d '\r ')"
 
 echo "elapsed_s,pss_kb,rss_kb,cpu_ticks,proc_state,wake_lock_held,screen" >"$samples"
-sent_critical1=false
-sent_moderate=false
-sent_critical2=false
+sent_critical=false
 while kill -0 "$test_pid" 2>/dev/null; do
   elapsed=$(($(date +%s) - start))
-  if [ "$sent_critical1" = false ] && [ "$elapsed" -ge 600 ]; then
-    sent_critical1=true
-    note "send-trim-memory RUNNING_CRITICAL: $(adb shell am send-trim-memory "$package" RUNNING_CRITICAL 2>&1 | tr -d '\r')"
-  fi
-  if [ "$sent_moderate" = false ] && [ "$elapsed" -ge 660 ]; then
-    sent_moderate=true
-    note "send-trim-memory RUNNING_MODERATE: $(adb shell am send-trim-memory "$package" RUNNING_MODERATE 2>&1 | tr -d '\r')"
-  fi
-  if [ "$sent_critical2" = false ] && [ "$elapsed" -ge 1320 ]; then
-    sent_critical2=true
+  if [ "$sent_critical" = false ] && [ "$elapsed" -ge 600 ]; then
+    sent_critical=true
     note "send-trim-memory RUNNING_CRITICAL: $(adb shell am send-trim-memory "$package" RUNNING_CRITICAL 2>&1 | tr -d '\r')"
   fi
   meminfo=$(adb shell dumpsys meminfo "$package" 2>/dev/null | tr -d '\r')

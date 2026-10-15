@@ -353,7 +353,9 @@ void main() {
     final releasedWhenOff = !engine.isLoaded;
     monitor.dispose();
     service.dispose();
-    tts.dispose();
+    // not tts.dispose(): turning TTS off notifies its listeners on the next
+    // frame, which doesn't come while the app is in the background.
+    await engine.dispose();
 
     expect(errors, isEmpty);
     expect(tts.neuralFallback, isNull);
