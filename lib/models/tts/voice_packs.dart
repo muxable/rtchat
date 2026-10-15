@@ -53,8 +53,8 @@ class VoicePacksModel extends ChangeNotifier {
             repository != null && (isSupported ?? platformSupportsNeuralVoices);
 
   /// Whether this platform has a native engine for neural voice packs.
-  // TODO(#1519): enable on iOS once the native iOS engine is merged.
-  static bool get platformSupportsNeuralVoices => Platform.isAndroid;
+  static bool get platformSupportsNeuralVoices =>
+      Platform.isAndroid || Platform.isIOS;
 
   /// Reads the catalog and the installed packs, and follows changes to them.
   /// Safe to call more than once.
