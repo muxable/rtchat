@@ -1,0 +1,46 @@
+{
+  "actions": [
+    {
+      "updateViewershipAction": {
+        "viewCount": {
+          "videoViewCountRenderer": {
+            "viewCount": {
+              "simpleText": "3,872 watching now"
+            },
+            "isLive": true,
+            "extraShortViewCount": {
+              "accessibility": {
+                "accessibilityData": {
+                  "label": "3.8K"
+                }
+              },
+              "simpleText": "3.8K"
+            },
+            "unlabeledViewCountValue": {
+              "simpleText": "3,872"
+            },
+            "originalViewCount": "3872"
+          }
+        }
+      }
+    },
+    {
+      "updateDateTextAction": {
+        "dateText": {
+          "simpleText": "Started streaming on Oct 1, 2026"
+        }
+      }
+    },
+    {
+      "updateTitleAction": {
+        "title": {
+          "runs": [
+            {
+              "text": "24/7 halloween ambience 🎃 spooky lofi to get chills to"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

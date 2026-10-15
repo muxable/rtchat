@@ -9,11 +9,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Store isolates message persistence and transactional reader ownership.
+// Store isolates message and channel persistence and transactional reader ownership.
 // Lease renewals use Acquire: absent, expired, or our own leases may be acquired.
 type Store interface {
 	Create(context.Context, string, string, map[string]interface{}) error
-	SetOnline(context.Context, string, *time.Time) error
+	Merge(context.Context, string, map[string]interface{}) error
 	Acquire(context.Context, string, string, time.Time, time.Time) (bool, error)
 	Release(context.Context, string, string) error
 }
@@ -28,12 +28,9 @@ func (s *FirestoreStore) Create(ctx context.Context, channel, id string, data ma
 	return err
 }
 
-func (s *FirestoreStore) SetOnline(ctx context.Context, channel string, at *time.Time) error {
-	var value interface{}
-	if at != nil {
-		value = *at
-	}
-	_, err := s.Client.Collection("channels").Doc(channel).Set(ctx, map[string]interface{}{"onlineAt": value}, firestore.MergeAll)
+// Merge updates fields on channels/{channel}.
+func (s *FirestoreStore) Merge(ctx context.Context, channel string, data map[string]interface{}) error {
+	_, err := s.Client.Collection("channels").Doc(channel).Set(ctx, data, firestore.MergeAll)
 	return err
 }
 

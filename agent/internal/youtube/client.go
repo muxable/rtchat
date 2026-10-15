@@ -29,14 +29,15 @@ type Client struct {
 	http    HTTPClient
 	store   Store
 
-	pollInterval    time.Duration
-	acquireInterval time.Duration
-	renewInterval   time.Duration
-	leaseTTL        time.Duration
-	retryInitial    time.Duration
-	retryMax        time.Duration
-	minPoll         time.Duration
-	maxPoll         time.Duration
+	pollInterval     time.Duration
+	metadataInterval time.Duration
+	acquireInterval  time.Duration
+	renewInterval    time.Duration
+	leaseTTL         time.Duration
+	retryInitial     time.Duration
+	retryMax         time.Duration
+	minPoll          time.Duration
+	maxPoll          time.Duration
 
 	counts    counters
 	ctx       context.Context
@@ -66,7 +67,7 @@ func newClient(channel string, httpClient HTTPClient, store Store) (*Client, err
 		return nil, err
 	}
 	return &Client{channel: channel, owner: hex.EncodeToString(random[:]), baseURL: "https://www.youtube.com", http: httpClient, store: store,
-		pollInterval: 3 * time.Minute, acquireInterval: time.Minute, renewInterval: 30 * time.Second, leaseTTL: 90 * time.Second,
+		pollInterval: 3 * time.Minute, metadataInterval: time.Minute, acquireInterval: time.Minute, renewInterval: 30 * time.Second, leaseTTL: 90 * time.Second,
 		retryInitial: time.Second, retryMax: 5 * time.Minute, minPoll: time.Second, maxPoll: 30 * time.Second}, nil
 }
 func (c *Client) start() {
@@ -203,14 +204,19 @@ func (c *Client) read(ctx context.Context) {
 			var key, version string
 			page, key, version, err = c.initial(ctx, video)
 			if err == nil {
-				now := time.Now()
-				if !c.retryWrite(ctx, func() error { return c.store.SetOnline(ctx, "youtube:"+c.channel, &now) }) {
-					return
-				}
-				c.stream(ctx, video, key, version, page)
+				stillLive := c.session(ctx, video, key, version, page, body)
 				if ctx.Err() != nil {
 					return
 				}
+				if stillLive {
+					// Chat stopped but the stream did not; rediscover it later.
+					delay = c.retryInitial
+					if !wait(ctx, c.pollInterval) {
+						return
+					}
+					continue
+				}
+				body = nil // The page shows the ended stream, not the channel.
 			}
 		}
 		if err != nil {
@@ -221,7 +227,14 @@ func (c *Client) read(ctx context.Context) {
 			delay = c.nextBackoff(delay)
 			continue
 		}
-		if !c.retryWrite(ctx, func() error { return c.store.SetOnline(ctx, "youtube:"+c.channel, nil) }) {
+		// An offline channel's page still names it.
+		var info streamInfo
+		if body != nil {
+			info, _ = pageInfo(body)
+			info.Title, info.Category = nil, nil
+		}
+		offline := c.channelFields(info, nil)
+		if !c.retryWrite(ctx, func() error { return c.store.Merge(ctx, "youtube:"+c.channel, offline) }) {
 			return
 		}
 		delay = c.retryInitial
