@@ -282,6 +282,7 @@ void main() {
         'pitch': 1.5,
         'speed': 0.6,
         'neuralVoices': {'ja': 'M3', 'pt-br': 'F2'},
+        'isVoicePackSuggestionDismissed': true,
         'mutedUsers': [
           {
             'provider': 'kick',

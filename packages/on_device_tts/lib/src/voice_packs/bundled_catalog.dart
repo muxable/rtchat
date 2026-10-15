@@ -12,6 +12,12 @@
 // catalog can point anywhere without a format change. Sizes and checksums
 // were computed by downloading every file.
 //
+// Supertonic 3 is under the BigScience OpenRAIL-M license: its use
+// restrictions apply and must be passed on to users (the app shows them with
+// the pack). A maintainer license review is pending. `name` and
+// `attribution` are shown to users, so keep internal notes like these out of
+// them; apps show the language count from `languages`.
+//
 // Generated from JSON; keep it valid JSON so it can also be served as a
 // remote catalog.
 
@@ -23,7 +29,7 @@ const bundledVoicePackCatalogJson = r'''
   "packs": [
     {
       "id": "supertonic-3",
-      "name": "Supertonic 3 (31 languages)",
+      "name": "Supertonic 3",
       "version": 1,
       "model_type": "supertonic",
       "languages": [
@@ -172,7 +178,7 @@ const bundledVoicePackCatalogJson = r'''
       "license": {
         "name": "LicenseRef-OpenRAIL-M",
         "url": "https://huggingface.co/Supertone/supertonic-3/blob/3cadd1ee6394adea1bd021217a0e650ede09a323/LICENSE",
-        "attribution": "Supertonic 3 by Supertone Inc. BigScience OpenRAIL-M: its use restrictions apply and must be passed on to users. A maintainer license review is pending."
+        "attribution": "Supertonic 3 by Supertone Inc."
       },
       "config": {
         "duration_predictor": "onnx/duration_predictor.onnx",

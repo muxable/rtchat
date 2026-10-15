@@ -30,6 +30,7 @@ import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/neural_engine_selector.dart';
+import 'package:rtchat/models/tts/voice_packs.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/views.dart';
 import 'package:rtchat/screens/home.dart';
@@ -164,7 +165,8 @@ class _AppState extends State<App> {
           },
           update: (context, userModel, model) => model!..update(userModel),
         ),
-        Provider<VoicePackRepository?>.value(value: widget.voicePacks),
+        ChangeNotifierProvider<VoicePacksModel>(
+            create: (context) => VoicePacksModel(widget.voicePacks)),
         ChangeNotifierProxyProvider<ViewsModel, TtsModel>(
           create: (context) {
             final model = TtsModel.fromJson(jsonDecode(

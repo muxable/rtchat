@@ -1448,5 +1448,372 @@
   "removeChannel": "Remove",
   "@removeChannel": {
     "description": "Shown while swiping a default channel away to remove it from the default channels"
+  },
+  "ttsVoiceSection": "Voice",
+  "@ttsVoiceSection": {
+    "description": "Heading of the text to speech settings section about the voice that reads chat"
+  },
+  "ttsEngine": "Reads chat with",
+  "@ttsEngine": {
+    "description": "Title of the row that says which text to speech engine reads chat"
+  },
+  "ttsEngineNeural": "Neural voice (on-device)",
+  "@ttsEngineNeural": {
+    "description": "Shown when chat is read with a neural voice pack that runs on the device"
+  },
+  "ttsEngineSystem": "System voice",
+  "@ttsEngineSystem": {
+    "description": "Shown when chat is read with the voices of the phone's operating system"
+  },
+  "voicePacks": "Voice packs",
+  "@voicePacks": {
+    "description": "Title of the screen that downloads and deletes neural voice packs"
+  },
+  "voicePacksSubtitleNone": "Download natural-sounding voices that run on your device",
+  "@voicePacksSubtitleNone": {
+    "description": "Subtitle of the voice packs settings row when no voice pack is installed"
+  },
+  "voicePacksSubtitleInstalled": "{count, plural, =1{1 installed} other{{count} installed}} · {size}",
+  "@voicePacksSubtitleInstalled": {
+    "description": "Subtitle of the voice packs settings row: how many voice packs are installed and the storage they take",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String",
+        "example": "402 MB"
+      }
+    }
+  },
+  "voicePacksDescription": "Voice packs read chat with natural-sounding neural voices. They run on your device and work offline once downloaded.",
+  "@voicePacksDescription": {
+    "description": "Explanation at the top of the voice packs screen"
+  },
+  "voicePacksStorageUsed": "Storage used: {size}",
+  "@voicePacksStorageUsed": {
+    "description": "How much storage the installed voice packs take",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "example": "402 MB"
+      }
+    }
+  },
+  "voicePacksAllowMobileData": "Download over mobile data",
+  "@voicePacksAllowMobileData": {
+    "description": "Title of the switch that lets voice packs download without Wi-Fi"
+  },
+  "voicePacksAllowMobileDataSubtitle": "Voice packs are large, so they download over Wi-Fi only unless you allow this",
+  "@voicePacksAllowMobileDataSubtitle": {
+    "description": "Subtitle of the switch that lets voice packs download without Wi-Fi"
+  },
+  "voicePacksLoadError": "Couldn't load the voice packs",
+  "@voicePacksLoadError": {
+    "description": "Shown when the list of voice packs couldn't be read"
+  },
+  "voicePackLanguageCount": "{count, plural, =1{1 language} other{{count} languages}}",
+  "@voicePackLanguageCount": {
+    "description": "How many languages a voice pack speaks; tapping it shows them all",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voicePackVoiceCount": "{count, plural, =1{1 voice} other{{count} voices}}",
+  "@voicePackVoiceCount": {
+    "description": "How many voices a voice pack or language has",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voicePackDownloadSize": "{size} download",
+  "@voicePackDownloadSize": {
+    "description": "The download size of a voice pack",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "example": "401 MB"
+      }
+    }
+  },
+  "voicePackSizeOnDisk": "{size} on device",
+  "@voicePackSizeOnDisk": {
+    "description": "The storage an installed voice pack takes",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "example": "402 MB"
+      }
+    }
+  },
+  "voicePackInstalled": "Installed",
+  "@voicePackInstalled": {
+    "description": "Shown on a voice pack that is installed"
+  },
+  "voicePackUpgradeAvailable": "Update available",
+  "@voicePackUpgradeAvailable": {
+    "description": "Shown on an installed voice pack that has a newer version"
+  },
+  "voicePackDownload": "Download",
+  "@voicePackDownload": {
+    "description": "Button that downloads and installs a voice pack"
+  },
+  "voicePackDownloadLabel": "Download {pack}",
+  "@voicePackDownloadLabel": {
+    "description": "Accessibility label of the button that downloads a voice pack",
+    "placeholders": {
+      "pack": {
+        "type": "String",
+        "example": "Supertonic 3"
+      }
+    }
+  },
+  "voicePackUpdate": "Update",
+  "@voicePackUpdate": {
+    "description": "Button that downloads the newer version of an installed voice pack"
+  },
+  "voicePackDelete": "Delete",
+  "@voicePackDelete": {
+    "description": "Button that deletes an installed voice pack"
+  },
+  "voicePackDeleteLabel": "Delete {pack}",
+  "@voicePackDeleteLabel": {
+    "description": "Accessibility label of the button that deletes a voice pack",
+    "placeholders": {
+      "pack": {
+        "type": "String",
+        "example": "Supertonic 3"
+      }
+    }
+  },
+  "voicePackCancelLabel": "Cancel downloading {pack}",
+  "@voicePackCancelLabel": {
+    "description": "Accessibility label of the button that cancels a voice pack download",
+    "placeholders": {
+      "pack": {
+        "type": "String",
+        "example": "Supertonic 3"
+      }
+    }
+  },
+  "voicePackDeleteTitle": "Delete {pack}?",
+  "@voicePackDeleteTitle": {
+    "description": "Title of the dialog that confirms deleting a voice pack",
+    "placeholders": {
+      "pack": {
+        "type": "String",
+        "example": "Supertonic 3"
+      }
+    }
+  },
+  "voicePackDeleteBody": "This frees {size}. Languages no other voice pack speaks will be read with the system voice.",
+  "@voicePackDeleteBody": {
+    "description": "Body of the dialog that confirms deleting a voice pack",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "example": "402 MB"
+      }
+    }
+  },
+  "voicePackWaitingForWifi": "Waiting for Wi-Fi",
+  "@voicePackWaitingForWifi": {
+    "description": "Shown while a voice pack download waits for a Wi-Fi connection"
+  },
+  "voicePackWaiting": "Waiting to download",
+  "@voicePackWaiting": {
+    "description": "Shown while a voice pack download is queued"
+  },
+  "voicePackUseMobileData": "Use mobile data",
+  "@voicePackUseMobileData": {
+    "description": "Button that downloads a voice pack that is waiting for Wi-Fi over mobile data instead"
+  },
+  "voicePackDownloading": "Downloading: {downloaded} of {total}",
+  "@voicePackDownloading": {
+    "description": "Progress of a voice pack download",
+    "placeholders": {
+      "downloaded": {
+        "type": "String",
+        "example": "120 MB"
+      },
+      "total": {
+        "type": "String",
+        "example": "401 MB"
+      }
+    }
+  },
+  "voicePackProgressLabel": "{pack} download progress",
+  "@voicePackProgressLabel": {
+    "description": "Accessibility label of a voice pack's download progress bar",
+    "placeholders": {
+      "pack": {
+        "type": "String",
+        "example": "Supertonic 3"
+      }
+    }
+  },
+  "voicePackVerifying": "Checking the download",
+  "@voicePackVerifying": {
+    "description": "Shown while a downloaded voice pack is verified"
+  },
+  "voicePackExtracting": "Installing",
+  "@voicePackExtracting": {
+    "description": "Shown while a downloaded voice pack is unpacked and installed"
+  },
+  "voicePackInstallFailed": "Couldn't install {pack}: {reason}",
+  "@voicePackInstallFailed": {
+    "description": "Shown when installing a voice pack failed, with why",
+    "placeholders": {
+      "pack": {
+        "type": "String",
+        "example": "Supertonic 3"
+      },
+      "reason": {
+        "type": "String",
+        "example": "the download failed"
+      }
+    }
+  },
+  "voicePackErrorSpace": "there isn't enough free storage ({size} needed)",
+  "@voicePackErrorSpace": {
+    "description": "Why a voice pack couldn't be installed: not enough storage",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "example": "2 GB"
+      }
+    }
+  },
+  "voicePackErrorDownload": "the download failed; check your connection and try again",
+  "@voicePackErrorDownload": {
+    "description": "Why a voice pack couldn't be installed: the download failed"
+  },
+  "voicePackErrorDamaged": "the download was damaged; try again",
+  "@voicePackErrorDamaged": {
+    "description": "Why a voice pack couldn't be installed: the download didn't match its checksum or archive"
+  },
+  "voicePackErrorUnsupported": "it needs a newer version of the app",
+  "@voicePackErrorUnsupported": {
+    "description": "Why a voice pack couldn't be installed: the app is too old"
+  },
+  "voicePackErrorUnknown": "something went wrong",
+  "@voicePackErrorUnknown": {
+    "description": "Why a voice pack couldn't be installed: an unexpected error"
+  },
+  "voicePackLicense": "License: {license}",
+  "@voicePackLicense": {
+    "description": "The license of a voice pack",
+    "placeholders": {
+      "license": {
+        "type": "String",
+        "example": "OpenRAIL-M"
+      }
+    }
+  },
+  "voicePackViewLicense": "View license",
+  "@voicePackViewLicense": {
+    "description": "Button that opens a voice pack's license"
+  },
+  "voicePackOpenRailNotice": "This model's license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.",
+  "@voicePackOpenRailNotice": {
+    "description": "Notice shown on voice packs under an OpenRAIL-M license"
+  },
+  "voicePackMachineGenerated": "Voices from voice packs are machine-generated: they are made by AI, not recorded by a person.",
+  "@voicePackMachineGenerated": {
+    "description": "Disclosure that neural voices are synthetic"
+  },
+  "voices": "Voices",
+  "@voices": {
+    "description": "Title of the screen that picks a neural voice for each language"
+  },
+  "voicesSubtitle": "Pick a voice for each language",
+  "@voicesSubtitle": {
+    "description": "Subtitle of the settings row that opens the voice picker"
+  },
+  "voicesEmpty": "Download a voice pack to pick voices",
+  "@voicesEmpty": {
+    "description": "Shown in the voice picker when no voice pack is installed"
+  },
+  "streamLanguage": "Stream language",
+  "@streamLanguage": {
+    "description": "Marks the language of the stream in the list of languages"
+  },
+  "voicePreviewLabel": "Play a sample of {voice}",
+  "@voicePreviewLabel": {
+    "description": "Accessibility label and tooltip of the button that plays a voice",
+    "placeholders": {
+      "voice": {
+        "type": "String",
+        "example": "F1"
+      }
+    }
+  },
+  "voicePreviewFailed": "Couldn't play the sample",
+  "@voicePreviewFailed": {
+    "description": "Shown when a voice sample couldn't be played"
+  },
+  "voiceFemale": "Female",
+  "@voiceFemale": {
+    "description": "Describes a female voice"
+  },
+  "voiceMale": "Male",
+  "@voiceMale": {
+    "description": "Describes a male voice"
+  },
+  "perViewerVoice": "Per-viewer voice",
+  "@perViewerVoice": {
+    "description": "Title of the switch that gives each viewer their own voice"
+  },
+  "perViewerVoiceOnSubtitle": "Each viewer gets their own voice. The voices you pick read alerts and system messages.",
+  "@perViewerVoiceOnSubtitle": {
+    "description": "Subtitle of the per-viewer voice switch while it's on"
+  },
+  "perViewerVoiceOffSubtitle": "The voices you pick read everything",
+  "@perViewerVoiceOffSubtitle": {
+    "description": "Subtitle of the per-viewer voice switch while it's off"
+  },
+  "languageUnsupported": "{language} isn't supported by your voice packs; the system voice will be used",
+  "@languageUnsupported": {
+    "description": "Shown when the stream's language isn't spoken by any installed voice pack",
+    "placeholders": {
+      "language": {
+        "type": "String",
+        "example": "Thai"
+      }
+    }
+  },
+  "voicePackSuggestionTitle": "Try a more natural voice",
+  "@voicePackSuggestionTitle": {
+    "description": "Title of the suggestion to download a voice pack"
+  },
+  "voicePackSuggestionBody": "{pack} reads {language} chat with a neural voice that runs on your device. It's a {size} download.",
+  "@voicePackSuggestionBody": {
+    "description": "Body of the suggestion to download a voice pack",
+    "placeholders": {
+      "pack": {
+        "type": "String",
+        "example": "Supertonic 3"
+      },
+      "size": {
+        "type": "String",
+        "example": "401 MB"
+      },
+      "language": {
+        "type": "String",
+        "example": "English"
+      }
+    }
+  },
+  "voicePackRetry": "Try again",
+  "@voicePackRetry": {
+    "description": "Button that tries again to install a voice pack, or to load the voice packs, after it failed"
+  },
+  "notNow": "Not now",
+  "@notNow": {
+    "description": "Dismisses a suggestion"
   }
 }
