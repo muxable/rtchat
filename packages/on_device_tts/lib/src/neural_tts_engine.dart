@@ -8,7 +8,7 @@ import 'onnx/onnx_tts_platform.dart';
 import 'tts_engine.dart';
 import 'tts_voice.dart';
 import 'voice_packs/installed_voice_pack.dart';
-import 'voice_packs/voice_pack_catalog.dart';
+import 'voice_packs/voice_pack.dart';
 
 /// Thrown when an installed voice pack can't be spoken with by a
 /// [NeuralTtsEngine], e.g. its model type isn't supported.
@@ -96,14 +96,14 @@ class NeuralTtsEngine implements TtsEngine {
         _utterancePrefix = 'neural-${_engines++}-' {
     if (!canSpeak(pack.pack)) {
       throw NeuralTtsException(
-          'Unsupported model type ${pack.pack.modelTypeName} in ${pack.id}');
+          'Unsupported model type ${pack.pack.modelType.name} in ${pack.id}');
     }
     modelDirectory; // Throws if the layout doesn't fit the native engine.
   }
 
   /// Whether a [NeuralTtsEngine] can speak with [pack].
   static bool canSpeak(VoicePack pack) =>
-      pack.isSupported && pack.modelType == VoicePackModelType.supertonic;
+      pack.modelType == VoicePackModelType.supertonic;
 
   /// Maps a [TtsEngine] rate (0..1, [TtsEngine.normalRate] = 0.5 is normal)
   /// to the native speed (1.0 is normal): `speed = 2 × rate`, clamped to
@@ -175,7 +175,7 @@ class NeuralTtsEngine implements TtsEngine {
     _checkNotDisposed();
     final model = _model ??= OnnxTts.load(
       modelDir: modelDirectory,
-      modelType: pack.pack.modelTypeName,
+      modelType: pack.pack.modelType.name,
       numThreads: numThreads,
       provider: provider,
       platform: _platform,
