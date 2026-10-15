@@ -9,6 +9,10 @@
 /// `OnnxTts` runs neural TTS models (Supertonic 3) natively on ONNX Runtime;
 /// see `doc/native_contract.md` for its platform channels.
 ///
+/// Neural voices come in voice packs that are downloaded on demand:
+/// `bundledVoicePacks` lists them and `VoicePackRepository` downloads,
+/// verifies, installs and deletes them.
+///
 /// This package doesn't depend on any app code, so it can move to its own
 /// repository.
 library;
@@ -18,3 +22,8 @@ export 'src/onnx/onnx_tts_platform.dart';
 export 'src/system_tts_engine.dart';
 export 'src/tts_engine.dart';
 export 'src/tts_voice.dart';
+export 'src/voice_packs/bundled_catalog.dart';
+export 'src/voice_packs/installed_voice_pack.dart';
+export 'src/voice_packs/voice_pack.dart';
+export 'src/voice_packs/voice_pack_exceptions.dart';
+export 'src/voice_packs/voice_pack_repository.dart';

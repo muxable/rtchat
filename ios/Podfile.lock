@@ -1190,6 +1190,8 @@ PODS:
   - abseil/xcprivacy (1.20240722.0)
   - audioplayers_darwin (0.0.1):
     - Flutter
+  - background_downloader (0.0.1):
+    - Flutter
   - BoringSSL-GRPC (0.0.37):
     - BoringSSL-GRPC/Implementation (= 0.0.37)
     - BoringSSL-GRPC/Interface (= 0.0.37)
@@ -1203,6 +1205,8 @@ PODS:
   - cloud_functions (5.4.0):
     - Firebase/Functions (= 11.10.0)
     - firebase_core
+    - Flutter
+  - connectivity_plus (0.0.1):
     - Flutter
   - dchs_motion_sensors (0.0.1):
     - Flutter
@@ -1554,8 +1558,10 @@ PODS:
 
 DEPENDENCIES:
   - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/ios`)
+  - background_downloader (from `.symlinks/plugins/background_downloader/ios`)
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
   - cloud_functions (from `.symlinks/plugins/cloud_functions/ios`)
+  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - dchs_motion_sensors (from `.symlinks/plugins/dchs_motion_sensors/ios`)
   - firebase_analytics (from `.symlinks/plugins/firebase_analytics/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
@@ -1618,10 +1624,14 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   audioplayers_darwin:
     :path: ".symlinks/plugins/audioplayers_darwin/ios"
+  background_downloader:
+    :path: ".symlinks/plugins/background_downloader/ios"
   cloud_firestore:
     :path: ".symlinks/plugins/cloud_firestore/ios"
   cloud_functions:
     :path: ".symlinks/plugins/cloud_functions/ios"
+  connectivity_plus:
+    :path: ".symlinks/plugins/connectivity_plus/ios"
   dchs_motion_sensors:
     :path: ".symlinks/plugins/dchs_motion_sensors/ios"
   firebase_analytics:
@@ -1662,9 +1672,11 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   abseil: a05cc83bf02079535e17169a73c5be5ba47f714b
   audioplayers_darwin: 877d9a4d06331c5c374595e46e16453ac7eafa40
+  background_downloader: a282027e76e0d4a29f9c33485a1654f7d8cd962d
   BoringSSL-GRPC: dded2a44897e45f28f08ae87a55ee4bcd19bc508
   cloud_firestore: aef3217af294cd35afda47e63112d306f4c9a2e2
   cloud_functions: 79ce7ce5c2e0fe46344a36b224beb09d5f15fd87
+  connectivity_plus: b99b087074bab1c79604e57f41afdf1fd2e5a81e
   dchs_motion_sensors: 9cef816635a39345cda9f0c4943e061f6429f453
   Firebase: 1fe1c0a7d9aaea32efe01fbea5f0ebd8d70e53a2
   firebase_analytics: 4b8609ce8d2e0c8928472bec8d9753a8f1835eb6
