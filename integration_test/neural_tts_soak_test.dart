@@ -218,13 +218,11 @@ void main() {
     final l10n = lookupAppLocalizations(const Locale('en'));
     expect(Directory(modelDir).existsSync(), isTrue,
         reason: 'push the model to $modelDir first');
-    final catalogPack = VoicePackCatalog.parse(bundledVoicePackCatalogJson)
-        .packs
-        .singleWhere((pack) => pack.id == 'supertonic-3');
+    final catalogPack =
+        bundledVoicePacks.singleWhere((pack) => pack.id == 'supertonic-3');
     final engine = NeuralTtsEngine(InstalledVoicePack(
       pack: catalogPack,
       directory: modelDir,
-      catalogVersion: 1,
       sizeOnDisk: 0,
       installedAt: DateTime.now(),
     ));

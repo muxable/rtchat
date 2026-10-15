@@ -8,8 +8,7 @@ class VoicePackException implements Exception {
   String toString() => '$runtimeType: $message';
 }
 
-/// A downloaded file didn't match the checksum in the catalog. The file has
-/// been deleted.
+/// A downloaded file didn't match its checksum. The file has been deleted.
 class VoicePackChecksumException extends VoicePackException {
   const VoicePackChecksumException(super.message);
 }
@@ -22,22 +21,8 @@ class VoicePackDownloadException extends VoicePackException {
   const VoicePackDownloadException(super.message, {this.statusCode});
 }
 
-/// An archive was damaged or had an entry that would write outside the
-/// pack's directory.
-class VoicePackArchiveException extends VoicePackException {
-  const VoicePackArchiveException(super.message);
-}
-
-/// There isn't enough free space to download and install the pack.
-class VoicePackInsufficientSpaceException extends VoicePackException {
-  final int requiredBytes;
-  final int availableBytes;
-
-  const VoicePackInsufficientSpaceException(
-      super.message, this.requiredBytes, this.availableBytes);
-}
-
-/// The pack can't be installed by this version of the package or app.
+/// The pack can't be installed, e.g. a file's path would leave the pack's
+/// directory.
 class VoicePackUnsupportedException extends VoicePackException {
   const VoicePackUnsupportedException(super.message);
 }

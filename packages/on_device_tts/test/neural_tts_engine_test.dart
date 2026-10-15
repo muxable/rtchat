@@ -113,7 +113,6 @@ class FakeNative {
 
 InstalledVoicePack supertonicPack({
   String id = 'supertonic-3',
-  String modelType = 'supertonic',
   List<VoicePackSpeaker>? speakers,
   Map<String, Object?>? config,
 }) {
@@ -121,7 +120,7 @@ InstalledVoicePack supertonicPack({
     pack: VoicePack(
       id: id,
       name: 'Supertonic 3',
-      modelTypeName: modelType,
+      modelType: VoicePackModelType.supertonic,
       languages: const ['en', 'ko', 'es'],
       speakers: speakers ??
           const [
@@ -147,7 +146,6 @@ InstalledVoicePack supertonicPack({
           },
     ),
     directory: '/data/voice_packs/packs/$id',
-    catalogVersion: 1,
     sizeOnDisk: 1,
     installedAt: DateTime(2026),
   );
@@ -249,14 +247,8 @@ void main() {
           throwsA(isA<NeuralTtsException>()));
     });
 
-    test('rejects model types it cannot speak', () {
+    test('speaks Supertonic packs', () {
       expect(NeuralTtsEngine.canSpeak(supertonicPack().pack), isTrue);
-      expect(NeuralTtsEngine.canSpeak(supertonicPack(modelType: 'kokoro').pack),
-          isFalse);
-      expect(
-          () => NeuralTtsEngine(supertonicPack(modelType: 'kokoro'),
-              platform: platform),
-          throwsA(isA<NeuralTtsException>()));
     });
 
     test('only load failures become NeuralTtsLoadExceptions', () async {

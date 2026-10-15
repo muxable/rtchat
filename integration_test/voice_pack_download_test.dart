@@ -28,7 +28,8 @@ void main() {
     final repo = VoicePackRepository(
         directory: Directory('${support.path}/voice_packs'));
     await repo.cleanUp();
-    final pack = (await repo.catalog()).pack(_packId)!;
+    final pack =
+        (await repo.availablePacks()).singleWhere((pack) => pack.id == _packId);
     await repo.delete(pack.id);
 
     final watch = Stopwatch()..start();
