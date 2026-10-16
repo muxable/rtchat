@@ -1,0 +1,9 @@
+{
+  "twitchSent": {"data":[{"message_id":"m1","is_sent":true}]},
+  "twitchDropped": {"data":[{"message_id":"","is_sent":false,"drop_reason":{"code":"msg_duplicate","message":"Your message is identical."}}]},
+  "twitchMissingScope": {"message":"Missing scope: user:write:chat"},
+  "kickSent": {"data":{"message_id":"m1"}},
+  "youtubeBroadcasts": {"items":[{"snippet":{"channelId":"UCaaaaaaaaaaaaaaaaaaaaaa","liveChatId":"own-chat"}}]},
+  "youtubeVideo": {"items":[{"snippet":{"channelId":"UCbbbbbbbbbbbbbbbbbbbbbb"},"liveStreamingDetails":{"activeLiveChatId":"other-chat"}}]},
+  "youtubeQuota": {"error":{"code":403,"message":"quotaExceeded","errors":[{"reason":"quotaExceeded"}]}}
+}
