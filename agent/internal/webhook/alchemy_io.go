@@ -10,9 +10,11 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-// AlchemyFirestore implements the original query, profile read, and auto-ID add.
+// AlchemyFirestore uses atomic creation to deduplicate deliveries across replicas.
 type AlchemyFirestore struct{ Client *firestore.Client }
 
 func (s AlchemyFirestore) FindOne(ctx context.Context, collection, field, value string) (string, error) {
@@ -33,12 +35,15 @@ func (s AlchemyFirestore) Get(ctx context.Context, path string) (map[string]inte
 	return doc.Data(), nil
 }
 
-func (s AlchemyFirestore) Add(ctx context.Context, path string, data map[string]interface{}) error {
+func (s AlchemyFirestore) Create(ctx context.Context, path, id string, data map[string]interface{}) error {
 	value, err := alchemyFirestoreValue(data)
 	if err != nil {
 		return err
 	}
-	_, _, err = s.Client.Collection(path).Add(ctx, value)
+	_, err = s.Client.Collection(path).Doc(id).Create(ctx, value)
+	if status.Code(err) == codes.AlreadyExists {
+		return nil
+	}
 	return err
 }
 
