@@ -4,6 +4,8 @@ import 'package:on_device_tts/on_device_tts.dart';
 
 /// A [VoicePackRepository] with packs installed in memory.
 class FakeVoicePackRepository implements VoicePackRepository {
+  /// The packs on offer: the bundled catalog unless a test changes it.
+  List<VoicePack> catalog = bundledVoicePacks;
   final installed = <String, InstalledVoicePack>{};
   final _changes = StreamController<void>.broadcast();
 
@@ -19,6 +21,9 @@ class FakeVoicePackRepository implements VoicePackRepository {
 
   @override
   Stream<void> get changes => _changes.stream;
+
+  @override
+  Future<List<VoicePack>> availablePacks() async => List.of(catalog);
 
   @override
   Future<Map<String, InstalledVoicePack>> installedPacks() async =>
@@ -50,3 +55,11 @@ InstalledVoicePack installedPack(String id,
       sizeOnDisk: 1,
       installedAt: DateTime(2026),
     );
+
+/// [pack], installed.
+InstalledVoicePack installedPackOf(VoicePack pack, {int sizeOnDisk = 1}) =>
+    InstalledVoicePack(
+        pack: pack,
+        directory: '/packs/${pack.id}',
+        sizeOnDisk: sizeOnDisk,
+        installedAt: DateTime(2026));
