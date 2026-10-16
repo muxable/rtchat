@@ -16,6 +16,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
+	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"github.com/muxable/rtchat/agent/internal/webhook"
 	"github.com/muxable/rtchat/agent/internal/youtube"
@@ -170,6 +171,14 @@ func main() {
 		secrets := webhook.LoadSecrets(ctx, nil)
 		cancel()
 		server := webhook.NewServer(secrets)
+		verifier, err := callable.FirebaseVerifier(context.Background(), "rtchat-47692")
+		if err != nil {
+			zap.L().Warn("callable authentication unavailable; protected requests will be rejected")
+		}
+		api := callable.NewServer(verifier)
+		// Handler migration packages register here before Mount. Empty foundation
+		// registers no placeholder routes and leaves readiness/webhooks intact.
+		api.Mount(server.Mux)
 		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
 		server.RegisterProvider("/twitch/", webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client, twitchClientID, twitchClientSecret))
 		server.RegisterProvider("/alchemy/", webhook.NewAlchemyHandler(webhook.AlchemyConfig{
