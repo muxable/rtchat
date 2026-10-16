@@ -1788,6 +1788,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stream language'**
   String get streamLanguage;
+
+  /// In the text to speech settings: chat is read with a neural voice from a voice pack, which runs on the device
+  ///
+  /// In en, this message translates to:
+  /// **'Neural voice (on-device)'**
+  String get ttsEngineNeural;
+
+  /// In the text to speech settings: chat is read with the device's own text to speech voice
+  ///
+  /// In en, this message translates to:
+  /// **'System voice'**
+  String get ttsEngineSystem;
+
+  /// The installed voice packs don't speak the stream's language, so the device's own voice reads it
+  ///
+  /// In en, this message translates to:
+  /// **'{language} isn\'t supported by your voice packs; the system voice will be used'**
+  String languageUnsupported(String language);
+
+  /// Shown once in the text to speech settings when a voice pack is installed but the device has too little memory to run it
+  ///
+  /// In en, this message translates to:
+  /// **'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.'**
+  String get neuralFallbackLowMemory;
+
+  /// Shown once in the text to speech settings when the installed voice pack failed to load, e.g. for lack of memory
+  ///
+  /// In en, this message translates to:
+  /// **'The neural voice couldn\'t load, so chat is read with the system voice.'**
+  String get neuralFallbackLoadFailed;
 }
 
 class _AppLocalizationsDelegate
