@@ -281,6 +281,7 @@ void main() {
         'language': 'fr',
         'pitch': 1.5,
         'speed': 0.6,
+        'neuralVoices': {'pt-br': 'M1'},
         'mutedUsers': [
           {
             'provider': 'kick',
