@@ -173,6 +173,8 @@ export function main(
           name: item.name,
           environment: item.environment ?? "GEN_1",
           status: item.status ?? item.state,
+          trigger: item.eventTrigger?.eventType ?? "HTTP",
+          topic: item.eventTrigger?.resource ?? item.eventTrigger?.pubsubTopic,
         })),
         schedules: schedules.map((item) => ({
           name: item.name,
