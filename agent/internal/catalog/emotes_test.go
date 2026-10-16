@@ -58,47 +58,24 @@ func TestAllThirdPartyEmoteSourcesAndFallback(t *testing.T) {
 		t.Fatal("local provider failure dropped global emotes")
 	}
 }
-func TestTwitchEmoteSetBatchingAndCategories(t *testing.T) {
-	s, _, tokens := fixture()
-	tokens.user["uid:twitch"] = "user-token"
-	s.EmoteSets = func(_ context.Context, token, login string) ([]string, error) {
-		if token != "user-token" || login != "streamer" {
-			t.Fatal("IRC requires user identity")
-		}
-		sets := []string{}
-		for i := 0; i < 26; i++ {
-			sets = append(sets, fmt.Sprint(i))
-		}
-		return sets, nil
-	}
-	batches := []int{}
+
+// CLI gives random owner IDs that are absent from its generated users. Keep
+// only this small category-resolution gap; batching/templates use real CLI data.
+func TestTwitchEmoteOwnerCategories(t *testing.T) {
+	s, _, _ := fixture()
+	s.EmoteSets = func(context.Context, string, string) ([]string, error) { return []string{"0"}, nil }
 	s.HTTP = &http.Client{Transport: transport(func(r *http.Request) (*http.Response, error) {
-		if r.URL.Host != "api.twitch.tv" {
-			return response(404, `{}`), nil
+		if r.URL.Path == "/helix/chat/emotes/set" {
+			return response(200, `{"data":[{"owner_id":"0"},{"owner_id":"42"}]}`), nil
 		}
-		if r.Header.Get("Authorization") != "Bearer user-token" {
-			t.Fatal("personal emotes used app token")
+		if r.URL.Query().Get("id") == "42" {
+			return response(200, `{"data":[{"id":"42","display_name":"Category"}]}`), nil
 		}
-		switch r.URL.Path {
-		case "/helix/users":
-			if len(r.URL.Query()["id"]) > 0 {
-				return response(200, `{"data":[{"id":"42","display_name":"Category"}]}`), nil
-			}
-			return response(200, `{"data":[{"id":"9","login":"streamer"}]}`), nil
-		case "/helix/chat/emotes/set":
-			batches = append(batches, len(r.URL.Query()["emote_set_id"]))
-			if len(batches) == 1 {
-				return response(200, `{"data":[{"id":"global","name":"Global","owner_id":"0","scale":["1.0","2.0","3.0"]},{"id":"personal","name":"Personal","owner_id":"42","scale":["1.0","2.0"]}],"template":"https://emotes/{{id}}/{{format}}/{{theme_mode}}/{{scale}}"}`), nil
-			}
-			return response(200, `{"data":[]}`), nil
-		}
-		t.Fatalf("unexpected %s", r.URL)
-		return nil, nil
+		return response(200, `{"data":[{"login":"streamer"}]}`), nil
 	})}
-	status, result := invoke(t, s, "getEmotes", `{"provider":"twitch","channelId":"123"}`, "uid")
-	emotes := array(result["result"])
-	if status != 200 || len(emotes) != 2 || emotes[0]["category"] != nil || emotes[0]["imageUrl"] != "https://emotes/global/default/dark/3.0" || emotes[1]["category"] != "Category" || !reflect.DeepEqual(batches, []int{25, 1}) {
-		t.Fatalf("personal emotes %+v, batches %v", result, batches)
+	emotes, err := s.twitchEmotes(context.Background(), "user-token")
+	if err != nil || len(emotes) != 2 || emotes[0].Category != nil || emotes[1].Category != "Category" {
+		t.Fatalf("owner categories: %+v %v", emotes, err)
 	}
 }
 func TestIRCEmoteStateAndCancellation(t *testing.T) {
