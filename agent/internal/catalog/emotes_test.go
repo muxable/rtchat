@@ -25,9 +25,9 @@ func TestAllThirdPartyEmoteSourcesAndFallback(t *testing.T) {
 		case "api.betterttv.net/3/cached/users/twitch/123":
 			return response(200, `{"channelEmotes":[{"id":"bc","code":"BTTVChannel"}],"sharedEmotes":[{"id":"bs","code":"BTTVShared"}]}`), nil
 		case "api.frankerfacez.com/v1/set/global":
-			return response(200, `{"default_sets":[1],"sets":{"1":{"title":"FFZ Global","emoticons":[{"id":11,"name":"FFZGlobal","urls":{"1":"https://one","2":"https://two","4":"https://four"}}]}}}`), nil
+			return response(200, `{"default_sets":[1539687],"sets":{"1539687":{"title":"FFZ Global","emoticons":[{"id":11,"name":"FFZGlobal","urls":{"1":"https://one","2":"https://two","4":"https://four"}}]}}}`), nil
 		case "api.frankerfacez.com/v1/room/id/123":
-			return response(200, `{"room":{"set":2},"sets":{"2":{"title":"FFZ Channel","emoticons":[{"id":22,"name":"FFZChannel","urls":{"1":"https://one"}}]}}}`), nil
+			return response(200, `{"room":{"set":1154282},"sets":{"1154282":{"title":"FFZ Channel","emoticons":[{"id":22,"name":"FFZChannel","urls":{"1":"https://one"}}]}}}`), nil
 		case "7tv.io/v3/emote-sets/global":
 			return response(200, `{"emotes":[{"id":"sg","name":"SevenGlobal"}]}`), nil
 		case "7tv.io/v3/users/twitch/123":
