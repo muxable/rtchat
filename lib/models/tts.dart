@@ -52,14 +52,30 @@ typedef TtsErrorReporter = void Function(Object error, StackTrace stack);
 void _recordToCrashlytics(Object error, StackTrace stack) =>
     FirebaseCrashlytics.instance.recordError(error, stack);
 
-/// Reads chat and alerts aloud, one message at a time: with the
-/// [neuralEngine] (an installed voice pack) if there is one, else with the
-/// platform's voices. A message the neural engine fails to read is read with
-/// the platform's voices instead.
+/// Reads chat and alerts aloud, one message at a time.
+///
+/// Each message is read, in this order of preference:
+///
+/// 1. by the [neuralEngine] (an installed voice pack) if it speaks the
+///    message's language, with the voice chosen for that language
+///    ([setVoice]) or, for chat with [isRandomVoiceEnabled], the chatter's
+///    own voice (see [voiceKey]);
+/// 2. else by the platform's voices;
+/// 3. and by the platform's voices too when the neural engine fails, for
+///    that message only (unless it was unsaid in the meantime).
+///
+/// Chat is in its channel's language ([languageFor]). Alerts and system
+/// messages are made of the app's strings, so they are in its language, and
+/// always read with the chosen voice.
 class TtsModel extends ChangeNotifier {
-  /// Speaks with the platform's voices, and whenever [_neuralEngine] fails.
+  /// Speaks with the platform's voices: messages in languages the neural
+  /// engine doesn't speak, and those it fails to read.
   final TtsEngine _systemEngine;
   TtsEngine? _neuralEngine;
+  VoiceRouter _router = VoiceRouter.empty;
+  // the neural voice chosen for each language, by voice id, keyed by the
+  // normalized language tag.
+  final Map<String, String> _neuralVoices = {};
   // neural engines that were replaced, disposed between utterances.
   final List<TtsEngine> _retiredEngines = [];
   final TtsErrorReporter _reportError;
@@ -404,6 +420,46 @@ class TtsModel extends ChangeNotifier {
   Language languageFor(MessageModel model) =>
       _knownLanguageFor(model) ?? _language;
 
+  /// Identifies [user] for picking their voice: their provider and user id,
+  /// or login if there's no id. Hashed with [fnv1a32], so a chatter keeps
+  /// their voice across restarts and devices.
+  static String voiceKey(ChatUser user) => user.userId.isNotEmpty
+      ? '${user.provider}:${user.userId}'
+      : '${user.provider}:login:${user.login.toLowerCase()}';
+
+  static String _voiceKeyFor(String language) =>
+      LanguageTag.parse(language).toString();
+
+  /// The id of the voice chosen for [language], else for [routed] (the
+  /// engine's own tag for it), else for its bare language, if any.
+  String? _chosenVoiceId(String language, String routed) =>
+      _neuralVoices[_voiceKeyFor(language)] ??
+      _neuralVoices[_voiceKeyFor(routed)] ??
+      _neuralVoices[LanguageTag.parse(language).language];
+
+  /// The neural voices that can read [language], a BCP-47 tag, or none if
+  /// the installed voice pack doesn't speak it (it's then read with the
+  /// platform's voices).
+  Future<List<TtsVoice>> availableVoices(String language) async =>
+      (await _router.route(language))?.voices ?? const [];
+
+  /// The neural voice that reads [language] when [isRandomVoiceEnabled] is
+  /// off, and that reads alerts: the one set with [setVoice] if it's still
+  /// available, else the first (e.g. `F1`). Null if the installed voice pack
+  /// doesn't speak [language].
+  Future<TtsVoice?> voiceFor(String language) async {
+    final route = await _router.route(language);
+    return route?.voiceWithId(_chosenVoiceId(language, route.language));
+  }
+
+  /// Reads [language] with the neural voice [voiceId] (a [TtsVoice.id] from
+  /// [availableVoices]) from now on, unless [isRandomVoiceEnabled] picks a
+  /// voice per chatter.
+  void setVoice(String language, String voiceId) {
+    _neuralVoices[_voiceKeyFor(language)] = voiceId;
+    notifyListeners();
+  }
+
   void say(AppLocalizations localizations, MessageModel model,
       {bool force = false}) async {
     if (_mode == TtsMode.disabled && !force) {
@@ -476,7 +532,7 @@ class TtsModel extends ChangeNotifier {
     // would otherwise block, and hold on to, every message after it.
     try {
       await previous;
-      await _speak(model, vocalization);
+      await _speak(localizations, model, vocalization);
     } catch (e, st) {
       _reportError(e, st);
     } finally {
@@ -486,7 +542,8 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  Future<void> _speak(MessageModel model, String vocalization) async {
+  Future<void> _speak(AppLocalizations localizations, MessageModel model,
+      String vocalization) async {
     _activeMessage = model;
 
     bool shouldSpeak() =>
@@ -500,12 +557,23 @@ class TtsModel extends ChangeNotifier {
     // cutting anyone off.
     await _disposeRetiredEngines();
 
-    final language = languageFor(model).languageCode;
-    final neural = _neuralEngine;
-    if (neural != null) {
+    final language = model is ChatMessage
+        ? languageFor(model).languageCode
+        : localizations.localeName.replaceAll('_', '-');
+    final route = await _router.route(language);
+    if (route != null) {
+      if (!shouldSpeak()) {
+        return;
+      }
+      final voice = model is ChatMessage && _isRandomVoiceEnabled
+          ? route.voiceForKey(voiceKey(model.author))
+          : route.voiceWithId(_chosenVoiceId(language, route.language));
       try {
-        await neural.speak(vocalization,
-            rate: _speed, pitch: _pitch, language: language);
+        await route.engine.speak(vocalization,
+            voice: voice,
+            rate: _speed,
+            pitch: _pitch,
+            language: route.language);
         return;
       } catch (e, st) {
         _reportError(e, st);
@@ -541,6 +609,9 @@ class TtsModel extends ChangeNotifier {
       return;
     }
     _neuralEngine = engine;
+    _router = engine == null
+        ? VoiceRouter.empty
+        : VoiceRouter([engine], onError: _reportError);
     if (previous == null) {
       return;
     }
@@ -620,6 +691,19 @@ class TtsModel extends ChangeNotifier {
     if (json['language'] != null) {
       _language = Language(json['language']);
     }
+    // the `voice` key of versions with cloud tts held cloud voice names
+    // (e.g. fr-FR-Wavenet-A), which mean nothing to neural voices: it's
+    // ignored, and dropped on the next save.
+    final voicesJson = json['neuralVoices'];
+    if (voicesJson is Map) {
+      // the saved map is a full snapshot, so it replaces the current one.
+      _neuralVoices
+        ..clear()
+        ..addAll({
+          for (final MapEntry(:key, :value) in voicesJson.entries)
+            if (key is String && value is String) _voiceKeyFor(key): value,
+        });
+    }
     final userJson = json['mutedUsers'];
     if (userJson != null) {
       // the saved list is a full snapshot, so it replaces the current one.
@@ -660,6 +744,7 @@ class TtsModel extends ChangeNotifier {
       engine.dispose().catchError((_) {});
     }
     _neuralEngine = null;
+    _router = VoiceRouter.empty;
     _retiredEngines.clear();
     super.dispose();
   }
@@ -672,6 +757,7 @@ class TtsModel extends ChangeNotifier {
         "language": language.languageCode,
         "pitch": pitch,
         "speed": speed,
+        "neuralVoices": Map.of(_neuralVoices),
         'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
       };
 }
