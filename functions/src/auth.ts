@@ -21,7 +21,7 @@ import {
   TWITCH_OAUTH_CONFIG,
 } from "./oauth";
 import { Store, SessionData } from "express-session";
-import { getYouTubeProfile, YOUTUBE_SCOPES } from "./youtube_actions";
+import { getYouTubeProfile, YOUTUBE_SCOPES } from "./youtube_profile";
 
 admin.initializeApp();
 
