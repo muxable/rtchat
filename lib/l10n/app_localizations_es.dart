@@ -1091,4 +1091,9 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get voicePackOpenRailNotice =>
       'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+
+  @override
+  String voicePackDeleteConfirm(String pack, String size) {
+    return 'Delete $pack? This frees $size.';
+  }
 }

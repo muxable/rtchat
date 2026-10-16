@@ -7,6 +7,7 @@ class FakeVoicePackRepository implements VoicePackRepository {
   /// The packs on offer: the bundled catalog unless a test changes it.
   List<VoicePack> catalog = bundledVoicePacks;
   final installed = <String, InstalledVoicePack>{};
+  final deleted = <String>[];
   final _changes = StreamController<void>.broadcast();
 
   void add(InstalledVoicePack pack) {
@@ -28,6 +29,12 @@ class FakeVoicePackRepository implements VoicePackRepository {
   @override
   Future<Map<String, InstalledVoicePack>> installedPacks() async =>
       Map.of(installed);
+
+  @override
+  Future<void> delete(String id) async {
+    deleted.add(id);
+    if (installed.remove(id) != null) _changes.add(null);
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

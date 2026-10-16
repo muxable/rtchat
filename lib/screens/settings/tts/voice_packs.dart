@@ -6,7 +6,8 @@ import 'package:rtchat/models/tts/voice_packs.dart';
 import 'package:rtchat/screens/settings/tts/labels.dart';
 import 'package:rtchat/urls.dart';
 
-/// Lists the voice packs in the catalog, with the languages each speaks.
+/// Lists the voice packs in the catalog, with the languages each speaks,
+/// and deletes them.
 class VoicePacksScreen extends StatefulWidget {
   const VoicePacksScreen({super.key});
 
@@ -42,7 +43,7 @@ class _VoicePacksScreenState extends State<VoicePacksScreen> {
   }
 }
 
-/// One voice pack: its name, size, languages and license.
+/// One voice pack: its name, size, languages and license, and deleting it.
 class VoicePackCard extends StatelessWidget {
   final VoicePack pack;
 
@@ -87,9 +88,42 @@ class VoicePackCard extends StatelessWidget {
                 label: Text(license!.name.replaceFirst('LicenseRef-', '')),
                 onPressed: () => openUrl(url),
               ),
+            if (installed != null)
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.delete_outline),
+                  label: Text(
+                      MaterialLocalizations.of(context).deleteButtonTooltip),
+                  onPressed: () => _confirmDelete(context, model, size),
+                ),
+              ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDelete(
+      BuildContext context, VoicePacksModel model, int size) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content:
+            Text(l10n.voicePackDeleteConfirm(pack.name, formatBytes(size))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(MaterialLocalizations.of(context).deleteButtonTooltip),
+          ),
+        ],
+      ),
+    );
+    if (confirmed ?? false) await model.delete(pack.id);
   }
 }

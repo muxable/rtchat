@@ -1716,6 +1716,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.'**
   String get voicePackOpenRailNotice;
+
+  /// Confirmation before deleting a voice pack
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {pack}? This frees {size}.'**
+  String voicePackDeleteConfirm(String pack, String size);
 }
 
 class _AppLocalizationsDelegate
