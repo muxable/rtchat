@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:rtchat/api.dart';
 import 'package:rtchat/models/channels.dart';
 
 class Viewers {
@@ -78,19 +79,16 @@ class TwitchBadgeInfo {
 }
 
 class ChatStateAdapter {
-  final FirebaseFunctions functions;
+  final Api api;
 
-  ChatStateAdapter._({required this.functions});
+  ChatStateAdapter._({required this.api});
 
   static ChatStateAdapter get instance =>
-      _instance ??= ChatStateAdapter._(functions: FirebaseFunctions.instance);
+      _instance ??= ChatStateAdapter._(api: Api.instance);
   static ChatStateAdapter? _instance;
 
   Future<Viewers> getViewers({required String channelId}) {
-    return functions
-        .httpsCallable("getViewerList")
-        .call(channelId)
-        .then((result) {
+    return api.callable("getViewerList").call(channelId).then((result) {
       return Viewers(
         broadcaster: [...(result.data['broadcaster'] ?? [])],
         moderators: [...(result.data['moderators'] ?? [])],
@@ -106,8 +104,8 @@ class ChatStateAdapter {
 
     for (int attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        final result = await functions
-            .httpsCallable("getBadges")
+        final result = await api
+            .callable("getBadges")
             .call({"provider": Providers.twitch, "channelId": channelId});
         if (result.data == null) {
           return [];

@@ -1,18 +1,18 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:rtchat/api.dart';
 import 'package:rtchat/models/channels.dart';
 
 class ActionsAdapter {
-  final FirebaseFunctions functions;
+  final Api api;
 
-  ActionsAdapter._({required this.functions});
+  ActionsAdapter._({required this.api});
 
   static ActionsAdapter get instance =>
-      _instance ??= ActionsAdapter._(functions: FirebaseFunctions.instance);
+      _instance ??= ActionsAdapter._(api: Api.instance);
   static ActionsAdapter? _instance;
 
   Future<String?> send(Channel channel, String message) async {
-    final call = functions.httpsCallable('send');
+    final call = api.callable('send');
     for (var i = 0; i < 3; i++) {
       try {
         final result = await call({
@@ -29,7 +29,7 @@ class ActionsAdapter {
   }
 
   Future<void> ban(Channel channel, String username, {String? userId}) async {
-    final call = functions.httpsCallable('ban');
+    final call = api.callable('ban');
     await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
@@ -39,7 +39,7 @@ class ActionsAdapter {
   }
 
   Future<void> unban(Channel channel, String username, {String? userId}) async {
-    final call = functions.httpsCallable('unban');
+    final call = api.callable('unban');
     await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
@@ -51,7 +51,7 @@ class ActionsAdapter {
   Future<void> timeout(
       Channel channel, String username, String reason, Duration duration,
       {String? userId}) async {
-    final call = functions.httpsCallable('timeout');
+    final call = api.callable('timeout');
     await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
@@ -63,7 +63,7 @@ class ActionsAdapter {
   }
 
   Future<void> delete(Channel channel, String messageId) async {
-    final call = functions.httpsCallable('deleteMessage');
+    final call = api.callable('deleteMessage');
     await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
@@ -76,7 +76,7 @@ class ActionsAdapter {
       throw ArgumentError(
           "Cannot raid between channels of different providers");
     }
-    final call = functions.httpsCallable('raid');
+    final call = api.callable('raid');
     await call({
       "provider": fromChannel.provider,
       "fromChannelId": fromChannel.channelId,
@@ -85,7 +85,7 @@ class ActionsAdapter {
   }
 
   Future<void> cancelRaid(Channel channel) async {
-    final call = functions.httpsCallable('cancelRaid');
+    final call = api.callable('cancelRaid');
     await call({
       "provider": channel.provider,
       "channelId": channel.channelId,
