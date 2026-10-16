@@ -6,8 +6,10 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"os/signal"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"cloud.google.com/go/compute/metadata"
@@ -106,10 +108,16 @@ func main() {
 		defer undo()
 	}
 
-	client, err := firestore.NewClient(context.Background(), "rtchat-47692")
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	client, err := firestore.NewClient(ctx, "rtchat-47692")
 	if err != nil {
 		zap.L().Fatal("failed to create firestore client", zap.Error(err))
 	}
+
+	defer client.Close()
+	stopJobs := startScheduledJobs(ctx, client)
+	defer stopJobs()
 
 	twitchClientID := auth.TwitchClientID()
 	twitchClientSecret, err := auth.TwitchClientSecret()
@@ -124,7 +132,7 @@ func main() {
 	}
 
 	// create a new RequestLock
-	subscribeRequests := client.Collection("assignments").Snapshots(context.Background())
+	subscribeRequests := client.Collection("assignments").Snapshots(ctx)
 
 	manager := newRequestManager(func(req *agent.Request) (io.Closer, error) {
 		switch req.Provider() {
