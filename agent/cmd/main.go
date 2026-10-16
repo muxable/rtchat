@@ -14,6 +14,7 @@ import (
 
 	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/firestore"
+	"github.com/muxable/rtchat/agent/internal/actions"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"github.com/muxable/rtchat/agent/internal/callable"
@@ -178,8 +179,7 @@ func main() {
 			zap.L().Warn("callable authentication unavailable; protected requests will be rejected")
 		}
 		api := callable.NewServer(verifier)
-		// Handler migration packages register here before Mount. Empty foundation
-		// registers no placeholder routes and leaves readiness/webhooks intact.
+		actions.NewService(client, provider.NewService(client, nil), nil).Register(api)
 		api.Mount(server.Mux)
 		if err := publichttp.Register(server.Mux, client, provider.NewService(client, nil)); err != nil {
 			zap.L().Warn("public HTTP configuration invalid; routes disabled")
