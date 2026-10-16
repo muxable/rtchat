@@ -95,6 +95,10 @@ func TestFirestoreCleanupIdempotencyAndActivity(t *testing.T) {
 	calls := 0
 	deleted := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			fmt.Fprint(w, `{"data":[]}`)
+			return
+		}
 		if r.Method != http.MethodDelete {
 			t.Error(r.Method)
 		}
@@ -223,6 +227,10 @@ func TestFirestoreConcurrentSubscribeRetainsAndInvalidatesCheck(t *testing.T) {
 		t.Fatal(err)
 	}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			fmt.Fprint(w, `{"data":[]}`)
+			return
+		}
 		if _, err := ref.Set(ctx, map[string]interface{}{"lastActiveAt": time.Now(), "checkedAt": time.Now(), "subscriptionIds": []string{"new"}}); err != nil {
 			t.Error(err)
 		}

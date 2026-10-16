@@ -21,6 +21,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"github.com/muxable/rtchat/agent/internal/provider"
 	"github.com/muxable/rtchat/agent/internal/publichttp"
+	"github.com/muxable/rtchat/agent/internal/subscriptions"
 	"github.com/muxable/rtchat/agent/internal/webhook"
 	"github.com/muxable/rtchat/agent/internal/youtube"
 	"go.uber.org/zap"
@@ -180,6 +181,14 @@ func main() {
 		}
 		api := callable.NewServer(verifier)
 		actions.NewService(client, provider.NewService(client, nil), nil).Register(api)
+		subscriptionService := &subscriptions.Service{
+			DB:             client,
+			API:            &subscriptions.API{Tokens: provider.NewService(client, &http.Client{Timeout: 10 * time.Second})},
+			Enabled:        os.Getenv("AGENT_PROVIDER_SUBSCRIPTIONS_ENABLED") == "true",
+			TwitchSecret:   secrets.TwitchEventSubSecret,
+			MaticWebhookID: secrets.AlchemyMaticWebhookID,
+		}
+		subscriptionService.Register(api)
 		api.Mount(server.Mux)
 		if err := publichttp.Register(server.Mux, client, provider.NewService(client, nil)); err != nil {
 			zap.L().Warn("public HTTP configuration invalid; routes disabled")

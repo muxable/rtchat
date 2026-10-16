@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -64,6 +65,12 @@ func (s *Service) Cleanup(ctx context.Context) error {
 	return nil
 }
 func (s *Service) removeIdleKick(ctx context.Context, doc *firestore.DocumentSnapshot, cutoff time.Time) error {
+	return subscriptionlock.With(ctx, s.Client, doc.Ref.ID, func(ctx context.Context) error {
+		return s.removeIdleKickLocked(ctx, doc, cutoff)
+	})
+}
+
+func (s *Service) removeIdleKickLocked(ctx context.Context, doc *firestore.DocumentSnapshot, cutoff time.Time) error {
 	current, err := doc.Ref.Get(ctx)
 	if status.Code(err) == codes.NotFound {
 		return nil
@@ -90,6 +97,29 @@ func (s *Service) removeIdleKick(ctx context.Context, doc *firestore.DocumentSna
 	case nil:
 	default:
 		return errors.New("invalid Kick subscription IDs")
+	}
+	// Reconcile actual provider state before deleting. A creation can have
+	// succeeded before its caller lost the response or Firestore write.
+	var listed struct {
+		Data []struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+	if err := s.API.request(ctx, "kick", http.MethodGet, "/events/subscriptions", params("broadcaster_user_id", []string{strings.TrimPrefix(doc.Ref.ID, "kick:")}), &listed); err != nil {
+		return err
+	}
+	if listed.Data == nil {
+		return errors.New("Kick subscriptions response missing data")
+	}
+	seen := map[string]bool{}
+	for _, id := range ids {
+		seen[id] = true
+	}
+	for _, sub := range listed.Data {
+		if !seen[sub.ID] {
+			ids = append(ids, sub.ID)
+			seen[sub.ID] = true
+		}
 	}
 	for start := 0; start < len(ids); start += 50 {
 		if err := s.API.request(ctx, "kick", http.MethodDelete, "/events/subscriptions", params("id", ids[start:min(start+50, len(ids))]), nil); err != nil {
