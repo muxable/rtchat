@@ -114,3 +114,18 @@ class SpeechLog {
   var speaking = 0;
   var maxSpeaking = 0;
 }
+
+/// The speakers of Supertonic 3.
+const supertonicSpeakers = [
+  'F1', 'F2', 'F3', 'F4', 'F5', 'M1', 'M2', 'M3', 'M4', 'M5', //
+];
+
+/// Each of [speakers] in each of [languages], as a multilingual pack lists
+/// its voices.
+List<TtsVoice> packVoices(List<String> languages,
+        {List<String> speakers = supertonicSpeakers}) =>
+    [
+      for (final speaker in speakers)
+        for (final language in languages)
+          TtsVoice(id: speaker, name: speaker, locale: language),
+    ];

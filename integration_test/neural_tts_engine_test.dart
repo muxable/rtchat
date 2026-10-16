@@ -16,7 +16,10 @@ import 'package:integration_test/integration_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/tts/language.dart';
 
 import '../test/fakes/fake_chat.dart';
 import '../test/fakes/fake_tts_engine.dart';
@@ -104,6 +107,28 @@ void main() {
     expect(events.map((e) => '${e.utteranceId}:${e.type.name}'), [
       for (final id in ids) ...['$id:firstAudio', '$id:done']
     ]);
+    await tester.pump(); // TtsModel notifies after the next frame.
+  });
+
+  testWidgets(
+      'routes a mixed-language queue: Supertonic for en and es, the '
+      'system voice for zh', (tester) async {
+    final spanish = Channel(Providers.twitch, 'es', 'es');
+    final chinese = Channel(Providers.kick, 'zh', 'zh');
+    tts
+      ..setChannelLanguage(spanish, Language('es'))
+      ..setChannelLanguage(chinese, Language('zh'))
+      ..setMode(l10n, TtsMode.enabled);
+    tts.say(l10n, chat('hello chat, how is everyone doing today?', 1));
+    tts.say(l10n, chat('hola a todos, ¿cómo están hoy?', 2)..channel = spanish);
+    tts.say(l10n, chat('大家好，今天怎么样？', 3)..channel = chinese);
+    tts.say(l10n, chat('qué buena jugada, de verdad', 1)..channel = spanish);
+    await waitFor(() => eventsOf(OnnxTtsEventType.done).length == 4);
+    await pumpEventQueue();
+
+    expect(system.utterances.map((u) => (u.text, u.language)),
+        [('user3 said: 大家好，今天怎么样？', 'zh')]);
+    system.utterances.clear();
     await tester.pump(); // TtsModel notifies after the next frame.
   });
 

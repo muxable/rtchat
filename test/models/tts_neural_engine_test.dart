@@ -31,7 +31,10 @@ void main() {
   setUp(() {
     log = SpeechLog();
     system = FakeTtsEngine(log: log, name: 'system');
-    neural = FakeTtsEngine(log: log, name: 'neural');
+    neural = FakeTtsEngine(
+        log: log,
+        name: 'neural',
+        availableVoices: packVoices(['en', 'es', 'ja']));
     errors = [];
     model = TtsModel.fromJson({'language': 'es'},
         engine: system, reportError: (error, _) => errors.add(error));
@@ -62,7 +65,8 @@ void main() {
       'user1 said: konnichiwa',
       'user2 said: hola'
     ]);
-    expect(neural.utterances.map((u) => u.language), ['es', 'ja', 'es']);
+    expect(neural.utterances.map((u) => u.language), ['en', 'ja', 'es'],
+        reason: 'alerts are in the app language');
     expect(neural.utterances.last.rate, 0.8);
     expect(system.spoken, isEmpty);
   });
@@ -92,7 +96,8 @@ void main() {
   test(
       'a replaced engine finishes its message and is disposed before the '
       'next one starts', () async {
-    final next = FakeTtsEngine(log: log, name: 'next');
+    final next = FakeTtsEngine(
+        log: log, name: 'next', availableVoices: neural.availableVoices);
     neural.holdSpeech = true;
     model.say(l10n, chat('first', 1));
     await pumpEventQueue();
