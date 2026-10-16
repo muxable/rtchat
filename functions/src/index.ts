@@ -20,11 +20,28 @@ import { updateKickChannelMetadata } from "./kick_subscriptions";
 import { kickWebhook } from "./kick_webhook";
 import { getKickSlug } from "./kick";
 import { eventsub } from "./eventsub";
-import { getAccessToken, getAppAccessToken, TWITCH_CLIENT_ID } from "./oauth";
+import {
+  getAccessToken,
+  getAppAccessToken,
+  TWITCH_CLIENT_ID,
+  YOUTUBE_OAUTH_SECRETS,
+} from "./oauth";
 import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
 import * as twitch from "./twitch";
 import { WebSocket } from "ws";
+import {
+  banYouTubeUser,
+  deleteYouTubeMessage,
+  parseVideoId,
+  sendYouTubeMessage,
+} from "./youtube_actions";
+
+// functions that act with a user's youtube token need the google oauth client
+// to refresh it.
+const withYouTube = functions.runWith({
+  secrets: YOUTUBE_OAUTH_SECRETS,
+});
 
 // sends over a one-off irc connection: slow, and silent about failures. only
 // used for tokens from before user:write:chat was requested.
@@ -51,7 +68,7 @@ async function sendOverIrc(uid: string, channelId: string, message: string) {
   ws.close();
 }
 
-export const send = functions.https.onCall(async (data, context) => {
+export const send = withYouTube.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("permission-denied", "missing auth");
   }
@@ -91,12 +108,21 @@ export const send = functions.https.onCall(async (data, context) => {
         data?.replyToMessageId
       );
       return;
+    case "youtube":
+      // youtube has no replies. return nothing on success, like the others.
+      await sendYouTubeMessage(
+        context.auth.uid,
+        channelId,
+        message,
+        parseVideoId(data?.videoId)
+      );
+      return;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
-export const ban = functions.https.onCall(async (data, context) => {
+export const ban = withYouTube.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("permission-denied", "missing auth");
   }
@@ -121,6 +147,12 @@ export const ban = functions.https.onCall(async (data, context) => {
         channelId,
         userId ?? (await resolveKickUserId(username))
       );
+    case "youtube":
+      // youtube users are banned by channel id; there are no logins.
+      await banYouTubeUser(context.auth.uid, channelId, userId, {
+        videoId: parseVideoId(data?.videoId),
+      });
+      return;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -156,7 +188,7 @@ export const unban = functions.https.onCall(async (data, context) => {
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
-export const timeout = functions.https.onCall(async (data, context) => {
+export const timeout = withYouTube.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("permission-denied", "missing auth");
   }
@@ -190,12 +222,19 @@ export const timeout = functions.https.onCall(async (data, context) => {
         userId ?? (await resolveKickUserId(username)),
         { durationSeconds: length, reason }
       );
+    case "youtube":
+      // youtube bans have no reason.
+      await banYouTubeUser(context.auth.uid, channelId, userId, {
+        durationSeconds: length,
+        videoId: parseVideoId(data?.videoId),
+      });
+      return;
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
-export const deleteMessage = functions.https.onCall(async (data, context) => {
+export const deleteMessage = withYouTube.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("permission-denied", "missing auth");
   }
@@ -219,6 +258,8 @@ export const deleteMessage = functions.https.onCall(async (data, context) => {
       );
     case "kick":
       return await deleteKickMessage(context.auth.uid, messageId);
+    case "youtube":
+      return await deleteYouTubeMessage(context.auth.uid, messageId);
   }
 
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
@@ -460,4 +501,4 @@ export {
   alchemyWebhook,
   updateFollowerAndViewerCount,
 };
-export const auth = functions.https.onRequest(authApp);
+export const auth = withYouTube.https.onRequest(authApp);
