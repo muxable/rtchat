@@ -1,10 +1,7 @@
 import fetch from "cross-fetch";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
-import {
-  alchemyWebhook,
-  setRealTimeCashAddress,
-} from "./alchemy_webhook";
+import { alchemyWebhook, setRealTimeCashAddress } from "./alchemy_webhook";
 import { app as authApp } from "./auth";
 import { getBadges } from "./badges";
 import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
@@ -29,6 +26,7 @@ import {
 import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
 import * as twitch from "./twitch";
+import { youTubeEmbedUrl } from "./youtube";
 import { WebSocket } from "ws";
 import {
   banYouTubeUser,
@@ -412,6 +410,15 @@ export const embedRedirect = functions.https.onRequest(async (req, res) => {
       res.redirect(
         `https://player.kick.com/${encodeURIComponent(slug)}?muted=true`
       );
+      break;
+    }
+    case "youtube": {
+      const url = youTubeEmbedUrl(channelId);
+      if (!url) {
+        res.status(404).send("channel not found");
+        return;
+      }
+      res.redirect(url);
       break;
     }
     default:
