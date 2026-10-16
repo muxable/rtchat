@@ -31,9 +31,10 @@ class VoicePacksModel extends ChangeNotifier {
       : isSupported =
             repository != null && (isSupported ?? platformSupportsNeuralVoices);
 
-  /// Whether this platform reads chat with neural voice packs.
-  // TODO(#1499): enable on iOS.
-  static bool get platformSupportsNeuralVoices => Platform.isAndroid;
+  /// Whether this platform reads chat with neural voice packs: Android and
+  /// iOS have a native engine for them.
+  static bool get platformSupportsNeuralVoices =>
+      Platform.isAndroid || Platform.isIOS;
 
   /// Reads the catalog and the installed packs, and follows changes to them.
   Future<void> load() async {
