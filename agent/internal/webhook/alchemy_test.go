@@ -64,6 +64,7 @@ type alchemyFakeStore struct {
 	calls    []string
 	messages []map[string]interface{}
 	failAt   string
+	ids      map[string]bool
 }
 
 func (s *alchemyFakeStore) FindOne(_ context.Context, collection, field, value string) (string, error) {
@@ -83,11 +84,18 @@ func (s *alchemyFakeStore) Get(_ context.Context, path string) (map[string]inter
 	}
 	return map[string]interface{}{"twitch": map[string]interface{}{"id": "123"}}, nil
 }
-func (s *alchemyFakeStore) Add(_ context.Context, path string, data map[string]interface{}) error {
+func (s *alchemyFakeStore) Create(_ context.Context, path, id string, data map[string]interface{}) error {
 	s.calls = append(s.calls, path)
 	if s.failAt == "write" {
 		return errors.New("write unavailable")
 	}
+	if s.ids == nil {
+		s.ids = map[string]bool{}
+	}
+	if s.ids[path+"/"+id] {
+		return nil
+	}
+	s.ids[path+"/"+id] = true
 	s.messages = append(s.messages, data)
 	return nil
 }
@@ -294,13 +302,13 @@ func TestAlchemyMultipleActivitiesAndRetries(t *testing.T) {
 	store := &alchemyFakeStore{}
 	tx := &alchemyFakeTransactions{input: alchemyTestInput(big.NewInt(1), "donor", "message")}
 	h := NewAlchemyHandler(AlchemyConfig{}, store, tx)
-	// Like the TypeScript Add calls, a repeated delivery creates new documents.
+	// The managed handler preserves each distinct activity exactly once across retries.
 	for i := 0; i < 2; i++ {
 		if err := h.process(context.Background(), notification); err != nil {
 			t.Fatal(err)
 		}
 	}
-	if len(store.messages) != 4 || !reflect.DeepEqual(tx.hashes, []string{"0xfirst", "0xsecond", "0xfirst", "0xsecond"}) {
+	if len(store.messages) != 2 || !reflect.DeepEqual(tx.hashes, []string{"0xfirst", "0xsecond", "0xfirst", "0xsecond"}) {
 		t.Fatalf("writes %d, hashes %v", len(store.messages), tx.hashes)
 	}
 }
