@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:rtchat/api.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
 import 'package:rtchat/models/messages/auxiliary/streamelements.dart';
@@ -349,16 +349,16 @@ DeltaEvent? toDeltaEvent(
 
 class MessagesAdapter {
   final FirebaseFirestore db;
-  final FirebaseFunctions functions;
+  final Api api;
 
-  MessagesAdapter._({required this.db, required this.functions});
+  MessagesAdapter._({required this.db, required this.api});
 
-  static MessagesAdapter get instance => _instance ??= MessagesAdapter._(
-      db: FirebaseFirestore.instance, functions: FirebaseFunctions.instance);
+  static MessagesAdapter get instance => _instance ??=
+      MessagesAdapter._(db: FirebaseFirestore.instance, api: Api.instance);
   static MessagesAdapter? _instance;
 
   Future<void> subscribe(Channel channel) async {
-    final subscribe = functions.httpsCallable('subscribe');
+    final subscribe = api.callable('subscribe');
     for (var i = 0; i < 3; i++) {
       try {
         await subscribe({
