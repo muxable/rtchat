@@ -15,6 +15,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"github.com/muxable/rtchat/agent/internal/handler"
+	"github.com/muxable/rtchat/agent/internal/oauthhttp"
 	"github.com/muxable/rtchat/agent/internal/webhook"
 	"github.com/muxable/rtchat/agent/internal/youtube"
 	"go.uber.org/zap"
@@ -168,6 +169,13 @@ func main() {
 			Secrets:        secrets,
 			MaticWebhookID: secrets.AlchemyMaticWebhookID,
 		}, webhook.AlchemyFirestore{Client: client}, webhook.NewAlchemyRPC()))
+		if os.Getenv("ENABLE_AGENT_OAUTH") == "true" {
+			oauthCtx, oauthCancel := context.WithTimeout(context.Background(), 30*time.Second)
+			if err := oauthhttp.Register(oauthCtx, server.Mux, client); err != nil {
+				zap.L().Warn("OAuth HTTP unavailable", zap.Error(err))
+			}
+			oauthCancel()
+		}
 		server.Mux.Handle("/", recycleHandler)
 		zap.L().Info("starting http server")
 		port := os.Getenv("PORT")
