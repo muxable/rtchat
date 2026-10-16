@@ -7,12 +7,8 @@ import {
   codeChallenge,
   createCodeVerifier,
   getKickProfile,
-  getKickSlug,
-  isKickSlug,
   kickApi,
-  searchKickChannel,
   toKickProfile,
-  toSearchResult,
 } from "../src/kick";
 
 function jsonResponse(status: number, body: unknown) {
@@ -24,7 +20,9 @@ function jsonResponse(status: number, body: unknown) {
   };
 }
 
-beforeEach(() => fetchMock.mockReset());
+beforeEach(() => {
+  fetchMock.mockReset();
+});
 
 describe("pkce", () => {
   it("matches the RFC 7636 example", () => {
@@ -104,71 +102,5 @@ describe("kickApi", () => {
       id: "7",
       slug: "kicker",
     });
-  });
-});
-
-describe("search", () => {
-  it("only looks up plausible slugs", async () => {
-    expect(isKickSlug("xQc")).toBe(true);
-    expect(isKickSlug(" muxfd ")).toBe(true);
-    expect(isKickSlug("two words")).toBe(false);
-    expect(isKickSlug("a")).toBe(false);
-    await expect(searchKickChannel("app", "two words")).resolves.toEqual([]);
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it("finds a channel by slug with its owner's picture", async () => {
-    fetchMock
-      .mockResolvedValueOnce(
-        jsonResponse(200, {
-          data: [
-            {
-              broadcaster_user_id: 7,
-              slug: "muxfd",
-              stream_title: "irl",
-              category: { name: "IRL" },
-              stream: { is_live: true, viewer_count: 12, language: "en" },
-            },
-          ],
-        })
-      )
-      .mockResolvedValueOnce(
-        jsonResponse(200, {
-          data: [{ user_id: 7, name: "MuxFD", profile_picture: "https://p" }],
-        })
-      );
-    const results = await searchKickChannel("app", "MuxFD");
-    expect(fetchMock.mock.calls[0][0]).toBe(
-      "https://api.kick.com/public/v1/channels?slug=muxfd"
-    );
-    expect(results).toEqual([
-      {
-        provider: "kick",
-        channelId: "7",
-        login: "muxfd",
-        displayName: "MuxFD",
-        isOnline: true,
-        imageUrl: "https://p",
-        categoryName: "IRL",
-        title: "irl",
-        viewerCount: 12,
-        language: "en",
-      },
-    ]);
-  });
-
-  it("returns nothing for unknown slugs", async () => {
-    fetchMock.mockResolvedValueOnce(jsonResponse(200, { data: [] }));
-    await expect(searchKickChannel("app", "nobody")).resolves.toEqual([]);
-  });
-
-  it("maps channel ids to slugs for the embed", async () => {
-    fetchMock.mockResolvedValueOnce(
-      jsonResponse(200, { data: [{ broadcaster_user_id: 7, slug: "muxfd" }] })
-    );
-    await expect(getKickSlug("app", "7")).resolves.toBe("muxfd");
-    expect(toSearchResult({ broadcaster_user_id: 1, slug: "x" }).imageUrl).toBe(
-      "https://rtirl.com/pfp.png?provider=kick&channelId=1"
-    );
   });
 });

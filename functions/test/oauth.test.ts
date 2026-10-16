@@ -8,12 +8,10 @@ const runtimeConfig = require(path.join(
   "../node_modules/firebase-functions/lib/v1/config.js"
 ));
 import {
-  isInvalidRefreshError,
   isValidState,
   KICK_OAUTH_CONFIG,
   oauthConfig,
   TWITCH_OAUTH_CONFIG,
-  withRefreshToken,
 } from "../src/oauth";
 
 describe("isValidState", () => {
@@ -70,45 +68,5 @@ describe("oauthConfig", () => {
     const oauth = await import("../src/oauth");
     expect(oauth.oauthConfig("twitch")).toBe(oauth.TWITCH_OAUTH_CONFIG);
     expect(() => oauth.oauthConfig("kick")).toThrow(/not configured/);
-  });
-});
-
-describe("withRefreshToken", () => {
-  it("keeps the old refresh token when google doesn't return one", () => {
-    expect(
-      withRefreshToken(
-        { refresh_token: "old" },
-        { access_token: "new", expires_in: 3599 }
-      )
-    ).toEqual({ access_token: "new", expires_in: 3599, refresh_token: "old" });
-  });
-
-  it("uses rotated refresh tokens", () => {
-    expect(
-      withRefreshToken(
-        { refresh_token: "old" },
-        { access_token: "a", refresh_token: "new" }
-      ).refresh_token
-    ).toBe("new");
-  });
-});
-
-describe("isInvalidRefreshError", () => {
-  it("detects revoked twitch and kick refresh tokens", () => {
-    expect(
-      isInvalidRefreshError({
-        data: { payload: { message: "Invalid refresh token" } },
-      })
-    ).toBe(true);
-    expect(
-      isInvalidRefreshError({ data: { payload: { error: "invalid_grant" } } })
-    ).toBe(true);
-  });
-
-  it("ignores transient errors", () => {
-    expect(isInvalidRefreshError(new Error("ECONNRESET"))).toBe(false);
-    expect(
-      isInvalidRefreshError({ data: { payload: { error: "server_error" } } })
-    ).toBe(false);
   });
 });

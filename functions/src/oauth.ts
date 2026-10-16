@@ -1,13 +1,7 @@
 import * as crypto from "crypto";
-import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { defineSecret } from "firebase-functions/params";
-import {
-  AccessToken,
-  AuthorizationCode,
-  ClientCredentials,
-  ModuleOptions,
-} from "simple-oauth2";
+import { ModuleOptions } from "simple-oauth2";
 
 export const TWITCH_CLIENT_ID = functions.config().twitch.id;
 export const TWITCH_CLIENT_SECRET = functions.config().twitch.secret;
@@ -154,87 +148,4 @@ export function isValidState(expected: string | undefined, actual: unknown) {
   const a = Buffer.from(expected);
   const b = Buffer.from(actual);
   return a.length === b.length && crypto.timingSafeEqual(a, b);
-}
-
-// Whether a refresh failed because the grant was revoked or expired, as
-// opposed to a transient error.
-export function isInvalidRefreshError(err: any) {
-  const payload = err?.data?.payload;
-  return (
-    payload?.message === "Invalid refresh token" || // twitch
-    payload?.error === "invalid_grant" // rfc 6749, used by kick and google
-  );
-}
-
-// Google only returns a refresh token with the first grant, so a refresh
-// response without one keeps the previous refresh token.
-export function withRefreshToken(
-  previous: { refresh_token?: unknown },
-  refreshed: Record<string, unknown>
-) {
-  return refreshed.refresh_token || !previous.refresh_token
-    ? refreshed
-    : { ...refreshed, refresh_token: previous.refresh_token };
-}
-
-export async function getAccessToken(userId: string, provider: string) {
-  // fetch the token from the database.
-  const ref = admin.firestore().collection("tokens").doc(userId);
-  const encoded = (await ref.get()).get(provider);
-  if (!encoded) {
-    return null;
-  }
-  const client = new AuthorizationCode(oauthConfig(provider));
-  let accessToken = client.createToken(JSON.parse(encoded));
-  while (accessToken.expired(300)) {
-    try {
-      // providers like kick rotate refresh tokens, so the refreshed token
-      // (including its new refresh token) is persisted below.
-      const refreshed = await accessToken.refresh();
-      accessToken = client.createToken(
-        withRefreshToken(accessToken.token, refreshed.token)
-      );
-    } catch (err: any) {
-      if (isInvalidRefreshError(err)) {
-        await admin
-          .firestore()
-          .collection("tokens")
-          .doc(userId)
-          .update({ [provider]: admin.firestore.FieldValue.delete() });
-        // this will sign the user out.
-        await admin
-          .firestore()
-          .collection("profiles")
-          .doc(userId)
-          .update({ [provider]: admin.firestore.FieldValue.delete() });
-        return null;
-      }
-      throw err;
-    }
-  }
-  await ref.update({ [provider]: JSON.stringify(accessToken.token) });
-  return accessToken.token["access_token"] as string;
-}
-
-const appTokens = new Map<string, AccessToken>();
-
-export async function getAppAccessToken(provider: string) {
-  switch (provider) {
-    case "twitch":
-      return new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken({
-        scopes: [],
-      });
-    case "kick": {
-      const cached = appTokens.get(provider);
-      if (cached && !cached.expired(300)) {
-        return cached;
-      }
-      const token = await new ClientCredentials(oauthConfig(provider)).getToken(
-        {}
-      );
-      appTokens.set(provider, token);
-      return token;
-    }
-  }
-  return null;
 }

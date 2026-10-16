@@ -1,4 +1,4 @@
-name: Deploy to Firebase Functions on merge
+name: Deploy retained OAuth function on merge
 on:
   push:
     paths:
@@ -23,9 +23,10 @@ jobs:
       - uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_RTCHAT_47692 }}
+      # Only auth is selected; never delete still-live migrated functions on merge.
       # functions.config() values are managed in the project with
       # `firebase functions:config:set`, not from CI, until they move to
       # params (#1409). the deploy reads them, which needs this experiment.
-      - run: npx -y firebase-tools@15.33.0 deploy --only functions --project rtchat-47692 --non-interactive --force
+      - run: npx -y firebase-tools@15.33.0 deploy --only functions:auth --project rtchat-47692 --non-interactive
         env:
           FIREBASE_CLI_EXPERIMENTS: legacyRuntimeConfigCommands
