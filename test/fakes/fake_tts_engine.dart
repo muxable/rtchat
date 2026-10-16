@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:on_device_tts/on_device_tts.dart';
 
@@ -36,9 +37,15 @@ class FakeTtsEngine implements TtsEngine {
   /// The error the next [speak] throws, if any.
   Object? failNext;
 
+  /// Where engines sharing it log `<name>: <text>` and `<name> dispose`,
+  /// and how many speak at once.
+  final SpeechLog? log;
+  final String name;
+
   final List<Completer<void>> _speaking = [];
 
-  FakeTtsEngine({this.availableVoices = const []});
+  FakeTtsEngine(
+      {this.availableVoices = const [], this.log, this.name = 'engine'});
 
   /// The text of every utterance, in order.
   List<String> get spoken => utterances.map((u) => u.text).toList();
@@ -58,11 +65,19 @@ class FakeTtsEngine implements TtsEngine {
     }
     utterances.add(FakeUtterance(text,
         voice: voice, rate: rate, pitch: pitch, language: language));
-    await onSpeak?.call(text);
-    if (holdSpeech) {
-      final done = Completer<void>();
-      _speaking.add(done);
-      await done.future;
+    log?.events.add('$name: $text');
+    if (log case final log?) {
+      log.maxSpeaking = max(log.maxSpeaking, ++log.speaking);
+    }
+    try {
+      await onSpeak?.call(text);
+      if (holdSpeech) {
+        final done = Completer<void>();
+        _speaking.add(done);
+        await done.future;
+      }
+    } finally {
+      log?.speaking--;
     }
   }
 
@@ -87,7 +102,15 @@ class FakeTtsEngine implements TtsEngine {
 
   @override
   Future<void> dispose() async {
+    log?.events.add('$name dispose');
     isDisposed = true;
     finishSpeaking();
   }
+}
+
+/// What engines sharing it did, in order, and the most that spoke at once.
+class SpeechLog {
+  final events = <String>[];
+  var speaking = 0;
+  var maxSpeaking = 0;
 }

@@ -440,6 +440,20 @@ void main() {
     await repo.delete('a');
   });
 
+  test('changes fire after an install and a delete', () async {
+    final a = packFor('a', modelFiles);
+    serve(a, modelFiles);
+    final repo = repository(packs: [a]);
+    var changes = 0;
+    repo.changes.listen((_) => changes++);
+
+    await repo.install(a).done;
+    await repo.delete('a');
+    await repo.delete('a'); // nothing left to delete: no change
+    await pumpEventQueue();
+    expect(changes, 2);
+  });
+
   test('delete cancels an install in progress', () async {
     final pack = packFor('a', modelFiles);
     serve(pack, modelFiles);

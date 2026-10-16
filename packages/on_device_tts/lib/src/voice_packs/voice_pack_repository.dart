@@ -114,6 +114,7 @@ class VoicePackRepository {
   final PackDownloader _downloader;
 
   final _tasks = <String, VoicePackInstallTask>{};
+  final _changes = StreamController<void>.broadcast();
   Future<void> _manifestLock = Future.value();
   Future<void>? _started;
 
@@ -157,6 +158,10 @@ class VoicePackRepository {
     return installed;
   }
 
+  /// Fires after a pack was installed, upgraded or deleted through this
+  /// repository.
+  Stream<void> get changes => _changes.stream;
+
   /// The installed pack [id], or null.
   Future<InstalledVoicePack?> installedPack(String id) async =>
       (await installedPacks())[id];
@@ -191,6 +196,7 @@ class VoicePackRepository {
         task._emit(VoicePackProgress(
             VoicePackInstallPhase.done, pack.downloadSize, pack.downloadSize));
         task._done.complete(installed);
+        if (!_changes.isClosed) _changes.add(null);
       } on Object catch (e, stack) {
         if (task.isCancelled && e is! VoicePackCancelledException) {
           task._done.completeError(const VoicePackCancelledException(), stack);
@@ -412,7 +418,8 @@ class VoicePackRepository {
     }
     await _locked(() async {
       final manifest = await _readManifest();
-      if (manifest.remove(id) != null) await _writeManifest(manifest);
+      final removed = manifest.remove(id) != null;
+      if (removed) await _writeManifest(manifest);
       final dir = packDirectory(id);
       if (await dir.exists()) {
         await _trashDir.create(recursive: true);
@@ -420,6 +427,7 @@ class VoicePackRepository {
             _trashDir.path, '$id-${DateTime.now().microsecondsSinceEpoch}'));
         await _deleteQuietly(trashed);
       }
+      if (removed && !_changes.isClosed) _changes.add(null);
     });
   }
 
@@ -443,6 +451,7 @@ class VoicePackRepository {
     for (final task in running) {
       await task.done.then((_) {}, onError: (_) {});
     }
+    await _changes.close();
   }
 
   Future<T> _locked<T>(Future<T> Function() action) {
