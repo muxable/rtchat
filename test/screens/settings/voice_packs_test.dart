@@ -76,4 +76,32 @@ void main() {
     await open(tester, home: const TextToSpeechScreen(), isSupported: false);
     expect(find.text('Voice packs'), findsNothing);
   });
+
+  testWidgets('an installed pack can be deleted', (tester) async {
+    await open(tester);
+    expect(find.text('Delete'), findsNothing);
+    repository
+        .add(installedPackOf(bundledVoicePacks.single, sizeOnDisk: 402000000));
+    await tester.pumpAndSettle();
+
+    Future<void> tapDelete() async {
+      await tester.ensureVisible(find.byType(OutlinedButton));
+      await tester.tap(find.byType(OutlinedButton));
+      await tester.pumpAndSettle();
+      expect(
+          find.text('Delete Supertonic 3? This frees 402 MB.'), findsOneWidget);
+    }
+
+    await tapDelete();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(repository.deleted, isEmpty);
+
+    await tapDelete();
+    await tester.tap(find.widgetWithText(TextButton, 'Delete'));
+    await tester.pumpAndSettle();
+    expect(repository.deleted, ['supertonic-3']);
+    expect(find.text('10 voices · 401 MB'), findsOneWidget);
+    expect(find.text('Delete'), findsNothing);
+  });
 }

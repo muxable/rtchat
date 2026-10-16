@@ -1488,5 +1488,19 @@
   "voicePackOpenRailNotice": "This model's license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.",
   "@voicePackOpenRailNotice": {
     "description": "Use restrictions of a voice pack's license, which must be passed on to users; keep OpenRAIL-M as is"
+  },
+  "voicePackDeleteConfirm": "Delete {pack}? This frees {size}.",
+  "@voicePackDeleteConfirm": {
+    "description": "Confirmation before deleting a voice pack",
+    "placeholders": {
+      "pack": {
+        "type": "String",
+        "example": "Supertonic 3"
+      },
+      "size": {
+        "type": "String",
+        "example": "401 MB"
+      }
+    }
   }
 }

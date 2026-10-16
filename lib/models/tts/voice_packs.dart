@@ -57,6 +57,12 @@ class VoicePacksModel extends ChangeNotifier {
   /// The installed packs, by id.
   Map<String, InstalledVoicePack> get installed => _installed;
 
+  /// Deletes pack [id].
+  Future<void> delete(String id) async {
+    await repository?.delete(id);
+    await refresh();
+  }
+
   void _notify() {
     if (!_isDisposed) notifyListeners();
   }
