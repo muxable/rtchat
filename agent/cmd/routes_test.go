@@ -25,14 +25,29 @@ func TestProductionCallableRegistration(t *testing.T) {
 	}
 	// Protected routes must reject absent/forged identity before any provider/database I/O.
 	for _, name := range []string{"send", "ban", "unban", "timeout", "deleteMessage", "clear", "raid", "cancelRaid", "setRealTimeCashAddress", "getViewerList"} {
+		for _, authorization := range []string{"", "Bearer forged-identity"} {
+			req := httptest.NewRequest("POST", "/"+name, strings.NewReader(`{"data":{}}`))
+			req.Header.Set("Content-Type", "application/json")
+			if authorization != "" {
+				req.Header.Set("Authorization", authorization)
+			}
+			w := httptest.NewRecorder()
+			server.Mux.ServeHTTP(w, req)
+			if w.Code != 401 {
+				t.Fatalf("%s missing authentication: %d", name, w.Code)
+			}
+		}
+	}
+	for _, name := range []string{"subscribe", "search", "getEmotes", "getBadges", "getStatistics"} {
 		req := httptest.NewRequest("POST", "/"+name, strings.NewReader(`{"data":{}}`))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		server.Mux.ServeHTTP(w, req)
-		if w.Code != 401 {
-			t.Fatalf("%s missing authentication: %d", name, w.Code)
+		if w.Code != 400 || !strings.Contains(w.Body.String(), "INVALID_ARGUMENT") {
+			t.Fatalf("%s public handler validation: %d %s", name, w.Code, w.Body.String())
 		}
 	}
+
 }
 func TestProductionUtilityAndWebhookRegistration(t *testing.T) {
 	t.Setenv("METADATA_CLIENT_IDS", "")
