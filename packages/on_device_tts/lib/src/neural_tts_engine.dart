@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 
 import 'onnx/onnx_tts.dart';
@@ -17,6 +18,16 @@ class NeuralTtsException implements Exception {
 
   @override
   String toString() => 'NeuralTtsException: $message';
+}
+
+/// Thrown when a [NeuralTtsEngine]'s model fails to load: the native
+/// `load_failed`, which includes running out of memory and a missing or
+/// broken model. [cause] is the native error.
+class NeuralTtsLoadException extends NeuralTtsException {
+  final PlatformException cause;
+
+  NeuralTtsLoadException(this.cause)
+      : super('Model failed to load: ${cause.message}');
 }
 
 /// Speaks with an installed neural voice pack, synthesized on the device by
@@ -111,7 +122,9 @@ class NeuralTtsEngine implements TtsEngine {
       numThreads: numThreads,
       provider: provider,
       platform: _platform,
-    );
+    ).onError<PlatformException>(
+        (error, _) => throw NeuralTtsLoadException(error),
+        test: (error) => error.code == 'load_failed');
     // Try again next time rather than keep a failure.
     model.then((_) {}, onError: (Object error) {
       if (identical(_model, model)) _model = null;
@@ -126,8 +139,9 @@ class NeuralTtsEngine implements TtsEngine {
   /// the pack's first speaker speaks. [rate] maps to the native speed with
   /// [speedForRate]. [pitch] is ignored: the model has no pitch control.
   ///
-  /// Throws if the model can't load (a `PlatformException` with code
-  /// `load_failed`) or speaking fails (`speak_failed`, `busy`, `bad_args`).
+  /// Throws a [NeuralTtsLoadException] if the model can't load, and a
+  /// `PlatformException` if speaking fails (`speak_failed`, `busy`,
+  /// `bad_args`).
   @override
   Future<void> speak(
     String text, {
@@ -202,6 +216,7 @@ class NeuralTtsEngine implements TtsEngine {
   ///
   /// Unloading natively cuts off whatever utterance is playing, even another
   /// engine's, so don't release while another engine speaks.
+  @override
   Future<void> release() async {
     final model = _model;
     _model = null;

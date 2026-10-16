@@ -26,6 +26,7 @@ class FakeUtterance {
 class FakeTtsEngine implements TtsEngine {
   final List<FakeUtterance> utterances = [];
   var stopCount = 0;
+  var releaseCount = 0;
   var isDisposed = false;
   var holdSpeech = false;
   List<TtsVoice> availableVoices;
@@ -94,6 +95,9 @@ class FakeTtsEngine implements TtsEngine {
     stopCount++;
     finishSpeaking();
   }
+
+  @override
+  Future<void> release() async => releaseCount++;
 
   @override
   Future<List<TtsVoice>> voices({String? language}) async => language == null

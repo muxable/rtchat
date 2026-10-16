@@ -39,6 +39,11 @@ abstract class TtsEngine {
   /// Stops the current utterance, if any.
   Future<void> stop();
 
+  /// Frees what the engine keeps in memory between utterances, such as a
+  /// neural model. Unlike [dispose] the engine stays usable: the next [speak]
+  /// loads what it needs again. Engines that keep nothing do nothing.
+  Future<void> release();
+
   /// The voices that can speak right now. With [language], a BCP-47 tag such
   /// as `en` or `pt-BR`, only the voices that speak it (see
   /// [TtsVoice.speaks]).

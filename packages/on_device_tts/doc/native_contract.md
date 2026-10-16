@@ -11,6 +11,7 @@ here; where this document and an implementation disagree, fix one of them.
 |---|---|---|
 | `on_device_tts/onnx` | `MethodChannel` | standard |
 | `on_device_tts/onnx/events` | `EventChannel` | standard |
+| `on_device_tts/memory` | `EventChannel` | standard (Android only) |
 
 Platforms without the engine answer every call with "not implemented"
 (`MissingPluginException` in Dart).
@@ -164,6 +165,15 @@ active utterance it does nothing.
 waits for queued synthesis, then releases the sessions. Later calls with the
 handle fail with `bad_args`. Unloading an unknown handle does nothing.
 
+### `deviceMemory`
+
+No arguments. Android only: returns `{totalBytes: int, availableBytes: int,
+lowRamDevice: bool}`, from `ActivityManager.MemoryInfo.totalMem` and
+`availMem` and `ActivityManager.isLowRamDevice()`. iOS answers "not
+implemented", which Dart reads as unknown (`null`). The app uses it to keep
+neural models off devices with too little memory
+(`DeviceMemory.isTooSmallForNeuralTts`).
+
 ## Events
 
 Each event is a map:
@@ -200,6 +210,25 @@ after it.
   the audio server's own wake lock only covers audio that is playing, not
   loading or synthesizing the first clause. Needs the `WAKE_LOCK`
   permission, which the plugin's manifest declares.
+
+## Memory events
+
+Android only: `on_device_tts/memory` sends `{level: int}` for the
+`ComponentCallbacks2.onTrimMemory` levels that mean memory is short:
+`TRIM_MEMORY_RUNNING_CRITICAL` (15) and `TRIM_MEMORY_BACKGROUND` (40) and up,
+and 80 for `onLowMemory`. Not `TRIM_MEMORY_UI_HIDDEN` (20), which only means
+the app went to the background: Flutter turns every level from
+`TRIM_MEMORY_RUNNING_LOW` up, including that one, into
+`didHaveMemoryPressure`, so on Android `MemoryPressureMonitor` listens here
+instead. The native side releases nothing itself: Dart unloads
+(`NeuralTtsEngine.release`) and the next `speak` loads again. On iOS
+`didHaveMemoryPressure` is the real `didReceiveMemoryWarning`, and nothing is
+sent here.
+
+Reloading Supertonic 3 (fp32) after a release took 0.7 to 1.2 s on the
+x86_64 emulator (the first load 1.4 to 1.9 s), which delays the next
+message's first audio by as much. Unloading it lowered the app's PSS by
+about 400 MB.
 
 ## Supertonic pipeline
 

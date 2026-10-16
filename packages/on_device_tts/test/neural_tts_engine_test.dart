@@ -148,10 +148,16 @@ void main() {
   });
 
   test('a failed load is retried on the next speak', () async {
-    native.onLoad = () async => throw PlatformException(code: 'load_failed');
-    await expectLater(engine.speak('Hello there everyone'),
-        throwsA(isA<PlatformException>()));
+    native.onLoad = () async =>
+        throw PlatformException(code: 'load_failed', message: 'OOM');
+    await expectLater(
+        engine.speak('Hello there everyone'),
+        throwsA(isA<NeuralTtsLoadException>()
+            .having((e) => e.cause.message, 'cause', 'OOM')));
     expect(engine.isLoaded, isFalse);
+    // other errors aren't load failures.
+    native.onLoad = () async => throw PlatformException(code: 'bad_args');
+    await expectLater(engine.load(), throwsA(isA<PlatformException>()));
 
     native.onLoad = () async => 'h9';
     await speakNow('Hello there everyone');
