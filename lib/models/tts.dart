@@ -454,6 +454,16 @@ class TtsModel extends ChangeNotifier {
   Language languageFor(MessageModel model) =>
       _knownLanguageFor(model) ?? _language;
 
+  /// The language most chat is read in: the first channel's stream
+  /// language if known, else [language].
+  Language get readingLanguage {
+    final channel = _primaryChannel;
+    return (channel == null
+            ? null
+            : _channelLanguages[channel] ?? streamLanguage(channel.language)) ??
+        _language;
+  }
+
   /// Identifies [user] for picking their voice: their provider and user id,
   /// or login if there's no id. Hashed with [fnv1a32], so a chatter keeps
   /// their voice across restarts and devices.
@@ -492,6 +502,35 @@ class TtsModel extends ChangeNotifier {
   void setVoice(String language, String voiceId) {
     _neuralVoices[_voiceKeyFor(language)] = voiceId;
     notifyListeners();
+  }
+
+  /// Every language the neural voices speak, as the engine's own tags (e.g.
+  /// `en`, `pt`); none without a voice pack.
+  Future<List<String>> neuralLanguages() => _router.languages();
+
+  /// Reads [text] in [language] with the neural voice [voiceId], after what
+  /// is being read now. Does nothing if no neural voice can read it.
+  Future<void> previewVoice(String language, String voiceId, String text) {
+    final completer = Completer<void>();
+    _idleTimer?.cancel();
+    _afterQueue(() async {
+      try {
+        await _releasing;
+        final route =
+            _neuralFallback == null ? await _router.route(language) : null;
+        await route?.engine.speak(text,
+            voice: route.voiceWithId(voiceId),
+            rate: _speed,
+            pitch: _pitch,
+            language: route.language);
+      } catch (e, st) {
+        _reportError(e, st);
+      } finally {
+        completer.complete();
+        _startIdleTimer();
+      }
+    });
+    return completer.future;
   }
 
   void say(AppLocalizations localizations, MessageModel model,
@@ -578,12 +617,17 @@ class TtsModel extends ChangeNotifier {
       }
       completer.complete();
       _pending.remove(model.messageId);
-      if (_pending.isEmpty && _neuralEngine != null) {
-        _idleTimer?.cancel();
-        _idleTimer = Timer(neuralIdleTimeout, () {
-          if (_pending.isEmpty) releaseNeuralModels();
-        });
-      }
+      _startIdleTimer();
+    }
+  }
+
+  /// Releases the neural model after [neuralIdleTimeout] without speech.
+  void _startIdleTimer() {
+    if (_pending.isEmpty && _neuralEngine != null) {
+      _idleTimer?.cancel();
+      _idleTimer = Timer(neuralIdleTimeout, () {
+        if (_pending.isEmpty) releaseNeuralModels();
+      });
     }
   }
 
@@ -667,8 +711,9 @@ class TtsModel extends ChangeNotifier {
     if (_neuralFallback == NeuralTtsFallback.loadFailed) {
       _neuralFallback = null;
       _isNeuralFallbackNoticePending = false;
-      notifyListeners();
     }
+    // the voices and languages on offer changed.
+    notifyListeners();
     if (previous == null) {
       return;
     }

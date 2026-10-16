@@ -1087,6 +1087,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String voicePackInstallFailed(String pack) {
     return 'Couldn\'t install $pack. Check your connection and try again.';
   }
+
+  @override
+  String get voices => 'Voices';
+
+  @override
+  String get perViewerVoice => 'Per-viewer voice';
+
+  @override
+  String get perViewerVoiceSubtitle =>
+      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+
+  @override
+  String get streamLanguage => 'Stream language';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

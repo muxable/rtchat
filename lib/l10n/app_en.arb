@@ -1546,5 +1546,21 @@
         "example": "Supertonic 3"
       }
     }
+  },
+  "voices": "Voices",
+  "@voices": {
+    "description": "Title of the screen that picks the neural voice for each language, and of the row in the text to speech settings that opens it"
+  },
+  "perViewerVoice": "Per-viewer voice",
+  "@perViewerVoice": {
+    "description": "Switch that gives each viewer in chat their own neural voice"
+  },
+  "perViewerVoiceSubtitle": "Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.",
+  "@perViewerVoiceSubtitle": {
+    "description": "Explains the per-viewer voice switch and what the voice picked for a language reads"
+  },
+  "streamLanguage": "Stream language",
+  "@streamLanguage": {
+    "description": "Marks the language of the stream being watched in a list of languages"
   }
 }
