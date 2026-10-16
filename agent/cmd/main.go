@@ -17,12 +17,8 @@ import (
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"github.com/muxable/rtchat/agent/internal/callable"
-	"github.com/muxable/rtchat/agent/internal/catalog"
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"github.com/muxable/rtchat/agent/internal/oauthhttp"
-	"github.com/muxable/rtchat/agent/internal/provider"
-	"github.com/muxable/rtchat/agent/internal/publichttp"
-	"github.com/muxable/rtchat/agent/internal/subscriptions"
 	"github.com/muxable/rtchat/agent/internal/webhook"
 	"github.com/muxable/rtchat/agent/internal/youtube"
 	"go.uber.org/zap"
@@ -175,38 +171,11 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		secrets := webhook.LoadSecrets(ctx, nil)
 		cancel()
-		server := webhook.NewServer(secrets)
 		verifier, err := callable.FirebaseVerifier(context.Background(), "rtchat-47692")
 		if err != nil {
 			zap.L().Warn("callable authentication unavailable; protected requests will be rejected")
 		}
-		api := callable.NewServer(verifier)
-		registerChat(api, &chatRoutes{tokens: provider.NewService(client, nil), store: chatFirestore{DB: client}})
-		subscriptionService := &subscriptions.Service{
-			DB:             client,
-			API:            &subscriptions.API{Tokens: provider.NewService(client, &http.Client{Timeout: 10 * time.Second})},
-			Enabled:        os.Getenv("AGENT_PROVIDER_SUBSCRIPTIONS_ENABLED") == "true",
-			TwitchSecret:   secrets.TwitchEventSubSecret,
-			MaticWebhookID: secrets.AlchemyMaticWebhookID,
-		}
-		subscriptionService.Register(api)
-		catalog.Register(api, client, provider.NewService(client, nil))
-		// Register every callable package before Mount so readiness and webhooks remain intact.
-		api.Mount(server.Mux)
-		if err := publichttp.Register(server.Mux, client, provider.NewService(client, nil)); err != nil {
-			zap.L().Warn("public HTTP configuration invalid; routes disabled")
-			for _, path := range []string{"/embed", "/embedRedirect", "/metadata", "/api/metadata"} {
-				server.Mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-					http.Error(w, "temporarily unavailable", http.StatusServiceUnavailable)
-				})
-			}
-		}
-		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
-		server.RegisterProvider("/twitch/", webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client, twitchClientID, twitchClientSecret))
-		server.RegisterProvider("/alchemy/", webhook.NewAlchemyHandler(webhook.AlchemyConfig{
-			Secrets:        secrets,
-			MaticWebhookID: secrets.AlchemyMaticWebhookID,
-		}, webhook.AlchemyFirestore{Client: client}, webhook.NewAlchemyRPC()))
+		server := newHTTPServer(client, secrets, verifier, twitchClientID, twitchClientSecret, recycleHandler)
 		if os.Getenv("ENABLE_AGENT_OAUTH") == "true" {
 			oauthCtx, oauthCancel := context.WithTimeout(context.Background(), 30*time.Second)
 			if err := oauthhttp.Register(oauthCtx, server.Mux, client); err != nil {
@@ -214,7 +183,6 @@ func main() {
 			}
 			oauthCancel()
 		}
-		server.Mux.Handle("/", recycleHandler)
 		zap.L().Info("starting http server")
 		port := os.Getenv("PORT")
 		if port == "" {
