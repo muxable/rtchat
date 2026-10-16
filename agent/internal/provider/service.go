@@ -3,8 +3,6 @@ package provider
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -19,8 +17,6 @@ import (
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	"github.com/muxable/rtchat/agent/internal/auth"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 var ErrNoToken = errors.New("provider token unavailable")
@@ -77,9 +73,10 @@ func (s *Service) Credentials(ctx context.Context, p string) (Credentials, error
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	s.mu.Lock()
-	defer s.mu.Unlock()
-	if c, ok := s.credentials[p]; ok {
-		return c, nil
+	cached, ok := s.credentials[p]
+	s.mu.Unlock()
+	if ok {
+		return cached, nil
 	}
 	prefix := p + "-client"
 	if p == "youtube" {
@@ -102,7 +99,9 @@ func (s *Service) Credentials(ctx context.Context, p string) (Credentials, error
 	if c.ClientID == "" || c.ClientSecret == "" {
 		return Credentials{}, errors.New("missing provider credentials")
 	}
+	s.mu.Lock()
 	s.credentials[p] = c
+	s.mu.Unlock()
 	return c, nil
 }
 
@@ -165,7 +164,10 @@ func (s *Service) AccessToken(ctx context.Context, uid, p string) (string, error
 		}
 		refreshed, revoked, err := s.refresh(ctx, p, token)
 		if err != nil {
-			_ = s.release(uid, p, encoded, owner, nil, revoked)
+			releaseErr := s.release(uid, p, encoded, owner, nil, revoked)
+			if revoked && releaseErr != nil {
+				return "", releaseErr
+			}
 			if revoked {
 				return "", ErrNoToken
 			}
@@ -203,6 +205,9 @@ func (s *Service) refresh(ctx context.Context, p string, previous map[string]any
 	}
 	for k, v := range result {
 		merged[k] = v
+	}
+	if _, ok := result["expires_at"]; !ok {
+		delete(merged, "expires_at")
 	}
 	if tokenString(result, "refresh_token") == "" {
 		merged["refresh_token"] = refresh
@@ -275,89 +280,10 @@ func (s *Service) requestToken(ctx context.Context, p string, form url.Values) (
 			return nil, false, errors.New("provider token expiry too short")
 		}
 		result["expires_at"] = time.Now().Add(time.Duration(seconds * float64(time.Second))).UTC().Format(time.RFC3339Nano)
-	} else {
-		delete(result, "expires_at")
+	} else if expiry := tokenString(result, "expires_at"); expiry != "" {
+		if _, err := time.Parse(time.RFC3339Nano, expiry); err != nil {
+			return nil, false, errors.New("invalid provider token expiry")
+		}
 	}
 	return result, false, nil
-}
-
-// FirestoreStore serializes rotating refresh tokens across all managed instances.
-// Lease metadata is a sibling field so legacy functions still read the same JSON strings.
-type FirestoreStore struct{ DB *firestore.Client }
-
-func newLeaseID() string {
-	var b [16]byte
-	if _, err := rand.Read(b[:]); err != nil {
-		panic(err)
-	}
-	return hex.EncodeToString(b[:])
-}
-func (s FirestoreStore) Load(ctx context.Context, uid, p string) (string, error) {
-	doc, err := s.DB.Collection("tokens").Doc(uid).Get(ctx)
-	if status.Code(err) == codes.NotFound {
-		return "", ErrNoToken
-	}
-	if err != nil {
-		return "", err
-	}
-	encoded, ok := doc.Data()[p].(string)
-	if !ok || encoded == "" {
-		return "", ErrNoToken
-	}
-	return encoded, nil
-}
-func (s FirestoreStore) Acquire(ctx context.Context, uid, p, encoded, owner string, until time.Time) (bool, error) {
-	acquired := false
-	err := s.DB.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-		acquired = false
-		ref := s.DB.Collection("tokens").Doc(uid)
-		doc, err := tx.Get(ref)
-		if err != nil {
-			return err
-		}
-		if doc.Data()[p] != encoded {
-			return nil
-		}
-		lease, _ := doc.Data()["_refresh_"+p].(map[string]any)
-		if expiry, ok := lease["until"].(time.Time); ok && time.Now().Before(expiry) {
-			return nil
-		}
-		acquired = true
-		return tx.Set(ref, map[string]any{"_refresh_" + p: map[string]any{"owner": owner, "until": until}}, firestore.MergeAll)
-	})
-	return acquired, err
-}
-func (s FirestoreStore) Finish(ctx context.Context, uid, p, encoded, owner string, next *string, revoked bool) error {
-	return s.DB.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-		ref := s.DB.Collection("tokens").Doc(uid)
-		doc, err := tx.Get(ref)
-		if err != nil {
-			return err
-		}
-		lease, _ := doc.Data()["_refresh_"+p].(map[string]any)
-		if lease["owner"] != owner {
-			return ErrRefreshBusy
-		}
-		updates := []firestore.Update{{Path: "_refresh_" + p, Value: firestore.Delete}}
-		if doc.Data()[p] == encoded {
-			if next != nil {
-				updates = append(updates, firestore.Update{Path: p, Value: *next})
-			}
-			if revoked {
-				// Read the profile before any writes, as required by Firestore transactions.
-				profile := s.DB.Collection("profiles").Doc(uid)
-				snap, err := tx.Get(profile)
-				if err != nil && status.Code(err) != codes.NotFound {
-					return err
-				}
-				if err == nil && snap.Exists() {
-					if err := tx.Update(profile, []firestore.Update{{Path: p, Value: firestore.Delete}}); err != nil {
-						return err
-					}
-				}
-				updates = append(updates, firestore.Update{Path: p, Value: firestore.Delete})
-			}
-		}
-		return tx.Update(ref, updates)
-	})
 }

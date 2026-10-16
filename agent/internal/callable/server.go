@@ -27,18 +27,38 @@ type uidKey struct{}
 func UID(ctx context.Context) string { uid, _ := ctx.Value(uidKey{}).(string); return uid }
 
 type Server struct {
-	mux    *http.ServeMux
-	verify VerifyFunc
+	mux      *http.ServeMux
+	verify   VerifyFunc
+	paths    []string
+	appCheck VerifyFunc
 }
 
 func NewServer(verify VerifyFunc) *Server                          { return &Server{mux: http.NewServeMux(), verify: verify} }
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) { s.mux.ServeHTTP(w, r) }
 
+// Mount exposes registered paths on the existing server without taking over its readiness route.
+// Call after all registrations and before serving requests.
+func (s *Server) Mount(mux *http.ServeMux) {
+	for _, path := range s.paths {
+		mux.Handle(path, s)
+	}
+}
+
+// SetAppCheckVerifier configures verification for routes that explicitly enforce App Check.
+func (s *Server) SetAppCheckVerifier(verify VerifyFunc) { s.appCheck = verify }
+
+type Options struct{ RequireAuth, RequireAppCheck bool }
+
 // Register installs a callable at /name. Public handlers still reject invalid supplied credentials.
 func (s *Server) Register(name string, requireAuth bool, handler Handler) {
+	s.RegisterWithOptions(name, Options{RequireAuth: requireAuth}, handler)
+}
+
+func (s *Server) RegisterWithOptions(name string, options Options, handler Handler) {
 	if name == "" || strings.Contains(name, "/") {
 		panic("invalid callable name")
 	}
+	s.paths = append(s.paths, "/"+name)
 	s.mux.HandleFunc("/"+name, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
@@ -59,14 +79,9 @@ func (s *Server) Register(name string, requireAuth bool, handler Handler) {
 		}
 		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
 		dec := json.NewDecoder(r.Body)
-		var envelope map[string]json.RawMessage
-		if err := dec.Decode(&envelope); err != nil || len(envelope) != 1 || envelope["data"] == nil {
+		data, err := readData(dec)
+		if err != nil {
 			writeError(w, &Error{Code: "invalid-argument", Message: "expected data envelope"})
-			return
-		}
-		var extra any
-		if dec.Decode(&extra) != io.EOF {
-			writeError(w, &Error{Code: "invalid-argument", Message: "invalid JSON"})
 			return
 		}
 		ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
@@ -84,11 +99,22 @@ func (s *Server) Register(name string, requireAuth bool, handler Handler) {
 			}
 			ctx = context.WithValue(ctx, uidKey{}, uid)
 		}
-		if requireAuth && UID(ctx) == "" {
+		if options.RequireAuth && UID(ctx) == "" {
 			writeError(w, &Error{Code: "unauthenticated", Message: "authentication required"})
 			return
 		}
-		result, err := handler(ctx, envelope["data"])
+		if options.RequireAppCheck {
+			appID := ""
+			var err error
+			if token := r.Header.Get("X-Firebase-AppCheck"); token != "" && s.appCheck != nil {
+				appID, err = s.appCheck(ctx, token)
+			}
+			if err != nil || appID == "" {
+				writeError(w, &Error{Code: "unauthenticated", Message: "App Check required"})
+				return
+			}
+		}
+		result, err := invoke(ctx, data, handler)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -125,4 +151,39 @@ func writeError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCodes[e.Code])
 	w.Write(payload)
+}
+
+// Decode exactly one data member, rejecting duplicate keys and trailing JSON.
+func readData(dec *json.Decoder) (json.RawMessage, error) {
+	start, err := dec.Token()
+	if err != nil || start != json.Delim('{') {
+		return nil, errors.New("invalid envelope")
+	}
+	key, err := dec.Token()
+	if err != nil || key != "data" {
+		return nil, errors.New("missing data")
+	}
+	var data json.RawMessage
+	if err := dec.Decode(&data); err != nil {
+		return nil, err
+	}
+	end, err := dec.Token()
+	if err != nil || end != json.Delim('}') {
+		return nil, errors.New("extra member")
+	}
+	var extra any
+	if dec.Decode(&extra) != io.EOF {
+		return nil, errors.New("trailing JSON")
+	}
+	return data, nil
+}
+
+func invoke(ctx context.Context, data json.RawMessage, handler Handler) (result any, err error) {
+	defer func() {
+		if recover() != nil {
+			result = nil
+			err = errors.New("handler panic")
+		}
+	}()
+	return handler(ctx, data)
 }
