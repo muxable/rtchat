@@ -115,7 +115,7 @@ func TestSearchLegacyExactOrderingAndFallback(t *testing.T) {
 			if kickFails {
 				return response(500, `secret`), nil
 			}
-			return response(200, `{"data":[{"broadcaster_user_id":3,"slug":"exact","stream":{"is_live":true,"viewer_count":4,"language":"en"},"category":{"name":"IRL"},"stream_title":"Title"}]}`), nil
+			return response(200, `{"data":[{"broadcaster_user_id":1234567,"slug":"exact","stream":{"is_live":true,"viewer_count":4,"language":"en"},"category":{"name":"IRL"},"stream_title":"Title"}]}`), nil
 		case "/public/v1/users":
 			return response(503, `private`), nil
 		default:
@@ -132,7 +132,7 @@ func TestSearchLegacyExactOrderingAndFallback(t *testing.T) {
 		t.Fatalf("ordering %+v", items)
 	}
 	kick := items[1]
-	if kick["channelId"] != "3" || kick["displayName"] != "exact" || kick["viewerCount"] != float64(4) || kick["imageUrl"] != "https://rtirl.com/pfp.png?provider=kick&channelId=3" {
+	if kick["channelId"] != "1234567" || kick["displayName"] != "exact" || kick["viewerCount"] != float64(4) || kick["imageUrl"] != "https://rtirl.com/pfp.png?provider=kick&channelId=1234567" {
 		t.Fatalf("Kick fallback schema %+v", kick)
 	}
 	kickFails = true

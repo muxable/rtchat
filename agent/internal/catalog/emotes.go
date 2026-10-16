@@ -111,12 +111,12 @@ func (s *Server) ffz(ctx context.Context, channel string) []Emote {
 		sets := object(global["sets"])
 		ids, _ := global["default_sets"].([]any)
 		for _, id := range ids {
-			result = append(result, ffzSet(object(sets[fmt.Sprint(id)]))...)
+			result = append(result, ffzSet(object(sets[identifier(id)]))...)
 		}
 	}
 	local, err := s.request(ctx, "https://api.frankerfacez.com/v1/room/id/"+channel, "")
 	if err == nil {
-		key := fmt.Sprint(object(local["room"])["set"])
+		key := identifier(object(local["room"])["set"])
 		result = append(result, ffzSet(object(object(local["sets"])[key]))...)
 	}
 	return result
