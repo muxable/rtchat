@@ -9,6 +9,10 @@
 ///   which runs neural TTS models (Supertonic 3) natively on ONNX Runtime;
 ///   see `doc/native_contract.md` for its platform channels.
 ///
+/// `VoiceRouter` picks which engine (e.g. which installed pack) reads text in
+/// a language, matching tags with `LanguageTag`, and a stable voice per key
+/// (such as a chatter) with `fnv1a32`.
+///
 /// Neural voices come in voice packs that are downloaded on demand:
 /// `bundledVoicePacks` lists them and `VoicePackRepository` downloads,
 /// verifies, installs and deletes them.
@@ -17,12 +21,15 @@
 /// repository.
 library;
 
+export 'src/language_tags.dart';
 export 'src/neural_tts_engine.dart';
 export 'src/onnx/onnx_tts.dart';
 export 'src/onnx/onnx_tts_platform.dart';
+export 'src/stable_hash.dart';
 export 'src/system_tts_engine.dart';
 export 'src/tts_engine.dart';
 export 'src/tts_voice.dart';
+export 'src/voice_router.dart';
 export 'src/voice_packs/bundled_catalog.dart';
 export 'src/voice_packs/installed_voice_pack.dart';
 export 'src/voice_packs/voice_pack.dart';
