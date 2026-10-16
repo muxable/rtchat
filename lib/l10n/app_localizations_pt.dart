@@ -1096,4 +1096,29 @@ class AppLocalizationsPt extends AppLocalizations {
   String voicePackDeleteConfirm(String pack, String size) {
     return 'Delete $pack? This frees $size.';
   }
+
+  @override
+  String get voicePackDownload => 'Download';
+
+  @override
+  String get voicePackUpdate => 'Update';
+
+  @override
+  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+
+  @override
+  String get voicePackUseMobileData => 'Use mobile data';
+
+  @override
+  String voicePackDownloading(String downloaded, String total) {
+    return 'Downloading: $downloaded of $total';
+  }
+
+  @override
+  String get voicePackInstalling => 'Installing';
+
+  @override
+  String voicePackInstallFailed(String pack) {
+    return 'Couldn\'t install $pack. Check your connection and try again.';
+  }
 }

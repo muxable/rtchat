@@ -7,7 +7,7 @@ import 'package:rtchat/screens/settings/tts/labels.dart';
 import 'package:rtchat/urls.dart';
 
 /// Lists the voice packs in the catalog, with the languages each speaks,
-/// and deletes them.
+/// and installs, updates and deletes them.
 class VoicePacksScreen extends StatefulWidget {
   const VoicePacksScreen({super.key});
 
@@ -43,7 +43,8 @@ class _VoicePacksScreenState extends State<VoicePacksScreen> {
   }
 }
 
-/// One voice pack: its name, size, languages and license, and deleting it.
+/// One voice pack: its name, size, languages and license, and what can be
+/// done with it.
 class VoicePackCard extends StatelessWidget {
   final VoicePack pack;
 
@@ -54,7 +55,10 @@ class VoicePackCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final model = context.watch<VoicePacksModel>();
     final theme = Theme.of(context);
+    final status = model.status(pack.id);
     final installed = model.installed[pack.id];
+    final task = model.task(pack.id);
+    final error = model.error(pack.id);
     final size = installed?.sizeOnDisk ?? pack.downloadSize;
     final languages = [
       for (final language in sortLanguages(context, pack.languages))
@@ -76,6 +80,11 @@ class VoicePackCard extends StatelessWidget {
                 l10n.voicePackDetails(pack.speakers.length, formatBytes(size))),
             Text(l10n.voicePackLanguages(
                 languages.length, languages.join(', '))),
+            if (task != null)
+              _InstallProgress(task: task)
+            else if (error != null)
+              Text(l10n.voicePackInstallFailed(pack.name),
+                  style: TextStyle(color: theme.colorScheme.error)),
             if (license?.attribution case final attribution?)
               Text(attribution, style: small),
             // OpenRAIL licenses' use restrictions must be passed on.
@@ -88,14 +97,33 @@ class VoicePackCard extends StatelessWidget {
                 label: Text(license!.name.replaceFirst('LicenseRef-', '')),
                 onPressed: () => openUrl(url),
               ),
-            if (installed != null)
+            if (task == null)
               Align(
                 alignment: AlignmentDirectional.centerEnd,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.delete_outline),
-                  label: Text(
-                      MaterialLocalizations.of(context).deleteButtonTooltip),
-                  onPressed: () => _confirmDelete(context, model, size),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (installed != null)
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.delete_outline),
+                        label: Text(MaterialLocalizations.of(context)
+                            .deleteButtonTooltip),
+                        onPressed: () => _confirmDelete(context, model, size),
+                      ),
+                    if (status == VoicePackStatus.upgradeAvailable)
+                      FilledButton.icon(
+                        icon: const Icon(Icons.upgrade),
+                        label: Text(l10n.voicePackUpdate),
+                        onPressed: () => model.install(pack),
+                      ),
+                    if (installed == null)
+                      FilledButton.icon(
+                        icon: const Icon(Icons.download),
+                        label: Text(l10n.voicePackDownload),
+                        onPressed: () => model.install(pack),
+                      ),
+                  ],
                 ),
               ),
           ],
@@ -125,5 +153,72 @@ class VoicePackCard extends StatelessWidget {
       ),
     );
     if (confirmed ?? false) await model.delete(pack.id);
+  }
+}
+
+class _InstallProgress extends StatelessWidget {
+  final VoicePackInstallTask task;
+
+  const _InstallProgress({required this.task});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final model = context.read<VoicePacksModel>();
+    final pack = task.pack;
+    return StreamBuilder<VoicePackProgress>(
+      stream: task.progress,
+      initialData: task.latest,
+      builder: (context, snapshot) {
+        final progress = snapshot.data ?? task.latest;
+        final waitsForWifi = progress.phase == VoicePackInstallPhase.waiting &&
+            model.waitsForWifi(pack.id);
+        final isDownloading =
+            progress.phase == VoicePackInstallPhase.downloading;
+        final label = switch (progress.phase) {
+          _ when waitsForWifi => l10n.voicePackWaitingForWifi,
+          VoicePackInstallPhase.waiting ||
+          VoicePackInstallPhase.downloading =>
+            l10n.voicePackDownloading(formatBytes(progress.downloadedBytes),
+                formatBytes(progress.totalBytes)),
+          VoicePackInstallPhase.verifying ||
+          VoicePackInstallPhase.done =>
+            l10n.voicePackInstalling,
+        };
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(children: [
+              if (waitsForWifi) ...[
+                const Icon(Icons.wifi_off, size: 20),
+                const SizedBox(width: 8),
+              ],
+              Expanded(child: Text(label)),
+              IconButton(
+                tooltip: l10n.cancel,
+                icon: const Icon(Icons.close),
+                onPressed: () => model.cancel(pack.id),
+              ),
+            ]),
+            LinearProgressIndicator(
+              value: isDownloading ? progress.fraction : null,
+              semanticsLabel: pack.name,
+              semanticsValue: isDownloading
+                  ? '${(progress.fraction * 100).round()}%'
+                  : label,
+            ),
+            if (waitsForWifi)
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: TextButton.icon(
+                  icon: const Icon(Icons.signal_cellular_alt),
+                  label: Text(l10n.voicePackUseMobileData),
+                  onPressed: () => model.installOverMobileData(pack),
+                ),
+              ),
+          ],
+        );
+      },
+    );
   }
 }
