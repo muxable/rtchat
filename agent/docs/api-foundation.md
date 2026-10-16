@@ -84,7 +84,7 @@ not participate in these leases. Do not run competing legacy refreshers for the
 same rotating provider grants during cutover. The `NewServiceWithStore` interface
 supports deterministic injected transport/storage tests.
 
-Verification: `cd agent && go test ./...` and
+Verification: `cd agent && go test -short ./...` and
 `go test -race ./internal/callable ./internal/provider`. Unit tests cover shared
 refresh concurrency and compare-and-swap semantics using a store implementation;
 real Firestore transaction/IAM and provider grants still need staging smoke tests.
