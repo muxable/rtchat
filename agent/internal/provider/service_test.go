@@ -187,3 +187,149 @@ func TestAppTokenCache(t *testing.T) {
 		t.Fatal(calls)
 	}
 }
+
+// delayedAcquireStore advances only its lease clock to model a slow transaction
+// without spending 25 seconds in a unit test. The second replica attempts to
+// acquire while the first remote refresh is still in flight.
+type delayedAcquireStore struct {
+	memoryStore
+	once          sync.Once
+	delayedNow    time.Time
+	secondAttempt chan struct{}
+	secondOnce    sync.Once
+}
+
+func (s *delayedAcquireStore) Acquire(ctx context.Context, uid, p, encoded, owner string, until time.Time) (bool, error) {
+	deadline, ok := ctx.Deadline()
+	if !ok || until.Before(deadline.Add(refreshLeaseSafety)) {
+		return false, errors.New("lease ends before work safety window")
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.owner != "" {
+		s.secondOnce.Do(func() { close(s.secondAttempt) })
+	}
+	if s.encoded != encoded || s.delayedNow.Before(s.until) {
+		return false, nil
+	}
+	s.owner = owner
+	s.until = until
+	s.once.Do(func() { s.delayedNow = time.Now().Add(25 * time.Second) })
+	return true, nil
+}
+func TestDelayedAcquisitionCannotOverlapRefresh(t *testing.T) {
+	store := &delayedAcquireStore{memoryStore: memoryStore{encoded: expired}, secondAttempt: make(chan struct{})}
+	var calls atomic.Int32
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		calls.Add(1)
+		select {
+		case <-store.secondAttempt:
+		case <-time.After(time.Second):
+			return nil, errors.New("second replica never attempted acquisition")
+		}
+		return response(200, `{"access_token":"new","refresh_token":"rotated","expires_in":3600}`), nil
+	})
+	services := []*Service{newTestService(store, transport), newTestService(store, transport)}
+	var wg sync.WaitGroup
+	for _, service := range services {
+		wg.Add(1)
+		go func(service *Service) {
+			defer wg.Done()
+			token, err := service.AccessToken(context.Background(), "user", "kick")
+			if err != nil || token != "new" {
+				t.Errorf("%q %v", token, err)
+			}
+		}(service)
+	}
+	wg.Wait()
+	if calls.Load() != 1 {
+		t.Fatalf("%d concurrent rotations after delayed acquisition", calls.Load())
+	}
+}
+func TestLeaseCoversEntireWorkDeadline(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), refreshWorkBudget)
+	defer cancel()
+	now := time.Now()
+	until := refreshLeaseExpiry(ctx, now)
+	deadline, _ := ctx.Deadline()
+	if until.Before(now.Add(60*time.Second)) || until.Before(deadline.Add(refreshLeaseSafety)) {
+		t.Fatalf("lease %s does not cover work %s", until, deadline)
+	}
+}
+func TestUncertainRefreshKeepsLeaseAndGrant(t *testing.T) {
+	for _, failure := range []string{"network", "cancelled", "invalid response", "temporary"} {
+		t.Run(failure, func(t *testing.T) {
+			store := &memoryStore{encoded: expired}
+			var calls atomic.Int32
+			service := newTestService(store, func(r *http.Request) (*http.Response, error) {
+				calls.Add(1)
+				switch failure {
+				case "network":
+					return nil, errors.New("response lost")
+				case "cancelled":
+					return nil, context.Canceled
+				case "invalid response":
+					return response(200, `invalid`), nil
+				default:
+					return response(503, `{"error":"unavailable"}`), nil
+				}
+			})
+			if _, err := service.AccessToken(context.Background(), "user", "kick"); err == nil {
+				t.Fatal("expected refresh failure")
+			}
+			store.mu.Lock()
+			held := store.until.After(time.Now())
+			grant := store.encoded
+			revoked := store.revoked
+			store.mu.Unlock()
+			if !held || grant != expired || revoked {
+				t.Fatal("uncertain result released lease or removed grant")
+			}
+			replica := newTestService(store, func(*http.Request) (*http.Response, error) {
+				calls.Add(1)
+				return response(200, `{"access_token":"wrong","expires_in":3600}`), nil
+			})
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
+			defer cancel()
+			if _, err := replica.AccessToken(ctx, "user", "kick"); !errors.Is(err, context.DeadlineExceeded) {
+				t.Fatalf("second replica bypassed lease: %v", err)
+			}
+			if calls.Load() != 1 {
+				t.Fatal("retried ambiguous rotation before lease expiration")
+			}
+		})
+	}
+}
+
+type cancelledAcquireStore struct {
+	memoryStore
+	cancel context.CancelFunc
+}
+
+func (s *cancelledAcquireStore) Acquire(ctx context.Context, uid, p, encoded, owner string, until time.Time) (bool, error) {
+	acquired, err := s.memoryStore.Acquire(ctx, uid, p, encoded, owner, until)
+	s.cancel()
+	return acquired, err
+}
+func TestNoRefreshStartsAfterAcquireCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store := &cancelledAcquireStore{memoryStore: memoryStore{encoded: expired}, cancel: cancel}
+	var calls int
+	service := newTestService(store, func(*http.Request) (*http.Response, error) {
+		calls++
+		return response(200, `{"access_token":"new","expires_in":3600}`), nil
+	})
+	if _, err := service.AccessToken(ctx, "user", "kick"); !errors.Is(err, context.Canceled) {
+		t.Fatal(err)
+	}
+	if calls != 0 {
+		t.Fatal("refresh started after cancellation")
+	}
+	store.mu.Lock()
+	held := store.until.After(time.Now())
+	store.mu.Unlock()
+	if held {
+		t.Fatal("local cancellation before refresh leaked lease")
+	}
+}
