@@ -26,7 +26,7 @@ type AlchemyConfig struct {
 type AlchemyStore interface {
 	FindOne(context.Context, string, string, string) (string, error)
 	Get(context.Context, string) (map[string]interface{}, error)
-	Add(context.Context, string, map[string]interface{}) error
+	Create(context.Context, string, string, map[string]interface{}) error
 }
 
 // AlchemyTransactions fetches transaction calldata on Polygon.
@@ -58,6 +58,7 @@ type alchemyNotification struct {
 	CreatedAt string `json:"createdAt"`
 	Type      string `json:"type"`
 	Event     struct {
+		Network  string                   `json:"network"`
 		Activity []map[string]interface{} `json:"activity"`
 	} `json:"event"`
 }
@@ -105,7 +106,7 @@ func (h *AlchemyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *AlchemyHandler) process(ctx context.Context, notification alchemyNotification) error {
 	for _, activity := range notification.Event.Activity {
 		hash, ok := activity["hash"].(string)
-		if !ok {
+		if !ok || hash == "" {
 			return fmt.Errorf("activity missing transaction hash")
 		}
 		input, err := h.transactions.Input(ctx, hash)
@@ -144,7 +145,7 @@ func (h *AlchemyHandler) process(ctx context.Context, notification alchemyNotifi
 			"activity": activity, "donor": donation.Donor, "message": donation.Message,
 			"timestamp": now, "expiresAt": h.now().Truncate(time.Millisecond).Add(14 * 24 * time.Hour),
 		}
-		if err := h.store.Add(ctx, "channels/"+channelID+"/messages", message); err != nil {
+		if err := h.store.Create(ctx, "channels/"+channelID+"/messages", alchemyDonationID(notification.Event.Network, activity), message); err != nil {
 			return err
 		}
 	}
