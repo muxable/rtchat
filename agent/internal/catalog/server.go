@@ -5,10 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/muxable/rtchat/agent/internal/callable"
@@ -142,4 +144,17 @@ func (s *Server) userToken(ctx context.Context, uid string) (string, error) {
 		return "", unavailable()
 	}
 	return token, nil
+}
+
+// JSON decodes provider IDs as float64. fmt.Sprint would use scientific
+// notation for large IDs, which does not match provider paths/object keys.
+func identifier(value any) string {
+	switch value := value.(type) {
+	case float64:
+		return strconv.FormatFloat(value, 'f', -1, 64)
+	case string:
+		return value
+	default:
+		return fmt.Sprint(value)
+	}
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/url"
 	"regexp"
 	"sort"
@@ -191,7 +190,7 @@ func (s *Server) searchKick(ctx context.Context, query string) []map[string]any 
 	if c == nil {
 		return empty
 	}
-	id := fmt.Sprint(c["broadcaster_user_id"])
+	id := identifier(c["broadcaster_user_id"])
 	users, _ := s.request(ctx, "https://api.kick.com/public/v1/users?id="+url.QueryEscape(id), token)
 	user := first(users["data"])
 	stream := object(c["stream"])
