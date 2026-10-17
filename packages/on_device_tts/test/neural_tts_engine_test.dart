@@ -164,8 +164,7 @@ void main() {
     expect(native.argsOf('speak').single['handle'], 'h9');
   });
 
-  test('speaks the whole message with the language, voice and speed',
-      () async {
+  test('speaks the whole message with the language, voice and speed', () async {
     await speakNow('Muxfd said: that was the cleanest clutch, GG everyone!',
         rate: 0.8);
     await speakNow('Hola a todos',
