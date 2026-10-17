@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
@@ -38,12 +39,24 @@ class SignInButton extends StatelessWidget {
     }
   }
 
+  /// Keeps the probes' web views alive until they answer. Otherwise the
+  /// controller is garbage collected, the plugin tears down the native web
+  /// view and the page never finishes loading.
+  static final _probes = <WebViewController>{};
+
   static Future<bool> isGlobalThisSupported() async {
+    // every iOS version we support has globalThis.
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return true;
+    }
     final completer = Completer<bool>();
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted);
+    _probes.add(controller);
     controller.addJavaScriptChannel("response", onMessageReceived: (message) {
-      completer.complete(message.message == "true");
+      if (!completer.isCompleted) {
+        completer.complete(message.message == "true");
+      }
     });
     controller.setNavigationDelegate(
       NavigationDelegate(
@@ -54,7 +67,14 @@ class SignInButton extends StatelessWidget {
       ),
     );
     controller.loadRequest(Uri.parse("about:blank"));
-    return completer.future;
+    try {
+      return await completer.future.timeout(const Duration(seconds: 3));
+    } on TimeoutException {
+      // don't block sign in on the probe, assume a modern web view.
+      return true;
+    } finally {
+      _probes.remove(controller);
+    }
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/components/auth/twitch.dart';
@@ -23,5 +24,11 @@ void main() {
     await pump(tester, const SignInWithKick());
     final text = tester.widget<Text>(find.text("Sign in with Kick"));
     expect(text.style?.color, Colors.black);
+  });
+
+  test("ios skips the globalThis probe", () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    expect(await SignInButton.isGlobalThisSupported(), isTrue);
   });
 }
