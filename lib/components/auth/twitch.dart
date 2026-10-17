@@ -38,10 +38,16 @@ class SignInButton extends StatelessWidget {
     }
   }
 
+  /// Keeps the probes' web views alive until they answer. Otherwise the
+  /// controller is garbage collected, the plugin tears down the native web
+  /// view and the page never finishes loading.
+  static final _probes = <WebViewController>{};
+
   static Future<bool> isGlobalThisSupported() async {
     final completer = Completer<bool>();
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted);
+    _probes.add(controller);
     controller.addJavaScriptChannel("response", onMessageReceived: (message) {
       completer.complete(message.message == "true");
     });
@@ -54,7 +60,7 @@ class SignInButton extends StatelessWidget {
       ),
     );
     controller.loadRequest(Uri.parse("about:blank"));
-    return completer.future;
+    return completer.future.whenComplete(() => _probes.remove(controller));
   }
 
   @override
