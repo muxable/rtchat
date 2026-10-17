@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
@@ -45,18 +44,12 @@ class SignInButton extends StatelessWidget {
   static final _probes = <WebViewController>{};
 
   static Future<bool> isGlobalThisSupported() async {
-    // every iOS version we support has globalThis.
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return true;
-    }
     final completer = Completer<bool>();
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted);
     _probes.add(controller);
     controller.addJavaScriptChannel("response", onMessageReceived: (message) {
-      if (!completer.isCompleted) {
-        completer.complete(message.message == "true");
-      }
+      completer.complete(message.message == "true");
     });
     controller.setNavigationDelegate(
       NavigationDelegate(
@@ -67,14 +60,7 @@ class SignInButton extends StatelessWidget {
       ),
     );
     controller.loadRequest(Uri.parse("about:blank"));
-    try {
-      return await completer.future.timeout(const Duration(seconds: 3));
-    } on TimeoutException {
-      // don't block sign in on the probe, assume a modern web view.
-      return true;
-    } finally {
-      _probes.remove(controller);
-    }
+    return completer.future.whenComplete(() => _probes.remove(controller));
   }
 
   @override
