@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	"github.com/muxable/rtchat/agent/internal/callable"
+	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"github.com/muxable/rtchat/agent/internal/provider"
 )
 
@@ -41,7 +41,7 @@ func NewService(db *firestore.Client, tokens Tokens, client *http.Client) *Servi
 	if client == nil {
 		client = &http.Client{Timeout: 10 * time.Second}
 	}
-	return &Service{Tokens: tokens, Store: FirestoreStore{DB: db}, HTTP: client, SendIRC: sendIRC}
+	return &Service{Tokens: tokens, Store: FirestoreStore{DB: db}, HTTP: client, SendIRC: twitch.SendIRC}
 }
 
 type request struct {
@@ -135,7 +135,6 @@ func first(m map[string]any, key string) map[string]any {
 	}
 	return object(items[0])
 }
-func query(path string, values url.Values) string { return path + "?" + values.Encode() }
 func (s *Service) profileID(ctx context.Context, uid, p string) (string, error) {
 	profile, err := s.Store.Profile(ctx, uid)
 	if err != nil {

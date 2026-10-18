@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/muxable/rtchat/agent/internal/callable"
+	"github.com/muxable/rtchat/agent/internal/clients/youtube"
 	"github.com/muxable/rtchat/agent/internal/provider"
 )
 
@@ -194,6 +195,9 @@ func TestTwitchModerationAndRaids(t *testing.T) {
 				}
 				if action == "unban" && params.Get("user_id") != "resolved" {
 					t.Fatal(params)
+				}
+				if action == "clear" && params.Has("message_id") {
+					t.Fatal("clear must remove the whole chat", params)
 				}
 				if action == "deleteMessage" && params.Get("message_id") != "message" {
 					t.Fatal(params)
@@ -417,8 +421,11 @@ func TestProviderErrorParity(t *testing.T) {
 		reason, code string
 	}{{403, "quotaExceeded", "resource-exhausted"}, {403, "rateLimitExceeded", "resource-exhausted"}, {404, "liveChatNotFound", "failed-precondition"}, {401, "authError", "unauthenticated"}, {403, "forbidden", "permission-denied"}, {404, "notFound", "not-found"}, {503, "backendError", "unavailable"}, {400, "badRequest", "internal"}} {
 		t.Run(tc.reason, func(t *testing.T) {
-			body := map[string]any{"error": map[string]any{"errors": []any{map[string]any{"reason": tc.reason}}}}
-			err := youtubeError(tc.status, body)
+			client := youtube.New(&http.Client{Transport: roundTrip(func(*http.Request) (*http.Response, error) {
+				payload, _ := json.Marshal(map[string]any{"error": map[string]any{"errors": []any{map[string]any{"reason": tc.reason}}}})
+				return respond(tc.status, string(payload)), nil
+			})}, "token")
+			err := youtubeError(client.DeleteMessage(context.Background(), "message")).(*callable.Error)
 			if err.Code != tc.code || object(err.Details)["status"] != tc.status {
 				t.Fatalf("%+v", err)
 			}

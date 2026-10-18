@@ -2,14 +2,9 @@ package actions
 
 import (
 	"context"
-	"encoding/json"
-	"math"
-	"net/url"
 	"strconv"
-	"unicode/utf16"
 
 	"github.com/muxable/rtchat/agent/internal/callable"
-
 	"github.com/muxable/rtchat/agent/internal/clients/kick"
 )
 
@@ -21,14 +16,6 @@ func kickID(value string) (int64, error) {
 	return id, nil
 }
 
-// JavaScript slice counts UTF-16 code units, including surrogate pairs.
-func truncateReason(reason string) string {
-	units := utf16.Encode([]rune(reason))
-	if len(units) > 100 {
-		units = units[:100]
-	}
-	return string(utf16.Decode(units))
-}
 func (s *Service) kick(ctx context.Context, uid, action string, r request) (any, error) {
 	if action == "raid" || action == "cancelRaid" {
 		return nil, nil
@@ -41,7 +28,7 @@ func (s *Service) kick(ctx context.Context, uid, action string, r request) (any,
 		return nil, err
 	}
 	if action == "deleteMessage" {
-		_, _, err = kick.New(s.HTTP, token).DoJSON(ctx, "DELETE", "/chat/"+url.PathEscape(strip(r.MessageID, "kick")), nil)
+		err = kick.New(s.HTTP, token).DeleteMessage(ctx, strip(r.MessageID, "kick"))
 		return nil, err
 	}
 	broadcaster, err := kickID(r.ChannelID)
@@ -49,11 +36,7 @@ func (s *Service) kick(ctx context.Context, uid, action string, r request) (any,
 		return nil, err
 	}
 	if action == "send" {
-		body := map[string]any{"content": r.Message, "type": "user", "broadcaster_user_id": broadcaster}
-		if r.ReplyID != "" {
-			body["reply_to_message_id"] = strip(r.ReplyID, "kick")
-		}
-		_, _, err = kick.New(s.HTTP, token).DoJSON(ctx, "POST", "/chat", body)
+		err = kick.New(s.HTTP, token).SendMessage(ctx, broadcaster, r.Message, strip(r.ReplyID, "kick"))
 		return nil, err
 	}
 	target := r.UserID
@@ -62,38 +45,25 @@ func (s *Service) kick(ctx context.Context, uid, action string, r request) (any,
 		if err != nil {
 			return nil, err
 		}
-		_, result, err := kick.New(s.HTTP, app).DoJSON(ctx, "GET", query("/channels", url.Values{"slug": {r.Username}}), nil)
+		target, err = kick.New(s.HTTP, app).ChannelUser(ctx, r.Username)
 		if err != nil {
 			return nil, err
 		}
-		raw := first(result, "data")["broadcaster_user_id"]
-		if raw == nil {
+		if target == "" {
 			return nil, &callable.Error{Code: "not-found", Message: "kick user not found"}
-		}
-		switch value := raw.(type) {
-		case float64:
-			target = strconv.FormatFloat(value, 'f', 0, 64)
-		case string:
-			target = value
-		case json.Number:
-			target = value.String()
 		}
 	}
 	user, err := kickID(target)
 	if err != nil {
 		return nil, err
 	}
-	body := map[string]any{"broadcaster_user_id": broadcaster, "user_id": user}
-	method := "POST"
+	client := kick.New(s.HTTP, token)
 	if action == "unban" {
-		method = "DELETE"
+		return nil, client.Unban(ctx, broadcaster, user)
 	}
+	duration, reason := float64(0), ""
 	if action == "timeout" {
-		body["duration"] = math.Min(10080, math.Max(1, math.Ceil(r.Length/60)))
-		if r.Reason != "" {
-			body["reason"] = truncateReason(r.Reason)
-		}
+		duration, reason = r.Length, r.Reason
 	}
-	_, _, err = kick.New(s.HTTP, token).DoJSON(ctx, method, "/moderation/bans", body)
-	return nil, err
+	return nil, client.Ban(ctx, broadcaster, user, duration, reason)
 }
