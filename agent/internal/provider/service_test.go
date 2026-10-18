@@ -127,12 +127,16 @@ func TestRefreshFailurePolicy(t *testing.T) {
 		code    int
 		body    string
 		revoked bool
-	}{{"revoked", 400, `{"error":"invalid_grant"}`, true}, {"temporary", 503, `{"error":"unavailable","secret":"do-not-leak"}`, false}, {"bad JSON", 200, "invalid", false}} {
+	}{{"revoked", 400, `{"error":"invalid_grant"}`, true}, {"revoked twitch", 401, `{"message":"Invalid refresh token","secret":"do-not-leak"}`, true}, {"temporary", 503, `{"error":"unavailable","secret":"do-not-leak"}`, false}, {"bad JSON", 200, "invalid", false}, {"missing access token", 200, `{"secret":"do-not-leak"}`, false}, {"short expiry", 200, `{"access_token":"new","expires_in":60}`, false}} {
 		t.Run(tc.name, func(t *testing.T) {
 			store := &memoryStore{encoded: expired}
-			s := newTestService(store, func(r *http.Request) (*http.Response, error) { return response(tc.code, tc.body), nil })
+			calls := 0
+			s := newTestService(store, func(r *http.Request) (*http.Response, error) {
+				calls++
+				return response(tc.code, tc.body), nil
+			})
 			_, err := s.AccessToken(context.Background(), "user", "kick")
-			if err == nil || strings.Contains(err.Error(), "do-not-leak") || store.revoked != tc.revoked {
+			if calls != 1 || err == nil || strings.Contains(err.Error(), "do-not-leak") || store.revoked != tc.revoked {
 				t.Fatalf("err=%v revoked=%v", err, store.revoked)
 			}
 			if !tc.revoked && store.encoded != expired {
@@ -168,12 +172,11 @@ func TestAppTokenCache(t *testing.T) {
 	var calls int
 	s := newTestService(nil, func(r *http.Request) (*http.Response, error) {
 		calls++
-		var body map[string]string
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		if err := r.ParseForm(); err != nil {
 			t.Fatal(err)
 		}
-		if body["grant_type"] != "client_credentials" {
-			t.Fatal(body)
+		if r.Form.Get("grant_type") != "client_credentials" {
+			t.Fatal("wrong app token grant type")
 		}
 		return response(200, `{"access_token":"app","expires_in":3600}`), nil
 	})
@@ -190,36 +193,27 @@ func TestAppTokenCache(t *testing.T) {
 
 func TestProviderRefreshRequests(t *testing.T) {
 	for _, tc := range []struct {
-		provider, host, secretPrefix, contentType string
+		provider, host, secretPrefix string
 	}{
-		{"twitch", "id.twitch.tv", "twitch-client", "application/json"},
-		{"kick", "id.kick.com", "kick-client", "application/x-www-form-urlencoded"},
-		{"youtube", "oauth2.googleapis.com", "youtube-oauth-client", "application/x-www-form-urlencoded"},
-		{"streamlabs", "www.streamlabs.com", "streamlabs-client", "application/json"},
-		{"streamelements", "api.streamelements.com", "streamelements-client", "application/json"},
+		{"twitch", "id.twitch.tv", "twitch-client"},
+		{"kick", "id.kick.com", "kick-client"},
+		{"youtube", "oauth2.googleapis.com", "youtube-oauth-client"},
+		{"streamlabs", "www.streamlabs.com", "streamlabs-client"},
+		{"streamelements", "api.streamelements.com", "streamelements-client"},
 	} {
 		t.Run(tc.provider, func(t *testing.T) {
 			store := &memoryStore{encoded: expired}
 			var fetched []string
 			client := &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
-				if r.URL.Host != tc.host || r.Header.Get("Content-Type") != tc.contentType {
+				if r.URL.Host != tc.host || r.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
 					t.Fatalf("unexpected token request: %s %s", r.URL, r.Header.Get("Content-Type"))
 				}
-				var fields map[string]string
-				if tc.contentType == "application/json" {
-					if err := json.NewDecoder(r.Body).Decode(&fields); err != nil {
-						t.Fatal(err)
-					}
-				} else {
-					if err := r.ParseForm(); err != nil {
-						t.Fatal(err)
-					}
-					fields = make(map[string]string)
-					for key := range r.Form {
-						fields[key] = r.Form.Get(key)
-					}
+				if err := r.ParseForm(); err != nil {
+					t.Fatal(err)
 				}
-				if fields["grant_type"] != "refresh_token" || fields["refresh_token"] != "refresh-old" || fields["client_id"] == "" || fields["client_secret"] != tc.secretPrefix+"-secret" {
+				fields := r.Form
+
+				if fields.Get("grant_type") != "refresh_token" || fields.Get("refresh_token") != "refresh-old" || fields.Get("client_id") == "" || fields.Get("client_secret") != tc.secretPrefix+"-secret" {
 					t.Fatal("missing refresh credentials")
 				}
 				return response(200, `{"access_token":"new","expires_in":3600}`), nil
@@ -260,4 +254,28 @@ func TestConcurrentAppTokenCache(t *testing.T) {
 		}()
 	}
 	wg.Wait()
+}
+
+func TestRefreshEncodesTokenAndUpdatesScope(t *testing.T) {
+	const refresh = "refresh+old&= /"
+	store := &memoryStore{encoded: strings.Replace(expired, "refresh-old", refresh, 1)}
+	s := newTestService(store, func(r *http.Request) (*http.Response, error) {
+		if err := r.ParseForm(); err != nil {
+			t.Fatal(err)
+		}
+		if r.Form.Get("refresh_token") != refresh || r.Header.Get("Authorization") != "" {
+			t.Fatal("refresh token or body authentication changed")
+		}
+		return response(200, `{"access_token":"new","refresh_token":"rotated+&= /","scope":["chat:write"],"expires_in":"3600"}`), nil
+	})
+	if token, err := s.AccessToken(context.Background(), "user", "twitch"); err != nil || token != "new" {
+		t.Fatalf("%q %v", token, err)
+	}
+	var stored map[string]any
+	if err := json.Unmarshal([]byte(store.encoded), &stored); err != nil {
+		t.Fatal(err)
+	}
+	if stored["refresh_token"] != "rotated+&= /" || stored["scope"].([]any)[0] != "chat:write" || stored["custom"] != true || !valid(stored) {
+		t.Fatal("refreshed grant lost fields")
+	}
 }

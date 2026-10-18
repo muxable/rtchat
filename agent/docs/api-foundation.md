@@ -62,6 +62,16 @@ optional credentials never affect unrelated chat/webhook startup. Successful
 credential reads are cached for the lifetime of the service; rotate by restarting
 instances. Network operations have bounded contexts and never log token payloads.
 
+Token requests use the existing `golang.org/x/oauth2` dependency:
+`oauth2.Config.TokenSource` for refresh and `clientcredentials.Config.Token` for
+app tokens. Requests use form encoding with credentials in the body; explicit
+`AuthStyleInParams` avoids authentication-probing retries on rotating grants.
+The adapter preserves stored metadata and updates access/refresh tokens, scope,
+token type and expiry. OAuth errors are classified and redacted before returning.
+Form encoding is documented by [Twitch](https://dev.twitch.tv/docs/authentication/refresh-tokens/),
+[StreamElements](https://github.com/StreamElements/api-docs/blob/main/docs/OAuth2.md#refreshing-access-token)
+and [Streamlabs v1](https://dev.streamlabs.com/v1/docs/obtain-an-access_token).
+
 Tokens remain JSON strings in `tokens/{uid}[provider]`, with `access_token`,
 `refresh_token`, ISO `expires_at`, and preserved provider-specific fields such as
 scope. Refreshes preserve a previous refresh token when Google omits it and save

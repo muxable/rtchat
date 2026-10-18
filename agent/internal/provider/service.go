@@ -6,9 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -17,6 +15,8 @@ import (
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	"github.com/muxable/rtchat/agent/internal/auth"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 var ErrNoToken = errors.New("provider token unavailable")
@@ -112,16 +112,15 @@ type providerConfig struct {
 	endpoint     string
 	secretPrefix string
 	clientID     string // Set when the public client ID is already known.
-	jsonBody     bool
 	appToken     bool
 }
 
 var providers = map[string]providerConfig{
-	"twitch":         {endpoint: "https://id.twitch.tv/oauth2/token", secretPrefix: "twitch-client", clientID: auth.TwitchClientID(), jsonBody: true, appToken: true},
+	"twitch":         {endpoint: "https://id.twitch.tv/oauth2/token", secretPrefix: "twitch-client", clientID: auth.TwitchClientID(), appToken: true},
 	"kick":           {endpoint: "https://id.kick.com/oauth/token", secretPrefix: "kick-client", appToken: true},
 	"youtube":        {endpoint: "https://oauth2.googleapis.com/token", secretPrefix: "youtube-oauth-client"},
-	"streamlabs":     {endpoint: "https://www.streamlabs.com/api/v1.0/token", secretPrefix: "streamlabs-client", jsonBody: true},
-	"streamelements": {endpoint: "https://api.streamelements.com/oauth2/token", secretPrefix: "streamelements-client", jsonBody: true},
+	"streamlabs":     {endpoint: "https://www.streamlabs.com/api/v1.0/token", secretPrefix: "streamlabs-client"},
+	"streamelements": {endpoint: "https://api.streamelements.com/oauth2/token", secretPrefix: "streamelements-client"},
 }
 
 func decodeToken(encoded string) (map[string]any, error) {
@@ -210,7 +209,7 @@ func (s *Service) refresh(ctx context.Context, p string, previous map[string]any
 	if refresh == "" {
 		return nil, false, ErrNoToken
 	}
-	result, revoked, err := s.requestToken(ctx, p, url.Values{"grant_type": {"refresh_token"}, "refresh_token": {refresh}})
+	result, revoked, err := s.requestToken(ctx, p, refresh)
 	if err != nil {
 		return nil, revoked, err
 	}
@@ -219,9 +218,6 @@ func (s *Service) refresh(ctx context.Context, p string, previous map[string]any
 	}
 	if _, ok := result["expires_at"]; !ok {
 		delete(previous, "expires_at")
-	}
-	if tokenString(result, "refresh_token") == "" {
-		previous["refresh_token"] = refresh
 	}
 	return previous, false, nil
 }
@@ -234,61 +230,57 @@ func (s *Service) AppAccessToken(ctx context.Context, p string) (string, error) 
 	if valid(token) {
 		return tokenString(token, "access_token"), nil
 	}
-	result, _, err := s.requestToken(ctx, p, url.Values{"grant_type": {"client_credentials"}})
+	result, _, err := s.requestToken(ctx, p, "")
 	if err != nil {
 		return "", err
 	}
 	s.appTokens.Store(p, result)
 	return tokenString(result, "access_token"), nil
 }
-func (s *Service) requestToken(ctx context.Context, p string, form url.Values) (map[string]any, bool, error) {
+
+// An empty refresh token requests an app token; refresh rejects missing grants locally.
+func (s *Service) requestToken(ctx context.Context, p, refresh string) (map[string]any, bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	credentials, err := s.Credentials(ctx, p)
 	if err != nil {
 		return nil, false, err
 	}
-	form.Set("client_id", credentials.ClientID)
-	form.Set("client_secret", credentials.ClientSecret)
-	var body io.Reader = strings.NewReader(form.Encode())
-	contentType := "application/x-www-form-urlencoded"
-	if providers[p].jsonBody {
-		values := map[string]string{}
-		for k, v := range form {
-			values[k] = v[0]
+	ctx = context.WithValue(ctx, oauth2.HTTPClient, s.client)
+	endpoint := oauth2.Endpoint{TokenURL: providers[p].endpoint, AuthStyle: oauth2.AuthStyleInParams}
+	var token *oauth2.Token
+	if refresh == "" {
+		config := clientcredentials.Config{ClientID: credentials.ClientID, ClientSecret: credentials.ClientSecret, TokenURL: endpoint.TokenURL, AuthStyle: endpoint.AuthStyle}
+		token, err = config.Token(ctx)
+	} else {
+		config := oauth2.Config{ClientID: credentials.ClientID, ClientSecret: credentials.ClientSecret, Endpoint: endpoint}
+		token, err = config.TokenSource(ctx, &oauth2.Token{RefreshToken: refresh}).Token()
+	}
+	if err != nil {
+		// RetrieveError includes the raw response body. Classify revoked grants,
+		// then return a redacted error so credentials cannot reach callers/logs.
+		var response *oauth2.RetrieveError
+		if errors.As(err, &response) {
+			var body map[string]any
+			_ = json.Unmarshal(response.Body, &body)
+			revoked := body["error"] == "invalid_grant" || body["message"] == "Invalid refresh token"
+			return nil, revoked, fmt.Errorf("provider token request returned HTTP %d", response.Response.StatusCode)
 		}
-		data, _ := json.Marshal(values)
-		body = strings.NewReader(string(data))
-		contentType = "application/json"
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, providers[p].endpoint, body)
-	if err != nil {
-		return nil, false, err
-	}
-	req.Header.Set("Content-Type", contentType)
-	resp, err := s.client.Do(req)
-	if err != nil {
 		return nil, false, errors.New("provider token request failed")
 	}
-	defer resp.Body.Close()
-	var result map[string]any
-	err = json.NewDecoder(io.LimitReader(resp.Body, 1024*1024)).Decode(&result)
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		revoked := result["error"] == "invalid_grant" || result["message"] == "Invalid refresh token"
-		return nil, revoked, fmt.Errorf("provider token request returned HTTP %d", resp.StatusCode)
+	if !token.Expiry.IsZero() && time.Until(token.Expiry) <= 5*time.Minute {
+		return nil, false, errors.New("provider token expiry too short")
 	}
-	if err != nil || tokenString(result, "access_token") == "" {
-		return nil, false, errors.New("invalid provider token response")
+	// Adapt library tokens to the existing Firestore schema. OAuth2 already
+	// retains the previous refresh token when a provider omits it.
+	result := map[string]any{"access_token": token.AccessToken, "refresh_token": token.RefreshToken}
+	for _, key := range []string{"scope", "token_type", "expires_in"} {
+		if value := token.Extra(key); value != nil {
+			result[key] = value
+		}
 	}
-	if seconds, ok := result["expires_in"].(float64); ok {
-		if seconds <= 300 {
-			return nil, false, errors.New("provider token expiry too short")
-		}
-		result["expires_at"] = time.Now().Add(time.Duration(seconds * float64(time.Second))).UTC().Format(time.RFC3339Nano)
-	} else if expiry := tokenString(result, "expires_at"); expiry != "" {
-		if _, err := time.Parse(time.RFC3339Nano, expiry); err != nil {
-			return nil, false, errors.New("invalid provider token expiry")
-		}
+	if !token.Expiry.IsZero() {
+		result["expires_at"] = token.Expiry.UTC().Format(time.RFC3339Nano)
 	}
 	return result, false, nil
 }
