@@ -91,20 +91,6 @@ func TestErrorAndMount(t *testing.T) {
 		t.Fatal("readiness taken over")
 	}
 }
-func TestAppCheckFailsClosed(t *testing.T) {
-	s := NewServer(nil)
-	called := false
-	s.RegisterWithOptions("check", Options{RequireAppCheck: true}, func(context.Context, json.RawMessage) (any, error) { called = true; return nil, nil })
-	req := httptest.NewRequest("POST", "/check", strings.NewReader(`{"data":{}}`))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Firebase-AppCheck", "client-assertion")
-	w := httptest.NewRecorder()
-	s.ServeHTTP(w, req)
-	if w.Code != 401 || called {
-		t.Fatal("unverified App Check accepted")
-	}
-}
-
 func TestPanicReturnsCanonicalInternal(t *testing.T) {
 	s := NewServer(nil)
 	s.Register("panic", false, func(context.Context, json.RawMessage) (any, error) { panic("secret") })

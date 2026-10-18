@@ -244,3 +244,20 @@ func TestProviderRefreshRequests(t *testing.T) {
 		})
 	}
 }
+
+func TestConcurrentAppTokenCache(t *testing.T) {
+	service := newTestService(nil, func(*http.Request) (*http.Response, error) {
+		return response(200, `{"access_token":"app","expires_in":3600}`), nil
+	})
+	var wg sync.WaitGroup
+	for i := 0; i < 16; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if token, err := service.AppAccessToken(context.Background(), "twitch"); err != nil || token != "app" {
+				t.Errorf("%q %v", token, err)
+			}
+		}()
+	}
+	wg.Wait()
+}

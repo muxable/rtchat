@@ -34,16 +34,10 @@ Responses always include `result`, including null. Requests use a single-member
 The body limit is 1 MiB and handler timeout is 60 seconds.
 CORS preflight permits Firebase SDK headers without cookie credentials.
 
-The existing functions source has no `enforceAppCheck` setting. If a deployment has
-separately enabled enforcement, preserve it by configuring
-the result of `callable.FirebaseAppCheckVerifier(...)` with
-`api.SetAppCheckVerifier(verify)` (handle initialization errors)
-and registering those routes with
-`RegisterWithOptions(name, callable.Options{RequireAuth: true, RequireAppCheck: true}, handler)`.
-Enforced routes fail closed if verification is missing or invalid. App Check is
-never inferred from an unverified client header. ID verification uses Firebase
-Admin SDK signature/issuer/audience/expiry verification, without revocation lookups,
-matching the existing callable default.
+The current app and callable handlers do not use App Check enforcement; this
+foundation supports Firebase ID-token authentication only. ID verification checks
+signature, issuer, audience and expiry using the Admin SDK, without revocation
+lookups.
 
 `internal/provider.Service` exposes:
 

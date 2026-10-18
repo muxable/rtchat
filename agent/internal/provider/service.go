@@ -47,9 +47,8 @@ type Service struct {
 	store       Store
 	client      *http.Client
 	fetch       SecretFetcher
-	mu          sync.Mutex
-	credentials map[string]Credentials
-	appTokens   map[string]map[string]any
+	credentials sync.Map // provider -> Credentials
+	appTokens   sync.Map // provider -> decoded token
 }
 
 func NewService(db *firestore.Client, client *http.Client) *Service {
@@ -62,7 +61,7 @@ func NewServiceWithStore(store Store, client *http.Client, fetch SecretFetcher) 
 	if fetch == nil {
 		fetch = fetchSecret
 	}
-	return &Service{store: store, client: client, fetch: fetch, credentials: map[string]Credentials{}, appTokens: map[string]map[string]any{}}
+	return &Service{store: store, client: client, fetch: fetch}
 }
 func fetchSecret(ctx context.Context, name string) (string, error) {
 	client, err := secretmanager.NewClient(ctx)
@@ -85,11 +84,8 @@ func (s *Service) Credentials(ctx context.Context, p string) (Credentials, error
 	}
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	s.mu.Lock()
-	cached, ok := s.credentials[p]
-	s.mu.Unlock()
-	if ok {
-		return cached, nil
+	if cached, ok := s.credentials.Load(p); ok {
+		return cached.(Credentials), nil
 	}
 	config := providers[p]
 	var c Credentials
@@ -108,9 +104,7 @@ func (s *Service) Credentials(ctx context.Context, p string) (Credentials, error
 	if c.ClientID == "" || c.ClientSecret == "" {
 		return Credentials{}, errors.New("missing provider credentials")
 	}
-	s.mu.Lock()
-	s.credentials[p] = c
-	s.mu.Unlock()
+	s.credentials.Store(p, c)
 	return c, nil
 }
 
@@ -220,41 +214,31 @@ func (s *Service) refresh(ctx context.Context, p string, previous map[string]any
 	if err != nil {
 		return nil, revoked, err
 	}
-	merged := map[string]any{}
-	for k, v := range previous {
-		merged[k] = v
-	}
 	for k, v := range result {
-		merged[k] = v
+		previous[k] = v
 	}
 	if _, ok := result["expires_at"]; !ok {
-		delete(merged, "expires_at")
+		delete(previous, "expires_at")
 	}
 	if tokenString(result, "refresh_token") == "" {
-		merged["refresh_token"] = refresh
+		previous["refresh_token"] = refresh
 	}
-	return merged, false, nil
+	return previous, false, nil
 }
 func (s *Service) AppAccessToken(ctx context.Context, p string) (string, error) {
 	if !providers[p].appToken {
 		return "", errors.New("provider has no app token")
 	}
-	// Cache protected separately from credential loading to avoid locking recursively.
-	s.mu.Lock()
-	cached := s.appTokens[p]
-	if valid(cached) {
-		result := tokenString(cached, "access_token")
-		s.mu.Unlock()
-		return result, nil
+	cached, _ := s.appTokens.Load(p)
+	token, _ := cached.(map[string]any)
+	if valid(token) {
+		return tokenString(token, "access_token"), nil
 	}
-	s.mu.Unlock()
 	result, _, err := s.requestToken(ctx, p, url.Values{"grant_type": {"client_credentials"}})
 	if err != nil {
 		return "", err
 	}
-	s.mu.Lock()
-	s.appTokens[p] = result
-	s.mu.Unlock()
+	s.appTokens.Store(p, result)
 	return tokenString(result, "access_token"), nil
 }
 func (s *Service) requestToken(ctx context.Context, p string, form url.Values) (map[string]any, bool, error) {

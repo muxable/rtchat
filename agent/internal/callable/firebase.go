@@ -24,27 +24,3 @@ func FirebaseVerifier(ctx context.Context, projectID string) (VerifyFunc, error)
 		return verified.UID, nil
 	}, nil
 }
-
-// FirebaseAppCheckVerifier verifies App Check token signatures and project audience.
-// Existing callable routes have no App Check enforcement; future enforced routes
-// must configure this verifier and use RegisterWithOptions.
-func FirebaseAppCheckVerifier(ctx context.Context, projectID string) (VerifyFunc, error) {
-	app, err := firebase.NewApp(ctx, &firebase.Config{ProjectID: projectID})
-	if err != nil {
-		return nil, err
-	}
-	client, err := app.AppCheck(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return func(ctx context.Context, token string) (string, error) {
-		if err := ctx.Err(); err != nil {
-			return "", err
-		}
-		verified, err := client.VerifyToken(token)
-		if err != nil {
-			return "", err
-		}
-		return verified.AppID, nil
-	}, nil
-}

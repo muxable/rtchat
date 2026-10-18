@@ -27,9 +27,8 @@ type uidKey struct{}
 func UID(ctx context.Context) string { uid, _ := ctx.Value(uidKey{}).(string); return uid }
 
 type Server struct {
-	routes   map[string]http.Handler
-	verify   VerifyFunc
-	appCheck VerifyFunc
+	routes map[string]http.Handler
+	verify VerifyFunc
 }
 
 func NewServer(verify VerifyFunc) *Server {
@@ -52,17 +51,8 @@ func (s *Server) Mount(mux *http.ServeMux) {
 	}
 }
 
-// SetAppCheckVerifier configures verification for routes that explicitly enforce App Check.
-func (s *Server) SetAppCheckVerifier(verify VerifyFunc) { s.appCheck = verify }
-
-type Options struct{ RequireAuth, RequireAppCheck bool }
-
 // Register installs a callable at /name. Public handlers still reject invalid supplied credentials.
 func (s *Server) Register(name string, requireAuth bool, handler Handler) {
-	s.RegisterWithOptions(name, Options{RequireAuth: requireAuth}, handler)
-}
-
-func (s *Server) RegisterWithOptions(name string, options Options, handler Handler) {
 	if name == "" || strings.Contains(name, "/") {
 		panic("invalid callable name")
 	}
@@ -70,10 +60,10 @@ func (s *Server) RegisterWithOptions(name string, options Options, handler Handl
 	if _, exists := s.routes[path]; exists {
 		panic("duplicate callable name")
 	}
-	s.routes[path] = s.wrap(options, handler)
+	s.routes[path] = s.wrap(requireAuth, handler)
 }
 
-func (s *Server) wrap(options Options, handler Handler) http.Handler {
+func (s *Server) wrap(requireAuth bool, handler Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
@@ -114,20 +104,9 @@ func (s *Server) wrap(options Options, handler Handler) http.Handler {
 			}
 			ctx = context.WithValue(ctx, uidKey{}, uid)
 		}
-		if options.RequireAuth && UID(ctx) == "" {
+		if requireAuth && UID(ctx) == "" {
 			writeError(w, &Error{Code: "unauthenticated", Message: "authentication required"})
 			return
-		}
-		if options.RequireAppCheck {
-			appID := ""
-			var err error
-			if token := r.Header.Get("X-Firebase-AppCheck"); token != "" && s.appCheck != nil {
-				appID, err = s.appCheck(ctx, token)
-			}
-			if err != nil || appID == "" {
-				writeError(w, &Error{Code: "unauthenticated", Message: "App Check required"})
-				return
-			}
 		}
 		result, err := invoke(ctx, data, handler)
 		if err != nil {
