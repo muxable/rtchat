@@ -96,7 +96,7 @@ func (s *Service) removeIdleKickLocked(ctx context.Context, doc *firestore.Docum
 			ID string `json:"id"`
 		} `json:"data"`
 	}
-	if err := s.API.request(ctx, "kick", http.MethodGet, "/events/subscriptions", params("broadcaster_user_id", []string{strings.TrimPrefix(doc.Ref.ID, "kick:")}), &listed); err != nil {
+	if err := s.API.kick(ctx, http.MethodGet, "/events/subscriptions", params("broadcaster_user_id", []string{strings.TrimPrefix(doc.Ref.ID, "kick:")}), &listed); err != nil {
 		return err
 	}
 	if listed.Data == nil {
