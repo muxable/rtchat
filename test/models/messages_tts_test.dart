@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/main.dart';
@@ -12,6 +11,7 @@ import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
 
 import '../fakes/fake_chat.dart';
+import '../fakes/fake_tts_engine.dart';
 
 final twitch = Channel(Providers.twitch, '1', 'muxfd');
 final kick = Channel(Providers.kick, '2', 'muxfd');
@@ -28,24 +28,14 @@ FakeChatMessage chat(String id, int seconds, Channel channel) =>
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // what flutter_tts was asked to say, and a gate that holds the current
+  // what the engine was asked to say, and a gate that holds the current
   // utterance until it's released.
-  late List<String> spoken;
+  late FakeTtsEngine engine;
   late Completer<void> gate;
 
   setUp(() {
-    spoken = [];
     gate = Completer()..complete();
-    final messenger =
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-    messenger.setMockMethodCallHandler(const MethodChannel('flutter_tts'),
-        (call) async {
-      if (call.method == 'speak') {
-        spoken.add(call.arguments as String);
-        await gate.future;
-      }
-      return 1;
-    });
+    engine = FakeTtsEngine()..onSpeak = (_) => gate.future;
   });
 
   late WidgetTester tester;
@@ -72,7 +62,7 @@ void main() {
       home: const SizedBox(),
     ));
     streams = {for (final c in channels) c: StreamController<DeltaEvent>()};
-    tts = TtsModel.fromJson({});
+    tts = TtsModel.fromJson({}, engine: engine);
     model = MessagesModel.fromJson({})
       ..forChannel = ((channel) => streams[channel]!.stream)
       ..tts = tts
@@ -85,7 +75,8 @@ void main() {
     await idle();
   }
 
-  bool said(String id) => spoken.any((text) => text.contains('text $id'));
+  bool said(String id) =>
+      engine.spoken.any((text) => text.contains('text $id'));
 
   testWidgets('a late live message in a merged view is read out',
       (tester) async {

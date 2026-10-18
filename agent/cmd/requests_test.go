@@ -171,3 +171,17 @@ func TestKeyedMutexSerializesWaiters(t *testing.T) {
 		t.Fatal("idle entry retained")
 	}
 }
+
+func TestYouTubeReaderIsKeptAcrossAssignmentUpdates(t *testing.T) {
+	calls := 0
+	m := newRequestManager(func(*agent.Request) (io.Closer, error) { calls++; return &closer{}, nil })
+	m.apply(request("youtube:UCchannel"), firestore.DocumentAdded)
+	m.apply(request("youtube:UCchannel"), firestore.DocumentModified)
+	if calls != 1 {
+		t.Fatalf("reader started %d times, want 1", calls)
+	}
+	m.apply(request("youtube:UCchannel"), firestore.DocumentRemoved)
+	if m.count() != 0 {
+		t.Fatal("removed youtube assignment kept its reader")
+	}
+}

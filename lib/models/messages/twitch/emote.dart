@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:rtchat/api.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
 
@@ -22,8 +22,7 @@ Future<List<Emote>> getEmotes(Channel channel) async {
 
   for (int i = 0; i < 3; i++) {
     try {
-      final response =
-          await FirebaseFunctions.instance.httpsCallable("getEmotes")({
+      final response = await Api.instance.callable("getEmotes")({
         "provider": channel.provider,
         "channelId": channel.channelId,
       });

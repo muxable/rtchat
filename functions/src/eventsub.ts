@@ -97,7 +97,7 @@ function createEventsub(token: string, type: string, condition: any) {
       transport: {
         method: "webhook",
         callback:
-          "https://us-central1-rtchat-47692.cloudfunctions.net/eventsub",
+          "https://rtchat-api.rtirl.com/eventsub",
         secret: TWITCH_CLIENT_SECRET,
       },
     }),

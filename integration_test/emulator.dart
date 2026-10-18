@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:rtchat/api.dart';
 import 'package:rtchat/firebase_options.dart';
 
 /// The Android emulator reaches the host machine's loopback via 10.0.2.2.
@@ -34,7 +34,7 @@ Future<void> initializeFirebaseEmulators() async {
   // Functions are not emulated. Point them at an unused port so callables
   // fail fast instead of reaching production; the app already tolerates
   // failures from getEmotes and subscribe.
-  FirebaseFunctions.instance.useFunctionsEmulator(emulatorHost, 5999);
+  Api.instance.useEmulator(emulatorHost, 5999);
 }
 
 /// Seeds Firestore through the emulator's REST API. The `owner` bearer token

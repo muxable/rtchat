@@ -13,6 +13,7 @@ import {
   KICK_OAUTH_CONFIG,
   oauthConfig,
   TWITCH_OAUTH_CONFIG,
+  withRefreshToken,
 } from "../src/oauth";
 
 describe("isValidState", () => {
@@ -44,7 +45,20 @@ describe("oauthConfig", () => {
   });
 
   it("rejects unknown providers", () => {
-    expect(() => oauthConfig("youtube")).toThrow(/unknown oauth provider/);
+    expect(() => oauthConfig("myspace")).toThrow(/unknown oauth provider/);
+  });
+
+  it("builds google's config from the youtube secrets at runtime", () => {
+    vi.stubEnv("youtube-oauth-client-id", "yt-id");
+    vi.stubEnv("youtube-oauth-client-secret", "yt-secret");
+    const config = oauthConfig("youtube");
+    expect(config.client).toEqual({ id: "yt-id", secret: "yt-secret" });
+    expect(config.auth.tokenHost).toBe("https://oauth2.googleapis.com");
+    expect(config.auth.authorizeHost).toBe("https://accounts.google.com");
+  });
+
+  it("refuses youtube without its secrets", () => {
+    expect(() => oauthConfig("youtube")).toThrow(/not configured/);
   });
 
   it("loads without kick config but refuses to use it", async () => {
@@ -56,6 +70,26 @@ describe("oauthConfig", () => {
     const oauth = await import("../src/oauth");
     expect(oauth.oauthConfig("twitch")).toBe(oauth.TWITCH_OAUTH_CONFIG);
     expect(() => oauth.oauthConfig("kick")).toThrow(/not configured/);
+  });
+});
+
+describe("withRefreshToken", () => {
+  it("keeps the old refresh token when google doesn't return one", () => {
+    expect(
+      withRefreshToken(
+        { refresh_token: "old" },
+        { access_token: "new", expires_in: 3599 }
+      )
+    ).toEqual({ access_token: "new", expires_in: 3599, refresh_token: "old" });
+  });
+
+  it("uses rotated refresh tokens", () => {
+    expect(
+      withRefreshToken(
+        { refresh_token: "old" },
+        { access_token: "a", refresh_token: "new" }
+      ).refresh_token
+    ).toBe("new");
   });
 });
 

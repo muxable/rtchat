@@ -1,0 +1,4 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Keeps the CPU awake while a model loads and an utterance plays. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+</manifest>

@@ -11,6 +11,13 @@
   },
   "hosting": {
     "public": "public",
+    "redirects": [
+      {
+        "source": "/privacy",
+        "destination": "https://rtirl.com/privacy-policy/",
+        "type": 301
+      }
+    ],
     "rewrites": [
       {
         "source": "/auth/**",

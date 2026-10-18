@@ -118,7 +118,12 @@ class _StreamPreviewState extends State<StreamPreview> {
                   "window.action(window.Actions.SetQuality, 'auto')");
             } else {
               await _controller.runJavaScript(
-                  "window.action(window.Actions.SetQuality, '160p')");
+                "window.action(window.Actions.SetQuality, '360p')",
+              );
+              await Future.delayed(const Duration(seconds: 2));
+              await _controller.runJavaScript(
+                "window.action(window.Actions.SetQuality, '360p30')",
+              );
             }
           }
         },
@@ -248,7 +253,13 @@ class _StreamPreviewState extends State<StreamPreview> {
                                               "window.action(window.Actions.SetQuality, 'auto')");
                                         } else {
                                           await _controller.runJavaScript(
-                                              "window.action(window.Actions.SetQuality, '160p')");
+                                            "window.action(window.Actions.SetQuality, '360p')",
+                                          );
+                                          await Future.delayed(
+                                              const Duration(seconds: 2));
+                                          await _controller.runJavaScript(
+                                            "window.action(window.Actions.SetQuality, '360p30')",
+                                          );
                                         }
                                       },
                                 color: Colors.white,

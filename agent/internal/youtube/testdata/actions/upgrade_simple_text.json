@@ -1,0 +1,91 @@
+{
+ "source": "constructed",
+ "action": {
+  "clickTrackingParams": "x",
+  "addChatItemAction": {
+   "item": {
+    "liveChatMembershipItemRenderer": {
+     "id": "upgrade-simple",
+     "timestampUsec": "1700000000123456",
+     "authorName": {
+      "simpleText": "@Viewer"
+     },
+     "authorExternalChannelId": "UCviewer",
+     "authorPhoto": {
+      "thumbnails": [
+       {
+        "url": "https://yt3.ggpht.com/viewer=s32",
+        "width": 32,
+        "height": 32
+       },
+       {
+        "url": "https://yt3.ggpht.com/viewer=s64",
+        "width": 64,
+        "height": 64
+       }
+      ]
+     },
+     "authorBadges": [
+      {
+       "liveChatAuthorBadgeRenderer": {
+        "customThumbnail": {
+         "thumbnails": [
+          {
+           "url": "https://yt3.ggpht.com/badge=s16"
+          }
+         ]
+        },
+        "tooltip": "Member (3 months)",
+        "accessibility": {
+         "accessibilityData": {
+          "label": "Member (3 months)"
+         }
+        }
+       }
+      }
+     ],
+     "contextMenuEndpoint": {
+      "liveChatItemContextMenuEndpoint": {
+       "params": "x"
+      }
+     },
+     "contextMenuAccessibility": {
+      "accessibilityData": {
+       "label": "Chat actions"
+      }
+     },
+     "trackingParams": "x",
+     "headerSubtext": {
+      "simpleText": "Upgraded membership to Platinum!"
+     }
+    }
+   },
+   "clientId": "x"
+  }
+ },
+ "event": {
+  "id": "upgrade-simple",
+  "snippet": {
+   "type": "newSponsorEvent",
+   "liveChatId": "innertube:video",
+   "authorChannelId": "UCviewer",
+   "publishedAt": "2023-11-14T22:13:20.123456Z",
+   "hasDisplayContent": true,
+   "displayMessage": "Upgraded membership to Platinum!",
+   "newSponsorDetails": {
+    "memberLevelName": "Platinum",
+    "isUpgrade": true
+   }
+  },
+  "authorDetails": {
+   "channelId": "UCviewer",
+   "channelUrl": "https://www.youtube.com/channel/UCviewer",
+   "displayName": "@Viewer",
+   "profileImageUrl": "https://yt3.ggpht.com/viewer=s64",
+   "isVerified": false,
+   "isChatOwner": false,
+   "isChatSponsor": true,
+   "isChatModerator": false
+  }
+ }
+}

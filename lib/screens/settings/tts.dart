@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/tts/voice_packs.dart';
+import 'package:rtchat/screens/settings/tts/voice_settings.dart';
 
 class TextToSpeechScreen extends StatelessWidget {
   const TextToSpeechScreen({super.key});
@@ -29,6 +31,8 @@ class TextToSpeechScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
+            if (context.watch<VoicePacksModel>().isSupported)
+              const VoiceSettings(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(

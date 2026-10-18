@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:rtchat/api.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/components/provider_icon.dart';
@@ -10,7 +10,7 @@ import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/views.dart';
 
-final _search = FirebaseFunctions.instance.httpsCallable("search");
+final _search = Api.instance.callable("search");
 
 Future<List<SearchResult>> fastSearch() async {
   // fast query firestore and slow query the functions. tag firestore results
