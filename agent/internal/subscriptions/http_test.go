@@ -27,14 +27,14 @@ func TestRateLimitCancellationAndNoAmbiguousPostRetry(t *testing.T) {
 		return &http.Response{StatusCode: status, Header: http.Header{"Retry-After": {"30"}}, Body: io.NopCloser(strings.NewReader(""))}, nil
 	})}
 	api := &API{Tokens: fakeTokens{}, Client: client, KickURL: "https://kick.invalid"}
-	if err := api.request(ctx, "kick", "app-token", http.MethodPost, "/events/subscriptions", nil, map[string]string{"test": "payload"}, nil); !errors.Is(err, context.Canceled) {
+	if err := api.kick(ctx, "app-token", http.MethodPost, "/events/subscriptions", nil, map[string]string{"test": "payload"}, nil); !errors.Is(err, context.Canceled) {
 		t.Fatalf("rate-limit wait ignored cancellation: %v", err)
 	}
 	if calls != 1 {
 		t.Fatal(calls)
 	}
 	calls, status = 0, 500
-	if err := api.request(context.Background(), "kick", "app-token", http.MethodPost, "/events/subscriptions", nil, nil, nil); !isStatus(err, 500) {
+	if err := api.kick(context.Background(), "app-token", http.MethodPost, "/events/subscriptions", nil, nil, nil); !isStatus(err, 500) {
 		t.Fatal(err)
 	}
 	if calls != 1 {

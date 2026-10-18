@@ -27,7 +27,7 @@ func (s *Service) twitchUser(ctx context.Context, token string, q url.Values) (t
 	var result struct {
 		Data []twitchUser `json:"data"`
 	}
-	if err := s.API.request(ctx, "twitch", token, http.MethodGet, "/users", q, nil, &result); err != nil {
+	if err := s.API.twitch(ctx, token, http.MethodGet, "/users", q, nil, &result); err != nil {
 		return twitchUser{}, err
 	}
 	if len(result.Data) != 1 {
@@ -165,7 +165,7 @@ func (s *Service) listTwitch(ctx context.Context, id, token string) ([]twitchSub
 				Cursor string `json:"cursor"`
 			} `json:"pagination"`
 		}
-		if err := s.API.request(ctx, "twitch", token, http.MethodGet, "/eventsub/subscriptions", q, nil, &result); err != nil {
+		if err := s.API.twitch(ctx, token, http.MethodGet, "/eventsub/subscriptions", q, nil, &result); err != nil {
 			return nil, err
 		}
 		if result.Data == nil {
@@ -213,7 +213,7 @@ func (s *Service) ensureTwitch(ctx context.Context, id, token string) error {
 			}
 			// Failed subscriptions at our own callback may be replaced safely. Never
 			// delete a legacy or unknown transport as a side effect of app activity.
-			if err = s.API.request(ctx, "twitch", token, http.MethodDelete, "/eventsub/subscriptions", url.Values{"id": {sub.ID}}, nil, nil); err != nil && !isStatus(err, 404) {
+			if err = s.API.twitch(ctx, token, http.MethodDelete, "/eventsub/subscriptions", url.Values{"id": {sub.ID}}, nil, nil); err != nil && !isStatus(err, 404) {
 				return err
 			}
 		}
@@ -221,7 +221,7 @@ func (s *Service) ensureTwitch(ctx context.Context, id, token string) error {
 			continue
 		}
 		body := map[string]interface{}{"type": wanted.Type, "version": wanted.Version, "condition": wanted.Condition, "transport": map[string]interface{}{"method": "webhook", "callback": TwitchCallback, "secret": s.TwitchSecret}}
-		err = s.API.request(ctx, "twitch", token, http.MethodPost, "/eventsub/subscriptions", nil, body, nil)
+		err = s.API.twitch(ctx, token, http.MethodPost, "/eventsub/subscriptions", nil, body, nil)
 		if isStatus(err, 403) {
 			zap.L().Warn("Twitch EventSub scope unavailable", zap.String("type", wanted.Type), zap.String("channel", id))
 			continue

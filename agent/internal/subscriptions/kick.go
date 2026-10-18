@@ -50,7 +50,7 @@ func (s *Service) listKick(ctx context.Context, id, token string) ([]kickSubscri
 	var result struct {
 		Data []kickSubscription `json:"data"`
 	}
-	if err := s.API.request(ctx, "kick", token, http.MethodGet, "/events/subscriptions", url.Values{"broadcaster_user_id": {id}}, nil, &result); err != nil {
+	if err := s.API.kick(ctx, token, http.MethodGet, "/events/subscriptions", url.Values{"broadcaster_user_id": {id}}, nil, &result); err != nil {
 		return nil, err
 	}
 	if result.Data == nil {
@@ -133,7 +133,7 @@ func (s *Service) ensureKick(ctx context.Context, id string) error {
 					Error          interface{} `json:"error"`
 				} `json:"data"`
 			}
-			if err := s.API.request(ctx, "kick", token, http.MethodPost, "/events/subscriptions", nil, body, &created); err != nil {
+			if err := s.API.kick(ctx, token, http.MethodPost, "/events/subscriptions", nil, body, &created); err != nil {
 				return err
 			}
 			// Always list provider state again; a partial/ambiguous response must not
