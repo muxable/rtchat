@@ -78,7 +78,7 @@ func (a *API) FetchTwitch(ctx context.Context, logins []string, write func([]Cha
 		var result struct {
 			Data []TwitchUser `json:"data"`
 		}
-		if err := a.request(ctx, "twitch", http.MethodGet, "/users", params("login", logins[start:end]), &result); err != nil {
+		if err := a.twitch(ctx, http.MethodGet, "/users", params("login", logins[start:end]), &result); err != nil {
 			return err
 		}
 		if result.Data == nil {
@@ -95,7 +95,7 @@ func (a *API) FetchTwitch(ctx context.Context, logins []string, write func([]Cha
 		var streams struct {
 			Data []TwitchStream `json:"data"`
 		}
-		if err := a.request(ctx, "twitch", http.MethodGet, "/streams", q, &streams); err != nil {
+		if err := a.twitch(ctx, http.MethodGet, "/streams", q, &streams); err != nil {
 			return err
 		}
 		if streams.Data == nil {
@@ -117,7 +117,7 @@ func (a *API) FetchTwitch(ctx context.Context, logins []string, write func([]Cha
 			var channels struct {
 				Data []TwitchChannel `json:"data"`
 			}
-			if err := a.request(ctx, "twitch", http.MethodGet, "/channels", params("broadcaster_id", missing), &channels); err != nil {
+			if err := a.twitch(ctx, http.MethodGet, "/channels", params("broadcaster_id", missing), &channels); err != nil {
 				return err
 			}
 			if channels.Data == nil {
@@ -138,7 +138,7 @@ func (a *API) FetchTwitch(ctx context.Context, logins []string, write func([]Cha
 		var result struct {
 			Total *int64 `json:"total"`
 		}
-		if err := a.request(ctx, "twitch", http.MethodGet, "/channels/followers", q, &result); err != nil {
+		if err := a.twitch(ctx, http.MethodGet, "/channels/followers", q, &result); err != nil {
 			var apiErr *HTTPError
 			// App tokens can read totals only where Twitch grants access. Do not
 			// invent a broadcaster scope or stop refreshing the other channels.
@@ -198,7 +198,7 @@ func (s *Service) Kick(ctx context.Context) error {
 		var result struct {
 			Data []KickChannel `json:"data"`
 		}
-		if err := s.API.request(ctx, "kick", http.MethodGet, "/channels", params("broadcaster_user_id", ids[start:min(start+50, len(ids))]), &result); err != nil {
+		if err := s.API.kick(ctx, http.MethodGet, "/channels", params("broadcaster_user_id", ids[start:min(start+50, len(ids))]), &result); err != nil {
 			return err
 		}
 		if result.Data == nil {

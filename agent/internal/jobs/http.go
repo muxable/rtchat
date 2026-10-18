@@ -2,23 +2,17 @@ package jobs
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"io"
+	"errors"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
+
+	"github.com/muxable/rtchat/agent/internal/clients"
+	"github.com/muxable/rtchat/agent/internal/clients/kick"
+	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 )
 
-type HTTPError struct {
-	Provider, Path string
-	Status         int
-}
-
-func (e *HTTPError) Error() string {
-	return fmt.Sprintf("%s %s: HTTP %d", e.Provider, e.Path, e.Status)
-}
+type HTTPError = clients.HTTPError
 
 type Tokens interface {
 	AppAccessToken(context.Context, string) (string, error)
@@ -30,77 +24,57 @@ type API struct {
 	TwitchURL, KickURL string
 }
 
-// Requests are serial (bounded concurrency = 1), context-bound, and retry only
-// transient errors. Both supported operations, GET and DELETE, are idempotent.
-func (a *API) request(ctx context.Context, provider, method, path string, query url.Values, out interface{}) error {
-	token, err := a.Tokens.AppAccessToken(ctx, provider)
+func (a *API) twitch(ctx context.Context, method, path string, query url.Values, out any) error {
+	token, err := a.Tokens.AppAccessToken(ctx, "twitch")
 	if err != nil {
 		return err
 	}
-	base := a.KickURL
-	if base == "" {
-		base = "https://api.kick.com/public/v1"
+	client := twitch.New(a.Client, a.TwitchClientID, token)
+	if a.TwitchURL != "" {
+		client.BaseURL = a.TwitchURL
 	}
-	if provider == "twitch" {
-		base = a.TwitchURL
-		if base == "" {
-			base = "https://api.twitch.tv/helix"
-		}
+	return request(ctx, &client.Client, method, path+"?"+query.Encode(), out)
+}
+
+func (a *API) kick(ctx context.Context, method, path string, query url.Values, out any) error {
+	token, err := a.Tokens.AppAccessToken(ctx, "kick")
+	if err != nil {
+		return err
 	}
-	client := a.Client
-	if client == nil {
-		client = &http.Client{Timeout: 15 * time.Second}
+	client := kick.New(a.Client, token)
+	if a.KickURL != "" {
+		client.BaseURL = a.KickURL
 	}
+	return request(ctx, &client.Client, method, path+"?"+query.Encode(), out)
+}
+
+// Job requests are serial and idempotent; deleting an absent subscription succeeds.
+func request(ctx context.Context, client *clients.Client, method, path string, out any) error {
 	for attempt := 0; attempt < 4; attempt++ {
-		req, err := http.NewRequestWithContext(ctx, method, base+path+"?"+query.Encode(), nil)
+		response, err := client.Do(ctx, method, path, nil)
 		if err != nil {
 			return err
 		}
-		req.Header.Set("Authorization", "Bearer "+token)
-		if provider == "twitch" {
-			req.Header.Set("Client-ID", a.TwitchClientID)
+		if response.Err() == nil {
+			return response.Decode(out)
 		}
-		resp, err := client.Do(req)
-		if err != nil {
-			return err
-		}
-		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			defer resp.Body.Close()
-			if out == nil {
-				return nil
-			}
-			return json.NewDecoder(io.LimitReader(resp.Body, 8<<20)).Decode(out)
-		}
-		io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
-		resp.Body.Close()
-		if method == http.MethodDelete && resp.StatusCode == http.StatusNotFound {
+		if method == http.MethodDelete && response.StatusCode == http.StatusNotFound {
 			return nil
 		}
-		if resp.StatusCode != 429 && resp.StatusCode < 500 {
-			return &HTTPError{provider, path, resp.StatusCode}
+		if response.StatusCode != 429 && response.StatusCode < 500 {
+			return response.Err()
 		}
-		delay := time.Duration(1<<attempt) * time.Second
-		if seconds, e := strconv.Atoi(resp.Header.Get("Retry-After")); e == nil && seconds > 0 {
-			delay = time.Duration(seconds) * time.Second
-		} else if at, e := http.ParseTime(resp.Header.Get("Retry-After")); e == nil && time.Until(at) > 0 {
-			delay = time.Until(at)
-		}
-		if reset, e := strconv.ParseInt(resp.Header.Get("Ratelimit-Reset"), 10, 64); e == nil && time.Until(time.Unix(reset, 0)) > delay {
-			delay = time.Until(time.Unix(reset, 0))
-		}
+		delay := clients.RetryDelay(response.Header, attempt)
 		if delay > time.Minute {
-			return fmt.Errorf("%s %s: rate limit retry exceeds job budget", provider, path)
+			return errors.New("rate limit retry exceeds job budget")
 		}
-		timer := time.NewTimer(delay)
-		select {
-		case <-ctx.Done():
-			timer.Stop()
-			return ctx.Err()
-		case <-timer.C:
+		if err := clients.Wait(ctx, delay); err != nil {
+			return err
 		}
 	}
-	return fmt.Errorf("%s %s: retry limit reached", provider, path)
+	return errors.New("provider retry limit reached")
 }
+
 func params(key string, ids []string) url.Values {
 	v := url.Values{}
 	for _, id := range ids {

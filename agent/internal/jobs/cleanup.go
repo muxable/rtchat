@@ -92,7 +92,7 @@ func (s *Service) removeIdleKick(ctx context.Context, doc *firestore.DocumentSna
 		return errors.New("invalid Kick subscription IDs")
 	}
 	for start := 0; start < len(ids); start += 50 {
-		if err := s.API.request(ctx, "kick", http.MethodDelete, "/events/subscriptions", params("id", ids[start:min(start+50, len(ids))]), nil); err != nil {
+		if err := s.API.kick(ctx, http.MethodDelete, "/events/subscriptions", params("id", ids[start:min(start+50, len(ids))]), nil); err != nil {
 			return err
 		}
 	}

@@ -127,13 +127,13 @@ func TestHTTPRateLimitCancellationAndIdempotentDelete(t *testing.T) {
 	a := API{Tokens: testTokens{}, Client: server.Client(), KickURL: server.URL}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 	defer cancel()
-	if err := a.request(ctx, "kick", http.MethodGet, "/channels", nil, nil); err == nil || !strings.Contains(err.Error(), "deadline") {
+	if err := a.kick(ctx, http.MethodGet, "/channels", nil, nil); err == nil || !strings.Contains(err.Error(), "deadline") {
 		t.Fatal(err)
 	}
 	if attempts != 1 {
 		t.Fatal(attempts)
 	}
-	if err := a.request(context.Background(), "kick", http.MethodDelete, "/events/subscriptions", nil, nil); err != nil {
+	if err := a.kick(context.Background(), http.MethodDelete, "/events/subscriptions", nil, nil); err != nil {
 		t.Fatal(err)
 	}
 }
