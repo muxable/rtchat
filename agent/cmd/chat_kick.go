@@ -1,4 +1,4 @@
-package actions
+package main
 
 import (
 	"context"
@@ -16,19 +16,11 @@ func kickID(value string) (int64, error) {
 	return id, nil
 }
 
-func (s *Service) kick(ctx context.Context, uid, action string, r request) (any, error) {
-	if action == "raid" || action == "cancelRaid" {
-		return nil, nil
-	}
-	if action == "clear" {
-		return nil, invalid("invalid provider")
-	}
-	token, err := s.userToken(ctx, uid, "kick")
-	if err != nil {
-		return nil, err
-	}
+func (s *chatRoutes) kick(ctx context.Context, token, action string, r chatRequest) (any, error) {
+	client := kick.New(s.httpClient, token)
+	var err error
 	if action == "deleteMessage" {
-		err = kick.New(s.HTTP, token).DeleteMessage(ctx, strip(r.MessageID, "kick"))
+		err = client.DeleteMessage(ctx, r.MessageID)
 		return nil, err
 	}
 	broadcaster, err := kickID(r.ChannelID)
@@ -36,16 +28,16 @@ func (s *Service) kick(ctx context.Context, uid, action string, r request) (any,
 		return nil, err
 	}
 	if action == "send" {
-		err = kick.New(s.HTTP, token).SendMessage(ctx, broadcaster, r.Message, strip(r.ReplyID, "kick"))
+		err = client.SendMessage(ctx, broadcaster, r.Message, r.ReplyID)
 		return nil, err
 	}
 	target := r.UserID
 	if target == "" {
-		app, err := s.Tokens.AppAccessToken(ctx, "kick")
+		app, err := s.tokens.AppAccessToken(ctx, "kick")
 		if err != nil {
 			return nil, err
 		}
-		target, err = kick.New(s.HTTP, app).ChannelUser(ctx, r.Username)
+		target, err = kick.New(s.httpClient, app).ChannelUser(ctx, r.Username)
 		if err != nil {
 			return nil, err
 		}
@@ -57,13 +49,11 @@ func (s *Service) kick(ctx context.Context, uid, action string, r request) (any,
 	if err != nil {
 		return nil, err
 	}
-	client := kick.New(s.HTTP, token)
 	if action == "unban" {
 		return nil, client.Unban(ctx, broadcaster, user)
 	}
-	duration, reason := float64(0), ""
 	if action == "timeout" {
-		duration, reason = r.Length, r.Reason
+		return nil, client.Ban(ctx, broadcaster, user, r.Length, r.Reason)
 	}
-	return nil, client.Ban(ctx, broadcaster, user, duration, reason)
+	return nil, client.Ban(ctx, broadcaster, user, 0, "")
 }

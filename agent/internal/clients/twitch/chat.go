@@ -3,6 +3,7 @@ package twitch
 import (
 	"context"
 	"net/url"
+	"time"
 )
 
 type User struct {
@@ -60,24 +61,24 @@ func (c *Client) SendMessage(ctx context.Context, channel, sender, message, repl
 	return "failed to send", nil
 }
 
-func (c *Client) Ban(ctx context.Context, channel, moderator, user string, duration float64, reason string) (int, map[string]any, error) {
+func (c *Client) Ban(ctx context.Context, channel, moderator, user string, duration float64, reason string) error {
 	data := map[string]any{"user_id": user}
 	if duration != 0 {
 		data["duration"], data["reason"] = duration, reason
 	}
-	return c.DoJSON(ctx, "POST", moderationPath("/moderation/bans", channel, moderator, nil), map[string]any{"data": data})
+	return c.write(ctx, "POST", moderationPath("/moderation/bans", channel, moderator, nil), map[string]any{"data": data})
 }
 
-func (c *Client) Unban(ctx context.Context, channel, moderator, user string) (int, map[string]any, error) {
-	return c.DoJSON(ctx, "DELETE", moderationPath("/moderation/bans", channel, moderator, url.Values{"user_id": {user}}), nil)
+func (c *Client) Unban(ctx context.Context, channel, moderator, user string) error {
+	return c.write(ctx, "DELETE", moderationPath("/moderation/bans", channel, moderator, url.Values{"user_id": {user}}), nil)
 }
 
-func (c *Client) DeleteMessages(ctx context.Context, channel, moderator, message string) (int, map[string]any, error) {
+func (c *Client) DeleteMessages(ctx context.Context, channel, moderator, message string) error {
 	params := url.Values{}
 	if message != "" {
 		params.Set("message_id", message)
 	}
-	return c.DoJSON(ctx, "DELETE", moderationPath("/moderation/chat", channel, moderator, params), nil)
+	return c.write(ctx, "DELETE", moderationPath("/moderation/chat", channel, moderator, params), nil)
 }
 
 func moderationPath(path, channel, moderator string, params url.Values) string {
@@ -89,10 +90,37 @@ func moderationPath(path, channel, moderator string, params url.Values) string {
 	return path + "?" + params.Encode()
 }
 
-func (c *Client) StartRaid(ctx context.Context, from, to string) (int, map[string]any, error) {
-	return c.DoJSON(ctx, "POST", "/raids?"+url.Values{"from_broadcaster_id": {from}, "to_broadcaster_id": {to}}.Encode(), nil)
+func (c *Client) StartRaid(ctx context.Context, from, to string) (time.Time, error) {
+	response, err := c.Do(ctx, "POST", "/raids?"+url.Values{"from_broadcaster_id": {from}, "to_broadcaster_id": {to}}.Encode(), nil)
+	if err != nil {
+		return time.Time{}, err
+	}
+	if err := response.Err(); err != nil {
+		return time.Time{}, err
+	}
+	var result struct {
+		Data []struct {
+			CreatedAt string `json:"created_at"`
+		}
+	}
+	if err := response.Decode(&result); err != nil {
+		return time.Time{}, err
+	}
+	if len(result.Data) == 0 {
+		return time.Time{}, nil
+	}
+	started, _ := time.Parse(time.RFC3339Nano, result.Data[0].CreatedAt)
+	return started, nil
 }
 
-func (c *Client) CancelRaid(ctx context.Context, channel string) (int, map[string]any, error) {
-	return c.DoJSON(ctx, "DELETE", "/raids?"+url.Values{"broadcaster_id": {channel}}.Encode(), nil)
+func (c *Client) CancelRaid(ctx context.Context, channel string) error {
+	return c.write(ctx, "DELETE", "/raids?"+url.Values{"broadcaster_id": {channel}}.Encode(), nil)
+}
+
+func (c *Client) write(ctx context.Context, method, path string, body any) error {
+	response, err := c.Do(ctx, method, path, body)
+	if err != nil {
+		return err
+	}
+	return response.Err()
 }

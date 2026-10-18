@@ -1,50 +1,45 @@
-// Package actions ports the Firebase send, moderation and raid callable handlers.
-package actions
+package main
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
-	"cloud.google.com/go/firestore"
 	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"github.com/muxable/rtchat/agent/internal/provider"
 )
 
-type Tokens interface {
+type chatTokens interface {
 	AccessToken(context.Context, string, string) (string, error)
 	AppAccessToken(context.Context, string) (string, error)
 	Credentials(context.Context, string) (provider.Credentials, error)
 }
-type Store interface {
+type chatStore interface {
 	Profile(context.Context, string) (map[string]any, error)
-	RaidStart(context.Context, string, map[string]any, time.Time) error
+	RaidStart(context.Context, string, twitch.User, time.Time) error
 	RaidCancel(context.Context, string, time.Time) error
 }
-type IRCSender func(context.Context, string, string, string, string) error
 
-type Service struct {
-	Tokens    Tokens
-	Store     Store
-	HTTP      *http.Client
-	SendIRC   IRCSender
-	mu        sync.Mutex
-	liveChats map[string]liveChat
+type chatRoutes struct {
+	tokens     chatTokens
+	store      chatStore
+	httpClient *http.Client
+	sendIRC    func(context.Context, string, string, string, string) error
+	mu         sync.Mutex
+	liveChats  map[string]liveChat
 }
 
-func NewService(db *firestore.Client, tokens Tokens, client *http.Client) *Service {
-	if client == nil {
-		client = &http.Client{Timeout: 10 * time.Second}
-	}
-	return &Service{Tokens: tokens, Store: FirestoreStore{DB: db}, HTTP: client, SendIRC: twitch.SendIRC}
-}
+var channelPattern = regexp.MustCompile(`^UC[A-Za-z0-9_-]{22}$`)
+var videoPattern = regexp.MustCompile(`^[A-Za-z0-9_-]{11}$`)
 
-type request struct {
+type chatRequest struct {
 	Provider  string  `json:"provider"`
 	ChannelID string  `json:"channelId"`
 	Message   string  `json:"message"`
@@ -62,33 +57,48 @@ type request struct {
 func invalid(message string) error {
 	return &callable.Error{Code: "invalid-argument", Message: message}
 }
-func (s *Service) Register(api *callable.Server) {
+func registerChat(api *callable.Server, s *chatRoutes) {
+	if s.httpClient == nil {
+		s.httpClient = &http.Client{Timeout: 10 * time.Second}
+	}
+	if s.sendIRC == nil {
+		s.sendIRC = twitch.SendIRC
+	}
 	for _, name := range []string{"send", "ban", "unban", "timeout", "deleteMessage", "clear", "raid", "cancelRaid"} {
 		name := name
 		api.Register(name, true, func(ctx context.Context, data json.RawMessage) (any, error) {
-			var r request
+			var r chatRequest
 			if string(data) == "null" || json.Unmarshal(data, &r) != nil {
 				return nil, invalid("invalid data")
 			}
-			if err := validate(name, r); err != nil {
+			r.MessageID = strings.TrimPrefix(r.MessageID, r.Provider+":")
+			r.ReplyID = strings.TrimPrefix(r.ReplyID, r.Provider+":")
+			if err := r.validate(name); err != nil {
+				return nil, err
+			}
+			if (name == "raid" || name == "cancelRaid") && r.Provider != "twitch" {
+				return nil, nil
+			}
+			token, err := s.tokens.AccessToken(ctx, callable.UID(ctx), r.Provider)
+			if errors.Is(err, provider.ErrNoToken) || (err == nil && token == "") {
+				return nil, &callable.Error{Code: "failed-precondition", Message: r.Provider + " account not linked"}
+			}
+			if err != nil {
 				return nil, err
 			}
 			switch r.Provider {
 			case "twitch":
-				return s.twitch(ctx, callable.UID(ctx), name, r)
+				return s.twitch(ctx, callable.UID(ctx), token, name, r)
 			case "kick":
-				return s.kick(ctx, callable.UID(ctx), name, r)
+				return s.kick(ctx, token, name, r)
 			case "youtube":
-				return s.youtube(ctx, callable.UID(ctx), name, r)
-			}
-			if name == "raid" || name == "cancelRaid" {
-				return nil, nil
+				return s.youtube(ctx, callable.UID(ctx), token, name, r)
 			}
 			return nil, invalid("invalid provider")
 		})
 	}
 }
-func validate(action string, r request) error {
+func (r chatRequest) validate(action string) error {
 	if r.Provider == "" {
 		return invalid("missing provider")
 	}
@@ -117,29 +127,44 @@ func validate(action string, r request) error {
 			return invalid("missing provider, fromChannelId, toChannelId")
 		}
 	}
-	return nil
-}
-func (s *Service) userToken(ctx context.Context, uid, p string) (string, error) {
-	token, err := s.Tokens.AccessToken(ctx, uid, p)
-	if errors.Is(err, provider.ErrNoToken) || (err == nil && token == "") {
-		return "", &callable.Error{Code: "failed-precondition", Message: p + " account not linked"}
+	if action != "raid" && action != "cancelRaid" {
+		switch r.Provider {
+		case "twitch":
+		case "kick":
+			if action == "clear" {
+				return invalid("invalid provider")
+			}
+		case "youtube":
+			if action != "send" && action != "ban" && action != "timeout" && action != "deleteMessage" {
+				return invalid("invalid provider")
+			}
+			if r.VideoID != nil && !videoPattern.MatchString(*r.VideoID) {
+				return invalid("invalid videoId")
+			}
+			if action != "deleteMessage" {
+				if !channelPattern.MatchString(r.ChannelID) {
+					return invalid("invalid channel")
+				}
+				if action == "send" && utf8.RuneCountInString(r.Message) > 200 {
+					return invalid("YouTube messages can be at most 200 characters.")
+				}
+				if (action == "ban" || action == "timeout") && !channelPattern.MatchString(r.UserID) {
+					return invalid("invalid user")
+				}
+			}
+
+		default:
+			return invalid("invalid provider")
+		}
 	}
-	return token, err
+	return nil
 }
 func object(v any) map[string]any               { m, _ := v.(map[string]any); return m }
 func field(m map[string]any, key string) string { v, _ := m[key].(string); return v }
-func first(m map[string]any, key string) map[string]any {
-	items, _ := m[key].([]any)
-	if len(items) == 0 {
-		return nil
-	}
-	return object(items[0])
-}
-func (s *Service) profileID(ctx context.Context, uid, p string) (string, error) {
-	profile, err := s.Store.Profile(ctx, uid)
+func (s *chatRoutes) profileID(ctx context.Context, uid, p string) (string, error) {
+	profile, err := s.store.Profile(ctx, uid)
 	if err != nil {
 		return "", err
 	}
 	return field(object(profile[p]), "id"), nil
 }
-func strip(value, p string) string { return strings.TrimPrefix(value, p+":") }

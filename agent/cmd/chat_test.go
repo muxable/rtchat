@@ -1,4 +1,4 @@
-package actions
+package main
 
 import (
 	"context"
@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/muxable/rtchat/agent/internal/callable"
+	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"github.com/muxable/rtchat/agent/internal/clients/youtube"
 	"github.com/muxable/rtchat/agent/internal/provider"
 )
@@ -42,7 +43,7 @@ type mockStore struct {
 }
 
 func (m *mockStore) Profile(context.Context, string) (map[string]any, error) { return m.profile, nil }
-func (m *mockStore) RaidStart(_ context.Context, id string, target map[string]any, at time.Time) error {
+func (m *mockStore) RaidStart(_ context.Context, id string, target twitch.User, at time.Time) error {
 	m.start++
 	return m.raidErr
 }
@@ -71,15 +72,15 @@ func fixture(t *testing.T, key string) string {
 	}
 	return string(all[key])
 }
-func newMock(transport roundTrip) (*Service, *mockStore) {
+func newMock(transport roundTrip) (*chatRoutes, *mockStore) {
 	store := &mockStore{profile: map[string]any{"twitch": map[string]any{"id": "sender"}, "youtube": map[string]any{"id": own}}}
-	s := &Service{Tokens: mockTokens{}, Store: store, HTTP: &http.Client{Transport: transport}, SendIRC: func(context.Context, string, string, string, string) error { return nil }}
+	s := &chatRoutes{tokens: mockTokens{}, store: store, httpClient: &http.Client{Transport: transport}, sendIRC: func(context.Context, string, string, string, string) error { return nil }}
 	return s, store
 }
-func call(t *testing.T, s *Service, name string, data any, authenticated bool) (int, map[string]any) {
+func call(t *testing.T, s *chatRoutes, name string, data any, authenticated bool) (int, map[string]any) {
 	t.Helper()
 	api := callable.NewServer(func(context.Context, string) (string, error) { return "verified-user", nil })
-	s.Register(api)
+	registerChat(api, s)
 	payload, err := json.Marshal(map[string]any{"data": data})
 	if err != nil {
 		t.Fatal(err)
@@ -149,7 +150,7 @@ func TestTwitchSendAndFallback(t *testing.T) {
 				return respond(tc.status, fixture(t, tc.fixture)), nil
 			})
 			called := false
-			s.SendIRC = func(_ context.Context, token, login, channel, message string) error {
+			s.sendIRC = func(_ context.Context, token, login, channel, message string) error {
 				called = true
 				if token != "user-token" || login != "sender-login" || channel != "target" || message != "hello" {
 					t.Fatal(token, login, channel, message)
@@ -382,7 +383,7 @@ func TestYouTubeCacheConcurrentAccess(t *testing.T) {
 func TestMissingTokensAndUnsupportedActions(t *testing.T) {
 	for _, p := range []string{"kick", "youtube"} {
 		s, _ := newMock(func(r *http.Request) (*http.Response, error) { t.Fatal("request without grant"); return nil, nil })
-		s.Tokens = mockTokens{err: provider.ErrNoToken}
+		s.tokens = mockTokens{err: provider.ErrNoToken}
 		code, body := call(t, s, "send", map[string]any{"provider": p, "channelId": own, "message": "hello"}, true)
 		if code != 400 || field(object(body["error"]), "status") != "FAILED_PRECONDITION" {
 			t.Fatal(code, body)
@@ -398,12 +399,12 @@ func TestMissingTokensAndUnsupportedActions(t *testing.T) {
 }
 
 func TestProviderErrorParity(t *testing.T) {
-	t.Run("Twitch JSON is a successful callable result", func(t *testing.T) {
+	t.Run("Twitch failures are callable errors", func(t *testing.T) {
 		s, _ := newMock(func(r *http.Request) (*http.Response, error) {
 			return respond(403, `{"error":"Forbidden","status":403,"message":"Missing moderator scope"}`), nil
 		})
 		code, body := call(t, s, "clear", map[string]any{"provider": "twitch", "channelId": "channel"}, true)
-		if code != 200 || field(object(body["result"]), "message") != "Missing moderator scope" {
+		if code != 500 || field(object(body["error"]), "message") != "INTERNAL" {
 			t.Fatal(code, body)
 		}
 	})
@@ -430,5 +431,27 @@ func TestProviderErrorParity(t *testing.T) {
 				t.Fatalf("%+v", err)
 			}
 		})
+	}
+}
+
+func TestChatValidationBeforeTokenLookup(t *testing.T) {
+	s, _ := newMock(func(*http.Request) (*http.Response, error) {
+		t.Fatal("invalid input reached a provider")
+		return nil, nil
+	})
+	s.tokens = mockTokens{err: provider.ErrNoToken}
+	for _, tc := range []struct {
+		action string
+		data   map[string]any
+	}{
+		{"deleteMessage", map[string]any{"provider": "twitch", "channelId": "channel", "messageId": "twitch:"}},
+		{"deleteMessage", map[string]any{"provider": "kick", "channelId": "123", "messageId": "kick:"}},
+		{"send", map[string]any{"provider": "youtube", "channelId": own, "videoId": "invalid", "message": "hi"}},
+		{"send", map[string]any{"provider": "youtube", "channelId": own, "message": strings.Repeat("😀", 201)}},
+	} {
+		code, body := call(t, s, tc.action, tc.data, true)
+		if code != 400 || field(object(body["error"]), "status") != "INVALID_ARGUMENT" {
+			t.Fatalf("%s %v: %d %v", tc.action, tc.data, code, body)
+		}
 	}
 }

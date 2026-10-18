@@ -12,7 +12,6 @@ import (
 
 	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/firestore"
-	"github.com/muxable/rtchat/agent/internal/actions"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"github.com/muxable/rtchat/agent/internal/callable"
@@ -170,7 +169,7 @@ func main() {
 			zap.L().Warn("callable authentication unavailable; protected requests will be rejected")
 		}
 		api := callable.NewServer(verifier)
-		actions.NewService(client, provider.NewService(client, nil), nil).Register(api)
+		registerChat(api, &chatRoutes{tokens: provider.NewService(client, nil), store: chatFirestore{DB: client}})
 		api.Mount(server.Mux)
 		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
 		server.RegisterProvider("/twitch/", webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client, twitchClientID, twitchClientSecret))
