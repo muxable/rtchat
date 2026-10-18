@@ -4,13 +4,14 @@ package publichttp
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"regexp"
 	"time"
+
+	"github.com/muxable/rtchat/agent/internal/clients/kick"
+	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 )
 
 type Store interface {
@@ -43,31 +44,6 @@ func first(result map[string]any, key string) map[string]any {
 	}
 	v, _ := items[0].(map[string]any)
 	return v
-}
-func (s *Server) json(req *http.Request, out any) error {
-	client := s.HTTP
-	if client == nil {
-		client = &http.Client{Timeout: 15 * time.Second}
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return errors.New("provider request failed")
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return errors.New("provider rejected request")
-	}
-	return json.NewDecoder(io.LimitReader(resp.Body, 2<<20)).Decode(out)
-}
-func (s *Server) get(ctx context.Context, endpoint, token, id string) (map[string]any, error) {
-	req, _ := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
-	req.Header.Set("Authorization", "Bearer "+token)
-	if id != "" {
-		req.Header.Set("Client-Id", id)
-	}
-	var result map[string]any
-	err := s.json(req, &result)
-	return result, err
 }
 
 var channelPattern = regexp.MustCompile(`^[0-9]{1,30}$`)
@@ -107,7 +83,8 @@ func (s *Server) embed(w http.ResponseWriter, r *http.Request) {
 	}
 	switch provider {
 	case "twitch":
-		data, err := s.get(r.Context(), "https://api.twitch.tv/helix/users?id="+channel, token, s.TwitchClientID)
+		var data map[string]any
+		err := twitch.New(s.HTTP, s.TwitchClientID, token).Get(r.Context(), "/users?id="+channel, &data)
 		if err != nil {
 			http.Error(w, "provider unavailable", 502)
 			return
@@ -121,7 +98,8 @@ func (s *Server) embed(w http.ResponseWriter, r *http.Request) {
 		q := url.Values{"channel": {login}, "controls": {"false"}, "parent": {"chat.rtirl.com"}, "muted": {"true"}}
 		http.Redirect(w, r, "https://player.twitch.tv/?"+q.Encode(), 302)
 	case "kick":
-		data, err := s.get(r.Context(), "https://api.kick.com/public/v1/channels?broadcaster_user_id="+channel, token, "")
+		var data map[string]any
+		err := kick.New(s.HTTP, token).Get(r.Context(), "/channels?broadcaster_user_id="+channel, &data)
 		if err != nil {
 			http.Error(w, "provider unavailable", 502)
 			return
@@ -153,13 +131,11 @@ func (s *Server) metadata(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid metadata", 400)
 		return
 	}
-	req, _ := http.NewRequestWithContext(r.Context(), "GET", "https://id.twitch.tv/oauth2/validate", nil)
-	req.Header.Set("Authorization", "OAuth "+body.Token)
 	var validation struct {
 		ClientID string `json:"client_id"`
 		UserID   string `json:"user_id"`
 	}
-	if err := s.json(req, &validation); err != nil || !channelPattern.MatchString(validation.UserID) {
+	if err := twitch.New(s.HTTP, s.TwitchClientID, "").Validate(r.Context(), body.Token, &validation); err != nil || !channelPattern.MatchString(validation.UserID) {
 		http.Error(w, "invalid token", 401)
 		return
 	}
