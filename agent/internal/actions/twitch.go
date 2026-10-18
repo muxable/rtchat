@@ -9,16 +9,29 @@ import (
 	"strings"
 	"time"
 
+	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"go.uber.org/zap"
 	"golang.org/x/net/websocket"
 )
+
+func (s *Service) twitchClient(ctx context.Context, token string) (*twitch.Client, error) {
+	credentials, err := s.Tokens.Credentials(ctx, "twitch")
+	if err != nil {
+		return nil, err
+	}
+	return twitch.New(s.HTTP, credentials.ClientID, token), nil
+}
 
 func (s *Service) twitchUser(ctx context.Context, key, value string) (map[string]any, error) {
 	token, err := s.Tokens.AppAccessToken(ctx, "twitch")
 	if err != nil {
 		return nil, err
 	}
-	_, result, err := s.request(ctx, "twitch", token, "GET", query("/users", url.Values{key: {value}}), nil)
+	client, err := s.twitchClient(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	_, result, err := client.DoJSON(ctx, "GET", query("/users", url.Values{key: {value}}), nil)
 	return first(result, "data"), err
 }
 func (s *Service) twitch(ctx context.Context, uid, action string, r request) (any, error) {
@@ -36,12 +49,16 @@ func (s *Service) twitch(ctx context.Context, uid, action string, r request) (an
 	if err != nil {
 		return nil, err
 	}
+	client, err := s.twitchClient(ctx, token)
+	if err != nil {
+		return nil, err
+	}
 	if action == "send" {
 		body := map[string]any{"broadcaster_id": r.ChannelID, "sender_id": id, "message": r.Message}
 		if r.ReplyID != "" {
 			body["reply_parent_message_id"] = strip(r.ReplyID, "twitch")
 		}
-		status, result, err := s.request(ctx, "twitch", token, "POST", "/chat/messages", body)
+		status, result, err := client.DoJSON(ctx, "POST", "/chat/messages", body)
 		if status == 401 || status == 403 {
 			target, err := s.twitchUser(ctx, "id", r.ChannelID)
 			if err != nil {
@@ -59,7 +76,7 @@ func (s *Service) twitch(ctx context.Context, uid, action string, r request) (an
 			}
 			return nil, s.SendIRC(ctx, token, field(sender, "login"), field(target, "login"), r.Message)
 		}
-		if err != nil {
+		if err != nil && (status < 400 || result == nil) {
 			return nil, err
 		}
 		item := first(result, "data")
@@ -115,14 +132,15 @@ func (s *Service) twitch(ctx context.Context, uid, action string, r request) (an
 		method = "DELETE"
 		params = url.Values{"broadcaster_id": {r.ChannelID}}
 	}
-	status, result, err := s.request(ctx, "twitch", token, method, query(path, params), body)
-	if err != nil {
+	status, result, err := client.DoJSON(ctx, method, query(path, params), body)
+	// Existing callables return well-formed Twitch API errors as result objects.
+	if err != nil && (status < 400 || result == nil) {
 		return nil, err
 	}
 	if action == "raid" && status >= 200 && status < 300 {
 		started, parseErr := time.Parse(time.RFC3339Nano, field(first(result, "data"), "created_at"))
 		if parseErr == nil {
-			_, users, lookupErr := s.request(ctx, "twitch", token, "GET", query("/users", url.Values{"id": {r.To}}), nil)
+			_, users, lookupErr := client.DoJSON(ctx, "GET", query("/users", url.Values{"id": {r.To}}), nil)
 			if lookupErr == nil {
 				user := first(users, "data")
 				target := map[string]any{"id": r.To, "login": field(user, "login"), "displayName": field(user, "display_name")}

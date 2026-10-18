@@ -2,12 +2,9 @@
 package actions
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -128,59 +125,6 @@ func (s *Service) userToken(ctx context.Context, uid, p string) (string, error) 
 		return "", &callable.Error{Code: "failed-precondition", Message: p + " account not linked"}
 	}
 	return token, err
-}
-func (s *Service) request(ctx context.Context, p, token, method, path string, body any) (int, map[string]any, error) {
-	base := map[string]string{"twitch": "https://api.twitch.tv/helix", "kick": "https://api.kick.com/public/v1", "youtube": "https://www.googleapis.com/youtube/v3"}[p]
-	var reader io.Reader
-	if body != nil {
-		data, err := json.Marshal(body)
-		if err != nil {
-			return 0, nil, err
-		}
-		reader = bytes.NewReader(data)
-	}
-	req, err := http.NewRequestWithContext(ctx, method, base+path, reader)
-	if err != nil {
-		return 0, nil, err
-	}
-	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Accept", "application/json")
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-	if p == "twitch" {
-		credentials, err := s.Tokens.Credentials(ctx, p)
-		if err != nil {
-			return 0, nil, err
-		}
-		req.Header.Set("Client-Id", credentials.ClientID)
-	}
-	resp, err := s.HTTP.Do(req)
-	if err != nil {
-		return 0, nil, errors.New("provider request failed")
-	}
-	defer resp.Body.Close()
-	data, err := io.ReadAll(io.LimitReader(resp.Body, 2*1024*1024+1))
-	if err != nil {
-		return 0, nil, err
-	}
-	if len(data) > 2*1024*1024 {
-		return resp.StatusCode, nil, errors.New("provider response too large")
-	}
-	var result map[string]any
-	if len(data) > 0 {
-		decodeErr := json.Unmarshal(data, &result)
-		if decodeErr != nil && (p == "twitch" || (p == "kick" && resp.StatusCode < 400)) {
-			return resp.StatusCode, nil, errors.New("invalid provider response")
-		}
-	}
-	if p == "kick" && resp.StatusCode >= 400 {
-		return resp.StatusCode, nil, fmt.Errorf("kick API returned HTTP %d", resp.StatusCode)
-	}
-	if p == "youtube" && resp.StatusCode >= 400 {
-		return resp.StatusCode, nil, youtubeError(resp.StatusCode, result)
-	}
-	return resp.StatusCode, result, nil
 }
 func object(v any) map[string]any               { m, _ := v.(map[string]any); return m }
 func field(m map[string]any, key string) string { v, _ := m[key].(string); return v }

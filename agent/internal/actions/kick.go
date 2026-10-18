@@ -9,6 +9,8 @@ import (
 	"unicode/utf16"
 
 	"github.com/muxable/rtchat/agent/internal/callable"
+
+	"github.com/muxable/rtchat/agent/internal/clients/kick"
 )
 
 func kickID(value string) (int64, error) {
@@ -39,7 +41,7 @@ func (s *Service) kick(ctx context.Context, uid, action string, r request) (any,
 		return nil, err
 	}
 	if action == "deleteMessage" {
-		_, _, err = s.request(ctx, "kick", token, "DELETE", "/chat/"+url.PathEscape(strip(r.MessageID, "kick")), nil)
+		_, _, err = kick.New(s.HTTP, token).DoJSON(ctx, "DELETE", "/chat/"+url.PathEscape(strip(r.MessageID, "kick")), nil)
 		return nil, err
 	}
 	broadcaster, err := kickID(r.ChannelID)
@@ -51,7 +53,7 @@ func (s *Service) kick(ctx context.Context, uid, action string, r request) (any,
 		if r.ReplyID != "" {
 			body["reply_to_message_id"] = strip(r.ReplyID, "kick")
 		}
-		_, _, err = s.request(ctx, "kick", token, "POST", "/chat", body)
+		_, _, err = kick.New(s.HTTP, token).DoJSON(ctx, "POST", "/chat", body)
 		return nil, err
 	}
 	target := r.UserID
@@ -60,7 +62,7 @@ func (s *Service) kick(ctx context.Context, uid, action string, r request) (any,
 		if err != nil {
 			return nil, err
 		}
-		_, result, err := s.request(ctx, "kick", app, "GET", query("/channels", url.Values{"slug": {r.Username}}), nil)
+		_, result, err := kick.New(s.HTTP, app).DoJSON(ctx, "GET", query("/channels", url.Values{"slug": {r.Username}}), nil)
 		if err != nil {
 			return nil, err
 		}
@@ -92,6 +94,6 @@ func (s *Service) kick(ctx context.Context, uid, action string, r request) (any,
 			body["reason"] = truncateReason(r.Reason)
 		}
 	}
-	_, _, err = s.request(ctx, "kick", token, method, "/moderation/bans", body)
+	_, _, err = kick.New(s.HTTP, token).DoJSON(ctx, method, "/moderation/bans", body)
 	return nil, err
 }

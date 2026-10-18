@@ -12,6 +12,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/muxable/rtchat/agent/internal/callable"
+
+	"github.com/muxable/rtchat/agent/internal/clients/youtube"
 )
 
 var channelPattern = regexp.MustCompile(`^UC[A-Za-z0-9_-]{22}$`)
@@ -109,7 +111,7 @@ func (s *Service) liveChat(ctx context.Context, uid, token, channel string, vide
 			return "", err
 		}
 		if own == channel {
-			_, body, err := s.request(ctx, "youtube", token, "GET", "/liveBroadcasts?part=snippet&broadcastStatus=active&broadcastType=all&maxResults=50", nil)
+			_, body, err := s.youtubeRequest(ctx, token, "GET", "/liveBroadcasts?part=snippet&broadcastStatus=active&broadcastType=all&maxResults=50", nil)
 			if err != nil {
 				return "", err
 			}
@@ -135,7 +137,7 @@ func (s *Service) liveChat(ctx context.Context, uid, token, channel string, vide
 			return "", err
 		}
 		if v != "" {
-			_, body, err := s.request(ctx, "youtube", token, "GET", query("/videos", url.Values{"part": {"liveStreamingDetails,snippet"}, "id": {v}}), nil)
+			_, body, err := s.youtubeRequest(ctx, token, "GET", query("/videos", url.Values{"part": {"liveStreamingDetails,snippet"}, "id": {v}}), nil)
 			if err != nil {
 				return "", err
 			}
@@ -187,7 +189,7 @@ func (s *Service) youtube(ctx context.Context, uid, action string, r request) (a
 		if id == "" {
 			return nil, invalid("invalid message")
 		}
-		_, _, err = s.request(ctx, "youtube", token, "DELETE", query("/liveChat/messages", url.Values{"id": {id}}), nil)
+		_, _, err = s.youtubeRequest(ctx, token, "DELETE", query("/liveChat/messages", url.Values{"id": {id}}), nil)
 		return nil, err
 	}
 	chat, err := s.liveChat(ctx, uid, token, r.ChannelID, r.VideoID)
@@ -208,7 +210,7 @@ func (s *Service) youtube(ctx context.Context, uid, action string, r request) (a
 			snippet["banDurationSeconds"] = math.Max(1, math.Ceil(r.Length))
 		}
 	}
-	_, _, err = s.request(ctx, "youtube", token, "POST", path, map[string]any{"snippet": snippet})
+	_, _, err = s.youtubeRequest(ctx, token, "POST", path, map[string]any{"snippet": snippet})
 	var ce *callable.Error
 	if errors.As(err, &ce) {
 		details, _ := ce.Details.(map[string]any)
@@ -220,4 +222,12 @@ func (s *Service) youtube(ctx context.Context, uid, action string, r request) (a
 		}
 	}
 	return nil, err
+}
+
+func (s *Service) youtubeRequest(ctx context.Context, token, method, path string, body any) (int, map[string]any, error) {
+	status, result, err := youtube.New(s.HTTP, token).DoJSON(ctx, method, path, body)
+	if status >= 400 {
+		return status, nil, youtubeError(status, result)
+	}
+	return status, result, err
 }
