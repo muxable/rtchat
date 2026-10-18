@@ -27,20 +27,28 @@ type uidKey struct{}
 func UID(ctx context.Context) string { uid, _ := ctx.Value(uidKey{}).(string); return uid }
 
 type Server struct {
-	mux      *http.ServeMux
+	routes   map[string]http.Handler
 	verify   VerifyFunc
-	paths    []string
 	appCheck VerifyFunc
 }
 
-func NewServer(verify VerifyFunc) *Server                          { return &Server{mux: http.NewServeMux(), verify: verify} }
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) { s.mux.ServeHTTP(w, r) }
+func NewServer(verify VerifyFunc) *Server {
+	return &Server{routes: make(map[string]http.Handler), verify: verify}
+}
 
-// Mount exposes registered paths on the existing server without taking over its readiness route.
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if handler, ok := s.routes[r.URL.Path]; ok {
+		handler.ServeHTTP(w, r)
+		return
+	}
+	http.NotFound(w, r)
+}
+
+// Mount registers handlers directly on the existing mux, leaving readiness intact.
 // Call after all registrations and before serving requests.
 func (s *Server) Mount(mux *http.ServeMux) {
-	for _, path := range s.paths {
-		mux.Handle(path, s)
+	for path, handler := range s.routes {
+		mux.Handle(path, handler)
 	}
 }
 
@@ -58,8 +66,15 @@ func (s *Server) RegisterWithOptions(name string, options Options, handler Handl
 	if name == "" || strings.Contains(name, "/") {
 		panic("invalid callable name")
 	}
-	s.paths = append(s.paths, "/"+name)
-	s.mux.HandleFunc("/"+name, func(w http.ResponseWriter, r *http.Request) {
+	path := "/" + name
+	if _, exists := s.routes[path]; exists {
+		panic("duplicate callable name")
+	}
+	s.routes[path] = s.wrap(options, handler)
+}
+
+func (s *Server) wrap(options Options, handler Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Firebase-Instance-ID-Token, X-Firebase-AppCheck")
@@ -153,26 +168,18 @@ func writeError(w http.ResponseWriter, err error) {
 	w.Write(payload)
 }
 
-// Decode exactly one data member, rejecting duplicate keys and trailing JSON.
+// Decode a single data envelope using the standard JSON decoder. As with other
+// Go JSON inputs, repeated keys use the last value.
 func readData(dec *json.Decoder) (json.RawMessage, error) {
-	start, err := dec.Token()
-	if err != nil || start != json.Delim('{') {
-		return nil, errors.New("invalid envelope")
-	}
-	key, err := dec.Token()
-	if err != nil || key != "data" {
-		return nil, errors.New("missing data")
-	}
-	var data json.RawMessage
-	if err := dec.Decode(&data); err != nil {
+	var envelope map[string]json.RawMessage
+	if err := dec.Decode(&envelope); err != nil {
 		return nil, err
 	}
-	end, err := dec.Token()
-	if err != nil || end != json.Delim('}') {
-		return nil, errors.New("extra member")
+	data, ok := envelope["data"]
+	if !ok || len(envelope) != 1 {
+		return nil, errors.New("expected data envelope")
 	}
-	var extra any
-	if dec.Decode(&extra) != io.EOF {
+	if dec.Decode(new(any)) != io.EOF {
 		return nil, errors.New("trailing JSON")
 	}
 	return data, nil

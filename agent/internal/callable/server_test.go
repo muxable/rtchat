@@ -22,8 +22,11 @@ func TestTransport(t *testing.T) {
 		{"protected missing token", "POST", `{"data":{}}`, "", true, 401, "UNAUTHENTICATED"},
 		{"protected valid token", "POST", `{"data":{}}`, "valid", true, 200, `"result":"uid"`},
 		{"unexpected member", "POST", `{"data":{},"uid":"admin"}`, "", false, 400, "INVALID_ARGUMENT"},
-		{"duplicate member", "POST", `{"data":{},"data":{}}`, "", false, 400, "INVALID_ARGUMENT"},
+		{"duplicate member", "POST", `{"data":{},"data":null}`, "", false, 200, `"result":null`},
 		{"trailing object", "POST", `{"data":{}}{}`, "", false, 400, "INVALID_ARGUMENT"},
+		{"missing data", "POST", `{}`, "", false, 400, "INVALID_ARGUMENT"},
+		{"null envelope", "POST", `null`, "", false, 400, "INVALID_ARGUMENT"},
+		{"array envelope", "POST", `[]`, "", false, 400, "INVALID_ARGUMENT"},
 		{"malformed", "POST", `{"data":`, "", false, 400, "INVALID_ARGUMENT"},
 		{"method", "GET", `{"data":{}}`, "", false, 400, "INVALID_ARGUMENT"},
 		{"preflight", "OPTIONS", "", "", true, 204, ""},
@@ -111,5 +114,23 @@ func TestPanicReturnsCanonicalInternal(t *testing.T) {
 	s.ServeHTTP(w, req)
 	if w.Code != 500 || strings.Contains(w.Body.String(), "secret") {
 		t.Fatalf("%d %s", w.Code, w.Body.String())
+	}
+}
+
+func TestMountedRoutesStayIsolated(t *testing.T) {
+	s := NewServer(nil)
+	s.Register("first", false, func(context.Context, json.RawMessage) (any, error) { return "first", nil })
+	s.Register("second", false, func(context.Context, json.RawMessage) (any, error) { return "second", nil })
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ready")) })
+	s.Mount(mux)
+	for path, expected := range map[string]string{"/first": `{"result":"first"}`, "/second": `{"result":"second"}`, "/unknown": "ready", "/first/child": "ready"} {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("POST", path, strings.NewReader(`{"data":null}`))
+		r.Header.Set("Content-Type", "application/json")
+		mux.ServeHTTP(w, r)
+		if w.Code != 200 || w.Body.String() != expected {
+			t.Errorf("%s: %d %s", path, w.Code, w.Body.String())
+		}
 	}
 }

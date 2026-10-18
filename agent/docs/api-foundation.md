@@ -29,8 +29,9 @@ still rejects invalid supplied tokens. Protected handlers reject absent tokens.
 Handlers use `*callable.Error{Code: "invalid-argument", Message: "...", Details: ...}`
 for expected errors. Unexpected errors are hidden behind INTERNAL. Canonical
 Firebase error codes are hyphenated in Go and uppercase with underscores on the wire.
-Responses always include `result`, including null. Request data must be an exact
-single-member JSON envelope; body limit is 1 MiB, handler timeout is 60 seconds.
+Responses always include `result`, including null. Requests use a single-member
+`data` envelope with standard JSON decoding (repeated keys use the last value).
+The body limit is 1 MiB and handler timeout is 60 seconds.
 CORS preflight permits Firebase SDK headers without cookie credentials.
 
 The existing functions source has no `enforceAppCheck` setting. If a deployment has
