@@ -7,6 +7,7 @@ import {
   isYouTubeChannelId,
   parseYouTubeQuery,
   searchYouTubeChannel,
+  youTubeEmbedUrl,
 } from "../src/youtube";
 
 const channelId = "UCabcdefghijklmnopqr12_-";
@@ -23,6 +24,19 @@ const channel = {
 };
 
 beforeEach(() => fetchMock.mockReset());
+
+describe("youTubeEmbedUrl", () => {
+  it("embeds the channel's live stream muted", () => {
+    expect(youTubeEmbedUrl(channelId)).toBe(
+      `https://www.youtube.com/embed/live_stream?channel=${channelId}&autoplay=1&mute=1`
+    );
+  });
+
+  it("rejects anything that isn't a channel id", () => {
+    expect(youTubeEmbedUrl("@creator")).toBeNull();
+    expect(youTubeEmbedUrl(`${channelId}&x=1`)).toBeNull();
+  });
+});
 
 describe("parseYouTubeQuery", () => {
   it.each(["@Some.Creator", "Some.Creator", " some.creator ", "@some_name-12"])(
