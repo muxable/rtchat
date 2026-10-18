@@ -24,11 +24,24 @@ var ErrRefreshBusy = errors.New("provider refresh in progress")
 
 type Credentials struct{ ClientID, ClientSecret string }
 type SecretFetcher func(context.Context, string) (string, error)
+
+// Lease identifies the refresh owner and the grant it is allowed to replace.
+type Lease struct {
+	UID, Provider, Token, Owner string
+	Until                       time.Time
+}
+
+// RefreshResult replaces a token, revokes a grant, or simply releases the lease.
+type RefreshResult struct {
+	Token   string
+	Revoked bool
+}
+
 type Store interface {
 	Load(context.Context, string, string) (string, error)
 	// Acquire atomically checks the serialized token and claims a bounded cross-instance lease.
-	Acquire(context.Context, string, string, string, string, time.Time) (bool, error)
-	Finish(context.Context, string, string, string, string, *string, bool) error
+	Acquire(context.Context, Lease) (bool, error)
+	Finish(context.Context, Lease, RefreshResult) error
 }
 type Service struct {
 	store       Store
@@ -67,7 +80,7 @@ func fetchSecret(ctx context.Context, name string) (string, error) {
 	return string(result.Payload.Data), nil
 }
 func (s *Service) Credentials(ctx context.Context, p string) (Credentials, error) {
-	if _, ok := endpoints[p]; !ok {
+	if _, ok := providers[p]; !ok {
 		return Credentials{}, errors.New("unknown provider")
 	}
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -78,21 +91,17 @@ func (s *Service) Credentials(ctx context.Context, p string) (Credentials, error
 	if ok {
 		return cached, nil
 	}
-	prefix := p + "-client"
-	if p == "youtube" {
-		prefix = "youtube-oauth-client"
-	}
+	config := providers[p]
 	var c Credentials
 	var err error
-	if p == "twitch" {
-		c.ClientID = auth.TwitchClientID()
-	} else {
-		c.ClientID, err = s.fetch(ctx, prefix+"-id")
+	c.ClientID = config.clientID
+	if c.ClientID == "" {
+		c.ClientID, err = s.fetch(ctx, config.secretPrefix+"-id")
 		if err != nil {
 			return c, err
 		}
 	}
-	c.ClientSecret, err = s.fetch(ctx, prefix+"-secret")
+	c.ClientSecret, err = s.fetch(ctx, config.secretPrefix+"-secret")
 	if err != nil {
 		return Credentials{}, err
 	}
@@ -105,7 +114,21 @@ func (s *Service) Credentials(ctx context.Context, p string) (Credentials, error
 	return c, nil
 }
 
-var endpoints = map[string]string{"twitch": "https://id.twitch.tv/oauth2/token", "kick": "https://id.kick.com/oauth/token", "youtube": "https://oauth2.googleapis.com/token", "streamlabs": "https://www.streamlabs.com/api/v1.0/token", "streamelements": "https://api.streamelements.com/oauth2/token"}
+type providerConfig struct {
+	endpoint     string
+	secretPrefix string
+	clientID     string // Set when the public client ID is already known.
+	jsonBody     bool
+	appToken     bool
+}
+
+var providers = map[string]providerConfig{
+	"twitch":         {endpoint: "https://id.twitch.tv/oauth2/token", secretPrefix: "twitch-client", clientID: auth.TwitchClientID(), jsonBody: true, appToken: true},
+	"kick":           {endpoint: "https://id.kick.com/oauth/token", secretPrefix: "kick-client", appToken: true},
+	"youtube":        {endpoint: "https://oauth2.googleapis.com/token", secretPrefix: "youtube-oauth-client"},
+	"streamlabs":     {endpoint: "https://www.streamlabs.com/api/v1.0/token", secretPrefix: "streamlabs-client", jsonBody: true},
+	"streamelements": {endpoint: "https://api.streamelements.com/oauth2/token", secretPrefix: "streamelements-client", jsonBody: true},
+}
 
 func decodeToken(encoded string) (map[string]any, error) {
 	var token map[string]any
@@ -128,7 +151,7 @@ func valid(token map[string]any) bool {
 }
 
 func (s *Service) AccessToken(ctx context.Context, uid, p string) (string, error) {
-	if _, ok := endpoints[p]; !ok {
+	if _, ok := providers[p]; !ok {
 		return "", errors.New("unknown provider")
 	}
 	if uid == "" || strings.Contains(uid, "/") {
@@ -148,9 +171,8 @@ func (s *Service) AccessToken(ctx context.Context, uid, p string) (string, error
 		if valid(token) {
 			return tokenString(token, "access_token"), nil
 		}
-		// A fresh unique document ID is used only as an opaque lease owner.
-		owner := newLeaseID()
-		acquired, err := s.store.Acquire(ctx, uid, p, encoded, owner, time.Now().Add(20*time.Second))
+		lease := Lease{UID: uid, Provider: p, Token: encoded, Owner: newLeaseID(), Until: time.Now().Add(20 * time.Second)}
+		acquired, err := s.store.Acquire(ctx, lease)
 		if err != nil {
 			return "", err
 		}
@@ -164,7 +186,7 @@ func (s *Service) AccessToken(ctx context.Context, uid, p string) (string, error
 		}
 		refreshed, revoked, err := s.refresh(ctx, p, token)
 		if err != nil {
-			releaseErr := s.release(uid, p, encoded, owner, nil, revoked)
+			releaseErr := s.release(lease, revoked)
 			if revoked && releaseErr != nil {
 				return "", releaseErr
 			}
@@ -175,20 +197,19 @@ func (s *Service) AccessToken(ctx context.Context, uid, p string) (string, error
 		}
 		data, err := json.Marshal(refreshed)
 		if err != nil {
-			_ = s.release(uid, p, encoded, owner, nil, false)
+			_ = s.release(lease, false)
 			return "", err
 		}
-		next := string(data)
-		if err = s.store.Finish(ctx, uid, p, encoded, owner, &next, false); err != nil {
+		if err = s.store.Finish(ctx, lease, RefreshResult{Token: string(data)}); err != nil {
 			return "", err
 		}
 		// Re-read in case an OAuth callback replaced the document during refresh.
 	}
 }
-func (s *Service) release(uid, p, encoded, owner string, next *string, revoked bool) error {
+func (s *Service) release(lease Lease, revoked bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	return s.store.Finish(ctx, uid, p, encoded, owner, next, revoked)
+	return s.store.Finish(ctx, lease, RefreshResult{Revoked: revoked})
 }
 func (s *Service) refresh(ctx context.Context, p string, previous map[string]any) (map[string]any, bool, error) {
 	refresh := tokenString(previous, "refresh_token")
@@ -215,7 +236,7 @@ func (s *Service) refresh(ctx context.Context, p string, previous map[string]any
 	return merged, false, nil
 }
 func (s *Service) AppAccessToken(ctx context.Context, p string) (string, error) {
-	if p != "twitch" && p != "kick" {
+	if !providers[p].appToken {
 		return "", errors.New("provider has no app token")
 	}
 	// Cache protected separately from credential loading to avoid locking recursively.
@@ -247,7 +268,7 @@ func (s *Service) requestToken(ctx context.Context, p string, form url.Values) (
 	form.Set("client_secret", credentials.ClientSecret)
 	var body io.Reader = strings.NewReader(form.Encode())
 	contentType := "application/x-www-form-urlencoded"
-	if p == "twitch" || p == "streamlabs" || p == "streamelements" {
+	if providers[p].jsonBody {
 		values := map[string]string{}
 		for k, v := range form {
 			values[k] = v[0]
@@ -256,7 +277,7 @@ func (s *Service) requestToken(ctx context.Context, p string, form url.Values) (
 		body = strings.NewReader(string(data))
 		contentType = "application/json"
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoints[p], body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, providers[p].endpoint, body)
 	if err != nil {
 		return nil, false, err
 	}

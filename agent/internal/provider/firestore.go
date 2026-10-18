@@ -1,13 +1,14 @@
 package provider
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"time"
+
+	"cloud.google.com/go/firestore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"time"
 )
 
 // FirestoreStore serializes rotating refresh tokens across all managed instances.
@@ -35,7 +36,8 @@ func (s FirestoreStore) Load(ctx context.Context, uid, p string) (string, error)
 	}
 	return encoded, nil
 }
-func (s FirestoreStore) Acquire(ctx context.Context, uid, p, encoded, owner string, until time.Time) (bool, error) {
+func (s FirestoreStore) Acquire(ctx context.Context, claim Lease) (bool, error) {
+	uid, p := claim.UID, claim.Provider
 	acquired := false
 	err := s.DB.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 		acquired = false
@@ -44,7 +46,7 @@ func (s FirestoreStore) Acquire(ctx context.Context, uid, p, encoded, owner stri
 		if err != nil {
 			return err
 		}
-		if doc.Data()[p] != encoded {
+		if doc.Data()[p] != claim.Token {
 			return nil
 		}
 		lease, _ := doc.Data()["_refresh_"+p].(map[string]any)
@@ -52,11 +54,12 @@ func (s FirestoreStore) Acquire(ctx context.Context, uid, p, encoded, owner stri
 			return nil
 		}
 		acquired = true
-		return tx.Set(ref, map[string]any{"_refresh_" + p: map[string]any{"owner": owner, "until": until}}, firestore.MergeAll)
+		return tx.Set(ref, map[string]any{"_refresh_" + p: map[string]any{"owner": claim.Owner, "until": claim.Until}}, firestore.MergeAll)
 	})
 	return acquired, err
 }
-func (s FirestoreStore) Finish(ctx context.Context, uid, p, encoded, owner string, next *string, revoked bool) error {
+func (s FirestoreStore) Finish(ctx context.Context, claim Lease, result RefreshResult) error {
+	uid, p := claim.UID, claim.Provider
 	return s.DB.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 		ref := s.DB.Collection("tokens").Doc(uid)
 		doc, err := tx.Get(ref)
@@ -64,15 +67,15 @@ func (s FirestoreStore) Finish(ctx context.Context, uid, p, encoded, owner strin
 			return err
 		}
 		lease, _ := doc.Data()["_refresh_"+p].(map[string]any)
-		if lease["owner"] != owner {
+		if lease["owner"] != claim.Owner {
 			return ErrRefreshBusy
 		}
 		updates := []firestore.Update{{Path: "_refresh_" + p, Value: firestore.Delete}}
-		if doc.Data()[p] == encoded {
-			if next != nil {
-				updates = append(updates, firestore.Update{Path: p, Value: *next})
+		if doc.Data()[p] == claim.Token {
+			if result.Token != "" {
+				updates = append(updates, firestore.Update{Path: p, Value: result.Token})
 			}
-			if revoked {
+			if result.Revoked {
 				// Read the profile before any writes, as required by Firestore transactions.
 				profile := s.DB.Collection("profiles").Doc(uid)
 				snap, err := tx.Get(profile)

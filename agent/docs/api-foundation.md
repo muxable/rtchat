@@ -83,7 +83,9 @@ process crashes release the lease by expiry. This coordinates only consumers usi
 this service: legacy Cloud Functions and the existing IRC Twitch token source do
 not participate in these leases. Do not run competing legacy refreshers for the
 same rotating provider grants during cutover. The `NewServiceWithStore` interface
-supports deterministic injected transport/storage tests.
+supports deterministic injected transport/storage tests. Storage operations take
+a named `Lease` (user, provider, original grant, owner, expiry) and `RefreshResult`
+(replacement token, revoked grant, or an empty result to release the lease).
 
 Verification: `cd agent && go test -short ./...` and
 `go test -race ./internal/callable ./internal/provider`. Unit tests cover shared

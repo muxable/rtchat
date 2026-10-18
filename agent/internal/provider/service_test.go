@@ -28,28 +28,28 @@ func (m *memoryStore) Load(context.Context, string, string) (string, error) {
 	}
 	return m.encoded, nil
 }
-func (m *memoryStore) Acquire(_ context.Context, _, _, encoded, owner string, until time.Time) (bool, error) {
+func (m *memoryStore) Acquire(_ context.Context, lease Lease) (bool, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if m.encoded != encoded || time.Now().Before(m.until) {
+	if m.encoded != lease.Token || time.Now().Before(m.until) {
 		return false, nil
 	}
-	m.owner = owner
-	m.until = until
+	m.owner = lease.Owner
+	m.until = lease.Until
 	return true, nil
 }
-func (m *memoryStore) Finish(_ context.Context, _, _, encoded, owner string, next *string, revoked bool) error {
+func (m *memoryStore) Finish(_ context.Context, lease Lease, result RefreshResult) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if m.owner != owner {
+	if m.owner != lease.Owner {
 		return ErrRefreshBusy
 	}
 	m.until = time.Time{}
-	if m.encoded == encoded {
-		if next != nil {
-			m.encoded = *next
+	if m.encoded == lease.Token {
+		if result.Token != "" {
+			m.encoded = result.Token
 		}
-		if revoked {
+		if result.Revoked {
 			m.revoked = true
 			m.encoded = ""
 		}
@@ -185,5 +185,62 @@ func TestAppTokenCache(t *testing.T) {
 	}
 	if calls != 1 {
 		t.Fatal(calls)
+	}
+}
+
+func TestProviderRefreshRequests(t *testing.T) {
+	for _, tc := range []struct {
+		provider, host, secretPrefix, contentType string
+	}{
+		{"twitch", "id.twitch.tv", "twitch-client", "application/json"},
+		{"kick", "id.kick.com", "kick-client", "application/x-www-form-urlencoded"},
+		{"youtube", "oauth2.googleapis.com", "youtube-oauth-client", "application/x-www-form-urlencoded"},
+		{"streamlabs", "www.streamlabs.com", "streamlabs-client", "application/json"},
+		{"streamelements", "api.streamelements.com", "streamelements-client", "application/json"},
+	} {
+		t.Run(tc.provider, func(t *testing.T) {
+			store := &memoryStore{encoded: expired}
+			var fetched []string
+			client := &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+				if r.URL.Host != tc.host || r.Header.Get("Content-Type") != tc.contentType {
+					t.Fatalf("unexpected token request: %s %s", r.URL, r.Header.Get("Content-Type"))
+				}
+				var fields map[string]string
+				if tc.contentType == "application/json" {
+					if err := json.NewDecoder(r.Body).Decode(&fields); err != nil {
+						t.Fatal(err)
+					}
+				} else {
+					if err := r.ParseForm(); err != nil {
+						t.Fatal(err)
+					}
+					fields = make(map[string]string)
+					for key := range r.Form {
+						fields[key] = r.Form.Get(key)
+					}
+				}
+				if fields["grant_type"] != "refresh_token" || fields["refresh_token"] != "refresh-old" || fields["client_id"] == "" || fields["client_secret"] != tc.secretPrefix+"-secret" {
+					t.Fatal("missing refresh credentials")
+				}
+				return response(200, `{"access_token":"new","expires_in":3600}`), nil
+			})}
+			service := NewServiceWithStore(store, client, func(_ context.Context, name string) (string, error) {
+				fetched = append(fetched, name)
+				return name, nil
+			})
+			if token, err := service.AccessToken(context.Background(), "user", tc.provider); err != nil || token != "new" {
+				t.Fatalf("%q %v", token, err)
+			}
+			if _, err := service.Credentials(context.Background(), tc.provider); err != nil {
+				t.Fatal(err)
+			}
+			want := tc.secretPrefix + "-id," + tc.secretPrefix + "-secret"
+			if tc.provider == "twitch" {
+				want = tc.secretPrefix + "-secret"
+			}
+			if strings.Join(fetched, ",") != want {
+				t.Fatalf("secret reads: %v", fetched)
+			}
+		})
 	}
 }
