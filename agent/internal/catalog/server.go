@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -14,6 +13,8 @@ import (
 	"time"
 
 	"github.com/muxable/rtchat/agent/internal/callable"
+	"github.com/muxable/rtchat/agent/internal/clients"
+	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"github.com/muxable/rtchat/agent/internal/provider"
 )
 
@@ -91,46 +92,37 @@ func or(v any, fallback any) any {
 	}
 	return v
 }
-func (s *Server) request(ctx context.Context, endpoint, token string) (map[string]any, error) {
+
+// Third-party emote catalogs are unauthenticated and may return JSON arrays.
+func (s *Server) request(ctx context.Context, endpoint string) (map[string]any, error) {
 	var result map[string]any
-	err := s.fetch(ctx, endpoint, token, &result)
+	err := s.fetch(ctx, endpoint, &result)
 	return result, err
 }
-func (s *Server) fetch(ctx context.Context, endpoint, token string, out any) error {
+func (s *Server) fetch(ctx context.Context, endpoint string, out any) error {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
+	target, err := url.Parse(endpoint)
 	if err != nil {
 		return unavailable()
 	}
-	if token != "" {
-		req.Header.Set("Authorization", "Bearer "+token)
-	}
-	if req.URL.Host == "api.twitch.tv" {
-		req.Header.Set("Client-Id", s.TwitchClientID)
-	}
-	client := s.HTTP
-	if client == nil {
-		client = &http.Client{Timeout: 10 * time.Second}
-	}
-	res, err := client.Do(req)
-	if err != nil {
-		return unavailable()
-	}
-	defer res.Body.Close()
-	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		if res.StatusCode == 401 || res.StatusCode == 403 {
-			return &callable.Error{Code: "permission-denied", Message: "provider did not authorize this request"}
-		}
-		return unavailable()
-	}
-	if json.NewDecoder(io.LimitReader(res.Body, 8<<20)).Decode(out) != nil {
+	client := clients.Client{HTTP: s.HTTP, BaseURL: target.Scheme + "://" + target.Host}
+	if err := client.Get(ctx, target.RequestURI(), out); err != nil {
 		return unavailable()
 	}
 	return nil
 }
 func (s *Server) twitch(ctx context.Context, path, token string, q url.Values) (map[string]any, error) {
-	return s.request(ctx, "https://api.twitch.tv/helix/"+path+"?"+q.Encode(), token)
+	var result map[string]any
+	err := twitch.New(s.HTTP, s.TwitchClientID, token).Get(ctx, "/"+path+"?"+q.Encode(), &result)
+	if err != nil {
+		var response *clients.HTTPError
+		if errors.As(err, &response) && (response.Status == 401 || response.Status == 403) {
+			return nil, &callable.Error{Code: "permission-denied", Message: "provider did not authorize this request"}
+		}
+		return nil, unavailable()
+	}
+	return result, nil
 }
 func (s *Server) userToken(ctx context.Context, uid string) (string, error) {
 	if uid == "" {

@@ -74,12 +74,12 @@ func (s *Server) Emotes(ctx context.Context, data json.RawMessage) (any, error) 
 func (s *Server) bttv(ctx context.Context, channel string) []Emote {
 	result := []Emote{}
 	var global []map[string]any
-	if s.fetch(ctx, "https://api.betterttv.net/3/cached/emotes/global", "", &global) == nil {
+	if s.fetch(ctx, "https://api.betterttv.net/3/cached/emotes/global", &global) == nil {
 		for _, e := range global {
 			result = append(result, Emote{"bttv", nil, e["id"], text(e["code"]), "https://cdn.betterttv.net/emote/" + text(e["id"]) + "/3x"})
 		}
 	}
-	local, err := s.request(ctx, "https://api.betterttv.net/3/cached/users/twitch/"+channel, "")
+	local, err := s.request(ctx, "https://api.betterttv.net/3/cached/users/twitch/"+channel)
 	if err == nil {
 		for _, source := range []struct{ key, category string }{{"channelEmotes", "Channel Emotes"}, {"sharedEmotes", "Shared Emotes"}} {
 			for _, e := range array(local[source.key]) {
@@ -106,7 +106,7 @@ func ffzSet(set map[string]any) []Emote {
 }
 func (s *Server) ffz(ctx context.Context, channel string) []Emote {
 	result := []Emote{}
-	global, err := s.request(ctx, "https://api.frankerfacez.com/v1/set/global", "")
+	global, err := s.request(ctx, "https://api.frankerfacez.com/v1/set/global")
 	if err == nil {
 		sets := object(global["sets"])
 		ids, _ := global["default_sets"].([]any)
@@ -114,7 +114,7 @@ func (s *Server) ffz(ctx context.Context, channel string) []Emote {
 			result = append(result, ffzSet(object(sets[identifier(id)]))...)
 		}
 	}
-	local, err := s.request(ctx, "https://api.frankerfacez.com/v1/room/id/"+channel, "")
+	local, err := s.request(ctx, "https://api.frankerfacez.com/v1/room/id/"+channel)
 	if err == nil {
 		key := identifier(object(local["room"])["set"])
 		result = append(result, ffzSet(object(object(local["sets"])[key]))...)
@@ -130,11 +130,11 @@ func sevenEmotes(items any) []Emote {
 }
 func (s *Server) sevenTV(ctx context.Context, channel string) []Emote {
 	result := []Emote{}
-	global, err := s.request(ctx, "https://7tv.io/v3/emote-sets/global", "")
+	global, err := s.request(ctx, "https://7tv.io/v3/emote-sets/global")
 	if err == nil {
 		result = append(result, sevenEmotes(global["emotes"])...)
 	}
-	local, err := s.request(ctx, "https://7tv.io/v3/users/twitch/"+channel, "")
+	local, err := s.request(ctx, "https://7tv.io/v3/users/twitch/"+channel)
 	if err == nil {
 		result = append(result, sevenEmotes(object(local["emote_set"])["emotes"])...)
 	}

@@ -12,6 +12,9 @@ import (
 
 	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/provider"
+
+	"github.com/muxable/rtchat/agent/internal/clients/kick"
+	"github.com/muxable/rtchat/agent/internal/clients/youtube"
 )
 
 var kickSlug = regexp.MustCompile(`^[a-z0-9_-]{2,25}$`)
@@ -182,7 +185,8 @@ func (s *Server) searchKick(ctx context.Context, query string) []map[string]any 
 	if err != nil {
 		return empty
 	}
-	data, err := s.request(ctx, "https://api.kick.com/public/v1/channels?slug="+url.QueryEscape(slug), token)
+	var data map[string]any
+	err = kick.New(s.HTTP, token).Get(ctx, "/channels?slug="+url.QueryEscape(slug), &data)
 	if err != nil {
 		return empty
 	}
@@ -191,7 +195,8 @@ func (s *Server) searchKick(ctx context.Context, query string) []map[string]any 
 		return empty
 	}
 	id := identifier(c["broadcaster_user_id"])
-	users, _ := s.request(ctx, "https://api.kick.com/public/v1/users?id="+url.QueryEscape(id), token)
+	var users map[string]any
+	_ = kick.New(s.HTTP, token).Get(ctx, "/users?id="+url.QueryEscape(id), &users)
 	user := first(users["data"])
 	stream := object(c["stream"])
 	return []map[string]any{
@@ -233,7 +238,8 @@ func (s *Server) searchYouTube(ctx context.Context, query string) []map[string]a
 	} else {
 		params.Set("forHandle", "@"+l.Handle)
 	}
-	data, err := s.request(ctx, "https://www.googleapis.com/youtube/v3/channels?"+params.Encode(), "")
+	var data map[string]any
+	err = youtube.New(s.HTTP, "").Get(ctx, "/channels?"+params.Encode(), &data)
 	results := empty
 	if err == nil {
 		c := first(data["items"])
