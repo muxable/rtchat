@@ -3,15 +3,15 @@
 package eventsubmigration
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
+
+	"github.com/muxable/rtchat/agent/internal/clients"
+	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 )
 
 const LegacyCallback = "https://us-central1-rtchat-47692.cloudfunctions.net/eventsub"
@@ -44,54 +44,23 @@ type API struct {
 	BaseURL, ClientID, Token string
 	Pause                    func(context.Context, time.Duration) error
 }
-type HTTPError struct{ Status int }
+type HTTPError = clients.HTTPError
 
-func (e *HTTPError) Error() string { return fmt.Sprintf("Twitch EventSub HTTP %d", e.Status) }
-func pause(ctx context.Context, delay time.Duration) error {
-	timer := time.NewTimer(delay)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-timer.C:
-		return nil
-	}
-}
 func (a *API) sleep(ctx context.Context, delay time.Duration) error {
 	if a.Pause != nil {
 		return a.Pause(ctx, delay)
 	}
-	return pause(ctx, delay)
+	return clients.Wait(ctx, delay)
 }
 func (a *API) request(ctx context.Context, method string, q url.Values, body, out interface{}) error {
-	base := a.BaseURL
-	if base == "" {
-		base = "https://api.twitch.tv/helix"
-	}
-	client := a.Client
-	if client == nil {
-		client = &http.Client{Timeout: 10 * time.Second}
-	}
-	var encoded []byte
-	var err error
-	if body != nil {
-		encoded, err = json.Marshal(body)
-		if err != nil {
-			return err
-		}
+	client := twitch.New(a.Client, a.ClientID, a.Token)
+	if a.BaseURL != "" {
+		client.BaseURL = a.BaseURL
 	}
 	for attempt := 0; attempt < 4; attempt++ {
-		req, err := http.NewRequestWithContext(ctx, method, base+"/eventsub/subscriptions?"+q.Encode(), bytes.NewReader(encoded))
+		response, err := client.Do(ctx, method, "/eventsub/subscriptions?"+q.Encode(), body)
 		if err != nil {
-			return err
-		}
-		req.Header.Set("Client-ID", a.ClientID)
-		req.Header.Set("Authorization", "Bearer "+a.Token)
-		req.Header.Set("Content-Type", "application/json")
-		response, err := client.Do(req)
-		if err != nil {
-			// POST may have succeeded before a transport error. Let resume discover
-			// the replacement instead of creating a second subscription blindly.
+			// A lost POST response may hide a successful creation. Resume must discover it.
 			if method == http.MethodPost || attempt == 3 || ctx.Err() != nil {
 				return fmt.Errorf("Twitch EventSub transport failure")
 			}
@@ -100,40 +69,24 @@ func (a *API) request(ctx context.Context, method string, q url.Values, body, ou
 			}
 			continue
 		}
-		if response.StatusCode >= 200 && response.StatusCode < 300 {
-			defer response.Body.Close()
-			if out == nil {
-				return nil
-			}
-			return json.NewDecoder(io.LimitReader(response.Body, 8<<20)).Decode(out)
+		if response.Err() == nil {
+			return response.Decode(out)
 		}
-		io.Copy(io.Discard, io.LimitReader(response.Body, 4096))
-		response.Body.Close()
 		if response.StatusCode == 404 && method == http.MethodDelete {
 			return nil
 		}
-		// 429 may indicate the three-per-condition cap. Bound retries and leave
-		// the source intact. Retry GET/DELETE server errors, never ambiguous POSTs.
+		// An explicit 429 is retryable; ambiguous POST server errors are not.
 		if attempt < 3 && (response.StatusCode == 429 || (response.StatusCode >= 500 && method != http.MethodPost)) {
-			delay := time.Duration(1<<attempt) * time.Second
-			if seconds, err := strconv.Atoi(response.Header.Get("Retry-After")); err == nil && seconds > 0 {
-				delay = time.Duration(seconds) * time.Second
-			}
-			if at, err := http.ParseTime(response.Header.Get("Retry-After")); err == nil && time.Until(at) > delay {
-				delay = time.Until(at)
-			}
-			if reset, err := strconv.ParseInt(response.Header.Get("Ratelimit-Reset"), 10, 64); err == nil && time.Until(time.Unix(reset, 0)) > delay {
-				delay = time.Until(time.Unix(reset, 0))
-			}
+			delay := clients.RetryDelay(response.Header, attempt)
 			if delay > 30*time.Second {
-				return &HTTPError{response.StatusCode}
+				return response.Err()
 			}
 			if err := a.sleep(ctx, delay); err != nil {
 				return err
 			}
 			continue
 		}
-		return &HTTPError{response.StatusCode}
+		return response.Err()
 	}
 	return fmt.Errorf("Twitch EventSub retries exhausted")
 }
