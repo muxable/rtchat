@@ -71,6 +71,7 @@ func (s *Server) get(ctx context.Context, endpoint, token, id string) (map[strin
 }
 
 var channelPattern = regexp.MustCompile(`^[0-9]{1,30}$`)
+var youtubeChannelPattern = regexp.MustCompile(`^UC[A-Za-z0-9_-]{22}$`)
 
 func (s *Server) embed(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
@@ -83,6 +84,14 @@ func (s *Server) embed(w http.ResponseWriter, r *http.Request) {
 	}
 	provider := r.URL.Query().Get("provider")
 	channel := r.URL.Query().Get("channelId")
+	if provider == "youtube" {
+		if !youtubeChannelPattern.MatchString(channel) {
+			http.NotFound(w, r)
+			return
+		}
+		http.Redirect(w, r, "https://www.youtube.com/embed/live_stream?channel="+channel+"&autoplay=1&mute=1", http.StatusFound)
+		return
+	}
 	if !channelPattern.MatchString(channel) || (provider != "twitch" && provider != "kick") {
 		http.Error(w, "invalid provider or channelId", 400)
 		return

@@ -171,3 +171,22 @@ func TestMetadataClientConfig(t *testing.T) {
 		}
 	}
 }
+
+func TestYouTubeEmbed(t *testing.T) {
+	s, _, mux := fixture()
+	s.AppToken = nil // YouTube embeds need no provider credentials or HTTP calls.
+	for _, path := range []string{"/embed", "/embedRedirect"} {
+		for _, id := range []string{"UCabcdefghijklmnopqr12_-", "@creator", "UCabcdefghijklmnopqr12_-&x=1", ""} {
+			w := httptest.NewRecorder()
+			mux.ServeHTTP(w, httptest.NewRequest("GET", path+"?provider=youtube&channelId="+url.QueryEscape(id), nil))
+			if id == "UCabcdefghijklmnopqr12_-" {
+				want := "https://www.youtube.com/embed/live_stream?channel=" + id + "&autoplay=1&mute=1"
+				if w.Code != 302 || w.Header().Get("Location") != want {
+					t.Fatalf("%s: %d %s", path, w.Code, w.Header().Get("Location"))
+				}
+			} else if w.Code != 404 {
+				t.Fatalf("accepted invalid YouTube channel %q: %d", id, w.Code)
+			}
+		}
+	}
+}
