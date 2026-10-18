@@ -67,7 +67,7 @@ class TwitchBadgesScreen extends StatelessWidget {
   }
 
   static int badgePriorityComparator(TwitchBadgeInfo a, TwitchBadgeInfo b) {
-    const highPriorityBadges = ['Moderator', 'VIP'];
+    const highPriorityBadges = ['Lead Moderator', 'Moderator', 'VIP'];
     var titleA = a.versions.last.title;
     var titleB = b.versions.last.title;
     var isAHighPriority = highPriorityBadges.contains(titleA);
