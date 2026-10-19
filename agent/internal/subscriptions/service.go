@@ -79,6 +79,7 @@ func (s *Service) Subscribe(ctx context.Context, data json.RawMessage) (interfac
 			if err != nil || id == 0 {
 				return nil, invalid("invalid channel")
 			}
+			channel = strconv.FormatUint(id, 10)
 		}
 	case "youtube":
 		if !youtubeID.MatchString(channel) {

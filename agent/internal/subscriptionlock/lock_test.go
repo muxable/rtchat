@@ -62,3 +62,45 @@ func TestLeaseExclusionExpiryAndCancellation(t *testing.T) {
 		t.Fatal("canceled wait succeeded")
 	}
 }
+
+func TestLeaseRetentionDistinguishesUncertainAndLogicalFailures(t *testing.T) {
+	if os.Getenv("FIRESTORE_EMULATOR_HOST") == "" {
+		t.Skip("set FIRESTORE_EMULATOR_HOST")
+	}
+	db, err := firestore.NewClient(context.Background(), fmt.Sprintf("lifecycle-failures-%d", time.Now().UnixNano()), option.WithoutAuthentication())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	for _, mode := range []string{"canceled", "uncertain", "logical"} {
+		t.Run(mode, func(t *testing.T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			err := With(ctx, db, mode, func(work context.Context) error {
+				switch mode {
+				case "canceled":
+					cancel()
+					return work.Err()
+				case "uncertain":
+					return &UncertainError{Err: fmt.Errorf("lost response")}
+				default:
+					return fmt.Errorf("definite rejection")
+				}
+			})
+			if err == nil {
+				t.Fatal("work failure lost")
+			}
+			entered := false
+			retry, stop := context.WithTimeout(context.Background(), 100*time.Millisecond)
+			defer stop()
+			err = With(retry, db, mode, func(context.Context) error { entered = true; return nil })
+			if mode == "logical" {
+				if err != nil || !entered {
+					t.Fatalf("safe retry blocked: %v", err)
+				}
+			} else if err == nil || entered {
+				t.Fatalf("uncertain operation admitted overlapping work: %v", err)
+			}
+		})
+	}
+}
