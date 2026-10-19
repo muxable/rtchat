@@ -270,7 +270,7 @@
   "youtubeMemberMilestoneEvent": "<b>{name}</b>님이 {months}개월째 멤버입니다!",
   "youtubeMembershipGiftingEvent": "{count,plural, other{<b>{name}</b>님이 멤버십 {count}개를 선물했습니다!}}",
   "youtubeGiftMembershipReceivedEvent": "<b>{name}</b>님이 선물받은 멤버십을 받았습니다!",
-  "youtubeGiftEvent": "<b>{name}</b>님이 {giftName}을(를) 보냈습니다 ({jewels} Jewels)!",
+  "youtubeGiftEvent": "<b>{name}</b>님이 {giftName}을(를) 보냈습니다{amountKnown,select, known{ ({jewels} Jewels)} other{}}!",
   "youtubePollEvent": "투표: {question}",
   "youtubeMembersOnlyModeOn": "멤버 전용 모드가 켜졌습니다",
   "youtubeMembersOnlyModeOff": "멤버 전용 모드가 꺼졌습니다",

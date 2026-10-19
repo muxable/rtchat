@@ -270,7 +270,7 @@
   "youtubeMemberMilestoneEvent": "¡<b>{name}</b> lleva {months} meses como miembro!",
   "youtubeMembershipGiftingEvent": "{count,plural, =1{¡<b>{name}</b> regaló una membresía!} other{¡<b>{name}</b> regaló {count} membresías!}}",
   "youtubeGiftMembershipReceivedEvent": "¡<b>{name}</b> recibió una membresía de regalo!",
-  "youtubeGiftEvent": "¡<b>{name}</b> envió {giftName} ({jewels} Jewels)!",
+  "youtubeGiftEvent": "¡<b>{name}</b> envió {giftName}{amountKnown,select, known{ ({jewels} Jewels)} other{}}!",
   "youtubePollEvent": "Encuesta: {question}",
   "youtubeMembersOnlyModeOn": "El modo solo para miembros está activado",
   "youtubeMembersOnlyModeOff": "El modo solo para miembros está desactivado",

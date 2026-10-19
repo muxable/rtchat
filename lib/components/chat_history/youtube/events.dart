@@ -177,7 +177,10 @@ class YouTubeGiftEventWidget extends StatelessWidget {
   Widget build(BuildContext context) =>
       _decorated(model.sender, Icons.diamond, _YouTubeEventText((l10n, style) {
         final text = l10n.youtubeGiftEvent(
-            style.getDisplayName(model.sender), model.giftName, model.jewels);
+            style.getDisplayName(model.sender),
+            model.giftName,
+            model.jewels ?? 0,
+            model.jewels == null ? 'unknown' : 'known');
         return model.comboCount > 1 ? "$text ×${model.comboCount}" : text;
       }));
 }

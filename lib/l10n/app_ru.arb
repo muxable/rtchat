@@ -270,7 +270,7 @@
   "youtubeMemberMilestoneEvent": "<b>{name}</b> спонсор уже {months} мес.!",
   "youtubeMembershipGiftingEvent": "{count,plural, one{<b>{name}</b> подарил(а) {count} спонсорство!} few{<b>{name}</b> подарил(а) {count} спонсорства!} many{<b>{name}</b> подарил(а) {count} спонсорств!} other{<b>{name}</b> подарил(а) {count} спонсорства!}}",
   "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> получил(а) спонсорство в подарок!",
-  "youtubeGiftEvent": "<b>{name}</b> отправил(а) {giftName} ({jewels} Jewels)!",
+  "youtubeGiftEvent": "<b>{name}</b> отправил(а) {giftName}{amountKnown,select, known{ ({jewels} Jewels)} other{}}!",
   "youtubePollEvent": "Опрос: {question}",
   "youtubeMembersOnlyModeOn": "Режим только для спонсоров включён",
   "youtubeMembersOnlyModeOff": "Режим только для спонсоров выключен",

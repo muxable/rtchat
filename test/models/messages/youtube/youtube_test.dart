@@ -212,9 +212,12 @@ void main() {
       expect(gift.altText, 'A rose');
       final bare = appendJson<YouTubeGiftEventModel>(
           withDetails('giftEvent', 'giftDetails', {'giftName': 'Heart'}));
-      expect(bare.jewels, 0);
+      expect(bare.jewels, isNull);
       expect(bare.comboCount, 1);
       expect(bare.giftUrl, isNull);
+      final zero = appendJson<YouTubeGiftEventModel>(withDetails('giftEvent',
+          'giftDetails', {'giftName': 'Heart', 'jewelsAmount': 0}));
+      expect(zero.jewels, 0);
     });
 
     test('polls', () {

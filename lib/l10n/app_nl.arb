@@ -270,7 +270,7 @@
   "youtubeMemberMilestoneEvent": "<b>{name}</b> is al {months} maanden lid!",
   "youtubeMembershipGiftingEvent": "{count,plural, =1{<b>{name}</b> heeft een lidmaatschap cadeau gegeven!} other{<b>{name}</b> heeft {count} lidmaatschappen cadeau gegeven!}}",
   "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> heeft een cadeaulidmaatschap ontvangen!",
-  "youtubeGiftEvent": "<b>{name}</b> heeft {giftName} gestuurd ({jewels} Jewels)!",
+  "youtubeGiftEvent": "<b>{name}</b> heeft {giftName} gestuurd{amountKnown,select, known{ ({jewels} Jewels)} other{}}!",
   "youtubePollEvent": "Poll: {question}",
   "youtubeMembersOnlyModeOn": "Alleen-leden-modus staat aan",
   "youtubeMembersOnlyModeOff": "Alleen-leden-modus staat uit",

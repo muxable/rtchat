@@ -171,6 +171,19 @@ void main() {
     expect(findRichText('@Viewer sent Rose (10 Jewels)! ×3'), findsOneWidget);
   });
 
+  testWidgets('omits unknown jewels amount without dropping the combo',
+      (tester) async {
+    await pumpEvent(
+        tester,
+        buildEventWidget(YouTubeGiftEventWidget(YouTubeGiftEventModel(
+            messageId: 'youtube:gift-unknown',
+            timestamp: t0,
+            sender: viewer,
+            giftName: 'Rose',
+            comboCount: 3))));
+    expect(findRichText('@Viewer sent Rose! ×3'), findsOneWidget);
+  });
+
   testWidgets('renders polls', (tester) async {
     await pumpEvent(
         tester,

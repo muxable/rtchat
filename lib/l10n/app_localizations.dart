@@ -1762,8 +1762,9 @@ abstract class AppLocalizations {
   /// A YouTube gift bought with Jewels, YouTube's virtual currency
   ///
   /// In en, this message translates to:
-  /// **'<b>{name}</b> sent {giftName} ({jewels} Jewels)!'**
-  String youtubeGiftEvent(String name, String giftName, int jewels);
+  /// **'<b>{name}</b> sent {giftName}{amountKnown,select, known{ ({jewels} Jewels)} other{}}!'**
+  String youtubeGiftEvent(
+      String name, String giftName, int jewels, String amountKnown);
 
   /// A YouTube live chat poll
   ///

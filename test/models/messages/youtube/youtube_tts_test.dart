@@ -33,6 +33,19 @@ void main() {
       model.getVocalization(l10n, message,
           includeAuthorPrelude: includeAuthorPrelude);
 
+  test('localizes unknown and known jewel amounts in every locale', () {
+    for (final locale in AppLocalizations.supportedLocales) {
+      final localized = lookupAppLocalizations(locale);
+      final unknown =
+          localized.youtubeGiftEvent('Viewer', 'Rose', 0, 'unknown');
+      expect(unknown, contains('Rose'), reason: '$locale');
+      expect(unknown, isNot(contains('Jewels')), reason: '$locale');
+      expect(localized.youtubeGiftEvent('Viewer', 'Rose', 0, 'known'),
+          contains('Jewels'),
+          reason: '$locale');
+    }
+  });
+
   test('reads youtube chat with its author', () {
     final message = YouTubeMessageModel(
         messageId: 'youtube:m',
@@ -140,6 +153,14 @@ void main() {
             giftName: 'Rose',
             jewels: 10)),
         '@Viewer sent Rose (10 Jewels)!');
+    expect(
+        say(YouTubeGiftEventModel(
+            messageId: 'youtube:gift-unknown',
+            timestamp: t0,
+            sender: viewer,
+            giftName: 'Rose')),
+        '@Viewer sent Rose!');
+
     YouTubePollEventModel poll(bool isClosed) => YouTubePollEventModel(
         messageId: 'youtube:p',
         timestamp: t0,

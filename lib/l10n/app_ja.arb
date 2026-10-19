@@ -270,7 +270,7 @@
   "youtubeMemberMilestoneEvent": "<b>{name}</b> さんはメンバーになって {months} か月です！",
   "youtubeMembershipGiftingEvent": "{count,plural, other{<b>{name}</b> さんがメンバーシップを {count} 件ギフトしました！}}",
   "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> さんがメンバーシップのギフトを受け取りました！",
-  "youtubeGiftEvent": "<b>{name}</b> さんが {giftName} を送りました（{jewels} Jewels）！",
+  "youtubeGiftEvent": "<b>{name}</b> さんが {giftName} を送りました{amountKnown,select, known{（{jewels} Jewels）} other{}}！",
   "youtubePollEvent": "アンケート: {question}",
   "youtubeMembersOnlyModeOn": "メンバー限定モードがオンになりました",
   "youtubeMembersOnlyModeOff": "メンバー限定モードがオフになりました",

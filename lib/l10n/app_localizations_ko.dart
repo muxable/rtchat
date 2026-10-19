@@ -1087,12 +1087,20 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String youtubeGiftEvent(String name, String giftName, int jewels) {
+  String youtubeGiftEvent(
+      String name, String giftName, int jewels, String amountKnown) {
     final intl.NumberFormat jewelsNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String jewelsString = jewelsNumberFormat.format(jewels);
 
-    return '<b>$name</b>님이 $giftName을(를) 보냈습니다 ($jewelsString Jewels)!';
+    String _temp0 = intl.Intl.selectLogic(
+      amountKnown,
+      {
+        'known': ' ($jewelsString Jewels)',
+        'other': '',
+      },
+    );
+    return '<b>$name</b>님이 $giftName을(를) 보냈습니다$_temp0!';
   }
 
   @override

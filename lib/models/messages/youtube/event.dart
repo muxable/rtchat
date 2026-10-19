@@ -117,7 +117,7 @@ class YouTubeGiftMembershipReceivedEventModel extends MessageModel {
 class YouTubeGiftEventModel extends MessageModel {
   final YouTubeUserModel sender;
   final String giftName;
-  final int jewels;
+  final int? jewels;
   final String? giftUrl;
   final String? altText;
   final int comboCount;
@@ -127,7 +127,7 @@ class YouTubeGiftEventModel extends MessageModel {
       required super.timestamp,
       required this.sender,
       required this.giftName,
-      required this.jewels,
+      this.jewels,
       this.giftUrl,
       this.altText,
       this.comboCount = 1});
