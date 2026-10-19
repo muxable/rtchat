@@ -59,14 +59,6 @@ var skippedActions = map[string]string{
 	"markChatItemsByAuthorAsDeletedAction":                      "a timeout; the messages are hidden, not removed",
 }
 
-// unmappedActions are real actions the reader does not map yet. The test
-// logs them instead of failing, so the daily run only fails on new formats.
-var unmappedActions = map[string]string{
-	// {"text":{"content":"sent Star"},"authorName":{"content":"@name "},"id":..,
-	// "authorAvatar":..,"giftImage":..}: no author channel id or timestamp.
-	"addChatItemAction/giftMessageViewModel": "YouTube gifts (jewels)",
-}
-
 // actionKind names an action by its key, and for added chat items, by
 // renderer too.
 func actionKind(raw json.RawMessage) string {
@@ -203,9 +195,7 @@ func TestLiveChat(t *testing.T) {
 		}
 		data := actionData(stream.channel, stream.video, raw, time.Now())
 		if data == nil {
-			if reason, ok := unmappedActions[kind]; ok {
-				t.Logf("known gap, not written: %s (%s)", kind, reason)
-			} else if _, ok := skippedActions[kind]; !ok {
+			if _, ok := skippedActions[kind]; !ok {
 				t.Errorf("unknown or unparsed action %s: %.300s", kind, raw)
 			}
 			continue
@@ -257,7 +247,12 @@ func checkEvent(t *testing.T, kind string, data map[string]interface{}, started 
 	if ts.Before(started.Add(-24*time.Hour)) || ts.After(time.Now().Add(5*time.Minute)) {
 		t.Errorf("%s: implausible timestamp %v", kind, ts)
 	}
-	if id, _ := author["channelId"].(string); !strings.HasPrefix(id, "UC") {
+	if id, _ := author["channelId"].(string); kind == "addChatItemAction/giftMessageViewModel" {
+		// The captured gift model identifies the author only by display name.
+		if id != "" {
+			t.Errorf("%s: fabricated author channel id %q", kind, id)
+		}
+	} else if !strings.HasPrefix(id, "UC") {
 		t.Errorf("%s: author channel id %q", kind, id)
 	}
 	if author["displayName"] == "" {
