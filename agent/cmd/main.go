@@ -22,6 +22,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/oauthhttp"
 	"github.com/muxable/rtchat/agent/internal/provider"
 	"github.com/muxable/rtchat/agent/internal/publichttp"
+	"github.com/muxable/rtchat/agent/internal/subscriptions"
 	"github.com/muxable/rtchat/agent/internal/webhook"
 	"github.com/muxable/rtchat/agent/internal/youtube"
 	"go.uber.org/zap"
@@ -181,6 +182,14 @@ func main() {
 		}
 		api := callable.NewServer(verifier)
 		registerChat(api, &chatRoutes{tokens: provider.NewService(client, nil), store: chatFirestore{DB: client}})
+		subscriptionService := &subscriptions.Service{
+			DB:             client,
+			API:            &subscriptions.API{Tokens: provider.NewService(client, &http.Client{Timeout: 10 * time.Second})},
+			Enabled:        os.Getenv("AGENT_PROVIDER_SUBSCRIPTIONS_ENABLED") == "true",
+			TwitchSecret:   secrets.TwitchEventSubSecret,
+			MaticWebhookID: secrets.AlchemyMaticWebhookID,
+		}
+		subscriptionService.Register(api)
 		catalog.Register(api, client, provider.NewService(client, nil))
 		// Register every callable package before Mount so readiness and webhooks remain intact.
 		api.Mount(server.Mux)

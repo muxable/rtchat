@@ -10,6 +10,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/clients"
 	"github.com/muxable/rtchat/agent/internal/clients/kick"
 	"github.com/muxable/rtchat/agent/internal/clients/twitch"
+	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
 )
 
 type HTTPError = clients.HTTPError
@@ -50,10 +51,20 @@ func (a *API) kick(ctx context.Context, method, path string, query url.Values, o
 
 // Job requests are serial and idempotent; deleting an absent subscription succeeds.
 func request(ctx context.Context, client *clients.Client, method, path string, out any) error {
+	uncertain := false
+	failure := func(err error) error {
+		if uncertain {
+			return &subscriptionlock.UncertainError{Err: err}
+		}
+		return err
+	}
 	for attempt := 0; attempt < 4; attempt++ {
 		response, err := client.Do(ctx, method, path, nil)
 		if err != nil {
-			return err
+			if method == http.MethodDelete {
+				uncertain = true
+			}
+			return failure(err)
 		}
 		if response.Err() == nil {
 			return response.Decode(out)
@@ -62,17 +73,20 @@ func request(ctx context.Context, client *clients.Client, method, path string, o
 			return nil
 		}
 		if response.StatusCode != 429 && response.StatusCode < 500 {
-			return response.Err()
+			return failure(response.Err())
+		}
+		if method == http.MethodDelete && response.StatusCode >= 500 {
+			uncertain = true
 		}
 		delay := clients.RetryDelay(response.Header, attempt)
 		if delay > time.Minute {
-			return errors.New("rate limit retry exceeds job budget")
+			return failure(errors.New("rate limit retry exceeds job budget"))
 		}
 		if err := clients.Wait(ctx, delay); err != nil {
-			return err
+			return failure(err)
 		}
 	}
-	return errors.New("provider retry limit reached")
+	return failure(errors.New("provider retry limit reached"))
 }
 
 func params(key string, ids []string) url.Values {
