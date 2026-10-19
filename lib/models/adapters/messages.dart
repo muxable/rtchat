@@ -26,6 +26,7 @@ import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
+import 'package:rtchat/models/messages/youtube/parse.dart';
 
 abstract class DeltaEvent {
   final DateTime timestamp;
@@ -344,6 +345,10 @@ DeltaEvent? toDeltaEvent(
     case "kick.channel.reward.redemption.updated":
       return kickDeltaEvent(id, data);
   }
+  final type = data['type'];
+  if (type is String && type.startsWith("youtube.")) {
+    return youTubeDocumentDeltaEvent(data);
+  }
   return null;
 }
 
@@ -536,4 +541,27 @@ DeltaEvent? kickDeltaEvent(String id, Map<String, dynamic> data) {
           userInput: input == null || input.isEmpty ? null : input));
   }
   return null;
+}
+
+/// Parses the documents written by the agent's YouTube chat reader, which wrap
+/// a `LiveChatMessage` in its REST JSON form in `event` and are typed
+/// `youtube.{snippet.type}`.
+DeltaEvent? youTubeDocumentDeltaEvent(Map<String, dynamic> data) {
+  const prefix = "${Providers.youtube}:";
+  final channelId = data['channelId'];
+  final event = data['event'];
+  if (channelId is! String || !channelId.startsWith(prefix) || event is! Map) {
+    return null;
+  }
+  final message = Map<String, dynamic>.from(event);
+  final snippet = Map<String, dynamic>.from(message['snippet'] ?? const {});
+  // the parser reads the time from the snippet, fall back to the document's.
+  final timestamp = data['timestamp'];
+  if (snippet['publishedAt'] == null && timestamp is Timestamp) {
+    snippet['publishedAt'] = timestamp.toDate().toUtc().toIso8601String();
+  }
+  message['snippet'] = snippet;
+  return youTubeDeltaEvent(message,
+      channel:
+          Channel(Providers.youtube, channelId.substring(prefix.length), ""));
 }

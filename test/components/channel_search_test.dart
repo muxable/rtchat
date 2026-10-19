@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:rtchat/components/channel_search_bottom_sheet.dart';
 import 'package:rtchat/components/channel_search_results.dart';
+import 'package:rtchat/models/channels.dart';
 
 import 'l10n.dart';
 
@@ -18,6 +20,11 @@ SearchResult result(String provider, String login, {bool isOnline = false}) =>
         language: null);
 
 void main() {
+  test("youtube can be searched", () {
+    expect(searchProviders.keys, ["twitch", "kick", "youtube"]);
+    expect(searchProviders["youtube"], "youtube.com/@");
+  });
+
   group("filterRecentChannels", () {
     final recent = [
       result("twitch", "xqc"),
@@ -78,5 +85,48 @@ void main() {
     // typing is debounced.
     await tester.pump(const Duration(milliseconds: 600));
     expect(calls.last, "kick:xqc");
+  });
+
+  test("youtube results become youtube channels", () {
+    final channel = result("youtube", "UCX6OQ3DkcsbYNE6H8uQQuVA").channel;
+    expect(channel.provider, Providers.youtube);
+    expect(channel.toString(), "youtube:UCX6OQ3DkcsbYNE6H8uQQuVA");
+  });
+
+  testWidgets("picking youtube searches youtube and lists its channels",
+      // the profile pictures are network images that flutter's image cache
+      // keeps.
+      experimentalLeakTesting: LeakTesting.settings
+          .withIgnored(classes: ['ImageStreamCompleterHandle', '_LiveImage']),
+      (tester) async {
+    final calls = <String>[];
+    Stream<List<SearchResult>> fakeSearch(
+        String query, String provider, bool isShowOnlyOnline) {
+      calls.add("$provider:$query");
+      return Stream.value([
+        if (provider == "youtube" && query.isNotEmpty)
+          result("youtube", "MrBeast", isOnline: false),
+      ]);
+    }
+
+    await tester.pumpWidget(MaterialApp(
+        home: TestLocalizations(
+            child: Material(
+                child: ChannelSearchBottomSheetWidget(
+                    onChannelSelect: (_) {}, search: fakeSearch)))));
+    await tester.pump();
+
+    await tester.tap(find.text("twitch.tv/"));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text("youtube.com/@"));
+    await tester.pumpAndSettle();
+    expect(find.text("youtube.com/@"), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), "mrbeast");
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump();
+    expect(calls.last, "youtube:mrbeast");
+    expect(find.text("MrBeast"), findsOneWidget);
   });
 }
