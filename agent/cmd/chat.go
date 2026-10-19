@@ -33,7 +33,7 @@ type chatRoutes struct {
 	httpClient *http.Client
 	sendIRC    func(context.Context, string, string, string, string) error
 	mu         sync.Mutex
-	liveChats  map[string]liveChat
+	liveChats  map[chatCacheKey]liveChat
 }
 
 var channelPattern = regexp.MustCompile(`^UC[A-Za-z0-9_-]{22}$`)

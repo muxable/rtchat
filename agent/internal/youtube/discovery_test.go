@@ -128,7 +128,7 @@ func TestUnrecognizedPageIsNotOffline(t *testing.T) {
 	c.pollInterval = time.Hour
 	c.start()
 	defer c.Close()
-	eventually(t, func() bool { mu.Lock(); defer mu.Unlock(); return len(times) >= 3 })
+	eventually(t, func() bool { return c.counts.unrecognizedPages.Load() >= 3 })
 	closeClient(t, c)
 	if n := c.counts.unrecognizedPages.Load(); n < 3 {
 		t.Fatalf("unrecognized pages %d", n)
