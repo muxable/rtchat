@@ -15,6 +15,13 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// UncertainError means a provider mutation may still finish remotely.
+// Keep its lifecycle lease until expiry rather than admitting overlapping work.
+type UncertainError struct{ Err error }
+
+func (e *UncertainError) Error() string { return "provider mutation outcome uncertain" }
+func (e *UncertainError) Unwrap() error { return e.Err }
+
 // With gives work a 45-second deadline and holds its distributed lease for
 // 90 seconds. All provider requests must honor this context. Lease expiry lets
 // another replica recover a dead instance; ownership guards stale releases.
@@ -59,7 +66,15 @@ func With(ctx context.Context, db *firestore.Client, key string, work func(conte
 		case <-timer.C:
 		}
 	}
+	bounded, cancel := context.WithTimeout(ctx, 45*time.Second)
+	var workErr error
 	defer func() {
+		var uncertain *UncertainError
+		retain := bounded.Err() != nil || errors.As(workErr, &uncertain)
+		cancel()
+		if retain {
+			return
+		}
 		release, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		// Failed release is safe: the lease remains exclusive until its expiry.
@@ -77,11 +92,9 @@ func With(ctx context.Context, db *firestore.Client, key string, work func(conte
 			zap.L().Warn("subscription lease release failed", zap.String("key", key), zap.Error(err))
 		}
 	}()
-	bounded, cancel := context.WithTimeout(ctx, 45*time.Second)
-	defer cancel()
-	err := work(bounded)
-	if err == nil {
+	workErr = work(bounded)
+	if workErr == nil {
 		return bounded.Err()
 	}
-	return err
+	return workErr
 }

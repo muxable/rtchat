@@ -11,6 +11,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/clients/kick"
 	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"github.com/muxable/rtchat/agent/internal/provider"
+	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
 )
 
 type Tokens interface {
@@ -50,6 +51,9 @@ func request(ctx context.Context, client *clients.Client, method, path string, b
 	for attempt := 0; attempt < 3; attempt++ {
 		response, err := client.Do(ctx, method, path, body)
 		if err != nil {
+			if method != http.MethodGet {
+				return &subscriptionlock.UncertainError{Err: err}
+			}
 			return err
 		}
 		if response.Err() == nil {
@@ -64,6 +68,9 @@ func request(ctx context.Context, client *clients.Client, method, path string, b
 				return err
 			}
 			continue
+		}
+		if method != http.MethodGet && response.StatusCode >= 500 {
+			return &subscriptionlock.UncertainError{Err: response.Err()}
 		}
 		return response.Err()
 	}
