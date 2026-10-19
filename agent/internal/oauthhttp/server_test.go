@@ -227,3 +227,18 @@ func TestProviderExchangePreservesRefresh(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestKickProfilePreservesNumericIdentity(t *testing.T) {
+	s, _ := fixture()
+	s.HTTP = &http.Client{Transport: transport(func(r *http.Request) (*http.Response, error) {
+		body := `{"data":[{"user_id":87654321,"name":"Broadcaster"}]}`
+		if strings.HasSuffix(r.URL.Path, "/channels") {
+			body = `{"data":[{"slug":"broadcaster"}]}`
+		}
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(body)), Header: http.Header{}}, nil
+	})}
+	profile, err := s.profile(context.Background(), "kick", "", "token")
+	if err != nil || profile["id"] != "87654321" {
+		t.Fatalf("unstable Kick account identity: %v, %v", profile, err)
+	}
+}

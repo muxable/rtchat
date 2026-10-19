@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -32,6 +33,9 @@ func object(v any) map[string]any { m, _ := v.(map[string]any); return m }
 func str(v any) string {
 	if v == nil {
 		return ""
+	}
+	if number, ok := v.(float64); ok {
+		return strconv.FormatFloat(number, 'f', -1, 64)
 	}
 	return fmt.Sprint(v)
 }
