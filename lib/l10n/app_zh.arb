@@ -265,7 +265,7 @@
   "youtubeMemberMilestoneEvent": "<b>{name}</b> 已成为会员 {months} 个月！",
   "youtubeMembershipGiftingEvent": "{count,plural, other{<b>{name}</b> 赠送了 {count} 份会员资格！}}",
   "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> 收到了一份赠送的会员资格！",
-  "youtubeGiftEvent": "<b>{name}</b> 送出了 {giftName}（{jewels} Jewels）！",
+  "youtubeGiftEvent": "<b>{name}</b> 送出了 {giftName}{amountKnown,select, known{（{jewels} Jewels）} other{}}！",
   "youtubePollEvent": "投票：{question}",
   "youtubeMembersOnlyModeOn": "仅限会员模式已开启",
   "youtubeMembersOnlyModeOff": "仅限会员模式已关闭",

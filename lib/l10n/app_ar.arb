@@ -265,7 +265,7 @@
   "youtubeMemberMilestoneEvent": "<b>{name}</b> عضو منذ {months} أشهر!",
   "youtubeMembershipGiftingEvent": "{count,plural, =1{أهدى <b>{name}</b> عضوية!} other{أهدى <b>{name}</b> {count} عضويات!}}",
   "youtubeGiftMembershipReceivedEvent": "تلقّى <b>{name}</b> عضوية مُهداة!",
-  "youtubeGiftEvent": "أرسل <b>{name}</b> {giftName} ({jewels} Jewels)!",
+  "youtubeGiftEvent": "أرسل <b>{name}</b> {giftName}{amountKnown,select, known{ ({jewels} Jewels)} other{}}!",
   "youtubePollEvent": "استطلاع: {question}",
   "youtubeMembersOnlyModeOn": "وضع الأعضاء فقط مفعّل",
   "youtubeMembersOnlyModeOff": "وضع الأعضاء فقط متوقف",

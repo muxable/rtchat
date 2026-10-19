@@ -265,7 +265,7 @@
   "youtubeMemberMilestoneEvent": "<b>{name}</b> {months} মাস ধরে সদস্য!",
   "youtubeMembershipGiftingEvent": "{count,plural, =1{<b>{name}</b> একটি সদস্যপদ উপহার দিয়েছেন!} other{<b>{name}</b> {count}টি সদস্যপদ উপহার দিয়েছেন!}}",
   "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> একটি উপহার সদস্যপদ পেয়েছেন!",
-  "youtubeGiftEvent": "<b>{name}</b> {giftName} পাঠিয়েছেন ({jewels} Jewels)!",
+  "youtubeGiftEvent": "<b>{name}</b> {giftName} পাঠিয়েছেন{amountKnown,select, known{ ({jewels} Jewels)} other{}}!",
   "youtubePollEvent": "পোল: {question}",
   "youtubeMembersOnlyModeOn": "শুধু সদস্যদের মোড চালু",
   "youtubeMembersOnlyModeOff": "শুধু সদস্যদের মোড বন্ধ",

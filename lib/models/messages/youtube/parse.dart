@@ -118,7 +118,9 @@ MessageModel? youTubeMessageFromJson(Map<String, dynamic> message,
           timestamp: timestamp,
           sender: author,
           giftName: details['giftName'] ?? '',
-          jewels: _int(details['jewelsAmount']),
+          jewels: details['jewelsAmount'] == null
+              ? null
+              : _int(details['jewelsAmount']),
           giftUrl: _nonEmpty(details['giftUrl']),
           altText: _nonEmpty(details['altText']),
           comboCount: _int(details['comboCount'], 1));

@@ -1681,7 +1681,7 @@
       }
     }
   },
-  "youtubeGiftEvent": "<b>{name}</b> sent {giftName} ({jewels} Jewels)!",
+  "youtubeGiftEvent": "<b>{name}</b> sent {giftName}{amountKnown,select, known{ ({jewels} Jewels)} other{}}!",
   "@youtubeGiftEvent": {
     "description": "A YouTube gift bought with Jewels, YouTube's virtual currency",
     "placeholders": {
@@ -1697,6 +1697,10 @@
         "type": "int",
         "example": "10",
         "format": "decimalPattern"
+      },
+      "amountKnown": {
+        "type": "String",
+        "description": "known when the Jewels amount is supplied, otherwise unknown"
       }
     }
   },

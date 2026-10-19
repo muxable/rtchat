@@ -1169,12 +1169,20 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String youtubeGiftEvent(String name, String giftName, int jewels) {
+  String youtubeGiftEvent(
+      String name, String giftName, int jewels, String amountKnown) {
     final intl.NumberFormat jewelsNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String jewelsString = jewelsNumberFormat.format(jewels);
 
-    return '<b>$name</b> 送出了 $giftName（$jewelsString Jewels）！';
+    String _temp0 = intl.Intl.selectLogic(
+      amountKnown,
+      {
+        'known': '（$jewelsString Jewels）',
+        'other': '',
+      },
+    );
+    return '<b>$name</b> 送出了 $giftName$_temp0！';
   }
 
   @override
@@ -2262,12 +2270,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String youtubeGiftEvent(String name, String giftName, int jewels) {
+  String youtubeGiftEvent(
+      String name, String giftName, int jewels, String amountKnown) {
     final intl.NumberFormat jewelsNumberFormat =
         intl.NumberFormat.decimalPattern(localeName);
     final String jewelsString = jewelsNumberFormat.format(jewels);
 
-    return '<b>$name</b> 送出了 $giftName（$jewelsString Jewels）！';
+    String _temp0 = intl.Intl.selectLogic(
+      amountKnown,
+      {
+        'known': '（$jewelsString Jewels）',
+        'other': '',
+      },
+    );
+    return '<b>$name</b> 送出了 $giftName$_temp0！';
   }
 
   @override

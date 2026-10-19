@@ -285,8 +285,8 @@ class TtsModel extends ChangeNotifier {
     } else if (model is YouTubeGiftMembershipReceivedEventModel) {
       return l10n.youtubeGiftMembershipReceivedEvent(model.recipient.name);
     } else if (model is YouTubeGiftEventModel) {
-      return l10n.youtubeGiftEvent(
-          model.sender.name, model.giftName, model.jewels);
+      return l10n.youtubeGiftEvent(model.sender.name, model.giftName,
+          model.jewels ?? 0, model.jewels == null ? 'unknown' : 'known');
     } else if (model is YouTubePollEventModel) {
       // only announce a poll when it opens.
       return model.isClosed ? "" : l10n.youtubePollEvent(model.question);

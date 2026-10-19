@@ -265,7 +265,7 @@
   "youtubeMemberMilestoneEvent": "<b>{name}</b> har varit medlem i {months} månader!",
   "youtubeMembershipGiftingEvent": "{count,plural, =1{<b>{name}</b> gav bort ett medlemskap!} other{<b>{name}</b> gav bort {count} medlemskap!}}",
   "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> fick ett medlemskap i present!",
-  "youtubeGiftEvent": "<b>{name}</b> skickade {giftName} ({jewels} Jewels)!",
+  "youtubeGiftEvent": "<b>{name}</b> skickade {giftName}{amountKnown,select, known{ ({jewels} Jewels)} other{}}!",
   "youtubePollEvent": "Omröstning: {question}",
   "youtubeMembersOnlyModeOn": "Läget endast för medlemmar är på",
   "youtubeMembersOnlyModeOff": "Läget endast för medlemmar är av",
