@@ -3,7 +3,9 @@ package jobs
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -112,22 +114,26 @@ func TestKickMetadataParity(t *testing.T) {
 		}
 	}
 }
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
 func TestHTTPRateLimitCancellationAndIdempotentDelete(t *testing.T) {
-	attempts := 0
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		attempts++
-		if r.Method == http.MethodDelete {
-			w.WriteHeader(404)
-			return
-		}
-		w.Header().Set("Retry-After", "60")
-		w.WriteHeader(429)
-	}))
-	defer server.Close()
-	a := API{Tokens: testTokens{}, Client: server.Client(), KickURL: server.URL}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	if err := a.kick(ctx, http.MethodGet, "/channels", nil, nil); err == nil || !strings.Contains(err.Error(), "deadline") {
+	attempts := 0
+	client := &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		attempts++
+		status := http.StatusNotFound
+		if r.Method != http.MethodDelete {
+			status = http.StatusTooManyRequests
+			cancel()
+		}
+		return &http.Response{StatusCode: status, Header: http.Header{"Retry-After": {"60"}}, Body: io.NopCloser(strings.NewReader(""))}, nil
+	})}
+	a := API{Tokens: testTokens{}, Client: client}
+	if err := a.kick(ctx, http.MethodGet, "/channels", nil, nil); !errors.Is(err, context.Canceled) {
 		t.Fatal(err)
 	}
 	if attempts != 1 {
@@ -137,6 +143,7 @@ func TestHTTPRateLimitCancellationAndIdempotentDelete(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
 func TestFollowerPermissionDoesNotFailMetadata(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
