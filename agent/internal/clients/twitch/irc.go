@@ -1,9 +1,11 @@
 package twitch
 
 import (
+	"bufio"
 	"context"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"golang.org/x/net/websocket"
 	"net"
 	"strings"
@@ -41,4 +43,63 @@ func SendIRC(ctx context.Context, token, login, channel, message string) error {
 		}
 	}
 	return nil
+}
+
+// EmoteSets opens one short-lived TLS connection and always closes it. No
+// channels are joined, and cancellation interrupts reads without leaking a client.
+func EmoteSets(ctx context.Context, token, login string) ([]string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 8*time.Second)
+	defer cancel()
+	dialer := tls.Dialer{NetDialer: &net.Dialer{Timeout: 5 * time.Second}, Config: &tls.Config{MinVersion: tls.VersionTLS12}}
+	conn, err := dialer.DialContext(ctx, "tcp", "irc.chat.twitch.tv:6697")
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	return readEmoteSets(ctx, conn, token, login)
+}
+func readEmoteSets(ctx context.Context, conn net.Conn, token, login string) ([]string, error) {
+	if strings.ContainsAny(token+login, "\r\n") {
+		return nil, errors.New("invalid IRC credentials")
+	}
+	deadline, ok := ctx.Deadline()
+	if !ok {
+		deadline = time.Now().Add(8 * time.Second)
+	}
+	conn.SetDeadline(deadline)
+	done := make(chan struct{})
+	defer close(done)
+	go func() {
+		select {
+		case <-ctx.Done():
+			conn.Close()
+		case <-done:
+		}
+	}()
+	if _, err := fmt.Fprintf(conn, "CAP REQ :twitch.tv/tags twitch.tv/commands\r\nPASS oauth:%s\r\nNICK %s\r\n", token, login); err != nil {
+		return nil, err
+	}
+	scanner := bufio.NewScanner(conn)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "PING ") {
+			fmt.Fprintf(conn, "PONG %s\r\n", strings.TrimPrefix(line, "PING "))
+			continue
+		}
+		if !strings.Contains(line, " GLOBALUSERSTATE") || !strings.HasPrefix(line, "@") {
+			continue
+		}
+		tagPart := strings.SplitN(line[1:], " ", 2)[0]
+		for _, tag := range strings.Split(tagPart, ";") {
+			if strings.HasPrefix(tag, "emote-sets=") {
+				value := strings.TrimPrefix(tag, "emote-sets=")
+				if value == "" {
+					return []string{}, nil
+				}
+				return strings.Split(value, ","), nil
+			}
+		}
+		return []string{}, nil
+	}
+	return nil, errors.New("IRC emote state unavailable")
 }
