@@ -17,6 +17,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"github.com/muxable/rtchat/agent/internal/provider"
+	"github.com/muxable/rtchat/agent/internal/publichttp"
 	"github.com/muxable/rtchat/agent/internal/webhook"
 	"github.com/muxable/rtchat/agent/internal/youtube"
 	"go.uber.org/zap"
@@ -171,6 +172,14 @@ func main() {
 		api := callable.NewServer(verifier)
 		registerChat(api, &chatRoutes{tokens: provider.NewService(client, nil), store: chatFirestore{DB: client}})
 		api.Mount(server.Mux)
+		if err := publichttp.Register(server.Mux, client, provider.NewService(client, nil)); err != nil {
+			zap.L().Warn("public HTTP configuration invalid; routes disabled")
+			for _, path := range []string{"/embed", "/embedRedirect", "/metadata", "/api/metadata"} {
+				server.Mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+					http.Error(w, "temporarily unavailable", http.StatusServiceUnavailable)
+				})
+			}
+		}
 		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
 		server.RegisterProvider("/twitch/", webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client, twitchClientID, twitchClientSecret))
 		server.RegisterProvider("/alchemy/", webhook.NewAlchemyHandler(webhook.AlchemyConfig{

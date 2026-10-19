@@ -25,7 +25,7 @@ class StreamPreview extends StatefulWidget {
 extension Embed on Channel {
   Uri get embedUri {
     return Uri.parse(
-        'https://chat.rtirl.com/embed?provider=$provider&channelId=$channelId');
+        'https://rtchat-api.rtirl.com/embed?provider=$provider&channelId=$channelId');
   }
 }
 
