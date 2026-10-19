@@ -225,7 +225,12 @@ func (s *Service) AccessToken(ctx context.Context, uid, p string) (string, error
 		if err != nil {
 			return "", err
 		}
-		if err = s.store.Finish(ctx, lease, RefreshResult{Token: string(data)}); err != nil {
+		// The provider has rotated the grant. Persist it even if the caller leaves;
+		// Finish still checks lease ownership and preserves a newer OAuth callback.
+		persist, persistCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		err = s.store.Finish(persist, lease, RefreshResult{Token: string(data)})
+		persistCancel()
+		if err != nil {
 			return "", err
 		}
 		// Re-read in case an OAuth callback replaced the document during refresh.
