@@ -983,6 +983,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get signInWithKick => '使用 Kick 登录';
 
   @override
+  String get signInWithYouTube => '使用 YouTube 登录';
+
+  @override
   String get textToSpeechTooManyMessages => '消息太多了。文字转语音已关闭';
 
   @override
@@ -2177,6 +2180,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get signInWithKick => '使用 Kick 登入';
+
+  @override
+  String get signInWithYouTube => '使用 YouTube 登入';
 
   @override
   String get textToSpeechTooManyMessages => '訊息太多了。文字轉語音已關閉';

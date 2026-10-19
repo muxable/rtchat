@@ -245,6 +245,7 @@
   "kickGiftedSubscriptionsEvent": "<b>{gifterName}</b> podarował {count} subskrypcji!",
   "kicksGiftedEvent": "<b>{senderName}</b> wysłał {amount} Kicks!",
   "signInWithKick": "Zaloguj się przez Kick",
+  "signInWithYouTube": "Zaloguj się przez YouTube",
   "textToSpeechTooManyMessages": "Jest zbyt wiele wiadomości. Zamiana tekstu na mowę wyłączona",
   "turnOffTextToSpeech": "Wyłącz",
   "addChannel": "Dodaj kanał",

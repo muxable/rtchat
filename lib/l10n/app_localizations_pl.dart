@@ -1020,6 +1020,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get signInWithKick => 'Zaloguj się przez Kick';
 
   @override
+  String get signInWithYouTube => 'Zaloguj się przez YouTube';
+
+  @override
   String get textToSpeechTooManyMessages =>
       'Jest zbyt wiele wiadomości. Zamiana tekstu na mowę wyłączona';
 

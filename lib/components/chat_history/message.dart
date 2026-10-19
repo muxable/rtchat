@@ -224,11 +224,25 @@ class ChatHistoryMessage extends StatelessWidget {
     } else if (m is KickRewardRedemptionEventModel) {
       return KickRewardRedemptionEventWidget(m);
     } else if (m is YouTubeMessageModel) {
-      // youtube moderation needs signing in with youtube, see #1482.
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: YouTubeMessageWidget(m),
-      );
+      return Consumer<LayoutModel>(builder: (context, layoutModel, child) {
+        final child = Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: YouTubeMessageWidget(m),
+        );
+        if (layoutModel.locked) {
+          return child;
+        }
+        return _ModerationActions(
+          message: m,
+          channel: Channel(Providers.youtube, m.channelId.split(':')[1], ""),
+          profileUrl: Uri.parse(m.author.channelUrl ??
+              "https://www.youtube.com/channel/${m.author.userId}"),
+          formattedTimestamp: formattedTimestamp,
+          // unbanning on youtube needs the ban's id, which messages don't have.
+          canUnban: false,
+          child: child,
+        );
+      });
     } else if (m is YouTubeSuperChatEventModel) {
       return YouTubeSuperChatEventWidget(m);
     } else if (m is YouTubeSuperStickerEventModel) {
@@ -261,6 +275,7 @@ class _ModerationActions extends StatelessWidget {
   final Channel channel;
   final Uri profileUrl;
   final String formattedTimestamp;
+  final bool canUnban;
   final Widget child;
 
   const _ModerationActions(
@@ -268,7 +283,20 @@ class _ModerationActions extends StatelessWidget {
       required this.channel,
       required this.profileUrl,
       required this.formattedTimestamp,
+      this.canUnban = true,
       required this.child});
+
+  /// Shows errors meant for the user, like YouTube's quota running out,
+  /// instead of dropping them.
+  static void _run(ScaffoldMessengerState messenger, Future<void> action) {
+    action.catchError((Object e, StackTrace stackTrace) {
+      final error = userFacingError(e);
+      if (error == null) {
+        Error.throwWithStackTrace(e, stackTrace);
+      }
+      messenger.showSnackBar(SnackBar(content: Text(error)));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -283,6 +311,7 @@ class _ModerationActions extends StatelessWidget {
           onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
           onLongPress: () async {
             FocusManager.instance.primaryFocus?.unfocus();
+            final messenger = ScaffoldMessenger.of(context);
             var showTimeoutDialog = await showDialog<bool>(
                 context: context,
                 builder: (context) {
@@ -326,8 +355,10 @@ class _ModerationActions extends StatelessWidget {
                           title:
                               Text(AppLocalizations.of(context)!.deleteMessage),
                           onTap: () {
-                            ActionsAdapter.instance
-                                .delete(channel, m.messageId);
+                            _run(
+                                messenger,
+                                ActionsAdapter.instance
+                                    .delete(channel, m.messageId));
                             Navigator.pop(context);
                           }),
                       ListTile(
@@ -344,21 +375,27 @@ class _ModerationActions extends StatelessWidget {
                           title: Text(AppLocalizations.of(context)!
                               .banUser(m.author.displayName ?? m.author.login)),
                           onTap: () {
-                            ActionsAdapter.instance.ban(channel, m.author.login,
-                                userId: m.author.userId);
+                            _run(
+                                messenger,
+                                ActionsAdapter.instance.ban(
+                                    channel, m.author.login,
+                                    userId: m.author.userId));
                             Navigator.pop(context);
                           }),
-                      ListTile(
-                          leading: const Icon(Icons.circle_outlined,
-                              color: Colors.greenAccent),
-                          title: Text(AppLocalizations.of(context)!.unbanUser(
-                              m.author.displayName ?? m.author.login)),
-                          onTap: () {
-                            ActionsAdapter.instance.unban(
-                                channel, m.author.login,
-                                userId: m.author.userId);
-                            Navigator.pop(context);
-                          }),
+                      if (canUnban)
+                        ListTile(
+                            leading: const Icon(Icons.circle_outlined,
+                                color: Colors.greenAccent),
+                            title: Text(AppLocalizations.of(context)!.unbanUser(
+                                m.author.displayName ?? m.author.login)),
+                            onTap: () {
+                              _run(
+                                  messenger,
+                                  ActionsAdapter.instance.unban(
+                                      channel, m.author.login,
+                                      userId: m.author.userId));
+                              Navigator.pop(context);
+                            }),
                       ListTile(
                           leading: const Icon(Icons.copy_outlined,
                               color: Colors.greenAccent),
@@ -388,9 +425,14 @@ class _ModerationActions extends StatelessWidget {
                         title: AppLocalizations.of(context)!.timeoutUser(
                             m.author.displayName ?? m.author.login),
                         onPressed: (duration) {
-                          ActionsAdapter.instance.timeout(channel,
-                              m.author.login, "timed out by streamer", duration,
-                              userId: m.author.userId);
+                          _run(
+                              messenger,
+                              ActionsAdapter.instance.timeout(
+                                  channel,
+                                  m.author.login,
+                                  "timed out by streamer",
+                                  duration,
+                                  userId: m.author.userId));
                           Navigator.pop(context);
                         });
                   });

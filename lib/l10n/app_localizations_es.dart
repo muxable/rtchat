@@ -1015,6 +1015,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get signInWithKick => 'Inicia sesión con Kick';
 
   @override
+  String get signInWithYouTube => 'Inicia sesión con YouTube';
+
+  @override
   String get textToSpeechTooManyMessages =>
       'Hay demasiados mensajes. Texto a voz desactivado';
 

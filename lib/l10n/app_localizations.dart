@@ -1609,6 +1609,12 @@ abstract class AppLocalizations {
   /// **'Sign in with Kick'**
   String get signInWithKick;
 
+  /// Button to sign in with a YouTube (Google) account
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with YouTube'**
+  String get signInWithYouTube;
+
   /// Spoken when text to speech turns itself off because too many messages are waiting to be read
   ///
   /// In en, this message translates to:

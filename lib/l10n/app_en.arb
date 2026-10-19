@@ -1385,6 +1385,10 @@
   "@signInWithKick": {
     "description": "Button to sign in with a Kick account"
   },
+  "signInWithYouTube": "Sign in with YouTube",
+  "@signInWithYouTube": {
+    "description": "Button to sign in with a YouTube (Google) account"
+  },
   "textToSpeechTooManyMessages": "There are too many messages. Text to speech disabled",
   "@textToSpeechTooManyMessages": {
     "description": "Spoken when text to speech turns itself off because too many messages are waiting to be read"

@@ -1007,6 +1007,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get signInWithKick => 'Kick দিয়ে সাইন ইন করুন';
 
   @override
+  String get signInWithYouTube => 'YouTube দিয়ে সাইন ইন করুন';
+
+  @override
   String get textToSpeechTooManyMessages =>
       'অনেক বেশি বার্তা আছে। টেক্সট টু স্পিচ বন্ধ করা হয়েছে';
 
