@@ -218,11 +218,7 @@ func (s *Server) searchKick(ctx context.Context, query string) []map[string]any 
 func (s *Server) searchYouTube(ctx context.Context, query string) []map[string]any {
 	empty := []map[string]any{}
 	l, ok := parseYouTube(query)
-	if !ok || s.YouTubeAPIKey == nil {
-		return empty
-	}
-	apiKey, err := s.YouTubeAPIKey(ctx)
-	if err != nil || apiKey == "" {
+	if !ok {
 		return empty
 	}
 	key := l.ID
@@ -232,38 +228,49 @@ func (s *Server) searchYouTube(ctx context.Context, query string) []map[string]a
 	if cached, hit, err := s.Store.CachedYouTube(ctx, key); err == nil && hit {
 		return cached
 	}
+	if s.YouTubeAPIKey == nil {
+		return empty
+	}
+	apiKey, err := s.YouTubeAPIKey(ctx)
+	if err != nil || apiKey == "" {
+		return empty
+	}
 	params := url.Values{"part": {"snippet"}, "key": {apiKey}}
 	if l.ID != "" {
 		params.Set("id", l.ID)
 	} else {
 		params.Set("forHandle", "@"+l.Handle)
 	}
-	var data map[string]any
-	err = youtube.New(s.HTTP, "").Get(ctx, "/channels?"+params.Encode(), &data)
+	var data struct{ Items []map[string]any }
+	if err := youtube.New(s.HTTP, "").Get(ctx, "/channels?"+params.Encode(), &data); err != nil || data.Items == nil {
+		return empty
+	}
 	results := empty
-	if err == nil {
-		c := first(data["items"])
+	if len(data.Items) > 0 {
+		c := data.Items[0]
 		snippet := object(c["snippet"])
-		if youtubeID.MatchString(text(c["id"])) && snippet != nil {
-			login := text(snippet["customUrl"])
-			if login == "" {
-				login = l.Handle
-			}
-			if login == "" {
-				login = text(c["id"])
-			}
-			thumbs := object(snippet["thumbnails"])
-			results = []map[string]any{
-				{
-					"provider":  "youtube",
-					"channelId": c["id"],
-					"login": strings.ToLower(strings.TrimPrefix(login,
-						"@")),
-					"displayName": snippet["title"],
-					"imageUrl": or(object(thumbs["default"])["url"], or(object(thumbs["medium"])["url"],
-						"")),
-					"isOnline": false}}
+		// Only a valid empty result is a cacheable miss; malformed data is retryable.
+		if !youtubeID.MatchString(text(c["id"])) || text(snippet["title"]) == "" {
+			return empty
 		}
+		login := text(snippet["customUrl"])
+		if login == "" {
+			login = l.Handle
+		}
+		if login == "" {
+			login = text(c["id"])
+		}
+		thumbs := object(snippet["thumbnails"])
+		results = []map[string]any{
+			{
+				"provider":  "youtube",
+				"channelId": c["id"],
+				"login": strings.ToLower(strings.TrimPrefix(login,
+					"@")),
+				"displayName": snippet["title"],
+				"imageUrl": or(object(thumbs["default"])["url"], or(object(thumbs["medium"])["url"],
+					"")),
+				"isOnline": false}}
 	}
 	_ = s.Store.CacheYouTube(ctx, key, results)
 	return results
