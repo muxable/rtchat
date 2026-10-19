@@ -9,8 +9,7 @@ on:
   pull_request:
     paths:
       - "agent/**"
-    branches:
-      - 'main'
+      - ".github/workflows/agent.yml"
   workflow_dispatch:
 
 jobs:
