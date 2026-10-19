@@ -6,8 +6,10 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"os/signal"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"cloud.google.com/go/compute/metadata"
@@ -17,6 +19,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"github.com/muxable/rtchat/agent/internal/provider"
+	"github.com/muxable/rtchat/agent/internal/subscriptions"
 	"github.com/muxable/rtchat/agent/internal/webhook"
 	"github.com/muxable/rtchat/agent/internal/youtube"
 	"go.uber.org/zap"
@@ -106,10 +109,16 @@ func main() {
 		defer undo()
 	}
 
-	client, err := firestore.NewClient(context.Background(), "rtchat-47692")
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	client, err := firestore.NewClient(ctx, "rtchat-47692")
 	if err != nil {
 		zap.L().Fatal("failed to create firestore client", zap.Error(err))
 	}
+
+	defer client.Close()
+	stopJobs := startScheduledJobs(ctx, client)
+	defer stopJobs()
 
 	twitchClientID := auth.TwitchClientID()
 	twitchClientSecret, err := auth.TwitchClientSecret()
@@ -124,7 +133,7 @@ func main() {
 	}
 
 	// create a new RequestLock
-	subscribeRequests := client.Collection("assignments").Snapshots(context.Background())
+	subscribeRequests := client.Collection("assignments").Snapshots(ctx)
 
 	manager := newRequestManager(func(req *agent.Request) (io.Closer, error) {
 		switch req.Provider() {
@@ -170,6 +179,14 @@ func main() {
 		}
 		api := callable.NewServer(verifier)
 		registerChat(api, &chatRoutes{tokens: provider.NewService(client, nil), store: chatFirestore{DB: client}})
+		subscriptionService := &subscriptions.Service{
+			DB:             client,
+			API:            &subscriptions.API{Tokens: provider.NewService(client, &http.Client{Timeout: 10 * time.Second})},
+			Enabled:        os.Getenv("AGENT_PROVIDER_SUBSCRIPTIONS_ENABLED") == "true",
+			TwitchSecret:   secrets.TwitchEventSubSecret,
+			MaticWebhookID: secrets.AlchemyMaticWebhookID,
+		}
+		subscriptionService.Register(api)
 		api.Mount(server.Mux)
 		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
 		server.RegisterProvider("/twitch/", webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client, twitchClientID, twitchClientSecret))
