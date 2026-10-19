@@ -1,0 +1,95 @@
+{
+  "source": "anonymized real capture: Lofi Girl live chat, video 1-LpQekNa9g, 2026-10-19; tracking metadata removed, id/name/avatar anonymized",
+  "action": {
+    "addChatItemAction": {
+      "item": {
+        "giftMessageViewModel": {
+          "text": {
+            "content": "sent Party hat",
+            "styleRuns": [
+              {
+                "startIndex": 0,
+                "length": 14
+              }
+            ]
+          },
+          "authorName": {
+            "content": "@Viewer ",
+            "styleRuns": [
+              {
+                "startIndex": 0,
+                "length": 8
+              }
+            ]
+          },
+          "id": "gift-item",
+          "authorAvatar": {
+            "avatarViewModel": {
+              "image": {
+                "sources": [
+                  {
+                    "url": "https://yt4.ggpht.com/viewer=s32",
+                    "width": 32,
+                    "height": 32
+                  },
+                  {
+                    "url": "https://yt4.ggpht.com/viewer=s64",
+                    "width": 64,
+                    "height": 64
+                  }
+                ],
+                "processor": {
+                  "borderImageProcessor": {
+                    "circular": true
+                  }
+                }
+              },
+              "avatarImageSize": "AVATAR_SIZE_XS"
+            }
+          },
+          "giftImage": {
+            "sources": [
+              {
+                "url": "//www.gstatic.com/youtube/img/pdg/gift/assets/party_hat_320x320.png=w480-h480",
+                "width": 480,
+                "height": 480
+              },
+              {
+                "url": "//www.gstatic.com/youtube/img/pdg/gift/assets/party_hat_320x320.png=w640-h640",
+                "width": 640,
+                "height": 640
+              }
+            ]
+          },
+          "giftImageA11yLabel": "@Viewer sent a gift, Party hat"
+        }
+      }
+    }
+  },
+  "event": {
+    "id": "gift-item",
+    "snippet": {
+      "type": "giftEvent",
+      "liveChatId": "innertube:video",
+      "authorChannelId": "",
+      "publishedAt": "2023-11-14T22:13:20Z",
+      "hasDisplayContent": true,
+      "displayMessage": "sent Party hat",
+      "giftDetails": {
+        "altText": "@Viewer sent a gift, Party hat",
+        "giftName": "Party hat",
+        "giftUrl": "https://www.gstatic.com/youtube/img/pdg/gift/assets/party_hat_320x320.png=w640-h640"
+      }
+    },
+    "authorDetails": {
+      "channelId": "",
+      "channelUrl": "",
+      "displayName": "@Viewer",
+      "profileImageUrl": "https://yt4.ggpht.com/viewer=s64",
+      "isVerified": false,
+      "isChatOwner": false,
+      "isChatSponsor": false,
+      "isChatModerator": false
+    }
+  }
+}
