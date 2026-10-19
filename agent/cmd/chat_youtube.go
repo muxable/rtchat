@@ -11,6 +11,8 @@ import (
 
 const quotaMessage = "YouTube's daily quota for sending and moderating chat is used up. It resets at midnight Pacific time."
 
+type chatCacheKey struct{ uid, channel string }
+
 type liveChat struct {
 	id    string
 	until time.Time
@@ -46,8 +48,9 @@ func youtubeError(err error) error {
 }
 
 func (s *chatRoutes) liveChat(ctx context.Context, uid, token, channel string, video *string) (string, error) {
+	key := chatCacheKey{uid, channel}
 	s.mu.Lock()
-	cached := s.liveChats[channel]
+	cached := s.liveChats[key]
 	s.mu.Unlock()
 	if video == nil && time.Now().Before(cached.until) {
 		return cached.id, nil
@@ -67,12 +70,15 @@ func (s *chatRoutes) liveChat(ctx context.Context, uid, token, channel string, v
 	if id == "" {
 		return "", &callable.Error{Code: "failed-precondition", Message: "This YouTube channel isn't live.", Details: map[string]any{"provider": "youtube", "reason": "notLive"}}
 	}
-	s.mu.Lock()
-	if s.liveChats == nil {
-		s.liveChats = map[string]liveChat{}
+	// Explicit videos must not change the destination of later default sends.
+	if video == nil {
+		s.mu.Lock()
+		if s.liveChats == nil {
+			s.liveChats = map[chatCacheKey]liveChat{}
+		}
+		s.liveChats[key] = liveChat{id: id, until: time.Now().Add(5 * time.Minute)}
+		s.mu.Unlock()
 	}
-	s.liveChats[channel] = liveChat{id: id, until: time.Now().Add(5 * time.Minute)}
-	s.mu.Unlock()
 	return id, nil
 }
 func (s *chatRoutes) youtube(ctx context.Context, uid, token, action string, r chatRequest) (any, error) {
@@ -97,9 +103,9 @@ func (s *chatRoutes) youtube(ctx context.Context, uid, token, action string, r c
 		err = client.Ban(ctx, chat, r.UserID, 0)
 	}
 	var apiErr *youtube.APIError
-	if errors.As(err, &apiErr) && chatGone(apiErr.Reason) {
+	if r.VideoID == nil && errors.As(err, &apiErr) && chatGone(apiErr.Reason) {
 		s.mu.Lock()
-		delete(s.liveChats, r.ChannelID)
+		delete(s.liveChats, chatCacheKey{uid, r.ChannelID})
 		s.mu.Unlock()
 	}
 	return nil, youtubeError(err)

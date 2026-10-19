@@ -378,13 +378,16 @@ func TestPollingWithoutActionsAndStreamEnd(t *testing.T) {
 func TestRenewalErrorStopsReader(t *testing.T) {
 	entered := make(chan struct{}, 1)
 	canceled := make(chan struct{}, 1)
+	store := &memoryStore{}
 	server := newTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		store.mu.Lock()
+		store.failRenew = true
+		store.mu.Unlock()
 		entered <- struct{}{}
 		<-r.Context().Done()
 		canceled <- struct{}{}
 	}))
 	defer server.Close()
-	store := &memoryStore{failRenew: true}
 	c := testClient(t, server, store)
 	c.acquireInterval = time.Hour
 	c.start()
