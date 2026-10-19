@@ -81,7 +81,7 @@ func (s *Service) ensureKick(ctx context.Context, id string) error {
 	if len(missing) > 0 {
 		// Serialize capacity checks with creation, not just per-channel work. This
 		// prevents two replicas admitting different new channels into the last slot.
-		err = subscriptionlock.With(ctx, s.DB, "kick-capacity", func(ctx context.Context) error {
+		return subscriptionlock.With(ctx, s.DB, "kick-capacity", func(ctx context.Context) error {
 			needsChat := false
 			for _, event := range missing {
 				if event.Name == "chat.message.sent" {
@@ -125,15 +125,7 @@ func (s *Service) ensureKick(ctx context.Context, id string) error {
 			}
 			number, _ := strconv.ParseUint(id, 10, 53)
 			body := map[string]interface{}{"broadcaster_user_id": number, "events": missing, "method": "webhook"}
-			var created struct {
-				Data []struct {
-					SubscriptionID string      `json:"subscription_id"`
-					Name           string      `json:"name"`
-					Version        int         `json:"version"`
-					Error          interface{} `json:"error"`
-				} `json:"data"`
-			}
-			if err := s.API.kick(ctx, token, http.MethodPost, "/events/subscriptions", nil, body, &created); err != nil {
+			if err := s.API.kick(ctx, token, http.MethodPost, "/events/subscriptions", nil, body, nil); err != nil {
 				return err
 			}
 			// Always list provider state again; a partial/ambiguous response must not
@@ -142,7 +134,6 @@ func (s *Service) ensureKick(ctx context.Context, id string) error {
 			if err != nil {
 				return err
 			}
-			existing = listed
 			ids := []string{}
 			for _, sub := range listed {
 				ids = append(ids, sub.ID)
@@ -163,9 +154,6 @@ func (s *Service) ensureKick(ctx context.Context, id string) error {
 			}
 			return nil
 		})
-		if err != nil {
-			return err
-		}
 	}
 	ids := []string{}
 	for _, sub := range existing {
