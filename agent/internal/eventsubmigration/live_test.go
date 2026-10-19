@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -29,7 +30,10 @@ func TestLiveTwitchSubscriptionInventory(t *testing.T) {
 		t.Fatal("Twitch credentials unavailable")
 	}
 	api := API{Client: httpClient, ClientID: credentials.ClientID, Token: token}
-	listing, err := api.List(ctx, nil)
+	// Sample a single page: a smoke test must not consume the app's entire
+	// inventory or shared rate-limit budget.
+	var listing Listing
+	err = api.request(ctx, http.MethodGet, url.Values{"first": {"100"}}, nil, &listing)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,5 +42,5 @@ func TestLiveTwitchSubscriptionInventory(t *testing.T) {
 			t.Fatal("unexpected live subscription schema")
 		}
 	}
-	t.Logf("real API: decoded %d current EventSub subscriptions without mutation", len(listing.Data))
+	t.Logf("real API: decoded %d sampled EventSub subscriptions (more pages: %t) without mutation", len(listing.Data), listing.Pagination.Cursor != "")
 }
