@@ -22,6 +22,22 @@ import (
 var ErrNoToken = errors.New("provider token unavailable")
 var ErrRefreshBusy = errors.New("provider refresh in progress")
 
+const (
+	refreshWorkBudget    = 30 * time.Second
+	refreshLeaseDuration = 60 * time.Second
+	refreshLeaseSafety   = 30 * time.Second
+)
+
+// The lease outlives the entire operation, including a slow/retried Acquire.
+// Its safety window also lets canceled remote requests settle before retrying.
+func refreshLeaseExpiry(ctx context.Context, now time.Time) time.Time {
+	until := now.Add(refreshLeaseDuration)
+	if deadline, ok := ctx.Deadline(); ok && deadline.Add(refreshLeaseSafety).After(until) {
+		until = deadline.Add(refreshLeaseSafety)
+	}
+	return until
+}
+
 type Credentials struct{ ClientID, ClientSecret string }
 type SecretFetcher func(context.Context, string) (string, error)
 
@@ -150,7 +166,7 @@ func (s *Service) AccessToken(ctx context.Context, uid, p string) (string, error
 	if uid == "" || strings.Contains(uid, "/") {
 		return "", ErrNoToken
 	}
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, refreshWorkBudget)
 	defer cancel()
 	for {
 		encoded, err := s.store.Load(ctx, uid, p)
@@ -164,7 +180,7 @@ func (s *Service) AccessToken(ctx context.Context, uid, p string) (string, error
 		if valid(token) {
 			return tokenString(token, "access_token"), nil
 		}
-		lease := Lease{UID: uid, Provider: p, Token: encoded, Owner: newLeaseID(), Until: time.Now().Add(20 * time.Second)}
+		lease := Lease{UID: uid, Provider: p, Token: encoded, Owner: newLeaseID(), Until: refreshLeaseExpiry(ctx, time.Now())}
 		acquired, err := s.store.Acquire(ctx, lease)
 		if err != nil {
 			return "", err
@@ -177,23 +193,44 @@ func (s *Service) AccessToken(ctx context.Context, uid, p string) (string, error
 				continue
 			}
 		}
+		// Acquire can return after transaction retries. Never start a remote rotation
+		// after cancellation or if the lease cannot cover the remaining work budget.
+		if err := ctx.Err(); err != nil {
+			_ = s.release(lease, false)
+			return "", err
+		}
+		deadline, _ := ctx.Deadline()
+		if lease.Until.Before(deadline.Add(refreshLeaseSafety)) || time.Until(lease.Until) <= refreshLeaseSafety {
+			_ = s.release(lease, false)
+			return "", ErrRefreshBusy
+		}
 		refreshed, revoked, err := s.refresh(ctx, p, token)
 		if err != nil {
-			releaseErr := s.release(lease, revoked)
-			if revoked && releaseErr != nil {
-				return "", releaseErr
-			}
 			if revoked {
+				if releaseErr := s.release(lease, true); releaseErr != nil {
+					return "", releaseErr
+				}
 				return "", ErrNoToken
 			}
+			// Missing refresh_token is a local failure: no provider call was attempted.
+			if errors.Is(err, ErrNoToken) {
+				_ = s.release(lease, false)
+			}
+			// Other failures may have consumed a rotating token despite a canceled or
+			// lost response. Keep the lease through its safety window; leave the grant
+			// and profile intact so transient errors never sign the user out.
 			return "", err
 		}
 		data, err := json.Marshal(refreshed)
 		if err != nil {
-			_ = s.release(lease, false)
 			return "", err
 		}
-		if err = s.store.Finish(ctx, lease, RefreshResult{Token: string(data)}); err != nil {
+		// The provider has rotated the grant. Persist it even if the caller leaves;
+		// Finish still checks lease ownership and preserves a newer OAuth callback.
+		persist, persistCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		err = s.store.Finish(persist, lease, RefreshResult{Token: string(data)})
+		persistCancel()
+		if err != nil {
 			return "", err
 		}
 		// Re-read in case an OAuth callback replaced the document during refresh.
