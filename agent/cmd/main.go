@@ -15,6 +15,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"github.com/muxable/rtchat/agent/internal/callable"
+	"github.com/muxable/rtchat/agent/internal/catalog"
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"github.com/muxable/rtchat/agent/internal/provider"
 	"github.com/muxable/rtchat/agent/internal/publichttp"
@@ -171,6 +172,8 @@ func main() {
 		}
 		api := callable.NewServer(verifier)
 		registerChat(api, &chatRoutes{tokens: provider.NewService(client, nil), store: chatFirestore{DB: client}})
+		catalog.Register(api, client, provider.NewService(client, nil))
+		// Register every callable package before Mount so readiness and webhooks remain intact.
 		api.Mount(server.Mux)
 		if err := publichttp.Register(server.Mux, client, provider.NewService(client, nil)); err != nil {
 			zap.L().Warn("public HTTP configuration invalid; routes disabled")
