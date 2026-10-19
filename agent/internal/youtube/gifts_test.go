@@ -59,13 +59,22 @@ func TestGiftMissingOptionalFieldsDoesNotInventValues(t *testing.T) {
 	if got["timestamp"] != now || snippet["publishedAt"] != now.Format(time.RFC3339Nano) || author["channelId"] != "" || author["channelUrl"] != "" || author["profileImageUrl"] != "" {
 		t.Fatalf("invented unavailable metadata: %#v", got)
 	}
-	if details["giftName"] != "sent Party hat" {
+	if details["giftName"] != "Party hat" {
 		t.Fatalf("lost gift text without label: %#v", details)
 	}
 	for _, key := range []string{"jewelsAmount", "comboCount", "giftUrl"} {
 		if _, ok := details[key]; ok {
 			t.Fatalf("invented %s: %#v", key, details)
 		}
+	}
+}
+func TestGiftEmptyLabelKeepsName(t *testing.T) {
+	action := giftFixture(t)
+	fixtureGift(action)["giftImageA11yLabel"] = "@Viewer sent a gift, "
+	got := actionData("channel", "video", mustJSON(t, action), time.Now())
+	details := got["event"].(map[string]interface{})["snippet"].(map[string]interface{})["giftDetails"].(map[string]interface{})
+	if details["giftName"] != "Party hat" {
+		t.Fatal("empty accessibility label lost gift name", details)
 	}
 }
 func TestGiftLocalizedLabelIsPreserved(t *testing.T) {

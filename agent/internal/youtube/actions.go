@@ -202,13 +202,19 @@ func actionData(channel, video string, raw json.RawMessage, now time.Time) map[s
 			if strings.HasPrefix(image, "//") {
 				image = "https:" + image
 			}
-			d := map[string]interface{}{"altText": gift.Alt, "giftName": display}
+			giftName := strings.TrimSpace(strings.TrimPrefix(display, "sent "))
+			if giftName == "" {
+				giftName = display
+			}
+			d := map[string]interface{}{"altText": gift.Alt, "giftName": giftName}
 			if image != "" {
 				d["giftUrl"] = image
 			}
 			// Keep the display text if a localized or changed label cannot be read.
 			if prefix := name + " sent a gift, "; strings.HasPrefix(gift.Alt, prefix) {
-				d["giftName"] = strings.TrimSpace(strings.TrimPrefix(gift.Alt, prefix))
+				if label := strings.TrimSpace(strings.TrimPrefix(gift.Alt, prefix)); label != "" {
+					d["giftName"] = label
+				}
 			}
 			details["giftDetails"] = d
 		}
