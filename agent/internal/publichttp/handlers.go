@@ -4,7 +4,6 @@ package publichttp
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -30,20 +29,6 @@ func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/embedRedirect", s.embed)
 	mux.HandleFunc("/metadata", s.metadata)
 	mux.HandleFunc("/api/metadata", s.metadata)
-}
-func str(v any) string {
-	if v == nil {
-		return ""
-	}
-	return fmt.Sprint(v)
-}
-func first(result map[string]any, key string) map[string]any {
-	items, _ := result[key].([]any)
-	if len(items) == 0 {
-		return nil
-	}
-	v, _ := items[0].(map[string]any)
-	return v
 }
 
 var channelPattern = regexp.MustCompile(`^[0-9]{1,30}$`)
@@ -83,13 +68,12 @@ func (s *Server) embed(w http.ResponseWriter, r *http.Request) {
 	}
 	switch provider {
 	case "twitch":
-		var data map[string]any
-		err := twitch.New(s.HTTP, s.TwitchClientID, token).Get(r.Context(), "/users?id="+channel, &data)
+		user, err := twitch.New(s.HTTP, s.TwitchClientID, token).User(r.Context(), "id", channel)
 		if err != nil {
 			http.Error(w, "provider unavailable", 502)
 			return
 		}
-		login := str(first(data, "data")["login"])
+		login := user.Login
 		if login == "" {
 			http.NotFound(w, r)
 			return
@@ -98,13 +82,16 @@ func (s *Server) embed(w http.ResponseWriter, r *http.Request) {
 		q := url.Values{"channel": {login}, "controls": {"false"}, "parent": {"chat.rtirl.com"}, "muted": {"true"}}
 		http.Redirect(w, r, "https://player.twitch.tv/?"+q.Encode(), 302)
 	case "kick":
-		var data map[string]any
+		var data struct{ Data []struct{ Slug string } }
 		err := kick.New(s.HTTP, token).Get(r.Context(), "/channels?broadcaster_user_id="+channel, &data)
 		if err != nil {
 			http.Error(w, "provider unavailable", 502)
 			return
 		}
-		slug := str(first(data, "data")["slug"])
+		slug := ""
+		if len(data.Data) > 0 {
+			slug = data.Data[0].Slug
+		}
 		if slug == "" {
 			http.NotFound(w, r)
 			return
