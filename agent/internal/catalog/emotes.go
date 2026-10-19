@@ -1,19 +1,16 @@
 package catalog
 
 import (
-	"bufio"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"net/url"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/muxable/rtchat/agent/internal/callable"
+	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"github.com/muxable/rtchat/agent/internal/provider"
 )
 
@@ -40,34 +37,27 @@ func (s *Server) Emotes(ctx context.Context, data json.RawMessage) (any, error) 
 	if err != nil && !errors.Is(err, provider.ErrNoToken) {
 		return nil, err
 	}
-	parts := make([][]Emote, 4)
-	var twitchErr error
+	sources := []func(context.Context, string) []Emote{s.bttv, s.ffz, s.sevenTV}
+	parts := make([][]Emote, len(sources))
 	var wg sync.WaitGroup
-	for i := range parts {
+	for i, load := range sources {
 		wg.Add(1)
-		go func(i int) {
+		go func(i int, load func(context.Context, string) []Emote) {
 			defer wg.Done()
-			switch i {
-			case 0:
-				if token != "" {
-					parts[i], twitchErr = s.twitchEmotes(ctx, token)
-				}
-			case 1:
-				parts[i] = s.bttv(ctx, channel)
-			case 2:
-				parts[i] = s.ffz(ctx, channel)
-			case 3:
-				parts[i] = s.sevenTV(ctx, channel)
-			}
-		}(i)
-	}
-	wg.Wait()
-	if twitchErr != nil {
-		return nil, twitchErr
+			parts[i] = load(ctx, channel)
+		}(i, load)
 	}
 	result := []Emote{}
-	for _, p := range parts {
-		result = append(result, p...)
+	err = nil
+	if token != "" {
+		result, err = s.twitchEmotes(ctx, token)
+	}
+	wg.Wait()
+	if err != nil {
+		return nil, err
+	}
+	for _, part := range parts {
+		result = append(result, part...)
 	}
 	return result, nil
 }
@@ -151,7 +141,7 @@ func (s *Server) twitchEmotes(ctx context.Context, token string) ([]Emote, error
 	}
 	setsFn := s.EmoteSets
 	if setsFn == nil {
-		setsFn = ircEmoteSets
+		setsFn = twitch.EmoteSets
 	}
 	sets, err := setsFn(ctx, token, login)
 	if err != nil {
@@ -227,63 +217,4 @@ func (s *Server) twitchEmotes(ctx context.Context, token string) ([]Emote, error
 		result = append(result, e)
 	}
 	return result, nil
-}
-
-// ircEmoteSets opens one short-lived TLS connection and always closes it. No
-// channels are joined, and cancellation interrupts reads without leaking a client.
-func ircEmoteSets(ctx context.Context, token, login string) ([]string, error) {
-	ctx, cancel := context.WithTimeout(ctx, 8*time.Second)
-	defer cancel()
-	dialer := tls.Dialer{NetDialer: &net.Dialer{Timeout: 5 * time.Second}, Config: &tls.Config{MinVersion: tls.VersionTLS12}}
-	conn, err := dialer.DialContext(ctx, "tcp", "irc.chat.twitch.tv:6697")
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-	return readEmoteSets(ctx, conn, token, login)
-}
-func readEmoteSets(ctx context.Context, conn net.Conn, token, login string) ([]string, error) {
-	if strings.ContainsAny(token+login, "\r\n") {
-		return nil, errors.New("invalid IRC credentials")
-	}
-	deadline, ok := ctx.Deadline()
-	if !ok {
-		deadline = time.Now().Add(8 * time.Second)
-	}
-	conn.SetDeadline(deadline)
-	done := make(chan struct{})
-	defer close(done)
-	go func() {
-		select {
-		case <-ctx.Done():
-			conn.Close()
-		case <-done:
-		}
-	}()
-	if _, err := fmt.Fprintf(conn, "CAP REQ :twitch.tv/tags twitch.tv/commands\r\nPASS oauth:%s\r\nNICK %s\r\n", token, login); err != nil {
-		return nil, err
-	}
-	scanner := bufio.NewScanner(conn)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "PING ") {
-			fmt.Fprintf(conn, "PONG %s\r\n", strings.TrimPrefix(line, "PING "))
-			continue
-		}
-		if !strings.Contains(line, " GLOBALUSERSTATE") || !strings.HasPrefix(line, "@") {
-			continue
-		}
-		tagPart := strings.SplitN(line[1:], " ", 2)[0]
-		for _, tag := range strings.Split(tagPart, ";") {
-			if strings.HasPrefix(tag, "emote-sets=") {
-				value := strings.TrimPrefix(tag, "emote-sets=")
-				if value == "" {
-					return []string{}, nil
-				}
-				return strings.Split(value, ","), nil
-			}
-		}
-		return []string{}, nil
-	}
-	return nil, errors.New("IRC emote state unavailable")
 }

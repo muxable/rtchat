@@ -8,10 +8,10 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"sync"
 
 	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/provider"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/muxable/rtchat/agent/internal/clients/kick"
 	"github.com/muxable/rtchat/agent/internal/clients/youtube"
@@ -117,29 +117,29 @@ func (s *Server) Search(ctx context.Context, data json.RawMessage) (any, error) 
 		}
 	}
 	batches := make([][]map[string]any, len(providers))
-	errs := make([]error, len(providers))
-	var wg sync.WaitGroup
+	var group errgroup.Group
 	for i, p := range providers {
-		wg.Add(1)
-		go func(i int, p string) {
-			defer wg.Done()
+		i, p := i, p
+		group.Go(func() error {
 			switch p {
 			case "twitch":
-				batches[i], errs[i] = s.searchTwitch(ctx, query)
+				var err error
+				batches[i], err = s.searchTwitch(ctx, query)
+				return err
 			case "kick":
 				batches[i] = s.searchKick(ctx, query)
 			case "youtube":
 				batches[i] = s.searchYouTube(ctx, query)
 			}
-		}(i, p)
+			return nil
+		})
 	}
-	wg.Wait()
+	if err := group.Wait(); err != nil {
+		return nil, err
+	}
 	results := []map[string]any{}
-	for i := range batches {
-		if errs[i] != nil {
-			return nil, errs[i]
-		}
-		results = append(results, batches[i]...)
+	for _, batch := range batches {
+		results = append(results, batch...)
 	}
 	wanted := strings.ToLower(strings.TrimSpace(query))
 	if l, ok := parseYouTube(query); ok && l.Handle != "" {
