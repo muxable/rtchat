@@ -39,12 +39,14 @@ func (t text) plain() string {
 	return b.String()
 }
 
+type thumbnail struct {
+	URL    string `json:"url"`
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
+}
+
 type thumbnails struct {
-	Items []struct {
-		URL    string `json:"url"`
-		Width  int    `json:"width"`
-		Height int    `json:"height"`
-	} `json:"thumbnails"`
+	Items []thumbnail `json:"thumbnails"`
 }
 
 func (t thumbnails) largest() string {
@@ -55,6 +57,29 @@ func (t thumbnails) largest() string {
 		}
 	}
 	return best
+}
+
+// Gifts use view-model images and attributed text, unlike classic renderers.
+// Captured gifts have no author channel ID, timestamp, jewel value or combo.
+type giftRenderer struct {
+	ID   string `json:"id"`
+	Text struct {
+		Content string `json:"content"`
+	} `json:"text"`
+	Author struct {
+		Content string `json:"content"`
+	} `json:"authorName"`
+	Avatar struct {
+		ViewModel struct {
+			Image struct {
+				Sources []thumbnail `json:"sources"`
+			} `json:"image"`
+		} `json:"avatarViewModel"`
+	} `json:"authorAvatar"`
+	Image struct {
+		Sources []thumbnail `json:"sources"`
+	} `json:"giftImage"`
+	Alt string `json:"giftImageA11yLabel"`
 }
 
 type badges []struct {
@@ -163,6 +188,29 @@ func actionData(channel, video string, raw json.RawMessage, now time.Time) map[s
 		}
 		if json.Unmarshal(action["addChatItemAction"], &add) != nil {
 			return nil
+		}
+		if payload, ok := add.Item["giftMessageViewModel"]; ok {
+			var gift giftRenderer
+			if json.Unmarshal(payload, &gift) != nil || strings.TrimSpace(gift.ID) == "" || strings.Contains(gift.ID, "/") || strings.TrimSpace(gift.Author.Content) == "" || strings.TrimSpace(gift.Text.Content) == "" {
+				return nil
+			}
+			kind, id, display = "giftEvent", gift.ID, strings.TrimSpace(gift.Text.Content)
+			name := strings.TrimSpace(gift.Author.Content)
+			author["displayName"] = name
+			author["profileImageUrl"] = thumbnails{Items: gift.Avatar.ViewModel.Image.Sources}.largest()
+			image := thumbnails{Items: gift.Image.Sources}.largest()
+			if strings.HasPrefix(image, "//") {
+				image = "https:" + image
+			}
+			d := map[string]interface{}{"altText": gift.Alt, "giftName": display}
+			if image != "" {
+				d["giftUrl"] = image
+			}
+			// Keep the display text if a localized or changed label cannot be read.
+			if prefix := name + " sent a gift, "; strings.HasPrefix(gift.Alt, prefix) {
+				d["giftName"] = strings.TrimSpace(strings.TrimPrefix(gift.Alt, prefix))
+			}
+			details["giftDetails"] = d
 		}
 		var r renderer
 		for _, name := range []string{"liveChatTextMessageRenderer", "liveChatPaidMessageRenderer", "liveChatPaidStickerRenderer", "liveChatMembershipItemRenderer", "liveChatSponsorshipsGiftPurchaseAnnouncementRenderer", "liveChatSponsorshipsGiftRedemptionAnnouncementRenderer"} {
