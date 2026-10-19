@@ -12,6 +12,7 @@ import (
 
 	"github.com/muxable/rtchat/agent/internal/clients"
 	"github.com/muxable/rtchat/agent/internal/clients/twitch"
+	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
 )
 
 const LegacyCallback = "https://us-central1-rtchat-47692.cloudfunctions.net/eventsub"
@@ -57,15 +58,25 @@ func (a *API) request(ctx context.Context, method string, q url.Values, body, ou
 	if a.BaseURL != "" {
 		client.BaseURL = a.BaseURL
 	}
+	uncertain := false
+	failure := func(err error) error {
+		if uncertain {
+			return &subscriptionlock.UncertainError{Err: err}
+		}
+		return err
+	}
 	for attempt := 0; attempt < 4; attempt++ {
 		response, err := client.Do(ctx, method, "/eventsub/subscriptions?"+q.Encode(), body)
 		if err != nil {
+			if method != http.MethodGet {
+				uncertain = true
+			}
 			// A lost POST response may hide a successful creation. Resume must discover it.
 			if method == http.MethodPost || attempt == 3 || ctx.Err() != nil {
-				return fmt.Errorf("Twitch EventSub transport failure")
+				return failure(fmt.Errorf("Twitch EventSub transport failure"))
 			}
 			if err := a.sleep(ctx, time.Duration(1<<attempt)*time.Second); err != nil {
-				return err
+				return failure(err)
 			}
 			continue
 		}
@@ -75,20 +86,23 @@ func (a *API) request(ctx context.Context, method string, q url.Values, body, ou
 		if response.StatusCode == 404 && method == http.MethodDelete {
 			return nil
 		}
+		if method != http.MethodGet && response.StatusCode >= 500 {
+			uncertain = true
+		}
 		// An explicit 429 is retryable; ambiguous POST server errors are not.
 		if attempt < 3 && (response.StatusCode == 429 || (response.StatusCode >= 500 && method != http.MethodPost)) {
 			delay := clients.RetryDelay(response.Header, attempt)
 			if delay > 30*time.Second {
-				return response.Err()
+				return failure(response.Err())
 			}
 			if err := a.sleep(ctx, delay); err != nil {
-				return err
+				return failure(err)
 			}
 			continue
 		}
-		return response.Err()
+		return failure(response.Err())
 	}
-	return fmt.Errorf("Twitch EventSub retries exhausted")
+	return failure(fmt.Errorf("Twitch EventSub retries exhausted"))
 }
 func (a *API) List(ctx context.Context, q url.Values) (Listing, error) {
 	if q == nil {
