@@ -244,3 +244,24 @@ func TestFirestoreConcurrentSubscribeRetainsAndInvalidatesCheck(t *testing.T) {
 		t.Fatal("new activity lost", doc.Data())
 	}
 }
+
+func TestFirestoreCleanupRejectsMalformedSubscriptionIDs(t *testing.T) {
+	db := emulator(t)
+	ctx := context.Background()
+	ref := db.Collection("webhooks").Doc("kick:malformed")
+	if _, err := ref.Set(ctx, map[string]interface{}{"lastActiveAt": time.Now().Add(-8 * 24 * time.Hour), "subscriptionIds": []interface{}{"valid", 42}}); err != nil {
+		t.Fatal(err)
+	}
+	doc, err := ref.Get(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// No API is configured: validation must finish before any provider deletion.
+	service := Service{Client: db}
+	if err := service.removeIdleKick(ctx, doc, time.Now().Add(-7*24*time.Hour)); err == nil {
+		t.Fatal("malformed IDs accepted")
+	}
+	if _, err := ref.Get(ctx); err != nil {
+		t.Fatal("malformed subscription record was deleted", err)
+	}
+}

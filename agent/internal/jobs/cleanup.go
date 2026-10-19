@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -71,26 +70,17 @@ func (s *Service) removeIdleKick(ctx context.Context, doc *firestore.DocumentSna
 	if err != nil {
 		return err
 	}
-	active, ok := current.Data()["lastActiveAt"].(time.Time)
-	if !ok || !active.Before(cutoff) {
+	var data struct {
+		LastActiveAt    time.Time `firestore:"lastActiveAt"`
+		SubscriptionIDs []string  `firestore:"subscriptionIds"`
+	}
+	if err := current.DataTo(&data); err != nil {
+		return err
+	}
+	if data.LastActiveAt.IsZero() || !data.LastActiveAt.Before(cutoff) {
 		return nil
 	}
-	var ids []string
-	switch values := current.Data()["subscriptionIds"].(type) {
-	case []interface{}:
-		for _, value := range values {
-			id, ok := value.(string)
-			if !ok {
-				return errors.New("invalid Kick subscription ID")
-			}
-			ids = append(ids, id)
-		}
-	case []string:
-		ids = values
-	case nil:
-	default:
-		return errors.New("invalid Kick subscription IDs")
-	}
+	ids := data.SubscriptionIDs
 	for start := 0; start < len(ids); start += 50 {
 		if err := s.API.kick(ctx, http.MethodDelete, "/events/subscriptions", params("id", ids[start:min(start+50, len(ids))]), nil); err != nil {
 			return err
