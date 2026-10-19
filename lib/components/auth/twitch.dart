@@ -48,14 +48,23 @@ class SignInButton extends StatelessWidget {
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted);
     _probes.add(controller);
-    controller.addJavaScriptChannel("response", onMessageReceived: (message) {
-      completer.complete(message.message == "true");
-    });
+    // Read the result directly instead of posting it to a JavaScript channel:
+    // WKWebView doesn't inject channels into about:blank, so on iOS the
+    // script threw and the probe never answered.
     controller.setNavigationDelegate(
       NavigationDelegate(
-        onPageFinished: (url) {
-          controller.runJavaScript(
-              "response.postMessage(typeof globalThis !== 'undefined');");
+        onPageFinished: (url) async {
+          if (completer.isCompleted) {
+            return;
+          }
+          try {
+            final result = await controller.runJavaScriptReturningResult(
+                "typeof globalThis !== 'undefined'");
+            completer.complete(result == true || result == "true");
+          } catch (e) {
+            // don't block sign in if the probe itself fails.
+            completer.complete(true);
+          }
         },
       ),
     );
