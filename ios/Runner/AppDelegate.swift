@@ -3,25 +3,22 @@ import UIKit
 import WebKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
     var sharedText = ""
-    
-    override func application(
-        _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-    ) -> Bool {
+
+    func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
         var views = [String: WKWebView]()
 
-        let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
+        let messenger = engineBridge.applicationRegistrar.messenger()
         let audioChannel = FlutterMethodChannel(name: "com.rtirl.chat/audio",
-                                                binaryMessenger: controller.binaryMessenger)
+                                                binaryMessenger: messenger)
         audioChannel.setMethodCallHandler {
             (call: FlutterMethodCall, result: @escaping FlutterResult) in
                 switch call.method {
                 case "set":
                     guard let args = call.arguments as? [String: Any],
                           let urls = args["urls"] as? [String],
-                          let window = self.window
+                          let window = self.keyWindow
                     else {
                         result(Bool(false))
                         return
@@ -69,7 +66,7 @@ import WebKit
                 }
         }
         
-        let shareChannel = FlutterMethodChannel(name: "com.rtirl.chat/share", binaryMessenger: controller.binaryMessenger)
+        let shareChannel = FlutterMethodChannel(name: "com.rtirl.chat/share", binaryMessenger: messenger)
         
         shareChannel.setMethodCallHandler {
             call, result in
@@ -79,12 +76,18 @@ import WebKit
             }
         }
 
-        GeneratedPluginRegistrant.register(with: self)
-        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+        GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     }
-    
-    override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-        
+
+    /// With scenes, the app delegate has no window; the web views attach to
+    /// the key window of the active scene instead.
+    var keyWindow: UIWindow? {
+        UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+            .first
+    }
+
+    func handle(url: URL) {
         if url.scheme == "com.rtirl.chat", url.host == "sharetext" {
             // This means that the app was launched from the share extension
             let uriComponents = NSURLComponents(string: url.absoluteString)
@@ -97,7 +100,22 @@ import WebKit
                 }
             }
         }
-        
-        return true
+    }
+}
+
+class SceneDelegate: FlutterSceneDelegate {
+    override func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        super.scene(scene, willConnectTo: session, options: connectionOptions)
+        // the share extension can cold launch the app with a URL.
+        connectionOptions.urlContexts.forEach { appDelegate?.handle(url: $0.url) }
+    }
+
+    override func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        super.scene(scene, openURLContexts: URLContexts)
+        URLContexts.forEach { appDelegate?.handle(url: $0.url) }
+    }
+
+    private var appDelegate: AppDelegate? {
+        UIApplication.shared.delegate as? AppDelegate
     }
 }
