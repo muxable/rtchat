@@ -10,9 +10,7 @@
 set -u
 
 attempt() {
-  # DDS is an IDE debugging proxy; integration tests can use the VM service
-  # directly, avoiding DDS startup failures on CI emulators.
-  timeout --kill-after=30s 20m flutter test integration_test/app_test.dart --no-dds --reporter expanded
+  timeout --kill-after=30s 20m flutter test integration_test/app_test.dart --reporter expanded
 }
 
 if attempt; then
@@ -20,6 +18,8 @@ if attempt; then
 fi
 echo "::warning::integration tests failed or hung; retrying once"
 adb logcat -d -t 300 || true
+# Stop any app left running by the failed attempt before reconnecting DDS.
+adb shell am force-stop com.rtirl.chat || exit 1
 if attempt; then
   exit 0
 fi
