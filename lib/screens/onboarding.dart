@@ -58,19 +58,18 @@ class LoginOptionsWidget extends StatefulWidget {
 class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
   var _isLoading = false;
 
+  void _onStart() {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+  }
+
+  void _onComplete() {
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const CircularProgressIndicator();
-    }
-    void onStart() {
-      if (!mounted) return;
-      setState(() => _isLoading = true);
-    }
-    void onComplete() {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-    }
     if (_isLoading) {
       return const CircularProgressIndicator();
     }
@@ -80,8 +79,8 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
         child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: SignInWithTwitch(
-              onStart: onStart,
-              onComplete: onComplete,
+              onStart: _onStart,
+              onComplete: _onComplete,
             )),
       ),
       ConstrainedBox(
@@ -89,8 +88,8 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
         child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: SignInWithKick(
-              onStart: onStart,
-              onComplete: onComplete,
+              onStart: _onStart,
+              onComplete: _onComplete,
             )),
       ),
       Text(AppLocalizations.of(context)!.or,
