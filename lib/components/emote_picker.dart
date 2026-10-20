@@ -32,7 +32,7 @@ class EmotesList extends StatelessWidget {
     });
     final categories = byCategory.keys.toList();
 
-// Sort all categories alphabetically first.
+// sort all channels alphabetically first.
     categories.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
 // ensure current channel emotes are first.
