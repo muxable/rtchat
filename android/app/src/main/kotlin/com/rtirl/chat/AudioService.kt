@@ -20,6 +20,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.app.NotificationCompat
 import androidx.multidex.BuildConfig
+import io.flutter.Log
 
 class AudioService : Service() {
 
@@ -192,11 +193,14 @@ class AudioService : Service() {
         mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
       }
 
-      // Do not forward every page console message to Flutter logs.
-      webView.webChromeClient =
-          object : WebChromeClient() {
-            override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean = true
-          }
+      webView.webChromeClient = object : WebChromeClient() {
+          override fun onConsoleMessage(
+            consoleMessage: ConsoleMessage
+            ): Boolean {
+        Log.d("WebView", consoleMessage.message())
+        return true
+      }
+    }
 
       webView.webViewClient =
           object : WebViewClient() {
