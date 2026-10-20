@@ -193,6 +193,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Subscribe to keyboard visibility changes.
     keyboardSubscription =
         keyboardVisibilityController.onChange.listen((visible) {
+      if (!mounted || _isKeyboardVisible == visible) return;
+
       setState(() {
         _isKeyboardVisible = visible;
       });
