@@ -40,7 +40,7 @@ void main() {
     expect(headers(tester), ['muxfd']);
   });
 
-  testWidgets("orders global emotes, then the channel's, then the rest",
+  testWidgets("orders the channel's emotes, global emotes, then the rest",
       (tester) async {
     await pumpEmotes(tester, [
       emote('Zed', 'Zed'),
@@ -48,6 +48,6 @@ void main() {
       emote('Kappa', null),
       emote('Abc', 'Abc'),
     ]);
-    expect(headers(tester), ['Global Emotes', 'muxfd', 'Abc', 'Zed']);
+    expect(headers(tester), ['muxfd', 'Global Emotes', 'Abc', 'Zed']);
   });
 }
