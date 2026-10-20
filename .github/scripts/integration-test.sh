@@ -10,7 +10,9 @@
 set -u
 
 attempt() {
-  timeout 20m flutter test integration_test/app_test.dart --reporter expanded
+  # DDS is an IDE debugging proxy; integration tests can use the VM service
+  # directly, avoiding DDS startup failures on CI emulators.
+  timeout --kill-after=30s 20m flutter test integration_test/app_test.dart --no-dds --reporter expanded
 }
 
 if attempt; then
