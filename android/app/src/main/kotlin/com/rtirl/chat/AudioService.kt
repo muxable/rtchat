@@ -245,7 +245,6 @@ class AudioService : Service() {
 
     webView.stopLoading()
     webView.webChromeClient = null
-    webView.webViewClient = null
 
     try {
       if (webView.parent != null) {
