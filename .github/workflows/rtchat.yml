@@ -11,7 +11,7 @@ on:
 
 jobs:
   ios:
-    uses: muxable/.github/.github/workflows/flutter-ios.yml@main
+    uses: muxable/.github/.github/workflows/flutter-ios.yml@bump-ci
     concurrency:
       group: ios-${{ github.ref }}
     with:
@@ -22,7 +22,7 @@ jobs:
       APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
       APPLE_CERTIFICATE_PRIVATE_KEY: ${{ secrets.APPLE_CERTIFICATE_PRIVATE_KEY }}
   android:
-    uses: muxable/.github/.github/workflows/flutter-android.yml@main
+    uses: muxable/.github/.github/workflows/flutter-android.yml@bump-ci
     concurrency:
       group: android-${{ github.ref }}
     with:
