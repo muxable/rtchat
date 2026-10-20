@@ -14,6 +14,10 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import io.flutter.plugin.common.MethodChannel
 
+/**
+ * Foreground service that runs while text to speech is on. Without it Android freezes the app
+ * shortly after it's backgrounded and mutes its audio, so chat stops being read out mid-stream.
+ */
 class TtsService : Service() {
 
   companion object {
@@ -131,24 +135,15 @@ class TtsService : Service() {
   }
 
   private fun ensureChannel() {
-    if (channelCreated) return
-
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       notificationManager.createNotificationChannel(
           NotificationChannel(
-                  CHANNEL_ID,
-                  CHANNEL_NAME,
-                  NotificationManager.IMPORTANCE_LOW,
-              )
-              .apply {
-                setSound(null, null)
-                enableVibration(false)
-                setShowBadge(false)
-              }
+              CHANNEL_ID,
+              CHANNEL_NAME,
+              NotificationManager.IMPORTANCE_LOW,
+          )
       )
     }
-
-    channelCreated = true
   }
 
   private fun createPendingIntents() {
