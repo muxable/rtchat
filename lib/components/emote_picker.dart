@@ -31,20 +31,27 @@ class EmotesList extends StatelessWidget {
       return map;
     });
     final categories = byCategory.keys.toList();
+
+// sort all channels alphabetically first.
     categories.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
-    // ensure global emotes is first.
-    final globalEmotesIndex = categories.indexOf(globalEmotes);
-    if (globalEmotesIndex != -1) {
-      categories.removeAt(globalEmotesIndex);
-      categories.insert(0, globalEmotes);
-    }
-
-    // ensure channel emotes is second, or first if there are no global ones.
+// ensure current channel emotes are first.
     final channelEmotesIndex = categories.indexOf(channel.displayName);
     if (channelEmotesIndex != -1) {
       categories.removeAt(channelEmotesIndex);
-      categories.insert(globalEmotesIndex == -1 ? 0 : 1, channel.displayName);
+      categories.insert(0, channel.displayName);
+    }
+
+// ensure global emotes are second, or first if the channel has no emotes.
+    final globalEmotesIndex = categories.indexOf(globalEmotes);
+    if (globalEmotesIndex != -1) {
+      categories.removeAt(globalEmotesIndex);
+      categories.insert(
+        categories.isNotEmpty && categories.first == channel.displayName
+            ? 1
+            : 0,
+        globalEmotes,
+      );
     }
 
     return ListView.builder(
