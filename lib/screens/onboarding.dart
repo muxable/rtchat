@@ -63,25 +63,25 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
     if (_isLoading) {
       return const CircularProgressIndicator();
     }
+    void onStart() {
+      if (!mounted) return;
+      setState(() => _isLoading = true);
+    }
+    void onComplete() {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+    if (_isLoading) {
+      return const CircularProgressIndicator();
+    }
     return Column(children: [
       ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
         child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: SignInWithTwitch(
-              onStart: () {
-                setState(() {
-                  _isLoading = true;
-                });
-              },
-              onComplete: () {
-                if (!mounted) {
-                  return;
-                }
-                setState(() {
-                  _isLoading = false;
-                });
-              },
+              onStart: onStart,
+              onComplete: onComplete,
             )),
       ),
       ConstrainedBox(
@@ -89,12 +89,8 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
         child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: SignInWithKick(
-              onStart: () => setState(() => _isLoading = true),
-              onComplete: () {
-                if (mounted) {
-                  setState(() => _isLoading = false);
-                }
-              },
+              onStart: onStart,
+              onComplete: onComplete,
             )),
       ),
       Text(AppLocalizations.of(context)!.or,
