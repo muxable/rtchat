@@ -58,6 +58,16 @@ class LoginOptionsWidget extends StatefulWidget {
 class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
   var _isLoading = false;
 
+  void _onStart() {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+  }
+
+  void _onComplete() {
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -69,19 +79,8 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
         child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: SignInWithTwitch(
-              onStart: () {
-                setState(() {
-                  _isLoading = true;
-                });
-              },
-              onComplete: () {
-                if (!mounted) {
-                  return;
-                }
-                setState(() {
-                  _isLoading = false;
-                });
-              },
+              onStart: _onStart,
+              onComplete: _onComplete,
             )),
       ),
       ConstrainedBox(
@@ -89,12 +88,8 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
         child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: SignInWithKick(
-              onStart: () => setState(() => _isLoading = true),
-              onComplete: () {
-                if (mounted) {
-                  setState(() => _isLoading = false);
-                }
-              },
+              onStart: _onStart,
+              onComplete: _onComplete,
             )),
       ),
       Text(AppLocalizations.of(context)!.or,
