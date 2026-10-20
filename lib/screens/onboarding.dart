@@ -64,8 +64,8 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
       return const CircularProgressIndicator();
     }
     return Column(children: [
-      SizedBox(
-        width: 400,
+      ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
         child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: SignInWithTwitch(
@@ -84,8 +84,8 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
               },
             )),
       ),
-      SizedBox(
-        width: 400,
+      ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
         child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: SignInWithKick(
@@ -102,8 +102,8 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
               .textTheme
               .titleMedium
               ?.copyWith(color: Colors.white)),
-      SizedBox(
-        width: 400,
+      ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: ElevatedButton(
