@@ -344,22 +344,23 @@ class _ModerationActions extends StatelessWidget {
                           Icons.share_outlined,
                           color: Colors.blueAccent,
                         ),
-                        title: const Text('Share message'),
+                        title: Text(
+                          AppLocalizations.of(context)!.shareMessage,
+                        ),
                         onTap: () async {
                           Navigator.pop(context);
-
                           try {
                             await AppShare.shareText(m.message);
-                          } on PlatformException catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    e.message ?? 'Unable to share message.',
-                                  ),
+                          } on PlatformException catch (_) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  AppLocalizations.of(context)!
+                                      .shareMessageError,
                                 ),
-                              );
-                            }
+                              ),
+                            );
                           }
                         },
                       ),

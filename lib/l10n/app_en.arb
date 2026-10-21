@@ -1588,5 +1588,13 @@
   "neuralFallbackLoadFailed": "The neural voice couldn't load, so chat is read with the system voice.",
   "@neuralFallbackLoadFailed": {
     "description": "Shown once in the text to speech settings when the installed voice pack failed to load, e.g. for lack of memory"
+  },
+  "shareMessage": "Share message",
+    "shareMessageError": "Unable to share message.",
+  "@shareMessage": {
+    "description": "Label for sharing a chat message"
+  },
+  "@shareMessageError": {
+    "description": "Error shown when sharing a chat message fails"
   }
 }
