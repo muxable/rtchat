@@ -43,61 +43,60 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
             alignment: Alignment.topLeft,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
-              child: _expanded
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Expanded vertical follower list.
-                        ...followers.map((follower) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 4,
-                            ),
-                            child: Row(
-                              children: [
-                                ClipOval(
-                                  child: SizedBox(
-                                    width: 32,
-                                    height: 32,
-                                    child: Image(
-                                      image: ResilientNetworkImage(
-                                        follower.profilePictureUrl,
+              child: DecoratedEventWidget.avatars(
+                avatars: _expanded
+                    ? const <ImageProvider>[]
+                    : followers.take(min(3, followers.length)).map(
+                          (follower) => ResilientNetworkImage(
+                            follower.profilePictureUrl,
+                          ),
+                        ),
+                child: _expanded
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Expanded vertical follower list.
+                          ...followers.map(
+                            (follower) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                children: [
+                                  ClipOval(
+                                    child: SizedBox(
+                                      width: 32,
+                                      height: 32,
+                                      child: Image(
+                                        image: ResilientNetworkImage(
+                                          follower.profilePictureUrl,
+                                        ),
+                                        fit: BoxFit.cover,
                                       ),
-                                      fit: BoxFit.cover,
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    styleModel.getDisplayName(follower),
-                                    style:
-                                        Theme.of(context).textTheme.titleSmall,
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      styleModel.getDisplayName(follower),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-
-                        const SizedBox(height: 8),
-
-                        // Event description without duplicated names.
-                        Text(
-                          AppLocalizations.of(context)!.areFollowingYou,
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                      ],
-                    )
-                  : DecoratedEventWidget.avatars(
-                      avatars: followers.take(min(3, followers.length)).map(
-                            (follower) => ResilientNetworkImage(
-                              follower.profilePictureUrl,
+                                ],
+                              ),
                             ),
                           ),
-                      child: _buildSummary(context, styleModel),
-                    ),
+                          const SizedBox(height: 8),
+                          // Event description without duplicated names.
+                          Text(
+                            AppLocalizations.of(context)!.areFollowingYou,
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                        ],
+                      )
+                    : _buildSummary(context, styleModel),
+              ),
             ),
           ),
         );
