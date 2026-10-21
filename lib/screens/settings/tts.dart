@@ -44,27 +44,24 @@ class TextToSpeechScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       )),
                   Slider.adaptive(
-                    value: model.speed,
+                    value: model.speed.clamp(0.0, 1.0),
                     min: 0.0,
                     max: 1.0,
-                    label: "speed: ${model.speed}",
-                    onChanged: (value) {
-                      model.speed = value;
-                    },
+                    label: model.speed.toStringAsFixed(1),
+                    onChanged: (value) => model.speed = value,
                   ),
                   Text(AppLocalizations.of(context)!.textToSpeechPitch,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                        fontWeight: FontWeight.bold,
-                      )),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   Slider.adaptive(
-                    value: model.pitch,
+                    value: model.pitch.clamp(0.1, 2.0),
                     min: 0.1,
-                    max: 2,
-                    label: "${model.pitch}",
-                    onChanged: (value) {
-                      model.pitch = value;
-                    },
+                    max: 2.0,
+                    label: model.pitch.toStringAsFixed(1),
+                    onChanged: (value) => model.pitch = value,
                   ),
                 ],
               ),
