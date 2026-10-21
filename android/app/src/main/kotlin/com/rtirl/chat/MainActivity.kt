@@ -1,5 +1,6 @@
 package com.rtirl.chat
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -19,13 +20,22 @@ class MainActivity : FlutterActivity() {
     handleIntent()
   }
 
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+    handleIntent()
+  }
+
   override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+    super.configureFlutterEngine(flutterEngine)
+
     val ttsServiceChannel =
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "com.rtirl.chat/tts_service",
         )
     TtsService.channel = ttsServiceChannel
+
     ttsServiceChannel.setMethodCallHandler { call, result ->
       when (call.method) {
         "start" -> {
@@ -37,11 +47,14 @@ class MainActivity : FlutterActivity() {
           )
           result.success(true)
         }
+
         "stop" -> {
           TtsService.stop(this)
           result.success(true)
         }
+
         "isRunning" -> result.success(TtsService.isRunning)
+
         else -> result.notImplemented()
       }
     }
@@ -62,17 +75,20 @@ class MainActivity : FlutterActivity() {
               startService(intent)
               result.success(true)
             }
+
             "reload" -> {
               val intent = Intent(this, AudioService::class.java)
               intent.action = AudioService.ACTION_START_SERVICE
               startService(intent)
               result.success(true)
             }
+
             "hasPermission" -> {
               result.success(
-                  Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this)
+                  Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this),
               )
             }
+
             "requestPermission" -> {
               if (
                   Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)
@@ -85,10 +101,12 @@ class MainActivity : FlutterActivity() {
                     8675309,
                 )
               }
+
               result.success(
-                  Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this)
+                  Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this),
               )
             }
+
             else -> result.notImplemented()
           }
         }
@@ -98,18 +116,52 @@ class MainActivity : FlutterActivity() {
             "com.rtirl.chat/share",
         )
         .setMethodCallHandler { call, result ->
-          if (call.method == "getSharedData") {
-            result.success(sharedData)
-            sharedData = ""
+          when (call.method) {
+            "getSharedData" -> {
+              result.success(sharedData)
+              sharedData = ""
+            }
+
+            "shareText" -> {
+              val text = call.argument<String>("text")
+
+              if (text.isNullOrBlank()) {
+                result.error(
+                    "INVALID_TEXT",
+                    "Cannot share an empty message.",
+                    null,
+                )
+                return@setMethodCallHandler
+              }
+
+              val sendIntent =
+                  Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, text)
+                  }
+
+              val chooser = Intent.createChooser(sendIntent, "Share message")
+
+              try {
+                startActivity(chooser)
+                result.success(true)
+              } catch (e: ActivityNotFoundException) {
+                result.error(
+                    "SHARE_UNAVAILABLE",
+                    "No app is available to share this message.",
+                    null,
+                )
+              }
+            }
+
+            else -> result.notImplemented()
           }
         }
-
-    super.configureFlutterEngine(flutterEngine)
   }
 
   private fun handleIntent() {
     // Handle the received text share intent
-    if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
+    if (intent?.action == Intent.ACTION_SEND && intent?.type == "text/plain") {
       intent.getStringExtra(Intent.EXTRA_TEXT)?.let { intentData ->
         sharedData = intentData
       }

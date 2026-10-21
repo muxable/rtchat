@@ -24,6 +24,7 @@ import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/twitch/raiding_event.dart';
 import 'package:rtchat/components/chat_history/twitch/shoutout_event.dart';
 import 'package:rtchat/components/chat_history/twitch/subscription_event.dart';
+import 'package:rtchat/components/share.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
@@ -338,6 +339,30 @@ class _ModerationActions extends StatelessWidget {
                             Clipboard.setData(ClipboardData(text: m.message));
                             Navigator.pop(context);
                           }),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.share_outlined,
+                          color: Colors.blueAccent,
+                        ),
+                        title: const Text('Share message'),
+                        onTap: () async {
+                          Navigator.pop(context);
+
+                          try {
+                            await AppShare.shareText(m.message);
+                          } on PlatformException catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    e.message ?? 'Unable to share message.',
+                                  ),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      ),
                       ListTile(
                           leading: const Icon(Icons.link_outlined,
                               color: Colors.blueAccent),
