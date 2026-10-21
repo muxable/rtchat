@@ -1818,6 +1818,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The neural voice couldn\'t load, so chat is read with the system voice.'**
   String get neuralFallbackLoadFailed;
+
+  /// Text label shown below the list of users who are following the streamer
+  ///
+  /// In en, this message translates to:
+  /// **'are following you'**
+  String get areFollowingYou;
 }
 
 class _AppLocalizationsDelegate

@@ -1121,4 +1121,7 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get neuralFallbackLoadFailed =>
       'The neural voice couldn\'t load, so chat is read with the system voice.';
+
+  @override
+  String get areFollowingYou => 'are following you';
 }
