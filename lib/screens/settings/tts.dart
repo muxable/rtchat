@@ -50,7 +50,8 @@ class TextToSpeechScreen extends StatelessWidget {
                     label: model.speed.toStringAsFixed(1),
                     onChanged: (value) => model.speed = value,
                   ),
-                  Text(AppLocalizations.of(context)!.textToSpeechPitch,
+                  Text(
+                    AppLocalizations.of(context)!.textToSpeechPitch,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.secondary,
                       fontWeight: FontWeight.bold,
