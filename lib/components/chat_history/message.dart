@@ -50,6 +50,7 @@ import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/user.dart';
+import 'package:rtchat/share_channel.dart';
 import 'package:rtchat/urls.dart';
 
 class ChatHistoryMessage extends StatelessWidget {
@@ -338,6 +339,31 @@ class _ModerationActions extends StatelessWidget {
                             Clipboard.setData(ClipboardData(text: m.message));
                             Navigator.pop(context);
                           }),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.share_outlined,
+                          color: Colors.blueAccent,
+                        ),
+                        title: Text(
+                          AppLocalizations.of(context)!.shareMessage,
+                        ),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          try {
+                            await AppShare.shareText(m.message);
+                          } on PlatformException catch (_) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  AppLocalizations.of(context)!
+                                      .shareMessageError,
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      ),
                       ListTile(
                           leading: const Icon(Icons.link_outlined,
                               color: Colors.blueAccent),

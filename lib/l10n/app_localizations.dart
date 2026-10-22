@@ -1818,6 +1818,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The neural voice couldn\'t load, so chat is read with the system voice.'**
   String get neuralFallbackLoadFailed;
+
+  /// Label for sharing a chat message
+  ///
+  /// In en, this message translates to:
+  /// **'Share message'**
+  String get shareMessage;
+
+  /// Error shown when sharing a chat message fails
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to share message.'**
+  String get shareMessageError;
 }
 
 class _AppLocalizationsDelegate
