@@ -15,21 +15,22 @@ TwitchMessageModel chat(
   DateTime timestamp, {
   String userId = 'u1',
   bool deleted = false,
-}) => TwitchMessageModel(
-  messageId: id,
-  author: TwitchUserModel(userId: userId, login: 'login$userId'),
-  message: 'message $id',
-  tags: const {},
-  annotations: const TwitchMessageAnnotationsModel(
-    isAction: false,
-    isFirstTimeChatter: false,
-    announcement: null,
-  ),
-  thirdPartyEmotes: const [],
-  timestamp: timestamp,
-  deleted: deleted,
-  channelId: 'twitch:1',
-);
+}) =>
+    TwitchMessageModel(
+      messageId: id,
+      author: TwitchUserModel(userId: userId, login: 'login$userId'),
+      message: 'message $id',
+      tags: const {},
+      annotations: const TwitchMessageAnnotationsModel(
+        isAction: false,
+        isFirstTimeChatter: false,
+        announcement: null,
+      ),
+      thirdPartyEmotes: const [],
+      timestamp: timestamp,
+      deleted: deleted,
+      channelId: 'twitch:1',
+    );
 
 StreamStateEventModel streamState(String id, DateTime timestamp) =>
     StreamStateEventModel(messageId: id, isOnline: true, timestamp: timestamp);
@@ -105,8 +106,8 @@ void main() {
           t0,
           (m) => (m as TwitchMessageModel).withDeleted(true),
         ),
-        onUpdate:
-            (event, previous, updated) => updates.add((previous, updated)),
+        onUpdate: (event, previous, updated) =>
+            updates.add((previous, updated)),
       );
       expect(result, same(messages));
       expect((result[0] as TwitchMessageModel).deleted, isFalse);
@@ -123,7 +124,7 @@ void main() {
       final result = applyDeltaEvent(
         messages,
         UpdateDeltaEvent('missing', t0, (m) => m),
-        onUpdate: (_, _, _) => called = true,
+        onUpdate: (messageId, oldMessage, newMessage) => called = true,
       );
       expect(ids(result), ['a']);
       expect(called, isFalse);
@@ -319,10 +320,9 @@ void main() {
 
       setUp(() {
         pings = 0;
-        model =
-            MessagesModel.fromJson({'pingMinGapDuration': 60})
-              ..isOnline = ((_) => Stream.value(true))
-              ..onMessagePing = (() => pings++);
+        model = MessagesModel.fromJson({'pingMinGapDuration': 60})
+          ..isOnline = ((_) => Stream.value(true))
+          ..onMessagePing = (() => pings++);
         model.addEvent(a, LiveStateDeltaEvent(t0));
         model.addEvent(b, LiveStateDeltaEvent(t0));
       });

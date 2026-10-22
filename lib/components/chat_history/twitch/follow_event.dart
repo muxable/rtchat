@@ -65,32 +65,29 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: followers.map((follower) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            children: [
-                              ClipOval(
-                                child: SizedBox(
-                                  width: 32,
-                                  height: 32,
-                                  child: Image(
-                                    image: ResilientNetworkImage(
-                                      follower.profilePictureUrl,
-                                    ),
-                                    fit: BoxFit.cover,
+                        return Row(
+                          children: [
+                            ClipOval(
+                              child: SizedBox(
+                                width: 32,
+                                height: 32,
+                                child: Image(
+                                  image: ResilientNetworkImage(
+                                    follower.profilePictureUrl,
                                   ),
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildFollowerEvent(
-                                  context,
-                                  styleModel,
-                                  follower,
-                                ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildFollowerEvent(
+                                context,
+                                styleModel,
+                                follower,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         );
                       }).toList(),
                     )
