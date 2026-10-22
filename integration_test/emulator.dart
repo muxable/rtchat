@@ -40,6 +40,7 @@ Future<void> initializeFirebaseEmulators() async {
     FirebaseFirestore.instanceFor(
       app: app,
     ).useFirestoreEmulator(emulatorHost, _firestorePort);
+    Api.forApp(app).useEmulator(emulatorHost, 5999);
   }
   FirebaseDatabase.instance.useDatabaseEmulator(emulatorHost, 9000);
   // Functions are not emulated. Point them at an unused port so callables

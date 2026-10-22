@@ -145,7 +145,11 @@ class _AppState extends State<App> {
         ChangeNotifierProvider(
           create: (context) => AccountsModel.fromFirebase(),
         ),
-        ChangeNotifierProvider(create: (context) => UserModel()),
+        ChangeNotifierProvider(
+          create:
+              (context) =>
+                  UserModel(Provider.of<AccountsModel>(context, listen: false)),
+        ),
         ChangeNotifierProvider(
           create: (context) {
             final model = ActivityFeedModel.fromJson(

@@ -154,7 +154,7 @@ class SignInButton extends StatelessWidget {
           );
           final token = Uri.parse(result).queryParameters['token'];
           if (token != null) {
-            await user.signIn(token);
+            await user.signIn(provider, token);
             // there's a bit of lag between the sign in call completing and the
             // ui updating to the homepage. delay the onComplete handler so any
             // loading indicator still shows.
