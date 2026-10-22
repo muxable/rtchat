@@ -1588,9 +1588,5 @@
   "neuralFallbackLoadFailed": "The neural voice couldn't load, so chat is read with the system voice.",
   "@neuralFallbackLoadFailed": {
     "description": "Shown once in the text to speech settings when the installed voice pack failed to load, e.g. for lack of memory"
-  },
-  "areFollowingYou": "are following you",
-  "@areFollowingYou": {
-    "description": "Text label shown below the list of users who are following the streamer"
-}
+  }
 }
