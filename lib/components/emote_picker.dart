@@ -32,17 +32,17 @@ class EmotesList extends StatelessWidget {
     });
     final categories = byCategory.keys.toList();
 
-// sort all channels alphabetically first.
+    // sort all channels alphabetically first.
     categories.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
-// ensure current channel emotes are first.
+    // ensure current channel emotes are first.
     final channelEmotesIndex = categories.indexOf(channel.displayName);
     if (channelEmotesIndex != -1) {
       categories.removeAt(channelEmotesIndex);
       categories.insert(0, channel.displayName);
     }
 
-// ensure global emotes are second, or first if the channel has no emotes.
+    // ensure global emotes are second, or first if the channel has no emotes.
     final globalEmotesIndex = categories.indexOf(globalEmotes);
     if (globalEmotesIndex != -1) {
       categories.removeAt(globalEmotesIndex);
@@ -77,39 +77,43 @@ class EmotesList extends StatelessWidget {
             ),
           ),
           content: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: Center(
               child: Wrap(
                 alignment: WrapAlignment.start,
                 spacing: 8.0,
                 runSpacing: 8.0,
-                children: byCategory[categories[index]]!.map((emote) {
-                  return Tooltip(
-                    message: emote.code,
-                    preferBelow: false,
-                    child: SizedBox(
-                      // Adjust width for 7 emotes per row in portrait, 10 in landscape.
-                      width: (MediaQuery.of(context).size.width - 32) /
-                              (MediaQuery.of(context).orientation ==
-                                      Orientation.portrait
-                                  ? 7
-                                  : 10) -
-                          8,
-                      height: 36,
-                      child: IconButton(
-                        onPressed: () => onEmoteSelected(emote),
-                        splashRadius: 24,
-                        icon: CrossFadeImage(
-                          placeholder: emote.image.placeholderImage,
-                          image: emote.image,
-                          width: 36,
+                children:
+                    byCategory[categories[index]]!.map((emote) {
+                      return Tooltip(
+                        message: emote.code,
+                        preferBelow: false,
+                        child: SizedBox(
+                          // Adjust width for 7 emotes per row in portrait, 10 in landscape.
+                          width:
+                              (MediaQuery.of(context).size.width - 32) /
+                                  (MediaQuery.of(context).orientation ==
+                                          Orientation.portrait
+                                      ? 7
+                                      : 10) -
+                              8,
                           height: 36,
+                          child: IconButton(
+                            onPressed: () => onEmoteSelected(emote),
+                            splashRadius: 24,
+                            icon: CrossFadeImage(
+                              placeholder: emote.image.placeholderImage,
+                              image: emote.image,
+                              width: 36,
+                              height: 36,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
               ),
             ),
           ),

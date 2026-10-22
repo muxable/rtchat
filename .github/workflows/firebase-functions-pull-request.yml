@@ -12,5 +12,5 @@ jobs:
         with:
           node-version: 22
       - uses: ./.github/actions/twitch-cli
-      - run: npm ci && npm run build && npm test
+      - run: npm ci && npm run format:check && npm run build && npm test
         working-directory: functions

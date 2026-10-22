@@ -36,7 +36,7 @@ describe("sendChatMessage", () => {
   it("sends through helix as the signed-in user", async () => {
     respond(200, { data: [{ message_id: "m1", is_sent: true }] });
     expect(
-      await sendChatMessage("uid", "broadcaster", "hello", "parent")
+      await sendChatMessage("uid", "broadcaster", "hello", "parent"),
     ).toEqual({
       sent: true,
     });
@@ -85,7 +85,7 @@ describe("clearChat", () => {
     expect(await clearChat("uid", "broadcaster")).toBeNull();
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.twitch.tv/helix/moderation/chat?broadcaster_id=broadcaster&moderator_id=sender",
-      expect.objectContaining({ method: "DELETE" })
+      expect.objectContaining({ method: "DELETE" }),
     );
   });
 });

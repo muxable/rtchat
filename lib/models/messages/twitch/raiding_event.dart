@@ -8,13 +8,13 @@ class RaidingEventConfig {
   RaidingEventConfig(this.showEvent, this.eventDuration);
 
   RaidingEventConfig.fromJson(Map<String, dynamic> json)
-      : showEvent = json['showEvent'],
-        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+    : showEvent = json['showEvent'],
+      eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
-        "showEvent": showEvent,
-        "eventDuration": eventDuration.inSeconds.toInt(),
-      };
+    "showEvent": showEvent,
+    "eventDuration": eventDuration.inSeconds.toInt(),
+  };
 }
 
 class TwitchRaidingEventModel extends MessageModel {
@@ -24,20 +24,22 @@ class TwitchRaidingEventModel extends MessageModel {
   final bool isComplete;
   final bool isSuccessful;
 
-  const TwitchRaidingEventModel(
-      {required super.timestamp,
-      required super.messageId,
-      required this.duration,
-      required this.targetUser,
-      this.isComplete = false,
-      this.isSuccessful = false});
+  const TwitchRaidingEventModel({
+    required super.timestamp,
+    required super.messageId,
+    required this.duration,
+    required this.targetUser,
+    this.isComplete = false,
+    this.isSuccessful = false,
+  });
 
   static TwitchRaidingEventModel fromDocumentData(Map<String, dynamic> data) {
     return TwitchRaidingEventModel(
       timestamp: data['timestamp'].toDate(),
       messageId: "raiding.${data['raid']['id']}",
-      duration:
-          Duration(seconds: data['raid']['force_raid_now_seconds'].toInt()),
+      duration: Duration(
+        seconds: data['raid']['force_raid_now_seconds'].toInt(),
+      ),
       targetUser: TwitchUserModel(
         userId: data['raid']['target_id'],
         displayName: data['raid']['target_display_name'],

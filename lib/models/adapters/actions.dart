@@ -49,8 +49,12 @@ class ActionsAdapter {
   }
 
   Future<void> timeout(
-      Channel channel, String username, String reason, Duration duration,
-      {String? userId}) async {
+    Channel channel,
+    String username,
+    String reason,
+    Duration duration, {
+    String? userId,
+  }) async {
     final call = api.callable('timeout');
     await call({
       "provider": channel.provider,
@@ -74,7 +78,8 @@ class ActionsAdapter {
   Future<void> raid(Channel fromChannel, Channel toChannel) async {
     if (fromChannel.provider != toChannel.provider) {
       throw ArgumentError(
-          "Cannot raid between channels of different providers");
+        "Cannot raid between channels of different providers",
+      );
     }
     final call = api.callable('raid');
     await call({
@@ -86,9 +91,6 @@ class ActionsAdapter {
 
   Future<void> cancelRaid(Channel channel) async {
     final call = api.callable('cancelRaid');
-    await call({
-      "provider": channel.provider,
-      "channelId": channel.channelId,
-    });
+    await call({"provider": channel.provider, "channelId": channel.channelId});
   }
 }

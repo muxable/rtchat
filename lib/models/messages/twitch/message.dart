@@ -29,12 +29,16 @@ Iterable<MessageToken> tokenizeTags(Iterable<MessageToken> tokens) sync* {
       var start = 0;
       for (final match in matches) {
         // before the tag
-        var preTag =
-            token.text.substring(start, match.start == 0 ? 0 : match.start + 1);
+        var preTag = token.text.substring(
+          start,
+          match.start == 0 ? 0 : match.start + 1,
+        );
         yield TextToken(preTag);
         // the tag
-        var tag = token.text
-            .substring(match.start == 0 ? 1 : match.start + 2, match.end);
+        var tag = token.text.substring(
+          match.start == 0 ? 1 : match.start + 2,
+          match.end,
+        );
         start = match.end;
         yield UserMentionToken(tag);
       }
@@ -56,8 +60,10 @@ Iterable<MessageToken> tokenizeTags(Iterable<MessageToken> tokens) sync* {
 Iterable<MessageToken> tokenizeLinks(Iterable<MessageToken> tokens) sync* {
   for (final token in tokens) {
     if (token is TextToken) {
-      final elements =
-          linkify(token.text, options: const LinkifyOptions(humanize: false));
+      final elements = linkify(
+        token.text,
+        options: const LinkifyOptions(humanize: false),
+      );
       for (final element in elements) {
         if (element is LinkableElement) {
           final url = Uri.tryParse(element.url);
@@ -77,7 +83,9 @@ Iterable<MessageToken> tokenizeLinks(Iterable<MessageToken> tokens) sync* {
 }
 
 Iterable<MessageToken> tokenizeEmotes(
-    Iterable<MessageToken> tokens, List<Emote> emotes) sync* {
+  Iterable<MessageToken> tokens,
+  List<Emote> emotes,
+) sync* {
   final emotesMap = {for (final emote in emotes) emote.code: emote};
   for (final token in tokens) {
     if (token is TextToken) {
@@ -85,9 +93,10 @@ Iterable<MessageToken> tokenizeEmotes(
       final message = token.text;
       for (var start = 0; start < message.length;) {
         final end = message.indexOf(" ", start);
-        final token = end == -1
-            ? message.substring(start)
-            : message.substring(start, end);
+        final token =
+            end == -1
+                ? message.substring(start)
+                : message.substring(start, end);
         final emote = emotesMap[token.trim()];
         if (emote != null) {
           if (lastParsedStart != start) {
@@ -159,7 +168,8 @@ Iterable<MessageToken> rootEmoteTokenizer(String message, String emotes) sync* {
         yield TextToken(substring);
       }
       final url = Uri.parse(
-          "https://static-cdn.jtvnw.net/emoticons/v2/${child.key}/default/dark/1.0");
+        "https://static-cdn.jtvnw.net/emoticons/v2/${child.key}/default/dark/1.0",
+      );
       final code =
           messageGrapheme.getRange(child.start, child.end + 1).toString();
       yield EmoteToken(url: url, code: code);
@@ -201,23 +211,29 @@ class TwitchMessageAnnotationsModel {
   final bool isFirstTimeChatter;
   final TwitchMessageAnnouncementModel? announcement;
 
-  const TwitchMessageAnnotationsModel(
-      {required this.isAction,
-      required this.isFirstTimeChatter,
-      required this.announcement});
+  const TwitchMessageAnnotationsModel({
+    required this.isAction,
+    required this.isFirstTimeChatter,
+    required this.announcement,
+  });
 
   static TwitchMessageAnnotationsModel fromMap(Map<String, dynamic>? map) {
     if (map == null) {
       return const TwitchMessageAnnotationsModel(
-          isAction: false, isFirstTimeChatter: false, announcement: null);
+        isAction: false,
+        isFirstTimeChatter: false,
+        announcement: null,
+      );
     }
     return TwitchMessageAnnotationsModel(
       isAction: map['isAction'] ?? false,
       isFirstTimeChatter: map['isFirstTimeChatter'] as bool,
-      announcement: map['announcement'] == null
-          ? null
-          : TwitchMessageAnnouncementModel(
-              toColor(map['announcement']['color'] as String)),
+      announcement:
+          map['announcement'] == null
+              ? null
+              : TwitchMessageAnnouncementModel(
+                toColor(map['announcement']['color'] as String),
+              ),
     );
   }
 }
@@ -235,17 +251,18 @@ class TwitchMessageModel extends MessageModel implements ChatMessage {
   final bool deleted;
   final String channelId;
 
-  TwitchMessageModel(
-      {required super.messageId,
-      required this.author,
-      required this.message,
-      this.reply,
-      required this.tags,
-      required this.annotations,
-      required this.thirdPartyEmotes,
-      required super.timestamp,
-      required this.deleted,
-      required this.channelId});
+  TwitchMessageModel({
+    required super.messageId,
+    required this.author,
+    required this.message,
+    this.reply,
+    required this.tags,
+    required this.annotations,
+    required this.thirdPartyEmotes,
+    required super.timestamp,
+    required this.deleted,
+    required this.channelId,
+  });
 
   List<BadgeData> get badges =>
       _badges ??= parseBadges(tags['badges-raw'] ?? "");
@@ -278,8 +295,10 @@ class TwitchMessageModel extends MessageModel implements ChatMessage {
   List<MessageToken> get tokenized => _tokenized ??= tokenize();
   List<MessageToken>? _tokenized;
   List<MessageToken> tokenize() {
-    Iterable<MessageToken> tokens =
-        rootEmoteTokenizer(message, tags['emotes-raw'] ?? "");
+    Iterable<MessageToken> tokens = rootEmoteTokenizer(
+      message,
+      tags['emotes-raw'] ?? "",
+    );
     tokens = tokenizeLinks(tokens);
     tokens = tokenizeTags(tokens);
     tokens = tokenizeEmotes(tokens, thirdPartyEmotes);
@@ -293,15 +312,16 @@ class TwitchMessageModel extends MessageModel implements ChatMessage {
 
   TwitchMessageModel withDeleted(bool deleted) {
     return TwitchMessageModel(
-        messageId: messageId,
-        author: author,
-        message: message,
-        reply: reply,
-        tags: tags,
-        annotations: annotations,
-        thirdPartyEmotes: thirdPartyEmotes,
-        timestamp: timestamp,
-        deleted: deleted,
-        channelId: channelId);
+      messageId: messageId,
+      author: author,
+      message: message,
+      reply: reply,
+      tags: tags,
+      annotations: annotations,
+      thirdPartyEmotes: thirdPartyEmotes,
+      timestamp: timestamp,
+      deleted: deleted,
+      channelId: channelId,
+    );
   }
 }

@@ -191,10 +191,7 @@ class _ScrollToBottomWidget extends StatelessWidget {
             padding: const EdgeInsets.all(16),
           ),
           child: Row(
-            children: [
-              const Icon(Icons.arrow_downward),
-              child ?? Container(),
-            ],
+            children: [const Icon(Icons.arrow_downward), child ?? Container()],
           ),
         ),
       ),
@@ -313,18 +310,13 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
       alignment: AlignmentDirectional.topCenter,
       children: [
         Consumer2<MessagesModel, EventSubConfigurationModel>(
-          builder: (
-            context,
-            messagesModel,
-            eventSubConfigurationModel,
-            child,
-          ) {
+          builder: (context, messagesModel, eventSubConfigurationModel, child) {
             var messages = messagesModel.messages.reversed.toList();
             _lastMessage = messages.isEmpty ? null : messages.first;
             if (messages.isEmpty) {
-              return FutureBuilder<bool>(
+              return FutureBuilder(
                 future: MessagesAdapter.instance.hasMessages(widget.channel),
-                builder: (context, snapshot) {
+                builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
                   if (snapshot.hasData && snapshot.data == false) {
                     return Align(
                       alignment: Alignment.bottomCenter,
@@ -332,13 +324,12 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Text(
                           AppLocalizations.of(context)!.noMessagesEmptyState,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     );
@@ -425,6 +416,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                 );
               }
             }
+
             final expirations = displayedMessages
                 .map(
                   (entry) => _getExpiration(
@@ -577,14 +569,16 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     width: dropped == 0 ? 0 : 150,
-                    child: dropped == 0
-                        ? null
-                        : Text(
-                            AppLocalizations.of(context)!
-                                .newMessageCount(dropped),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                          ),
+                    child:
+                        dropped == 0
+                            ? null
+                            : Text(
+                              AppLocalizations.of(
+                                context,
+                              )!.newMessageCount(dropped),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                            ),
                   ),
                 ),
               ],

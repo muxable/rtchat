@@ -8,20 +8,22 @@ class TwitchClipData {
   final String? title;
   final String? description;
 
-  const TwitchClipData(
-      {required this.imageUrl,
-      required this.url,
-      required this.title,
-      required this.description});
+  const TwitchClipData({
+    required this.imageUrl,
+    required this.url,
+    required this.title,
+    required this.description,
+  });
 }
 
 Future<TwitchClipData> fetchClipData(String url) async {
   final data = await MetadataFetch.extract(url);
   return TwitchClipData(
-      imageUrl: data!.image,
-      url: data.url,
-      title: data.title,
-      description: data.description);
+    imageUrl: data!.image,
+    url: data.url,
+    title: data.title,
+    description: data.description,
+  );
 }
 
 class TwitchMessageLinkPreviewWidget extends StatefulWidget {
@@ -59,21 +61,25 @@ class _TwitchMessageLinkPreviewWidgetState
     final data = _data;
     if (data == null) {
       return const Padding(
-          padding: EdgeInsets.symmetric(vertical: 4),
-          child: Card(child: CircularProgressIndicator()));
+        padding: EdgeInsets.symmetric(vertical: 4),
+        child: Card(child: CircularProgressIndicator()),
+      );
     }
     return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Card(
-          child: ListTile(
-            leading: data.imageUrl == null
-                ? null
-                : Image(
-                    image: ResilientNetworkImage(Uri.parse(data.imageUrl!))),
-            title: data.title == null ? null : Text(data.title!),
-            subtitle: data.description == null ? null : Text(data.description!),
-            isThreeLine: true,
-          ),
-        ));
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Card(
+        child: ListTile(
+          leading:
+              data.imageUrl == null
+                  ? null
+                  : Image(
+                    image: ResilientNetworkImage(Uri.parse(data.imageUrl!)),
+                  ),
+          title: data.title == null ? null : Text(data.title!),
+          subtitle: data.description == null ? null : Text(data.description!),
+          isThreeLine: true,
+        ),
+      ),
+    );
   }
 }

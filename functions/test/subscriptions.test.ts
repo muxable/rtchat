@@ -18,7 +18,7 @@ vi.mock("firebase-admin", () => {
         }),
       }),
     }),
-    { FieldValue: { serverTimestamp: () => serverTime } }
+    { FieldValue: { serverTimestamp: () => serverTime } },
   );
   return { firestore };
 });
@@ -43,14 +43,14 @@ describe("YouTube subscribe", () => {
     "writes an assignment with context %j",
     async (context) => {
       expect(
-        await subscribe.run({ provider: "youtube", channelId }, context as any)
+        await subscribe.run({ provider: "youtube", channelId }, context as any),
       ).toBe(channelId);
       expect([...store.entries()]).toEqual([
         [`assignments/youtube:${channelId}`, { subscribedAt: serverTime }],
       ]);
       expect(getTwitchLogin).not.toHaveBeenCalled();
       expect(ensureKickSubscriptions).not.toHaveBeenCalled();
-    }
+    },
   );
 
   it.each([
@@ -65,7 +65,7 @@ describe("YouTube subscribe", () => {
     [channelId],
   ])("rejects invalid id %j without writing", async (invalid) => {
     await expect(
-      subscribe.run({ provider: "youtube", channelId: invalid }, {})
+      subscribe.run({ provider: "youtube", channelId: invalid }, {}),
     ).rejects.toMatchObject({ code: "invalid-argument" });
     expect(store.size).toBe(0);
   });

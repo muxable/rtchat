@@ -21,7 +21,7 @@ type UnresolvedTwitchEmote = {
 };
 
 export async function getTwitchEmotes(
-  accessToken: string | null
+  accessToken: string | null,
 ): Promise<Emote[]> {
   if (!accessToken) {
     // if unauthenticated, return no emotes. global emotes are resolved in-band.
@@ -53,7 +53,7 @@ export async function getTwitchEmotes(
           Authorization: `Bearer ${accessToken}`,
           "Client-Id": TWITCH_CLIENT_ID,
         },
-      }
+      },
     )
       .then((res) => res.json() as any)
       .then((json) => {
@@ -82,8 +82,8 @@ export async function getTwitchEmotes(
   // collect the channel ids.
   const channelIds = Array.from(
     new Set(
-      unresolved.map((emote) => emote.channelId).filter((id) => id !== null)
-    )
+      unresolved.map((emote) => emote.channelId).filter((id) => id !== null),
+    ),
   );
   const channelPromises: Promise<[string, string][]>[] = [];
   // batch user id requests into chunks of 100.
@@ -127,11 +127,11 @@ export async function getBTTVEmotes(channelId: string): Promise<Emote[]> {
         id: emote.id,
         code: emote.code,
         imageUrl: `https://cdn.betterttv.net/emote/${emote.id}/3x`,
-      }))
+      })),
     )
     .catch(() => []);
   const local = fetch(
-    `https://api.betterttv.net/3/cached/users/twitch/${channelId}`
+    `https://api.betterttv.net/3/cached/users/twitch/${channelId}`,
   )
     .then((res) => res.json() as any)
     .then((json) => [
@@ -172,7 +172,7 @@ export async function getFFZEmotes(channelId: string): Promise<Emote[]> {
               emote["urls"]["4"] || emote["urls"]["2"] || emote["urls"]["1"],
           };
         });
-      })
+      }),
     )
     .catch(() => []);
   const local = fetch(`https://api.frankerfacez.com/v1/room/id/${channelId}`)
@@ -187,7 +187,7 @@ export async function getFFZEmotes(channelId: string): Promise<Emote[]> {
           imageUrl:
             emote["urls"]["4"] || emote["urls"]["2"] || emote["urls"]["1"],
         };
-      })
+      }),
     )
     .catch(() => []);
   return Promise.all([global, local]).then(([global, local]) => [
@@ -206,7 +206,7 @@ export async function get7TVEmotes(channelId: string): Promise<Emote[]> {
         id: emote.id,
         code: emote.name,
         imageUrl: `https://cdn.7tv.app/emote/${emote.id}/4x.webp`,
-      }))
+      })),
     )
     .catch(() => []);
   const local = fetch(`https://7tv.io/v3/users/twitch/${channelId}`)
@@ -218,7 +218,7 @@ export async function get7TVEmotes(channelId: string): Promise<Emote[]> {
         id: emote.id,
         code: emote.name,
         imageUrl: `https://cdn.7tv.app/emote/${emote.id}/4x.webp`,
-      }))
+      })),
     )
     .catch(() => []);
   return Promise.all([global, local]).then(([global, local]) => [
@@ -229,7 +229,7 @@ export async function get7TVEmotes(channelId: string): Promise<Emote[]> {
 
 async function getToken(
   context: functions.https.CallableContext,
-  provider: string
+  provider: string,
 ) {
   const uid = context.auth?.uid;
   if (!uid) {
@@ -244,7 +244,7 @@ export const getEmotes = functions.https.onCall(async (data, context) => {
   if (!provider || !channelId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId"
+      "missing provider, channelId",
     );
   }
   const token = await getToken(context, provider);

@@ -37,7 +37,7 @@ export interface MessageDoc {
 export function toRaid(
   target: RaidTarget,
   startedAt: number,
-  countdown = RAID_COUNTDOWN_SECONDS
+  countdown = RAID_COUNTDOWN_SECONDS,
 ): Raid {
   return {
     id: `${target.id}-${startedAt}`,
@@ -54,7 +54,7 @@ export function toRaidDocument(
   fromBroadcasterId: string,
   raid: Raid,
   at: number,
-  now = Date.now()
+  now = Date.now(),
 ): MessageDoc {
   return {
     id: `${type}-${raid.id}`,
@@ -76,7 +76,7 @@ export function toRaidGoDocuments(
   pending: Raid | undefined | null,
   event: any,
   at: number,
-  now = Date.now()
+  now = Date.now(),
 ): MessageDoc[] {
   if (pending && pending.target_id === event.to_broadcaster_user_id) {
     return [toRaidDocument("raid_go_v2", fromBroadcasterId, pending, at, now)];
@@ -88,7 +88,7 @@ export function toRaidGoDocuments(
       displayName: event.to_broadcaster_user_name,
     },
     at,
-    0
+    0,
   );
   return [
     toRaidDocument("raid_update_v2", fromBroadcasterId, raid, at, now),
@@ -133,7 +133,7 @@ async function setPendingRaid(broadcasterId: string, raid: Raid | null) {
 export async function recordRaidStart(
   fromBroadcasterId: string,
   target: RaidTarget,
-  startedAt: number
+  startedAt: number,
 ) {
   const raid = toRaid(target, startedAt);
   await writeMessages(fromBroadcasterId, [
@@ -153,11 +153,11 @@ export async function recordRaidGo(event: any, at: number, messageId: string) {
   const pending = channel.get("outgoingRaid") as Raid | undefined | null;
   await writeMessages(
     fromBroadcasterId,
-    toRaidGoDocuments(fromBroadcasterId, pending, event, at)
+    toRaidGoDocuments(fromBroadcasterId, pending, event, at),
   );
   await channelRef(fromBroadcasterId).set(
     { outgoingRaid: null, outgoingRaidMessageId: messageId },
-    { merge: true }
+    { merge: true },
   );
 }
 

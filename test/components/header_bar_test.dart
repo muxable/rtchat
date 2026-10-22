@@ -28,29 +28,38 @@ void main() {
       final controller = StreamController<ChannelMetadata>();
       controllers.add(controller);
       if (controllers.length == 1) {
-        controller.add(TwitchChannelMetadata(
-            viewerCount: 5, followerCount: 9, onlineAt: DateTime.now()));
+        controller.add(
+          TwitchChannelMetadata(
+            viewerCount: 5,
+            followerCount: 9,
+            onlineAt: DateTime.now(),
+          ),
+        );
       }
       return controller.stream;
     }
 
-    await tester.pumpWidget(MultiProvider(
-      providers: [
-        ChangeNotifierProvider<ViewsModel>.value(value: views),
-        ChangeNotifierProvider<LayoutModel>(
-            create: (_) => LayoutModel.fromJson({})),
-      ],
-      child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          appBar: HeaderBarWidget(
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<ViewsModel>.value(value: views),
+          ChangeNotifierProvider<LayoutModel>(
+            create: (_) => LayoutModel.fromJson({}),
+          ),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            appBar: HeaderBarWidget(
               channel: twitch,
               onChannelSelect: (_) {},
-              metadataFor: metadataFor),
+              metadataFor: metadataFor,
+            ),
+          ),
         ),
       ),
-    ));
+    );
     await tester.pump();
     expect(find.text('/TwitchMux'), findsOneWidget);
 
@@ -73,7 +82,9 @@ void main() {
   test("the title counts the channels after the first", () {
     expect(headerTitle([twitch]), '/TwitchMux');
     expect(headerTitle([kick, twitch]), '/KickMux +1');
-    expect(headerTitle([twitch, kick, Channel(Providers.kick, '3', 'x')]),
-        '/TwitchMux +2');
+    expect(
+      headerTitle([twitch, kick, Channel(Providers.kick, '3', 'x')]),
+      '/TwitchMux +2',
+    );
   });
 }

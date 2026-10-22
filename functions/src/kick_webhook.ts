@@ -36,7 +36,7 @@ export function verifySignature(
   messageId: string,
   timestamp: string,
   rawBody: Buffer,
-  signature: string
+  signature: string,
 ) {
   try {
     return crypto
@@ -80,7 +80,7 @@ export function toDocuments(delivery: KickDelivery, now = Date.now()) {
     channelId,
     type,
     timestamp: admin.firestore.Timestamp.fromMillis(
-      Date.parse(at ?? delivery.timestamp)
+      Date.parse(at ?? delivery.timestamp),
     ),
     expiresAt: admin.firestore.Timestamp.fromMillis(now + TWO_WEEKS),
     event,
@@ -103,7 +103,7 @@ export function toDocuments(delivery: KickDelivery, now = Date.now()) {
         id: `kick:${delivery.messageId}`,
         data: envelope(
           event.is_live ? "stream.online" : "stream.offline",
-          event.is_live ? event.started_at : event.ended_at
+          event.is_live ? event.started_at : event.ended_at,
         ),
       });
       channel.onlineAt = event.is_live
@@ -146,7 +146,7 @@ export function toDocuments(delivery: KickDelivery, now = Date.now()) {
         id: `kick:${delivery.messageId}`,
         data: envelope(
           "kick.channel.reward.redemption.updated",
-          event.redeemed_at
+          event.redeemed_at,
         ),
       });
       break;
@@ -189,7 +189,7 @@ export const kickWebhook = functions.https.onRequest(async (req, res) => {
       delivery.messageId,
       delivery.timestamp,
       req.rawBody,
-      signature
+      signature,
     );
   if (!(await verify(false)) && !(await verify(true))) {
     functions.logger.warn("kick webhook signature mismatch", {

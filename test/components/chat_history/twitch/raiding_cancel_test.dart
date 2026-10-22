@@ -19,52 +19,69 @@ import '../../../fakes/fake_user_model.dart';
 final raidingChannel = Channel(Providers.twitch, '42', 'streamer');
 
 // the avatar is a real network image that flutter's image cache keeps.
-final leakTesting = LeakTesting.settings
-    .withIgnored(classes: ['ImageStreamCompleterHandle', '_LiveImage']);
+final leakTesting = LeakTesting.settings.withIgnored(
+  classes: ['ImageStreamCompleterHandle', '_LiveImage'],
+);
 
 Future<void> pump(WidgetTester tester, Channel userChannel) async {
-  await tester.pumpWidget(MultiProvider(
-    providers: [
-      ChangeNotifierProvider<UserModel>(
-          create: (_) => FakeUserModel(userChannel: userChannel)),
-      ChangeNotifierProvider<LayoutModel>(
-          create: (_) => LayoutModel.fromJson({})),
-      ChangeNotifierProvider<StyleModel>(
-          create: (_) => StyleModel.fromJson({})),
-      ChangeNotifierProvider<EventSubConfigurationModel>(
-          create: (_) => EventSubConfigurationModel.fromJson({})),
-    ],
-    child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Material(
-        child: ChatHistoryMessage(
+  await tester.pumpWidget(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<UserModel>(
+          create: (_) => FakeUserModel(userChannel: userChannel),
+        ),
+        ChangeNotifierProvider<LayoutModel>(
+          create: (_) => LayoutModel.fromJson({}),
+        ),
+        ChangeNotifierProvider<StyleModel>(
+          create: (_) => StyleModel.fromJson({}),
+        ),
+        ChangeNotifierProvider<EventSubConfigurationModel>(
+          create: (_) => EventSubConfigurationModel.fromJson({}),
+        ),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Material(
+          child: ChatHistoryMessage(
             message: TwitchRaidingEventModel(
               timestamp: DateTime.now(),
               messageId: 'raiding.r1',
               duration: const Duration(seconds: 90),
               targetUser: const TwitchUserModel(
-                  userId: 't1', login: 'target', displayName: 'Target'),
+                userId: 't1',
+                login: 'target',
+                displayName: 'Target',
+              ),
             ),
-            channel: raidingChannel),
+            channel: raidingChannel,
+          ),
+        ),
       ),
     ),
-  ));
+  );
   await tester.pump();
 }
 
 void main() {
   HttpOverrides.global = null;
 
-  testWidgets('the raiding streamer can cancel',
-      experimentalLeakTesting: leakTesting, (tester) async {
-    await pump(tester, raidingChannel);
-    expect(find.text('Cancel'), findsOneWidget);
-  });
+  testWidgets(
+    'the raiding streamer can cancel',
+    experimentalLeakTesting: leakTesting,
+    (tester) async {
+      await pump(tester, raidingChannel);
+      expect(find.text('Cancel'), findsOneWidget);
+    },
+  );
 
-  testWidgets('moderators and viewers of the channel cannot',
-      experimentalLeakTesting: leakTesting, (tester) async {
-    await pump(tester, Channel(Providers.twitch, '99', 'mod'));
-    expect(find.text('Cancel'), findsNothing);
-  });
+  testWidgets(
+    'moderators and viewers of the channel cannot',
+    experimentalLeakTesting: leakTesting,
+    (tester) async {
+      await pump(tester, Channel(Providers.twitch, '99', 'mod'));
+      expect(find.text('Cancel'), findsNothing);
+    },
+  );
 }

@@ -16,14 +16,15 @@ class TwitchHostEventWidget extends StatelessWidget {
       avatar: ResilientNetworkImage(model.from.profilePictureUrl),
       child: StyledText(
         text: AppLocalizations.of(context)!.hostEventMessage(
-            model.from.displayName ?? AppLocalizations.of(context)!.anonymous,
-            model.viewers),
+          model.from.displayName ?? AppLocalizations.of(context)!.anonymous,
+          model.viewers,
+        ),
         tags: {
           'b': StyledTextTag(
-              style: Theme.of(context)
-                  .textTheme
-                  .titleSmall
-                  ?.copyWith(fontWeight: FontWeight.bold)),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
         },
       ),
     );

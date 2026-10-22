@@ -17,8 +17,11 @@ class DonationsAdapter {
 
   DonationsAdapter._({required this.db, required this.api});
 
-  static DonationsAdapter get instance => _instance ??=
-      DonationsAdapter._(db: FirebaseFirestore.instance, api: Api.instance);
+  static DonationsAdapter get instance =>
+      _instance ??= DonationsAdapter._(
+        db: FirebaseFirestore.instance,
+        api: Api.instance,
+      );
   static DonationsAdapter? _instance;
 
   Stream<String?> forRealtimeChatAddress({required String userId}) {
@@ -43,8 +46,9 @@ class DonationsAdapter {
     });
   }
 
-  Stream<StreamElementsConfig?> forStreamElementsConfig(
-      {required String userId}) {
+  Stream<StreamElementsConfig?> forStreamElementsConfig({
+    required String userId,
+  }) {
     return db.collection("streamelements").doc(userId).snapshots().map((doc) {
       final data = doc.data();
       if (data == null || data["token"] == null) {

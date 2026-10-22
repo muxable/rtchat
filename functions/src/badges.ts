@@ -12,7 +12,7 @@ async function getChannelBadges(channelId: string, accessToken: string) {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-    }
+    },
   );
   return ((await twitchResponse.json()) as any)["data"];
 }
@@ -26,7 +26,7 @@ async function getGlobalBadges(accessToken: string) {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-    }
+    },
   );
   return ((await twitchResponse.json()) as any)["data"];
 }
@@ -37,7 +37,7 @@ export const getBadges = functions.https.onCall(async (data, context) => {
   if (!provider) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider"
+      "missing provider",
     );
   }
   switch (provider) {
@@ -46,13 +46,13 @@ export const getBadges = functions.https.onCall(async (data, context) => {
       if (!token) {
         throw new functions.https.HttpsError(
           "internal",
-          "failed to get twitch access token"
+          "failed to get twitch access token",
         );
       }
       if (channelId) {
         const badges = await getChannelBadges(
           channelId,
-          token.token.access_token
+          token.token.access_token,
         );
         return badges;
       } else {

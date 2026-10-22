@@ -10,10 +10,11 @@ void main() {
   });
 
   test("json round trip", () {
-    final model = StreamPreviewModel.fromJson({})
-      ..isHighDefinition = true
-      ..volume = 42
-      ..showBatteryPrompt = false;
+    final model =
+        StreamPreviewModel.fromJson({})
+          ..isHighDefinition = true
+          ..volume = 42
+          ..showBatteryPrompt = false;
     final decoded = StreamPreviewModel.fromJson(model.toJson());
     expect(decoded.isHighDefinition, isTrue);
     expect(decoded.volume, 42);

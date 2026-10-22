@@ -18,15 +18,20 @@ class _Functions extends Fake implements FirebaseFunctions {
   }
 
   @override
-  HttpsCallable httpsCallableFromUrl(String url,
-      {HttpsCallableOptions? options}) {
+  HttpsCallable httpsCallableFromUrl(
+    String url, {
+    HttpsCallableOptions? options,
+  }) {
     this.url = url;
     return callable;
   }
 
   @override
-  void useFunctionsEmulator(String host, int port,
-      {bool automaticHostMapping = true}) {
+  void useFunctionsEmulator(
+    String host,
+    int port, {
+    bool automaticHostMapping = true,
+  }) {
     emulatorHost = host;
     emulatorPort = port;
   }

@@ -65,6 +65,12 @@ vi.mock("firebase-admin", () => {
       const data = store.get(path);
       return { exists: data !== undefined, data: () => data };
     },
+    create: async (data: Record<string, any>) => {
+      if (store.has(path)) {
+        throw Object.assign(new Error(`${path} exists`), { code: 6 });
+      }
+      store.set(path, apply({}, data));
+    },
     set: async (data: Record<string, any>, options?: { merge?: boolean }) => {
       store.set(path, apply(options?.merge ? store.get(path) : {}, data));
     },
@@ -142,7 +148,11 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
 
     expect(delivery.status).toBe(200);
     expect(delivery.body.subscription.type).toBe(type);
-    const message = store.get(`${CHANNEL}/messages/twitch:${id}`);
+    const message = store.get(
+      type === "channel.follow"
+        ? `${CHANNEL}/messages/twitch:follow:${delivery.body.event.user_id}`
+        : `${CHANNEL}/messages/twitch:${id}`,
+    );
     expect(message).toMatchObject({
       channelId: `twitch:${BROADCASTER}`,
       type,
@@ -150,8 +160,8 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
     });
     expect(message!.timestamp.toMillis()).toBe(
       Date.parse(
-        delivery.headers["twitch-eventsub-message-timestamp"] as string
-      )
+        delivery.headers["twitch-eventsub-message-timestamp"] as string,
+      ),
     );
     expect(message!.expiresAt.toMillis()).toBeGreaterThan(Date.now());
   });
@@ -163,7 +173,7 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
       to_broadcaster_user_id: BROADCASTER,
     });
     expect(store.get(`${CHANNEL}/messages/twitch:${id}`)?.event).toEqual(
-      delivery.body.event
+      delivery.body.event,
     );
   });
 
@@ -171,11 +181,11 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
     await send("stream.online");
 
     expect(store.get(CHANNEL)?.onlineAt.toMillis()).toBeLessThanOrEqual(
-      Date.now()
+      Date.now(),
     );
     expect(runUpdateFollowerAndViewerCount).toHaveBeenCalledWith(
       { token: { access_token: "app-token" } },
-      [`twitch:${BROADCASTER}`]
+      [`twitch:${BROADCASTER}`],
     );
   });
 
@@ -193,6 +203,24 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
     await send("channel.follow");
 
     expect(store.get(CHANNEL)?.followerCount).toBe(11);
+  });
+
+  it("records a follower once", async () => {
+    store.set(CHANNEL, { followerCount: 10 });
+
+    // Twitch sometimes sends two follows, with different message ids, for one
+    // follower.
+    const first = await send("channel.follow", ["-f", "5678"]);
+    server.deliveries.length = 0;
+    const second = await send("channel.follow", ["-f", "5678"]);
+
+    expect(first.id).not.toBe(second.id);
+    expect(second.delivery.status).toBe(200);
+    expect(store.get(CHANNEL)?.followerCount).toBe(11);
+    const messages = [...store.keys()].filter((key) =>
+      key.startsWith(`${CHANNEL}/messages/`),
+    );
+    expect(messages).toEqual([`${CHANNEL}/messages/twitch:follow:5678`]);
   });
 
   it("ignores follows for channels it doesn't know", async () => {
@@ -231,7 +259,7 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
     const output = await verifySubscription(
       server.url,
       SECRET,
-      "stream.online"
+      "stream.online",
     );
 
     const [delivery] = server.deliveries;
@@ -245,7 +273,7 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
     const { id, delivery } = await send(
       "stream.online",
       [],
-      "not-the-twitch-secret"
+      "not-the-twitch-secret",
     );
 
     expect(delivery.status).toBe(403);
@@ -257,7 +285,7 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
   it("rejects challenges signed with the wrong secret", async () => {
     // the CLI exits non-zero when the handshake fails.
     await expect(
-      verifySubscription(server.url, "not-the-twitch-secret", "stream.online")
+      verifySubscription(server.url, "not-the-twitch-secret", "stream.online"),
     ).rejects.toThrow();
 
     const [delivery] = server.deliveries;

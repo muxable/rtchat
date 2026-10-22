@@ -19,10 +19,10 @@ class DeviceMemory {
   });
 
   factory DeviceMemory.fromMap(Map<Object?, Object?> map) => DeviceMemory(
-        totalBytes: (map['totalBytes'] as num).toInt(),
-        availableBytes: (map['availableBytes'] as num?)?.toInt(),
-        isLowRamDevice: map['lowRamDevice'] as bool? ?? false,
-      );
+    totalBytes: (map['totalBytes'] as num).toInt(),
+    availableBytes: (map['availableBytes'] as num?)?.toInt(),
+    isLowRamDevice: map['lowRamDevice'] as bool? ?? false,
+  );
 
   /// Below this much total memory, neural voices don't load.
   ///
@@ -40,7 +40,8 @@ class DeviceMemory {
       isLowRamDevice || totalBytes < minimumBytesForNeuralTts;
 
   @override
-  String toString() => 'DeviceMemory(${totalBytes >> 20} MiB total'
+  String toString() =>
+      'DeviceMemory(${totalBytes >> 20} MiB total'
       '${availableBytes == null ? '' : ', ${availableBytes! >> 20} MiB free'}'
       '${isLowRamDevice ? ', low-RAM device' : ''})';
 }

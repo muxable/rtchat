@@ -5,6 +5,9 @@ class TwitchMessageReplyModel {
   final String message;
   final TwitchUserModel author;
 
-  TwitchMessageReplyModel(
-      {required this.messageId, required this.message, required this.author});
+  TwitchMessageReplyModel({
+    required this.messageId,
+    required this.message,
+    required this.author,
+  });
 }

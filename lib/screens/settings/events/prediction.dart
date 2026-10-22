@@ -9,12 +9,11 @@ class PredictionEventScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title:
-              Text(AppLocalizations.of(context)!.predictionConfigurationTitle),
-        ),
-        body: Consumer<EventSubConfigurationModel>(
-            builder: (context, model, child) {
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.predictionConfigurationTitle),
+      ),
+      body: Consumer<EventSubConfigurationModel>(
+        builder: (context, model, child) {
           return Column(
             children: [
               Padding(
@@ -22,28 +21,34 @@ class PredictionEventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(AppLocalizations.of(context)!.pinDuration,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontWeight: FontWeight.bold,
-                        )),
+                    Text(
+                      AppLocalizations.of(context)!.pinDuration,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Slider.adaptive(
-                      value: model.predictionEventConfig.eventDuration.inSeconds
-                          .toDouble(),
+                      value:
+                          model.predictionEventConfig.eventDuration.inSeconds
+                              .toDouble(),
                       min: 0,
                       max: 30,
                       divisions: 15,
                       label: AppLocalizations.of(context)!.durationSeconds(
-                          model.predictionEventConfig.eventDuration.inSeconds),
+                        model.predictionEventConfig.eventDuration.inSeconds,
+                      ),
                       onChanged: (value) {
                         model.setPredictionEventDuration(
-                            Duration(seconds: value.toInt()));
+                          Duration(seconds: value.toInt()),
+                        );
                       },
                     ),
                     SwitchListTile.adaptive(
                       title: Text(AppLocalizations.of(context)!.enableEvent),
                       subtitle: Text(
-                          AppLocalizations.of(context)!.showEventInChatHistory),
+                        AppLocalizations.of(context)!.showEventInChatHistory,
+                      ),
                       value: model.predictionEventConfig.showEvent,
                       onChanged: (value) {
                         model.setPredictionEventShowable(value);
@@ -54,6 +59,8 @@ class PredictionEventScreen extends StatelessWidget {
               ),
             ],
           );
-        }));
+        },
+      ),
+    );
   }
 }

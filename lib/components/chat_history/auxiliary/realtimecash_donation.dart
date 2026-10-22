@@ -14,24 +14,32 @@ class RealtimeCashDonationEventWidget extends StatelessWidget {
     return DecoratedEventWidget.avatar(
       avatar: model.image,
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            StyledText(
-              text: model.donor != null && model.donor!.isNotEmpty
-                  ? AppLocalizations.of(context)!.realtimeCashTipWithDonor(
-                      model.donor!, model.value.toString(), model.currency)
-                  : AppLocalizations.of(context)!.realtimeCashTipAnonymous(
-                      model.value.toString(), model.currency),
-              tags: {
-                'b': StyledTextTag(
-                    style: Theme.of(context).textTheme.titleSmall),
-              },
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          StyledText(
+            text:
+                model.donor != null && model.donor!.isNotEmpty
+                    ? AppLocalizations.of(context)!.realtimeCashTipWithDonor(
+                      model.donor!,
+                      model.value.toString(),
+                      model.currency,
+                    )
+                    : AppLocalizations.of(context)!.realtimeCashTipAnonymous(
+                      model.value.toString(),
+                      model.currency,
+                    ),
+            tags: {
+              'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+            },
+          ),
+          if (model.message != null && model.message!.isNotEmpty)
+            Text(
+              model.message!,
+              style: const TextStyle(fontStyle: FontStyle.italic),
             ),
-            if (model.message != null && model.message!.isNotEmpty)
-              Text(model.message!,
-                  style: const TextStyle(fontStyle: FontStyle.italic)),
-          ]),
+        ],
+      ),
     );
   }
 }

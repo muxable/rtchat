@@ -86,11 +86,14 @@ class CrossFadeImage extends StatelessWidget {
         if (wasSynchronouslyLoaded) return child;
         return AnimatedCrossFade(
           firstChild: _image(
-              image: placeholder!, errorBuilder: placeholderErrorBuilder),
+            image: placeholder!,
+            errorBuilder: placeholderErrorBuilder,
+          ),
           secondChild: child,
-          crossFadeState: frame == null
-              ? CrossFadeState.showFirst
-              : CrossFadeState.showSecond,
+          crossFadeState:
+              frame == null
+                  ? CrossFadeState.showFirst
+                  : CrossFadeState.showSecond,
           duration: crossfadeDuration,
           firstCurve: const Threshold(1.0),
           secondCurve: crossfadeCurve,

@@ -37,7 +37,7 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
           onTap: followers.length > 1 && !_expanded
               ? () {
                   if (widget.onExpand != null) {
-                    // ChatPanelWidget handles expansion.
+                    // Let ChatPanelWidget manage expansion.
                     widget.onExpand!();
                   } else {
                     // Preserve standalone expansion behavior.
@@ -65,29 +65,32 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: followers.map((follower) {
-                        return Row(
-                          children: [
-                            ClipOval(
-                              child: SizedBox(
-                                width: 32,
-                                height: 32,
-                                child: Image(
-                                  image: ResilientNetworkImage(
-                                    follower.profilePictureUrl,
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            children: [
+                              ClipOval(
+                                child: SizedBox(
+                                  width: 32,
+                                  height: 32,
+                                  child: Image(
+                                    image: ResilientNetworkImage(
+                                      follower.profilePictureUrl,
+                                    ),
+                                    fit: BoxFit.cover,
                                   ),
-                                  fit: BoxFit.cover,
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _buildFollowerEvent(
-                                context,
-                                styleModel,
-                                follower,
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _buildFollowerEvent(
+                                  context,
+                                  styleModel,
+                                  follower,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         );
                       }).toList(),
                     )
@@ -128,6 +131,7 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
     switch (followers.length) {
       case 0:
         return const SizedBox.shrink();
+
       case 1:
         return StyledText(
           text: localizations.followingEvent(
@@ -137,6 +141,7 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
             'bold': StyledTextTag(style: style),
           },
         );
+
       case 2:
         return StyledText(
           text: localizations.followingEvent2(
@@ -147,6 +152,7 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
             'bold': StyledTextTag(style: style),
           },
         );
+
       default:
         return StyledText(
           text: localizations.followingEvent3(

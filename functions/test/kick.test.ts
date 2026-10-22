@@ -29,7 +29,7 @@ beforeEach(() => fetchMock.mockReset());
 describe("pkce", () => {
   it("matches the RFC 7636 example", () => {
     expect(codeChallenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk")).toBe(
-      "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
+      "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
     );
   });
 
@@ -50,8 +50,8 @@ describe("toKickProfile", () => {
           email: "m@example.com",
           profile_picture: "https://files.kick.com/p.png",
         },
-        { broadcaster_user_id: 123, slug: "muxfd" }
-      )
+        { broadcaster_user_id: 123, slug: "muxfd" },
+      ),
     ).toEqual({
       id: "123",
       slug: "muxfd",
@@ -84,7 +84,7 @@ describe("kickApi", () => {
   it("returns null for 204 and throws on errors", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(204, null));
     await expect(
-      kickApi("tok", "/chat/1", { method: "DELETE" })
+      kickApi("tok", "/chat/1", { method: "DELETE" }),
     ).resolves.toBeNull();
     fetchMock.mockResolvedValueOnce(jsonResponse(401, { message: "nope" }));
     await expect(kickApi("tok", "/users")).rejects.toThrow(/401/);
@@ -93,12 +93,12 @@ describe("kickApi", () => {
   it("looks up the profile for a token", async () => {
     fetchMock
       .mockResolvedValueOnce(
-        jsonResponse(200, { data: [{ user_id: 7, name: "Kicker" }] })
+        jsonResponse(200, { data: [{ user_id: 7, name: "Kicker" }] }),
       )
       .mockResolvedValueOnce(
         jsonResponse(200, {
           data: [{ broadcaster_user_id: 7, slug: "kicker" }],
-        })
+        }),
       );
     await expect(getKickProfile("tok")).resolves.toMatchObject({
       id: "7",
@@ -130,16 +130,16 @@ describe("search", () => {
               stream: { is_live: true, viewer_count: 12, language: "en" },
             },
           ],
-        })
+        }),
       )
       .mockResolvedValueOnce(
         jsonResponse(200, {
           data: [{ user_id: 7, name: "MuxFD", profile_picture: "https://p" }],
-        })
+        }),
       );
     const results = await searchKickChannel("app", "MuxFD");
     expect(fetchMock.mock.calls[0][0]).toBe(
-      "https://api.kick.com/public/v1/channels?slug=muxfd"
+      "https://api.kick.com/public/v1/channels?slug=muxfd",
     );
     expect(results).toEqual([
       {
@@ -164,11 +164,11 @@ describe("search", () => {
 
   it("maps channel ids to slugs for the embed", async () => {
     fetchMock.mockResolvedValueOnce(
-      jsonResponse(200, { data: [{ broadcaster_user_id: 7, slug: "muxfd" }] })
+      jsonResponse(200, { data: [{ broadcaster_user_id: 7, slug: "muxfd" }] }),
     );
     await expect(getKickSlug("app", "7")).resolves.toBe("muxfd");
     expect(toSearchResult({ broadcaster_user_id: 1, slug: "x" }).imageUrl).toBe(
-      "https://rtirl.com/pfp.png?provider=kick&channelId=1"
+      "https://rtirl.com/pfp.png?provider=kick&channelId=1",
     );
   });
 });

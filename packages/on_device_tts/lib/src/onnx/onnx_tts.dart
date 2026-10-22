@@ -55,16 +55,15 @@ class OnnxTts {
     double speed = 1.0,
     int steps = 5,
     String? utteranceId,
-  }) =>
-      _platform.speak(
-        handle: handle,
-        utteranceId: utteranceId ?? '$handle-${_nextUtterance++}',
-        segments: segments,
-        language: language,
-        voiceId: voiceId,
-        speed: speed,
-        steps: steps,
-      );
+  }) => _platform.speak(
+    handle: handle,
+    utteranceId: utteranceId ?? '$handle-${_nextUtterance++}',
+    segments: segments,
+    language: language,
+    voiceId: voiceId,
+    speed: speed,
+    steps: steps,
+  );
 
   /// Synthesizes [text] without playing it; deterministic with [noiseSeed].
   Future<OnnxSynthesis> synthesize(
@@ -74,16 +73,15 @@ class OnnxTts {
     double speed = 1.0,
     int steps = 5,
     int? noiseSeed,
-  }) =>
-      _platform.synthesize(
-        handle: handle,
-        text: text,
-        language: language,
-        voiceId: voiceId,
-        speed: speed,
-        steps: steps,
-        noiseSeed: noiseSeed,
-      );
+  }) => _platform.synthesize(
+    handle: handle,
+    text: text,
+    language: language,
+    voiceId: voiceId,
+    speed: speed,
+    steps: steps,
+    noiseSeed: noiseSeed,
+  );
 
   /// Stops the utterance being spoken, if any.
   Future<void> stop() => _platform.stop();

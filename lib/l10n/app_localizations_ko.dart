@@ -76,8 +76,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String streamOnline(DateTime date, DateTime time) {
-    final intl.DateFormat dateDateFormat =
-        intl.DateFormat.yMMMMEEEEd(localeName);
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMMEEEEd(
+      localeName,
+    );
     final String dateString = dateDateFormat.format(date);
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
@@ -87,8 +88,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String streamOffline(DateTime date, DateTime time) {
-    final intl.DateFormat dateDateFormat =
-        intl.DateFormat.yMMMMEEEEd(localeName);
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMMEEEEd(
+      localeName,
+    );
     final String dateString = dateDateFormat.format(date);
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
@@ -98,8 +100,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String chatCleared(DateTime date, DateTime time) {
-    final intl.DateFormat dateDateFormat =
-        intl.DateFormat.yMMMMEEEEd(localeName);
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMMEEEEd(
+      localeName,
+    );
     final String dateString = dateDateFormat.format(date);
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
@@ -273,9 +276,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String followingEvent3(
-      String displayName, String displayNameTwo, int numOthers) {
-    final intl.NumberFormat numOthersNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    String displayName,
+    String displayNameTwo,
+    int numOthers,
+  ) {
+    final intl.NumberFormat numOthersNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
     return '<b>$displayName</b>님, <b>$displayNameTwo</b>님, 그리고 $numOthersString명이 팔로우합니다';
@@ -515,10 +521,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
-    final intl.NumberFormat viewerCountNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String viewerCountString =
-        viewerCountNumberFormat.format(viewerCount);
+    final intl.NumberFormat viewerCountNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
+    final String viewerCountString = viewerCountNumberFormat.format(
+      viewerCount,
+    );
 
     return '<b>$displayName</b>님이 <b>$viewerCountString</b>명의 시청자와 함께 습격 중입니다!';
   }
@@ -533,8 +540,8 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String raidingEventTimeRemaining(int seconds) {
-    final intl.NumberFormat secondsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat secondsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
     return '남은 시간 $secondsString초';
@@ -560,40 +567,55 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String subscriptionGiftEvent(
-      String gifterUserName, int total, String tier, int cumulativeTotal) {
-    final intl.NumberFormat totalNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    String gifterUserName,
+    int total,
+    String tier,
+    int cumulativeTotal,
+  ) {
+    final intl.NumberFormat totalNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
-    final intl.NumberFormat cumulativeTotalNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String cumulativeTotalString =
-        cumulativeTotalNumberFormat.format(cumulativeTotal);
+    final intl.NumberFormat cumulativeTotalNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
+    final String cumulativeTotalString = cumulativeTotalNumberFormat.format(
+      cumulativeTotal,
+    );
 
     return '<b>$gifterUserName</b>님이 티어 $tier 구독 $totalString개를 선물하여 총 $cumulativeTotalString개가 되었습니다!';
   }
 
   @override
   String subscriptionMessageEvent(
-      String subscriberUserName, int cumulativeMonths, String tier) {
-    final intl.NumberFormat cumulativeMonthsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String cumulativeMonthsString =
-        cumulativeMonthsNumberFormat.format(cumulativeMonths);
+    String subscriberUserName,
+    int cumulativeMonths,
+    String tier,
+  ) {
+    final intl.NumberFormat cumulativeMonthsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
+    final String cumulativeMonthsString = cumulativeMonthsNumberFormat.format(
+      cumulativeMonths,
+    );
 
     return '<b>$subscriberUserName</b>님이 티어 $tier에 $cumulativeMonthsString개월 동안 구독했습니다!';
   }
 
   @override
-  String subscriptionMessageMultiMonthEvent(String subscriberUserName,
-      String tier, int durationMonths, int cumulativeMonths) {
-    final intl.NumberFormat durationMonthsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String durationMonthsString =
-        durationMonthsNumberFormat.format(durationMonths);
-    final intl.NumberFormat cumulativeMonthsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String cumulativeMonthsString =
-        cumulativeMonthsNumberFormat.format(cumulativeMonths);
+  String subscriptionMessageMultiMonthEvent(
+    String subscriberUserName,
+    String tier,
+    int durationMonths,
+    int cumulativeMonths,
+  ) {
+    final intl.NumberFormat durationMonthsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
+    final String durationMonthsString = durationMonthsNumberFormat.format(
+      durationMonths,
+    );
+    final intl.NumberFormat cumulativeMonthsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
+    final String cumulativeMonthsString = cumulativeMonthsNumberFormat.format(
+      cumulativeMonths,
+    );
 
     return '<b>$subscriberUserName</b>님이 티어 $tier로 $durationMonthsString개월을 미리 구독했습니다. 총 $cumulativeMonthsString개월!';
   }
@@ -619,10 +641,14 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String channelPointRedemptionWithUserInput(String redeemerUsername,
-      String rewardName, int rewardCost, String userInput) {
-    final intl.NumberFormat rewardCostNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+  String channelPointRedemptionWithUserInput(
+    String redeemerUsername,
+    String rewardName,
+    int rewardCost,
+    String userInput,
+  ) {
+    final intl.NumberFormat rewardCostNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
     return '<b>$redeemerUsername</b>님이 <b>$rewardName</b>을(를) <b>$rewardCostString</b> 포인트로 교환했습니다. $userInput';
@@ -630,9 +656,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String channelPointRedemptionWithoutUserInput(
-      String redeemerUsername, String rewardName, int rewardCost) {
-    final intl.NumberFormat rewardCostNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    String redeemerUsername,
+    String rewardName,
+    int rewardCost,
+  ) {
+    final intl.NumberFormat rewardCostNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
     return '<b>$redeemerUsername</b>님이 <b>$rewardName</b>을(를) <b>$rewardCostString</b> 포인트로 교환했습니다.';
@@ -640,8 +669,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String cheerEventMessage(String name, int bits, String cheerMessage) {
-    final intl.NumberFormat bitsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat bitsNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
     final String bitsString = bitsNumberFormat.format(bits);
 
     return '<b>$name</b>님이 <b>$bitsString</b> 비트를 응원했습니다. $cheerMessage';
@@ -652,8 +682,8 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
-    final intl.NumberFormat viewersNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat viewersNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
     return '<b>$fromDisplayName</b>님이 <b>$viewersString</b>명의 파티와 함께 호스팅 중입니다.';
@@ -666,8 +696,8 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String hypeTrainEventEndedSuccessful(int level) {
-    final intl.NumberFormat levelNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat levelNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
     return '하이프 트레인 레벨 <b>$levelString</b> 성공.';
@@ -675,8 +705,8 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String hypeTrainEventEndedUnsuccessful(int level) {
-    final intl.NumberFormat levelNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat levelNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
     return '하이프 트레인 레벨 <b>$levelString</b> 실패.';
@@ -956,8 +986,8 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String kickResubscriptionEvent(String subscriberName, int months) {
-    final intl.NumberFormat monthsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat monthsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
     return '<b>$subscriberName</b>님이 $monthsString개월째 구독을 갱신했습니다!';
@@ -965,8 +995,8 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String kickGiftedSubscriptionsEvent(String gifterName, int count) {
-    final intl.NumberFormat countNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat countNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
     return '<b>$gifterName</b>님이 구독 $countString개를 선물했습니다!';
@@ -974,8 +1004,8 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String kicksGiftedEvent(String senderName, int amount) {
-    final intl.NumberFormat amountNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat amountNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
     return '<b>$senderName</b>님이 $amountString Kicks를 보냈습니다!';

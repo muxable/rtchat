@@ -30,13 +30,15 @@ class _ActivityFeedPanelWidgetState extends State<ActivityFeedPanelWidget> {
 
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       _controller = WebViewController.fromPlatformCreationParams(
-          WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const {},
-      ));
+        WebKitWebViewControllerCreationParams(
+          allowsInlineMediaPlayback: true,
+          mediaTypesRequiringUserAction: const {},
+        ),
+      );
     } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
       _controller = WebViewController.fromPlatformCreationParams(
-          AndroidWebViewControllerCreationParams());
+        AndroidWebViewControllerCreationParams(),
+      );
     } else {
       throw UnsupportedError("Unsupported platform");
     }
@@ -63,8 +65,10 @@ class _ActivityFeedPanelWidgetState extends State<ActivityFeedPanelWidget> {
   }
 
   Uri? getUri() {
-    final activityFeedModel =
-        Provider.of<ActivityFeedModel>(context, listen: false);
+    final activityFeedModel = Provider.of<ActivityFeedModel>(
+      context,
+      listen: false,
+    );
     final userModel = Provider.of<UserModel>(context, listen: false);
     final channel = userModel.userChannel;
     if (activityFeedModel.isCustom) {
@@ -79,7 +83,8 @@ class _ActivityFeedPanelWidgetState extends State<ActivityFeedPanelWidget> {
     switch (channel.provider) {
       case Providers.twitch:
         return Uri.tryParse(
-            "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
+          "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed",
+        );
     }
     return null;
   }
