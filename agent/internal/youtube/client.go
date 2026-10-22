@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/muxable/rtchat/agent/internal/messagehealth"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -265,9 +266,13 @@ func (c *Client) stream(ctx context.Context, video, key, version string, page ch
 				// needs its own document or the create is a no-op.
 				id += ":tombstone"
 			}
-			if !c.retryWrite(ctx, func() error { return c.store.Create(ctx, "youtube:"+c.channel, id, data) }) {
+			if !c.retryWrite(ctx, func() error {
+				return c.store.Create(ctx, "youtube:"+c.channel, id, data)
+			}) {
 				return
 			}
+
+			messagehealth.MarkMessageReceived()
 		}
 		token, timeout := page.next()
 		if token == "" {
