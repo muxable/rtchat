@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/channels.dart';
 
 class ProfilesAdapter {
@@ -17,6 +18,9 @@ class ProfilesAdapter {
         db: FirebaseFirestore.instanceFor(app: app),
       );
   static final Map<String, ProfilesAdapter> _forApp = {};
+
+  /// Reads as [account], for its own profile.
+  static ProfilesAdapter forAccount(Account account) => forApp(account.app);
 
   /// The channel of the account [userId] signed in with.
   Stream<Channel?> getChannel({required String userId}) {
