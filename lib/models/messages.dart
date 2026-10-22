@@ -80,7 +80,7 @@ class MessagesModel extends ChangeNotifier {
     _messages = applyDeltaEvent(
       _messages,
       event,
-      channel: _channels.length > 1 ? channel : null,
+      channel: channel,
       onAppend: (model) {
         // only messages that arrive live are read out or pinged, not history.
         // in a merged view a live message can land before a newer one that
@@ -184,10 +184,7 @@ class MessagesModel extends ChangeNotifier {
       return;
     }
     _events = [...history, ...futureEvents];
-    _messages = _channels.length > 1
-        ? replayEvents(_events)
-        : _events.fold(
-            [], (messages, entry) => applyDeltaEvent(messages, entry.event));
+    _messages = replayEvents(_events);
     _separators = computeSeparators(_messages);
     notifyListeners();
   }
@@ -330,9 +327,8 @@ List<MessageModel> applyDeltaEvent(
       messageId: event.messageId,
       timestamp: event.timestamp,
     )..channel = channel;
-    // Preserve existing chat history and append the clear event.
+    // Preserve existing history and insert the clear event.
     _insert(messages, cleared);
-    return messages;
   }
   return messages;
 }
