@@ -1158,4 +1158,85 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get neuralFallbackLoadFailed =>
       'The neural voice couldn\'t load, so chat is read with the system voice.';
+
+  @override
+  String youtubeSuperChatEvent(String name, String amount) {
+    return '<b>$name</b> ha inviato un Super Chat da $amount!';
+  }
+
+  @override
+  String youtubeSuperStickerEvent(String name, String amount) {
+    return '<b>$name</b> ha inviato un Super Sticker da $amount!';
+  }
+
+  @override
+  String youtubeNewMemberEvent(String name) {
+    return '<b>$name</b> è diventato membro!';
+  }
+
+  @override
+  String youtubeMemberUpgradeEvent(String name, String level) {
+    return '<b>$name</b> è passato a $level!';
+  }
+
+  @override
+  String youtubeMemberMilestoneEvent(String name, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$name</b> è membro da $monthsString mesi!';
+  }
+
+  @override
+  String youtubeMembershipGiftingEvent(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<b>$name</b> ha regalato $countString abbonamenti!',
+      one: '<b>$name</b> ha regalato un abbonamento!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youtubeGiftMembershipReceivedEvent(String name) {
+    return '<b>$name</b> ha ricevuto un abbonamento in regalo!';
+  }
+
+  @override
+  String youtubeGiftEvent(
+      String name, String giftName, int jewels, String amountKnown) {
+    final intl.NumberFormat jewelsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String jewelsString = jewelsNumberFormat.format(jewels);
+
+    String _temp0 = intl.Intl.selectLogic(
+      amountKnown,
+      {
+        'known': ' ($jewelsString Jewels)',
+        'other': '',
+      },
+    );
+    return '<b>$name</b> ha inviato $giftName$_temp0!';
+  }
+
+  @override
+  String youtubePollEvent(String question) {
+    return 'Sondaggio: $question';
+  }
+
+  @override
+  String get youtubeMembersOnlyModeOn => 'La modalità solo membri è attiva';
+
+  @override
+  String get youtubeMembersOnlyModeOff =>
+      'La modalità solo membri è disattivata';
+
+  @override
+  String get youtubeChatEnded => 'La chat dal vivo è terminata';
 }

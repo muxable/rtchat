@@ -24,6 +24,7 @@ import 'package:rtchat/models/messages/twitch/shoutout_receive_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
+import 'package:rtchat/models/messages/youtube/event.dart';
 import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/tts/muted_user.dart';
 import 'package:rtchat/models/views.dart';
@@ -263,6 +264,38 @@ class TtsModel extends ChangeNotifier {
           model.gifter?.name ?? l10n.anonymous, model.giftees.length);
     } else if (model is KicksGiftedEventModel) {
       return l10n.kicksGiftedEvent(model.sender.name, model.amount);
+    } else if (model is YouTubeSuperChatEventModel) {
+      return _withComment(
+          l10n.youtubeSuperChatEvent(
+              model.author.name, model.amountDisplayString),
+          model.comment);
+    } else if (model is YouTubeSuperStickerEventModel) {
+      return l10n.youtubeSuperStickerEvent(
+          model.author.name, model.amountDisplayString);
+    } else if (model is YouTubeNewMemberEventModel) {
+      return model.isUpgrade && model.levelName.isNotEmpty
+          ? l10n.youtubeMemberUpgradeEvent(model.member.name, model.levelName)
+          : l10n.youtubeNewMemberEvent(model.member.name);
+    } else if (model is YouTubeMemberMilestoneEventModel) {
+      return _withComment(
+          l10n.youtubeMemberMilestoneEvent(model.member.name, model.months),
+          model.comment);
+    } else if (model is YouTubeMembershipGiftingEventModel) {
+      return l10n.youtubeMembershipGiftingEvent(model.gifter.name, model.count);
+    } else if (model is YouTubeGiftMembershipReceivedEventModel) {
+      return l10n.youtubeGiftMembershipReceivedEvent(model.recipient.name);
+    } else if (model is YouTubeGiftEventModel) {
+      return l10n.youtubeGiftEvent(model.sender.name, model.giftName,
+          model.jewels ?? 0, model.jewels == null ? 'unknown' : 'known');
+    } else if (model is YouTubePollEventModel) {
+      // only announce a poll when it opens.
+      return model.isClosed ? "" : l10n.youtubePollEvent(model.question);
+    } else if (model is YouTubeMembersOnlyModeEventModel) {
+      return model.isEnabled
+          ? l10n.youtubeMembersOnlyModeOn
+          : l10n.youtubeMembersOnlyModeOff;
+    } else if (model is YouTubeChatEndedEventModel) {
+      return l10n.youtubeChatEnded;
     } else if (model is StreamStateEventModel) {
       final timestamp = model.timestamp;
       return model.isOnline
@@ -298,6 +331,9 @@ class TtsModel extends ChangeNotifier {
     } else if (model is TwitchShoutoutReceiveEventModel) {}
     return "";
   }
+
+  static String _withComment(String text, String? comment) =>
+      comment == null ? text : "$text $comment";
 
   bool get isSubscribersOnly {
     return _isSubscribersOnly;

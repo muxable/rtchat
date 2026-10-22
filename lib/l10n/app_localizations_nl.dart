@@ -1152,4 +1152,84 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get neuralFallbackLoadFailed =>
       'The neural voice couldn\'t load, so chat is read with the system voice.';
+
+  @override
+  String youtubeSuperChatEvent(String name, String amount) {
+    return '<b>$name</b> heeft een Super Chat van $amount gestuurd!';
+  }
+
+  @override
+  String youtubeSuperStickerEvent(String name, String amount) {
+    return '<b>$name</b> heeft een Super Sticker van $amount gestuurd!';
+  }
+
+  @override
+  String youtubeNewMemberEvent(String name) {
+    return '<b>$name</b> is lid geworden!';
+  }
+
+  @override
+  String youtubeMemberUpgradeEvent(String name, String level) {
+    return '<b>$name</b> is geüpgraded naar $level!';
+  }
+
+  @override
+  String youtubeMemberMilestoneEvent(String name, int months) {
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String monthsString = monthsNumberFormat.format(months);
+
+    return '<b>$name</b> is al $monthsString maanden lid!';
+  }
+
+  @override
+  String youtubeMembershipGiftingEvent(String name, int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '<b>$name</b> heeft $countString lidmaatschappen cadeau gegeven!',
+      one: '<b>$name</b> heeft een lidmaatschap cadeau gegeven!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String youtubeGiftMembershipReceivedEvent(String name) {
+    return '<b>$name</b> heeft een cadeaulidmaatschap ontvangen!';
+  }
+
+  @override
+  String youtubeGiftEvent(
+      String name, String giftName, int jewels, String amountKnown) {
+    final intl.NumberFormat jewelsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String jewelsString = jewelsNumberFormat.format(jewels);
+
+    String _temp0 = intl.Intl.selectLogic(
+      amountKnown,
+      {
+        'known': ' ($jewelsString Jewels)',
+        'other': '',
+      },
+    );
+    return '<b>$name</b> heeft $giftName gestuurd$_temp0!';
+  }
+
+  @override
+  String youtubePollEvent(String question) {
+    return 'Poll: $question';
+  }
+
+  @override
+  String get youtubeMembersOnlyModeOn => 'Alleen-leden-modus staat aan';
+
+  @override
+  String get youtubeMembersOnlyModeOff => 'Alleen-leden-modus staat uit';
+
+  @override
+  String get youtubeChatEnded => 'De livechat is afgelopen';
 }

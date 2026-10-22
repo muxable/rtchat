@@ -257,5 +257,17 @@
   "removeFromChat": "Quitar del chat",
   "cantChatWithAccount": "Tu cuenta de {provider} no puede chatear aquí",
   "replaceChannel": "Reemplazar a {channel}",
-  "removeChannel": "Quitar"
+  "removeChannel": "Quitar",
+  "youtubeSuperChatEvent": "¡<b>{name}</b> envió un Super Chat de {amount}!",
+  "youtubeSuperStickerEvent": "¡<b>{name}</b> envió un Super Sticker de {amount}!",
+  "youtubeNewMemberEvent": "¡<b>{name}</b> se hizo miembro!",
+  "youtubeMemberUpgradeEvent": "¡<b>{name}</b> subió a {level}!",
+  "youtubeMemberMilestoneEvent": "¡<b>{name}</b> lleva {months} meses como miembro!",
+  "youtubeMembershipGiftingEvent": "{count,plural, =1{¡<b>{name}</b> regaló una membresía!} other{¡<b>{name}</b> regaló {count} membresías!}}",
+  "youtubeGiftMembershipReceivedEvent": "¡<b>{name}</b> recibió una membresía de regalo!",
+  "youtubeGiftEvent": "¡<b>{name}</b> envió {giftName}{amountKnown,select, known{ ({jewels} Jewels)} other{}}!",
+  "youtubePollEvent": "Encuesta: {question}",
+  "youtubeMembersOnlyModeOn": "El modo solo para miembros está activado",
+  "youtubeMembersOnlyModeOff": "El modo solo para miembros está desactivado",
+  "youtubeChatEnded": "El chat en vivo ha terminado"
 }

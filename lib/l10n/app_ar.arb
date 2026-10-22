@@ -257,5 +257,17 @@
   "removeFromChat": "إزالة من الدردشة",
   "cantChatWithAccount": "لا يمكن لحساب {provider} الخاص بك الدردشة هنا",
   "replaceChannel": "استبدال {channel}",
-  "removeChannel": "إزالة"
+  "removeChannel": "إزالة",
+  "youtubeSuperChatEvent": "أرسل <b>{name}</b> Super Chat بقيمة {amount}!",
+  "youtubeSuperStickerEvent": "أرسل <b>{name}</b> Super Sticker بقيمة {amount}!",
+  "youtubeNewMemberEvent": "أصبح <b>{name}</b> عضوًا!",
+  "youtubeMemberUpgradeEvent": "رقّى <b>{name}</b> عضويته إلى {level}!",
+  "youtubeMemberMilestoneEvent": "<b>{name}</b> عضو منذ {months} أشهر!",
+  "youtubeMembershipGiftingEvent": "{count,plural, =1{أهدى <b>{name}</b> عضوية!} other{أهدى <b>{name}</b> {count} عضويات!}}",
+  "youtubeGiftMembershipReceivedEvent": "تلقّى <b>{name}</b> عضوية مُهداة!",
+  "youtubeGiftEvent": "أرسل <b>{name}</b> {giftName}{amountKnown,select, known{ ({jewels} Jewels)} other{}}!",
+  "youtubePollEvent": "استطلاع: {question}",
+  "youtubeMembersOnlyModeOn": "وضع الأعضاء فقط مفعّل",
+  "youtubeMembersOnlyModeOff": "وضع الأعضاء فقط متوقف",
+  "youtubeChatEnded": "انتهت الدردشة المباشرة"
 }

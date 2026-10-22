@@ -1588,5 +1588,142 @@
   "neuralFallbackLoadFailed": "The neural voice couldn't load, so chat is read with the system voice.",
   "@neuralFallbackLoadFailed": {
     "description": "Shown once in the text to speech settings when the installed voice pack failed to load, e.g. for lack of memory"
+  },
+  "youtubeSuperChatEvent": "<b>{name}</b> sent a {amount} Super Chat!",
+  "@youtubeSuperChatEvent": {
+    "description": "A YouTube Super Chat, a paid chat message",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "amount": {
+        "type": "String",
+        "example": "$5.00"
+      }
+    }
+  },
+  "youtubeSuperStickerEvent": "<b>{name}</b> sent a {amount} Super Sticker!",
+  "@youtubeSuperStickerEvent": {
+    "description": "A YouTube Super Sticker, a paid sticker",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "amount": {
+        "type": "String",
+        "example": "$5.00"
+      }
+    }
+  },
+  "youtubeNewMemberEvent": "<b>{name}</b> became a member!",
+  "@youtubeNewMemberEvent": {
+    "description": "Someone became a YouTube channel member",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "youtubeMemberUpgradeEvent": "<b>{name}</b> upgraded to {level}!",
+  "@youtubeMemberUpgradeEvent": {
+    "description": "A YouTube channel member upgraded their membership level",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "level": {
+        "type": "String",
+        "example": "Super Fan"
+      }
+    }
+  },
+  "youtubeMemberMilestoneEvent": "<b>{name}</b> has been a member for {months} months!",
+  "@youtubeMemberMilestoneEvent": {
+    "description": "A YouTube channel member celebrating how long they've been a member",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "months": {
+        "type": "int",
+        "example": "6",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "youtubeMembershipGiftingEvent": "{count,plural, =1{<b>{name}</b> gifted a membership!} other{<b>{name}</b> gifted {count} memberships!}}",
+  "@youtubeMembershipGiftingEvent": {
+    "description": "Someone gifted YouTube channel memberships to other viewers",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "count": {
+        "type": "int",
+        "example": "5",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> received a gifted membership!",
+  "@youtubeGiftMembershipReceivedEvent": {
+    "description": "A viewer received a gifted YouTube channel membership",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
+  "youtubeGiftEvent": "<b>{name}</b> sent {giftName}{amountKnown,select, known{ ({jewels} Jewels)} other{}}!",
+  "@youtubeGiftEvent": {
+    "description": "A YouTube gift bought with Jewels, YouTube's virtual currency",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "giftName": {
+        "type": "String",
+        "example": "Rose"
+      },
+      "jewels": {
+        "type": "int",
+        "example": "10",
+        "format": "decimalPattern"
+      },
+      "amountKnown": {
+        "type": "String",
+        "description": "known when the Jewels amount is supplied, otherwise unknown"
+      }
+    }
+  },
+  "youtubePollEvent": "Poll: {question}",
+  "@youtubePollEvent": {
+    "description": "A YouTube live chat poll",
+    "placeholders": {
+      "question": {
+        "type": "String",
+        "example": "Best snack?"
+      }
+    }
+  },
+  "youtubeMembersOnlyModeOn": "Members-only mode is on",
+  "@youtubeMembersOnlyModeOn": {
+    "description": "YouTube live chat switched to members-only mode"
+  },
+  "youtubeMembersOnlyModeOff": "Members-only mode is off",
+  "@youtubeMembersOnlyModeOff": {
+    "description": "YouTube live chat left members-only mode"
+  },
+  "youtubeChatEnded": "The live chat has ended",
+  "@youtubeChatEnded": {
+    "description": "The YouTube live chat ended"
   }
 }

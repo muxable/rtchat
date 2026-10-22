@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/models/channels.dart';
 
+/// YouTube's brand red.
+const youTubeRed = Color(0xFFFF0000);
+
 /// A small icon identifying a streaming platform.
 class ProviderIcon extends StatelessWidget {
   final String provider;
@@ -31,6 +34,18 @@ class ProviderIcon extends StatelessWidget {
                   fontWeight: FontWeight.w900,
                   fontSize: size * 0.7,
                   height: 1)),
+        );
+      case Providers.youtube:
+        return Container(
+          width: size,
+          height: size,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: youTubeRed,
+            borderRadius: BorderRadius.circular(size / 4),
+          ),
+          child: Icon(Icons.play_arrow_rounded,
+              color: Colors.white, size: size * 0.8),
         );
     }
     return Icon(Icons.public, size: size);

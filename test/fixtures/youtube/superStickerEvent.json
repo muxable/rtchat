@@ -1,0 +1,34 @@
+{
+  "kind": "youtube#liveChatMessage",
+  "etag": "etag",
+  "id": "LCC.sticker",
+  "snippet": {
+    "type": "superStickerEvent",
+    "liveChatId": "Cg0KC2xpdmVjaGF0aWQ",
+    "authorChannelId": "UCauthor",
+    "publishedAt": "2026-10-14T12:00:00.000000+00:00",
+    "hasDisplayContent": true,
+    "displayMessage": "Dancing cat",
+    "superStickerDetails": {
+      "superStickerMetadata": {
+        "stickerId": "sticker_1",
+        "altText": "Dancing cat",
+        "altTextLanguage": "en"
+      },
+      "amountMicros": "20000000",
+      "currency": "USD",
+      "amountDisplayString": "$20.00",
+      "tier": 5
+    }
+  },
+  "authorDetails": {
+    "channelId": "UCauthor",
+    "channelUrl": "http://www.youtube.com/channel/UCauthor",
+    "displayName": "@Viewer",
+    "profileImageUrl": "https://yt3.ggpht.com/viewer.jpg",
+    "isVerified": false,
+    "isChatOwner": false,
+    "isChatSponsor": true,
+    "isChatModerator": true
+  }
+}

@@ -257,5 +257,17 @@
   "removeFromChat": "Ta bort från chatten",
   "cantChatWithAccount": "Ditt {provider}-konto kan inte chatta här",
   "replaceChannel": "Ersätt {channel}",
-  "removeChannel": "Ta bort"
+  "removeChannel": "Ta bort",
+  "youtubeSuperChatEvent": "<b>{name}</b> skickade en Super Chat på {amount}!",
+  "youtubeSuperStickerEvent": "<b>{name}</b> skickade en Super Sticker på {amount}!",
+  "youtubeNewMemberEvent": "<b>{name}</b> blev medlem!",
+  "youtubeMemberUpgradeEvent": "<b>{name}</b> uppgraderade till {level}!",
+  "youtubeMemberMilestoneEvent": "<b>{name}</b> har varit medlem i {months} månader!",
+  "youtubeMembershipGiftingEvent": "{count,plural, =1{<b>{name}</b> gav bort ett medlemskap!} other{<b>{name}</b> gav bort {count} medlemskap!}}",
+  "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> fick ett medlemskap i present!",
+  "youtubeGiftEvent": "<b>{name}</b> skickade {giftName}{amountKnown,select, known{ ({jewels} Jewels)} other{}}!",
+  "youtubePollEvent": "Omröstning: {question}",
+  "youtubeMembersOnlyModeOn": "Läget endast för medlemmar är på",
+  "youtubeMembersOnlyModeOff": "Läget endast för medlemmar är av",
+  "youtubeChatEnded": "Livechatten har avslutats"
 }

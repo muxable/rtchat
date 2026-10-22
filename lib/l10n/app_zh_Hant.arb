@@ -257,5 +257,17 @@
   "removeFromChat": "從聊天中移除",
   "cantChatWithAccount": "你的 {provider} 帳號無法在此聊天",
   "replaceChannel": "替換 {channel}",
-  "removeChannel": "移除"
+  "removeChannel": "移除",
+  "youtubeSuperChatEvent": "<b>{name}</b> 傳送了 {amount} 的 Super Chat！",
+  "youtubeSuperStickerEvent": "<b>{name}</b> 傳送了 {amount} 的 Super Sticker！",
+  "youtubeNewMemberEvent": "<b>{name}</b> 成為了會員！",
+  "youtubeMemberUpgradeEvent": "<b>{name}</b> 升級到了 {level}！",
+  "youtubeMemberMilestoneEvent": "<b>{name}</b> 已成為會員 {months} 個月！",
+  "youtubeMembershipGiftingEvent": "{count,plural, other{<b>{name}</b> 贈送了 {count} 份會員資格！}}",
+  "youtubeGiftMembershipReceivedEvent": "<b>{name}</b> 收到了一份贈送的會員資格！",
+  "youtubeGiftEvent": "<b>{name}</b> 送出了 {giftName}{amountKnown,select, known{（{jewels} Jewels）} other{}}！",
+  "youtubePollEvent": "投票：{question}",
+  "youtubeMembersOnlyModeOn": "僅限會員模式已開啟",
+  "youtubeMembersOnlyModeOff": "僅限會員模式已關閉",
+  "youtubeChatEnded": "聊天室已結束"
 }
