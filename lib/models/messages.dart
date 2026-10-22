@@ -330,14 +330,9 @@ List<MessageModel> applyDeltaEvent(
       messageId: event.messageId,
       timestamp: event.timestamp,
     )..channel = channel;
-    if (channel == null) {
-      return [cleared];
-    }
-    // other channels' chat is unaffected.
-    final remaining =
-        messages.where((message) => message.channel != channel).toList();
-    _insert(remaining, cleared);
-    return remaining;
+    // Preserve existing chat history and append the clear event.
+    _insert(messages, cleared);
+    return messages;
   }
   return messages;
 }
