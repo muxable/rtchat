@@ -16,7 +16,7 @@ class TimeoutDialog extends StatefulWidget {
 }
 
 class _TimeoutDialogState extends State<TimeoutDialog> {
-  var _value = 5;
+  var _value = 3;
 
   String? getLabel(BuildContext context) {
     switch (_value) {
