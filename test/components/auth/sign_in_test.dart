@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/components/auth/twitch.dart';
+import 'package:rtchat/models/channels.dart';
 
 import '../l10n.dart';
 
@@ -26,5 +27,25 @@ void main() {
     await pump(tester, const SignInWithKick());
     final text = tester.widget<Text>(find.text("Sign in with Kick"));
     expect(text.style?.color, Colors.black);
+  });
+
+  testWidgets("adding an account names the provider", (tester) async {
+    for (final provider in Providers.all) {
+      await pump(
+        tester,
+        SignInButton(provider: provider, target: SignInTarget.addAccount),
+      );
+      expect(
+        find.text("Add ${providerName(provider)} account"),
+        findsOneWidget,
+      );
+    }
+  });
+
+  testWidgets("a provider without its own label still names itself", (
+    tester,
+  ) async {
+    await pump(tester, const SignInButton(provider: "youtube"));
+    expect(find.text("Sign in with youtube"), findsOneWidget);
   });
 }

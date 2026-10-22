@@ -365,6 +365,13 @@ class _SidebarState extends State<Sidebar> {
           await Navigator.pushNamed(context, "/settings");
         },
       ),
+      ListTile(
+        leading: const Icon(Icons.manage_accounts_outlined),
+        title: Text(AppLocalizations.of(context)!.accounts),
+        onTap: () async {
+          await Navigator.pushNamed(context, "/settings/accounts");
+        },
+      ),
       Consumer<UserModel>(
         builder: (context, model, child) {
           if (!model.isSignedIn()) {
