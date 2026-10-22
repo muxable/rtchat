@@ -29,10 +29,10 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
     return Consumer<StyleModel>(
       builder: (context, styleModel, child) {
         return InkWell(
-          onTap: followers.length > 1
+          onTap: followers.length > 1 && !_expanded
               ? () {
                   setState(() {
-                    _expanded = !_expanded;
+                    _expanded = true;
                   });
                 }
               : null,
@@ -55,51 +55,59 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Expanded vertical follower list.
-                          ...followers.map(
-                            (follower) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                children: [
-                                  ClipOval(
-                                    child: SizedBox(
-                                      width: 32,
-                                      height: 32,
-                                      child: Image(
-                                        image: ResilientNetworkImage(
-                                          follower.profilePictureUrl,
-                                        ),
-                                        fit: BoxFit.cover,
+                        children: followers.map((follower) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                ClipOval(
+                                  child: SizedBox(
+                                    width: 32,
+                                    height: 32,
+                                    child: Image(
+                                      image: ResilientNetworkImage(
+                                        follower.profilePictureUrl,
                                       ),
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      styleModel.getDisplayName(follower),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall,
-                                    ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _buildFollowerEvent(
+                                    context,
+                                    styleModel,
+                                    follower,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          // Event description without duplicated names.
-                          Text(
-                            AppLocalizations.of(context)!.areFollowingYou,
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                        ],
+                          );
+                        }).toList(),
                       )
                     : _buildSummary(context, styleModel),
               ),
             ),
           ),
         );
+      },
+    );
+  }
+
+  Widget _buildFollowerEvent(
+    BuildContext context,
+    StyleModel styleModel,
+    dynamic follower,
+  ) {
+    final localizations = AppLocalizations.of(context)!;
+    final style = Theme.of(context).textTheme.titleSmall;
+
+    return StyledText(
+      text: localizations.followingEvent(
+        styleModel.getDisplayName(follower),
+      ),
+      tags: {
+        'bold': StyledTextTag(style: style),
       },
     );
   }
