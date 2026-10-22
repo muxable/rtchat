@@ -59,13 +59,14 @@ List<Channel> _withChannel(List<Channel> channels, Channel channel) {
 }
 
 /// The channels shown in chat, on any providers. The app opens with the
-/// default channels (the signed-in user's own channel unless others were
+/// default channels (the signed-in user's own channels unless others were
 /// picked); channels can then be opened, added and removed. None of this
 /// needs an account, so signed-out users can use it too.
 class ViewsModel extends ChangeNotifier {
-  Channel? _userChannel;
+  // the signed-in accounts' own channels, one per provider.
+  List<Channel> _userChannels = const [];
 
-  // the picked default channels; empty means the user's own channel.
+  // the picked default channels; empty means the user's own channels.
   List<Channel> _defaultChannels = const [];
 
   // the current channels once they've been changed from the defaults. like
@@ -76,26 +77,27 @@ class ViewsModel extends ChangeNotifier {
   // the key of the channel picked to preview.
   String? _previewTarget;
 
+  // the channel last picked to send messages to.
+  Channel? _sendTarget;
+
   ViewsModel();
 
-  /// Keeps the user's own channel in sync with the signed-in account.
+  /// Keeps the user's own channels in sync with the signed-in accounts.
   void update(UserModel userModel) {
-    final channel = userModel.userChannel;
-    if (_sameChannelsAndMetadata(
-      [if (channel != null) channel],
-      [if (_userChannel != null) _userChannel!],
-    )) {
+    final channels = _onePerProvider(userModel.userChannels);
+    if (_sameChannelsAndMetadata(channels, _userChannels)) {
       return;
     }
-    _userChannel = channel;
+    _userChannels = List.unmodifiable(channels);
     notifyListeners();
   }
 
-  /// The channels the app opens with.
+  /// The channels the app opens with: all of the user's own, so a
+  /// simulcaster opens to merged chat, unless others were picked.
   List<Channel> get defaultChannels =>
       _defaultChannels.isNotEmpty
           ? List.unmodifiable(_defaultChannels)
-          : List.unmodifiable([if (_userChannel != null) _userChannel!]);
+          : _userChannels;
 
   /// Whether default channels were picked, rather than being the user's own.
   bool get hasCustomDefaultChannels => _defaultChannels.isNotEmpty;
@@ -124,7 +126,7 @@ class ViewsModel extends ChangeNotifier {
 
   void useCurrentChannelsAsDefault() => defaultChannels = channels;
 
-  /// Opens with the user's own channel again.
+  /// Opens with the user's own channels again.
   void resetDefaultChannels() => defaultChannels = const [];
 
   /// The channels shown in chat.
@@ -168,15 +170,32 @@ class ViewsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// The channel messages are sent to: the first one shown on [account]'s
-  /// provider, as an account can only post on its own provider. Null if no
-  /// channel shown is on it, or there's no account.
-  Channel? sendChannel(Channel? account) =>
-      account == null
-          ? null
-          : channels
-              .where((channel) => channel.provider == account.provider)
-              .firstOrNull;
+  /// The channels shown that messages can be sent to: those on a provider
+  /// the user has an account on, as an account can chat in any channel on
+  /// its own provider. At most one channel per provider is shown, so each
+  /// is sent to by a different account.
+  List<Channel> get sendableChannels {
+    final providers = {for (final channel in _userChannels) channel.provider};
+    return List.unmodifiable(
+      channels.where((channel) => providers.contains(channel.provider)),
+    );
+  }
+
+  /// The channel messages are sent to: the one last picked, while it can
+  /// be sent to, otherwise the first of [sendableChannels].
+  Channel? get sendChannel {
+    final channels = sendableChannels;
+    return channels.where((channel) => channel == _sendTarget).firstOrNull ??
+        channels.firstOrNull;
+  }
+
+  set sendChannel(Channel? channel) {
+    if (channel == _sendTarget) {
+      return;
+    }
+    _sendTarget = channel;
+    notifyListeners();
+  }
 
   /// The channel whose stream is previewed: the one picked, while it's
   /// shown, otherwise the first channel.
@@ -206,10 +225,15 @@ class ViewsModel extends ChangeNotifier {
     _defaultChannels = List.unmodifiable(
       _onePerProvider(_channelsFromJson(json['defaultChannels'])),
     );
+    _sendTarget =
+        _channelsFromJson([
+          if (json['sendChannel'] != null) json['sendChannel'],
+        ]).firstOrNull;
   }
 
   Map<String, dynamic> toJson() => {
     'defaultChannels':
         _defaultChannels.map((channel) => channel.toJson()).toList(),
+    if (_sendTarget != null) 'sendChannel': _sendTarget!.toJson(),
   };
 }

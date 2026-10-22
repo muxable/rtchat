@@ -1435,6 +1435,20 @@
       }
     }
   },
+  "cantChatWithAccounts": "Your accounts can't chat here",
+  "@cantChatWithAccounts": {
+    "description": "Hint in the disabled message input when none of the channels shown are on the platform of any of the signed-in accounts"
+  },
+  "sendAMessageTo": "Send a message to {channel}...",
+  "@sendAMessageTo": {
+    "description": "Message input field placeholder text when there are several channels to send to, naming the one picked",
+    "placeholders": {
+      "channel": {
+        "type": "String",
+        "example": "muxfd"
+      }
+    }
+  },
   "replaceChannel": "Replace {channel}",
   "@replaceChannel": {
     "description": "Shown while swiping a channel search result whose platform already has a channel in chat: adding it replaces that channel",

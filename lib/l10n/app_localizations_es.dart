@@ -1082,6 +1082,14 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+
+  @override
+  String sendAMessageTo(String channel) {
+    return 'Send a message to $channel...';
+  }
+
+  @override
   String replaceChannel(String channel) {
     return 'Reemplazar a $channel';
   }

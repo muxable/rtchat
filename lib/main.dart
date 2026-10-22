@@ -370,14 +370,18 @@ class _AppState extends State<App> {
                 widget.prefs.getString("audio", defaultValue: '{}').getValue(),
               ),
             );
+            // the first account's channel, like analytics.
             model.hostChannel =
-                Provider.of<UserModel>(context, listen: false).userChannel;
+                Provider.of<UserModel>(
+                  context,
+                  listen: false,
+                ).userChannels.firstOrNull;
             return model..addListener(() {
               widget.prefs.setString('audio', jsonEncode(model.toJson()));
             });
           },
           update: (context, userModel, model) {
-            model!.hostChannel = userModel.userChannel;
+            model!.hostChannel = userModel.userChannels.firstOrNull;
             return model;
           },
           lazy: false,
