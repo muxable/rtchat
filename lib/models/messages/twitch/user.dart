@@ -31,7 +31,7 @@ const botList = {
   'phantombot',
   'streamelements',
   'streamelement',
-  'sery_bot'
+  'sery_bot',
 };
 
 class TwitchUserModel implements ChatUser {
@@ -42,8 +42,11 @@ class TwitchUserModel implements ChatUser {
   @override
   final String login;
 
-  const TwitchUserModel(
-      {required this.userId, this.displayName, required this.login});
+  const TwitchUserModel({
+    required this.userId,
+    this.displayName,
+    required this.login,
+  });
 
   @override
   String toString() => login;
@@ -71,20 +74,21 @@ class TwitchUserModel implements ChatUser {
 
   Uri get profilePictureUrl {
     return Uri.parse(
-        "https://rtirl.com/pfp.png?provider=${Providers.twitch}&channelId=$userId");
+      "https://rtirl.com/pfp.png?provider=${Providers.twitch}&channelId=$userId",
+    );
   }
 
   Channel get asChannel =>
       Channel(Providers.twitch, userId, displayName ?? login);
 
   TwitchUserModel.fromJson(Map<String, dynamic> json)
-      : userId = json["userId"],
-        displayName = json["displayName"],
-        login = json["login"];
+    : userId = json["userId"],
+      displayName = json["displayName"],
+      login = json["login"];
 
   Map<String, dynamic> toJson() => {
-        "userId": userId,
-        "displayName": displayName,
-        "login": login,
-      };
+    "userId": userId,
+    "displayName": displayName,
+    "login": login,
+  };
 }

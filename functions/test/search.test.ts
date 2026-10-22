@@ -37,7 +37,7 @@ vi.mock("firebase-admin", () => ({
         }),
       }),
     }),
-    { FieldValue: { serverTimestamp: () => "now" } }
+    { FieldValue: { serverTimestamp: () => "now" } },
   ),
 }));
 
@@ -129,7 +129,7 @@ describe("parseSearchRequest", () => {
 
   it("rejects unknown providers", () => {
     expect(() =>
-      parseSearchRequest({ query: "xqc", provider: "trovo" })
+      parseSearchRequest({ query: "xqc", provider: "trovo" }),
     ).toThrow();
   });
 });
@@ -137,7 +137,7 @@ describe("parseSearchRequest", () => {
 describe("search", () => {
   it("binds the youtube secret", () => {
     expect(
-      (search as any).__endpoint.secretEnvironmentVariables
+      (search as any).__endpoint.secretEnvironmentVariables,
     ).toContainEqual({ key: "youtube-api-key" });
   });
 

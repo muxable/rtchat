@@ -19,29 +19,33 @@ final timestamp = DateTime(2024, 1, 2, 3, 4, 5);
 Map<String, dynamic> pollData({
   List<Map<String, dynamic>>? choices,
   Map<String, dynamic> extra = const {},
-}) =>
-    {
-      "timestamp": Timestamp.fromDate(timestamp),
-      "event": {
-        "id": "p1",
-        "title": "Best snack?",
-        "started_at": "2024-01-02T03:00:00Z",
-        "ends_at": "2024-01-02T03:05:00Z",
-        "choices": choices ??
-            [
-              {"id": "a", "title": "Chips", "votes": 3, "bits_votes": 1},
-              {"id": "b", "title": "Candy", "votes": 7},
-            ],
-        ...extra,
-      },
-    };
+}) => {
+  "timestamp": Timestamp.fromDate(timestamp),
+  "event": {
+    "id": "p1",
+    "title": "Best snack?",
+    "started_at": "2024-01-02T03:00:00Z",
+    "ends_at": "2024-01-02T03:05:00Z",
+    "choices":
+        choices ??
+        [
+          {"id": "a", "title": "Chips", "votes": 3, "bits_votes": 1},
+          {"id": "b", "title": "Candy", "votes": 7},
+        ],
+    ...extra,
+  },
+};
 
 void main() {
   group("TwitchPollEventModel", () {
     test("parseChoices applies defaults for missing fields", () {
-      final choices = TwitchPollEventModel.parseChoices(pollData(choices: [
-        {"id": "x"},
-      ]));
+      final choices = TwitchPollEventModel.parseChoices(
+        pollData(
+          choices: [
+            {"id": "x"},
+          ],
+        ),
+      );
       expect(choices, hasLength(1));
       expect(choices.single.id, "x");
       expect(choices.single.title, "Untitled");
@@ -67,10 +71,11 @@ void main() {
 
     test("withEnd marks the poll completed with the final status", () {
       final poll = TwitchPollEventModel.fromDocumentData(pollData());
-      final ended = poll.withEnd(pollData(extra: {
-        "ended_at": "2024-01-02T03:04:00Z",
-        "status": "completed",
-      }));
+      final ended = poll.withEnd(
+        pollData(
+          extra: {"ended_at": "2024-01-02T03:04:00Z", "status": "completed"},
+        ),
+      );
       expect(ended.isCompleted, isTrue);
       expect(ended.status, "completed");
       expect(ended.messageId, poll.messageId);
@@ -87,16 +92,17 @@ void main() {
       expect(model.messageId, "f1");
       expect(model.timestamp, timestamp);
       expect(model.followers, [
-        const TwitchUserModel(userId: "1", login: "foo", displayName: "Foo")
+        const TwitchUserModel(userId: "1", login: "foo", displayName: "Foo"),
       ]);
     });
 
     test("merged flattens followers, keeps first id and last timestamp", () {
       TwitchFollowEventModel follow(String id, String login, DateTime t) =>
           TwitchFollowEventModel(
-              followers: [TwitchUserModel(userId: id, login: login)],
-              messageId: "follow-$id",
-              timestamp: t);
+            followers: [TwitchUserModel(userId: id, login: login)],
+            messageId: "follow-$id",
+            timestamp: t,
+          );
       final merged = TwitchFollowEventModel.merged([
         follow("1", "a", DateTime(2024, 1, 1)),
         follow("2", "b", DateTime(2024, 1, 2)),
@@ -112,16 +118,18 @@ void main() {
       final b = Channel("twitch", "b", "B");
       TwitchFollowEventModel follow(String id, Channel channel) =>
           TwitchFollowEventModel(
-              followers: [TwitchUserModel(userId: id, login: "login$id")],
-              messageId: "follow-$id",
-              timestamp: DateTime(2024, 1, 1))
-            ..channel = channel;
+            followers: [TwitchUserModel(userId: id, login: "login$id")],
+            messageId: "follow-$id",
+            timestamp: DateTime(2024, 1, 1),
+          )..channel = channel;
       List<String>? logins(TwitchFollowEventModel? model) =>
           model?.followers.map((f) => f.login).toList();
 
       test("merged keeps the channel", () {
-        final merged =
-            TwitchFollowEventModel.merged([follow("1", a), follow("2", a)]);
+        final merged = TwitchFollowEventModel.merged([
+          follow("1", a),
+          follow("2", a),
+        ]);
         expect(merged.channel, a);
       });
 
@@ -134,15 +142,20 @@ void main() {
           follow("5", a),
         ];
         expect(TwitchFollowEventModel.mergeAdjacent(messages, 0), isNull);
-        expect(logins(TwitchFollowEventModel.mergeAdjacent(messages, 1)),
-            ["login2", "login1"]);
+        expect(logins(TwitchFollowEventModel.mergeAdjacent(messages, 1)), [
+          "login2",
+          "login1",
+        ]);
         expect(TwitchFollowEventModel.mergeAdjacent(messages, 1)!.channel, a);
         expect(TwitchFollowEventModel.mergeAdjacent(messages, 2), isNull);
-        expect(logins(TwitchFollowEventModel.mergeAdjacent(messages, 3)),
-            ["login4", "login3"]);
+        expect(logins(TwitchFollowEventModel.mergeAdjacent(messages, 3)), [
+          "login4",
+          "login3",
+        ]);
         expect(TwitchFollowEventModel.mergeAdjacent(messages, 3)!.channel, b);
-        expect(logins(TwitchFollowEventModel.mergeAdjacent(messages, 4)),
-            ["login5"]);
+        expect(logins(TwitchFollowEventModel.mergeAdjacent(messages, 4)), [
+          "login5",
+        ]);
       });
     });
   });
@@ -165,9 +178,13 @@ void main() {
       expect(model.timestamp, timestamp);
       expect(model.duration, const Duration(seconds: 90));
       expect(
-          model.targetUser,
-          const TwitchUserModel(
-              userId: "42", login: "target", displayName: "Target"));
+        model.targetUser,
+        const TwitchUserModel(
+          userId: "42",
+          login: "target",
+          displayName: "Target",
+        ),
+      );
       expect(model.isComplete, isFalse);
       expect(model.isSuccessful, isFalse);
     });
@@ -188,31 +205,22 @@ void main() {
 
   group("TwitchPredictionEventModel", () {
     Map<String, dynamic> predictionData(Map<String, dynamic> extra) => {
-          "timestamp": Timestamp.fromDate(timestamp),
-          "event": {
-            "id": "pr1",
-            "title": "Will we win?",
-            "outcomes": [
-              {
-                "id": "o1",
-                "title": "Yes",
-                "color": "blue",
-                "channel_points": 100
-              },
-              {
-                "id": "o2",
-                "title": "No",
-                "color": "pink",
-                "channel_points": 50
-              },
-            ],
-            ...extra,
-          },
-        };
+      "timestamp": Timestamp.fromDate(timestamp),
+      "event": {
+        "id": "pr1",
+        "title": "Will we win?",
+        "outcomes": [
+          {"id": "o1", "title": "Yes", "color": "blue", "channel_points": 100},
+          {"id": "o2", "title": "No", "color": "pink", "channel_points": 50},
+        ],
+        ...extra,
+      },
+    };
 
     test("fromDocumentData parses an in-progress prediction", () {
       final model = TwitchPredictionEventModel.fromDocumentData(
-          predictionData({"locks_at": "2024-01-02T03:10:00Z"}));
+        predictionData({"locks_at": "2024-01-02T03:10:00Z"}),
+      );
       expect(model.messageId, "channel.prediction-pr1");
       expect(model.status, "in_progress");
       expect(model.endTime, DateTime.utc(2024, 1, 2, 3, 10));
@@ -230,32 +238,44 @@ void main() {
     });
 
     test("fromEndEvent parses the result", () {
-      final model = TwitchPredictionEventModel.fromEndEvent(predictionData({
-        "ended_at": "2024-01-02T03:20:00Z",
-        "status": "resolved",
-        "winning_outcome_id": "o2",
-      }));
+      final model = TwitchPredictionEventModel.fromEndEvent(
+        predictionData({
+          "ended_at": "2024-01-02T03:20:00Z",
+          "status": "resolved",
+          "winning_outcome_id": "o2",
+        }),
+      );
       expect(model.status, "resolved");
       expect(model.winningOutcomeId, "o2");
       expect(model.endTime, DateTime.utc(2024, 1, 2, 3, 20));
     });
 
     test("outcome widget color", () {
-      expect(TwitchPredictionOutcomeModel("o", 0, "pink", "t").widgetColor,
-          isNot(TwitchPredictionOutcomeModel("o", 0, "blue", "t").widgetColor));
+      expect(
+        TwitchPredictionOutcomeModel("o", 0, "pink", "t").widgetColor,
+        isNot(TwitchPredictionOutcomeModel("o", 0, "blue", "t").widgetColor),
+      );
     });
   });
 
   group("TwitchChannelPointRedemptionEventModel", () {
     test("toEnum", () {
-      expect(TwitchChannelPointRedemptionStatusParser.toEnum("fulfilled"),
-          TwitchChannelPointRedemptionStatus.fulfilled);
-      expect(TwitchChannelPointRedemptionStatusParser.toEnum("canceled"),
-          TwitchChannelPointRedemptionStatus.canceled);
-      expect(TwitchChannelPointRedemptionStatusParser.toEnum("unfulfilled"),
-          TwitchChannelPointRedemptionStatus.unfulfilled);
-      expect(TwitchChannelPointRedemptionStatusParser.toEnum("bogus"),
-          TwitchChannelPointRedemptionStatus.unknown);
+      expect(
+        TwitchChannelPointRedemptionStatusParser.toEnum("fulfilled"),
+        TwitchChannelPointRedemptionStatus.fulfilled,
+      );
+      expect(
+        TwitchChannelPointRedemptionStatusParser.toEnum("canceled"),
+        TwitchChannelPointRedemptionStatus.canceled,
+      );
+      expect(
+        TwitchChannelPointRedemptionStatusParser.toEnum("unfulfilled"),
+        TwitchChannelPointRedemptionStatus.unfulfilled,
+      );
+      expect(
+        TwitchChannelPointRedemptionStatusParser.toEnum("bogus"),
+        TwitchChannelPointRedemptionStatus.unknown,
+      );
     });
 
     test("fromDocumentData", () {
@@ -344,13 +364,15 @@ void main() {
     });
 
     test("realtimecash fromDocumentData", () {
-      final model =
-          SimpleRealtimeCashDonationEventModel.fromDocumentData("d3", {
-        "timestamp": Timestamp.fromDate(timestamp),
-        "activity": {"asset": "MATIC", "value": 0.5, "hash": "0xabc"},
-        "donor": "anon",
-        "message": "hi",
-      });
+      final model = SimpleRealtimeCashDonationEventModel.fromDocumentData(
+        "d3",
+        {
+          "timestamp": Timestamp.fromDate(timestamp),
+          "activity": {"asset": "MATIC", "value": 0.5, "hash": "0xabc"},
+          "donor": "anon",
+          "message": "hi",
+        },
+      );
       expect(model.currency, "MATIC");
       expect(model.value, 0.5);
       expect(model.hash, "0xabc");
@@ -360,11 +382,13 @@ void main() {
     });
 
     test("realtimecash defaults unknown asset and parses string values", () {
-      final model =
-          SimpleRealtimeCashDonationEventModel.fromDocumentData("d4", {
-        "timestamp": Timestamp.fromDate(timestamp),
-        "activity": {"value": "1.25", "hash": "0xdef"},
-      });
+      final model = SimpleRealtimeCashDonationEventModel.fromDocumentData(
+        "d4",
+        {
+          "timestamp": Timestamp.fromDate(timestamp),
+          "activity": {"value": "1.25", "hash": "0xdef"},
+        },
+      );
       expect(model.currency, "UNKNOWN");
       expect(model.value, 1.25);
       expect(model.image.assetName, "assets/UNKNOWN.png");

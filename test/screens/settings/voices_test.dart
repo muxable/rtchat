@@ -15,29 +15,35 @@ void main() {
 
   Future<void> open(WidgetTester tester) async {
     engine = FakeTtsEngine(availableVoices: packVoices(['en', 'de', 'fr']));
-    tts = TtsModel.fromJson(const {},
-        engine: FakeTtsEngine(), reportError: (e, st) => throw e)
-      ..language = Language('fr')
-      ..neuralEngine = engine;
+    tts =
+        TtsModel.fromJson(
+            const {},
+            engine: FakeTtsEngine(),
+            reportError: (e, st) => throw e,
+          )
+          ..language = Language('fr')
+          ..neuralEngine = engine;
     addTearDown(tts.dispose);
-    await tester.pumpWidget(ChangeNotifierProvider.value(
-      value: tts,
-      child: const MaterialApp(
-        localizationsDelegates: [
-          ...AppLocalizations.localizationsDelegates,
-          LocaleNamesLocalizationsDelegate(),
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: VoiceLanguagesScreen(),
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: tts,
+        child: const MaterialApp(
+          localizationsDelegates: [
+            ...AppLocalizations.localizationsDelegates,
+            LocaleNamesLocalizationsDelegate(),
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: VoiceLanguagesScreen(),
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
   }
 
   List<String> titles(WidgetTester tester) => [
-        for (final tile in tester.widgetList<ListTile>(find.byType(ListTile)))
-          (tile.title as Text).data!,
-      ];
+    for (final tile in tester.widgetList<ListTile>(find.byType(ListTile)))
+      (tile.title as Text).data!,
+  ];
 
   testWidgets('lists the languages, the stream language first', (tester) async {
     await open(tester);
@@ -55,25 +61,30 @@ void main() {
     expect((await tts.voiceFor('de'))?.id, 'M2');
     expect(tts.toJson()['neuralVoices'], {'de': 'M2'});
     expect(
-        tester
-            .widget<RadioGroup<String>>(find.byType(RadioGroup<String>))
-            .groupValue,
-        'M2');
+      tester
+          .widget<RadioGroup<String>>(find.byType(RadioGroup<String>))
+          .groupValue,
+      'M2',
+    );
 
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.text('M2'), findsOneWidget);
   });
 
-  testWidgets('plays a sample with the voice through the engine',
-      (tester) async {
+  testWidgets('plays a sample with the voice through the engine', (
+    tester,
+  ) async {
     await open(tester);
     await tester.tap(find.text('French'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.descendant(
+    await tester.tap(
+      find.descendant(
         of: find.widgetWithText(RadioListTile<String>, 'F3'),
-        matching: find.byTooltip('Play sample message')));
+        matching: find.byTooltip('Play sample message'),
+      ),
+    );
     await tester.pumpAndSettle();
     final utterance = engine.utterances.single;
     expect(utterance.text, 'This is a sample message for text to speech.');

@@ -5,11 +5,12 @@ import 'package:rtchat/models/channels.dart';
 void main() {
   test("a twitch profile has its twitch channel", () {
     expect(
-        channelFromProfile({
-          'twitch': {'id': '123', 'displayName': 'Muxfd', 'login': 'muxfd'},
-          'lastActiveAt': null,
-        }),
-        Channel(Providers.twitch, '123', 'Muxfd'));
+      channelFromProfile({
+        'twitch': {'id': '123', 'displayName': 'Muxfd', 'login': 'muxfd'},
+        'lastActiveAt': null,
+      }),
+      Channel(Providers.twitch, '123', 'Muxfd'),
+    );
   });
 
   test("a kick profile has its kick channel", () {
@@ -22,10 +23,11 @@ void main() {
 
   test("falls back to the slug for the display name", () {
     expect(
-        channelFromProfile({
-          'kick': {'id': 9, 'slug': 'muxfd'},
-        })?.displayName,
-        'muxfd');
+      channelFromProfile({
+        'kick': {'id': 9, 'slug': 'muxfd'},
+      })?.displayName,
+      'muxfd',
+    );
   });
 
   test("a missing account has no channel", () {

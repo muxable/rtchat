@@ -24,15 +24,15 @@ class AudioSource {
   int get hashCode => url.hashCode;
 
   AudioSource.fromJson(Map<String, dynamic> json)
-      : name = json['name'],
-        url = Uri.parse(json['url']),
-        muted = json['muted'];
+    : name = json['name'],
+      url = Uri.parse(json['url']),
+      muted = json['muted'];
 
   Map<String, dynamic> toJson() => {
-        "name": name,
-        "url": url.toString(),
-        "muted": muted,
-      };
+    "name": name,
+    "url": url.toString(),
+    "muted": muted,
+  };
 
   @override
   String toString() => url.toString();
@@ -72,10 +72,10 @@ class AudioModel extends ChangeNotifier {
     _hostChannelStateSubscription = ProfilesAdapter.instance
         .getIsOnline(channelId: _hostChannel.toString())
         .listen((isOnline) {
-      _isOnline = isOnline;
-      _syncWebViews();
-      notifyListeners();
-    });
+          _isOnline = isOnline;
+          _syncWebViews();
+          notifyListeners();
+        });
   }
 
   bool get isSettingsVisible => _isSettingsVisible;
@@ -135,10 +135,12 @@ class AudioModel extends ChangeNotifier {
 
   void _syncWebViews() {
     if (enabled) {
-      AudioChannel.set(_sources
-          .where((element) => !element.muted)
-          .map((element) => element.url.toString())
-          .toList());
+      AudioChannel.set(
+        _sources
+            .where((element) => !element.muted)
+            .map((element) => element.url.toString())
+            .toList(),
+      );
     } else {
       AudioChannel.set([]);
     }
@@ -146,34 +148,39 @@ class AudioModel extends ChangeNotifier {
 
   Future<void> showAudioPermissionDialog(BuildContext context) {
     return showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (context) {
-          return AlertDialog(
-            title: Text(
-                AppLocalizations.of(context)!.audioSourcesRequirePermissions),
-            content: Text(AppLocalizations.of(context)!
-                .audioSourcesRequirePermissionsMessage),
-            actions: <Widget>[
-              TextButton(
-                child: Text(
-                    AppLocalizations.of(context)!.audioSourcesRemoveButton),
-                onPressed: () {
-                  _sources.clear();
-                  Navigator.of(context).pop();
-                },
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            AppLocalizations.of(context)!.audioSourcesRequirePermissions,
+          ),
+          content: Text(
+            AppLocalizations.of(context)!.audioSourcesRequirePermissionsMessage,
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                AppLocalizations.of(context)!.audioSourcesRemoveButton,
               ),
-              TextButton(
-                child: Text(AppLocalizations.of(context)!
-                    .audioSourcesOpenSettingsButton),
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  await AudioChannel.requestPermission();
-                },
+              onPressed: () {
+                _sources.clear();
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text(
+                AppLocalizations.of(context)!.audioSourcesOpenSettingsButton,
               ),
-            ],
-          );
-        });
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await AudioChannel.requestPermission();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   AudioModel.fromJson(Map<String, dynamic> json) {
@@ -182,9 +189,10 @@ class AudioModel extends ChangeNotifier {
       const Duration(minutes: 5),
       (_) => player.play(
         AssetSource("silence.mp3"),
-        ctx: AudioContextConfig(
-          focus: AudioContextConfigFocus.mixWithOthers,
-        ).build(),
+        ctx:
+            AudioContextConfig(
+              focus: AudioContextConfigFocus.mixWithOthers,
+            ).build(),
       ),
     );
     final sources = json['sources'];
@@ -200,7 +208,7 @@ class AudioModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-        "sources": _sources.map((source) => source.toJson()).toList(),
-        "isAlwaysEnabled": _isAlwaysEnabled,
-      };
+    "sources": _sources.map((source) => source.toJson()).toList(),
+    "isAlwaysEnabled": _isAlwaysEnabled,
+  };
 }

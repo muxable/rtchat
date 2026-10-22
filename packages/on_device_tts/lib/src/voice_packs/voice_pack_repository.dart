@@ -56,8 +56,11 @@ class VoicePackInstallTask {
   String? _downloadId;
 
   VoicePackInstallTask._(this.pack)
-      : _latest = VoicePackProgress(
-            VoicePackInstallPhase.waiting, 0, pack.downloadSize) {
+    : _latest = VoicePackProgress(
+        VoicePackInstallPhase.waiting,
+        0,
+        pack.downloadSize,
+      ) {
     // Nobody has to listen to the result; errors still reach those who do.
     _done.future.ignore();
   }
@@ -126,8 +129,8 @@ class VoicePackRepository {
     this.wifiOnly = true,
     List<VoicePack>? packs,
     @visibleForTesting PackDownloader? downloader,
-  })  : _packs = packs ?? bundledVoicePacks,
-        _downloader = downloader ?? BackgroundPackDownloader();
+  }) : _packs = packs ?? bundledVoicePacks,
+       _downloader = downloader ?? BackgroundPackDownloader();
 
   Directory get _packsDir => Directory(p.join(directory.path, 'packs'));
   Directory get _downloadsDir => Directory(p.join(directory.path, 'downloads'));
@@ -150,7 +153,9 @@ class VoicePackRepository {
         final dir = packDirectory(key);
         if (!await dir.exists()) continue;
         installed[key] = InstalledVoicePack.fromJson(
-            value as Map<String, Object?>, dir.path);
+          value as Map<String, Object?>,
+          dir.path,
+        );
       } on Object catch (e) {
         debugPrint('ignoring installed voice pack $key: $e');
       }
@@ -193,8 +198,13 @@ class VoicePackRepository {
     () async {
       try {
         final installed = await _install(task, allowMetered);
-        task._emit(VoicePackProgress(
-            VoicePackInstallPhase.done, pack.downloadSize, pack.downloadSize));
+        task._emit(
+          VoicePackProgress(
+            VoicePackInstallPhase.done,
+            pack.downloadSize,
+            pack.downloadSize,
+          ),
+        );
         task._done.complete(installed);
         if (!_changes.isClosed) _changes.add(null);
       } on Object catch (e, stack) {
@@ -212,12 +222,15 @@ class VoicePackRepository {
   }
 
   Future<InstalledVoicePack> _install(
-      VoicePackInstallTask task, bool allowMetered) async {
+    VoicePackInstallTask task,
+    bool allowMetered,
+  ) async {
     final pack = task.pack;
     for (final file in pack.files) {
       if (!isSafeRelativePath(file.path)) {
         throw VoicePackUnsupportedException(
-            '${pack.id} has a file outside its directory: ${file.path}');
+          '${pack.id} has a file outside its directory: ${file.path}',
+        );
       }
     }
     await _start();
@@ -232,24 +245,36 @@ class VoicePackRepository {
     try {
       // Download everything first, so a failure leaves nothing half done.
       final done = List.filled(pack.files.length, 0);
-      void report(VoicePackInstallPhase phase) => task._emit(VoicePackProgress(
-          phase, done.fold(0, (a, b) => a + b), pack.downloadSize));
+      void report(VoicePackInstallPhase phase) => task._emit(
+        VoicePackProgress(
+          phase,
+          done.fold(0, (a, b) => a + b),
+          pack.downloadSize,
+        ),
+      );
       for (var i = 0; i < pack.files.length; i++) {
         task._throwIfCancelled();
         final file = pack.files[i];
         if (!await _isDownloaded(file, downloads[i])) {
           await _download(
-              task, file, downloads[i], !allowMetered && wifiOnly, i == 0,
-              (bytes, phase) {
-            done[i] = bytes;
-            report(phase);
-          });
+            task,
+            file,
+            downloads[i],
+            !allowMetered && wifiOnly,
+            i == 0,
+            (bytes, phase) {
+              done[i] = bytes;
+              report(phase);
+            },
+          );
         }
         done[i] = file.size;
         task._throwIfCancelled();
-        report(i == pack.files.length - 1
-            ? VoicePackInstallPhase.verifying
-            : VoicePackInstallPhase.downloading);
+        report(
+          i == pack.files.length - 1
+              ? VoicePackInstallPhase.verifying
+              : VoicePackInstallPhase.downloading,
+        );
         await _verify(file, downloads[i]);
       }
 
@@ -288,7 +313,8 @@ class VoicePackRepository {
   /// Picks up downloads left over from an earlier run, once. Nothing is
   /// waiting for them any more, so they are cancelled; a file that finished
   /// downloading meanwhile is kept and checked by the next install.
-  Future<void> _start() => _started ??= () async {
+  Future<void> _start() =>
+      _started ??= () async {
         try {
           for (final id in await _downloader.leftoverDownloads()) {
             if (_tasks.values.any((task) => task._downloadId == id)) continue;
@@ -315,9 +341,10 @@ class VoicePackRepository {
     task._downloadId = id;
     // Between files the download is queued only briefly; only a long wait,
     // e.g. for Wi-Fi, is reported as one, through onState.
-    var phase = first
-        ? VoicePackInstallPhase.waiting
-        : VoicePackInstallPhase.downloading;
+    var phase =
+        first
+            ? VoicePackInstallPhase.waiting
+            : VoicePackInstallPhase.downloading;
     var bytes = 0;
     onProgress(bytes, phase);
     final cancelled = task._cancel.future.then((_) async {
@@ -350,8 +377,10 @@ class VoicePackRepository {
           } else if (first && bytes == 0) {
             report(VoicePackInstallPhase.waiting);
           } else {
-            waiting = Timer(const Duration(seconds: 1),
-                () => report(VoicePackInstallPhase.waiting));
+            waiting = Timer(
+              const Duration(seconds: 1),
+              () => report(VoicePackInstallPhase.waiting),
+            );
           }
         },
       );
@@ -368,15 +397,18 @@ class VoicePackRepository {
         await _deleteQuietly(target);
         throw const VoicePackCancelledException();
       case PackDownloadState.notFound:
-        throw VoicePackDownloadException('${file.url} was not found',
-            statusCode: result.httpStatusCode ?? 404);
+        throw VoicePackDownloadException(
+          '${file.url} was not found',
+          statusCode: result.httpStatusCode ?? 404,
+        );
       case PackDownloadState.failed ||
-            PackDownloadState.waiting ||
-            PackDownloadState.running:
+          PackDownloadState.waiting ||
+          PackDownloadState.running:
         await _deleteQuietly(target);
         throw VoicePackDownloadException(
-            'downloading ${file.url} failed: ${result.message}',
-            statusCode: result.httpStatusCode);
+          'downloading ${file.url} failed: ${result.message}',
+          statusCode: result.httpStatusCode,
+        );
     }
   }
 
@@ -386,7 +418,8 @@ class VoicePackRepository {
     if (digest.toString() != file.sha256) {
       await _deleteQuietly(download);
       throw VoicePackChecksumException(
-          '${file.url} has sha256 $digest, expected ${file.sha256}');
+        '${file.url} has sha256 $digest, expected ${file.sha256}',
+      );
     }
   }
 
@@ -397,8 +430,12 @@ class VoicePackRepository {
     Directory? old;
     if (await target.exists()) {
       await _trashDir.create(recursive: true);
-      old = await target.rename(p.join(_trashDir.path,
-          '${p.basename(target.path)}-${DateTime.now().microsecondsSinceEpoch}'));
+      old = await target.rename(
+        p.join(
+          _trashDir.path,
+          '${p.basename(target.path)}-${DateTime.now().microsecondsSinceEpoch}',
+        ),
+      );
     }
     try {
       await staging.rename(target.path);
@@ -423,8 +460,12 @@ class VoicePackRepository {
       final dir = packDirectory(id);
       if (await dir.exists()) {
         await _trashDir.create(recursive: true);
-        final trashed = await dir.rename(p.join(
-            _trashDir.path, '$id-${DateTime.now().microsecondsSinceEpoch}'));
+        final trashed = await dir.rename(
+          p.join(
+            _trashDir.path,
+            '$id-${DateTime.now().microsecondsSinceEpoch}',
+          ),
+        );
         await _deleteQuietly(trashed);
       }
       if (removed && !_changes.isClosed) _changes.add(null);

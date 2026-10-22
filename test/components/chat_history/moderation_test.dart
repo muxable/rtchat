@@ -15,30 +15,40 @@ import '../../fakes/fake_user_model.dart';
 final kickChannel = Channel(Providers.kick, '42', 'streamer');
 
 KickMessageModel kickMessage() => KickMessageModel(
-    messageId: 'kick:m1',
-    timestamp: DateTime(2025),
-    author: const KickUserModel(userId: '7', login: 'viewer'),
-    message: 'hello',
-    channelId: 'kick:42');
+  messageId: 'kick:m1',
+  timestamp: DateTime(2025),
+  author: const KickUserModel(userId: '7', login: 'viewer'),
+  message: 'hello',
+  channelId: 'kick:42',
+);
 
 Future<void> pump(WidgetTester tester, Channel userChannel) async {
-  await tester.pumpWidget(MultiProvider(
-    providers: [
-      ChangeNotifierProvider<UserModel>.value(
-          value: FakeUserModel(userChannel: userChannel)),
-      ChangeNotifierProvider<LayoutModel>.value(
-          value: LayoutModel.fromJson({})),
-      ChangeNotifierProvider<StyleModel>.value(value: StyleModel.fromJson({})),
-    ],
-    // dialogs are built outside `home`, so localizations come from the app.
-    child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Material(
-        child: ChatHistoryMessage(message: kickMessage(), channel: kickChannel),
+  await tester.pumpWidget(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<UserModel>.value(
+          value: FakeUserModel(userChannel: userChannel),
+        ),
+        ChangeNotifierProvider<LayoutModel>.value(
+          value: LayoutModel.fromJson({}),
+        ),
+        ChangeNotifierProvider<StyleModel>.value(
+          value: StyleModel.fromJson({}),
+        ),
+      ],
+      // dialogs are built outside `home`, so localizations come from the app.
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Material(
+          child: ChatHistoryMessage(
+            message: kickMessage(),
+            channel: kickChannel,
+          ),
+        ),
       ),
     ),
-  ));
+  );
   await tester.pumpAndSettle();
 }
 
@@ -58,8 +68,9 @@ void main() {
     expect(find.byType(InkWell), findsNothing);
   });
 
-  testWidgets('a twitch channel with the same id is not the kick channel',
-      (tester) async {
+  testWidgets('a twitch channel with the same id is not the kick channel', (
+    tester,
+  ) async {
     await pump(tester, Channel(Providers.twitch, '42', 'me'));
     expect(find.byType(InkWell), findsNothing);
   });

@@ -28,8 +28,9 @@ Future<void> initializeFirebaseEmulators() async {
 
   await FirebaseAuth.instance.useAuthEmulator(emulatorHost, 9099);
   FirebaseFirestore.instance.useFirestoreEmulator(emulatorHost, _firestorePort);
-  FirebaseFirestore.instance.settings =
-      const Settings(persistenceEnabled: false);
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: false,
+  );
   FirebaseDatabase.instance.useDatabaseEmulator(emulatorHost, 9000);
   // Functions are not emulated. Point them at an unused port so callables
   // fail fast instead of reaching production; the app already tolerates
@@ -43,15 +44,17 @@ class FirestoreSeeder {
   final _client = HttpClient();
 
   Uri _uri(String path, [Map<String, String>? query]) => Uri(
-      scheme: 'http',
-      host: emulatorHost,
-      port: _firestorePort,
-      path: path,
-      queryParameters: query);
+    scheme: 'http',
+    host: emulatorHost,
+    port: _firestorePort,
+    path: path,
+    queryParameters: query,
+  );
 
   Future<void> setDocument(String path, Map<String, dynamic> data) async {
     final request = await _client.patchUrl(
-        _uri('/v1/projects/$_projectId/databases/(default)/documents/$path'));
+      _uri('/v1/projects/$_projectId/databases/(default)/documents/$path'),
+    );
     request.headers
       ..set(HttpHeaders.authorizationHeader, 'Bearer owner')
       ..contentType = ContentType.json;
@@ -64,8 +67,9 @@ class FirestoreSeeder {
   }
 
   Future<void> clear() async {
-    final request = await _client.deleteUrl(_uri(
-        '/emulator/v1/projects/$_projectId/databases/(default)/documents'));
+    final request = await _client.deleteUrl(
+      _uri('/emulator/v1/projects/$_projectId/databases/(default)/documents'),
+    );
     final response = await request.close();
     await response.drain<void>();
   }
@@ -90,11 +94,11 @@ class FirestoreSeeder {
       return {'timestampValue': value.toUtc().toIso8601String()};
     } else if (value is List) {
       return {
-        'arrayValue': {'values': value.map(_encodeValue).toList()}
+        'arrayValue': {'values': value.map(_encodeValue).toList()},
       };
     } else if (value is Map<String, dynamic>) {
       return {
-        'mapValue': {'fields': _encodeFields(value)}
+        'mapValue': {'fields': _encodeFields(value)},
       };
     }
     throw ArgumentError('unsupported type ${value.runtimeType}');

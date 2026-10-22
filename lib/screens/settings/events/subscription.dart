@@ -9,12 +9,13 @@ class SubscriptionEventScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-              AppLocalizations.of(context)!.subscriptionConfigurationTitle),
+      appBar: AppBar(
+        title: Text(
+          AppLocalizations.of(context)!.subscriptionConfigurationTitle,
         ),
-        body: Consumer<EventSubConfigurationModel>(
-            builder: (context, model, child) {
+      ),
+      body: Consumer<EventSubConfigurationModel>(
+        builder: (context, model, child) {
           return Column(
             children: [
               Padding(
@@ -22,49 +23,60 @@ class SubscriptionEventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(AppLocalizations.of(context)!.pinDuration,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontWeight: FontWeight.bold,
-                        )),
+                    Text(
+                      AppLocalizations.of(context)!.pinDuration,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Slider.adaptive(
-                      value: model
-                          .subscriptionEventConfig.eventDuration.inSeconds
-                          .toDouble(),
+                      value:
+                          model.subscriptionEventConfig.eventDuration.inSeconds
+                              .toDouble(),
                       min: 0,
                       max: 30,
                       divisions: 15,
-                      label: AppLocalizations.of(context)!.durationSeconds(model
-                          .subscriptionEventConfig.eventDuration.inSeconds),
+                      label: AppLocalizations.of(context)!.durationSeconds(
+                        model.subscriptionEventConfig.eventDuration.inSeconds,
+                      ),
                       onChanged: (value) {
                         model.setSubscriptionEventDuration(
-                            Duration(seconds: value.toInt()));
+                          Duration(seconds: value.toInt()),
+                        );
                       },
                     ),
                     SwitchListTile.adaptive(
                       title: Text(AppLocalizations.of(context)!.enableEvent),
                       subtitle: Text(
-                          AppLocalizations.of(context)!.showEventInChatHistory),
+                        AppLocalizations.of(context)!.showEventInChatHistory,
+                      ),
                       value: model.subscriptionEventConfig.showEvent,
                       onChanged: (value) {
                         model.setSubscriptionEventShowable(value);
                       },
                     ),
                     SwitchListTile.adaptive(
-                      title: Text(AppLocalizations.of(context)!
-                          .enableGiftedSubscriptions),
-                      subtitle: Text(AppLocalizations.of(context)!
-                          .enableGiftedSubscriptionsSubtitle),
+                      title: Text(
+                        AppLocalizations.of(context)!.enableGiftedSubscriptions,
+                      ),
+                      subtitle: Text(
+                        AppLocalizations.of(
+                          context,
+                        )!.enableGiftedSubscriptionsSubtitle,
+                      ),
                       value: model.subscriptionEventConfig.showIndividualGifts,
                       onChanged: (value) {
                         model.setGiftSubscriptionStatus(value);
                       },
-                    )
+                    ),
                   ],
                 ),
               ),
             ],
           );
-        }));
+        },
+      ),
+    );
   }
 }

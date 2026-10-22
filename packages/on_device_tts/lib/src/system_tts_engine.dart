@@ -39,24 +39,22 @@ class SystemTtsEngine implements TtsEngine {
     String? Function()? platformLanguage,
     @visibleForTesting AudioPlayer? audioPlayer,
     @visibleForTesting Future<Directory> Function()? tempDirectory,
-  })  : _tts = tts ?? FlutterTts(),
-        _platformLanguage = platformLanguage ?? _devicePlatformLanguage,
-        _player = audioPlayer,
-        _tempDirectory = tempDirectory ?? getTemporaryDirectory {
+  }) : _tts = tts ?? FlutterTts(),
+       _platformLanguage = platformLanguage ?? _devicePlatformLanguage,
+       _player = audioPlayer,
+       _tempDirectory = tempDirectory ?? getTemporaryDirectory {
     _tts
       ..setSharedInstance(true)
-      ..setIosAudioCategory(
-          IosTextToSpeechAudioCategory.playback,
-          [IosTextToSpeechAudioCategoryOptions.mixWithOthers],
-          IosTextToSpeechAudioMode.voicePrompt);
+      ..setIosAudioCategory(IosTextToSpeechAudioCategory.playback, [
+        IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+      ], IosTextToSpeechAudioMode.voicePrompt);
   }
 
   static String? _devicePlatformLanguage() => switch (defaultTargetPlatform) {
-        TargetPlatform.iOS ||
-        TargetPlatform.macOS =>
-          PlatformDispatcher.instance.locale.toLanguageTag(),
-        _ => null,
-      };
+    TargetPlatform.iOS ||
+    TargetPlatform.macOS => PlatformDispatcher.instance.locale.toLanguageTag(),
+    _ => null,
+  };
 
   /// With a [voice], that voice speaks. Otherwise, with a [language], the
   /// platform's voice for that language speaks: the full tag if the
@@ -82,8 +80,14 @@ class SystemTtsEngine implements TtsEngine {
     }
   }
 
-  Future<void> _speak(String text, TtsVoice? voice, double rate, double pitch,
-      String? language, _Utterance utterance) async {
+  Future<void> _speak(
+    String text,
+    TtsVoice? voice,
+    double rate,
+    double pitch,
+    String? language,
+    _Utterance utterance,
+  ) async {
     await _tts.setSpeechRate(rate);
     await _tts.setPitch(pitch);
     if (voice != null) {
@@ -124,9 +128,11 @@ class SystemTtsEngine implements TtsEngine {
       utterance.checkCanceled();
       Object? result;
       try {
-        result = await utterance.wait(_tts
-            .synthesizeToFile(text, file.path, true)
-            .timeout(const Duration(seconds: 30)));
+        result = await utterance.wait(
+          _tts
+              .synthesizeToFile(text, file.path, true)
+              .timeout(const Duration(seconds: 30)),
+        );
       } catch (_) {
         // Reset flutter_tts's synthesis state after a timeout or platform error.
         // Cancellation already stops the platform before releasing this wait.
@@ -138,16 +144,20 @@ class SystemTtsEngine implements TtsEngine {
       final player = _player ??= AudioPlayer();
       try {
         final duration = await utterance.wait(
-            player.setFilePath(file.path).timeout(const Duration(seconds: 10)));
+          player.setFilePath(file.path).timeout(const Duration(seconds: 10)),
+        );
         utterance.checkCanceled();
         final completed = Completer<void>();
-        final subscription = player.processingStateStream.listen((state) {
-          if (state == ProcessingState.completed && !completed.isCompleted) {
-            completed.complete();
-          }
-        }, onError: (Object error, StackTrace stack) {
-          if (!completed.isCompleted) completed.completeError(error, stack);
-        });
+        final subscription = player.processingStateStream.listen(
+          (state) {
+            if (state == ProcessingState.completed && !completed.isCompleted) {
+              completed.complete();
+            }
+          },
+          onError: (Object error, StackTrace stack) {
+            if (!completed.isCompleted) completed.completeError(error, stack);
+          },
+        );
         try {
           // play() can complete immediately if the player is already playing.
           // Observe completion separately, and surface errors from either future.
@@ -155,9 +165,12 @@ class SystemTtsEngine implements TtsEngine {
             player.play(),
             completed.future,
           ], eagerError: true);
-          await utterance.wait(playback.timeout(
+          await utterance.wait(
+            playback.timeout(
               (duration ?? const Duration(seconds: 30)) +
-                  const Duration(seconds: 5)));
+                  const Duration(seconds: 5),
+            ),
+          );
         } finally {
           await subscription.cancel();
         }
@@ -189,10 +202,7 @@ class SystemTtsEngine implements TtsEngine {
     final utterance = _utterance;
     utterance?.canceled = true;
     try {
-      await Future.wait([
-        _tts.stop(),
-        if (_player != null) _player!.stop(),
-      ]);
+      await Future.wait([_tts.stop(), if (_player != null) _player!.stop()]);
     } finally {
       if (utterance != null && !utterance.stopped.isCompleted) {
         utterance.stopped.complete();

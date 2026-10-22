@@ -24,7 +24,8 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.19"
+          # the latest toolchain, so gofmt matches the latest release.
+          go-version: stable
           cache-dependency-path: agent/go.sum
 
       - uses: ./.github/actions/twitch-cli

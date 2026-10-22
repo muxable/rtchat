@@ -9,39 +9,49 @@ import 'l10n.dart';
 final channel = Channel('twitch', '1', 'muxfd');
 
 Emote emote(String code, String? category) => Emote(
-    provider: 'bttv',
-    category: category,
-    id: code,
-    code: code,
-    imageUrl: 'https://example.com/$code.png');
+  provider: 'bttv',
+  category: category,
+  id: code,
+  code: code,
+  imageUrl: 'https://example.com/$code.png',
+);
 
 Future<void> pumpEmotes(WidgetTester tester, List<Emote> emotes) async {
-  await tester.pumpWidget(MaterialApp(
+  await tester.pumpWidget(
+    MaterialApp(
       home: TestLocalizations(
-          child: Material(
-              child: EmotesList(
-                  emotes: emotes,
-                  channel: channel,
-                  onEmoteSelected: (_) {})))));
+        child: Material(
+          child: EmotesList(
+            emotes: emotes,
+            channel: channel,
+            onEmoteSelected: (_) {},
+          ),
+        ),
+      ),
+    ),
+  );
   // localizations load asynchronously.
   await tester.pump();
 }
 
-List<String> headers(WidgetTester tester) => tester
-    .widgetList<Text>(find.byType(Text))
-    .map((text) => text.data!)
-    .toList();
+List<String> headers(WidgetTester tester) =>
+    tester
+        .widgetList<Text>(find.byType(Text))
+        .map((text) => text.data!)
+        .toList();
 
 void main() {
-  testWidgets("shows a channel's emotes when there are no global ones",
-      (tester) async {
+  testWidgets("shows a channel's emotes when there are no global ones", (
+    tester,
+  ) async {
     await pumpEmotes(tester, [emote('muxHi', 'muxfd')]);
     expect(tester.takeException(), isNull);
     expect(headers(tester), ['muxfd']);
   });
 
-  testWidgets("orders the channel's emotes, global emotes, then the rest",
-      (tester) async {
+  testWidgets("orders the channel's emotes, global emotes, then the rest", (
+    tester,
+  ) async {
     await pumpEmotes(tester, [
       emote('Zed', 'Zed'),
       emote('muxHi', 'muxfd'),

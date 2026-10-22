@@ -123,8 +123,9 @@ class BackgroundPackDownloader implements PackDownloader {
     required void Function(double fraction) onProgress,
     required void Function(PackDownloadState state) onState,
   }) async {
-    final (baseDirectory, directory, filename) =
-        await Task.split(filePath: request.filePath);
+    final (baseDirectory, directory, filename) = await Task.split(
+      filePath: request.filePath,
+    );
     final task = DownloadTask(
       taskId: request.id,
       url: request.url.toString(),
@@ -150,7 +151,8 @@ class BackgroundPackDownloader implements PackDownloader {
     return PackDownloadResult(
       _state(update.status),
       message: update.exception?.description,
-      httpStatusCode: update.responseStatusCode ??
+      httpStatusCode:
+          update.responseStatusCode ??
           (update.exception is TaskHttpException
               ? (update.exception as TaskHttpException).httpResponseCode
               : null),
@@ -158,16 +160,15 @@ class BackgroundPackDownloader implements PackDownloader {
   }
 
   static PackDownloadState _state(TaskStatus status) => switch (status) {
-        TaskStatus.enqueued ||
-        TaskStatus.waitingToRetry ||
-        TaskStatus.paused =>
-          PackDownloadState.waiting,
-        TaskStatus.running => PackDownloadState.running,
-        TaskStatus.complete => PackDownloadState.complete,
-        TaskStatus.notFound => PackDownloadState.notFound,
-        TaskStatus.failed => PackDownloadState.failed,
-        TaskStatus.canceled => PackDownloadState.canceled,
-      };
+    TaskStatus.enqueued ||
+    TaskStatus.waitingToRetry ||
+    TaskStatus.paused => PackDownloadState.waiting,
+    TaskStatus.running => PackDownloadState.running,
+    TaskStatus.complete => PackDownloadState.complete,
+    TaskStatus.notFound => PackDownloadState.notFound,
+    TaskStatus.failed => PackDownloadState.failed,
+    TaskStatus.canceled => PackDownloadState.canceled,
+  };
 
   @override
   Future<void> cancel(String id) async {

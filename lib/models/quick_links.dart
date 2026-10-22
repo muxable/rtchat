@@ -18,15 +18,15 @@ class QuickLinkSource {
   int get hashCode => url.hashCode;
 
   QuickLinkSource.fromJson(Map<String, dynamic> json)
-      : icon = json['icon'],
-        url = Uri.parse(json['url']),
-        label = json['label'] ?? json['url']; // null coalescing for migration.
+    : icon = json['icon'],
+      url = Uri.parse(json['url']),
+      label = json['label'] ?? json['url']; // null coalescing for migration.
 
   Map<String, dynamic> toJson() => {
-        "url": url.toString(),
-        "icon": icon,
-        "label": label,
-      };
+    "url": url.toString(),
+    "icon": icon,
+    "label": label,
+  };
 
   @override
   String toString() => url.toString();
@@ -63,6 +63,6 @@ class QuickLinksModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-        "sources": _sources.map((source) => source.toJson()).toList(),
-      };
+    "sources": _sources.map((source) => source.toJson()).toList(),
+  };
 }

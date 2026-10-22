@@ -9,11 +9,11 @@ class RaidEventScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.raidConfigurationTitle),
-        ),
-        body: Consumer<EventSubConfigurationModel>(
-            builder: (context, model, child) {
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.raidConfigurationTitle),
+      ),
+      body: Consumer<EventSubConfigurationModel>(
+        builder: (context, model, child) {
           return Column(
             children: [
               Padding(
@@ -21,38 +21,46 @@ class RaidEventScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(AppLocalizations.of(context)!.pinDuration,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontWeight: FontWeight.bold,
-                        )),
+                    Text(
+                      AppLocalizations.of(context)!.pinDuration,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Slider.adaptive(
-                      value: model.raidEventConfig.eventDuration.inSeconds
-                          .toDouble(),
+                      value:
+                          model.raidEventConfig.eventDuration.inSeconds
+                              .toDouble(),
                       min: 0,
                       max: 30,
                       divisions: 15,
                       label: AppLocalizations.of(context)!.durationSeconds(
-                          model.raidEventConfig.eventDuration.inSeconds),
+                        model.raidEventConfig.eventDuration.inSeconds,
+                      ),
                       onChanged: (value) {
                         model.setRaidEventDuration(
-                            Duration(seconds: value.toInt()));
+                          Duration(seconds: value.toInt()),
+                        );
                       },
                     ),
                     SwitchListTile.adaptive(
                       title: Text(AppLocalizations.of(context)!.enableEvent),
                       subtitle: Text(
-                          AppLocalizations.of(context)!.showEventInChatHistory),
+                        AppLocalizations.of(context)!.showEventInChatHistory,
+                      ),
                       value: model.raidEventConfig.showEvent,
                       onChanged: (value) {
                         model.setRaidEventShowable(value);
                       },
                     ),
                     SwitchListTile.adaptive(
-                      title:
-                          Text(AppLocalizations.of(context)!.enableShoutouts),
-                      subtitle: Text(AppLocalizations.of(context)!
-                          .enableShoutoutsSubtitle),
+                      title: Text(
+                        AppLocalizations.of(context)!.enableShoutouts,
+                      ),
+                      subtitle: Text(
+                        AppLocalizations.of(context)!.enableShoutoutsSubtitle,
+                      ),
                       value: model.raidEventConfig.enableShoutoutButton,
                       onChanged: (value) {
                         model.setRaidEventEnableShoutoutButton(value);
@@ -63,6 +71,8 @@ class RaidEventScreen extends StatelessWidget {
               ),
             ],
           );
-        }));
+        },
+      ),
+    );
   }
 }

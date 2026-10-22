@@ -33,10 +33,10 @@ class OnnxVoice {
   const OnnxVoice({required this.id, required this.name, this.language});
 
   factory OnnxVoice.fromMap(Map<Object?, Object?> map) => OnnxVoice(
-        id: map['id'] as String,
-        name: map['name'] as String,
-        language: map['language'] as String?,
-      );
+    id: map['id'] as String,
+    name: map['name'] as String,
+    language: map['language'] as String?,
+  );
 
   @override
   bool operator ==(Object other) =>
@@ -98,9 +98,10 @@ class OnnxTtsEvent {
 
   /// Parses an event map, or returns null for an unknown event type.
   static OnnxTtsEvent? fromMap(Map<Object?, Object?> map) {
-    final type = OnnxTtsEventType.values
-        .where((type) => type.name == map['type'])
-        .firstOrNull;
+    final type =
+        OnnxTtsEventType.values
+            .where((type) => type.name == map['type'])
+            .firstOrNull;
     if (type == null) return null;
     return OnnxTtsEvent(
       utteranceId: map['utteranceId'] as String,
@@ -148,11 +149,13 @@ class OnnxTtsPlatform {
   Stream<OnnxTtsEvent>? _events;
   Stream<int>? _memoryPressure;
 
-  OnnxTtsPlatform(
-      {MethodChannel? methods, EventChannel? events, EventChannel? memory})
-      : _methods = methods ?? const MethodChannel(methodChannelName),
-        _eventChannel = events ?? const EventChannel(eventChannelName),
-        _memoryChannel = memory ?? const EventChannel(memoryChannelName);
+  OnnxTtsPlatform({
+    MethodChannel? methods,
+    EventChannel? events,
+    EventChannel? memory,
+  }) : _methods = methods ?? const MethodChannel(methodChannelName),
+       _eventChannel = events ?? const EventChannel(eventChannelName),
+       _memoryChannel = memory ?? const EventChannel(memoryChannelName);
 
   /// Loads the model in [modelDir] and returns its handle.
   Future<String> load({
@@ -174,8 +177,9 @@ class OnnxTtsPlatform {
   }
 
   Future<List<OnnxVoice>> voices(String handle) async {
-    final voices =
-        await _methods.invokeListMethod<Object?>('voices', {'handle': handle});
+    final voices = await _methods.invokeListMethod<Object?>('voices', {
+      'handle': handle,
+    });
     return [
       for (final voice in voices ?? const [])
         OnnxVoice.fromMap(voice as Map<Object?, Object?>),
@@ -192,16 +196,15 @@ class OnnxTtsPlatform {
     required String voiceId,
     double speed = 1.0,
     int steps = 5,
-  }) =>
-      _methods.invokeMethod<void>('speak', {
-        'handle': handle,
-        'utteranceId': utteranceId,
-        'segments': segments,
-        'language': language,
-        'voiceId': voiceId,
-        'speed': speed,
-        'steps': steps,
-      });
+  }) => _methods.invokeMethod<void>('speak', {
+    'handle': handle,
+    'utteranceId': utteranceId,
+    'segments': segments,
+    'language': language,
+    'voiceId': voiceId,
+    'speed': speed,
+    'steps': steps,
+  });
 
   /// Synthesizes [text] without playing it. With [noiseSeed] the output is
   /// deterministic.
@@ -214,16 +217,16 @@ class OnnxTtsPlatform {
     int steps = 5,
     int? noiseSeed,
   }) async {
-    final result =
-        await _methods.invokeMapMethod<String, Object?>('synthesize', {
-      'handle': handle,
-      'text': text,
-      'language': language,
-      'voiceId': voiceId,
-      'speed': speed,
-      'steps': steps,
-      if (noiseSeed != null) 'noiseSeed': noiseSeed,
-    });
+    final result = await _methods
+        .invokeMapMethod<String, Object?>('synthesize', {
+          'handle': handle,
+          'text': text,
+          'language': language,
+          'voiceId': voiceId,
+          'speed': speed,
+          'steps': steps,
+          if (noiseSeed != null) 'noiseSeed': noiseSeed,
+        });
     if (result == null) {
       throw PlatformException(code: 'synthesis_failed', message: 'No audio');
     }
@@ -244,8 +247,9 @@ class OnnxTtsPlatform {
   /// say.
   Future<DeviceMemory?> deviceMemory() async {
     try {
-      final map =
-          await _methods.invokeMapMethod<Object?, Object?>('deviceMemory');
+      final map = await _methods.invokeMapMethod<Object?, Object?>(
+        'deviceMemory',
+      );
       return map == null ? null : DeviceMemory.fromMap(map);
     } on MissingPluginException {
       return null;
@@ -255,13 +259,18 @@ class OnnxTtsPlatform {
   /// The trim level of each memory warning the native side forwards
   /// (Android only; see `MemoryPressureMonitor`), as a broadcast stream.
   Stream<int> get memoryPressure =>
-      _memoryPressure ??= _memoryChannel.receiveBroadcastStream().map((event) =>
-          ((event as Map<Object?, Object?>)['level'] as num).toInt());
+      _memoryPressure ??= _memoryChannel.receiveBroadcastStream().map(
+        (event) => ((event as Map<Object?, Object?>)['level'] as num).toInt(),
+      );
 
   /// Events of every utterance, as a broadcast stream.
-  Stream<OnnxTtsEvent> get events => _events ??= _eventChannel
-      .receiveBroadcastStream()
-      .map((event) => OnnxTtsEvent.fromMap(event as Map<Object?, Object?>))
-      .where((event) => event != null)
-      .cast<OnnxTtsEvent>();
+  Stream<OnnxTtsEvent> get events =>
+      _events ??=
+          _eventChannel
+              .receiveBroadcastStream()
+              .map(
+                (event) => OnnxTtsEvent.fromMap(event as Map<Object?, Object?>),
+              )
+              .where((event) => event != null)
+              .cast<OnnxTtsEvent>();
 }

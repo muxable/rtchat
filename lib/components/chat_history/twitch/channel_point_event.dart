@@ -14,15 +14,23 @@ class TwitchChannelPointRedemptionEventWidget extends StatelessWidget {
     return DecoratedEventWidget.icon(
       icon: model.icon,
       child: StyledText(
-        text: model.userInput != null
-            ? AppLocalizations.of(context)!.channelPointRedemptionWithUserInput(
-                model.redeemerUsername,
-                model.rewardName,
-                model.rewardCost,
-                model.userInput!)
-            : AppLocalizations.of(context)!
-                .channelPointRedemptionWithoutUserInput(
-                    model.redeemerUsername, model.rewardName, model.rewardCost),
+        text:
+            model.userInput != null
+                ? AppLocalizations.of(
+                  context,
+                )!.channelPointRedemptionWithUserInput(
+                  model.redeemerUsername,
+                  model.rewardName,
+                  model.rewardCost,
+                  model.userInput!,
+                )
+                : AppLocalizations.of(
+                  context,
+                )!.channelPointRedemptionWithoutUserInput(
+                  model.redeemerUsername,
+                  model.rewardName,
+                  model.rewardCost,
+                ),
         tags: {
           'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
         },

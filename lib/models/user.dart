@@ -17,8 +17,9 @@ class UserModel extends ChangeNotifier {
   Channel? _userChannel;
 
   UserModel() {
-    _userSubscription =
-        FirebaseAuth.instance.authStateChanges().listen((user) async {
+    _userSubscription = FirebaseAuth.instance.authStateChanges().listen((
+      user,
+    ) async {
       _user = user;
       _profileSubscription?.cancel();
       await FirebaseCrashlytics.instance.setUserIdentifier(user?.uid ?? "");
@@ -32,18 +33,24 @@ class UserModel extends ChangeNotifier {
       _profileSubscription = ProfilesAdapter.instance
           .getChannel(userId: user.uid)
           .listen((channel) {
-        _userChannel = channel;
-        _isLoading = false;
-        notifyListeners();
-        if (channel != null) {
-          FirebaseAnalytics.instance
-              .setUserProperty(name: "user_provider", value: channel.provider);
-          FirebaseAnalytics.instance.setUserProperty(
-              name: "user_channel_id", value: channel.channelId);
-          FirebaseAnalytics.instance.setUserProperty(
-              name: "user_display_name", value: channel.displayName);
-        }
-      });
+            _userChannel = channel;
+            _isLoading = false;
+            notifyListeners();
+            if (channel != null) {
+              FirebaseAnalytics.instance.setUserProperty(
+                name: "user_provider",
+                value: channel.provider,
+              );
+              FirebaseAnalytics.instance.setUserProperty(
+                name: "user_channel_id",
+                value: channel.channelId,
+              );
+              FirebaseAnalytics.instance.setUserProperty(
+                name: "user_display_name",
+                value: channel.displayName,
+              );
+            }
+          });
     });
   }
 
@@ -91,7 +98,8 @@ class UserModel extends ChangeNotifier {
     switch (channel.provider) {
       case Providers.twitch:
         return Uri.tryParse(
-            "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
+          "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed",
+        );
     }
     return null;
   }

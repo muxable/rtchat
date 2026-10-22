@@ -21,22 +21,26 @@ class Viewers {
       return this;
     }
     return Viewers(
-      broadcaster: broadcaster
-          .where((name) => name.toLowerCase().contains(text.toLowerCase()))
-          .take(10)
-          .toList(),
-      moderators: moderators
-          .where((name) => name.toLowerCase().contains(text.toLowerCase()))
-          .take(10)
-          .toList(),
-      vips: vips
-          .where((name) => name.toLowerCase().contains(text.toLowerCase()))
-          .take(10)
-          .toList(),
-      viewers: viewers
-          .where((name) => name.toLowerCase().contains(text.toLowerCase()))
-          .take(10)
-          .toList(),
+      broadcaster:
+          broadcaster
+              .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+              .take(10)
+              .toList(),
+      moderators:
+          moderators
+              .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+              .take(10)
+              .toList(),
+      vips:
+          vips
+              .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+              .take(10)
+              .toList(),
+      viewers:
+          viewers
+              .where((name) => name.toLowerCase().contains(text.toLowerCase()))
+              .take(10)
+              .toList(),
     );
   }
 
@@ -72,10 +76,7 @@ class TwitchBadgeInfo {
   final String setId;
   final List<BadgeVersion> versions;
 
-  TwitchBadgeInfo({
-    required this.setId,
-    required this.versions,
-  });
+  TwitchBadgeInfo({required this.setId, required this.versions});
 }
 
 class ChatStateAdapter {
@@ -104,17 +105,21 @@ class ChatStateAdapter {
 
     for (int attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        final result = await api
-            .callable("getBadges")
-            .call({"provider": Providers.twitch, "channelId": channelId});
+        final result = await api.callable("getBadges").call({
+          "provider": Providers.twitch,
+          "channelId": channelId,
+        });
         if (result.data == null) {
           return [];
         }
         return result.data
-            .map<TwitchBadgeInfo>((badgeInfo) => TwitchBadgeInfo(
-                  setId: badgeInfo["set_id"],
-                  versions: badgeInfo["versions"]
-                      .map<BadgeVersion>((version) => BadgeVersion(
+            .map<TwitchBadgeInfo>(
+              (badgeInfo) => TwitchBadgeInfo(
+                setId: badgeInfo["set_id"],
+                versions:
+                    badgeInfo["versions"]
+                        .map<BadgeVersion>(
+                          (version) => BadgeVersion(
                             id: version["id"],
                             imageUrl1x: version["image_url_1x"],
                             imageUrl2x: version["image_url_2x"],
@@ -123,9 +128,11 @@ class ChatStateAdapter {
                             title: version["title"],
                             clickAction: version["click_action"],
                             clickUrl: version["click_url"],
-                          ))
-                      .toList(),
-                ))
+                          ),
+                        )
+                        .toList(),
+              ),
+            )
             .toList();
       } catch (e) {
         if (e is FirebaseFunctionsException && e.code == 'unavailable') {

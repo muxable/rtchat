@@ -53,7 +53,7 @@ async function sendOverIrc(uid: string, channelId: string, message: string) {
     throw new functions.https.HttpsError("internal", "auth error");
   }
   const userChannel = await twitch.getTwitchLogin(
-    await twitch.getChannelId(uid, "twitch")
+    await twitch.getChannelId(uid, "twitch"),
   );
   const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
   await new Promise<void>((resolve) => {
@@ -76,7 +76,7 @@ export const send = withYouTube.https.onCall(async (data, context) => {
   if (!provider || !channelId || !message) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId, message"
+      "missing provider, channelId, message",
     );
   }
 
@@ -87,7 +87,7 @@ export const send = withYouTube.https.onCall(async (data, context) => {
         context.auth.uid,
         channelId,
         message,
-        replyTo
+        replyTo,
       );
       if (result.unauthorized) {
         await sendOverIrc(context.auth.uid, channelId, message);
@@ -103,7 +103,7 @@ export const send = withYouTube.https.onCall(async (data, context) => {
         context.auth.uid,
         channelId,
         message,
-        data?.replyToMessageId
+        data?.replyToMessageId,
       );
       return;
     case "youtube":
@@ -112,7 +112,7 @@ export const send = withYouTube.https.onCall(async (data, context) => {
         context.auth.uid,
         channelId,
         message,
-        parseVideoId(data?.videoId)
+        parseVideoId(data?.videoId),
       );
       return;
   }
@@ -131,7 +131,7 @@ export const ban = withYouTube.https.onCall(async (data, context) => {
   if (!provider || !channelId || (!username && !userId)) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId, username"
+      "missing provider, channelId, username",
     );
   }
 
@@ -143,7 +143,7 @@ export const ban = withYouTube.https.onCall(async (data, context) => {
       return await banKickUser(
         context.auth.uid,
         channelId,
-        userId ?? (await resolveKickUserId(username))
+        userId ?? (await resolveKickUserId(username)),
       );
     case "youtube":
       // youtube users are banned by channel id; there are no logins.
@@ -167,7 +167,7 @@ export const unban = functions.https.onCall(async (data, context) => {
   if (!provider || !channelId || (!username && !userId)) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId, username"
+      "missing provider, channelId, username",
     );
   }
 
@@ -179,7 +179,7 @@ export const unban = functions.https.onCall(async (data, context) => {
       return await unbanKickUser(
         context.auth.uid,
         channelId,
-        userId ?? (await resolveKickUserId(username))
+        userId ?? (await resolveKickUserId(username)),
       );
   }
 
@@ -199,7 +199,7 @@ export const timeout = withYouTube.https.onCall(async (data, context) => {
   if (!provider || !channelId || (!username && !userId) || !length || !reason) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId, username, length, reason"
+      "missing provider, channelId, username, length, reason",
     );
   }
 
@@ -211,14 +211,14 @@ export const timeout = withYouTube.https.onCall(async (data, context) => {
         channelId,
         banUserId,
         length,
-        reason
+        reason,
       );
     case "kick":
       return await banKickUser(
         context.auth.uid,
         channelId,
         userId ?? (await resolveKickUserId(username)),
-        { durationSeconds: length, reason }
+        { durationSeconds: length, reason },
       );
     case "youtube":
       // youtube bans have no reason.
@@ -242,7 +242,7 @@ export const deleteMessage = withYouTube.https.onCall(async (data, context) => {
   if (!provider || !channelId || !messageId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId, messageId"
+      "missing provider, channelId, messageId",
     );
   }
 
@@ -252,7 +252,7 @@ export const deleteMessage = withYouTube.https.onCall(async (data, context) => {
       return await twitch.deleteMessage(
         context.auth.uid,
         channelId,
-        messageId.replace(/^twitch:/, "")
+        messageId.replace(/^twitch:/, ""),
       );
     case "kick":
       return await deleteKickMessage(context.auth.uid, messageId);
@@ -272,7 +272,7 @@ export const clear = functions.https.onCall(async (data, context) => {
   if (!provider || !channelId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId"
+      "missing provider, channelId",
     );
   }
 
@@ -294,7 +294,7 @@ export const raid = functions.https.onCall(async (data, context) => {
   if (!provider || !fromChannelId || !toChannelId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, fromChannelId, toChannelId"
+      "missing provider, fromChannelId, toChannelId",
     );
   }
 
@@ -313,7 +313,7 @@ export const cancelRaid = functions.https.onCall(async (data, context) => {
   if (!provider || !channelId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId"
+      "missing provider, channelId",
     );
   }
 
@@ -329,7 +329,7 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
   if (!provider || !channelId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId"
+      "missing provider, channelId",
     );
   }
 
@@ -345,18 +345,18 @@ export const getStatistics = functions.https.onCall(async (data, context) => {
       };
       const viewerResponse = await fetch(
         `https://api.twitch.tv/helix/streams?user_id=${channelId}&first=1`,
-        { headers }
+        { headers },
       );
       const viewerJson = (await viewerResponse.json()) as any;
       const followerResponse = await fetch(
         `https://api.twitch.tv/helix/channels/followers?broadcaster_id=${channelId}&first=1`,
-        { headers }
+        { headers },
       );
       const followerJson = (await followerResponse.json()) as any;
       const stream = viewerJson["data"][0];
       const languageResponse = await fetch(
         `https://api.twitch.tv/helix/channels?broadcaster_id=${channelId}`,
-        { headers }
+        { headers },
       );
       const languageJson = (await languageResponse.json()) as any;
       if (!stream) {
@@ -384,7 +384,7 @@ export const embedRedirect = functions.https.onRequest(async (req, res) => {
   if (!provider || !channelId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId"
+      "missing provider, channelId",
     );
   }
   switch (provider) {
@@ -395,7 +395,7 @@ export const embedRedirect = functions.https.onRequest(async (req, res) => {
         return;
       }
       res.redirect(
-        `https://player.twitch.tv/?channel=${login}&controls=false&parent=chat.rtirl.com&muted=true`
+        `https://player.twitch.tv/?channel=${login}&controls=false&parent=chat.rtirl.com&muted=true`,
       );
       break;
     case "kick": {
@@ -408,7 +408,7 @@ export const embedRedirect = functions.https.onRequest(async (req, res) => {
         return;
       }
       res.redirect(
-        `https://player.kick.com/${encodeURIComponent(slug)}?muted=true`
+        `https://player.kick.com/${encodeURIComponent(slug)}?muted=true`,
       );
       break;
     }
@@ -424,14 +424,14 @@ export const embedRedirect = functions.https.onRequest(async (req, res) => {
     default:
       throw new functions.https.HttpsError(
         "invalid-argument",
-        "invalid provider"
+        "invalid provider",
       );
   }
 });
 
 async function validate(
   provider: string,
-  token: string
+  token: string,
 ): Promise<{ clientId: string; docId: string } | null> {
   switch (provider) {
     case "twitch":
@@ -460,14 +460,14 @@ export const metadata = functions.https.onRequest(async (req, res) => {
   if (req.method !== "POST") {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "only POST requests are allowed"
+      "only POST requests are allowed",
     );
   }
   const { key, value, token, provider } = req.body;
   if (!key || !value || !token || !provider) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing key, value, token, or provider"
+      "missing key, value, token, or provider",
     );
   }
   const data = await validate(provider, token);
@@ -477,7 +477,7 @@ export const metadata = functions.https.onRequest(async (req, res) => {
   if (!CLIENT_IDS[data.clientId]) {
     throw new functions.https.HttpsError(
       "unauthenticated",
-      "client id not registered, contact kevin@muxable.com"
+      "client id not registered, contact kevin@muxable.com",
     );
   }
   await admin

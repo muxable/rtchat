@@ -12,9 +12,7 @@ const Map<String, Gradient> gradientMap = {
     transform: GradientRotation(-math.pi / 2),
     colors: [Color(0xffa18cd1), Color(0xfffbc2eb)],
   ),
-  'juicyPeach': LinearGradient(
-    colors: [Color(0xffffecd2), Color(0xfffcb69f)],
-  ),
+  'juicyPeach': LinearGradient(colors: [Color(0xffffecd2), Color(0xfffcb69f)]),
   'springWarmth': LinearGradient(
     transform: GradientRotation(-math.pi / 2),
     colors: [Color(0xfffad0c4), Color(0xfffad0c4), Color(0xffffd1ff)],
@@ -64,22 +62,18 @@ const Map<String, Gradient> gradientMap = {
 };
 
 /// Cached gradients for efficient indexed access.
-final List<Gradient> _gradients = gradientMap.values.toList(
-  growable: false,
-);
+final List<Gradient> _gradients = gradientMap.values.toList(growable: false);
 
-final List<String> _gradientNames = gradientMap.keys.toList(
-  growable: false,
-);
+final List<String> _gradientNames = gradientMap.keys.toList(growable: false);
 
 class QRModel extends ChangeNotifier {
   QRModel({int initialGradient = 0})
-      : _currentGradient = _normalizeIndex(initialGradient);
+    : _currentGradient = _normalizeIndex(initialGradient);
 
   QRModel.fromJson(Map<String, dynamic> json)
-      : _currentGradient = _normalizeIndex(
-          (json['currentGradient'] as num?)?.toInt() ?? 0,
-        );
+    : _currentGradient = _normalizeIndex(
+        (json['currentGradient'] as num?)?.toInt() ?? 0,
+      );
 
   int _currentGradient;
 
@@ -111,7 +105,5 @@ class QRModel extends ChangeNotifier {
   }
 
   /// Restores the selected gradient from JSON.
-  Map<String, dynamic> toJson() => {
-        'currentGradient': _currentGradient,
-      };
+  Map<String, dynamic> toJson() => {'currentGradient': _currentGradient};
 }

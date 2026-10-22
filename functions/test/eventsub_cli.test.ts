@@ -151,7 +151,7 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
     const message = store.get(
       type === "channel.follow"
         ? `${CHANNEL}/messages/twitch:follow:${delivery.body.event.user_id}`
-        : `${CHANNEL}/messages/twitch:${id}`
+        : `${CHANNEL}/messages/twitch:${id}`,
     );
     expect(message).toMatchObject({
       channelId: `twitch:${BROADCASTER}`,
@@ -160,8 +160,8 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
     });
     expect(message!.timestamp.toMillis()).toBe(
       Date.parse(
-        delivery.headers["twitch-eventsub-message-timestamp"] as string
-      )
+        delivery.headers["twitch-eventsub-message-timestamp"] as string,
+      ),
     );
     expect(message!.expiresAt.toMillis()).toBeGreaterThan(Date.now());
   });
@@ -173,7 +173,7 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
       to_broadcaster_user_id: BROADCASTER,
     });
     expect(store.get(`${CHANNEL}/messages/twitch:${id}`)?.event).toEqual(
-      delivery.body.event
+      delivery.body.event,
     );
   });
 
@@ -181,11 +181,11 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
     await send("stream.online");
 
     expect(store.get(CHANNEL)?.onlineAt.toMillis()).toBeLessThanOrEqual(
-      Date.now()
+      Date.now(),
     );
     expect(runUpdateFollowerAndViewerCount).toHaveBeenCalledWith(
       { token: { access_token: "app-token" } },
-      [`twitch:${BROADCASTER}`]
+      [`twitch:${BROADCASTER}`],
     );
   });
 
@@ -218,7 +218,7 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
     expect(second.delivery.status).toBe(200);
     expect(store.get(CHANNEL)?.followerCount).toBe(11);
     const messages = [...store.keys()].filter((key) =>
-      key.startsWith(`${CHANNEL}/messages/`)
+      key.startsWith(`${CHANNEL}/messages/`),
     );
     expect(messages).toEqual([`${CHANNEL}/messages/twitch:follow:5678`]);
   });
@@ -259,7 +259,7 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
     const output = await verifySubscription(
       server.url,
       SECRET,
-      "stream.online"
+      "stream.online",
     );
 
     const [delivery] = server.deliveries;
@@ -273,7 +273,7 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
     const { id, delivery } = await send(
       "stream.online",
       [],
-      "not-the-twitch-secret"
+      "not-the-twitch-secret",
     );
 
     expect(delivery.status).toBe(403);
@@ -285,7 +285,7 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
   it("rejects challenges signed with the wrong secret", async () => {
     // the CLI exits non-zero when the handshake fails.
     await expect(
-      verifySubscription(server.url, "not-the-twitch-secret", "stream.online")
+      verifySubscription(server.url, "not-the-twitch-secret", "stream.online"),
     ).rejects.toThrow();
 
     const [delivery] = server.deliveries;

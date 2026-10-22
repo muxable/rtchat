@@ -37,11 +37,11 @@ class VoicePackSpeaker {
       );
 
   Map<String, Object?> toJson() => {
-        'id': index,
-        'name': name,
-        if (gender != null) 'gender': gender,
-        if (language != null) 'language': language,
-      };
+    'id': index,
+    'name': name,
+    if (gender != null) 'gender': gender,
+    if (language != null) 'language': language,
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -79,18 +79,18 @@ class VoicePackFile {
   });
 
   factory VoicePackFile.fromJson(Map<String, Object?> json) => VoicePackFile(
-        url: Uri.parse(json['url'] as String),
-        size: json['size'] as int,
-        sha256: json['sha256'] as String,
-        path: json['path'] as String,
-      );
+    url: Uri.parse(json['url'] as String),
+    size: json['size'] as int,
+    sha256: json['sha256'] as String,
+    path: json['path'] as String,
+  );
 
   Map<String, Object?> toJson() => {
-        'url': url.toString(),
-        'size': size,
-        'sha256': sha256,
-        'path': path,
-      };
+    'url': url.toString(),
+    'size': size,
+    'sha256': sha256,
+    'path': path,
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -128,10 +128,10 @@ class VoicePackLicense {
   }
 
   Map<String, Object?> toJson() => {
-        'name': name,
-        if (url != null) 'url': url.toString(),
-        if (attribution != null) 'attribution': attribution,
-      };
+    'name': name,
+    if (url != null) 'url': url.toString(),
+    if (attribution != null) 'attribution': attribution,
+  };
 }
 
 /// A downloadable voice pack: one model with its speakers.
@@ -194,38 +194,39 @@ class VoicePack {
   /// Reads a pack written by [toJson]. Throws if it can't, e.g. when a newer
   /// version of the app wrote a model type this one doesn't know.
   factory VoicePack.fromJson(Map<String, Object?> json) => VoicePack(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        version: json['version'] as int,
-        modelType:
-            VoicePackModelType.values.byName(json['model_type'] as String),
-        languages: List.unmodifiable(json['languages'] as List),
-        speakers: List.unmodifiable([
-          for (final speaker in json['speakers'] as List)
-            VoicePackSpeaker.fromJson(speaker as Map<String, Object?>),
-        ]),
-        files: List.unmodifiable([
-          for (final file in json['files'] as List)
-            VoicePackFile.fromJson(file as Map<String, Object?>),
-        ]),
-        license: json['license'] == null
+    id: json['id'] as String,
+    name: json['name'] as String,
+    version: json['version'] as int,
+    modelType: VoicePackModelType.values.byName(json['model_type'] as String),
+    languages: List.unmodifiable(json['languages'] as List),
+    speakers: List.unmodifiable([
+      for (final speaker in json['speakers'] as List)
+        VoicePackSpeaker.fromJson(speaker as Map<String, Object?>),
+    ]),
+    files: List.unmodifiable([
+      for (final file in json['files'] as List)
+        VoicePackFile.fromJson(file as Map<String, Object?>),
+    ]),
+    license:
+        json['license'] == null
             ? null
             : VoicePackLicense.fromJson(
-                json['license'] as Map<String, Object?>),
-        config: Map.unmodifiable(json['config'] as Map? ?? const {}),
-      );
+              json['license'] as Map<String, Object?>,
+            ),
+    config: Map.unmodifiable(json['config'] as Map? ?? const {}),
+  );
 
   Map<String, Object?> toJson() => {
-        'id': id,
-        'name': name,
-        'version': version,
-        'model_type': modelType.name,
-        'languages': languages,
-        'speakers': [for (final speaker in speakers) speaker.toJson()],
-        'files': [for (final file in files) file.toJson()],
-        if (license != null) 'license': license!.toJson(),
-        if (config.isNotEmpty) 'config': config,
-      };
+    'id': id,
+    'name': name,
+    'version': version,
+    'model_type': modelType.name,
+    'languages': languages,
+    'speakers': [for (final speaker in speakers) speaker.toJson()],
+    'files': [for (final file in files) file.toJson()],
+    if (license != null) 'license': license!.toJson(),
+    if (config.isNotEmpty) 'config': config,
+  };
 
   @override
   String toString() => 'VoicePack($id v$version)';

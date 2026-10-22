@@ -77,14 +77,18 @@ class VoicePackCard extends StatelessWidget {
           children: [
             Text(pack.name, style: theme.textTheme.titleMedium),
             Text(
-                l10n.voicePackDetails(pack.speakers.length, formatBytes(size))),
-            Text(l10n.voicePackLanguages(
-                languages.length, languages.join(', '))),
+              l10n.voicePackDetails(pack.speakers.length, formatBytes(size)),
+            ),
+            Text(
+              l10n.voicePackLanguages(languages.length, languages.join(', ')),
+            ),
             if (task != null)
               _InstallProgress(task: task)
             else if (error != null)
-              Text(l10n.voicePackInstallFailed(pack.name),
-                  style: TextStyle(color: theme.colorScheme.error)),
+              Text(
+                l10n.voicePackInstallFailed(pack.name),
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
             if (license?.attribution case final attribution?)
               Text(attribution, style: small),
             // OpenRAIL licenses' use restrictions must be passed on.
@@ -107,8 +111,9 @@ class VoicePackCard extends StatelessWidget {
                     if (installed != null)
                       OutlinedButton.icon(
                         icon: const Icon(Icons.delete_outline),
-                        label: Text(MaterialLocalizations.of(context)
-                            .deleteButtonTooltip),
+                        label: Text(
+                          MaterialLocalizations.of(context).deleteButtonTooltip,
+                        ),
                         onPressed: () => _confirmDelete(context, model, size),
                       ),
                     if (status == VoicePackStatus.upgradeAvailable)
@@ -133,24 +138,31 @@ class VoicePackCard extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(
-      BuildContext context, VoicePacksModel model, int size) async {
+    BuildContext context,
+    VoicePacksModel model,
+    int size,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        content:
-            Text(l10n.voicePackDeleteConfirm(pack.name, formatBytes(size))),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancel),
+      builder:
+          (context) => AlertDialog(
+            content: Text(
+              l10n.voicePackDeleteConfirm(pack.name, formatBytes(size)),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(
+                  MaterialLocalizations.of(context).deleteButtonTooltip,
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(MaterialLocalizations.of(context).deleteButtonTooltip),
-          ),
-        ],
-      ),
     );
     if (confirmed ?? false) await model.delete(pack.id);
   }
@@ -171,41 +183,45 @@ class _InstallProgress extends StatelessWidget {
       initialData: task.latest,
       builder: (context, snapshot) {
         final progress = snapshot.data ?? task.latest;
-        final waitsForWifi = progress.phase == VoicePackInstallPhase.waiting &&
+        final waitsForWifi =
+            progress.phase == VoicePackInstallPhase.waiting &&
             model.waitsForWifi(pack.id);
         final isDownloading =
             progress.phase == VoicePackInstallPhase.downloading;
         final label = switch (progress.phase) {
           _ when waitsForWifi => l10n.voicePackWaitingForWifi,
           VoicePackInstallPhase.waiting ||
-          VoicePackInstallPhase.downloading =>
-            l10n.voicePackDownloading(formatBytes(progress.downloadedBytes),
-                formatBytes(progress.totalBytes)),
+          VoicePackInstallPhase.downloading => l10n.voicePackDownloading(
+            formatBytes(progress.downloadedBytes),
+            formatBytes(progress.totalBytes),
+          ),
           VoicePackInstallPhase.verifying ||
-          VoicePackInstallPhase.done =>
-            l10n.voicePackInstalling,
+          VoicePackInstallPhase.done => l10n.voicePackInstalling,
         };
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(children: [
-              if (waitsForWifi) ...[
-                const Icon(Icons.wifi_off, size: 20),
-                const SizedBox(width: 8),
+            Row(
+              children: [
+                if (waitsForWifi) ...[
+                  const Icon(Icons.wifi_off, size: 20),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(child: Text(label)),
+                IconButton(
+                  tooltip: l10n.cancel,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => model.cancel(pack.id),
+                ),
               ],
-              Expanded(child: Text(label)),
-              IconButton(
-                tooltip: l10n.cancel,
-                icon: const Icon(Icons.close),
-                onPressed: () => model.cancel(pack.id),
-              ),
-            ]),
+            ),
             LinearProgressIndicator(
               value: isDownloading ? progress.fraction : null,
               semanticsLabel: pack.name,
-              semanticsValue: isDownloading
-                  ? '${(progress.fraction * 100).round()}%'
-                  : label,
+              semanticsValue:
+                  isDownloading
+                      ? '${(progress.fraction * 100).round()}%'
+                      : label,
             ),
             if (waitsForWifi)
               Align(

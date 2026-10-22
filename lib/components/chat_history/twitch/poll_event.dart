@@ -7,11 +7,14 @@ List<Widget> getPollsWidget(TwitchPollEventModel model) {
   var choices = model.choices;
   List<Widget> children = [];
   for (final poll in choices) {
-    children.add(PollChoiceWidget(
+    children.add(
+      PollChoiceWidget(
         data: poll,
         isCompleted: model.isCompleted,
         maxVotes: model.maxVotes,
-        totalVotes: model.totalVotes));
+        totalVotes: model.totalVotes,
+      ),
+    );
   }
   return children;
 }
@@ -24,15 +27,21 @@ class TwitchPollEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedEventWidget(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // title
-        Padding(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // title
+          Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Text(model.pollTitle,
-                style: Theme.of(context).textTheme.titleSmall)),
-        // polls
-        ...getPollsWidget(model),
-      ]),
+            child: Text(
+              model.pollTitle,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+          ),
+          // polls
+          ...getPollsWidget(model),
+        ],
+      ),
     );
   }
 }

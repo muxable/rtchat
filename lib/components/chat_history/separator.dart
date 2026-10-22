@@ -40,8 +40,10 @@ class SeparatorWidget extends StatelessWidget {
       alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       child: StreamBuilder<DateTime?>(
-        stream: MessagesAdapter.instance
-            .forChannelUptime(channel, timestamp: timestamp),
+        stream: MessagesAdapter.instance.forChannelUptime(
+          channel,
+          timestamp: timestamp,
+        ),
         builder: (context, snapshot) {
           final uptime = snapshot.data;
           if (uptime == null) {
