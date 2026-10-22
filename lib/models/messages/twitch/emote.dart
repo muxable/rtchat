@@ -13,8 +13,9 @@ Future<List<Emote>> getEmotes(Channel channel) async {
   final cacheFile = File('${temp.path}/emotes/${channel.toString()}.json');
   if (await cacheFile.exists()) {
     final stats = await cacheFile.stat();
-    if (stats.modified
-        .isAfter(DateTime.now().subtract(const Duration(days: 1)))) {
+    if (stats.modified.isAfter(
+      DateTime.now().subtract(const Duration(days: 1)),
+    )) {
       final json = await cacheFile.readAsString();
       return (jsonDecode(json) as List).map((e) => Emote.fromJson(e)).toList();
     }

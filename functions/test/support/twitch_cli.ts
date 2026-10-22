@@ -24,7 +24,7 @@ export function cliAvailable(): boolean {
       throw new Error(`can't run twitch cli ${TWITCH_CLI}: ${err}`);
     }
     console.warn(
-      `skipping twitch cli tests: can't run ${TWITCH_CLI} (${err}); set TWITCH_CLI or put twitch on the PATH`
+      `skipping twitch cli tests: can't run ${TWITCH_CLI} (${err}); set TWITCH_CLI or put twitch on the PATH`,
     );
     return false;
   }
@@ -59,7 +59,7 @@ export async function serve(handler: Handler) {
           status: res.statusCode,
           contentType: res.getHeader("content-type") as string | undefined,
           response,
-        })
+        }),
       );
       const reply = Object.assign(res, {
         status(code: number) {
@@ -97,10 +97,10 @@ function run(args: string[]) {
       (err, stdout, stderr) =>
         err
           ? reject(
-              new Error(`${TWITCH_CLI} ${args.join(" ")}: ${stderr || err}`)
+              new Error(`${TWITCH_CLI} ${args.join(" ")}: ${stderr || err}`),
             )
-          : resolve(stdout)
-    )
+          : resolve(stdout),
+    ),
   );
 }
 
@@ -109,7 +109,7 @@ export function trigger(
   url: string,
   secret: string,
   type: string,
-  flags: string[] = []
+  flags: string[] = [],
 ) {
   return run([
     "event",

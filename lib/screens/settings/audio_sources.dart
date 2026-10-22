@@ -75,18 +75,27 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.audioSources)),
       body: SafeArea(
-        child: Consumer<AudioModel>(builder: (context, model, child) {
-          return Column(
+        child: Consumer<AudioModel>(
+          builder: (context, model, child) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SwitchListTile.adaptive(
                   title: Text(
-                      AppLocalizations.of(context)!.enableOffStreamSwitchTitle),
-                  subtitle: model.isAlwaysEnabled
-                      ? Text(AppLocalizations.of(context)!
-                          .enableOffStreamSwitchEnabledSubtitle)
-                      : Text(AppLocalizations.of(context)!
-                          .enableOffStreamSwitchDisabledSubtitle),
+                    AppLocalizations.of(context)!.enableOffStreamSwitchTitle,
+                  ),
+                  subtitle:
+                      model.isAlwaysEnabled
+                          ? Text(
+                            AppLocalizations.of(
+                              context,
+                            )!.enableOffStreamSwitchEnabledSubtitle,
+                          )
+                          : Text(
+                            AppLocalizations.of(
+                              context,
+                            )!.enableOffStreamSwitchDisabledSubtitle,
+                          ),
                   value: model.isAlwaysEnabled,
                   onChanged: (value) {
                     model.isAlwaysEnabled = value;
@@ -96,10 +105,12 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                 if (Platform.isIOS)
                   ListTile(
                     leading: const Icon(Icons.warning),
-                    title:
-                        Text(AppLocalizations.of(context)!.iosOggWarningTitle),
+                    title: Text(
+                      AppLocalizations.of(context)!.iosOggWarningTitle,
+                    ),
                     subtitle: Text(
-                        AppLocalizations.of(context)!.iosOggWarningSubtitle),
+                      AppLocalizations.of(context)!.iosOggWarningSubtitle,
+                    ),
                     tileColor: Colors.yellow,
                     textColor: Colors.black,
                   )
@@ -107,27 +118,31 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                   Container(),
                 Expanded(
                   child: ListView(
-                    children: model.sources.map((source) {
-                      final name = source.name;
-                      return Dismissible(
-                        key: ValueKey(source),
-                        background: const DismissibleDeleteBackground(),
-                        child: CheckboxListTile.adaptive(
-                            title: name == null
-                                ? Text(source.url.toString())
-                                : Text(name),
-                            subtitle: name == null
-                                ? null
-                                : Text(source.url.toString()),
-                            value: !source.muted,
-                            onChanged: (value) {
-                              model.toggleSource(source);
-                            }),
-                        onDismissed: (direction) {
-                          model.removeSource(source);
-                        },
-                      );
-                    }).toList(),
+                    children:
+                        model.sources.map((source) {
+                          final name = source.name;
+                          return Dismissible(
+                            key: ValueKey(source),
+                            background: const DismissibleDeleteBackground(),
+                            child: CheckboxListTile.adaptive(
+                              title:
+                                  name == null
+                                      ? Text(source.url.toString())
+                                      : Text(name),
+                              subtitle:
+                                  name == null
+                                      ? null
+                                      : Text(source.url.toString()),
+                              value: !source.muted,
+                              onChanged: (value) {
+                                model.toggleSource(source);
+                              },
+                            ),
+                            onDismissed: (direction) {
+                              model.removeSource(source);
+                            },
+                          );
+                        }).toList(),
                   ),
                 ),
                 const Divider(),
@@ -135,104 +150,119 @@ class _AudioSourcesScreenState extends State<AudioSourcesScreen> {
                   padding: const EdgeInsets.only(left: 16, bottom: 16),
                   child: Form(
                     key: _formKey,
-                    child: Row(children: [
-                      Expanded(
-                        child: TextFormField(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
                             controller: _textEditingController,
                             decoration: InputDecoration(
-                                hintText: AppLocalizations.of(context)!.url,
-                                suffixIcon: IconButton(
-                                    icon: const Icon(Icons.qr_code_scanner),
-                                    onPressed: () {
-                                      final messenger =
-                                          ScaffoldMessenger.of(context);
+                              hintText: AppLocalizations.of(context)!.url,
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.qr_code_scanner),
+                                onPressed: () {
+                                  final messenger = ScaffoldMessenger.of(
+                                    context,
+                                  );
 
-                                      showModalBottomSheet(
-                                        isScrollControlled: true,
-                                        context: context,
-                                        builder: (ctx) {
-                                          return Stack(
-                                            children: [
-                                              MobileScanner(
-                                                errorBuilder: (context, error) {
-                                                  return ScannerErrorWidget(
-                                                      error: error);
-                                                },
-                                                controller: _scanController,
-                                                onDetect: (capture) {
-                                                  final List<Barcode> barcodes =
-                                                      capture.barcodes;
+                                  showModalBottomSheet(
+                                    isScrollControlled: true,
+                                    context: context,
+                                    builder: (ctx) {
+                                      return Stack(
+                                        children: [
+                                          MobileScanner(
+                                            errorBuilder: (context, error) {
+                                              return ScannerErrorWidget(
+                                                error: error,
+                                              );
+                                            },
+                                            controller: _scanController,
+                                            onDetect: (capture) {
+                                              final List<Barcode> barcodes =
+                                                  capture.barcodes;
 
-                                                  if (barcodes.isEmpty) {
-                                                    messenger.showSnackBar(SnackBar(
-                                                        content: Text(
-                                                            AppLocalizations.of(
-                                                                    context)!
-                                                                .invalidUrlErrorText)));
-                                                  }
+                                              if (barcodes.isEmpty) {
+                                                messenger.showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      AppLocalizations.of(
+                                                        context,
+                                                      )!.invalidUrlErrorText,
+                                                    ),
+                                                  ),
+                                                );
+                                              }
 
-                                                  final barcode =
-                                                      barcodes.first;
+                                              final barcode = barcodes.first;
 
-                                                  if (barcode.rawValue ==
-                                                          null ||
-                                                      barcode
-                                                          .rawValue!.isEmpty) {
-                                                    messenger.showSnackBar(SnackBar(
-                                                        content: Text(
-                                                            AppLocalizations.of(
-                                                                    context)!
-                                                                .invalidUrlErrorText)));
+                                              if (barcode.rawValue == null ||
+                                                  barcode.rawValue!.isEmpty) {
+                                                messenger.showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      AppLocalizations.of(
+                                                        context,
+                                                      )!.invalidUrlErrorText,
+                                                    ),
+                                                  ),
+                                                );
 
-                                                    Navigator.pop(ctx);
-                                                  }
+                                                Navigator.pop(ctx);
+                                              }
 
-                                                  _textEditingController.text =
-                                                      '${barcode.rawValue}';
+                                              _textEditingController.text =
+                                                  '${barcode.rawValue}';
 
-                                                  Navigator.pop(ctx);
-                                                },
-                                              ),
-                                              Positioned(
-                                                  top: 50,
-                                                  left: 0,
-                                                  right: 0,
-                                                  child: ScannerSettings(
-                                                      scanController:
-                                                          _scanController)),
-                                            ],
-                                          );
-                                        },
-                                      ).then((value) {
-                                        _scanController.dispose();
+                                              Navigator.pop(ctx);
+                                            },
+                                          ),
+                                          Positioned(
+                                            top: 50,
+                                            left: 0,
+                                            right: 0,
+                                            child: ScannerSettings(
+                                              scanController: _scanController,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ).then((value) {
+                                    _scanController.dispose();
 
-                                        //re initialize controller
-                                        _scanController =
-                                            MobileScannerController(
-                                          detectionSpeed:
-                                              DetectionSpeed.noDuplicates,
-                                        );
-                                      });
-                                    })),
+                                    //re initialize controller
+                                    _scanController = MobileScannerController(
+                                      detectionSpeed:
+                                          DetectionSpeed.noDuplicates,
+                                    );
+                                  });
+                                },
+                              ),
+                            ),
                             validator: (value) {
                               if (value == null ||
                                   value.isEmpty ||
                                   Uri.tryParse(value) == null) {
-                                return AppLocalizations.of(context)!
-                                    .invalidUrlErrorText;
+                                return AppLocalizations.of(
+                                  context,
+                                )!.invalidUrlErrorText;
                               }
                               return null;
                             },
                             keyboardType: TextInputType.url,
                             textInputAction: TextInputAction.done,
-                            onEditingComplete: add),
-                      ),
-                      IconButton(icon: const Icon(Icons.add), onPressed: add),
-                    ]),
+                            onEditingComplete: add,
+                          ),
+                        ),
+                        IconButton(icon: const Icon(Icons.add), onPressed: add),
+                      ],
+                    ),
                   ),
                 ),
-              ]);
-        }),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

@@ -15,44 +15,46 @@ final _search = Api.instance.callable("search");
 Future<List<SearchResult>> fastSearch() async {
   // fast query firestore and slow query the functions. tag firestore results
   // with isPromoted = true.
-  final snapshot = await FirebaseFirestore.instance
-      .collection("channels")
-      .where(
-        "lastActiveAt",
-        isGreaterThan: DateTime.now().subtract(const Duration(days: 3)),
-      )
-      .orderBy("lastActiveAt", descending: true)
-      .limit(250)
-      .get();
+  final snapshot =
+      await FirebaseFirestore.instance
+          .collection("channels")
+          .where(
+            "lastActiveAt",
+            isGreaterThan: DateTime.now().subtract(const Duration(days: 3)),
+          )
+          .orderBy("lastActiveAt", descending: true)
+          .limit(250)
+          .get();
   return snapshot.docs
       .where((doc) => doc.data().containsKey("displayName"))
       .map((doc) {
-    final data = doc.data();
-    final tokens = doc.id.split(":");
-    final provider = tokens[0];
-    final channelId = tokens[1];
-    String? title;
-    if (data['title'] != null && data['categoryName'] != null) {
-      title = "${data['categoryName']} - ${data['title']}";
-    } else if (data['title'] != null) {
-      title = data['title'];
-    } else if (data['categoryName'] != null) {
-      title = data['categoryName'];
-    }
-    return SearchResult(
-      channelId: channelId,
-      provider: provider,
-      login: data['login'],
-      displayName: data['displayName'],
-      isOnline: data['onlineAt'] != null,
-      imageUrl: Uri.parse(
-        "https://rtirl.com/pfp.png?provider=$provider&channelId=$channelId",
-      ),
-      title: title,
-      language: data['language'],
-      isPromoted: true,
-    );
-  }).toList();
+        final data = doc.data();
+        final tokens = doc.id.split(":");
+        final provider = tokens[0];
+        final channelId = tokens[1];
+        String? title;
+        if (data['title'] != null && data['categoryName'] != null) {
+          title = "${data['categoryName']} - ${data['title']}";
+        } else if (data['title'] != null) {
+          title = data['title'];
+        } else if (data['categoryName'] != null) {
+          title = data['categoryName'];
+        }
+        return SearchResult(
+          channelId: channelId,
+          provider: provider,
+          login: data['login'],
+          displayName: data['displayName'],
+          isOnline: data['onlineAt'] != null,
+          imageUrl: Uri.parse(
+            "https://rtirl.com/pfp.png?provider=$provider&channelId=$channelId",
+          ),
+          title: title,
+          language: data['language'],
+          isPromoted: true,
+        );
+      })
+      .toList();
 }
 
 // The providers channel search can target, with the prefix shown for each.
@@ -61,13 +63,12 @@ const searchProviders = {
   "kick": "kick.com/",
 };
 
-typedef ChannelSearch = Stream<List<SearchResult>> Function(
-  String query,
-  String provider,
-  bool isShowOnlyOnline,
-);
-
-String _channelKey(String provider, String channelId) => '$provider:$channelId';
+typedef ChannelSearch =
+    Stream<List<SearchResult>> Function(
+      String query,
+      String provider,
+      bool isShowOnlyOnline,
+    );
 
 /// Recently active channels matching [query].
 ///
@@ -200,13 +201,19 @@ Stream<List<SearchResult>> searchChannels(
   final combined = <String, SearchResult>{
     ...mergedFast,
   };
+
   for (final result in slow) {
     final key = _channelKey(result.provider, result.channelId);
-    if (result.provider != provider || combined.containsKey(key)) {
+
+    if (result.provider != provider ||
+        combined.containsKey(key) ||
+        (isShowOnlyOnline && !result.isOnline)) {
       continue;
     }
+
     combined[key] = result;
   }
+
   yield combined.values.toList();
 }
 
@@ -272,7 +279,6 @@ class ChannelSearchResultsWidget extends StatefulWidget {
     this.controller,
     this.onChannelAdd,
     this.channels = const [],
-    this.followedChannels = const [],
     this.header,
   });
 
@@ -343,12 +349,13 @@ class _ChannelSearchResultsWidgetState
           stream: _results,
           builder: (context, snapshot) {
             return Column(
-              children: (snapshot.data ?? [])
-                  .where(
-                      (result) => !widget.isShowOnlyOnline || result.isOnline)
-                  .map((result) => _tile(context, result))
-                  .toList(),
-            );
+  children: (snapshot.data ?? [])
+      .where(
+        (result) => !widget.isShowOnlyOnline || result.isOnline,
+      )
+      .map((result) => _tile(context, result))
+      .toList(),
+);
           },
         ),
       ],
@@ -411,9 +418,10 @@ class _ChannelSearchResultsWidgetState
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
-            color: result.isOnline
-                ? Theme.of(context).colorScheme.secondary
-                : Colors.transparent,
+            color:
+                result.isOnline
+                    ? Theme.of(context).colorScheme.secondary
+                    : Colors.transparent,
             width: 2.0,
           ),
         ),
@@ -433,19 +441,20 @@ class _ChannelSearchResultsWidgetState
             Positioned(
               right: -4,
               bottom: -4,
-              child: result.isPromoted
-                  ? Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.tertiary,
-                        borderRadius: BorderRadius.circular(18.0),
-                      ),
-                      child: const Icon(
-                        Icons.keyboard_double_arrow_up,
-                        color: Colors.green,
-                        size: 18.0,
-                      ),
-                    )
-                  : Container(),
+              child:
+                  result.isPromoted
+                      ? Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.tertiary,
+                          borderRadius: BorderRadius.circular(18.0),
+                        ),
+                        child: const Icon(
+                          Icons.keyboard_double_arrow_up,
+                          color: Colors.green,
+                          size: 18.0,
+                        ),
+                      )
+                      : Container(),
             ),
           ],
         ),

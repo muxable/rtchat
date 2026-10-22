@@ -45,8 +45,8 @@ class SignInButton extends StatelessWidget {
 
   static Future<bool> isGlobalThisSupported() async {
     final completer = Completer<bool>();
-    final controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted);
+    final controller =
+        WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted);
     _probes.add(controller);
     // Read the result directly instead of posting it to a JavaScript channel:
     // WKWebView doesn't inject channels into about:blank, so on iOS the
@@ -59,7 +59,8 @@ class SignInButton extends StatelessWidget {
           }
           try {
             final result = await controller.runJavaScriptReturningResult(
-                "typeof globalThis !== 'undefined'");
+              "typeof globalThis !== 'undefined'",
+            );
             completer.complete(result == true || result == "true");
           } catch (e) {
             // don't block sign in if the probe itself fails.
@@ -76,13 +77,13 @@ class SignInButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = _colors[provider] ?? Theme.of(context).colorScheme.primary;
     return ElevatedButton(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(color),
+      style: ButtonStyle(backgroundColor: WidgetStateProperty.all(color)),
+      child: Text(
+        _label(AppLocalizations.of(context)!),
+        style: TextStyle(
+          color: color.computeLuminance() > 0.5 ? Colors.black : Colors.white,
+        ),
       ),
-      child: Text(_label(AppLocalizations.of(context)!),
-          style: TextStyle(
-            color: color.computeLuminance() > 0.5 ? Colors.black : Colors.white,
-          )),
       onPressed: () async {
         final isGlobalThisSupported =
             await SignInButton.isGlobalThisSupported();
@@ -99,10 +100,7 @@ class SignInButton extends StatelessWidget {
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             builder: (context) {
-              return CompanionAuthWidget(
-                provider: provider,
-                isTooOld: true,
-              );
+              return CompanionAuthWidget(provider: provider, isTooOld: true);
             },
           );
           return;
@@ -118,14 +116,17 @@ class SignInButton extends StatelessWidget {
         if (!navigatorContext.mounted) {
           return;
         }
-        final capturedThemes =
-            InheritedTheme.capture(from: context, to: navigatorContext);
+        final capturedThemes = InheritedTheme.capture(
+          from: context,
+          to: navigatorContext,
+        );
         final retrySnackbar = SnackBar(
-            content: Text(AppLocalizations.of(context)!.signInError),
-            action: SnackBarAction(
-              label: "Sign in with another device",
-              onPressed: () {
-                navigator.push(ModalBottomSheetRoute(
+          content: Text(AppLocalizations.of(context)!.signInError),
+          action: SnackBarAction(
+            label: "Sign in with another device",
+            onPressed: () {
+              navigator.push(
+                ModalBottomSheetRoute(
                   builder: (context) {
                     return CompanionAuthWidget(
                       provider: provider,
@@ -134,18 +135,23 @@ class SignInButton extends StatelessWidget {
                   },
                   capturedThemes: capturedThemes,
                   isScrollControlled: true,
-                  barrierOnTapHint: localizations
-                      .scrimOnTapHint(localizations.bottomSheetLabel),
+                  barrierOnTapHint: localizations.scrimOnTapHint(
+                    localizations.bottomSheetLabel,
+                  ),
                   modalBarrierColor: modalBarrierColor,
-                ));
-              },
-            ));
+                ),
+              );
+            },
+          ),
+        );
         onStart?.call();
         try {
           await FirebaseAnalytics.instance.logLogin(loginMethod: provider);
           final url = Uri.https('chat.rtirl.com', '/auth/$provider/redirect');
           final result = await FlutterWebAuth2.authenticate(
-              url: url.toString(), callbackUrlScheme: "com.rtirl.chat");
+            url: url.toString(),
+            callbackUrlScheme: "com.rtirl.chat",
+          );
           final token = Uri.parse(result).queryParameters['token'];
           if (token != null) {
             await user.signIn(token);
@@ -178,7 +184,10 @@ class SignInWithTwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SignInButton(
-      provider: Providers.twitch, onStart: onStart, onComplete: onComplete);
+    provider: Providers.twitch,
+    onStart: onStart,
+    onComplete: onComplete,
+  );
 }
 
 class SignInWithKick extends StatelessWidget {
@@ -189,5 +198,8 @@ class SignInWithKick extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SignInButton(
-      provider: Providers.kick, onStart: onStart, onComplete: onComplete);
+    provider: Providers.kick,
+    onStart: onStart,
+    onComplete: onComplete,
+  );
 }

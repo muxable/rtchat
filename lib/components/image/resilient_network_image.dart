@@ -77,8 +77,8 @@ final kTransparentImage = Uint8List.fromList(<int>[
 ]);
 
 class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
-  static final HttpClient _sharedHttpClient = HttpClient()
-    ..autoUncompress = false;
+  static final HttpClient _sharedHttpClient =
+      HttpClient()..autoUncompress = false;
 
   static HttpClient get _httpClient {
     HttpClient client = _sharedHttpClient;
@@ -104,14 +104,17 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
 
   @override
   ImageStreamCompleter loadImage(
-      ResilientNetworkImage key, ImageDecoderCallback decode) {
+    ResilientNetworkImage key,
+    ImageDecoderCallback decode,
+  ) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiFrameImageStreamCompleter(
       chunkEvents: chunkEvents.stream,
-      codec: _pending[hash] ??= _loadAsync(key, chunkEvents, decode).then((x) {
-        _pending.remove(hash);
-        return x;
-      }),
+      codec:
+          _pending[hash] ??= _loadAsync(key, chunkEvents, decode).then((x) {
+            _pending.remove(hash);
+            return x;
+          }),
       scale: scale,
       debugLabel: key.uri.toString(),
       informationCollector: _imageStreamInformationCollector(key),
@@ -119,10 +122,12 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
   }
 
   InformationCollector? _imageStreamInformationCollector(
-      ResilientNetworkImage key) {
+    ResilientNetworkImage key,
+  ) {
     InformationCollector? collector;
     assert(() {
-      collector = () => <DiagnosticsNode>[
+      collector =
+          () => <DiagnosticsNode>[
             DiagnosticsProperty<ImageProvider>('Image provider', this),
             DiagnosticsProperty<ResilientNetworkImage>('Image key', key),
           ];
@@ -132,9 +137,10 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
   }
 
   static Future<Codec> _loadAsync(
-      ResilientNetworkImage key,
-      StreamController<ImageChunkEvent> chunkEvents,
-      ImageDecoderCallback decode) async {
+    ResilientNetworkImage key,
+    StreamController<ImageChunkEvent> chunkEvents,
+    ImageDecoderCallback decode,
+  ) async {
     final temp = await getTemporaryDirectory();
     final cacheFile = File('${temp.path}/${key.hash}');
     final etagFile = File('${temp.path}/${key.hash}.etag');
@@ -147,8 +153,9 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
       try {
         final bytes = await cacheFile.readAsBytes();
         if (bytes.isNotEmpty) {
-          decodedCache =
-              await decode(await ImmutableBuffer.fromUint8List(bytes));
+          decodedCache = await decode(
+            await ImmutableBuffer.fromUint8List(bytes),
+          );
           etagValue = await etagFile.readAsString();
         }
       } catch (e) {
@@ -176,17 +183,21 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
               etagValue != null &&
               decodedCache != null) {
             final bytes = await cacheFile.readAsBytes();
-            chunkEvents.add(ImageChunkEvent(
-              cumulativeBytesLoaded: bytes.lengthInBytes,
-              expectedTotalBytes: bytes.lengthInBytes,
-            ));
+            chunkEvents.add(
+              ImageChunkEvent(
+                cumulativeBytesLoaded: bytes.lengthInBytes,
+                expectedTotalBytes: bytes.lengthInBytes,
+              ),
+            );
             chunkEvents.close();
             await cacheFile.setLastModified(DateTime.now());
             return decodedCache;
           }
           if (response.statusCode >= 400 && response.statusCode < 500) {
             throw NetworkImageLoadException(
-                statusCode: response.statusCode, uri: key.uri);
+              statusCode: response.statusCode,
+              uri: key.uri,
+            );
           } else {
             // assume this is a retriable error.
             continue;
@@ -196,10 +207,12 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
         final bytes = await consolidateHttpClientResponseBytes(
           response,
           onBytesReceived: (int cumulative, int? total) {
-            chunkEvents.add(ImageChunkEvent(
-              cumulativeBytesLoaded: cumulative,
-              expectedTotalBytes: total,
-            ));
+            chunkEvents.add(
+              ImageChunkEvent(
+                cumulativeBytesLoaded: cumulative,
+                expectedTotalBytes: total,
+              ),
+            );
           },
         );
 

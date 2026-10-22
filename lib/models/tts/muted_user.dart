@@ -12,31 +12,34 @@ class MutedUser implements ChatUser {
   @override
   final String? displayName;
 
-  const MutedUser(
-      {required this.provider,
-      required this.userId,
-      required this.login,
-      this.displayName});
+  const MutedUser({
+    required this.provider,
+    required this.userId,
+    required this.login,
+    this.displayName,
+  });
 
   factory MutedUser.from(ChatUser user) => MutedUser(
-      provider: user.provider,
-      userId: user.userId,
-      login: user.login,
-      displayName: user.displayName);
+    provider: user.provider,
+    userId: user.userId,
+    login: user.login,
+    displayName: user.displayName,
+  );
 
   /// Muted users saved before other providers were supported are Twitch users.
   factory MutedUser.fromJson(Map<String, dynamic> json) => MutedUser(
-      provider: json['provider'] ?? Providers.twitch,
-      userId: json['userId'] ?? '',
-      login: json['login'] ?? '',
-      displayName: json['displayName']);
+    provider: json['provider'] ?? Providers.twitch,
+    userId: json['userId'] ?? '',
+    login: json['login'] ?? '',
+    displayName: json['displayName'],
+  );
 
   Map<String, dynamic> toJson() => {
-        'provider': provider,
-        'userId': userId,
-        'displayName': displayName,
-        'login': login,
-      };
+    'provider': provider,
+    'userId': userId,
+    'displayName': displayName,
+    'login': login,
+  };
 
   @override
   bool get isBot => false;

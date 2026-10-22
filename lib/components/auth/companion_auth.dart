@@ -31,24 +31,25 @@ class _CompanionAuthWidgetState extends State<CompanionAuthWidget> {
     ProfilesAdapter.instance
         .getCompanionAuthToken(sessionUuid: sessionUuid)
         .then((token) async {
-      await user.signIn(token);
-      if (!mounted) {
-        return;
-      }
-      navigator.pop();
-    });
+          await user.signIn(token);
+          if (!mounted) {
+            return;
+          }
+          navigator.pop();
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-        initialChildSize: 0.8,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, controller) {
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(children: [
+      initialChildSize: 0.8,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, controller) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
               Text(
                 widget.isTooOld
                     ? AppLocalizations.of(context)!.companionAuthBrowserTooOld
@@ -63,8 +64,10 @@ class _CompanionAuthWidgetState extends State<CompanionAuthWidget> {
                 version: QrVersions.auto,
                 size: 200.0,
               ),
-            ]),
-          );
-        });
+            ],
+          ),
+        );
+      },
+    );
   }
 }

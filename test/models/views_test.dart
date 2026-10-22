@@ -15,7 +15,8 @@ ViewsModel signedInAs(Channel? channel) =>
     ViewsModel()..update(FakeUserModel(userChannel: channel));
 
 ViewsModel restart(ViewsModel views) => ViewsModel.fromJson(
-    jsonDecode(jsonEncode(views.toJson())) as Map<String, dynamic>);
+  jsonDecode(jsonEncode(views.toJson())) as Map<String, dynamic>,
+);
 
 void main() {
   group("default channels", () {
@@ -47,17 +48,19 @@ void main() {
     });
 
     test("can be copied from the current channels", () {
-      final views = signedInAs(twitch)
-        ..openChannel(other)
-        ..addChannel(kick);
+      final views =
+          signedInAs(twitch)
+            ..openChannel(other)
+            ..addChannel(kick);
       views.useCurrentChannelsAsDefault();
       expect(views.defaultChannels, [other, kick]);
     });
 
     test("are what the app opens with after a restart", () {
-      final views = signedInAs(twitch)
-        ..addDefaultChannel(kick)
-        ..addChannel(other);
+      final views =
+          signedInAs(twitch)
+            ..addDefaultChannel(kick)
+            ..addChannel(other);
       final restored = restart(views)
         ..update(FakeUserModel(userChannel: twitch));
       expect(restored.defaultChannels, [twitch, kick]);
@@ -88,11 +91,10 @@ void main() {
             'id': 'simulcast',
             'name': 'Simulcast',
             'channels': [twitch.toJson(), kick.toJson()],
-          }
+          },
         ],
         'activeViewId': 'simulcast',
-      })
-        ..update(FakeUserModel(userChannel: kick));
+      })..update(FakeUserModel(userChannel: kick));
       expect(restored.channels, [kick]);
       expect(restored.toJson().containsKey('views'), isFalse);
     });
@@ -113,13 +115,21 @@ void main() {
     test("pick up a new display name or language, notifying", () {
       var notifications = 0;
       final views = signedInAs(twitch)..addListener(() => notifications++);
-      views.update(FakeUserModel(
-          userChannel: Channel(Providers.twitch, '1', 'renamed')));
+      views.update(
+        FakeUserModel(userChannel: Channel(Providers.twitch, '1', 'renamed')),
+      );
       expect(views.channels.single.displayName, 'renamed');
       expect(notifications, 1);
-      views.update(FakeUserModel(
-          userChannel:
-              Channel(Providers.twitch, '1', 'renamed', language: 'ja')));
+      views.update(
+        FakeUserModel(
+          userChannel: Channel(
+            Providers.twitch,
+            '1',
+            'renamed',
+            language: 'ja',
+          ),
+        ),
+      );
       expect(views.channels.single.language, 'ja');
       expect(notifications, 2);
     });
@@ -173,9 +183,10 @@ void main() {
     });
 
     test("falls back when the picked channel is removed", () {
-      final views = signedInAs(twitch)
-        ..addChannel(kick)
-        ..previewChannel = kick;
+      final views =
+          signedInAs(twitch)
+            ..addChannel(kick)
+            ..previewChannel = kick;
       views.removeChannel(kick);
       expect(views.previewChannel, twitch);
     });
@@ -184,9 +195,10 @@ void main() {
   group("one channel per provider", () {
     test("adding a channel replaces the one on its provider, in place", () {
       var notifications = 0;
-      final views = signedInAs(twitch)
-        ..addChannel(kick)
-        ..addListener(() => notifications++);
+      final views =
+          signedInAs(twitch)
+            ..addChannel(kick)
+            ..addListener(() => notifications++);
       views.addChannel(other);
       expect(views.channels, [other, kick]);
       views.addChannel(otherKick);
@@ -230,16 +242,19 @@ void main() {
       });
       expect(restored.defaultChannels, [kick, twitch]);
       expect(restored.channels, [kick, twitch]);
-      expect(restored.toJson()['defaultChannels'],
-          [kick.toJson(), twitch.toJson()]);
+      expect(restored.toJson()['defaultChannels'], [
+        kick.toJson(),
+        twitch.toJson(),
+      ]);
     });
   });
 
   group("messages are sent", () {
     test("to the channel on the account's provider", () {
-      final views = signedInAs(kick)
-        ..openChannel(twitch)
-        ..addChannel(kick);
+      final views =
+          signedInAs(kick)
+            ..openChannel(twitch)
+            ..addChannel(kick);
       expect(views.sendChannel(kick), kick);
       expect(views.sendChannel(twitch), twitch);
     });

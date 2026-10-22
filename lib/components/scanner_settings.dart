@@ -18,10 +18,7 @@ class ScannerSettings extends StatelessWidget {
           children: [
             IconButton(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(
-                Icons.close,
-                color: iconColor,
-              ),
+              icon: const Icon(Icons.close, color: iconColor),
             ),
             IconButton(
               onPressed: () => scanController.toggleTorch(),

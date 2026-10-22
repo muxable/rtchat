@@ -28,7 +28,7 @@ beforeEach(() => fetchMock.mockReset());
 describe("youTubeEmbedUrl", () => {
   it("embeds the channel's live stream muted", () => {
     expect(youTubeEmbedUrl(channelId)).toBe(
-      `https://www.youtube.com/embed/live_stream?channel=${channelId}&autoplay=1&mute=1`
+      `https://www.youtube.com/embed/live_stream?channel=${channelId}&autoplay=1&mute=1`,
     );
   });
 
@@ -45,7 +45,7 @@ describe("parseYouTubeQuery", () => {
       expect(parseYouTubeQuery(query)).toEqual({
         handle: query.trim().replace(/^@/, "").toLowerCase(),
       });
-    }
+    },
   );
 
   it.each([
@@ -85,7 +85,7 @@ describe("parseYouTubeQuery", () => {
 
   it.each([null, 123, {}, "UCshort", channelId + "x", channelId.toLowerCase()])(
     "rejects invalid channel id %s",
-    (value) => expect(isYouTubeChannelId(value)).toBe(false)
+    (value) => expect(isYouTubeChannelId(value)).toBe(false),
   );
   it("validates channel ids", () => {
     expect(isYouTubeChannelId(channelId)).toBe(true);
@@ -99,7 +99,7 @@ describe("searchYouTubeChannel", () => {
       json: async () => ({ items: [channel] }),
     });
     await expect(
-      searchYouTubeChannel("key&value", "@Some.Creator")
+      searchYouTubeChannel("key&value", "@Some.Creator"),
     ).resolves.toEqual([
       {
         provider: "youtube",
@@ -113,7 +113,7 @@ describe("searchYouTubeChannel", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const url = new URL(fetchMock.mock.calls[0][0]);
     expect(url.origin + url.pathname).toBe(
-      "https://www.googleapis.com/youtube/v3/channels"
+      "https://www.googleapis.com/youtube/v3/channels",
     );
     expect(Object.fromEntries(url.searchParams)).toEqual({
       part: "snippet",
@@ -139,7 +139,7 @@ describe("searchYouTubeChannel", () => {
     });
     const results = await searchYouTubeChannel(
       "key",
-      `youtube.com/channel/${channelId}`
+      `youtube.com/channel/${channelId}`,
     );
     expect(results[0]).toMatchObject({
       channelId,

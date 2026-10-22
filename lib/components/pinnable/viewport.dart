@@ -21,7 +21,8 @@ class PinnableMessageViewport extends Viewport {
   RenderPinnableMessageViewport createRenderObject(BuildContext context) {
     return RenderPinnableMessageViewport(
       axisDirection: axisDirection,
-      crossAxisDirection: crossAxisDirection ??
+      crossAxisDirection:
+          crossAxisDirection ??
           Viewport.getDefaultCrossAxisDirection(context, axisDirection),
       anchor: anchor,
       offset: offset,
@@ -32,10 +33,13 @@ class PinnableMessageViewport extends Viewport {
 
   @override
   void updateRenderObject(
-      BuildContext context, RenderPinnableMessageViewport renderObject) {
+    BuildContext context,
+    RenderPinnableMessageViewport renderObject,
+  ) {
     renderObject
       ..axisDirection = axisDirection
-      ..crossAxisDirection = crossAxisDirection ??
+      ..crossAxisDirection =
+          crossAxisDirection ??
           Viewport.getDefaultCrossAxisDirection(context, axisDirection)
       ..anchor = anchor
       ..offset = offset
@@ -72,17 +76,18 @@ class RenderPinnableMessageViewport extends RenderViewport {
   }) {
     cumulativeOffset = 0.0;
     final result = super.layoutChildSequence(
-        child: child,
-        scrollOffset: scrollOffset,
-        overlap: overlap,
-        layoutOffset: layoutOffset,
-        remainingPaintExtent: remainingPaintExtent,
-        mainAxisExtent: mainAxisExtent,
-        crossAxisExtent: crossAxisExtent,
-        growthDirection: growthDirection,
-        advance: advance,
-        remainingCacheExtent: remainingCacheExtent,
-        cacheOrigin: cacheOrigin);
+      child: child,
+      scrollOffset: scrollOffset,
+      overlap: overlap,
+      layoutOffset: layoutOffset,
+      remainingPaintExtent: remainingPaintExtent,
+      mainAxisExtent: mainAxisExtent,
+      crossAxisExtent: crossAxisExtent,
+      growthDirection: growthDirection,
+      advance: advance,
+      remainingCacheExtent: remainingCacheExtent,
+      cacheOrigin: cacheOrigin,
+    );
     // progress through the children and pin the children.
     while (child != null) {
       if (child is RenderPinnableMessageSliver) {
@@ -90,9 +95,9 @@ class RenderPinnableMessageViewport extends RenderViewport {
             (child.parentData! as SliverPhysicalParentData).paintOffset;
 
         (child.parentData! as SliverPhysicalParentData).paintOffset = Offset(
-            offset.dx,
-            math.max(
-                offset.dy, cumulativeOffset - child.geometry!.paintExtent));
+          offset.dx,
+          math.max(offset.dy, cumulativeOffset - child.geometry!.paintExtent),
+        );
         cumulativeOffset -= child.geometry!.maxPaintExtent * child.pinFraction;
       }
       child = advance(child);
@@ -101,8 +106,11 @@ class RenderPinnableMessageViewport extends RenderViewport {
   }
 
   @override
-  void updateChildLayoutOffset(RenderSliver child, double layoutOffset,
-      GrowthDirection growthDirection) {
+  void updateChildLayoutOffset(
+    RenderSliver child,
+    double layoutOffset,
+    GrowthDirection growthDirection,
+  ) {
     super.updateChildLayoutOffset(child, layoutOffset, growthDirection);
 
     if (child is RenderPinnableMessageSliver) {

@@ -16,12 +16,13 @@ class FakeChatUser implements ChatUser {
   @override
   final bool isBot;
 
-  const FakeChatUser(
-      {this.provider = 'fake',
-      required this.userId,
-      required this.login,
-      this.displayName,
-      this.isBot = false});
+  const FakeChatUser({
+    this.provider = 'fake',
+    required this.userId,
+    required this.login,
+    this.displayName,
+    this.isBot = false,
+  });
 }
 
 class FakeChatMessage extends MessageModel implements ChatMessage {
@@ -36,14 +37,15 @@ class FakeChatMessage extends MessageModel implements ChatMessage {
   @override
   final bool isSubscriber;
 
-  const FakeChatMessage(
-      {required super.messageId,
-      required super.timestamp,
-      required this.author,
-      required this.message,
-      this.isAction = false,
-      this.deleted = false,
-      this.isSubscriber = false});
+  const FakeChatMessage({
+    required super.messageId,
+    required super.timestamp,
+    required this.author,
+    required this.message,
+    this.isAction = false,
+    this.deleted = false,
+    this.isSubscriber = false,
+  });
 
   @override
   bool get isCommand => !isAction && message.startsWith("!");

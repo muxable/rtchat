@@ -20,13 +20,13 @@ class Command {
   String toString() => '$command:$timeLastUsed';
 
   Command.fromJson(Map<String, dynamic> json)
-      : command = json['command'],
-        timeLastUsed = DateTime.parse(json['timeLastUsed']);
+    : command = json['command'],
+      timeLastUsed = DateTime.parse(json['timeLastUsed']);
 
   Map<String, dynamic> toJson() => {
-        'command': command,
-        'timeLastUsed': timeLastUsed.toString(),
-      };
+    'command': command,
+    'timeLastUsed': timeLastUsed.toString(),
+  };
 }
 
 class CommandsModel extends ChangeNotifier {

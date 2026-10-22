@@ -18,30 +18,32 @@ class OnboardingScreen extends StatelessWidget {
     return Theme(
       data: Themes.darkTheme,
       child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          backgroundColor: Colors.black,
-          body: SafeArea(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Image(
-                        width: 160, image: AssetImage('assets/logo.png')),
-                    Padding(
-                        padding: const EdgeInsets.only(bottom: 32),
-                        child: Text("RealtimeChat",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(color: Colors.white))),
-                    LoginOptionsWidget(onChannelSelect: onChannelSelect),
-                  ],
-                ),
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Image(width: 160, image: AssetImage('assets/logo.png')),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 32),
+                    child: Text(
+                      "RealtimeChat",
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleLarge?.copyWith(color: Colors.white),
+                    ),
+                  ),
+                  LoginOptionsWidget(onChannelSelect: onChannelSelect),
+                ],
               ),
             ),
-          )),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -73,63 +75,66 @@ class _LoginOptionsWidgetState extends State<LoginOptionsWidget> {
     if (_isLoading) {
       return const CircularProgressIndicator();
     }
-    return Column(children: [
-      ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Padding(
+    return Column(
+      children: [
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: SignInWithTwitch(
-              onStart: _onStart,
-              onComplete: _onComplete,
-            )),
-      ),
-      ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Padding(
+            child: SignInWithTwitch(onStart: _onStart, onComplete: _onComplete),
+          ),
+        ),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: SignInWithKick(
-              onStart: _onStart,
-              onComplete: _onComplete,
-            )),
-      ),
-      Text(AppLocalizations.of(context)!.or,
-          style: Theme.of(context)
-              .textTheme
-              .titleMedium
-              ?.copyWith(color: Colors.white)),
-      ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ElevatedButton(
-            child: Text(
-              AppLocalizations.of(context)!.continueAsGuest,
-              textAlign: TextAlign.center,
-            ),
-            onPressed: () async {
-              FirebaseAnalytics.instance.logLogin(loginMethod: "anonymous");
-              showModalBottomSheet<void>(
-                context: context,
-                isScrollControlled: true,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                builder: (context) {
-                  return DraggableScrollableSheet(
+            child: SignInWithKick(onStart: _onStart, onComplete: _onComplete),
+          ),
+        ),
+        Text(
+          AppLocalizations.of(context)!.or,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(color: Colors.white),
+        ),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: ElevatedButton(
+              child: Text(
+                AppLocalizations.of(context)!.continueAsGuest,
+                textAlign: TextAlign.center,
+              ),
+              onPressed: () async {
+                FirebaseAnalytics.instance.logLogin(loginMethod: "anonymous");
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                  ),
+                  builder: (context) {
+                    return DraggableScrollableSheet(
                       initialChildSize: 0.8,
                       maxChildSize: 0.9,
                       expand: false,
                       builder: (context, controller) {
                         return ChannelSearchBottomSheetWidget(
-                            onChannelSelect: widget.onChannelSelect,
-                            controller: controller);
-                      });
-                },
-              );
-            },
+                          onChannelSelect: widget.onChannelSelect,
+                          controller: controller,
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ),
-      )
-    ]);
+      ],
+    );
   }
 }

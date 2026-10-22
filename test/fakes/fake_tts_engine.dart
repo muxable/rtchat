@@ -11,8 +11,13 @@ class FakeUtterance {
   final double pitch;
   final String? language;
 
-  FakeUtterance(this.text,
-      {this.voice, required this.rate, required this.pitch, this.language});
+  FakeUtterance(
+    this.text, {
+    this.voice,
+    required this.rate,
+    required this.pitch,
+    this.language,
+  });
 
   @override
   String toString() => 'FakeUtterance($text, rate: $rate, pitch: $pitch)';
@@ -45,8 +50,11 @@ class FakeTtsEngine implements TtsEngine {
 
   final List<Completer<void>> _speaking = [];
 
-  FakeTtsEngine(
-      {this.availableVoices = const [], this.log, this.name = 'engine'});
+  FakeTtsEngine({
+    this.availableVoices = const [],
+    this.log,
+    this.name = 'engine',
+  });
 
   /// The text of every utterance, in order.
   List<String> get spoken => utterances.map((u) => u.text).toList();
@@ -64,8 +72,15 @@ class FakeTtsEngine implements TtsEngine {
       failNext = null;
       throw error;
     }
-    utterances.add(FakeUtterance(text,
-        voice: voice, rate: rate, pitch: pitch, language: language));
+    utterances.add(
+      FakeUtterance(
+        text,
+        voice: voice,
+        rate: rate,
+        pitch: pitch,
+        language: language,
+      ),
+    );
     log?.events.add('$name: $text');
     if (log case final log?) {
       log.maxSpeaking = max(log.maxSpeaking, ++log.speaking);
@@ -100,9 +115,10 @@ class FakeTtsEngine implements TtsEngine {
   Future<void> release() async => releaseCount++;
 
   @override
-  Future<List<TtsVoice>> voices({String? language}) async => language == null
-      ? availableVoices
-      : availableVoices.where((voice) => voice.speaks(language)).toList();
+  Future<List<TtsVoice>> voices({String? language}) async =>
+      language == null
+          ? availableVoices
+          : availableVoices.where((voice) => voice.speaks(language)).toList();
 
   @override
   Future<void> dispose() async {
@@ -126,10 +142,11 @@ const supertonicSpeakers = [
 
 /// Each of [speakers] in each of [languages], as a multilingual pack lists
 /// its voices.
-List<TtsVoice> packVoices(List<String> languages,
-        {List<String> speakers = supertonicSpeakers}) =>
-    [
-      for (final speaker in speakers)
-        for (final language in languages)
-          TtsVoice(id: speaker, name: speaker, locale: language),
-    ];
+List<TtsVoice> packVoices(
+  List<String> languages, {
+  List<String> speakers = supertonicSpeakers,
+}) => [
+  for (final speaker in speakers)
+    for (final language in languages)
+      TtsVoice(id: speaker, name: speaker, locale: language),
+];

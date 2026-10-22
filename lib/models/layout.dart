@@ -3,11 +3,7 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-enum PreferredOrientation {
-  portrait,
-  landscape,
-  system,
-}
+enum PreferredOrientation { portrait, landscape, system }
 
 extension _OrientationPreferenceJson on PreferredOrientation {
   int toJson() {
@@ -180,8 +176,9 @@ class LayoutModel extends ChangeNotifier {
       _isStatsVisible = json['isStatsVisible'];
     }
     if (json['orientationPreference'] != null) {
-      _orientationPreference =
-          _OrientationPreferenceJson.fromJson(json['orientationPreference']);
+      _orientationPreference = _OrientationPreferenceJson.fromJson(
+        json['orientationPreference'],
+      );
       _bindOrientationPreference();
     }
     if (json['isShowNotifications'] != null) {
@@ -196,13 +193,13 @@ class LayoutModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-        "panelHeight": _panelHeight,
-        "panelWidth": _panelWidth,
-        "locked": _locked,
-        "isStatsVisible": _isStatsVisible,
-        "orientationPreference": _orientationPreference.toJson(),
-        "isShowNotifications": _isShowNotifications,
-        "isShowPreview": _isShowPreview,
-        "themeMode": _themeMode.toJson(),
-      };
+    "panelHeight": _panelHeight,
+    "panelWidth": _panelWidth,
+    "locked": _locked,
+    "isStatsVisible": _isStatsVisible,
+    "orientationPreference": _orientationPreference.toJson(),
+    "isShowNotifications": _isShowNotifications,
+    "isShowPreview": _isShowPreview,
+    "themeMode": _themeMode.toJson(),
+  };
 }

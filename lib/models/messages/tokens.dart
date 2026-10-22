@@ -109,8 +109,9 @@ extension IterableMessageToken<T extends MessageToken> on Iterable<T> {
       }
       if (repeating) {
         yield CompactedToken(
-            list.sublist(0, length - (isSpaceDelimited ? 1 : 0)),
-            (list.length + (isSpaceDelimited ? 1 : 0)) ~/ length);
+          list.sublist(0, length - (isSpaceDelimited ? 1 : 0)),
+          (list.length + (isSpaceDelimited ? 1 : 0)) ~/ length,
+        );
         return;
       }
     }

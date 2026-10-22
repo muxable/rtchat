@@ -14,7 +14,9 @@ void main() {
       'xyz.luan/audioplayers.global',
     ]) {
       messenger.setMockMethodCallHandler(
-          MethodChannel(channel), (call) async => true);
+        MethodChannel(channel),
+        (call) async => true,
+      );
     }
   });
 

@@ -17,11 +17,17 @@ void main() {
       final now = DateTime.now();
       expect(Command("!a", now).isDead, isFalse);
       expect(
-          Command("!a", now.subtract(const Duration(days: 6))).isDead, isFalse);
+        Command("!a", now.subtract(const Duration(days: 6))).isDead,
+        isFalse,
+      );
       expect(
-          Command("!a", now.subtract(const Duration(days: 7))).isDead, isTrue);
+        Command("!a", now.subtract(const Duration(days: 7))).isDead,
+        isTrue,
+      );
       expect(
-          Command("!a", now.subtract(const Duration(days: 30))).isDead, isTrue);
+        Command("!a", now.subtract(const Duration(days: 30))).isDead,
+        isTrue,
+      );
     });
 
     test("json round trip", () {
@@ -85,7 +91,8 @@ void main() {
       model.addCommand(Command("!a", DateTime.now()));
       model.addCommand(Command("!b", DateTime.now()));
       final decoded = CommandsModel.fromJson(
-          jsonDecode(jsonEncode(model.toJson())) as Map<String, dynamic>);
+        jsonDecode(jsonEncode(model.toJson())) as Map<String, dynamic>,
+      );
       expect(decoded.commandList.map((c) => c.command), ["!b", "!a"]);
     });
 
@@ -95,7 +102,7 @@ void main() {
         "commandList": [
           Command("!fresh", now).toJson(),
           Command("!stale", now.subtract(const Duration(days: 8))).toJson(),
-        ]
+        ],
       });
       expect(model.commandList.map((c) => c.command), ["!fresh"]);
     });

@@ -37,8 +37,8 @@ export function missingEvents(existing: KickSubscription[]) {
   return KICK_EVENTS.filter(
     (wanted) =>
       !existing.some(
-        (sub) => sub.event === wanted.name && sub.version === wanted.version
-      )
+        (sub) => sub.event === wanted.name && sub.version === wanted.version,
+      ),
   );
 }
 
@@ -59,7 +59,7 @@ export function toChannelMetadata(channel: any) {
     language: stream.language ?? null,
     categoryId: channel.category?.id ?? null,
     categoryName: channel.category?.name ?? null,
-    viewerCount: stream.is_live ? stream.viewer_count ?? 0 : 0,
+    viewerCount: stream.is_live ? (stream.viewer_count ?? 0) : 0,
     // channels subscribed mid-stream never see livestream.status.updated, so
     // the poll keeps onlineAt in sync too.
     onlineAt:
@@ -104,7 +104,7 @@ export async function ensureKickSubscriptions(broadcasterId: string) {
   const token = await appToken();
   const listed = await kickApi(
     token,
-    `/events/subscriptions?broadcaster_user_id=${broadcasterId}`
+    `/events/subscriptions?broadcaster_user_id=${broadcasterId}`,
   );
   const existing: KickSubscription[] = listed?.data ?? [];
   const missing = missingEvents(existing);
@@ -143,7 +143,7 @@ export async function ensureKickSubscriptions(broadcasterId: string) {
     ).data().count;
     if (count >= CHAT_SUBSCRIPTION_WARNING) {
       functions.logger.warn(
-        `${count} kick channels subscribed; unverified apps are limited to 1,000 chat subscriptions`
+        `${count} kick channels subscribed; unverified apps are limited to 1,000 chat subscriptions`,
       );
     }
   }
@@ -172,7 +172,7 @@ export async function removeIdleKickSubscriptions() {
     .where(
       "lastActiveAt",
       "<",
-      admin.firestore.Timestamp.fromMillis(Date.now() - IDLE_MS)
+      admin.firestore.Timestamp.fromMillis(Date.now() - IDLE_MS),
     )
     .get();
   for (const broadcasterId of kickBroadcasterIds(idle.docs)) {
@@ -197,7 +197,7 @@ export const updateKickChannelMetadata = functions.pubsub
       .where(
         "lastActiveAt",
         ">",
-        admin.firestore.Timestamp.fromMillis(Date.now() - 86400 * 1000)
+        admin.firestore.Timestamp.fromMillis(Date.now() - 86400 * 1000),
       )
       .get();
     const ids = kickBroadcasterIds(active.docs);
@@ -216,7 +216,7 @@ export const updateKickChannelMetadata = functions.pubsub
             .collection("channels")
             .doc(`kick:${channel.broadcaster_user_id}`),
           toChannelMetadata(channel),
-          { merge: true }
+          { merge: true },
         );
       }
       await writes.commit();

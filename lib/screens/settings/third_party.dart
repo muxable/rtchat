@@ -34,7 +34,7 @@ const streamlabsCurrencies = [
   ['CHF', 'Swiss Franc'],
   ['THB', 'Thai Baht'],
   ['TRY', 'Turkish Lira'],
-  ['USD', 'US Dollar']
+  ['USD', 'US Dollar'],
 ];
 
 class _RealtimeCashWidget extends StatefulWidget {
@@ -56,87 +56,103 @@ class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<String?>(
-      stream: DonationsAdapter.instance
-          .forRealtimeChatAddress(userId: widget.userId),
+      stream: DonationsAdapter.instance.forRealtimeChatAddress(
+        userId: widget.userId,
+      ),
       builder: (context, snapshot) {
-        return Column(children: [
-          ListTile(
-            leading: const Image(image: AssetImage('assets/realtimecash.png')),
-            title: const Text("RealtimeCash"),
-            subtitle: Text(AppLocalizations.of(context)!.realtimeCashSubtitle),
-            trailing: SizedBox(
-              width: 24,
-              height: 24,
-              child: snapshot.data != null
-                  ? const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                    )
-                  : const Icon(Icons.help),
+        return Column(
+          children: [
+            ListTile(
+              leading: const Image(
+                image: AssetImage('assets/realtimecash.png'),
+              ),
+              title: const Text("RealtimeCash"),
+              subtitle: Text(
+                AppLocalizations.of(context)!.realtimeCashSubtitle,
+              ),
+              trailing: SizedBox(
+                width: 24,
+                height: 24,
+                child:
+                    snapshot.data != null
+                        ? const Icon(Icons.check_circle, color: Colors.green)
+                        : const Icon(Icons.help),
+              ),
+              // open https://cash.rtirl.com/
+              onTap: () => openUrl(Uri.parse("https://cash.rtirl.com/")),
             ),
-            // open https://cash.rtirl.com/
-            onTap: () => openUrl(Uri.parse("https://cash.rtirl.com/")),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 88, right: 16),
-            child: TextField(
+            Padding(
+              padding: const EdgeInsets.only(left: 88, right: 16),
+              child: TextField(
                 controller: TextEditingController()..text = snapshot.data ?? "",
                 readOnly: false,
                 decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.walletAddress,
-                    suffixIcon: IconButton(
-                        icon: const Icon(Icons.qr_code_scanner),
-                        onPressed: () {
-                          final messenger = ScaffoldMessenger.of(context);
+                  hintText: AppLocalizations.of(context)!.walletAddress,
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.qr_code_scanner),
+                    onPressed: () {
+                      final messenger = ScaffoldMessenger.of(context);
 
-                          showModalBottomSheet(
-                            isScrollControlled: true,
-                            context: context,
-                            builder: (ctx) {
-                              return Stack(
-                                children: [
-                                  MobileScanner(
-                                    errorBuilder: (context, error) {
-                                      return ScannerErrorWidget(error: error);
-                                    },
-                                    controller: _scanController,
-                                    onDetect: (capture) {
-                                      final address = parseWalletAddress(capture
-                                          .barcodes.firstOrNull?.rawValue);
-                                      if (address == null) {
-                                        messenger.showSnackBar(SnackBar(
-                                            content: Text(
-                                                AppLocalizations.of(context)!
-                                                    .invalidUrlErrorText)));
-                                      } else {
-                                        DonationsAdapter.instance
-                                            .setRealtimeCashAddress(
-                                                address: address);
-                                      }
-                                      Navigator.pop(ctx);
-                                    },
-                                  ),
-                                  Positioned(
-                                      top: 50,
-                                      left: 0,
-                                      right: 0,
-                                      child: ScannerSettings(
-                                        scanController: _scanController,
-                                      )),
-                                ],
-                              );
-                            },
-                          ).then((value) {
-                            _scanController.dispose();
+                      showModalBottomSheet(
+                        isScrollControlled: true,
+                        context: context,
+                        builder: (ctx) {
+                          return Stack(
+                            children: [
+                              MobileScanner(
+                                errorBuilder: (context, error) {
+                                  return ScannerErrorWidget(error: error);
+                                },
+                                controller: _scanController,
+                                onDetect: (capture) {
+                                  final address = parseWalletAddress(
+                                    capture.barcodes.firstOrNull?.rawValue,
+                                  );
+                                  if (address == null) {
+                                    messenger.showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          AppLocalizations.of(
+                                            context,
+                                          )!.invalidUrlErrorText,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    DonationsAdapter.instance
+                                        .setRealtimeCashAddress(
+                                          address: address,
+                                        );
+                                  }
+                                  Navigator.pop(ctx);
+                                },
+                              ),
+                              Positioned(
+                                top: 50,
+                                left: 0,
+                                right: 0,
+                                child: ScannerSettings(
+                                  scanController: _scanController,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ).then((value) {
+                        _scanController.dispose();
 
-                            _scanController = MobileScannerController(
-                              detectionSpeed: DetectionSpeed.noDuplicates,
-                            );
-                          });
-                        })),
-                keyboardType: TextInputType.url),
-          ),
-        ]);
+                        _scanController = MobileScannerController(
+                          detectionSpeed: DetectionSpeed.noDuplicates,
+                        );
+                      });
+                    },
+                  ),
+                ),
+                keyboardType: TextInputType.url,
+              ),
+            ),
+          ],
+        );
       },
     );
   }
@@ -158,10 +174,7 @@ class _StreamlabsWidget extends StatelessWidget {
           stream: DonationsAdapter.instance.forStreamlabsConfig(userId: userId),
           builder: (context, snapshot) {
             return snapshot.data != null
-                ? const Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                  )
+                ? const Icon(Icons.check_circle, color: Colors.green)
                 : Container();
           },
         ),
@@ -175,20 +188,25 @@ class _StreamlabsWidget extends StatelessWidget {
         final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
         final provider = userModel.userChannel?.provider;
         if (provider == null) {
-          messenger.showSnackBar(const SnackBar(
+          messenger.showSnackBar(
+            const SnackBar(
               content: Text(
-                  "Some strange authentication error occurred. Try signing out, or ask on Discord?")));
+                "Some strange authentication error occurred. Try signing out, or ask on Discord?",
+              ),
+            ),
+          );
           return;
         }
         final result = await FlutterWebAuth2.authenticate(
-            url:
-                "https://chat.rtirl.com/auth/streamlabs/redirect?token=$idToken&provider=$provider",
-            callbackUrlScheme: "com.rtirl.chat");
+          url:
+              "https://chat.rtirl.com/auth/streamlabs/redirect?token=$idToken&provider=$provider",
+          callbackUrlScheme: "com.rtirl.chat",
+        );
         final token = Uri.parse(result).queryParameters['token'];
         if (token == null) {
-          messenger.showSnackBar(SnackBar(
-            content: Text(l10n.thirdPartyAuthError),
-          ));
+          messenger.showSnackBar(
+            SnackBar(content: Text(l10n.thirdPartyAuthError)),
+          );
         }
       },
     );
@@ -208,14 +226,12 @@ class _StreamElementsWidget extends StatelessWidget {
         width: 24,
         height: 24,
         child: StreamBuilder(
-          stream:
-              DonationsAdapter.instance.forStreamElementsConfig(userId: userId),
+          stream: DonationsAdapter.instance.forStreamElementsConfig(
+            userId: userId,
+          ),
           builder: (context, snapshot) {
             return snapshot.data != null
-                ? const Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                  )
+                ? const Icon(Icons.check_circle, color: Colors.green)
                 : Container();
           },
         ),
@@ -229,20 +245,25 @@ class _StreamElementsWidget extends StatelessWidget {
         final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
         final provider = userModel.userChannel?.provider;
         if (provider == null) {
-          messenger.showSnackBar(const SnackBar(
+          messenger.showSnackBar(
+            const SnackBar(
               content: Text(
-                  "Some strange authentication error occurred. Try signing out, or ask on Discord?")));
+                "Some strange authentication error occurred. Try signing out, or ask on Discord?",
+              ),
+            ),
+          );
           return;
         }
         final result = await FlutterWebAuth2.authenticate(
-            url:
-                "https://chat.rtirl.com/auth/streamelements/redirect?token=$idToken&provider=$provider",
-            callbackUrlScheme: "com.rtirl.chat");
+          url:
+              "https://chat.rtirl.com/auth/streamelements/redirect?token=$idToken&provider=$provider",
+          callbackUrlScheme: "com.rtirl.chat",
+        );
         final token = Uri.parse(result).queryParameters['token'];
         if (token == null) {
-          messenger.showSnackBar(SnackBar(
-            content: Text(l10n.thirdPartyAuthError),
-          ));
+          messenger.showSnackBar(
+            SnackBar(content: Text(l10n.thirdPartyAuthError)),
+          );
         }
       },
     );
@@ -272,90 +293,103 @@ class _RealTimeKitWidgetState extends State<_RealTimeKitWidget> {
           trailing: SizedBox(
             width: 24,
             height: 24,
-            child: apiKey.isNotEmpty
-                ? const Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                  )
-                : const Icon(Icons.help),
+            child:
+                apiKey.isNotEmpty
+                    ? const Icon(Icons.check_circle, color: Colors.green)
+                    : const Icon(Icons.help),
           ),
-          onTap: () => apiKey.isNotEmpty
-              ? openUrl(Uri.parse(apiKey))
-              : openUrl(Uri.parse("https://kit.rtirl.com/")),
+          onTap:
+              () =>
+                  apiKey.isNotEmpty
+                      ? openUrl(Uri.parse(apiKey))
+                      : openUrl(Uri.parse("https://kit.rtirl.com/")),
         ),
         Padding(
           padding: const EdgeInsets.only(left: 88, right: 16),
           child: TextField(
-              controller: TextEditingController()..text = apiKey,
-              readOnly: false,
-              decoration: InputDecoration(
-                  hintText: "API Key",
-                  suffixIcon: IconButton(
-                      icon: const Icon(Icons.qr_code_scanner),
-                      onPressed: () {
-                        final messenger = ScaffoldMessenger.of(context);
+            controller: TextEditingController()..text = apiKey,
+            readOnly: false,
+            decoration: InputDecoration(
+              hintText: "API Key",
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.qr_code_scanner),
+                onPressed: () {
+                  final messenger = ScaffoldMessenger.of(context);
 
-                        showModalBottomSheet(
-                          isScrollControlled: true,
-                          context: context,
-                          builder: (ctx) {
-                            return Stack(
-                              children: [
-                                MobileScanner(
-                                  errorBuilder: (context, error) {
-                                    return ScannerErrorWidget(error: error);
-                                  },
-                                  controller: _scanController,
-                                  onDetect: (capture) {
-                                    final List<Barcode> barcodes =
-                                        capture.barcodes;
+                  showModalBottomSheet(
+                    isScrollControlled: true,
+                    context: context,
+                    builder: (ctx) {
+                      return Stack(
+                        children: [
+                          MobileScanner(
+                            errorBuilder: (context, error) {
+                              return ScannerErrorWidget(error: error);
+                            },
+                            controller: _scanController,
+                            onDetect: (capture) {
+                              final List<Barcode> barcodes = capture.barcodes;
 
-                                    if (barcodes.isEmpty) {
-                                      messenger.showSnackBar(SnackBar(
-                                          content: Text(
-                                              AppLocalizations.of(context)!
-                                                  .invalidUrlErrorText)));
-                                      return;
-                                    }
+                              if (barcodes.isEmpty) {
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.invalidUrlErrorText,
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
 
-                                    final barcode = barcodes.first;
+                              final barcode = barcodes.first;
 
-                                    if (barcode.rawValue == null ||
-                                        barcode.rawValue!.isEmpty) {
-                                      messenger.showSnackBar(SnackBar(
-                                          content: Text(
-                                              AppLocalizations.of(context)!
-                                                  .invalidUrlErrorText)));
-                                      Navigator.pop(ctx);
-                                      return;
-                                    }
+                              if (barcode.rawValue == null ||
+                                  barcode.rawValue!.isEmpty) {
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.invalidUrlErrorText,
+                                    ),
+                                  ),
+                                );
+                                Navigator.pop(ctx);
+                                return;
+                              }
 
-                                    setState(() {
-                                      apiKey = barcode.rawValue!;
-                                    });
+                              setState(() {
+                                apiKey = barcode.rawValue!;
+                              });
 
-                                    Navigator.pop(ctx);
-                                  },
-                                ),
-                                Positioned(
-                                    top: 50,
-                                    left: 0,
-                                    right: 0,
-                                    child: ScannerSettings(
-                                      scanController: _scanController,
-                                    )),
-                              ],
-                            );
-                          },
-                        ).then((value) {
-                          _scanController.dispose();
+                              Navigator.pop(ctx);
+                            },
+                          ),
+                          Positioned(
+                            top: 50,
+                            left: 0,
+                            right: 0,
+                            child: ScannerSettings(
+                              scanController: _scanController,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ).then((value) {
+                    _scanController.dispose();
 
-                          _scanController = MobileScannerController(
-                            detectionSpeed: DetectionSpeed.noDuplicates,
-                          );
-                        });
-                      })),
-              keyboardType: TextInputType.url),
+                    _scanController = MobileScannerController(
+                      detectionSpeed: DetectionSpeed.noDuplicates,
+                    );
+                  });
+                },
+              ),
+            ),
+            keyboardType: TextInputType.url,
+          ),
         ),
       ],
     );
@@ -368,27 +402,29 @@ class ThirdPartyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            title: Text(AppLocalizations.of(context)!.thirdPartyServices)),
-        body: Consumer<UserModel>(
-          builder: (context, userModel, child) {
-            final userId = userModel.user?.uid;
-            if (userId == null) {
-              // the user should be signed in at this point.
-              return Container();
-            }
-            return ListView(
-              children: [
-                _RealtimeCashWidget(userId: userId),
-                const Divider(),
-                _RealTimeKitWidget(),
-                const Divider(),
-                _StreamlabsWidget(userId: userId),
-                const Divider(),
-                _StreamElementsWidget(userId: userId),
-              ],
-            );
-          },
-        ));
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.thirdPartyServices),
+      ),
+      body: Consumer<UserModel>(
+        builder: (context, userModel, child) {
+          final userId = userModel.user?.uid;
+          if (userId == null) {
+            // the user should be signed in at this point.
+            return Container();
+          }
+          return ListView(
+            children: [
+              _RealtimeCashWidget(userId: userId),
+              const Divider(),
+              _RealTimeKitWidget(),
+              const Divider(),
+              _StreamlabsWidget(userId: userId),
+              const Divider(),
+              _StreamElementsWidget(userId: userId),
+            ],
+          );
+        },
+      ),
+    );
   }
 }

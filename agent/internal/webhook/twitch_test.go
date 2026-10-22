@@ -50,8 +50,21 @@ func TestMapTwitchIgnoredAndInvalid(t *testing.T) {
 
 type fakeTwitchStore struct {
 	writes      []twitchDocument
+	created     map[string]bool
 	setError    error
 	updateError error
+}
+
+func (s *fakeTwitchStore) Create(_ context.Context, path string, data map[string]interface{}) (bool, error) {
+	s.writes = append(s.writes, twitchDocument{Path: path, Data: data, Create: true})
+	if s.setError != nil || s.created[path] {
+		return false, s.setError
+	}
+	if s.created == nil {
+		s.created = map[string]bool{}
+	}
+	s.created[path] = true
+	return true, nil
 }
 
 func (s *fakeTwitchStore) Set(_ context.Context, path string, data map[string]interface{}, merge bool) error {
@@ -145,12 +158,13 @@ func TestTwitchHTTP(t *testing.T) {
 
 func TestTwitchWritesAndRetries(t *testing.T) {
 	for _, test := range []struct {
-		name, eventType                     string
+		name, eventType, wantPath           string
 		setError, updateError, refreshError error
 		wantStatus, wantWrites, wantRefresh int
 	}{
-		{name: "follow retries use same set id", eventType: "channel.follow", wantStatus: 200, wantWrites: 4},
-		{name: "follow update failure ignored", eventType: "channel.follow", updateError: errors.New("missing channel"), wantStatus: 200, wantWrites: 4},
+		{name: "follow counted once", eventType: "channel.follow", wantPath: "channels/twitch:1337/messages/twitch:follow:42", wantStatus: 200, wantWrites: 3},
+		{name: "follow update failure ignored", eventType: "channel.follow", wantPath: "channels/twitch:1337/messages/twitch:follow:42", updateError: errors.New("missing channel"), wantStatus: 200, wantWrites: 3},
+		{name: "follow failure retried", eventType: "channel.follow", wantPath: "channels/twitch:1337/messages/twitch:follow:42", setError: errors.New("unavailable"), wantStatus: 500, wantWrites: 2},
 		{name: "message failure retried", eventType: "stream.offline", setError: errors.New("unavailable"), wantStatus: 500, wantWrites: 2},
 		{name: "online refresh", eventType: "stream.online", wantStatus: 200, wantWrites: 4, wantRefresh: 2},
 		{name: "refresh failure retried", eventType: "stream.online", refreshError: errors.New("unavailable"), wantStatus: 500, wantWrites: 4, wantRefresh: 2},
@@ -165,7 +179,7 @@ func TestTwitchWritesAndRetries(t *testing.T) {
 				refreshes++
 				return test.refreshError
 			}}
-			body := `{"subscription":{"type":"` + test.eventType + `","version":"2","status":"enabled"},"event":{"broadcaster_user_id":"1337"}}`
+			body := `{"subscription":{"type":"` + test.eventType + `","version":"2","status":"enabled"},"event":{"broadcaster_user_id":"1337","user_id":"42"}}`
 			for i := 0; i < 2; i++ {
 				recorder := httptest.NewRecorder()
 				h.ServeHTTP(recorder, signedTwitchRequest(body, "notification", twitchTestNow.Format(time.RFC3339Nano)))
@@ -176,7 +190,11 @@ func TestTwitchWritesAndRetries(t *testing.T) {
 			if len(store.writes) != test.wantWrites || refreshes != test.wantRefresh {
 				t.Fatalf("writes %d, refreshes %d", len(store.writes), refreshes)
 			}
-			if store.writes[0].Path != "channels/twitch:1337/messages/twitch:message-id" || store.writes[0].Merge || store.writes[0].Update {
+			wantPath := test.wantPath
+			if wantPath == "" {
+				wantPath = "channels/twitch:1337/messages/twitch:message-id"
+			}
+			if store.writes[0].Path != wantPath || store.writes[0].Merge || store.writes[0].Update {
 				t.Fatalf("message should be set at deterministic path: %#v", store.writes[0])
 			}
 		})
