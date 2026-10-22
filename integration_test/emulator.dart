@@ -9,6 +9,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:rtchat/api.dart';
 import 'package:rtchat/firebase_options.dart';
+import 'package:rtchat/models/accounts.dart';
 
 /// The Android emulator reaches the host machine's loopback via 10.0.2.2.
 final emulatorHost = Platform.isAndroid ? '10.0.2.2' : 'localhost';
@@ -30,6 +31,13 @@ Future<void> initializeFirebaseEmulators() async {
   FirebaseFirestore.instance.useFirestoreEmulator(emulatorHost, _firestorePort);
   FirebaseFirestore.instance.settings =
       const Settings(persistenceEnabled: false);
+  // the extra account slots must use the emulators too.
+  for (final app in await AccountsModel.initializeApps()) {
+    await FirebaseAuth.instanceFor(app: app)
+        .useAuthEmulator(emulatorHost, 9099);
+    FirebaseFirestore.instanceFor(app: app)
+        .useFirestoreEmulator(emulatorHost, _firestorePort);
+  }
   FirebaseDatabase.instance.useDatabaseEmulator(emulatorHost, 9000);
   // Functions are not emulated. Point them at an unused port so callables
   // fail fast instead of reaching production; the app already tolerates

@@ -16,6 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/firebase_options.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/commands.dart';
@@ -64,6 +65,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await AccountsModel.initializeApps();
   final prefs = await StreamingSharedPreferences.instance;
   final voicePacks = VoicePackRepository(
       directory: Directory(
@@ -135,6 +137,8 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(
+            create: (context) => AccountsModel.fromFirebase()),
         ChangeNotifierProvider(create: (context) => UserModel()),
         ChangeNotifierProvider(create: (context) {
           final model = ActivityFeedModel.fromJson(jsonDecode(widget.prefs
