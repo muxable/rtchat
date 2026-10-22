@@ -20,7 +20,7 @@ class ChatClearedEventWidget extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(8),
         child: Text(
-          '($provider) ${AppLocalizations.of(context)!.chatCleared(model.timestamp, model.timestamp)}',
+          '[$provider] ${AppLocalizations.of(context)!.chatCleared(model.timestamp, model.timestamp)}',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodySmall,
         ),
