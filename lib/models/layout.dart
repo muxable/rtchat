@@ -65,6 +65,7 @@ class LayoutModel extends ChangeNotifier {
   bool _isShowNotifications = false;
   bool _isShowPreview = false;
   ThemeMode _themeMode = ThemeMode.system;
+  bool _isAddAccountPromptDismissed = false;
 
   void updatePanelHeight({required double dy}) {
     _panelHeight += dy;
@@ -142,6 +143,15 @@ class LayoutModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Whether the prompt to add an account on another provider was dismissed,
+  /// so it's only offered once.
+  bool get isAddAccountPromptDismissed => _isAddAccountPromptDismissed;
+
+  set isAddAccountPromptDismissed(bool value) {
+    _isAddAccountPromptDismissed = value;
+    notifyListeners();
+  }
+
   void _bindOrientationPreference() async {
     switch (_orientationPreference) {
       case PreferredOrientation.portrait:
@@ -190,6 +200,9 @@ class LayoutModel extends ChangeNotifier {
     if (json['themeMode'] != null) {
       _themeMode = _ThemeModeJson.fromJson(json['themeMode']);
     }
+    if (json['isAddAccountPromptDismissed'] != null) {
+      _isAddAccountPromptDismissed = json['isAddAccountPromptDismissed'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -201,5 +214,6 @@ class LayoutModel extends ChangeNotifier {
     "isShowNotifications": _isShowNotifications,
     "isShowPreview": _isShowPreview,
     "themeMode": _themeMode.toJson(),
+    "isAddAccountPromptDismissed": _isAddAccountPromptDismissed,
   };
 }

@@ -6,6 +6,7 @@ import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/components/activity_feed_panel.dart';
+import 'package:rtchat/components/add_account_prompt.dart';
 import 'package:rtchat/components/auth/twitch.dart';
 import 'package:rtchat/components/chat_panel.dart';
 import 'package:rtchat/components/disco.dart';
@@ -398,6 +399,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 child: ChatPanelWidget(channel: widget.channel),
                               ),
                             ),
+                            const AddAccountPrompt(),
                             Consumer<LayoutModel>(
                               builder: (context, layoutModel, child) {
                                 if (layoutModel.isShowNotifications) {
@@ -468,6 +470,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Expanded(
                           child: Column(
                             children: [
+                              const AddAccountPrompt(),
                               Expanded(
                                 child: DiscoWidget(
                                   isEnabled: widget.isDiscoModeEnabled,

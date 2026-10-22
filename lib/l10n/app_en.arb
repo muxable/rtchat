@@ -1634,5 +1634,33 @@
   "signOutOfAll": "Sign out of all accounts",
   "@signOutOfAll": {
     "description": "Button on the accounts page that signs out of every account at once"
+  },
+  "addAccountPrompt": "Also stream on {provider}? Add your {provider} account to chat and moderate both.",
+  "@addAccountPrompt": {
+    "description": "Shown once above chat after signing in, offering to also sign in to the one other streaming platform the app has no account on",
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Kick"
+      }
+    }
+  },
+  "addAccountsPrompt": "Also stream on {providers} or {lastProvider}? Add your accounts to chat and moderate all of them.",
+  "@addAccountsPrompt": {
+    "description": "Shown once above chat after signing in, offering to also sign in to the other streaming platforms the app has no account on",
+    "placeholders": {
+      "providers": {
+        "type": "String",
+        "example": "Kick, Twitch"
+      },
+      "lastProvider": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  },
+  "notNow": "Not now",
+  "@notNow": {
+    "description": "Button that dismisses the prompt to add an account on another streaming platform, so it isn't shown again"
   }
 }

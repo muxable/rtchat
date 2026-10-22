@@ -1875,6 +1875,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign out of all accounts'**
   String get signOutOfAll;
+
+  /// Shown once above chat after signing in, offering to also sign in to the one other streaming platform the app has no account on
+  ///
+  /// In en, this message translates to:
+  /// **'Also stream on {provider}? Add your {provider} account to chat and moderate both.'**
+  String addAccountPrompt(String provider);
+
+  /// Shown once above chat after signing in, offering to also sign in to the other streaming platforms the app has no account on
+  ///
+  /// In en, this message translates to:
+  /// **'Also stream on {providers} or {lastProvider}? Add your accounts to chat and moderate all of them.'**
+  String addAccountsPrompt(String providers, String lastProvider);
+
+  /// Button that dismisses the prompt to add an account on another streaming platform, so it isn't shown again
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get notNow;
 }
 
 class _AppLocalizationsDelegate

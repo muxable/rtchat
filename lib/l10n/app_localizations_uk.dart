@@ -1213,4 +1213,17 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get signOutOfAll => 'Sign out of all accounts';
+
+  @override
+  String addAccountPrompt(String provider) {
+    return 'Also stream on $provider? Add your $provider account to chat and moderate both.';
+  }
+
+  @override
+  String addAccountsPrompt(String providers, String lastProvider) {
+    return 'Also stream on $providers or $lastProvider? Add your accounts to chat and moderate all of them.';
+  }
+
+  @override
+  String get notNow => 'Not now';
 }
