@@ -12,6 +12,7 @@ import (
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
+	"github.com/muxable/rtchat/agent/internal/messagehealth"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc/codes"
@@ -87,13 +88,30 @@ func joinWithTimeout(client chatConnection, channel string, timeout time.Duratio
 	}
 }
 
-func (h *TwitchAgent) write(channelID, messageID string, data interface{}) {
-	if err := createMessage(context.Background(), func(ctx context.Context) error {
-		_, err := h.Firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Create(ctx, data)
+func (h *TwitchAgent) write(
+	channelID, messageID string,
+	data interface{},
+) {
+	err := createMessage(context.Background(), func(ctx context.Context) error {
+		_, err := h.Firestore.
+			Collection("channels").
+			Doc(channelID).
+			Collection("messages").
+			Doc(messageID).
+			Create(ctx, data)
 		return err
-	}); err != nil {
-		zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID), zap.Any("data", data))
+	})
+
+	if err != nil {
+		zap.L().Error(
+			"failed to write message to firestore",
+			zap.Error(err),
+			zap.String("channelId", channelID),
+			zap.String("messageId", messageID),
+		)
+		return
 	}
+	messagehealth.MarkMessageReceived()
 }
 
 func (h *TwitchAgent) bindEvents(client *twitch.Client) {
