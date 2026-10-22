@@ -26,9 +26,6 @@ class FakeUserModel extends ChangeNotifier implements UserModel {
   ];
 
   @override
-  Channel? get userChannel => userChannels.firstOrNull;
-
-  @override
   bool isOwnChannel(Channel channel) => accountFor(channel) != null;
 
   @override

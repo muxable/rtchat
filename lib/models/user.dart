@@ -83,10 +83,6 @@ class UserModel extends ChangeNotifier {
     for (final account in accounts) account.channel,
   ];
 
-  /// The first account's channel.
-  @Deprecated("Use userChannels, isOwnChannel or accountFor")
-  Channel? get userChannel => userChannels.firstOrNull;
-
   bool isOwnChannel(Channel channel) => accountFor(channel) != null;
 
   /// The account to act on [channel] as: the one whose own channel it is.
@@ -128,20 +124,6 @@ class UserModel extends ChangeNotifier {
     return mappings[twitchLang] ?? 'en';
   }
 
-  Uri? get activityFeedUri {
-    final channel = userChannels.firstOrNull;
-    if (channel == null) {
-      return null;
-    }
-    switch (channel.provider) {
-      case Providers.twitch:
-        return Uri.tryParse(
-          "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed",
-        );
-    }
-    return null;
-  }
-
   bool get isLoading => _accounts.isLoading;
 
   /// Signs out of every account.
@@ -151,4 +133,27 @@ class UserModel extends ChangeNotifier {
   /// signed in on [provider] if there is one.
   Future<void> signIn(String provider, String token) =>
       _accounts.signIn(provider, token);
+}
+
+/// The activity feed of [channel], for the streamer whose channel it is.
+Uri? activityFeedUriOf(Channel channel) {
+  switch (channel.provider) {
+    case Providers.twitch:
+      return Uri.tryParse(
+        "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed",
+      );
+  }
+  return null;
+}
+
+extension OwnChannels on UserModel {
+  /// The activity feed of the first of the user's own channels that has one.
+  Uri? get activityFeedUri =>
+      userChannels.map(activityFeedUriOf).nonNulls.firstOrNull;
+
+  /// Whether [username] is the name of one of the user's accounts, so a
+  /// mention of it is of the user.
+  bool isOwnName(String username) => userChannels.any(
+    (channel) => channel.displayName.toLowerCase() == username.toLowerCase(),
+  );
 }

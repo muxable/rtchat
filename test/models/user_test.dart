@@ -64,7 +64,6 @@ void main() {
       expect(user.isSignedIn(), isTrue);
       expect(user.user?.uid, 'twitch-user');
       expect(user.userChannels, [twitch]);
-      expect(user.userChannel, twitch);
       expect(user.isOwnChannel(twitch), isTrue);
       expect(user.isOwnChannel(kick), isFalse);
       expect(user.accountFor(twitch)?.app.name, '[DEFAULT]');
@@ -76,7 +75,6 @@ void main() {
 
       expect(user.isSignedIn(), isFalse);
       expect(user.userChannels, isEmpty);
-      expect(user.userChannel, isNull);
       expect(reports.last, isEmpty);
     });
 
@@ -94,7 +92,6 @@ void main() {
         await settle();
 
         expect(user.userChannels, [twitch, kick]);
-        expect(user.userChannel, twitch);
         expect(user.user?.uid, 'twitch-user');
         expect(user.isOwnChannel(twitch), isTrue);
         expect(user.isOwnChannel(kick), isTrue);
@@ -102,6 +99,13 @@ void main() {
           user.isOwnChannel(Channel(Providers.kick, '3', 'someone')),
           isFalse,
         );
+
+        // mentions of either account are of the user.
+        expect(user.isOwnName(twitch.displayName.toUpperCase()), isTrue);
+        expect(user.isOwnName(kick.displayName), isTrue);
+        expect(user.isOwnName('someone'), isFalse);
+        // the activity feed is the first channel's that has one.
+        expect(user.activityFeedUri?.host, 'dashboard.twitch.tv');
 
         final twitchApi = Api.forAccount(user.accountFor(twitch)!);
         final kickApi = Api.forAccount(user.accountFor(kick)!);

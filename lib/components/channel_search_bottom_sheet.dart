@@ -57,7 +57,10 @@ class _ChannelSearchBottomSheetWidgetState
     _raid = widget.isRaid ?? false;
     try {
       final userProvider =
-          Provider.of<UserModel>(context, listen: false).userChannel?.provider;
+          Provider.of<UserModel>(
+            context,
+            listen: false,
+          ).userChannels.firstOrNull?.provider;
       if (searchProviders.containsKey(userProvider)) {
         _provider = userProvider!;
       }

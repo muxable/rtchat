@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:rtchat/components/autocomplete.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:rtchat/components/provider_icon.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/channels.dart';
@@ -139,11 +140,24 @@ class MessageInputWidget extends StatefulWidget {
   /// disables the input.
   final Channel? channel;
 
+  /// The channels that can be picked to send to instead. With more than one,
+  /// a picker for them shows to the left of the input.
+  final List<Channel> channels;
+
+  /// Called with the channel picked to send to.
+  final ValueChanged<Channel>? onChannelSelected;
+
   /// Loads the emotes usable in a channel. Defaults to [getEmotes], as the
   /// account on the channel's provider.
   final Future<List<Emote>> Function(Channel channel)? loadEmotes;
 
-  const MessageInputWidget({super.key, required this.channel, this.loadEmotes});
+  const MessageInputWidget({
+    super.key,
+    required this.channel,
+    this.channels = const [],
+    this.onChannelSelected,
+    this.loadEmotes,
+  });
 
   @override
   State<MessageInputWidget> createState() => _MessageInputWidgetState();
@@ -355,117 +369,143 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
             ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(24)),
-                color: Theme.of(context).splashColor,
-              ),
-              child: TextField(
-                enabled: channel != null,
-                focusNode: _chatInputFocusNode,
-                controller: _textEditingController,
-                textInputAction: TextInputAction.send,
-                // kick rejects messages over 500 characters (grapheme
-                // clusters, which is how maxLength counts too).
-                maxLength: channel?.provider == Providers.kick ? 500 : null,
-                buildCounter:
-                    (
-                      context, {
-                      required currentLength,
-                      required isFocused,
-                      maxLength,
-                    }) => null,
-                maxLines: 6,
-                minLines: 1,
-                textAlignVertical: TextAlignVertical.center,
-                decoration: InputDecoration(
-                  prefixIcon: IconButton(
-                    onPressed:
-                        channel == null
-                            ? null
-                            : () {
-                              if (_isEmotePickerVisible) {
-                                setState(() => _isEmotePickerVisible = false);
-                                _chatInputFocusNode.requestFocus();
-                              } else {
-                                _chatInputFocusNode.unfocus();
-                                setState(() {
-                                  _isEmotePickerVisible = true;
-                                  _emoteIndex = Random().nextInt(
-                                    _emotes.length,
-                                  );
-                                });
-                              }
-                            },
-                    splashRadius: 24,
-                    icon:
-                        _isEmotePickerVisible
-                            ? const Icon(Icons.keyboard_rounded)
-                            : ColorFiltered(
-                              colorFilter: _greyscale,
-                              child: Image(
-                                width: 24,
-                                height: 24,
-                                image: ResilientNetworkImage(
-                                  Uri.parse(_emotes[_emoteIndex]),
-                                ),
+            child: Row(
+              children: [
+                if (channel != null && widget.channels.length > 1)
+                  _DestinationPicker(
+                    channel: channel,
+                    channels: widget.channels,
+                    onSelected: widget.onChannelSelected,
+                  ),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.all(Radius.circular(24)),
+                      color: Theme.of(context).splashColor,
+                    ),
+                    child: TextField(
+                      enabled: channel != null,
+                      focusNode: _chatInputFocusNode,
+                      controller: _textEditingController,
+                      textInputAction: TextInputAction.send,
+                      // kick rejects messages over 500 characters (grapheme
+                      // clusters, which is how maxLength counts too).
+                      maxLength:
+                          channel?.provider == Providers.kick ? 500 : null,
+                      buildCounter:
+                          (
+                            context, {
+                            required currentLength,
+                            required isFocused,
+                            maxLength,
+                          }) => null,
+                      maxLines: 6,
+                      minLines: 1,
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: InputDecoration(
+                        prefixIcon: IconButton(
+                          onPressed:
+                              channel == null
+                                  ? null
+                                  : () {
+                                    if (_isEmotePickerVisible) {
+                                      setState(
+                                        () => _isEmotePickerVisible = false,
+                                      );
+                                      _chatInputFocusNode.requestFocus();
+                                    } else {
+                                      _chatInputFocusNode.unfocus();
+                                      setState(() {
+                                        _isEmotePickerVisible = true;
+                                        _emoteIndex = Random().nextInt(
+                                          _emotes.length,
+                                        );
+                                      });
+                                    }
+                                  },
+                          splashRadius: 24,
+                          icon:
+                              _isEmotePickerVisible
+                                  ? const Icon(Icons.keyboard_rounded)
+                                  : ColorFiltered(
+                                    colorFilter: _greyscale,
+                                    child: Image(
+                                      width: 24,
+                                      height: 24,
+                                      image: ResilientNetworkImage(
+                                        Uri.parse(_emotes[_emoteIndex]),
+                                      ),
+                                    ),
+                                  ),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.send_rounded),
+                          color: Theme.of(context).colorScheme.primary,
+                          splashRadius: 24,
+                          onPressed:
+                              channel == null
+                                  ? null
+                                  : () => sendMessage(
+                                    _textEditingController?.text ?? '',
+                                  ),
+                        ),
+                        border: InputBorder.none,
+                        hintMaxLines: 1,
+                        hintText: () {
+                          if (channel == null) {
+                            final accounts =
+                                Provider.of<UserModel>(context).accounts;
+                            if (accounts.isEmpty) {
+                              return l10n.signInToSendMessages;
+                            } else if (accounts.length > 1) {
+                              return l10n.cantChatWithAccounts;
+                            }
+                            return l10n.cantChatWithAccount(
+                              providerName(accounts.single.provider),
+                            );
+                          }
+                          // name the channel when it's one of several.
+                          if (widget.channels.length > 1) {
+                            return l10n.sendAMessageTo(channel.displayName);
+                          }
+                          if (_textSeed < 0.5) {
+                            return l10n.sendAMessage;
+                          } else if (_textSeed < 0.9) {
+                            return l10n.writeSomething;
+                          } else if (_textSeed < 0.99) {
+                            return l10n.speakToTheCrowds;
+                          } else if (_textSeed < 0.999) {
+                            return l10n.shareYourThoughts;
+                          }
+                          return l10n.saySomethingYouLittleBitch;
+                        }(),
+                      ),
+                      onChanged: (text) {
+                        final filtered = text.replaceAll('\n', ' ');
+                        if (filtered == text) {
+                          return;
+                        }
+                        setState(() {
+                          _textEditingController?.value = TextEditingValue(
+                            text: filtered,
+                            selection: TextSelection.fromPosition(
+                              TextPosition(
+                                offset:
+                                    _textEditingController?.text.length ?? 0,
                               ),
                             ),
+                          );
+                        });
+                      },
+                      onSubmitted: sendMessage,
+                      onTap: () {
+                        setState(() => _isEmotePickerVisible = false);
+                        _chatInputFocusNode.requestFocus();
+                      },
+                    ),
                   ),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.send_rounded),
-                    color: Theme.of(context).colorScheme.primary,
-                    splashRadius: 24,
-                    onPressed:
-                        channel == null
-                            ? null
-                            : () =>
-                                sendMessage(_textEditingController?.text ?? ''),
-                  ),
-                  border: InputBorder.none,
-                  hintMaxLines: 1,
-                  hintText: () {
-                    if (channel == null) {
-                      final account =
-                          Provider.of<UserModel>(context).userChannel?.provider;
-                      return account == null
-                          ? l10n.signInToSendMessages
-                          : l10n.cantChatWithAccount(providerName(account));
-                    }
-                    if (_textSeed < 0.5) {
-                      return l10n.sendAMessage;
-                    } else if (_textSeed < 0.9) {
-                      return l10n.writeSomething;
-                    } else if (_textSeed < 0.99) {
-                      return l10n.speakToTheCrowds;
-                    } else if (_textSeed < 0.999) {
-                      return l10n.shareYourThoughts;
-                    }
-                    return l10n.saySomethingYouLittleBitch;
-                  }(),
                 ),
-                onChanged: (text) {
-                  final filtered = text.replaceAll('\n', ' ');
-                  if (filtered == text) {
-                    return;
-                  }
-                  setState(() {
-                    _textEditingController?.value = TextEditingValue(
-                      text: filtered,
-                      selection: TextSelection.fromPosition(
-                        TextPosition(
-                          offset: _textEditingController?.text.length ?? 0,
-                        ),
-                      ),
-                    );
-                  });
-                },
-                onSubmitted: sendMessage,
-                onTap: () {
-                  setState(() => _isEmotePickerVisible = false);
-                  _chatInputFocusNode.requestFocus();
-                },
-              ),
+              ],
             ),
           ),
           _isEmotePickerVisible && channel != null
@@ -489,6 +529,50 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
               )
               : Container(),
         ],
+      ),
+    );
+  }
+}
+
+/// Shows the channel messages are sent to, and picks another from
+/// [channels].
+class _DestinationPicker extends StatelessWidget {
+  final Channel channel;
+  final List<Channel> channels;
+  final ValueChanged<Channel>? onSelected;
+
+  const _DestinationPicker({
+    required this.channel,
+    required this.channels,
+    this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<Channel>(
+      tooltip: channel.displayName,
+      initialValue: channel,
+      onSelected: onSelected,
+      itemBuilder:
+          (context) => [
+            for (final option in channels)
+              PopupMenuItem(
+                value: option,
+                child: ListTile(
+                  leading: ProviderIcon(option.provider),
+                  title: Text(option.displayName),
+                ),
+              ),
+          ],
+      child: Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ProviderIcon(channel.provider, size: 16),
+            const Icon(Icons.arrow_drop_down),
+          ],
+        ),
       ),
     );
   }

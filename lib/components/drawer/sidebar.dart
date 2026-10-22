@@ -63,7 +63,9 @@ class _DrawerHeader extends StatelessWidget {
                 Expanded(
                   child: Consumer<UserModel>(
                     builder: (context, model, child) {
-                      final userChannel = model.userChannel;
+                      // the user's own channels, which the app opens with.
+                      final userChannels = model.userChannels;
+                      final userChannel = userChannels.firstOrNull;
                       return InkWell(
                         borderRadius: BorderRadius.circular(10.0),
                         onTap: () {
@@ -96,17 +98,26 @@ class _DrawerHeader extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    userChannel?.displayName ??
-                                        AppLocalizations.of(
+                                    userChannels.isEmpty
+                                        ? AppLocalizations.of(
                                           context,
-                                        )!.notSignedIn,
+                                        )!.notSignedIn
+                                        : {
+                                          for (final channel in userChannels)
+                                            channel.displayName,
+                                        }.join(", "),
                                     overflow: TextOverflow.ellipsis,
                                     style:
                                         Theme.of(context).textTheme.bodyLarge,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    "twitch.tv",
+                                    userChannels
+                                        .map(
+                                          (channel) =>
+                                              providerName(channel.provider),
+                                        )
+                                        .join(" · "),
                                     overflow: TextOverflow.ellipsis,
                                     style:
                                         Theme.of(context).textTheme.bodyMedium,

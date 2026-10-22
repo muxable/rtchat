@@ -115,6 +115,23 @@ void main() {
     expect(find.byType(InkWell), findsNothing);
   });
 
+  testWidgets(
+    'a channel without an account on its provider cannot be moderated',
+    (tester) async {
+      // signed in to twitch only, as the same streamer.
+      final userModel = FakeUserModel(
+        accounts: [
+          fakeAccount(
+            Channel(Providers.twitch, '42', 'streamer'),
+            appName: '[DEFAULT]',
+          ),
+        ],
+      );
+      await pumpMessage(tester, userModel, kickMessage(), kickChannel);
+      expect(find.byType(InkWell), findsNothing);
+    },
+  );
+
   group('signed in to twitch and kick', () {
     late Account twitch, kick;
     late FakeFunctions twitchApi, kickApi;
@@ -129,6 +146,22 @@ void main() {
     });
 
     tearDown(Api.debugReset);
+
+    testWidgets('both channels can be moderated, each as its own account', (
+      tester,
+    ) async {
+      await pumpMessage(tester, userModel, twitchMessage(), twitchChannel);
+      await openModeration(tester);
+      await tester.tap(find.text('Delete Message'));
+      await tester.pumpAndSettle();
+      await pumpMessage(tester, userModel, kickMessage(), kickChannel);
+      await openModeration(tester);
+      await tester.tap(find.text('Delete Message'));
+      await tester.pumpAndSettle();
+
+      expect(twitchApi.calls.single.data['provider'], Providers.twitch);
+      expect(kickApi.calls.single.data['provider'], Providers.kick);
+    });
 
     testWidgets('a kick ban calls as the kick account', (tester) async {
       await pumpMessage(tester, userModel, kickMessage(), kickChannel);

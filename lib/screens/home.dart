@@ -371,14 +371,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           );
                         }
 
-                        // an account can only post on its own provider,
-                        // and at most one channel per provider is shown.
+                        // an account can only post on its own provider.
                         return Consumer<ViewsModel>(
                           builder:
                               (context, views, child) => MessageInputWidget(
-                                channel: views.sendChannel(
-                                  userModel.userChannel,
-                                ),
+                                channel: views.sendChannel,
+                                channels: views.sendableChannels,
+                                onChannelSelected:
+                                    (channel) => views.sendChannel = channel,
                               ),
                         );
                       },

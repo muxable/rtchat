@@ -1696,6 +1696,18 @@ abstract class AppLocalizations {
   /// **'Your {provider} account can\'t chat here'**
   String cantChatWithAccount(String provider);
 
+  /// Hint in the disabled message input when none of the channels shown are on the platform of any of the signed-in accounts
+  ///
+  /// In en, this message translates to:
+  /// **'Your accounts can\'t chat here'**
+  String get cantChatWithAccounts;
+
+  /// Message input field placeholder text when there are several channels to send to, naming the one picked
+  ///
+  /// In en, this message translates to:
+  /// **'Send a message to {channel}...'**
+  String sendAMessageTo(String channel);
+
   /// Shown while swiping a channel search result whose platform already has a channel in chat: adding it replaces that channel
   ///
   /// In en, this message translates to:
