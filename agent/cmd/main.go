@@ -70,6 +70,7 @@ type keyedLock struct {
 	mutex sync.Mutex
 	users int
 }
+
 type KeyedMutex struct {
 	mu      sync.Mutex
 	mutexes sync.Map
@@ -81,9 +82,12 @@ func (m *KeyedMutex) Lock(key string) func() {
 	entry := value.(*keyedLock)
 	entry.users++
 	m.mu.Unlock()
+
 	entry.mutex.Lock()
+
 	return func() {
 		entry.mutex.Unlock()
+
 		m.mu.Lock()
 		entry.users--
 		if entry.users == 0 {
@@ -112,14 +116,20 @@ func main() {
 		defer undo()
 	}
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
 	defer stop()
+
 	client, err := firestore.NewClient(ctx, "rtchat-47692")
 	if err != nil {
 		zap.L().Fatal("failed to create firestore client", zap.Error(err))
 	}
 
 	defer client.Close()
+
 	stopJobs := startScheduledJobs(ctx, client)
 	defer stopJobs()
 
@@ -135,7 +145,6 @@ func main() {
 		ClientSecret: twitchClientSecret,
 	}
 
-	// create a new RequestLock
 	subscribeRequests := client.Collection("assignments").Snapshots(ctx)
 
 	manager := newRequestManager(func(req *agent.Request) (io.Closer, error) {
@@ -146,42 +155,97 @@ func main() {
 			return twitch.NewClient(req)
 		}
 	})
+
 	go func() {
 		ticker := time.NewTicker(15 * time.Second)
 		defer ticker.Stop()
-		for range ticker.C {
-			zap.L().Info("active channels", zap.Int("count", manager.count()))
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				zap.L().Info("active channels", zap.Int("count", manager.count()))
+			}
 		}
 	}()
 
 	isListening := &atomic.Bool{}
 	ready := &atomic.Bool{}
+
 	initial := newInitialJoins(func() {
-		zap.L().Info("initial channels applied", zap.Int("count", manager.count()))
+		zap.L().Info(
+			"initial channels applied",
+			zap.Int("count", manager.count()),
+		)
 		ready.Store(true)
 	})
+
 	manager.applied = initial.done
+
 	start := time.Now().Add(time.Duration(rand.Intn(24)) * time.Hour)
+
 	recycleHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !ready.Load() || !isListening.Load() || time.Since(start) > 72*time.Hour {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
-		w.Write([]byte((72*time.Hour - time.Since(start)).String()))
+		_, _ = w.Write([]byte((72*time.Hour - time.Since(start)).String()))
 	})
+
+	// Kubernetes-style readiness semantics exposed for the GCE health check.
+	// The instance is ready only after initial channel joins have been applied.
+	readinessHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.Header().Set("Allow", http.MethodGet)
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		if !ready.Load() {
+			http.Error(
+				w,
+				"initial channel joins incomplete",
+				http.StatusServiceUnavailable,
+			)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ready\n"))
+	})
+
+	serverErr := make(chan error, 1)
 
 	go func() {
 		// Optional webhook credentials must not delay the chat snapshot loop.
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		secrets := webhook.LoadSecrets(ctx, nil)
-		cancel()
+		secretsCtx, secretsCancel := context.WithTimeout(
+			context.Background(),
+			10*time.Second,
+		)
+		secrets := webhook.LoadSecrets(secretsCtx, nil)
+		secretsCancel()
+
 		server := webhook.NewServer(secrets)
-		verifier, err := callable.FirebaseVerifier(context.Background(), "rtchat-47692")
+
+		verifier, err := callable.FirebaseVerifier(
+			context.Background(),
+			"rtchat-47692",
+		)
 		if err != nil {
-			zap.L().Warn("callable authentication unavailable; protected requests will be rejected")
+			zap.L().Warn(
+				"callable authentication unavailable; protected requests will be rejected",
+			)
 		}
+
 		api := callable.NewServer(verifier)
-		registerChat(api, &chatRoutes{tokens: provider.NewService(client, nil), store: chatFirestore{DB: client}})
+
+		registerChat(api, &chatRoutes{
+			tokens: provider.NewService(client, nil),
+			store:  chatFirestore{DB: client},
+		})
+
 		subscriptionService := &subscriptions.Service{
 			DB:             client,
 			API:            &subscriptions.API{Tokens: provider.NewService(client, &http.Client{Timeout: 10 * time.Second})},
@@ -189,59 +253,150 @@ func main() {
 			TwitchSecret:   secrets.TwitchEventSubSecret,
 			MaticWebhookID: secrets.AlchemyMaticWebhookID,
 		}
+
 		subscriptionService.Register(api)
 		catalog.Register(api, client, provider.NewService(client, nil))
+
 		// Register every callable package before Mount so readiness and webhooks remain intact.
 		api.Mount(server.Mux)
-		if err := publichttp.Register(server.Mux, client, provider.NewService(client, nil)); err != nil {
+
+		if err := publichttp.Register(
+			server.Mux,
+			client,
+			provider.NewService(client, nil),
+		); err != nil {
 			zap.L().Warn("public HTTP configuration invalid; routes disabled")
-			for _, path := range []string{"/embed", "/embedRedirect", "/metadata", "/api/metadata"} {
+			for _, path := range []string{
+				"/embed",
+				"/embedRedirect",
+				"/metadata",
+				"/api/metadata",
+			} {
 				server.Mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-					http.Error(w, "temporarily unavailable", http.StatusServiceUnavailable)
+					http.Error(
+						w,
+						"temporarily unavailable",
+						http.StatusServiceUnavailable,
+					)
 				})
 			}
 		}
-		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
-		server.RegisterProvider("/twitch/", webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client, twitchClientID, twitchClientSecret))
-		server.RegisterProvider("/alchemy/", webhook.NewAlchemyHandler(webhook.AlchemyConfig{
-			Secrets:        secrets,
-			MaticWebhookID: secrets.AlchemyMaticWebhookID,
-		}, webhook.AlchemyFirestore{Client: client}, webhook.NewAlchemyRPC()))
+
+		server.RegisterProvider(
+			"/kick/",
+			webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)),
+		)
+
+		server.RegisterProvider(
+			"/twitch/",
+			webhook.NewTwitchHandler(
+				secrets.TwitchEventSubSecret,
+				client,
+				twitchClientID,
+				twitchClientSecret,
+			),
+		)
+
+		server.RegisterProvider(
+			"/alchemy/",
+			webhook.NewAlchemyHandler(
+				webhook.AlchemyConfig{
+					Secrets:        secrets,
+					MaticWebhookID: secrets.AlchemyMaticWebhookID,
+				},
+				webhook.AlchemyFirestore{Client: client},
+				webhook.NewAlchemyRPC(),
+			),
+		)
+
 		if os.Getenv("ENABLE_AGENT_OAUTH") == "true" {
-			oauthCtx, oauthCancel := context.WithTimeout(context.Background(), 30*time.Second)
+			oauthCtx, oauthCancel := context.WithTimeout(
+				context.Background(),
+				30*time.Second,
+			)
 			if err := oauthhttp.Register(oauthCtx, server.Mux, client); err != nil {
 				zap.L().Warn("OAuth HTTP unavailable", zap.Error(err))
 			}
 			oauthCancel()
 		}
+
+		server.Mux.Handle("/ready", readinessHandler)
 		server.Mux.Handle("/", recycleHandler)
-		zap.L().Info("starting http server")
+
 		port := os.Getenv("PORT")
 		if port == "" {
 			port = "8080"
 		}
-		if err := http.ListenAndServe(":"+port, server.Mux); err != nil {
-			zap.L().Fatal("failed to start http server", zap.Error(err))
+
+		httpServer := &http.Server{
+			Addr:              ":" + port,
+			Handler:           server.Mux,
+			ReadHeaderTimeout: 10 * time.Second,
+		}
+
+		// Shut down the HTTP server when the application context is cancelled.
+		go func() {
+			<-ctx.Done()
+
+			shutdownCtx, shutdownCancel := context.WithTimeout(
+				context.Background(),
+				10*time.Second,
+			)
+			defer shutdownCancel()
+
+			if err := httpServer.Shutdown(shutdownCtx); err != nil {
+				zap.L().Error("HTTP server shutdown failed", zap.Error(err))
+			}
+		}()
+
+		zap.L().Info("starting http server", zap.String("port", port))
+
+		if err := httpServer.ListenAndServe(); err != nil &&
+			err != http.ErrServerClosed {
+			select {
+			case serverErr <- err:
+			default:
+			}
+		}
+	}()
+
+	// Cancel the application if the HTTP server fails unexpectedly.
+	go func() {
+		select {
+		case err := <-serverErr:
+			zap.L().Error("HTTP server failed", zap.Error(err))
+			stop()
+		case <-ctx.Done():
 		}
 	}()
 
 	first := true
+
 	for {
 		isListening.Store(true)
 		snapshot, err := subscribeRequests.Next()
 		isListening.Store(false)
+
 		if err != nil {
+			if ctx.Err() == nil {
+				zap.L().Error("assignment snapshot listener failed", zap.Error(err))
+				stop()
+			}
 			return
 		}
+
 		for _, change := range snapshot.Changes {
 			req := (*agent.Request)(change.Doc.Ref)
 			zap.L().Info("got request", zap.String("id", req.String()))
+
 			if first {
 				initial.add(req.String())
 			}
+
 			manager.submit(req, change.Kind)
 			time.Sleep(250 * time.Millisecond)
 		}
+
 		if first {
 			first = false
 			initial.seal()
