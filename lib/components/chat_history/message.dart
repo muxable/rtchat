@@ -55,9 +55,14 @@ import 'package:rtchat/urls.dart';
 class ChatHistoryMessage extends StatelessWidget {
   final MessageModel message;
   final Channel channel;
+  final VoidCallback? onFollowExpand;
 
-  const ChatHistoryMessage(
-      {super.key, required this.message, required this.channel});
+  const ChatHistoryMessage({
+    super.key,
+    required this.message,
+    required this.channel,
+    this.onFollowExpand,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -122,8 +127,12 @@ class ChatHistoryMessage extends StatelessWidget {
     } else if (m is TwitchFollowEventModel) {
       return Selector<EventSubConfigurationModel, FollowEventConfig>(
         selector: (_, model) => model.followEventConfig,
-        builder: (_, config, __) =>
-            config.showEvent ? TwitchFollowEventWidget(m) : Container(),
+        builder: (_, config, __) => config.showEvent
+            ? TwitchFollowEventWidget(
+                m,
+                onExpand: onFollowExpand,
+              )
+            : Container(),
       );
     } else if (m is TwitchCheerEventModel) {
       return Selector<EventSubConfigurationModel, CheerEventConfig>(
