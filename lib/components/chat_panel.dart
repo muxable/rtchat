@@ -66,16 +66,17 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
 
   void _setTimers() {
     final now = DateTime.now();
-    timers = widget.rebuildAt.expand((dateTime) sync* {
-      final duration = dateTime.difference(now);
-      if (!duration.isNegative) {
-        yield Timer(duration, () {
-          if (mounted) {
-            setState(() {});
+    timers =
+        widget.rebuildAt.expand((dateTime) sync* {
+          final duration = dateTime.difference(now);
+          if (!duration.isNegative) {
+            yield Timer(duration, () {
+              if (mounted) {
+                setState(() {});
+              }
+            });
           }
-        });
-      }
-    }).toSet();
+        }).toSet();
   }
 
   void _clearTimers() {
@@ -214,10 +215,7 @@ class _DisplayedMessage {
 class ChatPanelWidget extends StatefulWidget {
   final Channel channel;
 
-  const ChatPanelWidget({
-    required this.channel,
-    super.key,
-  });
+  const ChatPanelWidget({required this.channel, super.key});
 
   @override
   State<ChatPanelWidget> createState() => _ChatPanelWidgetState();
@@ -231,7 +229,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
 
   final _controller = ScrollController(keepScrollOffset: true);
 
-// don't render anything after this message if not null.
+  // don't render anything after this message if not null.
   MessageModel? _pauseAt;
   MessageModel? _lastMessage;
   var _atBottom = true;
@@ -356,10 +354,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
 
               if (message is! TwitchFollowEventModel) {
                 displayedMessages.add(
-                  _DisplayedMessage(
-                    message: message,
-                    key: message.messageId,
-                  ),
+                  _DisplayedMessage(message: message, key: message.messageId),
                 );
                 continue;
               }
@@ -388,9 +383,11 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
               final groupKey = 'follow-${group.channel}-${group.messageId}';
 
               if (_expandedFollowGroups.contains(groupKey)) {
-                for (var followerIndex = 0;
-                    followerIndex < group.followers.length;
-                    followerIndex++) {
+                for (
+                  var followerIndex = 0;
+                  followerIndex < group.followers.length;
+                  followerIndex++
+                ) {
                   final follower = group.followers[followerIndex];
 
                   final individual = TwitchFollowEventModel(
@@ -417,15 +414,16 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
               }
             }
 
-            final expirations = displayedMessages
-                .map(
-                  (entry) => _getExpiration(
-                    entry.message,
-                    eventSubConfigurationModel,
-                    messagesModel,
-                  ),
-                )
-                .toList();
+            final expirations =
+                displayedMessages
+                    .map(
+                      (entry) => _getExpiration(
+                        entry.message,
+                        eventSubConfigurationModel,
+                        messagesModel,
+                      ),
+                    )
+                    .toList();
             return Stack(
               alignment: Alignment.topCenter,
               children: [
@@ -433,12 +431,15 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                   rebuildAt: expirations.whereType<DateTime>().toSet(),
                   builder: (context) {
                     final now = DateTime.now();
-                    final oneSecondAgo =
-                        now.subtract(const Duration(seconds: 1));
+                    final oneSecondAgo = now.subtract(
+                      const Duration(seconds: 1),
+                    );
                     return ReverseRefreshIndicator(
                       key: _refreshIndicatorKey,
-                      onRefresh: () =>
-                          MessagesAdapter.instance.subscribe(widget.channel),
+                      onRefresh:
+                          () => MessagesAdapter.instance.subscribe(
+                            widget.channel,
+                          ),
                       child: PinnableMessageScrollView(
                         vsync: this,
                         controller: _controller,
@@ -481,27 +482,30 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                                 final chatMessage = ChatHistoryMessage(
                                   message: message,
                                   channel: source ?? widget.channel,
-                                  onFollowExpand: entry.followGroupKey == null
-                                      ? null
-                                      : () {
-                                          setState(() {
-                                            _expandedFollowGroups
-                                                .add(entry.followGroupKey!);
-                                          });
-                                        },
+                                  onFollowExpand:
+                                      entry.followGroupKey == null
+                                          ? null
+                                          : () {
+                                            setState(() {
+                                              _expandedFollowGroups.add(
+                                                entry.followGroupKey!,
+                                              );
+                                            });
+                                          },
                                 );
                                 final Widget messageWidget =
                                     messagesModel.channels.length > 1 &&
                                             source != null
                                         ? ChannelAttribution(
-                                            provider: source.provider,
-                                            child: chatMessage,
-                                          )
+                                          provider: source.provider,
+                                          child: chatMessage,
+                                        )
                                         : chatMessage;
                                 // Centralized, consistent spacing.
                                 final paddedMessage = Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 2,
+                                  ),
                                   child: messageWidget,
                                 );
                                 final showSeparator = messagesModel.separators

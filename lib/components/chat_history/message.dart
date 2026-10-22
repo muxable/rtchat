@@ -73,15 +73,16 @@ class ChatHistoryMessage extends StatelessWidget {
       return Consumer<LayoutModel>(
         builder: (context, layoutModel, child) {
           final announcement = m.annotations.announcement;
-          final child = announcement != null
-              ? DecoratedEventWidget(
-                  accentColor: announcement.color,
-                  child: TwitchMessageWidget(m),
-                )
-              : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: TwitchMessageWidget(m),
-                );
+          final child =
+              announcement != null
+                  ? DecoratedEventWidget(
+                    accentColor: announcement.color,
+                    child: TwitchMessageWidget(m),
+                  )
+                  : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TwitchMessageWidget(m),
+                  );
           if (layoutModel.locked) {
             return child;
           }
@@ -139,50 +140,56 @@ class ChatHistoryMessage extends StatelessWidget {
         selector: (context, model) => model.followEventConfig,
         builder: (context, config, child) {
           return config.showEvent
-              ? TwitchFollowEventWidget(
-                  m,
-                  onExpand: onFollowExpand,
-                )
+              ? TwitchFollowEventWidget(m, onExpand: onFollowExpand)
               : Container();
         },
       );
     } else if (m is TwitchCheerEventModel) {
       return Selector<EventSubConfigurationModel, CheerEventConfig>(
         selector: (_, model) => model.cheerEventConfig,
-        builder: (context, config, child) =>
-            config.showEvent ? TwitchCheerEventWidget(m) : Container(),
+        builder:
+            (context, config, child) =>
+                config.showEvent ? TwitchCheerEventWidget(m) : Container(),
       );
     } else if (m is TwitchPollEventModel) {
       return Selector<EventSubConfigurationModel, PollEventConfig>(
         selector: (_, model) => model.pollEventConfig,
-        builder: (context, config, child) =>
-            config.showEvent ? TwitchPollEventWidget(m) : Container(),
+        builder:
+            (context, config, child) =>
+                config.showEvent ? TwitchPollEventWidget(m) : Container(),
       );
     } else if (m is TwitchChannelPointRedemptionEventModel) {
-      return Selector<EventSubConfigurationModel,
-          ChannelPointRedemptionEventConfig>(
+      return Selector<
+        EventSubConfigurationModel,
+        ChannelPointRedemptionEventConfig
+      >(
         selector: (_, model) => model.channelPointRedemptionEventConfig,
-        builder: (context, config, child) => config.showEvent
-            ? TwitchChannelPointRedemptionEventWidget(m)
-            : Container(),
+        builder:
+            (context, config, child) =>
+                config.showEvent
+                    ? TwitchChannelPointRedemptionEventWidget(m)
+                    : Container(),
       );
     } else if (m is TwitchHypeTrainEventModel) {
       return Selector<EventSubConfigurationModel, HypetrainEventConfig>(
         selector: (_, model) => model.hypetrainEventConfig,
-        builder: (context, config, child) =>
-            config.showEvent ? TwitchHypeTrainEventWidget(m) : Container(),
+        builder:
+            (context, config, child) =>
+                config.showEvent ? TwitchHypeTrainEventWidget(m) : Container(),
       );
     } else if (m is TwitchPredictionEventModel) {
       return Selector<EventSubConfigurationModel, PredictionEventConfig>(
         selector: (_, model) => model.predictionEventConfig,
-        builder: (context, config, child) =>
-            config.showEvent ? TwitchPredictionEventWidget(m) : Container(),
+        builder:
+            (context, config, child) =>
+                config.showEvent ? TwitchPredictionEventWidget(m) : Container(),
       );
     } else if (m is TwitchHostEventModel) {
       return Selector<EventSubConfigurationModel, HostEventConfig>(
         selector: (_, model) => model.hostEventConfig,
-        builder: (context, config, child) =>
-            config.showEvent ? TwitchHostEventWidget(m) : Container(),
+        builder:
+            (context, config, child) =>
+                config.showEvent ? TwitchHostEventWidget(m) : Container(),
       );
     } else if (m is TwitchRaidingEventModel) {
       return Selector<EventSubConfigurationModel, RaidingEventConfig>(
@@ -194,12 +201,13 @@ class ChatHistoryMessage extends StatelessWidget {
           // only the raiding streamer can cancel, so only they see the button.
           final isHost =
               Provider.of<UserModel>(context, listen: false).userChannel ==
-                  channel;
+              channel;
           return TwitchRaidingEventWidget(
             m,
-            onCancel: isHost
-                ? () => ActionsAdapter.instance.cancelRaid(channel)
-                : null,
+            onCancel:
+                isHost
+                    ? () => ActionsAdapter.instance.cancelRaid(channel)
+                    : null,
           );
         },
       );
@@ -350,9 +358,7 @@ class _ModerationActions extends StatelessWidget {
                       title: Text(
                         AppLocalizations.of(
                           context,
-                        )!
-                            .timeoutUser(
-                                m.author.displayName ?? m.author.login),
+                        )!.timeoutUser(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
                         Navigator.pop(context, true);
@@ -366,8 +372,7 @@ class _ModerationActions extends StatelessWidget {
                       title: Text(
                         AppLocalizations.of(
                           context,
-                        )!
-                            .banUser(m.author.displayName ?? m.author.login),
+                        )!.banUser(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
                         ActionsAdapter.instance.ban(
@@ -386,8 +391,7 @@ class _ModerationActions extends StatelessWidget {
                       title: Text(
                         AppLocalizations.of(
                           context,
-                        )!
-                            .unbanUser(m.author.displayName ?? m.author.login),
+                        )!.unbanUser(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
                         ActionsAdapter.instance.unban(
@@ -417,9 +421,7 @@ class _ModerationActions extends StatelessWidget {
                       title: Text(
                         AppLocalizations.of(
                           context,
-                        )!
-                            .viewProfile(
-                                m.author.displayName ?? m.author.login),
+                        )!.viewProfile(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
                         openUrl(profileUrl);
@@ -438,8 +440,7 @@ class _ModerationActions extends StatelessWidget {
                 return TimeoutDialog(
                   title: AppLocalizations.of(
                     context,
-                  )!
-                      .timeoutUser(m.author.displayName ?? m.author.login),
+                  )!.timeoutUser(m.author.displayName ?? m.author.login),
                   onPressed: (duration) {
                     ActionsAdapter.instance.timeout(
                       channel,
