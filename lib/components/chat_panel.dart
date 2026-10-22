@@ -45,7 +45,6 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
   @override
   void initState() {
     super.initState();
-
     _setTimers();
   }
 
@@ -61,9 +60,8 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
 
   @override
   void dispose() {
-    super.dispose();
-
     _clearTimers();
+    super.dispose();
   }
 
   void _setTimers() {
@@ -72,7 +70,11 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
         widget.rebuildAt.expand((dateTime) sync* {
           final duration = dateTime.difference(now);
           if (!duration.isNegative) {
-            yield Timer(duration, () => setState(() {}));
+            yield Timer(duration, () {
+              if (mounted) {
+                setState(() {});
+              }
+            });
           }
         }).toSet();
   }
@@ -81,6 +83,7 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
     for (final timer in timers) {
       timer.cancel();
     }
+    timers.clear();
   }
 
   @override
@@ -95,75 +98,70 @@ DateTime? _getExpiration(
   MessagesModel messagesModel,
 ) {
   if (model is TwitchRaidEventModel) {
-    final raidEventConfig = eventSubConfigurationModel.raidEventConfig;
-    return raidEventConfig.eventDuration > Duration.zero
-        ? model.timestamp.add(raidEventConfig.eventDuration)
+    final config = eventSubConfigurationModel.raidEventConfig;
+    return config.eventDuration > Duration.zero
+        ? model.timestamp.add(config.eventDuration)
         : null;
   } else if (model is TwitchHostEventModel) {
-    final hostEventConfig = eventSubConfigurationModel.hostEventConfig;
-    return hostEventConfig.eventDuration > Duration.zero
-        ? model.timestamp.add(hostEventConfig.eventDuration)
+    final config = eventSubConfigurationModel.hostEventConfig;
+    return config.eventDuration > Duration.zero
+        ? model.timestamp.add(config.eventDuration)
         : null;
   } else if (model is TwitchFollowEventModel) {
-    final followEventConfig = eventSubConfigurationModel.followEventConfig;
-    return followEventConfig.eventDuration > Duration.zero
-        ? model.timestamp.add(followEventConfig.eventDuration)
+    final config = eventSubConfigurationModel.followEventConfig;
+    return config.eventDuration > Duration.zero
+        ? model.timestamp.add(config.eventDuration)
         : null;
   } else if (model is TwitchCheerEventModel) {
-    final cheerEventConfig = eventSubConfigurationModel.cheerEventConfig;
-    return cheerEventConfig.eventDuration > Duration.zero
-        ? model.timestamp.add(cheerEventConfig.eventDuration)
+    final config = eventSubConfigurationModel.cheerEventConfig;
+    return config.eventDuration > Duration.zero
+        ? model.timestamp.add(config.eventDuration)
         : null;
   } else if (model is TwitchSubscriptionEventModel ||
       model is TwitchSubscriptionGiftEventModel ||
       model is TwitchSubscriptionMessageEventModel) {
-    final subEventConfig = eventSubConfigurationModel.subscriptionEventConfig;
-    return subEventConfig.eventDuration > Duration.zero
-        ? model.timestamp.add(subEventConfig.eventDuration)
+    final config = eventSubConfigurationModel.subscriptionEventConfig;
+    return config.eventDuration > Duration.zero
+        ? model.timestamp.add(config.eventDuration)
         : null;
   } else if (model is TwitchPollEventModel) {
-    final pollEventConfig = eventSubConfigurationModel.pollEventConfig;
+    final config = eventSubConfigurationModel.pollEventConfig;
     if (model.status == 'archived' || model.status == 'terminated') {
       return null;
     }
-    return model.endTimestamp.add(pollEventConfig.eventDuration);
+    return model.endTimestamp.add(config.eventDuration);
   } else if (model is TwitchChannelPointRedemptionEventModel) {
-    final channelPointRedemptionEventConfig =
-        eventSubConfigurationModel.channelPointRedemptionEventConfig;
+    final config = eventSubConfigurationModel.channelPointRedemptionEventConfig;
     final unfulfilledDuration =
-        channelPointRedemptionEventConfig.eventDuration +
-        channelPointRedemptionEventConfig.unfulfilledAdditionalDuration;
+        config.eventDuration + config.unfulfilledAdditionalDuration;
 
     if (model.status == TwitchChannelPointRedemptionStatus.unfulfilled &&
         unfulfilledDuration > Duration.zero) {
       return model.timestamp.add(unfulfilledDuration);
     }
     if (model.status == TwitchChannelPointRedemptionStatus.fulfilled &&
-        channelPointRedemptionEventConfig.eventDuration > Duration.zero) {
-      return model.timestamp.add(
-        channelPointRedemptionEventConfig.eventDuration,
-      );
+        config.eventDuration > Duration.zero) {
+      return model.timestamp.add(config.eventDuration);
     }
     return null;
   } else if (model is TwitchHypeTrainEventModel) {
-    final hypetrainEventConfig =
-        eventSubConfigurationModel.hypetrainEventConfig;
-    return model.endTimestamp.add(hypetrainEventConfig.eventDuration);
+    final config = eventSubConfigurationModel.hypetrainEventConfig;
+    return model.endTimestamp.add(config.eventDuration);
   } else if (model is TwitchPredictionEventModel) {
-    final predictionEventConfig =
-        eventSubConfigurationModel.predictionEventConfig;
+    final config = eventSubConfigurationModel.predictionEventConfig;
 
     if (model.status == 'canceled') {
       return null;
     }
 
-    return model.endTime.add(predictionEventConfig.eventDuration);
+    return model.endTime.add(config.eventDuration);
   } else if (model is TwitchMessageModel &&
       model.annotations.announcement != null) {
     return messagesModel.announcementPinDuration > Duration.zero
         ? model.timestamp.add(messagesModel.announcementPinDuration)
         : null;
   }
+
   return null;
 }
 
@@ -202,6 +200,18 @@ class _ScrollToBottomWidget extends StatelessWidget {
   }
 }
 
+class _DisplayedMessage {
+  final MessageModel message;
+  final String key;
+  final String? followGroupKey;
+
+  const _DisplayedMessage({
+    required this.message,
+    required this.key,
+    this.followGroupKey,
+  });
+}
+
 class ChatPanelWidget extends StatefulWidget {
   final Channel channel;
 
@@ -213,6 +223,7 @@ class ChatPanelWidget extends StatefulWidget {
 
 class _ChatPanelWidgetState extends State<ChatPanelWidget>
     with TickerProviderStateMixin {
+  final Set<String> _expandedFollowGroups = {};
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
@@ -228,7 +239,6 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
   @override
   void initState() {
     super.initState();
-
     _controller.addListener(updateScrollPosition);
   }
 
@@ -237,33 +247,35 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.channel != widget.channel) {
+      _expandedFollowGroups.clear();
       if (_controller.hasClients) {
         _controller.jumpTo(0);
       }
       setState(() {
         _atBottom = true;
+        _pauseAt = null;
       });
     }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(updateScrollPosition);
     _controller.dispose();
-
     super.dispose();
   }
 
   void updateScrollPosition() async {
+    if (!_controller.hasClients) return;
     if (_controller.position.maxScrollExtent - _controller.offset < 100) {
-      if (_refreshPending) {
-        return;
-      }
+      if (_refreshPending) return;
       _refreshPending = true;
       final model = Provider.of<MessagesModel>(context, listen: false);
       final messenger = ScaffoldMessenger.of(context);
       final localizations = AppLocalizations.of(context)!;
       await model.pullMoreMessages();
       _refreshPending = false;
+      if (!mounted) return;
       if (_showScrollNotification && model.messages.length > 5000) {
         messenger.showSnackBar(
           SnackBar(
@@ -280,6 +292,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
         );
       }
     }
+    if (!_controller.hasClients) return;
     final value = _controller.position.atEdge && _controller.offset == 0;
     if (_atBottom != value) {
       setState(() {
@@ -333,11 +346,79 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
             } else {
               messagesModel.pruneMessages();
             }
+
+            final displayedMessages = <_DisplayedMessage>[];
+
+            for (var index = 0; index < messages.length; index++) {
+              final message = messages[index];
+
+              if (message is! TwitchFollowEventModel) {
+                displayedMessages.add(
+                  _DisplayedMessage(message: message, key: message.messageId),
+                );
+                continue;
+              }
+
+              final channel = message.channel;
+
+              bool sameRun(MessageModel element) =>
+                  element is TwitchFollowEventModel &&
+                  element.channel == channel;
+
+              // Process only the end of each adjacent run.
+              if (index != messages.length - 1 &&
+                  sameRun(messages[index + 1])) {
+                continue;
+              }
+
+              final lastIndex = messages.lastIndexWhere(
+                (element) => !sameRun(element),
+                index,
+              );
+
+              final group = TwitchFollowEventModel.merged(
+                messages.sublist(lastIndex + 1, index + 1).reversed.toList(),
+              );
+
+              final groupKey = 'follow-${group.channel}-${group.messageId}';
+
+              if (_expandedFollowGroups.contains(groupKey)) {
+                for (
+                  var followerIndex = 0;
+                  followerIndex < group.followers.length;
+                  followerIndex++
+                ) {
+                  final follower = group.followers[followerIndex];
+
+                  final individual = TwitchFollowEventModel(
+                    followers: [follower],
+                    messageId: '${group.messageId}-follower-$followerIndex',
+                    timestamp: group.timestamp,
+                  )..channel = group.channel;
+
+                  displayedMessages.add(
+                    _DisplayedMessage(
+                      message: individual,
+                      key: '$groupKey-follower-$followerIndex',
+                    ),
+                  );
+                }
+              } else {
+                displayedMessages.add(
+                  _DisplayedMessage(
+                    message: group,
+                    key: groupKey,
+                    followGroupKey: groupKey,
+                  ),
+                );
+              }
+            }
+
             final expirations =
-                messages
+                displayedMessages
                     .map(
-                      (message) => _getExpiration(
-                        message,
+                      (entry) => _getExpiration(
+                        entry.message,
                         eventSubConfigurationModel,
                         messagesModel,
                       ),
@@ -359,96 +440,103 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                           () => MessagesAdapter.instance.subscribe(
                             widget.channel,
                           ),
-                      // Pull from top to show refresh indicator.
                       child: PinnableMessageScrollView(
                         vsync: this,
                         controller: _controller,
-                        itemBuilder:
-                            (index) => StyleModelTheme(
-                              key: Key(messages[index].messageId),
-                              child: Builder(
-                                builder: (context) {
-                                  var message = messages[index];
-                                  // if the message is a TwitchFollowEventModel, we want to merge adjacents.
-                                  // return Container() if the message is not the first and a merged model
-                                  // if it is the first. keep in mind that the list is reversed.
-                                  if (message is TwitchFollowEventModel) {
-                                    final merged =
-                                        TwitchFollowEventModel.mergeAdjacent(
-                                          messages,
-                                          index,
-                                        );
-                                    if (merged == null) {
-                                      return Container();
-                                    }
-                                    message = merged;
-                                  }
-                                  // twitch will often send multiple subscription messages in a row.
-                                  // if we see them, suppress the less informative ones.
-                                  if (message is TwitchSubscriptionEventModel) {
-                                    // if the next or prev message is a TwitchSubscriptionMessageEventModel by the same user and tier, ignore this one.
-                                    if (index != messages.length - 1) {
-                                      final next = messages[index + 1];
-                                      if (next
-                                              is TwitchSubscriptionMessageEventModel &&
-                                          next.subscriberUserName ==
-                                              message.subscriberUserName &&
-                                          next.tier == message.tier) {
-                                        return Container();
-                                      }
-                                    }
-                                    if (index > 0) {
-                                      final prev = messages[index - 1];
-                                      if (prev
-                                              is TwitchSubscriptionMessageEventModel &&
-                                          prev.subscriberUserName ==
-                                              message.subscriberUserName &&
-                                          prev.tier == message.tier) {
-                                        return Container();
-                                      }
+                        itemBuilder: (index) {
+                          final entry = displayedMessages[index];
+                          final message = entry.message;
+
+                          return StyleModelTheme(
+                            key: Key(entry.key),
+                            child: Builder(
+                              builder: (context) {
+                                // Suppress redundant subscription events.
+                                if (message is TwitchSubscriptionEventModel) {
+                                  if (index != displayedMessages.length - 1) {
+                                    final next =
+                                        displayedMessages[index + 1].message;
+                                    if (next
+                                            is TwitchSubscriptionMessageEventModel &&
+                                        next.subscriberUserName ==
+                                            message.subscriberUserName &&
+                                        next.tier == message.tier) {
+                                      return const SizedBox.shrink();
                                     }
                                   }
-                                  // in a merged view, actions like shoutouts go to
-                                  // the channel the message came from.
-                                  final source = message.channel;
-                                  final chatMessage = ChatHistoryMessage(
-                                    message: message,
-                                    channel: source ?? widget.channel,
+                                  if (index > 0) {
+                                    final previous =
+                                        displayedMessages[index - 1].message;
+                                    if (previous
+                                            is TwitchSubscriptionMessageEventModel &&
+                                        previous.subscriberUserName ==
+                                            message.subscriberUserName &&
+                                        previous.tier == message.tier) {
+                                      return const SizedBox.shrink();
+                                    }
+                                  }
+                                }
+                                // in a merged view, actions like shoutouts go to
+                                // the channel the message came from.
+                                final source = message.channel;
+                                final chatMessage = ChatHistoryMessage(
+                                  message: message,
+                                  channel: source ?? widget.channel,
+                                  onFollowExpand:
+                                      entry.followGroupKey == null
+                                          ? null
+                                          : () {
+                                            setState(() {
+                                              _expandedFollowGroups.add(
+                                                entry.followGroupKey!,
+                                              );
+                                            });
+                                          },
+                                );
+                                final Widget messageWidget =
+                                    messagesModel.channels.length > 1 &&
+                                            source != null
+                                        ? ChannelAttribution(
+                                          provider: source.provider,
+                                          child: chatMessage,
+                                        )
+                                        : chatMessage;
+                                // Centralized, consistent spacing.
+                                final paddedMessage = Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 2,
+                                  ),
+                                  child: messageWidget,
+                                );
+                                final showSeparator = messagesModel.separators
+                                    .contains(messages.length - index - 1);
+                                // only show separators after the first 50.
+                                if (showSeparator && index > 50) {
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SeparatorWidget(
+                                        widget.channel,
+                                        message.timestamp,
+                                      ),
+                                      paddedMessage,
+                                    ],
                                   );
-                                  final Widget messageWidget =
-                                      messagesModel.channels.length > 1 &&
-                                              source != null
-                                          ? ChannelAttribution(
-                                            provider: source.provider,
-                                            child: chatMessage,
-                                          )
-                                          : chatMessage;
-                                  final showSeparator = messagesModel.separators
-                                      .contains(messages.length - index - 1);
-                                  // only show separators after the first 50.
-                                  if (showSeparator && index > 50) {
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        SeparatorWidget(
-                                          widget.channel,
-                                          message.timestamp,
-                                        ),
-                                        messageWidget,
-                                      ],
-                                    );
-                                  }
-                                  return messageWidget;
-                                },
-                              ),
+                                }
+                                return paddedMessage;
+                              },
                             ),
-                        findChildIndexCallback:
-                            (key) => messages.indexWhere(
-                              (element) => key == Key(element.messageId),
-                            ),
+                          );
+                        },
+                        findChildIndexCallback: (key) {
+                          return displayedMessages.indexWhere(
+                            (entry) => key == Key(entry.key),
+                          );
+                        },
                         isPinnedBuilder: (index) {
                           final expiration = expirations[index];
+
                           if (expiration == null ||
                               // if the message is too expired, it can't be pinned again.
                               // note: we track unpinned separately to permit animations.
@@ -459,7 +547,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                               ? PinState.pinned
                               : PinState.unpinned;
                         },
-                        count: messages.length,
+                        count: displayedMessages.length,
                       ),
                     );
                   },
@@ -467,7 +555,10 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                 _ScrollToBottomWidget(
                   show: !_atBottom,
                   onPressed: () async {
+                    if (!_controller.hasClients) return;
+
                     updateScrollPosition();
+
                     if (_controller.offset < 2500) {
                       await _controller.animateTo(
                         0,

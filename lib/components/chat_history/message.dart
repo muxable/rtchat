@@ -55,11 +55,13 @@ import 'package:rtchat/urls.dart';
 class ChatHistoryMessage extends StatelessWidget {
   final MessageModel message;
   final Channel channel;
+  final VoidCallback? onFollowExpand;
 
   const ChatHistoryMessage({
     super.key,
     required this.message,
     required this.channel,
+    this.onFollowExpand,
   });
 
   @override
@@ -97,61 +99,63 @@ class ChatHistoryMessage extends StatelessWidget {
       );
     } else if (m is TwitchRaidEventModel) {
       return Selector<EventSubConfigurationModel, RaidEventConfig>(
-        selector: (_, model) => model.raidEventConfig,
-        builder:
-            (_, config, _) =>
-                config.showEvent
-                    ? TwitchRaidEventWidget(m, channel: channel)
-                    : Container(),
+        selector: (context, model) => model.raidEventConfig,
+        builder: (context, config, child) {
+          return config.showEvent
+              ? TwitchRaidEventWidget(m, channel: channel)
+              : Container();
+        },
       );
     } else if (m is TwitchSubscriptionEventModel) {
       return Selector<EventSubConfigurationModel, SubscriptionEventConfig>(
-        selector: (_, model) => model.subscriptionEventConfig,
-        builder:
-            (_, config, _) =>
-                config.showEvent || (config.showIndividualGifts && m.isGift)
-                    ? TwitchSubscriptionEventWidget(m)
-                    : Container(),
+        selector: (context, model) => model.subscriptionEventConfig,
+        builder: (context, config, child) {
+          return config.showEvent || (config.showIndividualGifts && m.isGift)
+              ? TwitchSubscriptionEventWidget(m)
+              : Container();
+        },
       );
     } else if (m is TwitchSubscriptionGiftEventModel) {
       return Selector<EventSubConfigurationModel, SubscriptionEventConfig>(
-        selector: (_, model) => model.subscriptionEventConfig,
-        builder:
-            (_, config, _) =>
-                config.showEvent
-                    ? TwitchSubscriptionGiftEventWidget(m)
-                    : Container(),
+        selector: (context, model) => model.subscriptionEventConfig,
+        builder: (context, config, child) {
+          return config.showEvent
+              ? TwitchSubscriptionGiftEventWidget(m)
+              : Container();
+        },
       );
     } else if (m is TwitchSubscriptionMessageEventModel) {
       return Selector<EventSubConfigurationModel, SubscriptionEventConfig>(
-        selector: (_, model) => model.subscriptionEventConfig,
-        builder:
-            (_, config, _) =>
-                config.showEvent
-                    ? TwitchSubscriptionMessageEventWidget(m)
-                    : Container(),
+        selector: (context, model) => model.subscriptionEventConfig,
+        builder: (context, config, child) {
+          return config.showEvent
+              ? TwitchSubscriptionMessageEventWidget(m)
+              : Container();
+        },
       );
     } else if (m is StreamStateEventModel) {
       return StreamStateEventWidget(m);
     } else if (m is TwitchFollowEventModel) {
       return Selector<EventSubConfigurationModel, FollowEventConfig>(
-        selector: (_, model) => model.followEventConfig,
-        builder:
-            (_, config, _) =>
-                config.showEvent ? TwitchFollowEventWidget(m) : Container(),
+        selector: (context, model) => model.followEventConfig,
+        builder: (context, config, child) {
+          return config.showEvent
+              ? TwitchFollowEventWidget(m, onExpand: onFollowExpand)
+              : Container();
+        },
       );
     } else if (m is TwitchCheerEventModel) {
       return Selector<EventSubConfigurationModel, CheerEventConfig>(
         selector: (_, model) => model.cheerEventConfig,
         builder:
-            (_, config, _) =>
+            (context, config, child) =>
                 config.showEvent ? TwitchCheerEventWidget(m) : Container(),
       );
     } else if (m is TwitchPollEventModel) {
       return Selector<EventSubConfigurationModel, PollEventConfig>(
         selector: (_, model) => model.pollEventConfig,
         builder:
-            (_, config, _) =>
+            (context, config, child) =>
                 config.showEvent ? TwitchPollEventWidget(m) : Container(),
       );
     } else if (m is TwitchChannelPointRedemptionEventModel) {
@@ -161,7 +165,7 @@ class ChatHistoryMessage extends StatelessWidget {
       >(
         selector: (_, model) => model.channelPointRedemptionEventConfig,
         builder:
-            (_, config, _) =>
+            (context, config, child) =>
                 config.showEvent
                     ? TwitchChannelPointRedemptionEventWidget(m)
                     : Container(),
@@ -170,21 +174,21 @@ class ChatHistoryMessage extends StatelessWidget {
       return Selector<EventSubConfigurationModel, HypetrainEventConfig>(
         selector: (_, model) => model.hypetrainEventConfig,
         builder:
-            (_, config, _) =>
+            (context, config, child) =>
                 config.showEvent ? TwitchHypeTrainEventWidget(m) : Container(),
       );
     } else if (m is TwitchPredictionEventModel) {
       return Selector<EventSubConfigurationModel, PredictionEventConfig>(
         selector: (_, model) => model.predictionEventConfig,
         builder:
-            (_, config, _) =>
+            (context, config, child) =>
                 config.showEvent ? TwitchPredictionEventWidget(m) : Container(),
       );
     } else if (m is TwitchHostEventModel) {
       return Selector<EventSubConfigurationModel, HostEventConfig>(
         selector: (_, model) => model.hostEventConfig,
         builder:
-            (_, config, _) =>
+            (context, config, child) =>
                 config.showEvent ? TwitchHostEventWidget(m) : Container(),
       );
     } else if (m is TwitchRaidingEventModel) {
