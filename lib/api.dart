@@ -1,5 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:rtchat/models/accounts.dart';
 
 /// Keeps callable requests (including Firebase auth and error handling) on our, own hostname so the backend can move without another app release.
@@ -16,9 +17,14 @@ class Api {
   /// Calls as [account], so the backend acts on that account's channel.
   static Api forAccount(Account account) => forApp(account.app);
 
-  /// Calls as whoever is signed in on [DEFAULT]. Calls that act as an account
-  /// should use [forAccount] instead.
-  static Api get instance => forApp(Firebase.app());
+  /// Makes [forApp] return [api] for [app], so tests can see which account
+  /// a call is made as.
+  @visibleForTesting
+  static void debugOverride(FirebaseApp app, Api api) =>
+      _forApp[app.name] = api;
+
+  @visibleForTesting
+  static void debugReset() => _forApp.clear();
 
   final FirebaseFunctions _functions;
   bool _useEmulator = false;

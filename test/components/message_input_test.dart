@@ -3,14 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/api.dart';
 import 'package:rtchat/components/emote_picker.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/twitch/emote.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/user.dart';
 
+import '../fakes/fake_accounts.dart';
+import '../fakes/fake_api.dart';
 import '../fakes/fake_user_model.dart';
 
 final twitch = Channel(Providers.twitch, '1', 'TwitchMux');
@@ -58,30 +62,33 @@ void main() {
     classes: ['ImageStreamCompleterHandle', '_LiveImage'],
   );
 
-  Widget app(Channel? channel, {Channel? account}) => MultiProvider(
-    providers: [
-      ChangeNotifierProvider<UserModel>(
-        create: (context) => FakeUserModel(userChannel: account),
-      ),
-      ChangeNotifierProvider<StyleModel>(
-        create: (context) => StyleModel.fromJson({}),
-      ),
-    ],
-    child: MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: Align(
-          alignment: Alignment.bottomCenter,
-          child: MessageInputWidget(
-            key: const ValueKey('input'),
-            channel: channel,
-            loadEmotes: loadEmotes,
+  Widget app(Channel? channel, {Channel? account, List<Account>? accounts}) =>
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<UserModel>(
+            create:
+                (context) =>
+                    FakeUserModel(userChannel: account, accounts: accounts),
+          ),
+          ChangeNotifierProvider<StyleModel>(
+            create: (context) => StyleModel.fromJson({}),
+          ),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.bottomCenter,
+              child: MessageInputWidget(
+                key: const ValueKey('input'),
+                channel: channel,
+                loadEmotes: loadEmotes,
+              ),
+            ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 
   Future<EmotePickerWidget> openPicker(WidgetTester tester) async {
     await tester.tap(find.byType(IconButton).first);
@@ -172,6 +179,57 @@ void main() {
         expect(field.enabled, isTrue);
         expect(find.text("Your Twitch account can't chat here"), findsNothing);
         expect(loaded, [twitch]);
+      },
+    );
+  });
+
+  group("sending", () {
+    late FakeFunctions twitchApi, kickApi;
+    late List<Account> accounts;
+
+    setUp(() {
+      final twitchAccount = fakeAccount(twitch, appName: '[DEFAULT]');
+      final kickAccount = fakeAccount(kick);
+      twitchApi = fakeApiFor(twitchAccount);
+      kickApi = fakeApiFor(kickAccount);
+      accounts = [twitchAccount, kickAccount];
+    });
+
+    tearDown(Api.debugReset);
+
+    Future<void> send(WidgetTester tester, Channel channel) async {
+      await tester.pumpWidget(app(channel, accounts: accounts));
+      await tester.pump();
+      await tester.enterText(find.byType(TextField), 'hello');
+      await tester.tap(find.byIcon(Icons.send_rounded));
+      await tester.pump(const Duration(seconds: 1));
+    }
+
+    testWidgets(
+      "goes through the channel's own account",
+      experimentalLeakTesting: ignoreImages,
+      (tester) async {
+        await send(tester, kick);
+
+        expect(twitchApi.calls, isEmpty);
+        expect(kickApi.calls.single.name, 'send');
+        expect(kickApi.calls.single.data, {
+          'provider': 'kick',
+          'channelId': '2',
+          'message': 'hello',
+        });
+      },
+    );
+
+    testWidgets(
+      "to someone else's channel goes through its provider's account",
+      experimentalLeakTesting: ignoreImages,
+      (tester) async {
+        await send(tester, Channel(Providers.twitch, '99', 'someone'));
+
+        expect(kickApi.calls, isEmpty);
+        expect(twitchApi.calls.single.name, 'send');
+        expect(twitchApi.calls.single.data['channelId'], '99');
       },
     );
   });

@@ -1,12 +1,14 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/provider_icon.dart';
 import 'package:rtchat/components/scanner_error.dart';
 import 'package:rtchat/components/scanner_settings.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/adapters/donations.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/wallet_address.dart';
 import 'package:rtchat/urls.dart';
@@ -37,10 +39,57 @@ const streamlabsCurrencies = [
   ['USD', 'US Dollar'],
 ];
 
-class _RealtimeCashWidget extends StatefulWidget {
-  final String userId;
+/// Opens [url] to sign in to a service, returning the URL it redirects back
+/// to.
+typedef Authenticate = Future<String> Function(Uri url);
 
-  const _RealtimeCashWidget({required this.userId});
+Future<String> _authenticate(Uri url) => FlutterWebAuth2.authenticate(
+  url: url.toString(),
+  callbackUrlScheme: "com.rtirl.chat",
+);
+
+/// Connects [service] to [account]. The ID token says which account it's
+/// for, so the backend stores it under that account's uid.
+Future<void> _connect(
+  BuildContext context,
+  Account account,
+  String service,
+  Authenticate authenticate,
+) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final l10n = AppLocalizations.of(context)!;
+  final idToken = await account.user.getIdToken();
+  if (idToken == null) {
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text(
+          "Some strange authentication error occurred. Try signing out, or ask on Discord?",
+        ),
+      ),
+    );
+    return;
+  }
+  final result = await authenticate(
+    Uri.https("chat.rtirl.com", "/auth/$service/redirect", {
+      "token": idToken,
+      "provider": account.provider,
+    }),
+  );
+  final token = Uri.parse(result).queryParameters['token'];
+  if (token == null) {
+    messenger.showSnackBar(SnackBar(content: Text(l10n.thirdPartyAuthError)));
+  }
+}
+
+class _RealtimeCashWidget extends StatefulWidget {
+  final Account account;
+  final DonationsAdapter donations;
+
+  const _RealtimeCashWidget({
+    super.key,
+    required this.account,
+    required this.donations,
+  });
 
   @override
   State<_RealtimeCashWidget> createState() => _RealtimeCashWidgetState();
@@ -56,8 +105,8 @@ class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<String?>(
-      stream: DonationsAdapter.instance.forRealtimeChatAddress(
-        userId: widget.userId,
+      stream: widget.donations.forRealtimeChatAddress(
+        userId: widget.account.user.uid,
       ),
       builder: (context, snapshot) {
         return Column(
@@ -119,10 +168,9 @@ class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
                                       ),
                                     );
                                   } else {
-                                    DonationsAdapter.instance
-                                        .setRealtimeCashAddress(
-                                          address: address,
-                                        );
+                                    widget.donations.setRealtimeCashAddress(
+                                      address: address,
+                                    );
                                   }
                                   Navigator.pop(ctx);
                                 },
@@ -159,9 +207,15 @@ class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
 }
 
 class _StreamlabsWidget extends StatelessWidget {
-  final String userId;
+  final Account account;
+  final DonationsAdapter donations;
+  final Authenticate authenticate;
 
-  const _StreamlabsWidget({required this.userId});
+  const _StreamlabsWidget({
+    required this.account,
+    required this.donations,
+    required this.authenticate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +225,7 @@ class _StreamlabsWidget extends StatelessWidget {
         width: 24,
         height: 24,
         child: StreamBuilder(
-          stream: DonationsAdapter.instance.forStreamlabsConfig(userId: userId),
+          stream: donations.forStreamlabsConfig(userId: account.user.uid),
           builder: (context, snapshot) {
             return snapshot.data != null
                 ? const Icon(Icons.check_circle, color: Colors.green)
@@ -181,42 +235,21 @@ class _StreamlabsWidget extends StatelessWidget {
       ),
       title: const Text("Streamlabs"),
       subtitle: Text(AppLocalizations.of(context)!.streamlabsSubtitle),
-      onTap: () async {
-        final messenger = ScaffoldMessenger.of(context);
-        final l10n = AppLocalizations.of(context)!;
-        final userModel = Provider.of<UserModel>(context, listen: false);
-        final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-        final provider = userModel.userChannel?.provider;
-        if (provider == null) {
-          messenger.showSnackBar(
-            const SnackBar(
-              content: Text(
-                "Some strange authentication error occurred. Try signing out, or ask on Discord?",
-              ),
-            ),
-          );
-          return;
-        }
-        final result = await FlutterWebAuth2.authenticate(
-          url:
-              "https://chat.rtirl.com/auth/streamlabs/redirect?token=$idToken&provider=$provider",
-          callbackUrlScheme: "com.rtirl.chat",
-        );
-        final token = Uri.parse(result).queryParameters['token'];
-        if (token == null) {
-          messenger.showSnackBar(
-            SnackBar(content: Text(l10n.thirdPartyAuthError)),
-          );
-        }
-      },
+      onTap: () => _connect(context, account, "streamlabs", authenticate),
     );
   }
 }
 
 class _StreamElementsWidget extends StatelessWidget {
-  final String userId;
+  final Account account;
+  final DonationsAdapter donations;
+  final Authenticate authenticate;
 
-  const _StreamElementsWidget({required this.userId});
+  const _StreamElementsWidget({
+    required this.account,
+    required this.donations,
+    required this.authenticate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -226,9 +259,7 @@ class _StreamElementsWidget extends StatelessWidget {
         width: 24,
         height: 24,
         child: StreamBuilder(
-          stream: DonationsAdapter.instance.forStreamElementsConfig(
-            userId: userId,
-          ),
+          stream: donations.forStreamElementsConfig(userId: account.user.uid),
           builder: (context, snapshot) {
             return snapshot.data != null
                 ? const Icon(Icons.check_circle, color: Colors.green)
@@ -238,34 +269,7 @@ class _StreamElementsWidget extends StatelessWidget {
       ),
       title: const Text("StreamElements"),
       subtitle: Text(AppLocalizations.of(context)!.streamElementsSubtitle),
-      onTap: () async {
-        final messenger = ScaffoldMessenger.of(context);
-        final l10n = AppLocalizations.of(context)!;
-        final userModel = Provider.of<UserModel>(context, listen: false);
-        final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-        final provider = userModel.userChannel?.provider;
-        if (provider == null) {
-          messenger.showSnackBar(
-            const SnackBar(
-              content: Text(
-                "Some strange authentication error occurred. Try signing out, or ask on Discord?",
-              ),
-            ),
-          );
-          return;
-        }
-        final result = await FlutterWebAuth2.authenticate(
-          url:
-              "https://chat.rtirl.com/auth/streamelements/redirect?token=$idToken&provider=$provider",
-          callbackUrlScheme: "com.rtirl.chat",
-        );
-        final token = Uri.parse(result).queryParameters['token'];
-        if (token == null) {
-          messenger.showSnackBar(
-            SnackBar(content: Text(l10n.thirdPartyAuthError)),
-          );
-        }
-      },
+      onTap: () => _connect(context, account, "streamelements", authenticate),
     );
   }
 }
@@ -396,8 +400,37 @@ class _RealTimeKitWidgetState extends State<_RealTimeKitWidget> {
   }
 }
 
+/// Names the account the connections after it belong to.
+class _AccountHeader extends StatelessWidget {
+  final Account account;
+
+  const _AccountHeader(this.account);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: ProviderIcon(account.provider),
+      title: Text(
+        account.channel.displayName,
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      subtitle: Text(providerName(account.provider)),
+    );
+  }
+}
+
 class ThirdPartyScreen extends StatelessWidget {
-  const ThirdPartyScreen({super.key});
+  /// Reads and writes an account's connections.
+  final DonationsAdapter Function(Account account) donations;
+
+  /// Opens a service's sign in page.
+  final Authenticate authenticate;
+
+  const ThirdPartyScreen({
+    super.key,
+    @visibleForTesting this.donations = DonationsAdapter.forAccount,
+    @visibleForTesting this.authenticate = _authenticate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -407,20 +440,33 @@ class ThirdPartyScreen extends StatelessWidget {
       ),
       body: Consumer<UserModel>(
         builder: (context, userModel, child) {
-          final userId = userModel.user?.uid;
-          if (userId == null) {
-            // the user should be signed in at this point.
-            return Container();
-          }
+          final accounts = userModel.accounts;
+          // connections are each account's own, so each account gets its
+          // own section once there's more than one.
           return ListView(
             children: [
-              _RealtimeCashWidget(userId: userId),
-              const Divider(),
+              for (final account in accounts) ...[
+                if (accounts.length > 1) _AccountHeader(account),
+                _RealtimeCashWidget(
+                  key: ValueKey(account.app.name),
+                  account: account,
+                  donations: donations(account),
+                ),
+                const Divider(),
+                _StreamlabsWidget(
+                  account: account,
+                  donations: donations(account),
+                  authenticate: authenticate,
+                ),
+                const Divider(),
+                _StreamElementsWidget(
+                  account: account,
+                  donations: donations(account),
+                  authenticate: authenticate,
+                ),
+                const Divider(),
+              ],
               _RealTimeKitWidget(),
-              const Divider(),
-              _StreamlabsWidget(userId: userId),
-              const Divider(),
-              _StreamElementsWidget(userId: userId),
             ],
           );
         },

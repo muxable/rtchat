@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:core';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:rtchat/api.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/main.dart';
 import 'package:rtchat/models/adapters/messages.dart';
@@ -15,9 +17,14 @@ import 'package:rtchat/models/tts.dart';
 class MessagesModel extends ChangeNotifier {
   final List<StreamSubscription<void>> _subscriptions = [];
 
+  /// The [Api] to call as the user on a provider, from `UserModel.apiOn`.
+  Api Function(String provider) apiOn =
+      (provider) => Api.forApp(Firebase.app());
+
   @visibleForTesting
-  Stream<DeltaEvent> Function(Channel channel) forChannel =
-      (channel) => MessagesAdapter.instance.forChannel(channel);
+  late Stream<DeltaEvent> Function(Channel channel) forChannel =
+      (channel) =>
+          MessagesAdapter.instance.forChannel(channel, apiOn(channel.provider));
   List<ChannelEvent> _events = [];
   List<MessageModel> _messages = [];
   Set<int> _separators = {};
@@ -182,6 +189,7 @@ class MessagesModel extends ChangeNotifier {
       final events = await MessagesAdapter.instance.forChannelHistory(
         channel,
         oldest,
+        apiOn(channel.provider),
       );
       history.addAll(events.map((event) => (channel: channel, event: event)));
     }

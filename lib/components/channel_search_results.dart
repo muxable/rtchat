@@ -2,15 +2,15 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rtchat/api.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/components/provider_icon.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/views.dart';
-
-final _search = Api.instance.callable("search");
 
 Future<List<SearchResult>> fastSearch() async {
   // fast query firestore and slow query the functions. tag firestore results
@@ -86,32 +86,35 @@ List<SearchResult> filterRecentChannels(
   ].take(5).toList();
 }
 
+/// Searches as the user [api] calls as. With no query, Twitch lists the
+/// channels that user follows.
 Stream<List<SearchResult>> searchChannels(
   String query,
   String provider,
   bool isShowOnlyOnline,
+  Api api,
 ) async* {
   final fastRanked = filterRecentChannels(await fastSearch(), query, provider);
   yield fastRanked;
-  final slow = await _search({"query": query, "provider": provider}).then((
-    result,
-  ) {
-    return (result.data as List<dynamic>)
-        .map(
-          (data) => SearchResult(
-            channelId: data['channelId'],
-            provider: data['provider'],
-            login: data['login'],
-            displayName: data['displayName'],
-            isOnline: data['isOnline'],
-            imageUrl: Uri.parse(data['imageUrl']),
-            title: data['title'],
-            language: data['language'],
-            isPromoted: false,
-          ),
-        )
-        .toList();
-  });
+  final slow = await api
+      .callable("search")({"query": query, "provider": provider})
+      .then((result) {
+        return (result.data as List<dynamic>)
+            .map(
+              (data) => SearchResult(
+                channelId: data['channelId'],
+                provider: data['provider'],
+                login: data['login'],
+                displayName: data['displayName'],
+                isOnline: data['isOnline'],
+                imageUrl: Uri.parse(data['imageUrl']),
+                title: data['title'],
+                language: data['language'],
+                isPromoted: false,
+              ),
+            )
+            .toList();
+      });
   final slowFiltered = slow.where(
     (result) =>
         result.provider == provider &&
@@ -155,7 +158,10 @@ class ChannelSearchResultsWidget extends StatefulWidget {
   final String query;
   final String provider;
   final bool isShowOnlyOnline;
-  final ChannelSearch search;
+
+  /// Finds the results. Defaults to [searchChannels], as the account on
+  /// [provider].
+  final ChannelSearch? search;
   final Function(Channel) onChannelSelect;
   final ScrollController? controller;
 
@@ -174,7 +180,7 @@ class ChannelSearchResultsWidget extends StatefulWidget {
     super.key,
     required this.query,
     this.provider = "twitch",
-    this.search = searchChannels,
+    this.search,
     required this.onChannelSelect,
     required this.isShowOnlyOnline,
     this.controller,
@@ -196,10 +202,23 @@ class _ChannelSearchResultsWidgetState
   @override
   void initState() {
     super.initState();
-    _results = widget.search(
+    _results = _search();
+  }
+
+  Stream<List<SearchResult>> _search() {
+    final search = widget.search;
+    if (search != null) {
+      return search(widget.query, widget.provider, widget.isShowOnlyOnline);
+    }
+    final api = Provider.of<UserModel>(
+      context,
+      listen: false,
+    ).apiOn(widget.provider);
+    return searchChannels(
       widget.query,
       widget.provider,
       widget.isShowOnlyOnline,
+      api,
     );
   }
 
@@ -209,21 +228,13 @@ class _ChannelSearchResultsWidgetState
     if (oldWidget.provider != widget.provider) {
       // switching provider searches right away.
       _debounce?.cancel();
-      _results = widget.search(
-        widget.query,
-        widget.provider,
-        widget.isShowOnlyOnline,
-      );
+      _results = _search();
     } else if (oldWidget.query != widget.query ||
         oldWidget.isShowOnlyOnline != widget.isShowOnlyOnline) {
       _debounce?.cancel();
       _debounce = Timer(const Duration(milliseconds: 500), () {
         setState(() {
-          _results = widget.search(
-            widget.query,
-            widget.provider,
-            widget.isShowOnlyOnline,
-          );
+          _results = _search();
         });
       });
     }

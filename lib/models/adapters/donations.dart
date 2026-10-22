@@ -18,13 +18,6 @@ class DonationsAdapter {
 
   DonationsAdapter._({required this.db, required this.api});
 
-  static DonationsAdapter get instance =>
-      _instance ??= DonationsAdapter._(
-        db: FirebaseFirestore.instance,
-        api: Api.instance,
-      );
-  static DonationsAdapter? _instance;
-
   /// Reads and writes [account]'s own connections, which are owner-only.
   static DonationsAdapter forAccount(Account account) =>
       _forApp[account.app.name] ??= DonationsAdapter._(

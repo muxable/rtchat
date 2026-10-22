@@ -118,6 +118,43 @@ void main() {
       },
     );
 
+    test("acts on a provider as its account", () async {
+      await user.signIn(
+        Providers.twitch,
+        slots.backend.account('twitch-user', twitch),
+      );
+      await user.signIn(
+        Providers.kick,
+        slots.backend.account('kick-user', kick),
+      );
+      await settle();
+
+      // someone else's channel is acted on as the account on its provider.
+      final other = Channel(Providers.kick, '3', 'someone');
+      expect(user.accountFor(other), isNull);
+      expect(user.accountOn(other.provider)?.user.uid, 'kick-user');
+      expect(user.apiOn(Providers.kick).app.name, 'account-kick');
+      expect(user.apiOn(Providers.twitch).app.name, '[DEFAULT]');
+    });
+
+    test("reads on a provider without an account as another one", () async {
+      await user.signIn(
+        Providers.twitch,
+        slots.backend.account('twitch-user', twitch),
+      );
+      await user.signIn(
+        Providers.kick,
+        slots.backend.account('kick-user', kick),
+      );
+      await settle();
+      await accounts.signOut(user.accountOn(Providers.twitch)!);
+      await settle();
+
+      // [DEFAULT] is signed out, so reads go through kick's slot.
+      expect(user.accountOn(Providers.twitch), isNull);
+      expect(user.apiOn(Providers.twitch).app.name, 'account-kick');
+    });
+
     test("notifies when an account changes", () async {
       var notified = 0;
       user.addListener(() => notified++);

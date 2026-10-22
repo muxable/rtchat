@@ -1,7 +1,9 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:rtchat/api.dart';
 import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/channels.dart';
 
@@ -89,6 +91,19 @@ class UserModel extends ChangeNotifier {
 
   /// The account to act on [channel] as: the one whose own channel it is.
   Account? accountFor(Channel channel) => _accounts.accountFor(channel);
+
+  /// The account on [provider], which can also chat in others' channels there.
+  Account? accountOn(String provider) =>
+      accounts.where((account) => account.provider == provider).firstOrNull;
+
+  /// The [Api] to call as the user on [provider]. Calls that only read are
+  /// made as another account, or [DEFAULT], if there's none on [provider].
+  Api apiOn(String provider) {
+    final account = accountOn(provider) ?? accounts.firstOrNull;
+    return account == null
+        ? Api.forApp(Firebase.app())
+        : Api.forAccount(account);
+  }
 
   static String normalizeLanguageCode(String? twitchLang) {
     final mappings = {
