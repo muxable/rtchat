@@ -123,7 +123,7 @@ void main() {
       final result = applyDeltaEvent(
         messages,
         UpdateDeltaEvent('missing', t0, (m) => m),
-        onUpdate: (_, _, _) => called = true,
+        onUpdate: (messageId, oldMessage, newMessage) => called = true,
       );
       expect(ids(result), ['a']);
       expect(called, isFalse);
