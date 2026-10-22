@@ -1588,5 +1588,51 @@
   "neuralFallbackLoadFailed": "The neural voice couldn't load, so chat is read with the system voice.",
   "@neuralFallbackLoadFailed": {
     "description": "Shown once in the text to speech settings when the installed voice pack failed to load, e.g. for lack of memory"
+  },
+  "accounts": "Accounts",
+  "@accounts": {
+    "description": "Title of the settings page that lists the streaming accounts the app is signed in to"
+  },
+  "accountsSubtitle": "Sign in to each platform you stream on",
+  "@accountsSubtitle": {
+    "description": "Explains the accounts settings page: the app can be signed in to one account on each streaming platform at the same time"
+  },
+  "addProviderAccount": "Add {provider} account",
+  "@addProviderAccount": {
+    "description": "Button on the accounts page that signs in to an account on a platform the app isn't signed in to yet, alongside the accounts it is",
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Kick"
+      }
+    }
+  },
+  "signInWithProvider": "Sign in with {provider}",
+  "@signInWithProvider": {
+    "description": "Button to sign in with an account on a streaming platform",
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  },
+  "signOutOfAccount": "Sign out of {channel} on {provider}?",
+  "@signOutOfAccount": {
+    "description": "Confirmation shown before signing out of one account; the others stay signed in",
+    "placeholders": {
+      "channel": {
+        "type": "String",
+        "example": "muxfd"
+      },
+      "provider": {
+        "type": "String",
+        "example": "Twitch"
+      }
+    }
+  },
+  "signOutOfAll": "Sign out of all accounts",
+  "@signOutOfAll": {
+    "description": "Button on the accounts page that signs out of every account at once"
   }
 }

@@ -36,6 +36,7 @@ import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/views.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/onboarding.dart';
+import 'package:rtchat/screens/settings/accounts.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
@@ -435,6 +436,7 @@ class _AppState extends State<App> {
                 );
               },
               '/settings': (context) => const SettingsScreen(),
+              '/settings/accounts': (context) => const AccountsScreen(),
               '/settings/badges': (context) => const TwitchBadgesScreen(),
               '/settings/default-channels':
                   (context) => const DefaultChannelsScreen(),

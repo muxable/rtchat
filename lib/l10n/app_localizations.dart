@@ -1839,6 +1839,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The neural voice couldn\'t load, so chat is read with the system voice.'**
   String get neuralFallbackLoadFailed;
+
+  /// Title of the settings page that lists the streaming accounts the app is signed in to
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get accounts;
+
+  /// Explains the accounts settings page: the app can be signed in to one account on each streaming platform at the same time
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to each platform you stream on'**
+  String get accountsSubtitle;
+
+  /// Button on the accounts page that signs in to an account on a platform the app isn't signed in to yet, alongside the accounts it is
+  ///
+  /// In en, this message translates to:
+  /// **'Add {provider} account'**
+  String addProviderAccount(String provider);
+
+  /// Button to sign in with an account on a streaming platform
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with {provider}'**
+  String signInWithProvider(String provider);
+
+  /// Confirmation shown before signing out of one account; the others stay signed in
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of {channel} on {provider}?'**
+  String signOutOfAccount(String channel, String provider);
+
+  /// Button on the accounts page that signs out of every account at once
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of all accounts'**
+  String get signOutOfAll;
 }
 
 class _AppLocalizationsDelegate
