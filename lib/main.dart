@@ -89,15 +89,16 @@ void main() async {
   ));
 
   AudioPlayer.global.setAudioContext(AudioContext(
-    android: const AudioContextAndroid(
-      contentType: AndroidContentType.sonification,
-      usageType: AndroidUsageType.assistanceSonification,
-      audioFocus: AndroidAudioFocus.none,
+      android: const AudioContextAndroid(
+        contentType: AndroidContentType.sonification,
+        usageType: AndroidUsageType.assistanceSonification,
+        audioFocus: AndroidAudioFocus.none,
+      ),
+      iOS: AudioContextIOS(
+        category: AVAudioSessionCategory.playback,
+      ),
     ),
-    iOS: AudioContextIOS(
-      category: AVAudioSessionCategory.ambient,
-    ),
-  ));
+  );
   runApp(App(prefs: prefs, voicePacks: voicePacks));
 }
 
