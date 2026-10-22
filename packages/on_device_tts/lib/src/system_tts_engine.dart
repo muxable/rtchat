@@ -39,26 +39,22 @@ class SystemTtsEngine implements TtsEngine {
     String? Function()? platformLanguage,
     @visibleForTesting AudioPlayer? audioPlayer,
     @visibleForTesting Future<Directory> Function()? tempDirectory,
-  })  : _tts = tts ?? FlutterTts(),
-        _platformLanguage = platformLanguage ?? _devicePlatformLanguage,
-        _player = audioPlayer,
-        _tempDirectory = tempDirectory ?? getTemporaryDirectory {
+  }) : _tts = tts ?? FlutterTts(),
+       _platformLanguage = platformLanguage ?? _devicePlatformLanguage,
+       _player = audioPlayer,
+       _tempDirectory = tempDirectory ?? getTemporaryDirectory {
     _tts
       ..setSharedInstance(true)
-      ..setIosAudioCategory(
-          IosTextToSpeechAudioCategory.playback,
-          [
-            IosTextToSpeechAudioCategoryOptions.mixWithOthers,
-          ],
-          IosTextToSpeechAudioMode.voicePrompt);
+      ..setIosAudioCategory(IosTextToSpeechAudioCategory.playback, [
+        IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+      ], IosTextToSpeechAudioMode.voicePrompt);
   }
 
   static String? _devicePlatformLanguage() => switch (defaultTargetPlatform) {
-        TargetPlatform.iOS ||
-        TargetPlatform.macOS =>
-          PlatformDispatcher.instance.locale.toLanguageTag(),
-        _ => null,
-      };
+    TargetPlatform.iOS ||
+    TargetPlatform.macOS => PlatformDispatcher.instance.locale.toLanguageTag(),
+    _ => null,
+  };
 
   /// With a [voice], that voice speaks. Otherwise, with a [language], the
   /// platform's voice for that language speaks: the full tag if the
@@ -182,9 +178,7 @@ class SystemTtsEngine implements TtsEngine {
         await player.stop();
       }
     } finally {
-      if (await temporary.exists()) {
-        await temporary.delete(recursive: true);
-      }
+      await temporary.delete(recursive: true);
     }
   }
 

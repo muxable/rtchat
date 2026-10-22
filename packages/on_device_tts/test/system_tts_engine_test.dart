@@ -113,19 +113,21 @@ void main() {
   group('language', () {
     setUp(() {
       // the platform has voices for these languages.
-      handler = (call) async => call.method != 'setLanguage' ||
-              {'en', 'es', 'ja', 'pt'}.contains(call.arguments)
-          ? 1
-          : 0;
+      handler =
+          (call) async =>
+              call.method != 'setLanguage' ||
+                      {'en', 'es', 'ja', 'pt'}.contains(call.arguments)
+                  ? 1
+                  : 0;
     });
 
     List<Object?> languageCalls() => [
-          for (final call in calls)
-            if (call.method == 'setLanguage')
-              call.arguments
-            else if (call.method == 'clearVoice')
-              'clearVoice',
-        ];
+      for (final call in calls)
+        if (call.method == 'setLanguage')
+          call.arguments
+        else if (call.method == 'clearVoice')
+          'clearVoice',
+    ];
 
     Future<SystemTtsEngine> engine({String? platformLanguage}) async {
       final engine = SystemTtsEngine(platformLanguage: () => platformLanguage);
@@ -230,9 +232,7 @@ void main() {
           rate: 0.8,
           pitch: 1.5,
         );
-        await player.pathReady.future.timeout(
-          const Duration(seconds: 5),
-        );
+        await pumpEventQueue(times: 100);
         expect(player.paths, hasLength(1));
         final synthesis = calls.singleWhere(
           (c) => c.method == 'synthesizeToFile',
@@ -269,8 +269,9 @@ void main() {
       () async {
         for (var i = 0; i < 3; i++) {
           var finished = false;
-          final speaking =
-              engine.speak('hello $i').then((_) => finished = true);
+          final speaking = engine
+              .speak('hello $i')
+              .then((_) => finished = true);
           await pumpEventQueue(times: 100);
           expect(player.playCount, i + 1);
           expect(finished, isFalse);
@@ -299,9 +300,11 @@ void main() {
     test('stop releases stalled synthesis without playing it later', () async {
       final synthesis = Completer<Object?>();
       final normalHandler = handler;
-      handler = (call) => call.method == 'synthesizeToFile'
-          ? synthesis.future
-          : normalHandler(call);
+      handler =
+          (call) =>
+              call.method == 'synthesizeToFile'
+                  ? synthesis.future
+                  : normalHandler(call);
       final speaking = engine.speak('canceled');
       await pumpEventQueue(times: 100);
       expect(methods(), contains('synthesizeToFile'));
@@ -339,9 +342,11 @@ void main() {
       () async {
         final synthesis = Completer<Object?>();
         final normalHandler = handler;
-        handler = (call) => call.method == 'synthesizeToFile'
-            ? synthesis.future
-            : normalHandler(call);
+        handler =
+            (call) =>
+                call.method == 'synthesizeToFile'
+                    ? synthesis.future
+                    : normalHandler(call);
         await expectLater(
           engine.speak('stalled'),
           throwsA(isA<TimeoutException>()),
@@ -437,7 +442,6 @@ void main() {
 
 /// Models play() returning immediately while audio is still playing.
 class FakeAudioPlayer implements AudioPlayer {
-  final Completer<void> pathReady = Completer<void>();
   final states = StreamController<ProcessingState>.broadcast(sync: true);
   final paths = <String>[];
   int playCount = 0;
@@ -457,11 +461,6 @@ class FakeAudioPlayer implements AudioPlayer {
     dynamic tag,
   }) async {
     paths.add(filePath);
-
-    if (!pathReady.isCompleted) {
-      pathReady.complete();
-    }
-
     if (loadError != null) throw loadError!;
     return const Duration(seconds: 1);
   }
