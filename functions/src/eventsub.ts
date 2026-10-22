@@ -49,7 +49,7 @@ export function eventsubConditions(twitchUserId: string) {
     if (type === EventsubType.ChannelRaid) {
       subscriptions.push(
         { type, condition: { to_broadcaster_user_id: twitchUserId } },
-        { type, condition: { from_broadcaster_user_id: twitchUserId } }
+        { type, condition: { from_broadcaster_user_id: twitchUserId } },
       );
     } else if (
       type === EventsubType.ChannelShoutoutCreate ||
@@ -96,8 +96,7 @@ function createEventsub(token: string, type: string, condition: any) {
       condition,
       transport: {
         method: "webhook",
-        callback:
-          "https://rtchat-api.rtirl.com/eventsub",
+        callback: "https://rtchat-api.rtirl.com/eventsub",
         secret: TWITCH_CLIENT_SECRET,
       },
     }),
@@ -106,7 +105,7 @@ function createEventsub(token: string, type: string, condition: any) {
 
 export async function checkEventSubSubscriptions(userId: string) {
   const credentials = await new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken(
-    { scopes: [] }
+    { scopes: [] },
   );
   const appAccessToken = credentials.token.access_token;
   const snapshot = await admin
@@ -132,7 +131,7 @@ export async function checkEventSubSubscriptions(userId: string) {
         "failed to create subscription",
         type,
         await response.json(),
-        response.status
+        response.status,
       );
       continue;
     }
@@ -189,25 +188,50 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
 
     const channelRef = admin.firestore().collection("channels").doc(channelId);
 
+    // Twitch can send several notifications, each with its own message id, for
+    // one follower (double clicks, refollows), so follows are keyed by follower
+    // and only the first is recorded until its message expires.
+    // https://github.com/twitchdev/issues/issues/1224
+    const followerId = req.body.event["user_id"];
+    const isFollow =
+      type === EventsubType.ChannelFollow &&
+      typeof followerId === "string" &&
+      followerId !== "" &&
+      !followerId.includes("/");
+
     const messageRef = channelRef
       .collection("messages")
-      .doc(`twitch:${messageId}`);
+      .doc(isFollow ? `twitch:follow:${followerId}` : `twitch:${messageId}`);
 
-    await messageRef.set({
+    const message = {
       channelId,
       type,
       timestamp: admin.firestore.Timestamp.fromMillis(Date.parse(timestamp)),
       expiresAt: admin.firestore.Timestamp.fromMillis(
-        Date.now() + 1000 * 86400 * 7 * 2
+        Date.now() + 1000 * 86400 * 7 * 2,
       ),
       event: req.body.event,
-    });
+    };
+    if (isFollow) {
+      try {
+        await messageRef.create(message);
+      } catch (e: any) {
+        // ALREADY_EXISTS: this follower was already recorded and counted.
+        if (e?.code === 6) {
+          res.status(200).send();
+          return;
+        }
+        throw e;
+      }
+    } else {
+      await messageRef.set(message);
+    }
 
     switch (type) {
       case EventsubType.StreamOnline:
         await channelRef.set(
           { onlineAt: admin.firestore.FieldValue.serverTimestamp() },
-          { merge: true }
+          { merge: true },
         );
         // process twitch channel ids.
         const token = await getAppAccessToken("twitch");
@@ -237,7 +261,7 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
             categoryId: req.body.event.category_id,
             categoryName: req.body.event.category_name,
           },
-          { merge: true }
+          { merge: true },
         );
         break;
     }

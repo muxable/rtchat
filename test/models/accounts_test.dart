@@ -31,7 +31,9 @@ void main() {
 
   test('the first account goes in [DEFAULT]', () async {
     await model.signIn(
-        Providers.twitch, slots.backend.account('twitch-user', twitch));
+      Providers.twitch,
+      slots.backend.account('twitch-user', twitch),
+    );
     await settle();
 
     expect(appNames(), ['[DEFAULT]']);
@@ -42,9 +44,13 @@ void main() {
 
   test('a second provider goes in its own slot and keeps the first', () async {
     await model.signIn(
-        Providers.twitch, slots.backend.account('twitch-user', twitch));
+      Providers.twitch,
+      slots.backend.account('twitch-user', twitch),
+    );
     await model.signIn(
-        Providers.kick, slots.backend.account('kick-user', kick));
+      Providers.kick,
+      slots.backend.account('kick-user', kick),
+    );
     await settle();
 
     expect(appNames(), ['[DEFAULT]', 'account-kick']);
@@ -56,32 +62,46 @@ void main() {
 
   test('signing in on a provider that has an account replaces it', () async {
     await model.signIn(
-        Providers.twitch, slots.backend.account('twitch-user', twitch));
+      Providers.twitch,
+      slots.backend.account('twitch-user', twitch),
+    );
     await model.signIn(
-        Providers.kick, slots.backend.account('kick-user', kick));
+      Providers.kick,
+      slots.backend.account('kick-user', kick),
+    );
     await settle();
 
     // in [DEFAULT].
     final otherTwitch = Channel(Providers.twitch, '3', 'other');
     await model.signIn(
-        Providers.twitch, slots.backend.account('twitch-2', otherTwitch));
+      Providers.twitch,
+      slots.backend.account('twitch-2', otherTwitch),
+    );
     // in a named slot.
     final otherKick = Channel(Providers.kick, '4', 'other');
     await model.signIn(
-        Providers.kick, slots.backend.account('kick-2', otherKick));
+      Providers.kick,
+      slots.backend.account('kick-2', otherKick),
+    );
     await settle();
 
     expect(appNames(), ['[DEFAULT]', 'account-kick']);
     expect(
-        [for (final a in model.accounts) a.channel], [otherTwitch, otherKick]);
+      [for (final a in model.accounts) a.channel],
+      [otherTwitch, otherKick],
+    );
     expect(slots.extra[Providers.twitch]!.user, isNull);
   });
 
   test('signing out one account leaves the others', () async {
     await model.signIn(
-        Providers.twitch, slots.backend.account('twitch-user', twitch));
+      Providers.twitch,
+      slots.backend.account('twitch-user', twitch),
+    );
     await model.signIn(
-        Providers.kick, slots.backend.account('kick-user', kick));
+      Providers.kick,
+      slots.backend.account('kick-user', kick),
+    );
     await settle();
 
     await model.signOut(model.accountFor(twitch)!);
@@ -93,16 +113,22 @@ void main() {
 
     // the next account fills [DEFAULT] again.
     await model.signIn(
-        Providers.twitch, slots.backend.account('twitch-user', twitch));
+      Providers.twitch,
+      slots.backend.account('twitch-user', twitch),
+    );
     await settle();
     expect(appNames(), ['[DEFAULT]', 'account-kick']);
   });
 
   test('signing out of all accounts empties every slot', () async {
     await model.signIn(
-        Providers.twitch, slots.backend.account('twitch-user', twitch));
+      Providers.twitch,
+      slots.backend.account('twitch-user', twitch),
+    );
     await model.signIn(
-        Providers.kick, slots.backend.account('kick-user', kick));
+      Providers.kick,
+      slots.backend.account('kick-user', kick),
+    );
     await settle();
 
     await model.signOutAll();
@@ -115,9 +141,13 @@ void main() {
 
   test('restores every account after a restart', () async {
     await model.signIn(
-        Providers.twitch, slots.backend.account('twitch-user', twitch));
+      Providers.twitch,
+      slots.backend.account('twitch-user', twitch),
+    );
     await model.signIn(
-        Providers.kick, slots.backend.account('kick-user', kick));
+      Providers.kick,
+      slots.backend.account('kick-user', kick),
+    );
     await settle();
     model.dispose();
 
@@ -141,7 +171,9 @@ void main() {
 
     final otherKick = Channel(Providers.kick, '4', 'other');
     await model.signIn(
-        Providers.kick, slots.backend.account('kick-2', otherKick));
+      Providers.kick,
+      slots.backend.account('kick-2', otherKick),
+    );
     await settle();
 
     expect(appNames(), ['account-kick']);
@@ -151,7 +183,9 @@ void main() {
 
   test('accountFor only matches the account\'s own channel', () async {
     await model.signIn(
-        Providers.twitch, slots.backend.account('twitch-user', twitch));
+      Providers.twitch,
+      slots.backend.account('twitch-user', twitch),
+    );
     await settle();
 
     expect(model.accountFor(twitch)?.app.name, '[DEFAULT]');

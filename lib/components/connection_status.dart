@@ -14,35 +14,37 @@ class ConnectionStatusWidget extends StatelessWidget {
       children: [
         // add a sentinel listener so Firebase connects to the db.
         StreamBuilder(
-            stream: FirebaseDatabase.instance.ref('sentinel').onValue,
-            builder: (context, snapshot) => Container()),
+          stream: FirebaseDatabase.instance.ref('sentinel').onValue,
+          builder: (context, snapshot) => Container(),
+        ),
         StreamBuilder<DateTime?>(
-            stream: FirebaseDatabase.instance
-                .ref('.info/connected')
-                .onValue
-                .map((event) {
-              return event.snapshot.value == false ? DateTime.now() : null;
-            }),
-            builder: (context, snapshot) {
-              final data = snapshot.data;
-              if (data == null) {
-                return Container();
-              }
-              return RebuildableWidget(
-                  rebuildAt: {data.add(_delay)},
-                  builder: (context) {
-                    if (DateTime.now().difference(data) < _delay) {
-                      return Container();
-                    }
-                    return Container(
-                      width: double.infinity,
-                      height: 48,
-                      alignment: Alignment.center,
-                      color: Colors.red,
-                      child: Text(AppLocalizations.of(context)!.reconnecting),
-                    );
-                  });
-            }),
+          stream: FirebaseDatabase.instance.ref('.info/connected').onValue.map((
+            event,
+          ) {
+            return event.snapshot.value == false ? DateTime.now() : null;
+          }),
+          builder: (context, snapshot) {
+            final data = snapshot.data;
+            if (data == null) {
+              return Container();
+            }
+            return RebuildableWidget(
+              rebuildAt: {data.add(_delay)},
+              builder: (context) {
+                if (DateTime.now().difference(data) < _delay) {
+                  return Container();
+                }
+                return Container(
+                  width: double.infinity,
+                  height: 48,
+                  alignment: Alignment.center,
+                  color: Colors.red,
+                  child: Text(AppLocalizations.of(context)!.reconnecting),
+                );
+              },
+            );
+          },
+        ),
       ],
     );
   }

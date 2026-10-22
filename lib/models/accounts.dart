@@ -100,27 +100,33 @@ class AccountsModel extends ChangeNotifier {
 
   /// [primary] is the [DEFAULT] slot and [extra] the named slot for each
   /// provider.
-  AccountsModel(
-      {required AccountSlot primary, required Map<String, AccountSlot> extra})
-      : _primary = primary,
-        _extra = extra {
+  AccountsModel({
+    required AccountSlot primary,
+    required Map<String, AccountSlot> extra,
+  }) : _primary = primary,
+       _extra = extra {
     _slots = [
       _SlotState(primary),
-      for (final slot in extra.values) _SlotState(slot)
+      for (final slot in extra.values) _SlotState(slot),
     ];
     for (final state in _slots) {
-      state.authSubscription =
-          state.slot.authStateChanges().listen((user) => _onUser(state, user));
+      state.authSubscription = state.slot.authStateChanges().listen(
+        (user) => _onUser(state, user),
+      );
     }
   }
 
   /// The slots on the apps from [initializeApps].
   AccountsModel.fromFirebase()
-      : this(primary: FirebaseAccountSlot(Firebase.app()), extra: {
+    : this(
+        primary: FirebaseAccountSlot(Firebase.app()),
+        extra: {
           for (final provider in Providers.all)
-            provider:
-                FirebaseAccountSlot(Firebase.app(accountAppName(provider))),
-        });
+            provider: FirebaseAccountSlot(
+              Firebase.app(accountAppName(provider)),
+            ),
+        },
+      );
 
   /// Initializes the named app for each provider. [DEFAULT] must already be
   /// initialized.
@@ -128,11 +134,13 @@ class AccountsModel extends ChangeNotifier {
     final apps = <FirebaseApp>[];
     for (final provider in Providers.all) {
       final app = await Firebase.initializeApp(
-          name: accountAppName(provider),
-          options: DefaultFirebaseOptions.currentPlatform);
+        name: accountAppName(provider),
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       // like [DEFAULT]'s, these are only read as event streams.
-      FirebaseFirestore.instanceFor(app: app).settings =
-          const Settings(persistenceEnabled: false);
+      FirebaseFirestore.instanceFor(app: app).settings = const Settings(
+        persistenceEnabled: false,
+      );
       apps.add(app);
     }
     return apps;
@@ -146,14 +154,19 @@ class AccountsModel extends ChangeNotifier {
       _setLoaded(state);
       return;
     }
-    state.profileSubscription = state.slot.channelOf(user).listen((channel) {
-      state.channel = channel;
-      _setLoaded(state);
-    }, onError: (Object error) {
-      // without a readable profile, the user isn't a usable account.
-      state.channel = null;
-      _setLoaded(state);
-    });
+    state.profileSubscription = state.slot
+        .channelOf(user)
+        .listen(
+          (channel) {
+            state.channel = channel;
+            _setLoaded(state);
+          },
+          onError: (Object error) {
+            // without a readable profile, the user isn't a usable account.
+            state.channel = null;
+            _setLoaded(state);
+          },
+        );
   }
 
   void _setLoaded(_SlotState state) {

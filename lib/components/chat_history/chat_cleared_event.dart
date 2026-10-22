@@ -10,18 +10,21 @@ class ChatClearedEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Container(
-          color: Theme.of(context).dividerColor,
-          width: double.infinity,
-          child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(
-                AppLocalizations.of(context)!
-                    .chatCleared(model.timestamp, model.timestamp),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall,
-              )),
-        ));
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Container(
+        color: Theme.of(context).dividerColor,
+        width: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Text(
+            AppLocalizations.of(
+              context,
+            )!.chatCleared(model.timestamp, model.timestamp),
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      ),
+    );
   }
 }

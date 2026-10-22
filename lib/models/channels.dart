@@ -45,7 +45,8 @@ class Channel {
 
   Uri get profilePictureUrl {
     return Uri.parse(
-        "https://rtirl.com/pfp.png?provider=$provider&channelId=$channelId");
+      "https://rtirl.com/pfp.png?provider=$provider&channelId=$channelId",
+    );
   }
 
   ResilientNetworkImage get profilePicture {

@@ -10,10 +10,11 @@ import '../fakes/fake_chat.dart';
 import '../fakes/fake_tts_engine.dart';
 
 FakeChatMessage chat(String text, int i) => FakeChatMessage(
-    messageId: 'm$i',
-    timestamp: DateTime(2024),
-    author: FakeChatUser(userId: '$i', login: 'user$i'),
-    message: text);
+  messageId: 'm$i',
+  timestamp: DateTime(2024),
+  author: FakeChatUser(userId: '$i', login: 'user$i'),
+  message: text,
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -29,39 +30,47 @@ void main() {
     system = FakeTtsEngine();
     neural = FakeTtsEngine(availableVoices: packVoices(['en']));
     errors = [];
-    model = TtsModel.fromJson({'language': 'en'},
-        engine: system,
-        reportError: (error, _) => errors.add(error),
-        neuralIdleTimeout: const Duration(minutes: 5))
-      ..neuralEngine = neural
-      ..setMode(l10n, TtsMode.enabled);
+    model =
+        TtsModel.fromJson(
+            {'language': 'en'},
+            engine: system,
+            reportError: (error, _) => errors.add(error),
+            neuralIdleTimeout: const Duration(minutes: 5),
+          )
+          ..neuralEngine = neural
+          ..setMode(l10n, TtsMode.enabled);
   });
 
   tearDown(() => model.dispose());
 
   group('releaseNeuralModels', () {
-    test('waits for the message being read, then the next one reloads',
-        () async {
-      neural.holdSpeech = true;
-      model.say(l10n, chat('first', 1));
-      model.say(l10n, chat('second', 2));
-      await pumpEventQueue();
+    test(
+      'waits for the message being read, then the next one reloads',
+      () async {
+        neural.holdSpeech = true;
+        model.say(l10n, chat('first', 1));
+        model.say(l10n, chat('second', 2));
+        await pumpEventQueue();
 
-      var released = false;
-      model.releaseNeuralModels().then((_) => released = true);
-      model.releaseNeuralModels();
-      await pumpEventQueue();
-      expect((neural.releaseCount, neural.stopCount), (0, 0),
-          reason: 'not cut off');
+        var released = false;
+        model.releaseNeuralModels().then((_) => released = true);
+        model.releaseNeuralModels();
+        await pumpEventQueue();
+        expect(
+          (neural.releaseCount, neural.stopCount),
+          (0, 0),
+          reason: 'not cut off',
+        );
 
-      neural.finishSpeaking();
-      await pumpEventQueue();
-      expect((released, neural.releaseCount), (true, 1));
-      neural.finishSpeaking();
-      await pumpEventQueue();
-      expect(neural.spoken, hasLength(3), reason: 'nothing dropped');
-      expect(system.spoken, isEmpty);
-    });
+        neural.finishSpeaking();
+        await pumpEventQueue();
+        expect((released, neural.releaseCount), (true, 1));
+        neural.finishSpeaking();
+        await pumpEventQueue();
+        expect(neural.spoken, hasLength(3), reason: 'nothing dropped');
+        expect(system.spoken, isEmpty);
+      },
+    );
 
     test('a failed release is reported, not thrown', () async {
       await pumpEventQueue();
@@ -103,28 +112,34 @@ void main() {
     expect(neural.releaseCount, 1);
   });
 
-  test('releases after a quiet spell, and each message restarts the clock',
-      () async {
-    model.dispose();
-    model = TtsModel.fromJson({'language': 'en'},
-        engine: system, neuralIdleTimeout: const Duration(milliseconds: 200))
-      ..neuralEngine = neural
-      ..setMode(l10n, TtsMode.enabled);
-    await Future<void>.delayed(const Duration(milliseconds: 150));
-    model.say(l10n, chat('hello', 1));
-    await Future<void>.delayed(const Duration(milliseconds: 150));
-    expect(neural.releaseCount, 0);
-    await Future<void>.delayed(const Duration(milliseconds: 100));
-    expect(neural.releaseCount, 1);
-  });
+  test(
+    'releases after a quiet spell, and each message restarts the clock',
+    () async {
+      model.dispose();
+      model =
+          TtsModel.fromJson(
+              {'language': 'en'},
+              engine: system,
+              neuralIdleTimeout: const Duration(milliseconds: 200),
+            )
+            ..neuralEngine = neural
+            ..setMode(l10n, TtsMode.enabled);
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      model.say(l10n, chat('hello', 1));
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      expect(neural.releaseCount, 0);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect(neural.releaseCount, 1);
+    },
+  );
 
   group('fallback', () {
-    test(
-        'a model that fails to load reads with the system voices from then '
+    test('a model that fails to load reads with the system voices from then '
         'on, with a one-time notice', () async {
       await pumpEventQueue();
       neural.failNext = NeuralTtsLoadException(
-          PlatformException(code: 'load_failed', message: 'OOM'));
+        PlatformException(code: 'load_failed', message: 'OOM'),
+      );
       model.say(l10n, chat('first', 1));
       model.say(l10n, chat('second', 2));
       await pumpEventQueue();
@@ -138,8 +153,9 @@ void main() {
       errors.clear();
 
       // a new engine gets another chance.
-      model.neuralEngine =
-          FakeTtsEngine(availableVoices: neural.availableVoices);
+      model.neuralEngine = FakeTtsEngine(
+        availableVoices: neural.availableVoices,
+      );
       expect(model.neuralFallback, isNull);
     });
 
@@ -155,8 +171,9 @@ void main() {
 
     test('a low-memory device keeps the system voices for good', () async {
       model.fallBackToSystemVoices(NeuralTtsFallback.lowMemoryDevice);
-      model.neuralEngine =
-          FakeTtsEngine(availableVoices: neural.availableVoices);
+      model.neuralEngine = FakeTtsEngine(
+        availableVoices: neural.availableVoices,
+      );
       model.say(l10n, chat('hello', 1));
       await pumpEventQueue();
       expect(model.neuralFallback, NeuralTtsFallback.lowMemoryDevice);

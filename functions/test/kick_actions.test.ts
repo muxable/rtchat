@@ -41,7 +41,7 @@ describe("chat", () => {
   it("sends as the user and returns the document id", async () => {
     kickApi.mockResolvedValue({ data: { is_sent: true, message_id: "abc" } });
     await expect(sendKickMessage("uid", "123", "hello")).resolves.toBe(
-      "kick:abc"
+      "kick:abc",
     );
     expect(userToken).toHaveBeenCalledWith("uid", "kick");
     expect(kickApi.mock.calls[0][0]).toBe("user-token");
@@ -70,7 +70,7 @@ describe("chat", () => {
   it("requires a linked kick account", async () => {
     userToken.mockResolvedValue(null);
     await expect(sendKickMessage("uid", "1", "hi")).rejects.toThrow(
-      /not linked/
+      /not linked/,
     );
   });
 });
@@ -106,7 +106,7 @@ describe("moderation", () => {
     await expect(resolveKickUserId("some_user")).resolves.toBe("42");
     expect(kickApi).toHaveBeenCalledWith(
       "app-token",
-      "/channels?slug=some_user"
+      "/channels?slug=some_user",
     );
     kickApi.mockResolvedValue({ data: [] });
     await expect(resolveKickUserId("nobody")).rejects.toThrow(/not found/);

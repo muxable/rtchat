@@ -44,7 +44,7 @@ export class FirestoreStore extends Store {
 
   get = (
     sid: string,
-    callback: (err?: Error | null, session?: SessionData) => void
+    callback: (err?: Error | null, session?: SessionData) => void,
   ) => {
     this.db
       .collection(this.kind)
@@ -67,7 +67,7 @@ export class FirestoreStore extends Store {
   set = (
     sid: string,
     session: SessionData,
-    callback?: (err?: Error) => void
+    callback?: (err?: Error) => void,
   ) => {
     callback = callback || (() => {});
     let sessJson;
@@ -110,7 +110,7 @@ app.use(
     limit: 30,
     standardHeaders: "draft-7",
     legacyHeaders: false,
-  })
+  }),
 );
 
 app.use(
@@ -125,7 +125,7 @@ app.use(
     saveUninitialized: true,
     rolling: true,
     cookie: { maxAge: 60000, secure: "auto", httpOnly: true },
-  })
+  }),
 );
 
 declare module "express-session" {
@@ -182,7 +182,7 @@ app.get("/auth/twitch/redirect", (req, res) => {
       "user:read:follows",
       "user:read:moderated_channels",
       "user:read:subscriptions",
-      "user:write:chat"
+      "user:write:chat",
     ],
     state: state,
   });
@@ -226,7 +226,7 @@ async function completeSignIn(
   res: express.Response,
   provider: string,
   profile: { id: string },
-  token: object
+  token: object,
 ) {
   // check if this user exists already.
   const userIdRef = admin
@@ -267,7 +267,7 @@ async function completeSignIn(
     res.send("Logged in successfully.");
   } else {
     res.redirect(
-      "com.rtirl.chat://success?token=" + encodeURIComponent(customToken)
+      "com.rtirl.chat://success?token=" + encodeURIComponent(customToken),
     );
   }
 }
@@ -312,7 +312,7 @@ app.get("/auth/youtube/redirect", (req, res) => {
   req.session.companion = req.query.companion?.toString();
   req.session.state = state;
   const redirectUri = new AuthorizationCode(
-    oauthConfig("youtube")
+    oauthConfig("youtube"),
   ).authorizeURL({
     redirect_uri: `${HOST}/auth/youtube/callback`,
     scope: YOUTUBE_SCOPES,
@@ -333,13 +333,13 @@ type SignInError = "access_denied" | "sign_in_failed" | "no_youtube_channel";
 function signInError(
   req: express.Request,
   res: express.Response,
-  message: SignInError
+  message: SignInError,
 ) {
   if (req.session.companion) {
     res.status(400).type("text/plain").send(message);
   } else {
     res.redirect(
-      "com.rtirl.chat://error?message=" + encodeURIComponent(message)
+      "com.rtirl.chat://error?message=" + encodeURIComponent(message),
     );
   }
 }
@@ -356,7 +356,7 @@ app.get("/auth/youtube/callback", async (req, res) => {
       res,
       !req.query.error || req.query.error === "access_denied"
         ? "access_denied"
-        : "sign_in_failed"
+        : "sign_in_failed",
     );
     return;
   }
@@ -378,7 +378,7 @@ app.get("/auth/streamlabs/redirect", (req, res) => {
   req.session.token = req.query.token?.toString();
   req.session.provider = req.query.provider?.toString();
   const redirectUri = new AuthorizationCode(
-    STREAMLABS_OAUTH_CONFIG
+    STREAMLABS_OAUTH_CONFIG,
   ).authorizeURL({
     redirect_uri: `${HOST}/auth/streamlabs/callback`,
     scope: ["donations.read", "socket.token"],
@@ -409,7 +409,7 @@ app.get("/auth/streamlabs/callback", async (req, res) => {
     {
       code: String(req.query.code),
       redirect_uri: `${HOST}/auth/streamlabs/callback`,
-    }
+    },
   );
   const usernameDoc = await admin
     .firestore()
@@ -432,7 +432,7 @@ app.get("/auth/streamelements/redirect", (req, res) => {
   req.session.token = req.query.token?.toString();
   req.session.provider = req.query.provider?.toString();
   const redirectUri = new AuthorizationCode(
-    STREAMELEMENTS_OAUTH_CONFIG
+    STREAMELEMENTS_OAUTH_CONFIG,
   ).authorizeURL({
     redirect_uri: `${HOST}/auth/streamelements/callback`,
     scope: ["tips:read"],
@@ -487,7 +487,7 @@ app.get("/auth/streamelements/callback", async (req, res) => {
         token: JSON.stringify({ ...json, expires_at: expiresAt.toISOString() }),
         channelId,
       },
-      { merge: true }
+      { merge: true },
     );
 
   res.redirect("com.rtirl.chat://success?token=1");

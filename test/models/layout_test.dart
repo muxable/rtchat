@@ -12,11 +12,13 @@ void main() {
   });
 
   testWidgets("LayoutModel json roundtrip", (tester) async {
-    tester.binding.defaultBinaryMessenger
-        .setMockMethodCallHandler(SystemChannels.platform, (methodCall) {
-      log.add(methodCall);
-      return null;
-    });
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (methodCall) {
+        log.add(methodCall);
+        return null;
+      },
+    );
 
     final model = LayoutModel.fromJson({});
 
@@ -27,11 +29,13 @@ void main() {
   });
 
   testWidgets("setting orientation propagates to system", (tester) async {
-    tester.binding.defaultBinaryMessenger
-        .setMockMethodCallHandler(SystemChannels.platform, (methodCall) {
-      log.add(methodCall);
-      return null;
-    });
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (methodCall) {
+        log.add(methodCall);
+        return null;
+      },
+    );
 
     final model = LayoutModel.fromJson({});
 
@@ -41,36 +45,36 @@ void main() {
 
     expect(log, hasLength(1));
     expect(
-        log.last,
-        isMethodCall(
-          'SystemChrome.setPreferredOrientations',
-          arguments: [
-            "DeviceOrientation.portraitUp",
-            "DeviceOrientation.portraitDown"
-          ],
-        ));
+      log.last,
+      isMethodCall(
+        'SystemChrome.setPreferredOrientations',
+        arguments: [
+          "DeviceOrientation.portraitUp",
+          "DeviceOrientation.portraitDown",
+        ],
+      ),
+    );
 
     model.preferredOrientation = PreferredOrientation.landscape;
 
     expect(log, hasLength(2));
     expect(
-        log.last,
-        isMethodCall(
-          'SystemChrome.setPreferredOrientations',
-          arguments: [
-            "DeviceOrientation.landscapeLeft",
-            "DeviceOrientation.landscapeRight"
-          ],
-        ));
+      log.last,
+      isMethodCall(
+        'SystemChrome.setPreferredOrientations',
+        arguments: [
+          "DeviceOrientation.landscapeLeft",
+          "DeviceOrientation.landscapeRight",
+        ],
+      ),
+    );
 
     model.preferredOrientation = PreferredOrientation.system;
 
     expect(log, hasLength(3));
     expect(
-        log.last,
-        isMethodCall(
-          'SystemChrome.setPreferredOrientations',
-          arguments: [],
-        ));
+      log.last,
+      isMethodCall('SystemChrome.setPreferredOrientations', arguments: []),
+    );
   });
 }

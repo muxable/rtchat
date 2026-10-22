@@ -10,7 +10,7 @@ async function userToken(uid: string) {
   if (!token) {
     throw new functions.https.HttpsError(
       "failed-precondition",
-      "kick account not linked"
+      "kick account not linked",
     );
   }
   return token;
@@ -32,7 +32,7 @@ export async function sendKickMessage(
   uid: string,
   broadcasterId: string,
   message: string,
-  replyToMessageId?: string
+  replyToMessageId?: string,
 ) {
   const response = await kickApi(await userToken(uid), "/chat", {
     method: "POST",
@@ -52,7 +52,7 @@ export async function deleteKickMessage(uid: string, messageId: string) {
   await kickApi(
     await userToken(uid),
     `/chat/${encodeURIComponent(toKickMessageId(messageId))}`,
-    { method: "DELETE" }
+    { method: "DELETE" },
   );
 }
 
@@ -65,7 +65,7 @@ export async function resolveKickUserId(login: string) {
   }
   const response = await kickApi(
     String(token.token.access_token),
-    `/channels?slug=${encodeURIComponent(login)}`
+    `/channels?slug=${encodeURIComponent(login)}`,
   );
   const id = response?.data?.[0]?.broadcaster_user_id;
   if (!id) {
@@ -78,7 +78,7 @@ export async function banKickUser(
   uid: string,
   broadcasterId: string,
   userId: string,
-  options: { durationSeconds?: number; reason?: string } = {}
+  options: { durationSeconds?: number; reason?: string } = {},
 ) {
   await kickApi(await userToken(uid), "/moderation/bans", {
     method: "POST",
@@ -96,7 +96,7 @@ export async function banKickUser(
 export async function unbanKickUser(
   uid: string,
   broadcasterId: string,
-  userId: string
+  userId: string,
 ) {
   await kickApi(await userToken(uid), "/moderation/bans", {
     method: "DELETE",

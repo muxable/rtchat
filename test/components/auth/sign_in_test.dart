@@ -6,8 +6,11 @@ import '../l10n.dart';
 
 void main() {
   Future<void> pump(WidgetTester tester, Widget button) async {
-    await tester.pumpWidget(MaterialApp(
-        home: TestLocalizations(child: Scaffold(body: Center(child: button)))));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TestLocalizations(child: Scaffold(body: Center(child: button))),
+      ),
+    );
     await tester.pumpAndSettle();
   }
 

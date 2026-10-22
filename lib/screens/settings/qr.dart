@@ -12,8 +12,10 @@ class QRDisplay extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     final isLandscape = size.width > size.height;
 
-    return Selector<UserModel,
-        ({String displayName, ImageProvider? profilePicture})>(
+    return Selector<
+      UserModel,
+      ({String displayName, ImageProvider? profilePicture})
+    >(
       selector: (_, userModel) {
         final channel = userModel.userChannel;
 

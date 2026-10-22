@@ -28,8 +28,8 @@ class VoicePacksModel extends ChangeNotifier {
   var _isDisposed = false;
 
   VoicePacksModel(this.repository, {bool? isSupported})
-      : isSupported =
-            repository != null && (isSupported ?? platformSupportsNeuralVoices);
+    : isSupported =
+          repository != null && (isSupported ?? platformSupportsNeuralVoices);
 
   /// Whether this platform reads chat with neural voice packs: Android and
   /// iOS have a native engine for them.
@@ -130,12 +130,17 @@ class VoicePacksModel extends ChangeNotifier {
 
   void _follow(VoicePackInstallTask task) {
     if (!_followed.add(task)) return;
-    task.done.then((_) {}, onError: (Object e) {
-      if (e is! VoicePackCancelledException) _errors[task.pack.id] = e;
-    }).whenComplete(() {
-      _followed.remove(task);
-      return refresh();
-    });
+    task.done
+        .then(
+          (_) {},
+          onError: (Object e) {
+            if (e is! VoicePackCancelledException) _errors[task.pack.id] = e;
+          },
+        )
+        .whenComplete(() {
+          _followed.remove(task);
+          return refresh();
+        });
   }
 
   void _notify() {

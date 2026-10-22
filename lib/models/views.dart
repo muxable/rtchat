@@ -19,11 +19,14 @@ bool _sameChannelsAndMetadata(List<Channel> a, List<Channel> b) {
 }
 
 List<Channel> _channelsFromJson(dynamic json) => [
-      for (final channel in (json as List?) ?? const [])
-        Channel(channel['provider'], channel['channelId'],
-            channel['displayName'] ?? '',
-            language: channel['language']),
-    ];
+  for (final channel in (json as List?) ?? const [])
+    Channel(
+      channel['provider'],
+      channel['channelId'],
+      channel['displayName'] ?? '',
+      language: channel['language'],
+    ),
+];
 
 /// [channels] without any after the first on each provider.
 List<Channel> _onePerProvider(List<Channel> channels) {
@@ -37,14 +40,18 @@ List<Channel> _onePerProvider(List<Channel> channels) {
 /// The channel in [channels] on [channel]'s provider, which adding [channel]
 /// replaces. An account is bound to one provider, so at most one channel per
 /// provider is shown at a time.
-Channel? channelReplacedBy(List<Channel> channels, Channel channel) => channels
-    .where((other) => other.provider == channel.provider && other != channel)
-    .firstOrNull;
+Channel? channelReplacedBy(List<Channel> channels, Channel channel) =>
+    channels
+        .where(
+          (other) => other.provider == channel.provider && other != channel,
+        )
+        .firstOrNull;
 
 /// [channels] with [channel] added, in place of the one on its provider.
 List<Channel> _withChannel(List<Channel> channels, Channel channel) {
-  final index =
-      channels.indexWhere((other) => other.provider == channel.provider);
+  final index = channels.indexWhere(
+    (other) => other.provider == channel.provider,
+  );
   if (index == -1) {
     return [...channels, channel];
   }
@@ -74,8 +81,10 @@ class ViewsModel extends ChangeNotifier {
   /// Keeps the user's own channel in sync with the signed-in account.
   void update(UserModel userModel) {
     final channel = userModel.userChannel;
-    if (_sameChannelsAndMetadata([if (channel != null) channel],
-        [if (_userChannel != null) _userChannel!])) {
+    if (_sameChannelsAndMetadata(
+      [if (channel != null) channel],
+      [if (_userChannel != null) _userChannel!],
+    )) {
       return;
     }
     _userChannel = channel;
@@ -83,9 +92,10 @@ class ViewsModel extends ChangeNotifier {
   }
 
   /// The channels the app opens with.
-  List<Channel> get defaultChannels => _defaultChannels.isNotEmpty
-      ? List.unmodifiable(_defaultChannels)
-      : List.unmodifiable([if (_userChannel != null) _userChannel!]);
+  List<Channel> get defaultChannels =>
+      _defaultChannels.isNotEmpty
+          ? List.unmodifiable(_defaultChannels)
+          : List.unmodifiable([if (_userChannel != null) _userChannel!]);
 
   /// Whether default channels were picked, rather than being the user's own.
   bool get hasCustomDefaultChannels => _defaultChannels.isNotEmpty;
@@ -161,11 +171,12 @@ class ViewsModel extends ChangeNotifier {
   /// The channel messages are sent to: the first one shown on [account]'s
   /// provider, as an account can only post on its own provider. Null if no
   /// channel shown is on it, or there's no account.
-  Channel? sendChannel(Channel? account) => account == null
-      ? null
-      : channels
-          .where((channel) => channel.provider == account.provider)
-          .firstOrNull;
+  Channel? sendChannel(Channel? account) =>
+      account == null
+          ? null
+          : channels
+              .where((channel) => channel.provider == account.provider)
+              .firstOrNull;
 
   /// The channel whose stream is previewed: the one picked, while it's
   /// shown, otherwise the first channel.
@@ -193,11 +204,12 @@ class ViewsModel extends ChangeNotifier {
   // with several channels on one provider keep only the first of them.
   ViewsModel.fromJson(Map<String, dynamic> json) {
     _defaultChannels = List.unmodifiable(
-        _onePerProvider(_channelsFromJson(json['defaultChannels'])));
+      _onePerProvider(_channelsFromJson(json['defaultChannels'])),
+    );
   }
 
   Map<String, dynamic> toJson() => {
-        'defaultChannels':
-            _defaultChannels.map((channel) => channel.toJson()).toList(),
-      };
+    'defaultChannels':
+        _defaultChannels.map((channel) => channel.toJson()).toList(),
+  };
 }

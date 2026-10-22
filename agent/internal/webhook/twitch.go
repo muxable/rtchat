@@ -15,11 +15,15 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // twitchStore keeps notification mapping independent of Firestore I/O.
 type twitchStore interface {
 	Set(context.Context, string, map[string]interface{}, bool) error
+	// Create reports false when the document already exists.
+	Create(context.Context, string, map[string]interface{}) (bool, error)
 	Update(context.Context, string, map[string]interface{}) error
 	mergeBatch(context.Context, []twitchDocument) error
 }
@@ -33,6 +37,14 @@ func (s twitchFirestoreStore) Set(ctx context.Context, path string, data map[str
 	}
 	_, err := s.client.Doc(path).Set(ctx, data, options...)
 	return err
+}
+
+func (s twitchFirestoreStore) Create(ctx context.Context, path string, data map[string]interface{}) (bool, error) {
+	_, err := s.client.Doc(path).Create(ctx, data)
+	if status.Code(err) == codes.AlreadyExists {
+		return false, nil
+	}
+	return err == nil, err
 }
 
 func (s twitchFirestoreStore) Update(ctx context.Context, path string, data map[string]interface{}) error {
@@ -103,10 +115,12 @@ func twitchFirestoreValue(value interface{}) interface{} {
 }
 
 type twitchDocument struct {
-	Path        string
-	Data        map[string]interface{}
-	Merge       bool
-	Update      bool
+	Path   string
+	Data   map[string]interface{}
+	Merge  bool
+	Update bool
+	// Create skips the notification's remaining documents if this one exists.
+	Create      bool
 	IgnoreError bool
 }
 
@@ -130,8 +144,19 @@ func mapTwitchNotification(payload twitchPayload, messageID string, timestamp, n
 	}
 	channelID := "twitch:" + id
 	channelPath := "channels/" + channelID
+	messagePath := channelPath + "/messages/twitch:" + messageID
+	// Twitch can send several notifications, each with its own message id, for
+	// one follower (double clicks, refollows), so follows are keyed by follower
+	// and only the first is recorded until its message expires.
+	// https://github.com/twitchdev/issues/issues/1224
+	followerID, _ := payload.Event["user_id"].(string)
+	isFollow := payload.Subscription.Type == "channel.follow" && followerID != "" && !strings.Contains(followerID, "/")
+	if isFollow {
+		messagePath = channelPath + "/messages/twitch:follow:" + followerID
+	}
 	notification := twitchNotification{Documents: []twitchDocument{{
-		Path: channelPath + "/messages/twitch:" + messageID,
+		Path:   messagePath,
+		Create: isFollow,
 		Data: map[string]interface{}{
 			"channelId": channelID, "type": payload.Subscription.Type,
 			// JavaScript Date.parse only retains millisecond precision.
@@ -273,7 +298,12 @@ func (h *TwitchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *TwitchHandler) writeNotification(ctx context.Context, notification twitchNotification) error {
 	for _, doc := range notification.Documents {
 		var err error
-		if doc.Update {
+		if doc.Create {
+			var created bool
+			if created, err = h.Store.Create(ctx, doc.Path, doc.Data); err == nil && !created {
+				return nil
+			}
+		} else if doc.Update {
 			err = h.Store.Update(ctx, doc.Path, doc.Data)
 		} else {
 			err = h.Store.Set(ctx, doc.Path, doc.Data, doc.Merge)

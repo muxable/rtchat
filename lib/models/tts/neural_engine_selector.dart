@@ -33,9 +33,9 @@ class NeuralEngineSelector {
     required TtsErrorReporter reportError,
     NeuralEngineFactory? createEngine,
     Future<DeviceMemory?> Function()? deviceMemory,
-  })  : _createEngine = createEngine ?? NeuralTtsEngine.new,
-        _reportError = reportError,
-        _deviceMemory = deviceMemory ?? OnnxTtsPlatform.instance.deviceMemory;
+  }) : _createEngine = createEngine ?? NeuralTtsEngine.new,
+       _reportError = reportError,
+       _deviceMemory = deviceMemory ?? OnnxTtsPlatform.instance.deviceMemory;
 
   /// Checks the device's memory, then picks the engine now and again
   /// whenever the installed packs change.
@@ -67,17 +67,20 @@ class NeuralEngineSelector {
 
   /// Looks at the installed packs again and swaps the engine if the pack to
   /// speak with changed.
-  Future<void> refresh() => _refreshing =
-      _refreshing.then((_) => _refresh()).catchError(_reportError);
+  Future<void> refresh() =>
+      _refreshing = _refreshing
+          .then((_) => _refresh())
+          .catchError(_reportError);
 
   Future<void> _refresh() async {
     if (_isDisposed) return;
     final pack = choose((await repository.installedPacks()).values);
     if (_isDisposed) return;
-    final installed = pack == null
-        ? null
-        : '${pack.id}@${pack.pack.version}@${pack.directory}@'
-            '${pack.installedAt.toIso8601String()}';
+    final installed =
+        pack == null
+            ? null
+            : '${pack.id}@${pack.pack.version}@${pack.directory}@'
+                '${pack.installedAt.toIso8601String()}';
     if (installed == _installed) return;
     _installed = installed;
     TtsEngine? engine;

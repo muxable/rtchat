@@ -18,32 +18,36 @@ class QuicklinksListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<QuickLinksModel>(
-        builder: (context, quickLinksModel, child) {
-      return Column(
-        children: quickLinksModel.sources.map((source) {
-          final url = source.url.toString();
-          return ListTile(
-            leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
-            title: Text(source.label),
-            subtitle: Text(
-              url,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            onTap: () => openUrl(source.url),
-            onLongPress: () async {
-              Navigator.pop(context);
-              await Clipboard.setData(ClipboardData(text: url));
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content:
-                        Text(AppLocalizations.of(context)!.copiedToClipboard)),
-              );
-            },
-          );
-        }).toList(),
-      );
-    });
+      builder: (context, quickLinksModel, child) {
+        return Column(
+          children:
+              quickLinksModel.sources.map((source) {
+                final url = source.url.toString();
+                return ListTile(
+                  leading: Icon(quickLinksIconsMap[source.icon] ?? Icons.link),
+                  title: Text(source.label),
+                  subtitle: Text(
+                    url,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onTap: () => openUrl(source.url),
+                  onLongPress: () async {
+                    Navigator.pop(context);
+                    await Clipboard.setData(ClipboardData(text: url));
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          AppLocalizations.of(context)!.copiedToClipboard,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }).toList(),
+        );
+      },
+    );
   }
 }

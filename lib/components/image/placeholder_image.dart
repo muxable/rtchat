@@ -19,7 +19,9 @@ class PlaceholderImage extends ImageProvider<PlaceholderImage> {
 
   @override
   ImageStreamCompleter loadImage(
-      PlaceholderImage key, ImageDecoderCallback decode) {
+    PlaceholderImage key,
+    ImageDecoderCallback decode,
+  ) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiFrameImageStreamCompleter(
       chunkEvents: chunkEvents.stream,
@@ -33,7 +35,8 @@ class PlaceholderImage extends ImageProvider<PlaceholderImage> {
   InformationCollector? _imageStreamInformationCollector(PlaceholderImage key) {
     InformationCollector? collector;
     assert(() {
-      collector = () => <DiagnosticsNode>[
+      collector =
+          () => <DiagnosticsNode>[
             DiagnosticsProperty<ImageProvider>('Image provider', this),
             DiagnosticsProperty<PlaceholderImage>('Image key', key),
           ];
@@ -43,9 +46,10 @@ class PlaceholderImage extends ImageProvider<PlaceholderImage> {
   }
 
   static Future<Codec> _loadAsync(
-      PlaceholderImage key,
-      StreamController<ImageChunkEvent> chunkEvents,
-      ImageDecoderCallback decode) async {
+    PlaceholderImage key,
+    StreamController<ImageChunkEvent> chunkEvents,
+    ImageDecoderCallback decode,
+  ) async {
     final temp = await getTemporaryDirectory();
     final cacheFile = File('${temp.path}/${key.hash}');
     final etagFile = File('${temp.path}/${key.hash}.etag');
@@ -56,12 +60,15 @@ class PlaceholderImage extends ImageProvider<PlaceholderImage> {
       try {
         final bytes = await cacheFile.readAsBytes();
         if (bytes.isNotEmpty) {
-          decodedCache =
-              await decode(await ImmutableBuffer.fromUint8List(bytes));
-          chunkEvents.add(ImageChunkEvent(
-            cumulativeBytesLoaded: bytes.lengthInBytes,
-            expectedTotalBytes: bytes.lengthInBytes,
-          ));
+          decodedCache = await decode(
+            await ImmutableBuffer.fromUint8List(bytes),
+          );
+          chunkEvents.add(
+            ImageChunkEvent(
+              cumulativeBytesLoaded: bytes.lengthInBytes,
+              expectedTotalBytes: bytes.lengthInBytes,
+            ),
+          );
           chunkEvents.close();
           return decodedCache;
         }

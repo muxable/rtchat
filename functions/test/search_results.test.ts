@@ -28,7 +28,7 @@ describe("exactMatchesFirst", () => {
         results[1],
         results[0],
       ]);
-    }
+    },
   );
 
   it("keeps the order of the other results", () => {

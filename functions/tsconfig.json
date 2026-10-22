@@ -8,12 +8,8 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
-    "lib": [
-      "es2019"
-    ]
+    "lib": ["es2019"]
   },
   "compileOnSave": true,
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

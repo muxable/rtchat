@@ -83,6 +83,7 @@ class FakeSlots {
 
 /// A signed-in account on [channel], for tests that don't need slots.
 Account fakeAccount(Channel channel, {String? appName, String? uid}) => Account(
-    app: FakeFirebaseApp(appName ?? accountAppName(channel.provider)),
-    user: FakeUser(uid ?? '${channel.provider}-user'),
-    channel: channel);
+  app: FakeFirebaseApp(appName ?? accountAppName(channel.provider)),
+  user: FakeUser(uid ?? '${channel.provider}-user'),
+  channel: channel,
+);

@@ -29,8 +29,11 @@ class RebuildableWidget extends StatefulWidget {
   final Widget Function(BuildContext) builder;
   final Set<DateTime> rebuildAt;
 
-  const RebuildableWidget(
-      {super.key, required this.builder, required this.rebuildAt});
+  const RebuildableWidget({
+    super.key,
+    required this.builder,
+    required this.rebuildAt,
+  });
 
   @override
   State<RebuildableWidget> createState() => _RebuildableWidgetState();
@@ -65,12 +68,13 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
 
   void _setTimers() {
     final now = DateTime.now();
-    timers = widget.rebuildAt.expand((dateTime) sync* {
-      final duration = dateTime.difference(now);
-      if (!duration.isNegative) {
-        yield Timer(duration, () => setState(() {}));
-      }
-    }).toSet();
+    timers =
+        widget.rebuildAt.expand((dateTime) sync* {
+          final duration = dateTime.difference(now);
+          if (!duration.isNegative) {
+            yield Timer(duration, () => setState(() {}));
+          }
+        }).toSet();
   }
 
   void _clearTimers() {
@@ -86,9 +90,10 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
 }
 
 DateTime? _getExpiration(
-    MessageModel model,
-    EventSubConfigurationModel eventSubConfigurationModel,
-    MessagesModel messagesModel) {
+  MessageModel model,
+  EventSubConfigurationModel eventSubConfigurationModel,
+  MessagesModel messagesModel,
+) {
   if (model is TwitchRaidEventModel) {
     final raidEventConfig = eventSubConfigurationModel.raidEventConfig;
     return raidEventConfig.eventDuration > Duration.zero
@@ -127,7 +132,7 @@ DateTime? _getExpiration(
         eventSubConfigurationModel.channelPointRedemptionEventConfig;
     final unfulfilledDuration =
         channelPointRedemptionEventConfig.eventDuration +
-            channelPointRedemptionEventConfig.unfulfilledAdditionalDuration;
+        channelPointRedemptionEventConfig.unfulfilledAdditionalDuration;
 
     if (model.status == TwitchChannelPointRedemptionStatus.unfulfilled &&
         unfulfilledDuration > Duration.zero) {
@@ -135,8 +140,9 @@ DateTime? _getExpiration(
     }
     if (model.status == TwitchChannelPointRedemptionStatus.fulfilled &&
         channelPointRedemptionEventConfig.eventDuration > Duration.zero) {
-      return model.timestamp
-          .add(channelPointRedemptionEventConfig.eventDuration);
+      return model.timestamp.add(
+        channelPointRedemptionEventConfig.eventDuration,
+      );
     }
     return null;
   } else if (model is TwitchHypeTrainEventModel) {
@@ -166,8 +172,11 @@ class _ScrollToBottomWidget extends StatelessWidget {
   final void Function() onPressed;
   final Widget? child;
 
-  const _ScrollToBottomWidget(
-      {required this.show, required this.onPressed, required this.child});
+  const _ScrollToBottomWidget({
+    required this.show,
+    required this.onPressed,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -177,18 +186,17 @@ class _ScrollToBottomWidget extends StatelessWidget {
       curve: Curves.easeOut,
       child: Center(
         child: ElevatedButton(
-            onPressed: onPressed,
-            style: ElevatedButton.styleFrom(
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(32))),
-              padding: const EdgeInsets.all(16),
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(32)),
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.arrow_downward),
-                child ?? Container(),
-              ],
-            )),
+            padding: const EdgeInsets.all(16),
+          ),
+          child: Row(
+            children: [const Icon(Icons.arrow_downward), child ?? Container()],
+          ),
+        ),
       ),
     );
   }
@@ -257,17 +265,19 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
       await model.pullMoreMessages();
       _refreshPending = false;
       if (_showScrollNotification && model.messages.length > 5000) {
-        messenger.showSnackBar(SnackBar(
-          content: Text(localizations.longScrollNotification),
-          action: SnackBarAction(
-            label: localizations.stfu,
-            onPressed: () {
-              setState(() {
-                _showScrollNotification = false;
-              });
-            },
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(localizations.longScrollNotification),
+            action: SnackBarAction(
+              label: localizations.stfu,
+              onPressed: () {
+                setState(() {
+                  _showScrollNotification = false;
+                });
+              },
+            ),
           ),
-        ));
+        );
       }
     }
     final value = _controller.position.atEdge && _controller.offset == 0;
@@ -284,174 +294,210 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     return Stack(
       alignment: AlignmentDirectional.topCenter,
       children: [
-        Consumer2<MessagesModel, EventSubConfigurationModel>(builder:
-            (context, messagesModel, eventSubConfigurationModel, child) {
-          var messages = messagesModel.messages.reversed.toList();
-          _lastMessage = messages.isEmpty ? null : messages.first;
-          if (messages.isEmpty) {
-            return FutureBuilder(
-              future: MessagesAdapter.instance.hasMessages(widget.channel),
-              builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-                if (snapshot.hasData && snapshot.data == false) {
-                  return Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        AppLocalizations.of(context)!.noMessagesEmptyState,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+        Consumer2<MessagesModel, EventSubConfigurationModel>(
+          builder: (context, messagesModel, eventSubConfigurationModel, child) {
+            var messages = messagesModel.messages.reversed.toList();
+            _lastMessage = messages.isEmpty ? null : messages.first;
+            if (messages.isEmpty) {
+              return FutureBuilder(
+                future: MessagesAdapter.instance.hasMessages(widget.channel),
+                builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                  if (snapshot.hasData && snapshot.data == false) {
+                    return Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          AppLocalizations.of(context)!.noMessagesEmptyState,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleLarge?.copyWith(
                             color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
-                  );
-                }
-                return const SizedBox();
-              },
-            );
-          }
-          var dropped = 0;
-          if (_pauseAt != null) {
-            final index = messages.indexOf(_pauseAt!);
-            if (index != -1) {
-              dropped = index;
-              messages = messages.sublist(index);
+                    );
+                  }
+                  return const SizedBox();
+                },
+              );
             }
-          } else {
-            messagesModel.pruneMessages();
-          }
-          final expirations = messages
-              .map((message) => _getExpiration(
-                  message, eventSubConfigurationModel, messagesModel))
-              .toList();
-          return Stack(alignment: Alignment.topCenter, children: [
-            RebuildableWidget(
-                rebuildAt: expirations.whereType<DateTime>().toSet(),
-                builder: (context) {
-                  final now = DateTime.now();
-                  final oneSecondAgo = now.subtract(const Duration(seconds: 1));
-                  return ReverseRefreshIndicator(
-                    key: _refreshIndicatorKey,
-                    onRefresh: () =>
-                        MessagesAdapter.instance.subscribe(widget.channel),
-                    // Pull from top to show refresh indicator.
-                    child: PinnableMessageScrollView(
-                      vsync: this,
-                      controller: _controller,
-                      itemBuilder: (index) => StyleModelTheme(
-                          key: Key(messages[index].messageId),
-                          child: Builder(builder: (context) {
-                            var message = messages[index];
-                            // if the message is a TwitchFollowEventModel, we want to merge adjacents.
-                            // return Container() if the message is not the first and a merged model
-                            // if it is the first. keep in mind that the list is reversed.
-                            if (message is TwitchFollowEventModel) {
-                              final merged =
-                                  TwitchFollowEventModel.mergeAdjacent(
-                                      messages, index);
-                              if (merged == null) {
-                                return Container();
-                              }
-                              message = merged;
-                            }
-                            // twitch will often send multiple subscription messages in a row.
-                            // if we see them, suppress the less informative ones.
-                            if (message is TwitchSubscriptionEventModel) {
-                              // if the next or prev message is a TwitchSubscriptionMessageEventModel by the same user and tier, ignore this one.
-                              if (index != messages.length - 1) {
-                                final next = messages[index + 1];
-                                if (next
-                                        is TwitchSubscriptionMessageEventModel &&
-                                    next.subscriberUserName ==
-                                        message.subscriberUserName &&
-                                    next.tier == message.tier) {
-                                  return Container();
-                                }
-                              }
-                              if (index > 0) {
-                                final prev = messages[index - 1];
-                                if (prev
-                                        is TwitchSubscriptionMessageEventModel &&
-                                    prev.subscriberUserName ==
-                                        message.subscriberUserName &&
-                                    prev.tier == message.tier) {
-                                  return Container();
-                                }
-                              }
-                            }
-                            // in a merged view, actions like shoutouts go to
-                            // the channel the message came from.
-                            final source = message.channel;
-                            final chatMessage = ChatHistoryMessage(
-                                message: message,
-                                channel: source ?? widget.channel);
-                            final Widget messageWidget =
-                                messagesModel.channels.length > 1 &&
-                                        source != null
-                                    ? ChannelAttribution(
-                                        provider: source.provider,
-                                        child: chatMessage)
-                                    : chatMessage;
-                            final showSeparator = messagesModel.separators
-                                .contains(messages.length - index - 1);
-                            // only show separators after the first 50.
-                            if (showSeparator && index > 50) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SeparatorWidget(
-                                      widget.channel, message.timestamp),
-                                  messageWidget
-                                ],
-                              );
-                            }
-                            return messageWidget;
-                          })),
-                      findChildIndexCallback: (key) => messages.indexWhere(
-                          (element) => key == Key(element.messageId)),
-                      isPinnedBuilder: (index) {
-                        final expiration = expirations[index];
-                        if (expiration == null ||
-                            // if the message is too expired, it can't be pinned again.
-                            // note: we track unpinned separately to permit animations.
-                            expiration.isBefore(oneSecondAgo)) {
-                          return PinState.notPinnable;
-                        }
-                        return expiration.isAfter(now)
-                            ? PinState.pinned
-                            : PinState.unpinned;
-                      },
-                      count: messages.length,
-                    ),
-                  );
-                }),
-            _ScrollToBottomWidget(
-              show: !_atBottom,
-              onPressed: () async {
-                updateScrollPosition();
-                if (_controller.offset < 2500) {
-                  await _controller.animateTo(0,
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeInOut);
-                } else {
-                  // jump instead, it's a better user experience.
-                  _controller.jumpTo(0);
-                }
-              },
-              child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: dropped == 0 ? 0 : 150,
-                  child: dropped == 0
-                      ? null
-                      : Text(
-                          AppLocalizations.of(context)!
-                              .newMessageCount(dropped),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                        )),
-            ),
-          ]);
-        }),
+            var dropped = 0;
+            if (_pauseAt != null) {
+              final index = messages.indexOf(_pauseAt!);
+              if (index != -1) {
+                dropped = index;
+                messages = messages.sublist(index);
+              }
+            } else {
+              messagesModel.pruneMessages();
+            }
+            final expirations =
+                messages
+                    .map(
+                      (message) => _getExpiration(
+                        message,
+                        eventSubConfigurationModel,
+                        messagesModel,
+                      ),
+                    )
+                    .toList();
+            return Stack(
+              alignment: Alignment.topCenter,
+              children: [
+                RebuildableWidget(
+                  rebuildAt: expirations.whereType<DateTime>().toSet(),
+                  builder: (context) {
+                    final now = DateTime.now();
+                    final oneSecondAgo = now.subtract(
+                      const Duration(seconds: 1),
+                    );
+                    return ReverseRefreshIndicator(
+                      key: _refreshIndicatorKey,
+                      onRefresh:
+                          () => MessagesAdapter.instance.subscribe(
+                            widget.channel,
+                          ),
+                      // Pull from top to show refresh indicator.
+                      child: PinnableMessageScrollView(
+                        vsync: this,
+                        controller: _controller,
+                        itemBuilder:
+                            (index) => StyleModelTheme(
+                              key: Key(messages[index].messageId),
+                              child: Builder(
+                                builder: (context) {
+                                  var message = messages[index];
+                                  // if the message is a TwitchFollowEventModel, we want to merge adjacents.
+                                  // return Container() if the message is not the first and a merged model
+                                  // if it is the first. keep in mind that the list is reversed.
+                                  if (message is TwitchFollowEventModel) {
+                                    final merged =
+                                        TwitchFollowEventModel.mergeAdjacent(
+                                          messages,
+                                          index,
+                                        );
+                                    if (merged == null) {
+                                      return Container();
+                                    }
+                                    message = merged;
+                                  }
+                                  // twitch will often send multiple subscription messages in a row.
+                                  // if we see them, suppress the less informative ones.
+                                  if (message is TwitchSubscriptionEventModel) {
+                                    // if the next or prev message is a TwitchSubscriptionMessageEventModel by the same user and tier, ignore this one.
+                                    if (index != messages.length - 1) {
+                                      final next = messages[index + 1];
+                                      if (next
+                                              is TwitchSubscriptionMessageEventModel &&
+                                          next.subscriberUserName ==
+                                              message.subscriberUserName &&
+                                          next.tier == message.tier) {
+                                        return Container();
+                                      }
+                                    }
+                                    if (index > 0) {
+                                      final prev = messages[index - 1];
+                                      if (prev
+                                              is TwitchSubscriptionMessageEventModel &&
+                                          prev.subscriberUserName ==
+                                              message.subscriberUserName &&
+                                          prev.tier == message.tier) {
+                                        return Container();
+                                      }
+                                    }
+                                  }
+                                  // in a merged view, actions like shoutouts go to
+                                  // the channel the message came from.
+                                  final source = message.channel;
+                                  final chatMessage = ChatHistoryMessage(
+                                    message: message,
+                                    channel: source ?? widget.channel,
+                                  );
+                                  final Widget messageWidget =
+                                      messagesModel.channels.length > 1 &&
+                                              source != null
+                                          ? ChannelAttribution(
+                                            provider: source.provider,
+                                            child: chatMessage,
+                                          )
+                                          : chatMessage;
+                                  final showSeparator = messagesModel.separators
+                                      .contains(messages.length - index - 1);
+                                  // only show separators after the first 50.
+                                  if (showSeparator && index > 50) {
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SeparatorWidget(
+                                          widget.channel,
+                                          message.timestamp,
+                                        ),
+                                        messageWidget,
+                                      ],
+                                    );
+                                  }
+                                  return messageWidget;
+                                },
+                              ),
+                            ),
+                        findChildIndexCallback:
+                            (key) => messages.indexWhere(
+                              (element) => key == Key(element.messageId),
+                            ),
+                        isPinnedBuilder: (index) {
+                          final expiration = expirations[index];
+                          if (expiration == null ||
+                              // if the message is too expired, it can't be pinned again.
+                              // note: we track unpinned separately to permit animations.
+                              expiration.isBefore(oneSecondAgo)) {
+                            return PinState.notPinnable;
+                          }
+                          return expiration.isAfter(now)
+                              ? PinState.pinned
+                              : PinState.unpinned;
+                        },
+                        count: messages.length,
+                      ),
+                    );
+                  },
+                ),
+                _ScrollToBottomWidget(
+                  show: !_atBottom,
+                  onPressed: () async {
+                    updateScrollPosition();
+                    if (_controller.offset < 2500) {
+                      await _controller.animateTo(
+                        0,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeInOut,
+                      );
+                    } else {
+                      // jump instead, it's a better user experience.
+                      _controller.jumpTo(0);
+                    }
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: dropped == 0 ? 0 : 150,
+                    child:
+                        dropped == 0
+                            ? null
+                            : Text(
+                              AppLocalizations.of(
+                                context,
+                              )!.newMessageCount(dropped),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                            ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
         const ConnectionStatusWidget(),
       ],
     );

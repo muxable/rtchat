@@ -77,7 +77,7 @@ import 'app_localizations_zh.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -100,11 +100,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -124,7 +124,7 @@ abstract class AppLocalizations {
     Locale('sv'),
     Locale('uk'),
     Locale('zh'),
-    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant')
+    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
   /// Message input field placeholder text
@@ -564,7 +564,10 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'<b>{displayName}</b>, <b>{displayNameTwo}</b>, and {numOthers} others are following you'**
   String followingEvent3(
-      String displayName, String displayNameTwo, int numOthers);
+    String displayName,
+    String displayNameTwo,
+    int numOthers,
+  );
 
   /// Unmute option shown when long pressing on a chat message
   ///
@@ -997,21 +1000,32 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'<b>{gifterUserName}</b> has gifted {total} Tier {tier} subs, totaling {cumulativeTotal}!'**
   String subscriptionGiftEvent(
-      String gifterUserName, int total, String tier, int cumulativeTotal);
+    String gifterUserName,
+    int total,
+    String tier,
+    int cumulativeTotal,
+  );
 
   /// Message displayed when a subscription message event occurs
   ///
   /// In en, this message translates to:
   /// **'<b>{subscriberUserName}</b> has subscribed for {cumulativeMonths} months at Tier {tier}!'**
   String subscriptionMessageEvent(
-      String subscriberUserName, int cumulativeMonths, String tier);
+    String subscriberUserName,
+    int cumulativeMonths,
+    String tier,
+  );
 
   /// Message displayed when a subscriber pays for multiple months at once
   ///
   /// In en, this message translates to:
   /// **'<b>{subscriberUserName}</b> has subscribed at Tier {tier} for {durationMonths} months in advance, {cumulativeMonths} months in total!'**
-  String subscriptionMessageMultiMonthEvent(String subscriberUserName,
-      String tier, int durationMonths, int cumulativeMonths);
+  String subscriptionMessageMultiMonthEvent(
+    String subscriberUserName,
+    String tier,
+    int durationMonths,
+    int cumulativeMonths,
+  );
 
   /// Message displayed when a RealtimeCash tip is made with a donor name
   ///
@@ -1041,15 +1055,22 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points. {userInput}'**
-  String channelPointRedemptionWithUserInput(String redeemerUsername,
-      String rewardName, int rewardCost, String userInput);
+  String channelPointRedemptionWithUserInput(
+    String redeemerUsername,
+    String rewardName,
+    int rewardCost,
+    String userInput,
+  );
 
   /// Message displayed when a channel point redemption event occurs without user input
   ///
   /// In en, this message translates to:
   /// **'<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points.'**
   String channelPointRedemptionWithoutUserInput(
-      String redeemerUsername, String rewardName, int rewardCost);
+    String redeemerUsername,
+    String rewardName,
+    int rewardCost,
+  );
 
   /// Message displayed when a cheer event occurs
   ///
@@ -1831,23 +1852,23 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) => <String>[
-        'ar',
-        'bn',
-        'de',
-        'en',
-        'es',
-        'fr',
-        'it',
-        'ja',
-        'ko',
-        'nl',
-        'pl',
-        'pt',
-        'ru',
-        'sv',
-        'uk',
-        'zh'
-      ].contains(locale.languageCode);
+    'ar',
+    'bn',
+    'de',
+    'en',
+    'es',
+    'fr',
+    'it',
+    'ja',
+    'ko',
+    'nl',
+    'pl',
+    'pt',
+    'ru',
+    'sv',
+    'uk',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1903,8 +1924,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

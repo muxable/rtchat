@@ -12,8 +12,10 @@ class ProfilesAdapter {
   static ProfilesAdapter? _instance;
 
   /// Reads as the user signed in on [app], for owner-only profiles.
-  static ProfilesAdapter forApp(FirebaseApp app) => _forApp[app.name] ??=
-      ProfilesAdapter._(db: FirebaseFirestore.instanceFor(app: app));
+  static ProfilesAdapter forApp(FirebaseApp app) =>
+      _forApp[app.name] ??= ProfilesAdapter._(
+        db: FirebaseFirestore.instanceFor(app: app),
+      );
   static final Map<String, ProfilesAdapter> _forApp = {};
 
   /// The channel of the account [userId] signed in with.
@@ -34,9 +36,11 @@ class ProfilesAdapter {
         .orderBy("timestamp")
         .limitToLast(1)
         .snapshots()
-        .map((event) =>
-            event.docs.isNotEmpty &&
-            event.docs.single.get("type") == "stream.online");
+        .map(
+          (event) =>
+              event.docs.isNotEmpty &&
+              event.docs.single.get("type") == "stream.online",
+        );
   }
 
   Stream<bool> getIsAdsEnabled({required String userId}) {
@@ -63,8 +67,11 @@ Channel? channelFromProfile(Map<String, dynamic>? data) {
     if (account is! Map || account['id'] == null) {
       continue;
     }
-    return Channel(provider, account['id'].toString(),
-        account['displayName'] ?? account['slug'] ?? account['login'] ?? '');
+    return Channel(
+      provider,
+      account['id'].toString(),
+      account['displayName'] ?? account['slug'] ?? account['login'] ?? '',
+    );
   }
   return null;
 }
