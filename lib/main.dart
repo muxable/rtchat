@@ -241,6 +241,8 @@ class _AppState extends State<App> {
                 player.play(AssetSource('message-sound.wav'));
               }
             };
+            // subscribing and emotes call as the user's account.
+            model.apiOn = Provider.of<UserModel>(context, listen: false).apiOn;
             model.channels =
                 Provider.of<ViewsModel>(context, listen: false).channels;
             model.tts = Provider.of<TtsModel>(context, listen: false);

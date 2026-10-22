@@ -8,7 +8,9 @@ import 'package:rtchat/api.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
 
-Future<List<Emote>> getEmotes(Channel channel) async {
+/// The emotes usable in [channel]. Twitch's include those of the user [api]
+/// calls as.
+Future<List<Emote>> getEmotes(Channel channel, Api api) async {
   final temp = await getTemporaryDirectory();
   final cacheFile = File('${temp.path}/emotes/${channel.toString()}.json');
   if (await cacheFile.exists()) {
@@ -23,7 +25,7 @@ Future<List<Emote>> getEmotes(Channel channel) async {
 
   for (int i = 0; i < 3; i++) {
     try {
-      final response = await Api.instance.callable("getEmotes")({
+      final response = await api.callable("getEmotes")({
         "provider": channel.provider,
         "channelId": channel.channelId,
       });

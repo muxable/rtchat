@@ -6,6 +6,7 @@ import 'package:rtchat/components/drawer/quicklinks_listview.dart';
 import 'package:rtchat/components/in_chat_channels.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -127,8 +128,8 @@ class _DrawerHeader extends StatelessWidget {
                 ),
                 Consumer<UserModel>(
                   builder: (context, model, child) {
-                    final userChannel = model.userChannel;
-                    if (userChannel == null) {
+                    final account = model.accounts.firstOrNull;
+                    if (account == null) {
                       return Container();
                     }
                     return Padding(
@@ -164,7 +165,7 @@ class _DrawerHeader extends StatelessWidget {
                                               bottom: Radius.circular(25.0),
                                             ),
                                       ),
-                                      child: const QRDisplay(),
+                                      child: QRDisplay(account: account),
                                     );
                                   },
                                 ),
@@ -204,17 +205,19 @@ class _DrawerHeader extends StatelessWidget {
                             expand: false,
                             builder: (context, controller) {
                               final views = Provider.of<ViewsModel>(context);
-                              final raidFrom = _raidableChannel(context);
+                              final raider = _raidingAccount(context);
                               return ChannelSearchBottomSheetWidget(
                                 onChannelSelect: views.openChannel,
                                 onChannelAdd: views.addChannel,
                                 channels: views.channels,
                                 header: const InChatChannels(),
                                 onRaid:
-                                    raidFrom == null
+                                    raider == null
                                         ? null
-                                        : (channel) => ActionsAdapter.instance
-                                            .raid(raidFrom, channel),
+                                        : (channel) =>
+                                            ActionsAdapter.forAccount(
+                                              raider,
+                                            ).raid(raider.channel, channel),
                                 controller: controller,
                               );
                             },
@@ -334,19 +337,18 @@ class _SidebarState extends State<Sidebar> {
                     expand: false,
                     builder: (context, controller) {
                       final views = Provider.of<ViewsModel>(context);
-                      final raidFrom = _raidableChannel(context);
+                      final raider = _raidingAccount(context);
                       return ChannelSearchBottomSheetWidget(
                         isRaid: true,
                         onChannelSelect: views.openChannel,
                         onChannelAdd: views.addChannel,
                         channels: views.channels,
                         onRaid:
-                            raidFrom == null
+                            raider == null
                                 ? null
-                                : (channel) => ActionsAdapter.instance.raid(
-                                  raidFrom,
-                                  channel,
-                                ),
+                                : (channel) => ActionsAdapter.forAccount(
+                                  raider,
+                                ).raid(raider.channel, channel),
                         controller: controller,
                       );
                     },
@@ -459,16 +461,13 @@ class _SidebarState extends State<Sidebar> {
   }
 }
 
-/// The channel the user can raid from: the one they're viewing, if it's their
-/// own Twitch channel (raids are Twitch-only).
-Channel? _raidableChannel(BuildContext context) {
+/// The account the user can raid as: the one whose channel they're viewing,
+/// if it's Twitch (raids are Twitch-only).
+Account? _raidingAccount(BuildContext context) {
   final channel =
       Provider.of<ViewsModel>(context, listen: false).primaryChannel;
-  final userModel = Provider.of<UserModel>(context, listen: false);
-  if (channel == null ||
-      channel.provider != Providers.twitch ||
-      userModel.userChannel != channel) {
+  if (channel == null || channel.provider != Providers.twitch) {
     return null;
   }
-  return channel;
+  return Provider.of<UserModel>(context, listen: false).accountFor(channel);
 }

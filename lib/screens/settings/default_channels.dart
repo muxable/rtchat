@@ -14,12 +14,12 @@ class DefaultChannelsScreen extends StatelessWidget {
   final void Function(BuildContext context)? searchChannels;
 
   /// Finds the channels shown in the search sheet.
-  final results.ChannelSearch search;
+  final results.ChannelSearch? search;
 
   const DefaultChannelsScreen({
     super.key,
     @visibleForTesting this.searchChannels,
-    @visibleForTesting this.search = results.searchChannels,
+    @visibleForTesting this.search,
   });
 
   void _searchChannels(BuildContext context) {

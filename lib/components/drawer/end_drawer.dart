@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rtchat/components/drawer/sliver_search_bar.dart';
 import 'package:rtchat/components/drawer/sliver_title.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/chat_state.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/user.dart';
 
 class EndDrawerWidget extends StatefulWidget {
   final Channel channel;
@@ -28,9 +30,15 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
 
   void _loadViewers() async {
     try {
-      final viewers = await ChatStateAdapter.instance.getViewers(
-        channelId: widget.channel.toString(),
-      );
+      // twitch lists chatters with the caller's token when the channel's own
+      // isn't stored, so call as the account on its provider.
+      final api = Provider.of<UserModel>(
+        context,
+        listen: false,
+      ).apiOn(widget.channel.provider);
+      final viewers = await ChatStateAdapter(
+        api,
+      ).getViewers(channelId: widget.channel.toString());
       if (!mounted) return;
       setState(() {
         _viewers = viewers;

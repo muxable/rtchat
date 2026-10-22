@@ -399,18 +399,17 @@ DeltaEvent? toDeltaEvent(
 
 class MessagesAdapter {
   final FirebaseFirestore db;
-  final Api api;
 
-  MessagesAdapter._({required this.db, required this.api});
+  MessagesAdapter._({required this.db});
 
   static MessagesAdapter get instance =>
-      _instance ??= MessagesAdapter._(
-        db: FirebaseFirestore.instance,
-        api: Api.instance,
-      );
+      _instance ??= MessagesAdapter._(db: FirebaseFirestore.instance);
   static MessagesAdapter? _instance;
 
-  Future<void> subscribe(Channel channel) async {
+  /// Starts collecting [channel]'s chat. [api] should call as the account on
+  /// [channel]'s provider: when it's that account's own channel, the backend
+  /// also sets up its events and lists it in search.
+  Future<void> subscribe(Channel channel, Api api) async {
     final subscribe = api.callable('subscribe');
     for (var i = 0; i < 3; i++) {
       try {
@@ -432,8 +431,9 @@ class MessagesAdapter {
   Future<List<DeltaEvent>> forChannelHistory(
     Channel channel,
     DateTime from,
+    Api api,
   ) async {
-    final emotes = await getEmotes(channel);
+    final emotes = await getEmotes(channel, api);
 
     final results =
         await db
@@ -451,9 +451,9 @@ class MessagesAdapter {
         .toList();
   }
 
-  Stream<DeltaEvent> forChannel(Channel channel) {
-    subscribe(channel);
-    final emotes = getEmotes(channel);
+  Stream<DeltaEvent> forChannel(Channel channel, Api api) {
+    subscribe(channel, api);
+    final emotes = getEmotes(channel, api);
     var isInitialSnapshot = true;
     return db
         .collection("channels")

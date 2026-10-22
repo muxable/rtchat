@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:rtchat/api.dart';
 import 'package:rtchat/models/channels.dart';
 
@@ -82,10 +83,12 @@ class TwitchBadgeInfo {
 class ChatStateAdapter {
   final Api api;
 
-  ChatStateAdapter._({required this.api});
+  /// Calls as [api]'s user. Only [getViewers] reads as the caller.
+  ChatStateAdapter(this.api);
 
+  /// Calls as [DEFAULT]'s user, for reads that don't depend on who calls.
   static ChatStateAdapter get instance =>
-      _instance ??= ChatStateAdapter._(api: Api.instance);
+      _instance ??= ChatStateAdapter(Api.forApp(Firebase.app()));
   static ChatStateAdapter? _instance;
 
   Future<Viewers> getViewers({required String channelId}) {

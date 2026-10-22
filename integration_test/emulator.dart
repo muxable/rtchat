@@ -46,7 +46,7 @@ Future<void> initializeFirebaseEmulators() async {
   // Functions are not emulated. Point them at an unused port so callables
   // fail fast instead of reaching production; the app already tolerates
   // failures from getEmotes and subscribe.
-  Api.instance.useEmulator(emulatorHost, 5999);
+  Api.forApp(Firebase.app()).useEmulator(emulatorHost, 5999);
 }
 
 /// Seeds Firestore through the emulator's REST API. The `owner` bearer token

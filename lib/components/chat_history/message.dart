@@ -199,15 +199,16 @@ class ChatHistoryMessage extends StatelessWidget {
             return Container();
           }
           // only the raiding streamer can cancel, so only they see the button.
-          final isHost =
-              Provider.of<UserModel>(context, listen: false).userChannel ==
-              channel;
+          final host = Provider.of<UserModel>(
+            context,
+            listen: false,
+          ).accountFor(channel);
           return TwitchRaidingEventWidget(
             m,
             onCancel:
-                isHost
-                    ? () => ActionsAdapter.instance.cancelRaid(channel)
-                    : null,
+                host == null
+                    ? null
+                    : () => ActionsAdapter.forAccount(host).cancelRaid(channel),
           );
         },
       );
@@ -276,10 +277,15 @@ class _ModerationActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userModel = Provider.of<UserModel>(context, listen: false);
-    if (userModel.userChannel != channel) {
+    // moderate as the account whose channel this is.
+    final account = Provider.of<UserModel>(
+      context,
+      listen: false,
+    ).accountFor(channel);
+    if (account == null) {
       return child;
     }
+    final actions = ActionsAdapter.forAccount(account);
     final m = message;
     final author = m.author;
     return Material(
@@ -346,7 +352,7 @@ class _ModerationActions extends StatelessWidget {
                       ),
                       title: Text(AppLocalizations.of(context)!.deleteMessage),
                       onTap: () {
-                        ActionsAdapter.instance.delete(channel, m.messageId);
+                        actions.delete(channel, m.messageId);
                         Navigator.pop(context);
                       },
                     ),
@@ -375,7 +381,7 @@ class _ModerationActions extends StatelessWidget {
                         )!.banUser(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
-                        ActionsAdapter.instance.ban(
+                        actions.ban(
                           channel,
                           m.author.login,
                           userId: m.author.userId,
@@ -394,7 +400,7 @@ class _ModerationActions extends StatelessWidget {
                         )!.unbanUser(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
-                        ActionsAdapter.instance.unban(
+                        actions.unban(
                           channel,
                           m.author.login,
                           userId: m.author.userId,
@@ -442,7 +448,7 @@ class _ModerationActions extends StatelessWidget {
                     context,
                   )!.timeoutUser(m.author.displayName ?? m.author.login),
                   onPressed: (duration) {
-                    ActionsAdapter.instance.timeout(
+                    actions.timeout(
                       channel,
                       m.author.login,
                       "timed out by streamer",

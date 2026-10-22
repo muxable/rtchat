@@ -24,6 +24,7 @@ import 'package:rtchat/models/messages/twitch/prediction_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
+import 'package:rtchat/models/user.dart';
 
 class RebuildableWidget extends StatefulWidget {
   final Widget Function(BuildContext) builder;
@@ -439,6 +440,10 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                       onRefresh:
                           () => MessagesAdapter.instance.subscribe(
                             widget.channel,
+                            Provider.of<UserModel>(
+                              context,
+                              listen: false,
+                            ).apiOn(widget.channel.provider),
                           ),
                       child: PinnableMessageScrollView(
                         vsync: this,

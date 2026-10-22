@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:rtchat/api.dart';
 import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/user.dart';
@@ -33,6 +34,14 @@ class FakeUserModel extends ChangeNotifier implements UserModel {
   @override
   Account? accountFor(Channel channel) =>
       accounts.where((account) => account.channel == channel).firstOrNull;
+
+  @override
+  Account? accountOn(String provider) =>
+      accounts.where((account) => account.provider == provider).firstOrNull;
+
+  @override
+  Api apiOn(String provider) =>
+      Api.forAccount(accountOn(provider) ?? accounts.first);
 
   @override
   bool get isLoading => false;

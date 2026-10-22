@@ -139,14 +139,11 @@ class MessageInputWidget extends StatefulWidget {
   /// disables the input.
   final Channel? channel;
 
-  /// Loads the emotes usable in a channel. Defaults to [getEmotes].
-  final Future<List<Emote>> Function(Channel channel) loadEmotes;
+  /// Loads the emotes usable in a channel. Defaults to [getEmotes], as the
+  /// account on the channel's provider.
+  final Future<List<Emote>> Function(Channel channel)? loadEmotes;
 
-  const MessageInputWidget({
-    super.key,
-    required this.channel,
-    this.loadEmotes = getEmotes,
-  });
+  const MessageInputWidget({super.key, required this.channel, this.loadEmotes});
 
   @override
   State<MessageInputWidget> createState() => _MessageInputWidgetState();
@@ -224,7 +221,15 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
       _channelEmotes = Future.value(const []);
       return;
     }
-    final emotes = widget.loadEmotes(channel);
+    final emotes =
+        widget.loadEmotes?.call(channel) ??
+        getEmotes(
+          channel,
+          Provider.of<UserModel>(
+            context,
+            listen: false,
+          ).apiOn(channel.provider),
+        );
     _channelEmotes = emotes;
     emotes.then(
       (loaded) {
@@ -267,6 +272,14 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     if (value.isEmpty || channel == null) {
       return;
     }
+    // an account can chat in others' channels on its own provider.
+    final account = Provider.of<UserModel>(
+      context,
+      listen: false,
+    ).accountOn(channel.provider);
+    if (account == null) {
+      return;
+    }
     final messenger = ScaffoldMessenger.of(context);
     if (value.startsWith('!')) {
       final commandsModel = Provider.of<CommandsModel>(context, listen: false);
@@ -282,7 +295,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     await Future.wait([
       () async {
         try {
-          final error = await ActionsAdapter.instance.send(channel, value);
+          final error = await ActionsAdapter.forAccount(
+            account,
+          ).send(channel, value);
           if (error != null) {
             messenger.showSnackBar(SnackBar(content: Text(error)));
           }

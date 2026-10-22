@@ -18,6 +18,10 @@ class FakeUser extends Fake implements User {
   final String uid;
 
   FakeUser(this.uid);
+
+  @override
+  Future<String?> getIdToken([bool forceRefresh = false]) async =>
+      'id-token-$uid';
 }
 
 /// Stands in for the auth backend: which user each custom token signs in,
