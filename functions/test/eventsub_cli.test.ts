@@ -65,6 +65,12 @@ vi.mock("firebase-admin", () => {
       const data = store.get(path);
       return { exists: data !== undefined, data: () => data };
     },
+    create: async (data: Record<string, any>) => {
+      if (store.has(path)) {
+        throw Object.assign(new Error(`${path} exists`), { code: 6 });
+      }
+      store.set(path, apply({}, data));
+    },
     set: async (data: Record<string, any>, options?: { merge?: boolean }) => {
       store.set(path, apply(options?.merge ? store.get(path) : {}, data));
     },
@@ -142,7 +148,11 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
 
     expect(delivery.status).toBe(200);
     expect(delivery.body.subscription.type).toBe(type);
-    const message = store.get(`${CHANNEL}/messages/twitch:${id}`);
+    const message = store.get(
+      type === "channel.follow"
+        ? `${CHANNEL}/messages/twitch:follow:${delivery.body.event.user_id}`
+        : `${CHANNEL}/messages/twitch:${id}`
+    );
     expect(message).toMatchObject({
       channelId: `twitch:${BROADCASTER}`,
       type,
@@ -193,6 +203,24 @@ describe.runIf(cliAvailable())("eventsub driven by the twitch cli", () => {
     await send("channel.follow");
 
     expect(store.get(CHANNEL)?.followerCount).toBe(11);
+  });
+
+  it("records a follower once", async () => {
+    store.set(CHANNEL, { followerCount: 10 });
+
+    // Twitch sometimes sends two follows, with different message ids, for one
+    // follower.
+    const first = await send("channel.follow", ["-f", "5678"]);
+    server.deliveries.length = 0;
+    const second = await send("channel.follow", ["-f", "5678"]);
+
+    expect(first.id).not.toBe(second.id);
+    expect(second.delivery.status).toBe(200);
+    expect(store.get(CHANNEL)?.followerCount).toBe(11);
+    const messages = [...store.keys()].filter((key) =>
+      key.startsWith(`${CHANNEL}/messages/`)
+    );
+    expect(messages).toEqual([`${CHANNEL}/messages/twitch:follow:5678`]);
   });
 
   it("ignores follows for channels it doesn't know", async () => {
