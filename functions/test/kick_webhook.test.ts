@@ -22,26 +22,26 @@ describe("verifySignature", () => {
 
   it("accepts deliveries signed by kick", () => {
     expect(
-      verifySignature(publicKey, id, ts, Buffer.from(body), sign(id, ts, body))
+      verifySignature(publicKey, id, ts, Buffer.from(body), sign(id, ts, body)),
     ).toBe(true);
   });
 
   it("rejects tampered bodies, ids, timestamps and garbage", () => {
     const signature = sign(id, ts, body);
     expect(
-      verifySignature(publicKey, id, ts, Buffer.from(body + " "), signature)
+      verifySignature(publicKey, id, ts, Buffer.from(body + " "), signature),
     ).toBe(false);
     expect(
-      verifySignature(publicKey, "other", ts, Buffer.from(body), signature)
+      verifySignature(publicKey, "other", ts, Buffer.from(body), signature),
     ).toBe(false);
     expect(
-      verifySignature(publicKey, id, "2026", Buffer.from(body), signature)
+      verifySignature(publicKey, id, "2026", Buffer.from(body), signature),
     ).toBe(false);
     expect(
-      verifySignature(publicKey, id, ts, Buffer.from(body), "not base64!")
+      verifySignature(publicKey, id, ts, Buffer.from(body), "not base64!"),
     ).toBe(false);
     expect(
-      verifySignature("not a key", id, ts, Buffer.from(body), signature)
+      verifySignature("not a key", id, ts, Buffer.from(body), signature),
     ).toBe(false);
   });
 });
@@ -72,7 +72,7 @@ describe("toDocuments", () => {
         content: "hello",
         created_at: "2026-10-12T00:59:59Z",
       }),
-      now
+      now,
     )!;
     expect(docs.channelId).toBe("kick:123");
     expect(docs.messages).toHaveLength(1);
@@ -81,10 +81,10 @@ describe("toDocuments", () => {
     expect(message.data.type).toBe("kick.chat.message.sent");
     expect(message.data.channelId).toBe("kick:123");
     expect((message.data.timestamp as any).toMillis()).toBe(
-      Date.parse("2026-10-12T00:59:59Z")
+      Date.parse("2026-10-12T00:59:59Z"),
     );
     expect((message.data.expiresAt as any).toMillis()).toBe(
-      now + 14 * 86400 * 1000
+      now + 14 * 86400 * 1000,
     );
     expect((message.data.event as any).content).toBe("hello");
     expect(docs.channel).toEqual({ login: "muxfd", displayName: "Muxfd" });
@@ -97,12 +97,12 @@ describe("toDocuments", () => {
         title: "irl",
         started_at: "2026-10-12T00:00:00Z",
       }),
-      now
+      now,
     )!;
     expect(online.messages[0].id).toBe("kick:delivery-1");
     expect(online.messages[0].data.type).toBe("stream.online");
     expect((online.channel.onlineAt as any).toMillis()).toBe(
-      Date.parse("2026-10-12T00:00:00Z")
+      Date.parse("2026-10-12T00:00:00Z"),
     );
     expect(online.channel.title).toBe("irl");
 
@@ -111,7 +111,7 @@ describe("toDocuments", () => {
         is_live: false,
         ended_at: "2026-10-12T02:00:00Z",
       }),
-      now
+      now,
     )!;
     expect(offline.messages[0].data.type).toBe("stream.offline");
     expect(offline.channel.onlineAt).toBeNull();
@@ -126,7 +126,7 @@ describe("toDocuments", () => {
           category: { id: 15, name: "IRL" },
         },
       }),
-      now
+      now,
     )!;
     expect(docs.messages).toEqual([]);
     expect(docs.channel).toMatchObject({
@@ -140,7 +140,7 @@ describe("toDocuments", () => {
   it("stores other events under a kick-prefixed type", () => {
     const docs = toDocuments(
       delivery("channel.followed", { follower: { user_id: 9 } }),
-      now
+      now,
     )!;
     expect(docs.messages[0]).toMatchObject({
       id: "kick:delivery-1",
@@ -150,7 +150,7 @@ describe("toDocuments", () => {
 
   it("ignores deliveries without a broadcaster", () => {
     expect(
-      toDocuments({ ...delivery("chat.message.sent", {}), event: {} }, now)
+      toDocuments({ ...delivery("chat.message.sent", {}), event: {} }, now),
     ).toBeNull();
   });
 });

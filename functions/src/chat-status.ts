@@ -13,7 +13,7 @@ type UserData = {
 async function findModerators(
   token: string,
   twitchBroadcasterId: string,
-  twitchUserIds: string[]
+  twitchUserIds: string[],
 ) {
   const twitchChannelIds: UserData[] = [];
   for (let i = 0; i < twitchUserIds.length; i += 100) {
@@ -28,7 +28,7 @@ async function findModerators(
           "Client-ID": TWITCH_CLIENT_ID,
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
     const json = await response.json();
     if (json["data"]) {
@@ -41,7 +41,7 @@ async function findModerators(
 async function findVIPs(
   token: string,
   twitchBroadcasterId: string,
-  twitchUserIds: string[]
+  twitchUserIds: string[],
 ) {
   const twitchChannelIds: UserData[] = [];
   for (let i = 0; i < twitchUserIds.length; i += 100) {
@@ -56,7 +56,7 @@ async function findVIPs(
           "Client-ID": TWITCH_CLIENT_ID,
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
     const json = await response.json();
     if (json["data"]) {
@@ -69,7 +69,7 @@ async function findVIPs(
 async function findChatters(
   token: string,
   twitchBroadcasterId: string,
-  after = ""
+  after = "",
 ): Promise<UserData[]> {
   const chatters = await fetch(
     `https://api.twitch.tv/helix/chat/chatters?broadcaster_id=${twitchBroadcasterId}&moderator_id=${twitchBroadcasterId}&first=1000&after=${after}`,
@@ -78,7 +78,7 @@ async function findChatters(
         "Client-ID": TWITCH_CLIENT_ID,
         Authorization: `Bearer ${token}`,
       },
-    }
+    },
   );
   if (chatters.status !== 200) {
     throw new Error("Failed to fetch chatters");
@@ -91,8 +91,8 @@ async function findChatters(
         ...(await findChatters(
           token,
           twitchBroadcasterId,
-          json["pagination"]["cursor"]
-        ))
+          json["pagination"]["cursor"],
+        )),
       );
     }
     return chatters;
@@ -129,7 +129,7 @@ async function twitchGetFollowerCount(token: AccessToken, channelId: string) {
         "Client-ID": TWITCH_CLIENT_ID,
         Authorization: `Bearer ${token.token.access_token}`,
       },
-    }
+    },
   );
   const json = await response.json();
   return json["total"];
@@ -157,7 +157,7 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
           "Client-ID": TWITCH_CLIENT_ID,
           Authorization: `Bearer ${token.token.access_token}`,
         },
-      }
+      },
     );
     const json = await response.json();
     if (!json["data"]) {
@@ -175,7 +175,7 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
     // find any channels that are not in the response and reissue a request to helix/channels
     const missingChannelIds = batch.filter(
       (channelId) =>
-        !json["data"].some((stream: any) => stream["user_id"] === channelId)
+        !json["data"].some((stream: any) => stream["user_id"] === channelId),
     );
     if (missingChannelIds.length > 0) {
       const query = missingChannelIds
@@ -188,7 +188,7 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
             "Client-ID": TWITCH_CLIENT_ID,
             Authorization: `Bearer ${token.token.access_token}`,
           },
-        }
+        },
       );
       const json = await response.json();
       if (!json["data"]) {
@@ -214,7 +214,7 @@ async function twitchGetViewerCounts(token: AccessToken, channelIds: string[]) {
 
 export async function twitchGetChatters(
   twitchBroadcasterId: string,
-  asUserId: string
+  asUserId: string,
 ) {
   const token = await getAccessToken(asUserId, "twitch");
   if (!token) {
@@ -235,7 +235,7 @@ export async function twitchGetChatters(
     mods = await findModerators(
       token,
       twitchBroadcasterId,
-      chatters.map((c) => c.user_id)
+      chatters.map((c) => c.user_id),
     );
   } catch (e) {
     console.error(e);
@@ -246,7 +246,7 @@ export async function twitchGetChatters(
     vips = await findVIPs(
       token,
       twitchBroadcasterId,
-      chatters.map((c) => c.user_id)
+      chatters.map((c) => c.user_id),
     );
   } catch (e) {
     console.error(e);
@@ -257,7 +257,7 @@ export async function twitchGetChatters(
     (c) =>
       !broadcaster.some((b) => b.user_id == c.user_id) &&
       !mods.some((m) => m.user_id == c.user_id) &&
-      !vips.some((v) => v.user_id == c.user_id)
+      !vips.some((v) => v.user_id == c.user_id),
   );
   viewers.sort((a, b) => a.user_name.localeCompare(b.user_name));
   // for backwards compatibility, return the list of usernames as strings.
@@ -276,7 +276,7 @@ export async function twitchGetChatters(
 
 export async function runUpdateFollowerAndViewerCount(
   token: AccessToken,
-  channelIds: string[]
+  channelIds: string[],
 ) {
   let updateBatch = admin.firestore().batch();
   let batchSize = 0;
@@ -294,12 +294,12 @@ export async function runUpdateFollowerAndViewerCount(
       language,
       login,
       displayName,
-      onlineAt
+      onlineAt,
     );
     updateBatch.set(
       admin.firestore().collection("channels").doc(`twitch:${channelId}`),
       { viewerCount, language, login, displayName, onlineAt },
-      { merge: true }
+      { merge: true },
     );
     if (++batchSize == 500) {
       console.log("committing batch");
@@ -320,7 +320,7 @@ export async function runUpdateFollowerAndViewerCount(
 
   // lastly, fetch the follower count for each channel individually.
   const followerCountRequests = channelIds.map((channelId) =>
-    twitchGetFollowerCount(token, channelId)
+    twitchGetFollowerCount(token, channelId),
   );
   for (let i = 0; i < channelIds.length; i++) {
     const channelId = channelIds[i];
@@ -332,7 +332,7 @@ export async function runUpdateFollowerAndViewerCount(
     updateBatch.set(
       admin.firestore().collection("channels").doc(`twitch:${channelId}`),
       { followerCount },
-      { merge: true }
+      { merge: true },
     );
     if (++batchSize == 500) {
       console.log("committing batch");
@@ -373,7 +373,7 @@ export const getViewerList = functions.https.onCall(
     if (!context.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
-        "must be authenticated"
+        "must be authenticated",
       );
     }
     const [provider, channel] = channelId.split(":");
@@ -402,5 +402,5 @@ export const getViewerList = functions.https.onCall(
         return await twitchGetChatters(channel, context.auth.uid);
     }
     throw new functions.https.HttpsError("invalid-argument", "invalid channel");
-  }
+  },
 );

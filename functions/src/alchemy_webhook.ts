@@ -46,7 +46,7 @@ type AddressNotification = {
 function isValidSignatureForStringBody(
   body: string, // must be raw string body, not json transformed version of the body
   signature: string, // your "X-Alchemy-Signature" from header
-  signingKey: string // taken from dashboard for specific webhook
+  signingKey: string, // taken from dashboard for specific webhook
 ): boolean {
   const hmac = crypto.createHmac("sha256", signingKey); // Create a HMAC SHA256 hash using the signing key
   hmac.update(body, "utf8"); // Update the token hash with the request body using utf8
@@ -157,7 +157,7 @@ async function storeDonation(
   activity: Activity,
   toAddr: string,
   donor: string,
-  message: string
+  message: string,
 ) {
   // look for userId that associated with this address
   const addressDoc = await admin
@@ -200,7 +200,9 @@ async function storeDonation(
       donor: donor,
       message: message,
       timestamp: new Date(),
-      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 1000 * 86400 * 7 * 2),
+      expiresAt: admin.firestore.Timestamp.fromMillis(
+        Date.now() + 1000 * 86400 * 7 * 2,
+      ),
     });
   functions.logger.info("Payload is stored in messages collection");
 }
@@ -234,7 +236,7 @@ export const alchemyWebhook = functions.https.onRequest(async (req, res) => {
 
   for (const activity of notification.event.activity) {
     const transaction = contractInterface.parseTransaction(
-      await polyProvider.getTransaction(activity.hash)
+      await polyProvider.getTransaction(activity.hash),
     );
     if (transaction.name === "donate") {
       functions.logger.info("transaction args", {
@@ -273,7 +275,7 @@ export const setRealTimeCashAddress = functions.https.onCall(
       functions.logger.error("missing address");
       throw new functions.https.HttpsError(
         "invalid-argument",
-        "missing userId, address params"
+        "missing userId, address params",
       );
     }
 
@@ -296,7 +298,7 @@ export const setRealTimeCashAddress = functions.https.onCall(
           address,
           maticWebhookId: MATICWEBHOOKID,
         },
-        { merge: true }
+        { merge: true },
       )
       .catch((error) => {
         functions.logger.error("Error writing document: ", error);
@@ -305,5 +307,5 @@ export const setRealTimeCashAddress = functions.https.onCall(
       });
 
     return;
-  }
+  },
 );

@@ -19,6 +19,8 @@ jobs:
       # the analyzer resolves the package's files with its own dependencies.
       - run: flutter pub get
         working-directory: packages/on_device_tts
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
       - name: Run flutter analyze
         uses: invertase/github-action-dart-analyzer@v3
       - name: Analyze on_device_tts

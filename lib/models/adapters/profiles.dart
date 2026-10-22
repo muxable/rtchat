@@ -28,9 +28,11 @@ class ProfilesAdapter {
         .orderBy("timestamp")
         .limitToLast(1)
         .snapshots()
-        .map((event) =>
-            event.docs.isNotEmpty &&
-            event.docs.single.get("type") == "stream.online");
+        .map(
+          (event) =>
+              event.docs.isNotEmpty &&
+              event.docs.single.get("type") == "stream.online",
+        );
   }
 
   Stream<bool> getIsAdsEnabled({required String userId}) {
@@ -57,8 +59,11 @@ Channel? channelFromProfile(Map<String, dynamic>? data) {
     if (account is! Map || account['id'] == null) {
       continue;
     }
-    return Channel(provider, account['id'].toString(),
-        account['displayName'] ?? account['slug'] ?? account['login'] ?? '');
+    return Channel(
+      provider,
+      account['id'].toString(),
+      account['displayName'] ?? account['slug'] ?? account['login'] ?? '',
+    );
   }
   return null;
 }

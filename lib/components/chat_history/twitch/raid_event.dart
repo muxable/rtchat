@@ -19,34 +19,47 @@ class TwitchRaidEventWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedEventWidget.avatar(
       avatar: ResilientNetworkImage(model.from.profilePictureUrl),
-      child: Row(children: [
-        Expanded(
-          child: StyledText(
-            text: AppLocalizations.of(context)!
-                .raidEventMessage(model.from.displayName ?? "", model.viewers),
-            tags: {
-              'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+      child: Row(
+        children: [
+          Expanded(
+            child: StyledText(
+              text: AppLocalizations.of(
+                context,
+              )!.raidEventMessage(model.from.displayName ?? "", model.viewers),
+              tags: {
+                'b': StyledTextTag(
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              },
+            ),
+          ),
+          Consumer<EventSubConfigurationModel>(
+            builder: (context, eventSubConfigurationModel, child) {
+              if (!eventSubConfigurationModel
+                  .raidEventConfig
+                  .enableShoutoutButton) {
+                return Container();
+              }
+              return GestureDetector(
+                child: Text.rich(
+                  TextSpan(
+                    text: AppLocalizations.of(context)!.shoutout,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).buttonTheme.colorScheme?.primary,
+                    ),
+                  ),
+                ),
+                onTap: () {
+                  ActionsAdapter.instance.send(
+                    channel,
+                    "/shoutout ${model.from.login}",
+                  );
+                },
+              );
             },
           ),
-        ),
-        Consumer<EventSubConfigurationModel>(
-            builder: (context, eventSubConfigurationModel, child) {
-          if (!eventSubConfigurationModel
-              .raidEventConfig.enableShoutoutButton) {
-            return Container();
-          }
-          return GestureDetector(
-              child: Text.rich(TextSpan(
-                  text: AppLocalizations.of(context)!.shoutout,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color:
-                          Theme.of(context).buttonTheme.colorScheme?.primary))),
-              onTap: () {
-                ActionsAdapter.instance
-                    .send(channel, "/shoutout ${model.from.login}");
-              });
-        }),
-      ]),
+        ],
+      ),
     );
   }
 }

@@ -57,7 +57,7 @@ async function youtubeResults(query: string) {
     return await searchYouTubeChannel(
       youtubeApiKey.value(),
       query,
-      youtubeLookupCache
+      youtubeLookupCache,
     );
   } catch {
     return [];
@@ -81,7 +81,7 @@ export function parseSearchRequest(data: unknown): SearchRequest {
   if (provider !== "twitch" && provider !== "kick" && provider !== "youtube") {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      `unsupported provider: ${provider}`
+      `unsupported provider: ${provider}`,
     );
   }
   return {
@@ -110,7 +110,7 @@ async function followedTwitchChannels(uid: string) {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-    }
+    },
   );
   const twitchJson = (await twitchResponse.json()) as any;
   return (twitchJson.data || []).map((channel: any) => {
@@ -133,7 +133,7 @@ async function followedTwitchChannels(uid: string) {
 
 async function twitchResults(query: string) {
   const credentials = await new ClientCredentials(TWITCH_OAUTH_CONFIG).getToken(
-    { scopes: [] }
+    { scopes: [] },
   );
   const twitchResponse = await fetch(
     "https://api.twitch.tv/helix/search/channels?query=" +
@@ -144,7 +144,7 @@ async function twitchResults(query: string) {
         Authorization: `Bearer ${credentials.token.access_token}`,
         "Content-Type": "application/json",
       },
-    }
+    },
   );
   const twitchJson = (await twitchResponse.json()) as any;
   return (twitchJson.data || []).map((channel: any) => {
@@ -182,6 +182,6 @@ export const search = functions
       : [];
     return exactMatchesFirst(
       [...twitch, ...(await kick), ...(await youtube)],
-      query
+      query,
     );
   });

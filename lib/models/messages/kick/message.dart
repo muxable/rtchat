@@ -16,8 +16,11 @@ class KickMessageReplyModel {
   final String content;
   final KickUserModel author;
 
-  const KickMessageReplyModel(
-      {required this.messageId, required this.content, required this.author});
+  const KickMessageReplyModel({
+    required this.messageId,
+    required this.content,
+    required this.author,
+  });
 
   /// The replied-to message with emotes shown by name.
   String get text =>
@@ -34,36 +37,42 @@ class KickMessageModel extends MessageModel implements ChatMessage {
   final bool deleted;
   final String channelId;
 
-  KickMessageModel(
-      {required super.messageId,
-      required super.timestamp,
-      required this.author,
-      required this.message,
-      this.reply,
-      this.deleted = false,
-      required this.channelId});
+  KickMessageModel({
+    required super.messageId,
+    required super.timestamp,
+    required this.author,
+    required this.message,
+    this.reply,
+    this.deleted = false,
+    required this.channelId,
+  });
 
   /// Parses the `event` of a `kick.chat.message.sent` document.
-  factory KickMessageModel.fromEvent(
-      {required String messageId,
-      required DateTime timestamp,
-      required String channelId,
-      required Map<String, dynamic> event}) {
+  factory KickMessageModel.fromEvent({
+    required String messageId,
+    required DateTime timestamp,
+    required String channelId,
+    required Map<String, dynamic> event,
+  }) {
     final repliesTo = event['replies_to'];
     return KickMessageModel(
       messageId: messageId,
       timestamp: timestamp,
       channelId: channelId,
-      author:
-          KickUserModel.fromJson(Map<String, dynamic>.from(event['sender'])),
+      author: KickUserModel.fromJson(
+        Map<String, dynamic>.from(event['sender']),
+      ),
       message: event['content'] ?? '',
-      reply: repliesTo == null
-          ? null
-          : KickMessageReplyModel(
-              messageId: "kick:${repliesTo['message_id']}",
-              content: repliesTo['content'] ?? '',
-              author: KickUserModel.fromJson(
-                  Map<String, dynamic>.from(repliesTo['sender'] ?? {}))),
+      reply:
+          repliesTo == null
+              ? null
+              : KickMessageReplyModel(
+                messageId: "kick:${repliesTo['message_id']}",
+                content: repliesTo['content'] ?? '',
+                author: KickUserModel.fromJson(
+                  Map<String, dynamic>.from(repliesTo['sender'] ?? {}),
+                ),
+              ),
     );
   }
 
@@ -94,7 +103,9 @@ class KickMessageModel extends MessageModel implements ChatMessage {
         yield TextToken(message.substring(last, match.start));
       }
       yield EmoteToken(
-          url: kickEmoteUrl(match.group(1)!), code: match.group(2)!);
+        url: kickEmoteUrl(match.group(1)!),
+        code: match.group(2)!,
+      );
       last = match.end;
     }
     if (last < message.length) {
@@ -103,11 +114,12 @@ class KickMessageModel extends MessageModel implements ChatMessage {
   }
 
   KickMessageModel withDeleted(bool deleted) => KickMessageModel(
-      messageId: messageId,
-      timestamp: timestamp,
-      author: author,
-      message: message,
-      reply: reply,
-      deleted: deleted,
-      channelId: channelId);
+    messageId: messageId,
+    timestamp: timestamp,
+    author: author,
+    message: message,
+    reply: reply,
+    deleted: deleted,
+    channelId: channelId,
+  );
 }

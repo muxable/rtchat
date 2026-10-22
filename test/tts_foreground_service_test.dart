@@ -24,8 +24,9 @@ void main() {
 
   setUp(() {
     calls = [];
-    messenger.setMockMethodCallHandler(TtsForegroundService.channel,
-        (call) async {
+    messenger.setMockMethodCallHandler(TtsForegroundService.channel, (
+      call,
+    ) async {
       calls.add(call);
       return null;
     });
@@ -62,8 +63,9 @@ void main() {
     expect(calls.map((c) => c.method), ['start', 'stop']);
   });
 
-  testWidgets('updates the notification when switching to alerts only',
-      (tester) async {
+  testWidgets('updates the notification when switching to alerts only', (
+    tester,
+  ) async {
     model.setMode(l10n, TtsMode.enabled);
     await frame(tester);
     model.setMode(l10n, TtsMode.alertsOnly);
@@ -72,16 +74,19 @@ void main() {
     expect(calls.last.arguments['text'], l10n.alertsEnabled);
   });
 
-  testWidgets("the notification's turn off button turns tts off",
-      (tester) async {
+  testWidgets("the notification's turn off button turns tts off", (
+    tester,
+  ) async {
     model.setMode(l10n, TtsMode.enabled);
     await frame(tester);
 
     await messenger.handlePlatformMessage(
-        TtsForegroundService.channel.name,
-        TtsForegroundService.channel.codec
-            .encodeMethodCall(const MethodCall('turnOff')),
-        (_) {});
+      TtsForegroundService.channel.name,
+      TtsForegroundService.channel.codec.encodeMethodCall(
+        const MethodCall('turnOff'),
+      ),
+      (_) {},
+    );
     await frame(tester);
 
     expect(model.mode, TtsMode.disabled);

@@ -43,7 +43,7 @@ vi.mock("firebase-admin", () => {
     set: async (data: Record<string, any>, options?: { merge?: boolean }) => {
       store.set(
         path,
-        options?.merge ? { ...store.get(path), ...data } : { ...data }
+        options?.merge ? { ...store.get(path), ...data } : { ...data },
       );
     },
   });
@@ -105,7 +105,7 @@ describe("documents", () => {
     expect(doc.data.raid).toEqual(r);
     expect((doc.data.timestamp as any).toMillis()).toBe(startedAt);
     expect((doc.data.expiresAt as any).toMillis()).toBe(
-      now + 14 * 86400 * 1000
+      now + 14 * 86400 * 1000,
     );
   });
 
@@ -145,33 +145,33 @@ describe("raid", () => {
       .mockResolvedValueOnce(
         response(200, {
           data: [{ created_at: "2026-10-14T01:00:00Z", is_mature: false }],
-        })
+        }),
       )
       .mockResolvedValueOnce(
         response(200, {
           data: [{ id: "456", login: "target", display_name: "Target" }],
-        })
+        }),
       );
 
     await raid("uid", "123", "456");
     expect(fetch.mock.calls[0][0]).toBe(
-      "https://api.twitch.tv/helix/raids?from_broadcaster_id=123&to_broadcaster_id=456"
+      "https://api.twitch.tv/helix/raids?from_broadcaster_id=123&to_broadcaster_id=456",
     );
     expect(fetch.mock.calls[1][0]).toBe(
-      "https://api.twitch.tv/helix/users?id=456"
+      "https://api.twitch.tv/helix/users?id=456",
     );
     const docs = messages("twitch:123");
     expect(docs).toHaveLength(1);
     expect(docs[0].id).toBe(`raid_update_v2-456-${startedAt}`);
     expect(docs[0].raid).toEqual(toRaid(target, startedAt));
     expect(store.get("channels/twitch:123")?.outgoingRaid).toEqual(
-      toRaid(target, startedAt)
+      toRaid(target, startedAt),
     );
   });
 
   it("doesn't write anything when twitch rejects the raid", async () => {
     fetch.mockResolvedValueOnce(
-      response(409, { status: 409, message: "already raiding" })
+      response(409, { status: 409, message: "already raiding" }),
     );
     await expect(raid("uid", "123", "456")).resolves.toEqual({
       status: 409,
@@ -226,7 +226,7 @@ describe("cancelRaid", () => {
     fetch.mockResolvedValueOnce(response(204));
     await cancelRaid("uid", "123");
     expect(fetch.mock.calls[0][0]).toBe(
-      "https://api.twitch.tv/helix/raids?broadcaster_id=123"
+      "https://api.twitch.tv/helix/raids?broadcaster_id=123",
     );
     expect(fetch.mock.calls[0][1].method).toBe("DELETE");
     const docs = messages("twitch:123");

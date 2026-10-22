@@ -144,11 +144,11 @@ class StyleModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-        "lightnessBoost": _lightnessBoost,
-        "fontSize": _fontSize,
-        "isDeletedMessagesVisible": _isDeletedMessagesVisible,
-        "compactMessages": _compactMessages.toJson(),
-        "isDiscoModeEnabled": _isDiscoModeAvailable,
-        "isLoginShown": _isLoginShown,
-      };
+    "lightnessBoost": _lightnessBoost,
+    "fontSize": _fontSize,
+    "isDeletedMessagesVisible": _isDeletedMessagesVisible,
+    "compactMessages": _compactMessages.toJson(),
+    "isDiscoModeEnabled": _isDiscoModeAvailable,
+    "isLoginShown": _isLoginShown,
+  };
 }

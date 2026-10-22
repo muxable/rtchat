@@ -24,9 +24,9 @@ class TwitchBadgeModel extends ChangeNotifier {
         .getTwitchBadges()
         .asStream()
         .listen((badgeSets) {
-      globalBadgeSets = badgeSets;
-      notifyListeners();
-    });
+          globalBadgeSets = badgeSets;
+          notifyListeners();
+        });
     if (channel != null) {
       if (channel.provider != Providers.twitch) {
         return;
@@ -35,9 +35,9 @@ class TwitchBadgeModel extends ChangeNotifier {
           .getTwitchBadges(channelId: channel.channelId)
           .asStream()
           .listen((badgeSets) {
-        localBadgeSets = badgeSets;
-        notifyListeners();
-      });
+            localBadgeSets = badgeSets;
+            notifyListeners();
+          });
     }
   }
 
@@ -92,7 +92,5 @@ class TwitchBadgeModel extends ChangeNotifier {
     }
   }
 
-  Map<String, dynamic> toJson() => {
-        "enabled": _enabled.toList(),
-      };
+  Map<String, dynamic> toJson() => {"enabled": _enabled.toList()};
 }

@@ -14,17 +14,24 @@ void main() {
   group("getDisplayName", () {
     final model = StyleModel.fromJson({});
 
-    KickUserModel kick(String username, String slug) => KickUserModel.fromJson(
-        {'user_id': 1, 'username': username, 'channel_slug': slug});
+    KickUserModel kick(String username, String slug) => KickUserModel.fromJson({
+      'user_id': 1,
+      'username': username,
+      'channel_slug': slug,
+    });
 
     test("hides a kick slug that only swaps underscores for dashes", () {
-      expect(model.getDisplayName(kick("For_Example", "for-example")),
-          "For_Example");
+      expect(
+        model.getDisplayName(kick("For_Example", "for-example")),
+        "For_Example",
+      );
     });
 
     test("shows the login when it differs from the display name", () {
-      expect(model.getDisplayName(kick("Someone", "someone-else")),
-          "Someone (someone-else)");
+      expect(
+        model.getDisplayName(kick("Someone", "someone-else")),
+        "Someone (someone-else)",
+      );
     });
   });
 }

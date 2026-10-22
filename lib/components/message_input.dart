@@ -23,7 +23,9 @@ class EmoteTextEditingController extends TextEditingController {
   EmoteTextEditingController(this.emotes);
 
   Iterable<MessageToken> tokenizeEmotes(
-      String message, List<Emote> emotes) sync* {
+    String message,
+    List<Emote> emotes,
+  ) sync* {
     final emotesMap = {for (final emote in emotes) emote.code: emote};
     var lastParsedStart = 0;
     for (var start = 0; start < message.length;) {
@@ -46,22 +48,27 @@ class EmoteTextEditingController extends TextEditingController {
   }
 
   static Iterable<InlineSpan> render(
-      BuildContext context, StyleModel styleModel, MessageToken token) sync* {
+    BuildContext context,
+    StyleModel styleModel,
+    MessageToken token,
+  ) sync* {
     if (token is TextToken) {
       yield TextSpan(text: token.text);
     } else if (token is EmoteToken) {
       yield* [
         TextSpan(text: "\u200B" * (token.code.length - 1)),
         WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Tooltip(
-                message: token.code,
-                preferBelow: false,
-                child: Image(
-                    height: styleModel.fontSize,
-                    image: ResilientNetworkImage(token.url),
-                    errorBuilder: (context, error, stackTrace) =>
-                        Text(token.code))))
+          alignment: PlaceholderAlignment.middle,
+          child: Tooltip(
+            message: token.code,
+            preferBelow: false,
+            child: Image(
+              height: styleModel.fontSize,
+              image: ResilientNetworkImage(token.url),
+              errorBuilder: (context, error, stackTrace) => Text(token.code),
+            ),
+          ),
+        ),
       ];
     } else {
       throw Exception("invalid token");
@@ -74,9 +81,9 @@ class EmoteTextEditingController extends TextEditingController {
     TextStyle? style,
     required bool withComposing,
   }) {
-    assert(!value.composing.isValid ||
-        !withComposing ||
-        value.isComposingRangeValid);
+    assert(
+      !value.composing.isValid || !withComposing || value.isComposingRangeValid,
+    );
     // If the composing range is out of range for the current text, ignore it to
     // preserve the tree integrity, otherwise in release mode a RangeError will
     // be thrown and this EditableText will be built with a broken subtree.
@@ -87,33 +94,40 @@ class EmoteTextEditingController extends TextEditingController {
 
     if (composingRegionOutOfRange) {
       return TextSpan(
-          style: style,
-          children: tokenizeEmotes(text, emotes)
-              .expand((token) => render(context, styleModel, token))
-              .toList());
+        style: style,
+        children:
+            tokenizeEmotes(
+              text,
+              emotes,
+            ).expand((token) => render(context, styleModel, token)).toList(),
+      );
     }
 
     final TextStyle composingStyle =
         style?.merge(const TextStyle(decoration: TextDecoration.underline)) ??
-            const TextStyle(decoration: TextDecoration.underline);
+        const TextStyle(decoration: TextDecoration.underline);
 
     return TextSpan(
       style: style,
       children: <TextSpan>[
         TextSpan(
-            children:
-                tokenizeEmotes(value.composing.textBefore(value.text), emotes)
-                    .expand((token) => render(context, styleModel, token))
-                    .toList()),
+          children:
+              tokenizeEmotes(
+                value.composing.textBefore(value.text),
+                emotes,
+              ).expand((token) => render(context, styleModel, token)).toList(),
+        ),
         TextSpan(
           style: composingStyle,
           text: value.composing.textInside(value.text),
         ),
         TextSpan(
-            children:
-                tokenizeEmotes(value.composing.textAfter(value.text), emotes)
-                    .expand((token) => render(context, styleModel, token))
-                    .toList()),
+          children:
+              tokenizeEmotes(
+                value.composing.textAfter(value.text),
+                emotes,
+              ).expand((token) => render(context, styleModel, token)).toList(),
+        ),
       ],
     );
   }
@@ -175,8 +189,9 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     _textEditingController = EmoteTextEditingController(const []);
     _useEmotesOf(widget.channel);
     // Subscribe to keyboard visibility changes.
-    keyboardSubscription =
-        keyboardVisibilityController.onChange.listen((visible) {
+    keyboardSubscription = keyboardVisibilityController.onChange.listen((
+      visible,
+    ) {
       setState(() {
         _isKeyboardVisible = visible;
       });
@@ -211,18 +226,21 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     }
     final emotes = widget.loadEmotes(channel);
     _channelEmotes = emotes;
-    emotes.then((loaded) {
-      // the channel may have changed while these were loading.
-      if (!mounted || _emoteChannel != channel) {
-        return;
-      }
-      setState(() {
-        _loadedEmotes = loaded;
-        _textEditingController?.emotes = loaded;
-      });
-    }, onError: (_) {
-      // without emotes, messages are still sent as typed.
-    });
+    emotes.then(
+      (loaded) {
+        // the channel may have changed while these were loading.
+        if (!mounted || _emoteChannel != channel) {
+          return;
+        }
+        setState(() {
+          _loadedEmotes = loaded;
+          _textEditingController?.emotes = loaded;
+        });
+      },
+      onError: (_) {
+        // without emotes, messages are still sent as typed.
+      },
+    );
   }
 
   // Handles any shared data we may receive.
@@ -266,14 +284,10 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
         try {
           final error = await ActionsAdapter.instance.send(channel, value);
           if (error != null) {
-            messenger.showSnackBar(SnackBar(
-              content: Text(error),
-            ));
+            messenger.showSnackBar(SnackBar(content: Text(error)));
           }
         } catch (e) {
-          messenger.showSnackBar(SnackBar(
-            content: Text(e.toString()),
-          ));
+          messenger.showSnackBar(SnackBar(content: Text(e.toString())));
         }
         done = true;
         if (!mounted) {
@@ -303,147 +317,164 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
     final l10n = AppLocalizations.of(context)!;
     return Material(
       child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // render pending sends
-            ..._pendingSend.map((e) => Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-                  child: Text(e,
-                      style: const TextStyle(fontStyle: FontStyle.italic)),
-                )),
-            if (_isKeyboardVisible && channel != null)
-              Flexible(
-                child: AutocompleteWidget(
-                  controller: _textEditingController!,
-                  onSend: sendMessage,
-                  emotes: _channelEmotes,
-                ),
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // render pending sends
+          ..._pendingSend.map(
+            (e) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+              child: Text(
+                e,
+                style: const TextStyle(fontStyle: FontStyle.italic),
               ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Container(
-                decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(24)),
-                    color: Theme.of(context).splashColor),
-                child: TextField(
-                  enabled: channel != null,
-                  focusNode: _chatInputFocusNode,
-                  controller: _textEditingController,
-                  textInputAction: TextInputAction.send,
-                  // kick rejects messages over 500 characters (grapheme
-                  // clusters, which is how maxLength counts too).
-                  maxLength: channel?.provider == Providers.kick ? 500 : null,
-                  buildCounter: (context,
-                          {required currentLength,
-                          required isFocused,
-                          maxLength}) =>
-                      null,
-                  maxLines: 6,
-                  minLines: 1,
-                  textAlignVertical: TextAlignVertical.center,
-                  decoration: InputDecoration(
-                      prefixIcon: IconButton(
-                        onPressed: channel == null
+            ),
+          ),
+          if (_isKeyboardVisible && channel != null)
+            Flexible(
+              child: AutocompleteWidget(
+                controller: _textEditingController!,
+                onSend: sendMessage,
+                emotes: _channelEmotes,
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(24)),
+                color: Theme.of(context).splashColor,
+              ),
+              child: TextField(
+                enabled: channel != null,
+                focusNode: _chatInputFocusNode,
+                controller: _textEditingController,
+                textInputAction: TextInputAction.send,
+                // kick rejects messages over 500 characters (grapheme
+                // clusters, which is how maxLength counts too).
+                maxLength: channel?.provider == Providers.kick ? 500 : null,
+                buildCounter:
+                    (
+                      context, {
+                      required currentLength,
+                      required isFocused,
+                      maxLength,
+                    }) => null,
+                maxLines: 6,
+                minLines: 1,
+                textAlignVertical: TextAlignVertical.center,
+                decoration: InputDecoration(
+                  prefixIcon: IconButton(
+                    onPressed:
+                        channel == null
                             ? null
                             : () {
-                                if (_isEmotePickerVisible) {
-                                  setState(() => _isEmotePickerVisible = false);
-                                  _chatInputFocusNode.requestFocus();
-                                } else {
-                                  _chatInputFocusNode.unfocus();
-                                  setState(() {
-                                    _isEmotePickerVisible = true;
-                                    _emoteIndex =
-                                        Random().nextInt(_emotes.length);
-                                  });
-                                }
-                              },
-                        splashRadius: 24,
-                        icon: _isEmotePickerVisible
+                              if (_isEmotePickerVisible) {
+                                setState(() => _isEmotePickerVisible = false);
+                                _chatInputFocusNode.requestFocus();
+                              } else {
+                                _chatInputFocusNode.unfocus();
+                                setState(() {
+                                  _isEmotePickerVisible = true;
+                                  _emoteIndex = Random().nextInt(
+                                    _emotes.length,
+                                  );
+                                });
+                              }
+                            },
+                    splashRadius: 24,
+                    icon:
+                        _isEmotePickerVisible
                             ? const Icon(Icons.keyboard_rounded)
                             : ColorFiltered(
-                                colorFilter: _greyscale,
-                                child: Image(
-                                  width: 24,
-                                  height: 24,
-                                  image: ResilientNetworkImage(
-                                      Uri.parse(_emotes[_emoteIndex])),
-                                )),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.send_rounded),
-                        color: Theme.of(context).colorScheme.primary,
-                        splashRadius: 24,
-                        onPressed: channel == null
+                              colorFilter: _greyscale,
+                              child: Image(
+                                width: 24,
+                                height: 24,
+                                image: ResilientNetworkImage(
+                                  Uri.parse(_emotes[_emoteIndex]),
+                                ),
+                              ),
+                            ),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.send_rounded),
+                    color: Theme.of(context).colorScheme.primary,
+                    splashRadius: 24,
+                    onPressed:
+                        channel == null
                             ? null
                             : () =>
                                 sendMessage(_textEditingController?.text ?? ''),
-                      ),
-                      border: InputBorder.none,
-                      hintMaxLines: 1,
-                      hintText: () {
-                        if (channel == null) {
-                          final account = Provider.of<UserModel>(context)
-                              .userChannel
-                              ?.provider;
-                          return account == null
-                              ? l10n.signInToSendMessages
-                              : l10n.cantChatWithAccount(providerName(account));
-                        }
-                        if (_textSeed < 0.5) {
-                          return l10n.sendAMessage;
-                        } else if (_textSeed < 0.9) {
-                          return l10n.writeSomething;
-                        } else if (_textSeed < 0.99) {
-                          return l10n.speakToTheCrowds;
-                        } else if (_textSeed < 0.999) {
-                          return l10n.shareYourThoughts;
-                        }
-                        return l10n.saySomethingYouLittleBitch;
-                      }()),
-                  onChanged: (text) {
-                    final filtered = text.replaceAll('\n', ' ');
-                    if (filtered == text) {
-                      return;
+                  ),
+                  border: InputBorder.none,
+                  hintMaxLines: 1,
+                  hintText: () {
+                    if (channel == null) {
+                      final account =
+                          Provider.of<UserModel>(context).userChannel?.provider;
+                      return account == null
+                          ? l10n.signInToSendMessages
+                          : l10n.cantChatWithAccount(providerName(account));
                     }
-                    setState(() {
-                      _textEditingController?.value = TextEditingValue(
-                          text: filtered,
-                          selection: TextSelection.fromPosition(TextPosition(
-                              offset:
-                                  _textEditingController?.text.length ?? 0)));
-                    });
-                  },
-                  onSubmitted: sendMessage,
-                  onTap: () {
-                    setState(() => _isEmotePickerVisible = false);
-                    _chatInputFocusNode.requestFocus();
-                  },
+                    if (_textSeed < 0.5) {
+                      return l10n.sendAMessage;
+                    } else if (_textSeed < 0.9) {
+                      return l10n.writeSomething;
+                    } else if (_textSeed < 0.99) {
+                      return l10n.speakToTheCrowds;
+                    } else if (_textSeed < 0.999) {
+                      return l10n.shareYourThoughts;
+                    }
+                    return l10n.saySomethingYouLittleBitch;
+                  }(),
                 ),
+                onChanged: (text) {
+                  final filtered = text.replaceAll('\n', ' ');
+                  if (filtered == text) {
+                    return;
+                  }
+                  setState(() {
+                    _textEditingController?.value = TextEditingValue(
+                      text: filtered,
+                      selection: TextSelection.fromPosition(
+                        TextPosition(
+                          offset: _textEditingController?.text.length ?? 0,
+                        ),
+                      ),
+                    );
+                  });
+                },
+                onSubmitted: sendMessage,
+                onTap: () {
+                  setState(() => _isEmotePickerVisible = false);
+                  _chatInputFocusNode.requestFocus();
+                },
               ),
             ),
-            _isEmotePickerVisible && channel != null
-                ? EmotePickerWidget(
-                    channel: channel,
-                    emotes: _loadedEmotes,
-                    onEmoteSelected: (emote) {
-                      if (emote == null) {
-                        setState(() {
-                          _isEmotePickerVisible = false;
-                        });
-                        return;
-                      }
-                      if (_textEditingController?.text.isNotEmpty ?? false) {
-                        _textEditingController?.text =
-                            "${_textEditingController?.text} ${emote.code} ";
-                      } else {
-                        _textEditingController?.text = "${emote.code} ";
-                      }
-                    })
-                : Container(),
-          ]),
+          ),
+          _isEmotePickerVisible && channel != null
+              ? EmotePickerWidget(
+                channel: channel,
+                emotes: _loadedEmotes,
+                onEmoteSelected: (emote) {
+                  if (emote == null) {
+                    setState(() {
+                      _isEmotePickerVisible = false;
+                    });
+                    return;
+                  }
+                  if (_textEditingController?.text.isNotEmpty ?? false) {
+                    _textEditingController?.text =
+                        "${_textEditingController?.text} ${emote.code} ";
+                  } else {
+                    _textEditingController?.text = "${emote.code} ";
+                  }
+                },
+              )
+              : Container(),
+        ],
+      ),
     );
   }
 }

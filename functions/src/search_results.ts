@@ -4,7 +4,7 @@ import { parseYouTubeQuery } from "./youtube";
 // or YouTube match isn't buried under Twitch's fuzzy results.
 export function exactMatchesFirst<T extends { login: string }>(
   results: T[],
-  query: string
+  query: string,
 ) {
   const lookup = parseYouTubeQuery(query);
   const wanted =

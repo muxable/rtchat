@@ -11,7 +11,10 @@ class KickBadge {
   const KickBadge({required this.type, required this.text, this.count});
 
   factory KickBadge.fromJson(Map<String, dynamic> json) => KickBadge(
-      type: json['type'] ?? '', text: json['text'] ?? '', count: json['count']);
+    type: json['type'] ?? '',
+    text: json['text'] ?? '',
+    count: json['count'],
+  );
 }
 
 class KickUserModel implements ChatUser {
@@ -27,13 +30,14 @@ class KickUserModel implements ChatUser {
   final List<KickBadge> badges;
   final String? profilePictureUrl;
 
-  const KickUserModel(
-      {required this.userId,
-      required this.login,
-      this.displayName,
-      this.usernameColor,
-      this.badges = const [],
-      this.profilePictureUrl});
+  const KickUserModel({
+    required this.userId,
+    required this.login,
+    this.displayName,
+    this.usernameColor,
+    this.badges = const [],
+    this.profilePictureUrl,
+  });
 
   /// Parses a Kick webhook user object (sender, follower, subscriber, ...).
   factory KickUserModel.fromJson(Map<String, dynamic> json) {

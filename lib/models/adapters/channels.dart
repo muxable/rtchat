@@ -16,21 +16,23 @@ class StreamChannelMetadata extends ChannelMetadata {
   final String? language;
   final String? title;
 
-  StreamChannelMetadata(
-      {required this.viewerCount,
-      this.followerCount,
-      this.language,
-      this.title,
-      required super.onlineAt});
+  StreamChannelMetadata({
+    required this.viewerCount,
+    this.followerCount,
+    this.language,
+    this.title,
+    required super.onlineAt,
+  });
 }
 
 class TwitchChannelMetadata extends StreamChannelMetadata {
-  TwitchChannelMetadata(
-      {required super.viewerCount,
-      required int super.followerCount,
-      super.language,
-      super.title,
-      required super.onlineAt});
+  TwitchChannelMetadata({
+    required super.viewerCount,
+    required int super.followerCount,
+    super.language,
+    super.title,
+    required super.onlineAt,
+  });
 
   @override
   int get followerCount => super.followerCount!;
@@ -39,12 +41,13 @@ class TwitchChannelMetadata extends StreamChannelMetadata {
 /// Kick's API doesn't report follower counts, so [followerCount] is only set
 /// once the backend has counted follows.
 class KickChannelMetadata extends StreamChannelMetadata {
-  KickChannelMetadata(
-      {required super.viewerCount,
-      super.followerCount,
-      super.language,
-      super.title,
-      required super.onlineAt});
+  KickChannelMetadata({
+    required super.viewerCount,
+    super.followerCount,
+    super.language,
+    super.title,
+    required super.onlineAt,
+  });
 }
 
 class ChannelsAdapter {
@@ -68,27 +71,32 @@ class ChannelsAdapter {
 /// Reads the metadata stored on `channels/{provider:id}`.
 @visibleForTesting
 ChannelMetadata channelMetadataFromData(
-    Channel channel, Map<String, dynamic>? data) {
+  Channel channel,
+  Map<String, dynamic>? data,
+) {
   if (data == null) {
     return ChannelMetadata(onlineAt: null);
   }
   switch (channel.provider) {
     case Providers.twitch:
       return TwitchChannelMetadata(
-          onlineAt: (data["onlineAt"] as Timestamp?)?.toDate(),
-          viewerCount: data["viewerCount"] ?? 0,
-          followerCount: data["followerCount"] ?? 0,
-          language: data["language"],
-          title: data["title"]);
+        onlineAt: (data["onlineAt"] as Timestamp?)?.toDate(),
+        viewerCount: data["viewerCount"] ?? 0,
+        followerCount: data["followerCount"] ?? 0,
+        language: data["language"],
+        title: data["title"],
+      );
     case Providers.kick:
       return KickChannelMetadata(
-          onlineAt: (data["onlineAt"] as Timestamp?)?.toDate(),
-          viewerCount: data["viewerCount"] ?? 0,
-          followerCount: data["followerCount"],
-          language: data["language"],
-          title: data["title"]);
+        onlineAt: (data["onlineAt"] as Timestamp?)?.toDate(),
+        viewerCount: data["viewerCount"] ?? 0,
+        followerCount: data["followerCount"],
+        language: data["language"],
+        title: data["title"],
+      );
     default:
       return ChannelMetadata(
-          onlineAt: (data["onlineAt"] as Timestamp?)?.toDate());
+        onlineAt: (data["onlineAt"] as Timestamp?)?.toDate(),
+      );
   }
 }

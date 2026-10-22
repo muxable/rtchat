@@ -16,13 +16,13 @@ export function youTubeEmbedUrl(channelId: string): string | null {
 }
 
 export function parseYouTubeQuery(
-  query: string
+  query: string,
 ): { channelId: string } | { handle: string } | null {
   let value = query.trim();
   if (/^(https?:\/\/)?(www\.|m\.)?youtube\.com\//i.test(value)) {
     try {
       const url = new URL(
-        /^https?:\/\//i.test(value) ? value : `https://${value}`
+        /^https?:\/\//i.test(value) ? value : `https://${value}`,
       );
       const path = decodeURIComponent(url.pathname).replace(/\/$/, "");
       if (path.startsWith("/channel/")) {
@@ -57,7 +57,7 @@ export type YouTubeSearchResult = Awaited<
 export async function searchYouTubeChannel(
   apiKey: string,
   query: string,
-  cache?: YouTubeLookupCache
+  cache?: YouTubeLookupCache,
 ) {
   const lookup = parseYouTubeQuery(query);
   if (!lookup || !apiKey) {
@@ -76,7 +76,7 @@ export async function searchYouTubeChannel(
 // Exact channels.list lookups cost one quota unit; never use search.list.
 async function lookupYouTubeChannel(
   apiKey: string,
-  lookup: { channelId: string } | { handle: string }
+  lookup: { channelId: string } | { handle: string },
 ) {
   const params = new URLSearchParams({ part: "snippet", key: apiKey });
   if ("channelId" in lookup) {
@@ -86,7 +86,7 @@ async function lookupYouTubeChannel(
   }
   try {
     const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/channels?${params}`
+      `https://www.googleapis.com/youtube/v3/channels?${params}`,
     );
     if (!response.ok) {
       return [];

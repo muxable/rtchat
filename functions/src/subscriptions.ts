@@ -14,7 +14,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
   if (!provider || !channelId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "missing provider, channelId"
+      "missing provider, channelId",
     );
   }
 
@@ -24,7 +24,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
       if (!channel) {
         throw new functions.https.HttpsError(
           "invalid-argument",
-          "invalid channel"
+          "invalid channel",
         );
       }
 
@@ -33,7 +33,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         "subscribing to",
         provider,
         channel,
-        channelId
+        channelId,
       );
 
       // acquire a new assignment.
@@ -66,7 +66,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
         {
           lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
         },
-        { merge: true }
+        { merge: true },
       );
 
       if (profile.get("twitch") && profile.get("twitch")["id"] == channelId) {
@@ -82,7 +82,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
             {
               lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
             },
-            { merge: true }
+            { merge: true },
           );
 
         // if there are no messages logged, this is a new user.
@@ -140,7 +140,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
       if (!isYouTubeChannelId(channelId)) {
         throw new functions.https.HttpsError(
           "invalid-argument",
-          "invalid channel"
+          "invalid channel",
         );
       }
       await admin
@@ -156,7 +156,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
       if (!/^\d+$/.test(String(channelId))) {
         throw new functions.https.HttpsError(
           "invalid-argument",
-          "invalid channel"
+          "invalid channel",
         );
       }
       await ensureKickSubscriptions(String(channelId));
@@ -173,7 +173,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
       }
       await profileRef.set(
         { lastActiveAt: admin.firestore.FieldValue.serverTimestamp() },
-        { merge: true }
+        { merge: true },
       );
       if (String(kickProfile.id) === String(channelId)) {
         // owners' channels show up in search like twitch channels do.
@@ -183,7 +183,7 @@ export const subscribe = functions.https.onCall(async (data, context) => {
           .doc(`${provider}:${channelId}`)
           .set(
             { lastActiveAt: admin.firestore.FieldValue.serverTimestamp() },
-            { merge: true }
+            { merge: true },
           );
       }
       return channelId;

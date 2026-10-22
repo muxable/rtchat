@@ -47,19 +47,21 @@ var nativeMessageIdCounter = 0;
 class StreamStateEventModel extends MessageModel {
   final bool isOnline;
 
-  const StreamStateEventModel(
-      {required super.messageId,
-      required this.isOnline,
-      required super.timestamp});
+  const StreamStateEventModel({
+    required super.messageId,
+    required this.isOnline,
+    required super.timestamp,
+  });
 }
 
 class SystemMessageModel extends MessageModel {
   final String text;
 
   SystemMessageModel({required this.text})
-      : super(
-            messageId: 'system-${nativeMessageIdCounter++}',
-            timestamp: DateTime.now());
+    : super(
+        messageId: 'system-${nativeMessageIdCounter++}',
+        timestamp: DateTime.now(),
+      );
 }
 
 class ChatClearedEventModel extends MessageModel {

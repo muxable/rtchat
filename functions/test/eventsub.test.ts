@@ -9,7 +9,7 @@ import { eventsubConditions, outgoingRaidFrom } from "../src/eventsub";
 describe("eventsubConditions", () => {
   it("subscribes to raids into and out of the channel", () => {
     const raids = eventsubConditions("123").filter(
-      (s) => s.type === "channel.raid"
+      (s) => s.type === "channel.raid",
     );
     expect(raids.map((s) => s.condition)).toEqual([
       { to_broadcaster_user_id: "123" },
@@ -21,7 +21,7 @@ describe("eventsubConditions", () => {
     const conditions = Object.fromEntries(
       eventsubConditions("123")
         .filter((s) => s.type !== "channel.raid")
-        .map((s) => [s.type, s.condition])
+        .map((s) => [s.type, s.condition]),
     );
     expect(conditions["stream.online"]).toEqual({
       broadcaster_user_id: "123",
@@ -42,7 +42,7 @@ describe("outgoingRaidFrom", () => {
           from_broadcaster_user_id: "123",
           to_broadcaster_user_id: "",
         },
-      })
+      }),
     ).toBe("123");
   });
 
@@ -54,19 +54,19 @@ describe("outgoingRaidFrom", () => {
           from_broadcaster_user_id: "",
           to_broadcaster_user_id: "456",
         },
-      })
+      }),
     ).toBeNull();
     expect(
       outgoingRaidFrom({
         type: "channel.raid",
         condition: { to_broadcaster_user_id: "456" },
-      })
+      }),
     ).toBeNull();
     expect(
       outgoingRaidFrom({
         type: "stream.online",
         condition: { broadcaster_user_id: "123" },
-      })
+      }),
     ).toBeNull();
     expect(outgoingRaidFrom(undefined)).toBeNull();
   });

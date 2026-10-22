@@ -39,8 +39,8 @@ vi.mock("firebase-admin", () => {
       store.set(
         path,
         Object.fromEntries(
-          Object.entries(data).map(([k, v]) => [k, resolve(v)])
-        )
+          Object.entries(data).map(([k, v]) => [k, resolve(v)]),
+        ),
       );
     },
     update: async (data: Record<string, any>) => {
@@ -69,7 +69,7 @@ vi.mock("firebase-admin", () => {
           .filter(([, data]) =>
             op === "<"
               ? data[field].toMillis() < value.toMillis()
-              : data[field].toMillis() > value.toMillis()
+              : data[field].toMillis() > value.toMillis(),
           )
           .map(([k]) => ({ id: k.split("/").pop() }));
         return { docs, empty: docs.length === 0 };
@@ -105,10 +105,10 @@ describe("helpers", () => {
   it("finds events that aren't subscribed yet", () => {
     expect(missingEvents([])).toEqual(KICK_EVENTS);
     expect(missingEvents(subscribed(KICK_EVENTS.map((e) => e.name)))).toEqual(
-      []
+      [],
     );
     expect(
-      missingEvents([{ id: "x", event: "chat.message.sent", version: 2 }])
+      missingEvents([{ id: "x", event: "chat.message.sent", version: 2 }]),
     ).toContainEqual({ name: "chat.message.sent", version: 1 });
   });
 
@@ -130,7 +130,7 @@ describe("helpers", () => {
           language: "en",
           start_time: "2025-01-14T16:08:06Z",
         },
-      })
+      }),
     ).toEqual({
       login: "muxfd",
       title: "irl",
@@ -170,7 +170,7 @@ describe("ensureKickSubscriptions", () => {
       method: "webhook",
     });
     expect(store.get("webhooks/kick:123")!.subscriptionIds).toHaveLength(
-      KICK_EVENTS.length
+      KICK_EVENTS.length,
     );
   });
 
@@ -222,7 +222,7 @@ describe("removeIdleKickSubscriptions", () => {
     expect(kickApi).toHaveBeenCalledWith(
       "app-token",
       "/events/subscriptions?id=a&id=b",
-      { method: "DELETE" }
+      { method: "DELETE" },
     );
     expect(store.has("webhooks/kick:111")).toBe(false);
     expect(store.has("webhooks/kick:222")).toBe(true);

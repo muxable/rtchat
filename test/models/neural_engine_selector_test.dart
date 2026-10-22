@@ -40,10 +40,15 @@ void main() {
     repository.installed['b'] = installedPack('b');
     repository.installed['a'] = installedPack('a');
     selector = NeuralEngineSelector(
-        repository: repository, tts: tts, reportError: (e, _) => fail('$e'));
+      repository: repository,
+      tts: tts,
+      reportError: (e, _) => fail('$e'),
+    );
     await selector.start();
-    expect(tts.neuralEngine,
-        isA<NeuralTtsEngine>().having((e) => e.pack.id, 'pack', 'a'));
+    expect(
+      tts.neuralEngine,
+      isA<NeuralTtsEngine>().having((e) => e.pack.id, 'pack', 'a'),
+    );
   });
 
   test('follows installs, upgrades and deletes', () async {
@@ -86,20 +91,21 @@ void main() {
       (const DeviceMemory(totalBytes: 1900 << 20), lowMemory),
       (
         const DeviceMemory(totalBytes: 8 << 30, isLowRamDevice: true),
-        lowMemory
+        lowMemory,
       ),
     ]) {
       final tts = TtsModel.fromJson({}, engine: FakeTtsEngine());
       var checks = 0;
       final selector = NeuralEngineSelector(
-          repository: repository,
-          tts: tts,
-          reportError: (e, _) => fail('$e'),
-          createEngine: (_) => FakeTtsEngine(),
-          deviceMemory: () async {
-            checks++;
-            return memory;
-          });
+        repository: repository,
+        tts: tts,
+        reportError: (e, _) => fail('$e'),
+        createEngine: (_) => FakeTtsEngine(),
+        deviceMemory: () async {
+          checks++;
+          return memory;
+        },
+      );
       await selector.start();
       await selector.start();
       expect((tts.neuralFallback, checks), (fallback, 1), reason: '$memory');
