@@ -58,10 +58,7 @@ Future<List<SearchResult>> fastSearch() async {
 }
 
 // The providers channel search can target, with the prefix shown for each.
-const searchProviders = {
-  "twitch": "twitch.tv/",
-  "kick": "kick.com/",
-};
+const searchProviders = {"twitch": "twitch.tv/", "kick": "kick.com/"};
 
 typedef ChannelSearch =
     Stream<List<SearchResult>> Function(
@@ -69,6 +66,8 @@ typedef ChannelSearch =
       String provider,
       bool isShowOnlyOnline,
     );
+
+String _channelKey(String provider, String channelId) => '$provider:$channelId';
 
 /// Recently active channels matching [query].
 ///
@@ -87,26 +86,29 @@ List<SearchResult> filterRecentChannels(
         (result.displayName.toLowerCase().contains(needle) ||
             result.login.toLowerCase().contains(needle)),
   );
-  final followed = matches
-      .where(
-        (result) => followedChannelKeys.contains(
-          _channelKey(result.provider, result.channelId),
-        ),
-      )
-      .toList();
-  final others = matches
-      .where(
-        (result) => !followedChannelKeys.contains(
-          _channelKey(result.provider, result.channelId),
-        ),
-      )
-      .toList()
-    ..sort((a, b) {
-      if (a.isOnline != b.isOnline) {
-        return a.isOnline ? -1 : 1;
-      }
-      return 0;
-    });
+  final followed =
+      matches
+          .where(
+            (result) => followedChannelKeys.contains(
+              _channelKey(result.provider, result.channelId),
+            ),
+          )
+          .toList();
+  final others =
+      matches
+          .where(
+            (result) =>
+                !followedChannelKeys.contains(
+                  _channelKey(result.provider, result.channelId),
+                ),
+          )
+          .toList()
+        ..sort((a, b) {
+          if (a.isOnline != b.isOnline) {
+            return a.isOnline ? -1 : 1;
+          }
+          return 0;
+        });
   return [...followed, ...others.take(5)];
 }
 
@@ -116,44 +118,48 @@ Stream<List<SearchResult>> searchChannels(
   bool isShowOnlyOnline, {
   List<Channel> followedChannels = const [],
 }) async* {
-  final followedForProvider = followedChannels
-      .where((channel) => channel.provider == provider)
-      .toList();
-  final followedChannelKeys = followedForProvider
-      .map((channel) => _channelKey(channel.provider, channel.channelId))
-      .toSet();
+  final followedForProvider =
+      followedChannels
+          .where((channel) => channel.provider == provider)
+          .toList();
+  final followedChannelKeys =
+      followedForProvider
+          .map((channel) => _channelKey(channel.provider, channel.channelId))
+          .toSet();
   // Fetch recent channels and prioritize followed streamers.
   final recent = await fastSearch();
   // Convert followed channels missing from the recent query into search
   // results, so following a streamer doesn't depend on recent activity.
-  final followedResults = followedForProvider.map((channel) {
-    final existing = recent.where(
-      (result) =>
-          result.provider == channel.provider &&
-          result.channelId == channel.channelId,
-    );
-    if (existing.isNotEmpty) {
-      return existing.first;
-    }
-    return SearchResult(
-      channelId: channel.channelId,
-      provider: channel.provider,
-      login: channel.displayName,
-      displayName: channel.displayName,
-      isOnline: false,
-      imageUrl: Uri.parse(
-        "https://rtirl.com/pfp.png?provider=${channel.provider}"
-        "&channelId=${channel.channelId}",
-      ),
-      title: null,
-      language: null,
-      isPromoted: false,
-    );
-  }).where(
-    (result) =>
-        result.displayName.toLowerCase().contains(query.toLowerCase()) ||
-        result.login.toLowerCase().contains(query.toLowerCase()),
-  );
+  final followedResults = followedForProvider
+      .map((channel) {
+        final existing = recent.where(
+          (result) =>
+              result.provider == channel.provider &&
+              result.channelId == channel.channelId,
+        );
+        if (existing.isNotEmpty) {
+          return existing.first;
+        }
+        return SearchResult(
+          channelId: channel.channelId,
+          provider: channel.provider,
+          login: channel.displayName,
+          displayName: channel.displayName,
+          isOnline: false,
+          imageUrl: Uri.parse(
+            "https://rtirl.com/pfp.png?provider=${channel.provider}"
+            "&channelId=${channel.channelId}",
+          ),
+          title: null,
+          language: null,
+          isPromoted: false,
+        );
+      })
+      .where(
+        (result) =>
+            result.displayName.toLowerCase().contains(query.toLowerCase()) ||
+            result.login.toLowerCase().contains(query.toLowerCase()),
+      );
   final followedByKey = {
     for (final result in followedResults)
       _channelKey(result.provider, result.channelId): result,
@@ -177,10 +183,9 @@ Stream<List<SearchResult>> searchChannels(
   }
   yield mergedFast.values.toList();
   // Fetch the full provider search.
-  final slow = await _search({
-    "query": query,
-    "provider": provider,
-  }).then((result) {
+  final slow = await _search({"query": query, "provider": provider}).then((
+    result,
+  ) {
     return (result.data as List<dynamic>)
         .map(
           (data) => SearchResult(
@@ -198,22 +203,14 @@ Stream<List<SearchResult>> searchChannels(
         .toList();
   });
 
-  final combined = <String, SearchResult>{
-    ...mergedFast,
-  };
-
+  final combined = <String, SearchResult>{...mergedFast};
   for (final result in slow) {
     final key = _channelKey(result.provider, result.channelId);
-
-    if (result.provider != provider ||
-        combined.containsKey(key) ||
-        (isShowOnlyOnline && !result.isOnline)) {
+    if (result.provider != provider || combined.containsKey(key)) {
       continue;
     }
-
     combined[key] = result;
   }
-
   yield combined.values.toList();
 }
 
@@ -279,6 +276,7 @@ class ChannelSearchResultsWidget extends StatefulWidget {
     this.controller,
     this.onChannelAdd,
     this.channels = const [],
+    this.followedChannels = const [],
     this.header,
   });
 
@@ -349,13 +347,14 @@ class _ChannelSearchResultsWidgetState
           stream: _results,
           builder: (context, snapshot) {
             return Column(
-  children: (snapshot.data ?? [])
-      .where(
-        (result) => !widget.isShowOnlyOnline || result.isOnline,
-      )
-      .map((result) => _tile(context, result))
-      .toList(),
-);
+              children:
+                  (snapshot.data ?? [])
+                      .where(
+                        (result) => !widget.isShowOnlyOnline || result.isOnline,
+                      )
+                      .map((result) => _tile(context, result))
+                      .toList(),
+            );
           },
         ),
       ],
