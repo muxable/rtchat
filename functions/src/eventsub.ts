@@ -189,11 +189,22 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
 
     const channelRef = admin.firestore().collection("channels").doc(channelId);
 
+    // Twitch can send several notifications, each with its own message id, for
+    // one follower (double clicks, refollows), so follows are keyed by follower
+    // and only the first is recorded until its message expires.
+    // https://github.com/twitchdev/issues/issues/1224
+    const followerId = req.body.event["user_id"];
+    const isFollow =
+      type === EventsubType.ChannelFollow &&
+      typeof followerId === "string" &&
+      followerId !== "" &&
+      !followerId.includes("/");
+
     const messageRef = channelRef
       .collection("messages")
-      .doc(`twitch:${messageId}`);
+      .doc(isFollow ? `twitch:follow:${followerId}` : `twitch:${messageId}`);
 
-    await messageRef.set({
+    const message = {
       channelId,
       type,
       timestamp: admin.firestore.Timestamp.fromMillis(Date.parse(timestamp)),
@@ -201,7 +212,21 @@ export const eventsub = functions.https.onRequest(async (req, res) => {
         Date.now() + 1000 * 86400 * 7 * 2
       ),
       event: req.body.event,
-    });
+    };
+    if (isFollow) {
+      try {
+        await messageRef.create(message);
+      } catch (e: any) {
+        // ALREADY_EXISTS: this follower was already recorded and counted.
+        if (e?.code === 6) {
+          res.status(200).send();
+          return;
+        }
+        throw e;
+      }
+    } else {
+      await messageRef.set(message);
+    }
 
     switch (type) {
       case EventsubType.StreamOnline:

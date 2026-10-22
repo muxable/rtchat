@@ -172,6 +172,12 @@ func (s *lockedTwitchStore) Set(ctx context.Context, path string, data map[strin
 	return s.store.Set(ctx, path, data, merge)
 }
 
+func (s *lockedTwitchStore) Create(ctx context.Context, path string, data map[string]interface{}) (bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.store.Create(ctx, path, data)
+}
+
 func (s *lockedTwitchStore) Update(ctx context.Context, path string, data map[string]interface{}) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -263,7 +269,11 @@ func TestTwitchCLINotifications(t *testing.T) {
 				t.Fatal("no writes")
 			}
 			message := writes[0]
-			if message.Path != twitchCLIChannel+"/messages/twitch:"+messageID || message.Merge || message.Update {
+			messagePath := twitchCLIChannel + "/messages/twitch:" + messageID
+			if test.eventType == "channel.follow" {
+				messagePath = twitchCLIChannel + "/messages/twitch:follow:" + event["user_id"].(string)
+			}
+			if message.Path != messagePath || message.Merge || message.Update || message.Create != (test.eventType == "channel.follow") {
 				t.Fatalf("message written as %#v", message)
 			}
 			if message.Data["channelId"] != "twitch:"+twitchCLIBroadcaster || message.Data["type"] != test.eventType {
@@ -311,6 +321,39 @@ func TestTwitchCLINotifications(t *testing.T) {
 				t.Fatalf("refreshed %v, want %v", got, refreshes)
 			}
 		})
+	}
+}
+
+// Twitch sometimes sends two follows, with different message ids, for one
+// follower. Only the first is recorded and counted.
+func TestTwitchCLIRepeatedFollow(t *testing.T) {
+	twitchCLI(t)
+	s := newTwitchCLIServer(t)
+	first := triggerTwitchCLI(t, s, twitchCLISecret, "channel.follow", "2", "-f", "5678")
+	second := triggerTwitchCLI(t, s, twitchCLISecret, "channel.follow", "2", "-f", "5678")
+	if first == second {
+		t.Fatal("cli reused the message id")
+	}
+	s.mu.Lock()
+	for _, d := range s.deliveries {
+		if d.status != http.StatusOK {
+			t.Fatalf("status %d, want 200", d.status)
+		}
+	}
+	s.mu.Unlock()
+	want := []twitchDocument{
+		{Path: twitchCLIChannel + "/messages/twitch:follow:5678", Create: true},
+		{Path: twitchCLIChannel, Update: true},
+		{Path: twitchCLIChannel + "/messages/twitch:follow:5678", Create: true},
+	}
+	writes := s.store.writes()
+	if len(writes) != len(want) {
+		t.Fatalf("writes %#v", writes)
+	}
+	for i, write := range writes {
+		if write.Path != want[i].Path || write.Create != want[i].Create || write.Update != want[i].Update {
+			t.Fatalf("write %d %#v, want %#v", i, write, want[i])
+		}
 	}
 }
 
