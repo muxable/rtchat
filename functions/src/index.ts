@@ -4,7 +4,7 @@ import { updateFollowerAndViewerCount } from "./chat-status";
 import { updateKickChannelMetadata } from "./kick_subscriptions";
 import { YOUTUBE_OAUTH_SECRETS } from "./oauth";
 import { proxy, proxyCallable } from "./proxy";
-import { subscribe, unsubscribe } from "./subscriptions";
+import { unsubscribe } from "./subscriptions";
 
 // functions that act with a user's youtube token need the google oauth client
 // to refresh it.
@@ -28,12 +28,7 @@ export const raid = proxyCallable("raid");
 
 export const cancelRaid = proxyCallable("cancelRaid");
 
-export {
-  subscribe,
-  unsubscribe,
-  updateKickChannelMetadata,
-  updateFollowerAndViewerCount,
-};
+export { unsubscribe, updateKickChannelMetadata, updateFollowerAndViewerCount };
 // moved to the agent; forwards clients that still call the function URL.
 export const getBadges = proxyCallable("getBadges");
 export const getEmotes = proxyCallable("getEmotes");
@@ -46,5 +41,6 @@ export const setRealTimeCashAddress = proxyCallable("setRealTimeCashAddress");
 export const kickWebhook = proxy("kickWebhook", "/kick/webhook");
 export const alchemyWebhook = proxy("alchemyWebhook", "/alchemy/webhook");
 export const eventsub = proxy("eventsub", "/twitch/eventsub");
+export const subscribe = proxyCallable("subscribe");
 
 export const auth = withYouTube.https.onRequest(authApp);
