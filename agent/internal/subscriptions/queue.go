@@ -54,6 +54,10 @@ type TwitchQueue struct {
 	mu        sync.Mutex
 	pending   map[string]*twitchItem
 	costCheck time.Time
+	// cappedUntil is when the last report that Twitch's EventSub cost limit
+	// is full stops applying. Twitch then rejects every new subscription, so
+	// subscribe doesn't queue work that can't succeed.
+	cappedUntil time.Time
 }
 
 func NewTwitchQueue(s *Service) *TwitchQueue {
@@ -81,11 +85,15 @@ func (q *TwitchQueue) Enqueue(channel string) {
 	if q.pending[channel] != nil {
 		return
 	}
+	now := q.now()
+	if now.Before(q.cappedUntil) {
+		zap.L().Info("twitch eventsub reconcile skipped while cost limit is full", zap.String("channel", channel))
+		return
+	}
 	if len(q.pending) >= q.capacity {
 		zap.L().Warn("twitch eventsub queue full", zap.String("channel", channel), zap.Int("queue_depth", len(q.pending)))
 		return
 	}
-	now := q.now()
 	q.pending[channel] = &twitchItem{channel: channel, enqueued: now, ready: now}
 	select {
 	case q.wake <- struct{}{}:
@@ -191,6 +199,11 @@ func (q *TwitchQueue) checkCost(ctx context.Context, now time.Time) {
 	}
 	headroom := result.MaxTotalCost > 0 && result.TotalCost < result.MaxTotalCost
 	q.mu.Lock()
+	if headroom {
+		q.cappedUntil = time.Time{}
+	} else {
+		q.cappedUntil = now.Add(twitchCostCheckInterval)
+	}
 	held := 0
 	for _, item := range q.pending {
 		if item.costHeld {
@@ -300,6 +313,7 @@ func (q *TwitchQueue) process(ctx context.Context, item *twitchItem) {
 		if q.costCheck.Before(now) {
 			q.costCheck = now.Add(twitchCostCheckInterval)
 		}
+		q.cappedUntil = now.Add(twitchCostCheckInterval)
 	case err == nil:
 		delete(q.pending, item.channel)
 	case errors.Is(err, errTwitchBudget):
