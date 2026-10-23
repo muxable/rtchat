@@ -64,7 +64,7 @@ func registerChat(api *callable.Server, s *chatRoutes) {
 	if s.sendIRC == nil {
 		s.sendIRC = twitch.SendIRC
 	}
-	for _, name := range []string{"send", "ban", "unban", "timeout", "deleteMessage", "clear", "raid", "cancelRaid"} {
+	for _, name := range []string{"send", "ban", "unban", "timeout", "deleteMessage", "clear", "raid", "cancelRaid", "shoutout"} {
 		name := name
 		api.Register(name, true, func(ctx context.Context, data json.RawMessage) (any, error) {
 			var r chatRequest
@@ -122,9 +122,12 @@ func (r chatRequest) validate(action string) error {
 		if r.ChannelID == "" {
 			return invalid("missing provider, channelId")
 		}
-	case "raid":
+	case "raid", "shoutout":
 		if r.From == "" || r.To == "" {
 			return invalid("missing provider, fromChannelId, toChannelId")
+		}
+		if action == "shoutout" && r.Provider != "twitch" {
+			return invalid("invalid provider")
 		}
 	}
 	if action != "raid" && action != "cancelRaid" {

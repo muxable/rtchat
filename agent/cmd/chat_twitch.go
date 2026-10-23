@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/clients"
 	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"go.uber.org/zap"
@@ -94,6 +95,12 @@ func (s *chatRoutes) twitch(ctx context.Context, uid, token, action string, r ch
 					zap.L().Warn("failed to record raid start")
 				}
 			}
+		}
+	case "shoutout":
+		var reason string
+		reason, err = client.Shoutout(ctx, r.From, r.To, id)
+		if err == nil && reason != "" {
+			err = &callable.Error{Code: "failed-precondition", Message: reason}
 		}
 	case "cancelRaid":
 		err = client.CancelRaid(ctx, r.ChannelID)

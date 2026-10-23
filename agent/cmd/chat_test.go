@@ -117,7 +117,7 @@ func assertNull(t *testing.T, code int, result map[string]any) {
 }
 func TestAllActionsRequireVerifiedAuthentication(t *testing.T) {
 	s, _ := newMock(func(r *http.Request) (*http.Response, error) { t.Fatal("unauthenticated side effect"); return nil, nil })
-	for _, name := range []string{"send", "ban", "unban", "timeout", "deleteMessage", "clear", "raid", "cancelRaid"} {
+	for _, name := range []string{"send", "ban", "unban", "timeout", "deleteMessage", "clear", "raid", "cancelRaid", "shoutout"} {
 		code, body := call(t, s, name, map[string]any{}, false)
 		if code != 401 || field(object(body["error"]), "status") != "UNAUTHENTICATED" {
 			t.Fatalf("%s %d %v", name, code, body)
@@ -223,6 +223,53 @@ func TestTwitchModerationAndRaids(t *testing.T) {
 				assertNull(t, code, result)
 			}
 		})
+	}
+}
+func TestTwitchShoutout(t *testing.T) {
+	for _, tc := range []struct {
+		name, body string
+		status     int
+		code       int
+		want       string
+	}{{"sent", "", 204, 200, ""}, {"offline", `{"error":"Bad Request","status":400,"message":"The broadcaster is not streaming live."}`, 400, 400, "The broadcaster is not streaming live."}, {"cooldown", `{"error":"Too Many Requests","status":429,"message":"The broadcaster may not give the same streamer another shoutout yet."}`, 429, 400, "The broadcaster may not give the same streamer another shoutout yet."}, {"forbidden", `{"error":"Forbidden","status":403,"message":"Missing scope"}`, 403, 500, "INTERNAL"}} {
+		t.Run(tc.name, func(t *testing.T) {
+			requests := 0
+			s, _ := newMock(func(r *http.Request) (*http.Response, error) {
+				requests++
+				params := r.URL.Query()
+				if r.Method != "POST" || r.URL.Path != "/helix/chat/shoutouts" || r.Header.Get("Authorization") != "Bearer user-token" {
+					t.Fatal(r.Method, r.URL, r.Header)
+				}
+				if params.Get("from_broadcaster_id") != "from" || params.Get("to_broadcaster_id") != "to" || params.Get("moderator_id") != "sender" {
+					t.Fatal(params)
+				}
+				return respond(tc.status, tc.body), nil
+			})
+			code, body := call(t, s, "shoutout", map[string]any{"provider": "twitch", "fromChannelId": "from", "toChannelId": "to"}, true)
+			if code != tc.code || requests != 1 {
+				t.Fatalf("%d %v requests=%d", code, body, requests)
+			}
+			if tc.want == "" {
+				assertNull(t, code, body)
+			} else if field(object(body["error"]), "message") != tc.want {
+				t.Fatal(body)
+			}
+		})
+	}
+	s, _ := newMock(func(*http.Request) (*http.Response, error) {
+		t.Fatal("invalid shoutout reached a provider")
+		return nil, nil
+	})
+	for _, data := range []map[string]any{
+		{"provider": "kick", "fromChannelId": "from", "toChannelId": "to"},
+		{"provider": "youtube", "fromChannelId": own, "toChannelId": other},
+		{"provider": "twitch", "fromChannelId": "from"},
+		{"fromChannelId": "from", "toChannelId": "to"},
+	} {
+		code, body := call(t, s, "shoutout", data, true)
+		if code != 400 || field(object(body["error"]), "status") != "INVALID_ARGUMENT" {
+			t.Fatalf("%v: %d %v", data, code, body)
+		}
 	}
 }
 func TestKickActions(t *testing.T) {
