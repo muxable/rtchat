@@ -81,3 +81,57 @@ class TwitchRaidEventWidget extends StatelessWidget {
     );
   }
 }
+
+class TwitchRaidEventGroupWidget extends StatelessWidget {
+  final List<TwitchRaidEventModel> raids;
+  final Channel channel;
+  final VoidCallback onExpand;
+
+  const TwitchRaidEventGroupWidget({
+    super.key,
+    required this.raids,
+    required this.channel,
+    required this.onExpand,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Selector<EventSubConfigurationModel, RaidEventConfig>(
+      selector: (context, model) => model.raidEventConfig,
+      builder: (context, config, child) {
+        if (!config.showEvent || raids.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final first = raids.first;
+        final localizations = AppLocalizations.of(context)!;
+        final style = Theme.of(context).textTheme.titleSmall;
+
+        final summary =
+            '${localizations.raidEventMessage(first.from.displayName ?? '', first.viewers)} (+${raids.length - 1} more raids)';
+
+        return InkWell(
+          onTap: onExpand,
+          borderRadius: BorderRadius.circular(8),
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topLeft,
+            child: DecoratedEventWidget.avatars(
+              avatars: raids
+                  .take(3)
+                  .map(
+                    (raid) =>
+                        ResilientNetworkImage(raid.from.profilePictureUrl),
+                  ),
+              child: StyledText(
+                text: summary,
+                tags: {'b': StyledTextTag(style: style)},
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
