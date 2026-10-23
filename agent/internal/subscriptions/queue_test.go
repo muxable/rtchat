@@ -479,3 +479,64 @@ func TestTwitchQueueBudgetIgnoresUserTokenBuckets(t *testing.T) {
 		t.Fatal("user-token response paced the queue", delay)
 	}
 }
+
+func TestTwitchQueueSkipsEnqueueWhileCostLimitIsFull(t *testing.T) {
+	fake := &fakeEventSub{}
+	var mu sync.Mutex
+	full := true
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		defer mu.Unlock()
+		if r.Method == http.MethodGet && r.URL.Query().Get("first") == "1" {
+			cost := 10000
+			if !full {
+				cost = 11
+			}
+			fmt.Fprintf(w, `{"data":[],"total":180000,"total_cost":%d,"max_total_cost":10000}`, cost)
+			return
+		}
+		fake.ServeHTTP(w, r)
+	}))
+	defer server.Close()
+	fake.reply = func(w http.ResponseWriter, kind string, _ int) bool {
+		if !full {
+			return false
+		}
+		w.Header().Set("Ratelimit-Remaining", "700")
+		w.WriteHeader(429)
+		fmt.Fprint(w, `{"error":"Too Many Requests","status":429,"message":"subscription limit exceeded"}`)
+		return true
+	}
+	queue, clock := testQueue(server)
+	queue.Enqueue("123")
+	queue.step(context.Background())
+	// Twitch reported the cost limit full, so another broadcaster isn't queued.
+	queue.Enqueue("456")
+	queue.mu.Lock()
+	skipped := queue.pending["456"] == nil
+	queue.mu.Unlock()
+	if !skipped {
+		t.Fatal("queued a reconcile while the cost limit is full")
+	}
+	// Once the window passes, a channel open queues again to re-test the limit.
+	clock.Advance(twitchCostCheckInterval)
+	queue.Enqueue("789")
+	queue.mu.Lock()
+	requeued := queue.pending["789"] != nil
+	queue.mu.Unlock()
+	if !requeued {
+		t.Fatal("cost limit window never expired")
+	}
+	// A cost check with headroom clears the limit right away.
+	mu.Lock()
+	full = false
+	mu.Unlock()
+	queue.checkCost(context.Background(), clock.Now())
+	queue.Enqueue("456")
+	queue.mu.Lock()
+	cleared := queue.pending["456"] != nil
+	queue.mu.Unlock()
+	if !cleared {
+		t.Fatal("headroom did not clear the cost limit")
+	}
+}
