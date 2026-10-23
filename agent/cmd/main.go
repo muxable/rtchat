@@ -155,7 +155,7 @@ func main() {
 		}
 	}()
 
-	isListening := &atomic.Bool{}
+	loop := &snapshotLoop{}
 	ready := &atomic.Bool{}
 	initial := newInitialJoins(func() {
 		zap.L().Info("initial channels applied", zap.Int("count", manager.count()))
@@ -164,7 +164,7 @@ func main() {
 	manager.applied = initial.done
 	start := time.Now().Add(time.Duration(rand.Intn(24)) * time.Hour)
 	recycleHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !ready.Load() || !isListening.Load() || time.Since(start) > 72*time.Hour {
+		if !ready.Load() || loop.stuck(time.Now()) || time.Since(start) > 72*time.Hour {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
@@ -235,9 +235,9 @@ func main() {
 
 	first := true
 	for {
-		isListening.Store(true)
+		loop.listening()
 		snapshot, err := subscribeRequests.Next()
-		isListening.Store(false)
+		loop.applying(time.Now())
 		if err != nil {
 			// SIGTERM cancels the snapshot. The container is killed ten seconds
 			// later, so fail health checks long enough for the load balancer to
