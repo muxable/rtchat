@@ -9,18 +9,26 @@ import 'package:rtchat/models/user.dart';
 
 class EndDrawerWidget extends StatefulWidget {
   final Channel channel;
+  final VoidCallback onClose;
 
-  const EndDrawerWidget({required this.channel, super.key});
+  const EndDrawerWidget({
+    required this.channel,
+    required this.onClose,
+    super.key,
+  });
 
   @override
   State<EndDrawerWidget> createState() => EndDrawerWidgetState();
 }
 
 class EndDrawerWidgetState extends State<EndDrawerWidget> {
-  String _search = "";
+  String _search = '';
   Viewers? _viewers;
   bool _isLoading = true;
   bool _isError = false;
+
+  // Incremented for each request so older requests cannot update the UI.
+  int _requestId = 0;
 
   @override
   void initState() {
@@ -28,29 +36,50 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
     _loadViewers();
   }
 
-  void _loadViewers() async {
+  @override
+  void didUpdateWidget(covariant EndDrawerWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.channel != widget.channel) {
+      _search = '';
+      _viewers = null;
+      _isLoading = true;
+      _isError = false;
+      _loadViewers();
+    }
+  }
+
+  Future<void> _loadViewers() async {
+    final requestId = ++_requestId;
     try {
-      // twitch lists chatters with the caller's token when the channel's own
+      // Twitch lists chatters with the caller's token when the channel's own
       // isn't stored, so call as the account on its provider.
       final api = Provider.of<UserModel>(
         context,
         listen: false,
       ).apiOn(widget.channel.provider);
+
       final viewers = await ChatStateAdapter(
         api,
       ).getViewers(channelId: widget.channel.toString());
-      if (!mounted) return;
+      if (!mounted || requestId != _requestId) return;
       setState(() {
         _viewers = viewers;
         _isLoading = false;
+        _isError = false;
       });
-    } catch (e) {
-      if (!mounted) return;
+    } catch (error, stackTrace) {
+      // Ignore failures from requests belonging to an older channel.
+      if (!mounted || requestId != _requestId) return;
+      debugPrint('Failed to load viewers: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
       setState(() {
         _isLoading = false;
         _isError = true;
       });
       _showTemporaryError();
+      widget.onClose();
     }
   }
 
@@ -66,20 +95,14 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const CircularProgressIndicator();
+      return const Center(child: CircularProgressIndicator());
     }
-    // Check if viewers data is available and build UI accordingly
-    if (_viewers == null || _isError) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-      });
-      // Show loading or empty state
-      return const CircularProgressIndicator();
+    if (_isError || _viewers == null) {
+      return const SizedBox.shrink();
     }
 
     final filtered = _viewers!.query(_search);
+    final localizations = AppLocalizations.of(context)!;
 
     return Container(
       color: Theme.of(context).canvasColor,
@@ -95,7 +118,7 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
                 title: Padding(
                   padding: const EdgeInsets.only(left: 16),
                   child: Text(
-                    AppLocalizations.of(context)!.searchViewers,
+                    localizations.searchViewers,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -106,78 +129,67 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
               ),
             ),
             SliverSearchBarWidget(
-              onFilterBySearchBarText:
-                  (value) => setState(() => _search = value),
+              onFilterBySearchBarText: (value) {
+                setState(() => _search = value);
+              },
             ),
             if (filtered.broadcaster.isNotEmpty) ...[
               SliverPadding(
                 padding: const EdgeInsets.only(top: 8, left: 8),
-                sliver: SliverTitleWidget(
-                  title: AppLocalizations.of(context)!.broadcaster,
-                ),
+                sliver: SliverTitleWidget(title: localizations.broadcaster),
               ),
               SliverList(
-                delegate: SliverChildListDelegate(
-                  filtered.broadcaster.map((name) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 24),
-                      child: Text(name),
-                    );
-                  }).toList(),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.only(left: 24),
+                    child: Text(filtered.broadcaster[index]),
+                  ),
+                  childCount: filtered.broadcaster.length,
                 ),
               ),
             ],
             if (filtered.moderators.isNotEmpty) ...[
               SliverPadding(
                 padding: const EdgeInsets.only(top: 8, left: 8),
-                sliver: SliverTitleWidget(
-                  title: AppLocalizations.of(context)!.moderators,
-                ),
+                sliver: SliverTitleWidget(title: localizations.moderators),
               ),
               SliverList(
-                delegate: SliverChildListDelegate(
-                  filtered.moderators.map((name) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 24),
-                      child: Text(name),
-                    );
-                  }).toList(),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.only(left: 24),
+                    child: Text(filtered.moderators[index]),
+                  ),
+                  childCount: filtered.moderators.length,
                 ),
               ),
             ],
             if (filtered.vips.isNotEmpty) ...[
               SliverPadding(
                 padding: const EdgeInsets.only(top: 8, left: 8),
-                sliver: SliverTitleWidget(
-                  title: AppLocalizations.of(context)!.communityVips,
-                ),
+                sliver: SliverTitleWidget(title: localizations.communityVips),
               ),
               SliverList(
-                delegate: SliverChildListDelegate(
-                  filtered.vips.map((name) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 24),
-                      child: Text(name),
-                    );
-                  }).toList(),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.only(left: 24),
+                    child: Text(filtered.vips[index]),
+                  ),
+                  childCount: filtered.vips.length,
                 ),
               ),
             ],
             if (filtered.viewers.isNotEmpty) ...[
               SliverPadding(
                 padding: const EdgeInsets.only(top: 8, left: 8),
-                sliver: SliverTitleWidget(
-                  title: AppLocalizations.of(context)!.viewers,
-                ),
+                sliver: SliverTitleWidget(title: localizations.viewers),
               ),
               SliverList(
-                delegate: SliverChildListDelegate(
-                  filtered.viewers.map((name) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 24),
-                      child: Text(name),
-                    );
-                  }).toList(),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.only(left: 24),
+                    child: Text(filtered.viewers[index]),
+                  ),
+                  childCount: filtered.viewers.length,
                 ),
               ),
             ],
