@@ -502,3 +502,24 @@ func TestChatValidationBeforeTokenLookup(t *testing.T) {
 		}
 	}
 }
+func TestTwitchRaidRejected(t *testing.T) {
+	for _, tc := range []struct {
+		name, body string
+		status     int
+		code       int
+		want       string
+	}{{"rejected", `{"error":"Bad Request","status":400,"message":"The channel you are trying to raid does not allow raids from you."}`, 400, 400, "The channel you are trying to raid does not allow raids from you."}, {"server error", `{"error":"Internal Server Error","status":500,"message":""}`, 500, 500, "INTERNAL"}} {
+		t.Run(tc.name, func(t *testing.T) {
+			s, _ := newMock(func(r *http.Request) (*http.Response, error) {
+				if r.Method != "POST" || r.URL.Path != "/helix/raids" {
+					t.Fatal(r.Method, r.URL)
+				}
+				return respond(tc.status, tc.body), nil
+			})
+			code, body := call(t, s, "raid", map[string]any{"provider": "twitch", "fromChannelId": "from", "toChannelId": "to"}, true)
+			if code != tc.code || field(object(body["error"]), "message") != tc.want {
+				t.Fatalf("%d %v", code, body)
+			}
+		})
+	}
+}

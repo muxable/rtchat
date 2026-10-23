@@ -90,10 +90,22 @@ func moderationPath(path, channel, moderator string, params url.Values) string {
 	return path + "?" + params.Encode()
 }
 
+// RaidRejected is Twitch's reason for refusing a raid, e.g. because the target
+// doesn't accept raids or the raider is raiding themselves.
+type RaidRejected struct{ Message string }
+
+func (e *RaidRejected) Error() string { return e.Message }
+
 func (c *Client) StartRaid(ctx context.Context, from, to string) (time.Time, error) {
 	response, err := c.Do(ctx, "POST", "/raids?"+url.Values{"from_broadcaster_id": {from}, "to_broadcaster_id": {to}}.Encode(), nil)
 	if err != nil {
 		return time.Time{}, err
+	}
+	if response.StatusCode == 400 {
+		var result struct{ Message string }
+		if response.Decode(&result) == nil && result.Message != "" {
+			return time.Time{}, &RaidRejected{Message: result.Message}
+		}
 	}
 	if err := response.Err(); err != nil {
 		return time.Time{}, err
