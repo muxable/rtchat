@@ -13,18 +13,12 @@ import {
 } from "./kick_actions";
 import { updateKickChannelMetadata } from "./kick_subscriptions";
 import { kickWebhook } from "./kick_webhook";
-import { getKickSlug } from "./kick";
 import { eventsub } from "./eventsub";
-import {
-  getAccessToken,
-  getAppAccessToken,
-  YOUTUBE_OAUTH_SECRETS,
-} from "./oauth";
-import { proxyCallable } from "./proxy";
+import { getAccessToken, YOUTUBE_OAUTH_SECRETS } from "./oauth";
+import { proxy, proxyCallable } from "./proxy";
 import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
 import * as twitch from "./twitch";
-import { youTubeEmbedUrl } from "./youtube";
 import { WebSocket } from "ws";
 import {
   banYouTubeUser,
@@ -321,57 +315,6 @@ export const cancelRaid = functions.https.onCall(async (data, context) => {
   }
 });
 
-export const embedRedirect = functions.https.onRequest(async (req, res) => {
-  const provider = req.query?.provider as string | null;
-  const channelId = req.query?.channelId as string | null;
-  if (!provider || !channelId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId",
-    );
-  }
-  switch (provider) {
-    case "twitch":
-      const login = await twitch.getTwitchLogin(channelId);
-      if (!login) {
-        res.status(404).send("channel not found");
-        return;
-      }
-      res.redirect(
-        `https://player.twitch.tv/?channel=${login}&controls=false&parent=chat.rtirl.com&muted=true`,
-      );
-      break;
-    case "kick": {
-      const token = await getAppAccessToken("kick");
-      const slug = token
-        ? await getKickSlug(String(token.token.access_token), channelId)
-        : null;
-      if (!slug) {
-        res.status(404).send("channel not found");
-        return;
-      }
-      res.redirect(
-        `https://player.kick.com/${encodeURIComponent(slug)}?muted=true`,
-      );
-      break;
-    }
-    case "youtube": {
-      const url = youTubeEmbedUrl(channelId);
-      if (!url) {
-        res.status(404).send("channel not found");
-        return;
-      }
-      res.redirect(url);
-      break;
-    }
-    default:
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "invalid provider",
-      );
-  }
-});
-
 async function validate(
   provider: string,
   token: string,
@@ -453,5 +396,6 @@ export {
 export const getBadges = proxyCallable("getBadges");
 export const getEmotes = proxyCallable("getEmotes");
 export const getStatistics = proxyCallable("getStatistics");
+export const embedRedirect = proxy("embedRedirect", "/embedRedirect");
 
 export const auth = withYouTube.https.onRequest(authApp);
