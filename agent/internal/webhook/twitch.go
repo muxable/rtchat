@@ -248,6 +248,7 @@ func (h *TwitchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	messageID := r.Header.Get("Twitch-Eventsub-Message-Id")
 	timestampHeader := r.Header.Get("Twitch-Eventsub-Message-Timestamp")
 	if !verifyTwitchSignature(h.Secret, messageID, timestampHeader, r.Header.Get("Twitch-Eventsub-Message-Signature"), body) {
+		zap.L().Warn("twitch eventsub rejected", zap.String("reason", "bad signature"), zap.String("type", r.Header.Get("Twitch-Eventsub-Subscription-Type")), zap.String("messageId", messageID))
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -257,6 +258,7 @@ func (h *TwitchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	timestamp, err := time.Parse(time.RFC3339Nano, timestampHeader)
 	if err != nil || now.Sub(timestamp) > 10*time.Minute {
+		zap.L().Warn("twitch eventsub rejected", zap.String("reason", "stale timestamp"), zap.String("type", r.Header.Get("Twitch-Eventsub-Subscription-Type")), zap.String("messageId", messageID), zap.String("timestamp", timestampHeader))
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
