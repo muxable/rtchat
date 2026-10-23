@@ -66,14 +66,17 @@ class _DrawerHeader extends StatelessWidget {
                       // the user's own channels, which the app opens with.
                       final userChannels = model.userChannels;
                       final userChannel = userChannels.firstOrNull;
-                      return InkWell(
-                        borderRadius: BorderRadius.circular(10.0),
+                      return _AccountSwitchButton(
                         onTap: () {
                           Provider.of<ViewsModel>(
                             context,
                             listen: false,
                           ).showDefaultChannels();
                           Navigator.of(context).pop();
+                        },
+                        onLongPress: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pushNamed("/settings/accounts");
                         },
                         child: Row(
                           children: [
@@ -242,6 +245,75 @@ class _DrawerHeader extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _AccountSwitchButton extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+
+  const _AccountSwitchButton({
+    required this.child,
+    required this.onTap,
+    required this.onLongPress,
+  });
+
+  @override
+  State<_AccountSwitchButton> createState() => _AccountSwitchButtonState();
+}
+
+class _AccountSwitchButtonState extends State<_AccountSwitchButton> {
+  bool _showSwitchIcon = false;
+
+  void _resetPressState() {
+    if (!_showSwitchIcon) return;
+
+    setState(() {
+      _showSwitchIcon = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.primary;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      splashColor: color.withValues(alpha: 0.18),
+      highlightColor: color.withValues(alpha: 0.10),
+      onTapDown: (_) {
+        setState(() {
+          _showSwitchIcon = true;
+        });
+      },
+      onTapUp: (_) => _resetPressState(),
+      onTapCancel: _resetPressState,
+      onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
+      child: Stack(
+        alignment: Alignment.centerRight,
+        children: [
+          AnimatedPadding(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeInOut,
+            padding: EdgeInsets.only(right: _showSwitchIcon ? 36 : 0),
+            child: widget.child,
+          ),
+          IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: _showSwitchIcon ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeInOut,
+              child: const Padding(
+                padding: EdgeInsets.only(right: 10),
+                child: Icon(Icons.switch_account_outlined, size: 22),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
