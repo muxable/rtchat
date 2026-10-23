@@ -67,6 +67,7 @@ class _DrawerHeader extends StatelessWidget {
                       final userChannels = model.userChannels;
                       final userChannel = userChannels.firstOrNull;
                       return _AccountSwitchButton(
+                        // account switching logic, should have a dedicated switcher later
                         onTap: () {
                           Provider.of<ViewsModel>(
                             context,
