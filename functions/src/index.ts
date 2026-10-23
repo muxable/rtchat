@@ -18,7 +18,6 @@ import { eventsub } from "./eventsub";
 import {
   getAccessToken,
   getAppAccessToken,
-  TWITCH_CLIENT_ID,
   YOUTUBE_OAUTH_SECRETS,
 } from "./oauth";
 import { proxyCallable } from "./proxy";
@@ -322,61 +321,6 @@ export const cancelRaid = functions.https.onCall(async (data, context) => {
   }
 });
 
-export const getStatistics = functions.https.onCall(async (data, context) => {
-  const provider = data?.provider;
-  const channelId = data?.channelId;
-  if (!provider || !channelId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId",
-    );
-  }
-
-  switch (provider) {
-    case "twitch":
-      const token = await getAppAccessToken(provider);
-      if (!token) {
-        throw new functions.https.HttpsError("internal", "auth error");
-      }
-      const headers = {
-        "Client-Id": TWITCH_CLIENT_ID,
-        Authorization: `Bearer ${token.token["access_token"]}`,
-      };
-      const viewerResponse = await fetch(
-        `https://api.twitch.tv/helix/streams?user_id=${channelId}&first=1`,
-        { headers },
-      );
-      const viewerJson = (await viewerResponse.json()) as any;
-      const followerResponse = await fetch(
-        `https://api.twitch.tv/helix/channels/followers?broadcaster_id=${channelId}&first=1`,
-        { headers },
-      );
-      const followerJson = (await followerResponse.json()) as any;
-      const stream = viewerJson["data"][0];
-      const languageResponse = await fetch(
-        `https://api.twitch.tv/helix/channels?broadcaster_id=${channelId}`,
-        { headers },
-      );
-      const languageJson = (await languageResponse.json()) as any;
-      if (!stream) {
-        return {
-          isOnline: false,
-          viewers: 0,
-          followers: followerJson["total"],
-          language: languageJson["data"][0]["broadcaster_language"],
-        };
-      }
-      return {
-        isOnline: true,
-        viewers: stream["viewer_count"],
-        followers: followerJson["total"],
-        language: languageJson["data"][0]["broadcaster_language"],
-      };
-  }
-
-  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
-});
-
 export const embedRedirect = functions.https.onRequest(async (req, res) => {
   const provider = req.query?.provider as string | null;
   const channelId = req.query?.channelId as string | null;
@@ -508,5 +452,6 @@ export {
 // moved to the agent; forwards clients that still call the function URL.
 export const getBadges = proxyCallable("getBadges");
 export const getEmotes = proxyCallable("getEmotes");
+export const getStatistics = proxyCallable("getStatistics");
 
 export const auth = withYouTube.https.onRequest(authApp);
