@@ -170,6 +170,11 @@ func main() {
 		w.Write([]byte((72*time.Hour - time.Since(start)).String()))
 	})
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	httpServer := newDrainableServer(":" + port)
 	go func() {
 		// Optional webhook credentials must not delay the chat snapshot loop.
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -219,11 +224,7 @@ func main() {
 		}
 		server.Mux.Handle("/", recycleHandler)
 		zap.L().Info("starting http server")
-		port := os.Getenv("PORT")
-		if port == "" {
-			port = "8080"
-		}
-		if err := http.ListenAndServe(":"+port, server.Mux); err != nil {
+		if err := httpServer.Serve(server.Mux); err != nil {
 			zap.L().Fatal("failed to start http server", zap.Error(err))
 		}
 	}()
@@ -234,6 +235,9 @@ func main() {
 		snapshot, err := subscribeRequests.Next()
 		isListening.Store(false)
 		if err != nil {
+			// SIGTERM cancels the snapshot. Finish API requests before the
+			// deferred cleanup closes Firestore.
+			httpServer.Drain(drainDelay, drainTimeout)
 			return
 		}
 		for _, change := range snapshot.Changes {
