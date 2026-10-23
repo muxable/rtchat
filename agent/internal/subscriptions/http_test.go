@@ -2,6 +2,7 @@ package subscriptions
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -64,5 +65,33 @@ func TestTwitchPaginationPreflightsAllLegacyCallbacks(t *testing.T) {
 	}
 	if gets != 2 || mutations != 0 {
 		t.Fatal(gets, mutations)
+	}
+}
+
+func TestTwitchLegacyFunctionCallbackCountsAsPresent(t *testing.T) {
+	var subs []map[string]interface{}
+	for i, wanted := range twitchConditions("123") {
+		subs = append(subs, map[string]interface{}{"id": fmt.Sprint("legacy-", i), "type": wanted.Type, "version": wanted.Version, "status": "enabled", "condition": wanted.Condition, "transport": map[string]string{"method": "webhook", "callback": LegacyTwitchCallback}})
+	}
+	list, err := json.Marshal(map[string]interface{}{"data": subs})
+	if err != nil {
+		t.Fatal(err)
+	}
+	mutations := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			mutations++
+			w.WriteHeader(202)
+			return
+		}
+		w.Write(list)
+	}))
+	defer server.Close()
+	service := &Service{TwitchSecret: "dedicated-secret", API: &API{Tokens: fakeTokens{}, Client: server.Client(), TwitchURL: server.URL}}
+	if err := service.ensureTwitch(context.Background(), "123", "app-token"); err != nil {
+		t.Fatal(err)
+	}
+	if mutations != 0 {
+		t.Fatal("changed subscriptions that the legacy function forwards", mutations)
 	}
 }
