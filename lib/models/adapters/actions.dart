@@ -92,6 +92,16 @@ class ActionsAdapter {
     });
   }
 
+  /// Gives [toChannelId] a shoutout in [channel], moderating as this account.
+  Future<void> shoutout(Channel channel, String toChannelId) async {
+    final call = api.callable('shoutout');
+    await call({
+      "provider": channel.provider,
+      "fromChannelId": channel.channelId,
+      "toChannelId": toChannelId,
+    });
+  }
+
   Future<void> cancelRaid(Channel channel) async {
     final call = api.callable('cancelRaid');
     await call({"provider": channel.provider, "channelId": channel.channelId});

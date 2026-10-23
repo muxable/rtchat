@@ -3,9 +3,7 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { alchemyWebhook, setRealTimeCashAddress } from "./alchemy_webhook";
 import { app as authApp } from "./auth";
-import { getBadges } from "./badges";
 import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
-import { getEmotes } from "./emotes";
 import {
   banKickUser,
   deleteKickMessage,
@@ -15,18 +13,12 @@ import {
 } from "./kick_actions";
 import { updateKickChannelMetadata } from "./kick_subscriptions";
 import { kickWebhook } from "./kick_webhook";
-import { getKickSlug } from "./kick";
 import { eventsub } from "./eventsub";
-import {
-  getAccessToken,
-  getAppAccessToken,
-  TWITCH_CLIENT_ID,
-  YOUTUBE_OAUTH_SECRETS,
-} from "./oauth";
+import { getAccessToken, YOUTUBE_OAUTH_SECRETS } from "./oauth";
+import { proxy, proxyCallable } from "./proxy";
 import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
 import * as twitch from "./twitch";
-import { youTubeEmbedUrl } from "./youtube";
 import { WebSocket } from "ws";
 import {
   banYouTubeUser,
@@ -323,112 +315,6 @@ export const cancelRaid = functions.https.onCall(async (data, context) => {
   }
 });
 
-export const getStatistics = functions.https.onCall(async (data, context) => {
-  const provider = data?.provider;
-  const channelId = data?.channelId;
-  if (!provider || !channelId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId",
-    );
-  }
-
-  switch (provider) {
-    case "twitch":
-      const token = await getAppAccessToken(provider);
-      if (!token) {
-        throw new functions.https.HttpsError("internal", "auth error");
-      }
-      const headers = {
-        "Client-Id": TWITCH_CLIENT_ID,
-        Authorization: `Bearer ${token.token["access_token"]}`,
-      };
-      const viewerResponse = await fetch(
-        `https://api.twitch.tv/helix/streams?user_id=${channelId}&first=1`,
-        { headers },
-      );
-      const viewerJson = (await viewerResponse.json()) as any;
-      const followerResponse = await fetch(
-        `https://api.twitch.tv/helix/channels/followers?broadcaster_id=${channelId}&first=1`,
-        { headers },
-      );
-      const followerJson = (await followerResponse.json()) as any;
-      const stream = viewerJson["data"][0];
-      const languageResponse = await fetch(
-        `https://api.twitch.tv/helix/channels?broadcaster_id=${channelId}`,
-        { headers },
-      );
-      const languageJson = (await languageResponse.json()) as any;
-      if (!stream) {
-        return {
-          isOnline: false,
-          viewers: 0,
-          followers: followerJson["total"],
-          language: languageJson["data"][0]["broadcaster_language"],
-        };
-      }
-      return {
-        isOnline: true,
-        viewers: stream["viewer_count"],
-        followers: followerJson["total"],
-        language: languageJson["data"][0]["broadcaster_language"],
-      };
-  }
-
-  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
-});
-
-export const embedRedirect = functions.https.onRequest(async (req, res) => {
-  const provider = req.query?.provider as string | null;
-  const channelId = req.query?.channelId as string | null;
-  if (!provider || !channelId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId",
-    );
-  }
-  switch (provider) {
-    case "twitch":
-      const login = await twitch.getTwitchLogin(channelId);
-      if (!login) {
-        res.status(404).send("channel not found");
-        return;
-      }
-      res.redirect(
-        `https://player.twitch.tv/?channel=${login}&controls=false&parent=chat.rtirl.com&muted=true`,
-      );
-      break;
-    case "kick": {
-      const token = await getAppAccessToken("kick");
-      const slug = token
-        ? await getKickSlug(String(token.token.access_token), channelId)
-        : null;
-      if (!slug) {
-        res.status(404).send("channel not found");
-        return;
-      }
-      res.redirect(
-        `https://player.kick.com/${encodeURIComponent(slug)}?muted=true`,
-      );
-      break;
-    }
-    case "youtube": {
-      const url = youTubeEmbedUrl(channelId);
-      if (!url) {
-        res.status(404).send("channel not found");
-        return;
-      }
-      res.redirect(url);
-      break;
-    }
-    default:
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "invalid provider",
-      );
-  }
-});
-
 async function validate(
   provider: string,
   token: string,
@@ -501,11 +387,15 @@ export {
   kickWebhook,
   updateKickChannelMetadata,
   search,
-  getEmotes,
-  getBadges,
   getViewerList,
   setRealTimeCashAddress,
   alchemyWebhook,
   updateFollowerAndViewerCount,
 };
+// moved to the agent; forwards clients that still call the function URL.
+export const getBadges = proxyCallable("getBadges");
+export const getEmotes = proxyCallable("getEmotes");
+export const getStatistics = proxyCallable("getStatistics");
+export const embedRedirect = proxy("embedRedirect", "/embedRedirect");
+
 export const auth = withYouTube.https.onRequest(authApp);

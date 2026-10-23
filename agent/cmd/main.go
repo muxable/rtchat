@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"io"
 	"math/rand"
 	"net/http"
@@ -154,7 +155,7 @@ func main() {
 		}
 	}()
 
-	isListening := &atomic.Bool{}
+	loop := &snapshotLoop{}
 	ready := &atomic.Bool{}
 	initial := newInitialJoins(func() {
 		zap.L().Info("initial channels applied", zap.Int("count", manager.count()))
@@ -163,19 +164,26 @@ func main() {
 	manager.applied = initial.done
 	start := time.Now().Add(time.Duration(rand.Intn(24)) * time.Hour)
 	recycleHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !ready.Load() || !isListening.Load() || time.Since(start) > 72*time.Hour {
+		if !ready.Load() || loop.stuck(time.Now()) || time.Since(start) > 72*time.Hour {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
 		w.Write([]byte((72*time.Hour - time.Since(start)).String()))
 	})
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	httpServer := &http.Server{Addr: ":" + port}
+	draining := &atomic.Bool{}
 	go func() {
 		// Optional webhook credentials must not delay the chat snapshot loop.
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		secrets := webhook.LoadSecrets(ctx, nil)
 		cancel()
 		server := webhook.NewServer(secrets)
+		server.Draining = draining
 		verifier, err := callable.FirebaseVerifier(context.Background(), "rtchat-47692")
 		if err != nil {
 			zap.L().Warn("callable authentication unavailable; protected requests will be rejected")
@@ -219,21 +227,29 @@ func main() {
 		}
 		server.Mux.Handle("/", recycleHandler)
 		zap.L().Info("starting http server")
-		port := os.Getenv("PORT")
-		if port == "" {
-			port = "8080"
-		}
-		if err := http.ListenAndServe(":"+port, server.Mux); err != nil {
+		httpServer.Handler = server.Mux
+		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			zap.L().Fatal("failed to start http server", zap.Error(err))
 		}
 	}()
 
 	first := true
 	for {
-		isListening.Store(true)
+		loop.listening()
 		snapshot, err := subscribeRequests.Next()
-		isListening.Store(false)
+		loop.applying(time.Now())
 		if err != nil {
+			// SIGTERM cancels the snapshot. The container is killed ten seconds
+			// later, so fail health checks long enough for the load balancer to
+			// stop routing here (two 2s probes), then finish in-flight requests
+			// before the deferred cleanup closes Firestore.
+			draining.Store(true)
+			if os.Getenv("CI") == "" {
+				time.Sleep(5 * time.Second)
+			}
+			shutdown, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+			httpServer.Shutdown(shutdown)
+			cancel()
 			return
 		}
 		for _, change := range snapshot.Changes {
