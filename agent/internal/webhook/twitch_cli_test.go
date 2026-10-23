@@ -99,8 +99,7 @@ type twitchDelivery struct {
 // what the CLI sent and what the handler answered.
 type twitchCLIServer struct {
 	*httptest.Server
-	store     *lockedTwitchStore
-	refreshes []string
+	store *lockedTwitchStore
 
 	mu         sync.Mutex
 	deliveries []twitchDelivery
@@ -108,12 +107,7 @@ type twitchCLIServer struct {
 
 func newTwitchCLIServer(t *testing.T) *twitchCLIServer {
 	s := &twitchCLIServer{store: &lockedTwitchStore{}}
-	h := &TwitchHandler{Secret: twitchCLISecret, Store: s.store, RefreshChannel: func(_ context.Context, id string) error {
-		s.mu.Lock()
-		defer s.mu.Unlock()
-		s.refreshes = append(s.refreshes, id)
-		return nil
-	}}
+	h := &TwitchHandler{Secret: twitchCLISecret, Store: s.store}
 	server := NewServer(Secrets{})
 	server.RegisterProvider("/twitch/", h)
 	s.Server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -152,12 +146,6 @@ func (s *twitchCLIServer) delivery(t *testing.T) twitchDelivery {
 		t.Fatalf("got %d deliveries, want 1", len(s.deliveries))
 	}
 	return s.deliveries[0]
-}
-
-func (s *twitchCLIServer) refreshed() []string {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return append([]string(nil), s.refreshes...)
 }
 
 // lockedTwitchStore records writes made on the server's goroutines.
@@ -298,11 +286,9 @@ func TestTwitchCLINotifications(t *testing.T) {
 				channel = writes[1:]
 			}
 			var want []twitchDocument
-			var refreshes []string
 			switch test.eventType {
 			case "stream.online":
 				want = []twitchDocument{{Path: twitchCLIChannel, Data: map[string]interface{}{"onlineAt": firestore.ServerTimestamp}, Merge: true}}
-				refreshes = []string{"twitch:" + twitchCLIBroadcaster}
 			case "stream.offline":
 				want = []twitchDocument{{Path: twitchCLIChannel, Data: map[string]interface{}{"onlineAt": nil}, Merge: true}}
 			case "channel.follow":
@@ -316,9 +302,6 @@ func TestTwitchCLINotifications(t *testing.T) {
 			}
 			if !reflect.DeepEqual(channel, want) {
 				t.Fatalf("channel writes %#v, want %#v", channel, want)
-			}
-			if got := s.refreshed(); !reflect.DeepEqual(got, refreshes) {
-				t.Fatalf("refreshed %v, want %v", got, refreshes)
 			}
 		})
 	}
@@ -419,9 +402,6 @@ func TestTwitchCLIWrongSecret(t *testing.T) {
 		}
 		if writes := s.store.writes(); len(writes) != 0 {
 			t.Fatalf("writes %#v", writes)
-		}
-		if got := s.refreshed(); len(got) != 0 {
-			t.Fatalf("refreshed %v", got)
 		}
 	})
 	t.Run("challenge", func(t *testing.T) {
