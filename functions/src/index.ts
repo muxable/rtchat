@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import { alchemyWebhook, setRealTimeCashAddress } from "./alchemy_webhook";
 import { app as authApp } from "./auth";
-import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
+import { updateFollowerAndViewerCount } from "./chat-status";
 import {
   banKickUser,
   deleteKickMessage,
@@ -320,7 +320,6 @@ export {
   kickWebhook,
   updateKickChannelMetadata,
   search,
-  getViewerList,
   setRealTimeCashAddress,
   alchemyWebhook,
   updateFollowerAndViewerCount,
@@ -331,5 +330,6 @@ export const getEmotes = proxyCallable("getEmotes");
 export const getStatistics = proxyCallable("getStatistics");
 export const embedRedirect = proxy("embedRedirect", "/embedRedirect");
 export const metadata = proxy("metadata", "/metadata");
+export const getViewerList = proxyCallable("getViewerList");
 
 export const auth = withYouTube.https.onRequest(authApp);
