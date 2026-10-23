@@ -447,10 +447,21 @@ class ThirdPartyScreen extends StatelessWidget {
             children: [
               for (final account in accounts) ...[
                 if (accounts.length > 1) _AccountHeader(account),
+                // 1. RealtimeCash
                 _RealtimeCashWidget(
                   key: ValueKey(account.app.name),
                   account: account,
                   donations: donations(account),
+                ),
+                const Divider(),
+                // 2. RealtimeKit
+                _RealTimeKitWidget(),
+                const Divider(),
+                // 3. External third-party services alphabetically sorted
+                _StreamElementsWidget(
+                  account: account,
+                  donations: donations(account),
+                  authenticate: authenticate,
                 ),
                 const Divider(),
                 _StreamlabsWidget(
@@ -459,14 +470,7 @@ class ThirdPartyScreen extends StatelessWidget {
                   authenticate: authenticate,
                 ),
                 const Divider(),
-                _StreamElementsWidget(
-                  account: account,
-                  donations: donations(account),
-                  authenticate: authenticate,
-                ),
-                const Divider(),
               ],
-              _RealTimeKitWidget(),
             ],
           );
         },
