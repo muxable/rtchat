@@ -237,7 +237,7 @@
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				3719EC0CF7D8E1A8BA5C15D2 /* [firebase_crashlytics] Crashlytics Upload Symbols */,
-				9B7206925B2F8BD11A629C05 /* Validate embedded frameworks */,
+				9B7206925B2F8BD11A629C05 /* Repair ONNX Runtime framework */,
 			);
 			buildRules = (
 			);
@@ -397,7 +397,7 @@
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
 		};
-		9B7206925B2F8BD11A629C05 /* Validate embedded frameworks */ = {
+		9B7206925B2F8BD11A629C05 /* Repair ONNX Runtime framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -407,16 +407,16 @@
 			);
 			inputPaths = (
 				"$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)",
-				"$(PROJECT_DIR)/tool/validate_frameworks.py",
+				"$(PROJECT_DIR)/tool/repair_onnx_framework.py",
 			);
-			name = "Validate embedded frameworks";
+			name = "Repair ONNX Runtime framework";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "python3 \"$PROJECT_DIR/tool/validate_frameworks.py\" \"$TARGET_BUILD_DIR/$WRAPPER_NAME\" --repair-onnx\n";
+			shellScript = "python3 \"$PROJECT_DIR/tool/repair_onnx_framework.py\" \"$TARGET_BUILD_DIR/$WRAPPER_NAME\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

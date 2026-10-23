@@ -31,11 +31,11 @@ An earlier SPM build was rejected with ITMS-90208 because Xcode embedded an
 copied `Info.plist` declared 15.1. The package's static product alone did not
 prevent this wrapper from being embedded.
 
-Runner's final build phase runs `ios/tool/validate_frameworks.py --repair-onnx`.
+Runner's final build phase runs `ios/tool/repair_onnx_framework.py`.
 It reads the binary's deployment target with `vtool`, updates only ONNX
 Runtime's plist to match, and re-signs that framework before Runner is signed.
-It refuses binaries that require a newer OS than the app supports. The existing iOS build workflow runs this phase during archive creation.
-The validator can also check a completed archive without `--repair-onnx`.
+The existing iOS build workflow runs this phase during archive creation.
+Other embedded frameworks are left to Xcode's validation.
 App Store acceptance still requires Apple's processing of a signed upload.
 
 The podspec remains available for other apps using CocoaPods.
