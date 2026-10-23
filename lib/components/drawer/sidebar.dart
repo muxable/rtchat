@@ -330,6 +330,15 @@ class _SidebarState extends State<Sidebar> {
       //raid
       Consumer<UserModel>(
         builder: (context, model, child) {
+          final channel = widget.channel;
+          final raidingAccount =
+              channel.provider == Providers.twitch
+                  ? model.accountFor(channel)
+                  : null;
+          // hide the raid option if this isn't your own twitch channel
+          if (raidingAccount == null) {
+            return const SizedBox.shrink();
+          }
           return ListTile(
             leading: const Icon(Icons.connect_without_contact),
             title: Text(AppLocalizations.of(context)!.raidAChannel),
@@ -348,18 +357,15 @@ class _SidebarState extends State<Sidebar> {
                     expand: false,
                     builder: (context, controller) {
                       final views = Provider.of<ViewsModel>(context);
-                      final raider = _raidingAccount(context);
                       return ChannelSearchBottomSheetWidget(
                         isRaid: true,
                         onChannelSelect: views.openChannel,
                         onChannelAdd: views.addChannel,
                         channels: views.channels,
                         onRaid:
-                            raider == null
-                                ? null
-                                : (channel) => ActionsAdapter.forAccount(
-                                  raider,
-                                ).raid(raider.channel, channel),
+                            (channel) => ActionsAdapter.forAccount(
+                              raidingAccount,
+                            ).raid(raidingAccount.channel, channel),
                         controller: controller,
                       );
                     },
