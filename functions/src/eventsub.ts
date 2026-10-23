@@ -1,16 +1,11 @@
-import * as crypto from "crypto";
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
 import fetch from "cross-fetch";
 import { ClientCredentials } from "simple-oauth2";
 import {
-  getAppAccessToken,
   TWITCH_CLIENT_ID,
   TWITCH_CLIENT_SECRET,
   TWITCH_OAUTH_CONFIG,
 } from "./oauth";
-import { runUpdateFollowerAndViewerCount } from "./chat-status";
-import { recordRaidGo } from "./raids";
 
 enum EventsubType {
   ChannelFollow = "channel.follow",
@@ -140,131 +135,3 @@ export async function checkEventSubSubscriptions(userId: string) {
     console.log(JSON.stringify(json));
   }
 }
-
-export const eventsub = functions.https.onRequest(async (req, res) => {
-  const messageId = req.headers["twitch-eventsub-message-id"] as string;
-  const timestamp = req.headers["twitch-eventsub-message-timestamp"] as string;
-  const hmacMessage = messageId + timestamp + req.rawBody.toString("utf-8");
-  const signature = crypto
-    .createHmac("sha256", TWITCH_CLIENT_SECRET)
-    .update(hmacMessage)
-    .digest("hex");
-  if (
-    String(req.headers["twitch-eventsub-message-signature"]) !==
-    `sha256=${signature}`
-  ) {
-    console.error(new Error("failed to match signature"));
-    res.status(403).send();
-    return;
-  }
-  console.log("/eventsub", JSON.stringify(req.body));
-
-  const status = req.body?.subscription?.status;
-  if (status === "webhook_callback_verification_pending") {
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.status(200).send(req.body.challenge);
-    return;
-  } else if (status === "enabled") {
-    const type = req.body?.subscription?.type as EventsubType;
-    const version = req.body?.subscription?.version as string;
-
-    if (type === EventsubType.ChannelFollow && version === "1") {
-      console.log("rejecting channel.follow v1");
-      return;
-    }
-
-    // raids out of the channel complete the raiding channel's countdown rather
-    // than appearing as an incoming raid in the target channel.
-    if (outgoingRaidFrom(req.body.subscription)) {
-      await recordRaidGo(req.body.event, Date.parse(timestamp), messageId);
-      res.status(200).send();
-      return;
-    }
-
-    const channelId = `twitch:${
-      req.body.event["broadcaster_user_id"] ??
-      req.body.event["to_broadcaster_user_id"]
-    }`;
-
-    const channelRef = admin.firestore().collection("channels").doc(channelId);
-
-    // Twitch can send several notifications, each with its own message id, for
-    // one follower (double clicks, refollows), so follows are keyed by follower
-    // and only the first is recorded until its message expires.
-    // https://github.com/twitchdev/issues/issues/1224
-    const followerId = req.body.event["user_id"];
-    const isFollow =
-      type === EventsubType.ChannelFollow &&
-      typeof followerId === "string" &&
-      followerId !== "" &&
-      !followerId.includes("/");
-
-    const messageRef = channelRef
-      .collection("messages")
-      .doc(isFollow ? `twitch:follow:${followerId}` : `twitch:${messageId}`);
-
-    const message = {
-      channelId,
-      type,
-      timestamp: admin.firestore.Timestamp.fromMillis(Date.parse(timestamp)),
-      expiresAt: admin.firestore.Timestamp.fromMillis(
-        Date.now() + 1000 * 86400 * 7 * 2,
-      ),
-      event: req.body.event,
-    };
-    if (isFollow) {
-      try {
-        await messageRef.create(message);
-      } catch (e: any) {
-        // ALREADY_EXISTS: this follower was already recorded and counted.
-        if (e?.code === 6) {
-          res.status(200).send();
-          return;
-        }
-        throw e;
-      }
-    } else {
-      await messageRef.set(message);
-    }
-
-    switch (type) {
-      case EventsubType.StreamOnline:
-        await channelRef.set(
-          { onlineAt: admin.firestore.FieldValue.serverTimestamp() },
-          { merge: true },
-        );
-        // process twitch channel ids.
-        const token = await getAppAccessToken("twitch");
-        if (!token) {
-          throw new functions.https.HttpsError("internal", "auth error");
-        }
-        await runUpdateFollowerAndViewerCount(token, [channelId]);
-        break;
-      case EventsubType.StreamOffline:
-        await channelRef.set({ onlineAt: null }, { merge: true });
-        break;
-      case EventsubType.ChannelFollow:
-        // increment the follower count.
-        try {
-          await channelRef.update({
-            followerCount: admin.firestore.FieldValue.increment(1),
-          });
-        } catch {}
-        break;
-      case EventsubType.ChannelUpdate:
-        await channelRef.set(
-          {
-            login: req.body.event.broadcaster_user_login,
-            displayName: req.body.event.broadcaster_user_name,
-            title: req.body.event.title,
-            language: req.body.event.language,
-            categoryId: req.body.event.category_id,
-            categoryName: req.body.event.category_name,
-          },
-          { merge: true },
-        );
-        break;
-    }
-  }
-  res.status(200).send();
-});

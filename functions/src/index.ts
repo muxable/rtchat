@@ -3,7 +3,6 @@ import { app as authApp } from "./auth";
 import { updateFollowerAndViewerCount } from "./chat-status";
 import { sendKickMessage } from "./kick_actions";
 import { updateKickChannelMetadata } from "./kick_subscriptions";
-import { eventsub } from "./eventsub";
 import { getAccessToken, YOUTUBE_OAUTH_SECRETS } from "./oauth";
 import { proxy, proxyCallable } from "./proxy";
 import { subscribe, unsubscribe } from "./subscriptions";
@@ -113,7 +112,6 @@ export const cancelRaid = proxyCallable("cancelRaid");
 export {
   subscribe,
   unsubscribe,
-  eventsub,
   updateKickChannelMetadata,
   updateFollowerAndViewerCount,
 };
@@ -128,5 +126,6 @@ export const search = proxyCallable("search");
 export const setRealTimeCashAddress = proxyCallable("setRealTimeCashAddress");
 export const kickWebhook = proxy("kickWebhook", "/kick/webhook");
 export const alchemyWebhook = proxy("alchemyWebhook", "/alchemy/webhook");
+export const eventsub = proxy("eventsub", "/twitch/eventsub");
 
 export const auth = withYouTube.https.onRequest(authApp);
