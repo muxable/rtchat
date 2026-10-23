@@ -179,6 +179,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   late StreamSubscription<bool> keyboardSubscription;
   bool _isKeyboardVisible = false;
+  bool _viewerDrawerOnCooldown = false;
   TtsForegroundService? _ttsService;
 
   @override
@@ -225,6 +226,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  static const _viewerDrawerCooldownDuration = Duration(seconds: 5);
+  void _startViewerDrawerCooldown() {
+    if (_viewerDrawerOnCooldown) return;
+    setState(() {
+      _viewerDrawerOnCooldown = true;
+    });
+    Future<void>.delayed(_viewerDrawerCooldownDuration, () {
+      if (!mounted) return;
+      setState(() {
+        _viewerDrawerOnCooldown = false;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.orientationOf(context);
@@ -239,8 +254,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             drawer: Sidebar(channel: widget.channel),
             endDrawer:
-                userModel.isSignedIn()
-                    ? EndDrawerWidget(channel: widget.channel)
+                userModel.isSignedIn() && !_viewerDrawerOnCooldown
+                    ? EndDrawerWidget(
+                      channel: widget.channel,
+                      onClose: () {
+                        _scaffoldKey.currentState?.closeEndDrawer();
+                        _startViewerDrawerCooldown();
+                      },
+                    )
                     : null,
             drawerEdgeDragWidth: MediaQuery.sizeOf(context).width * 0.6,
             onDrawerChanged:
