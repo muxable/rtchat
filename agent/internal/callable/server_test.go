@@ -138,6 +138,7 @@ func TestRequestLog(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 		if tc.token != "" {
 			req.Header.Set("Authorization", "Bearer "+tc.token)
+			req.Header.Set(ProxyHeader, "getBadges")
 		}
 		s.ServeHTTP(httptest.NewRecorder(), req)
 	}
@@ -146,10 +147,10 @@ func TestRequestLog(t *testing.T) {
 		t.Fatalf("got %d request logs", len(entries))
 	}
 	ok, fail := entries[0].ContextMap(), entries[1].ContextMap()
-	if ok["callable"] != "ok" || ok["status"] != int64(200) || ok["code"] != "ok" || ok["provider"] != "kick" || ok["authenticated"] != true {
+	if ok["callable"] != "ok" || ok["status"] != int64(200) || ok["code"] != "ok" || ok["provider"] != "kick" || ok["authenticated"] != true || ok["via"] != "getBadges" {
 		t.Fatalf("unexpected success log %v", ok)
 	}
-	if entries[1].Level != zap.WarnLevel || fail["callable"] != "fail" || fail["status"] != int64(500) || fail["code"] != "internal" || fail["error"] != "boom" {
+	if entries[1].Level != zap.WarnLevel || fail["callable"] != "fail" || fail["status"] != int64(500) || fail["code"] != "internal" || fail["error"] != "boom" || fail["via"] != "" {
 		t.Fatalf("unexpected failure log %v", fail)
 	}
 }

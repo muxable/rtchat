@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/muxable/rtchat/agent/internal/callable"
 	"go.uber.org/zap"
 )
 
@@ -67,6 +68,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 		zap.L().Info("http request",
 			zap.String("method", r.Method),
 			zap.String("path", r.URL.Path),
+			zap.String("via", callable.Via(r)),
 			zap.Int("status", writer.status),
 			zap.Float64("latency_ms", float64(time.Since(start))/float64(time.Millisecond)),
 		)

@@ -86,6 +86,7 @@ func (s *Server) wrap(name string, requireAuth bool, handler Handler) http.Handl
 			zap.Int("status", status),
 			zap.String("code", code),
 			zap.String("provider", call.provider),
+			zap.String("via", Via(r)),
 			zap.Bool("authenticated", call.authenticated),
 			zap.Float64("latency_ms", float64(time.Since(start))/float64(time.Millisecond)),
 		}
@@ -95,6 +96,18 @@ func (s *Server) wrap(name string, requireAuth bool, handler Handler) http.Handl
 		}
 		zap.L().Info("http request", fields...)
 	})
+}
+
+// ProxyHeader names the Cloud Function that forwarded a request to the agent.
+const ProxyHeader = "X-Rtchat-Proxy"
+
+// Via is the forwarding Cloud Function, or empty for direct requests.
+func Via(r *http.Request) string {
+	via := r.Header.Get(ProxyHeader)
+	if len(via) > 32 {
+		return "invalid"
+	}
+	return via
 }
 
 // callInfo is what the request log records about a call.

@@ -330,6 +330,39 @@
             }
           }
         }
+      },
+      {
+        "xPos": 0,
+        "yPos": 80,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Agent requests/s via Cloud Functions proxy, by function",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"logging.googleapis.com/user/agent_http_requests\" resource.type=\"gce_instance\" metric.label.via!=\"\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "groupByFields": [
+                        "metric.label.via"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
       }
     ]
   }
