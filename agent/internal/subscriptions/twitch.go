@@ -18,6 +18,16 @@ import (
 
 const TwitchCallback = "https://rtchat-api.rtirl.com/twitch/eventsub"
 
+// LegacyTwitchCallback is the Cloud Function that received EventSub before the
+// agent. It now forwards deliveries to TwitchCallback with the same signing
+// secret, so subscriptions there still reach the agent until migrate-eventsub
+// moves them.
+const LegacyTwitchCallback = "https://us-central1-rtchat-47692.cloudfunctions.net/eventsub"
+
+func ownCallback(sub twitchSubscription) bool {
+	return sub.Transport.Method == "webhook" && (sub.Transport.Callback == TwitchCallback || sub.Transport.Callback == LegacyTwitchCallback)
+}
+
 type twitchUser struct {
 	ID    string `json:"id"`
 	Login string `json:"login"`
@@ -196,7 +206,7 @@ func (s *Service) ensureTwitch(ctx context.Context, id, token string) error {
 	// legacy callback conflict must not leave a partially migrated broadcaster.
 	for _, wanted := range wantedSubscriptions {
 		for _, sub := range existing {
-			if sub.Type == wanted.Type && sub.Version == wanted.Version && reflect.DeepEqual(sub.Condition, wanted.Condition) && (sub.Transport.Method != "webhook" || sub.Transport.Callback != TwitchCallback) {
+			if sub.Type == wanted.Type && sub.Version == wanted.Version && reflect.DeepEqual(sub.Condition, wanted.Condition) && !ownCallback(sub) {
 				return &callable.Error{Code: "failed-precondition", Message: "Twitch callbacks require coordinated migration before enabling subscriptions"}
 			}
 		}
