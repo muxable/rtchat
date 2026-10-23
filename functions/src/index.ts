@@ -1,46 +1,32 @@
 import * as functions from "firebase-functions/v1";
 import { app as authApp } from "./auth";
-import { updateFollowerAndViewerCount } from "./chat-status";
-import { updateKickChannelMetadata } from "./kick_subscriptions";
 import { YOUTUBE_OAUTH_SECRETS } from "./oauth";
 import { proxy, proxyCallable } from "./proxy";
-import { unsubscribe } from "./subscriptions";
 
-// functions that act with a user's youtube token need the google oauth client
-// to refresh it.
-const withYouTube = functions.runWith({
-  secrets: YOUTUBE_OAUTH_SECRETS,
-});
-
+// Everything but OAuth runs on the agent. These forward clients and provider
+// callbacks that still use the function URLs (#1551).
 export const send = proxyCallable("send");
-
 export const ban = proxyCallable("ban");
-
 export const unban = proxyCallable("unban");
-
 export const timeout = proxyCallable("timeout");
-
 export const deleteMessage = proxyCallable("deleteMessage");
-
 export const clear = proxyCallable("clear");
-
 export const raid = proxyCallable("raid");
-
 export const cancelRaid = proxyCallable("cancelRaid");
-
-export { unsubscribe, updateKickChannelMetadata, updateFollowerAndViewerCount };
-// moved to the agent; forwards clients that still call the function URL.
-export const getBadges = proxyCallable("getBadges");
+export const subscribe = proxyCallable("subscribe");
+export const setRealTimeCashAddress = proxyCallable("setRealTimeCashAddress");
+export const search = proxyCallable("search");
 export const getEmotes = proxyCallable("getEmotes");
+export const getBadges = proxyCallable("getBadges");
+export const getViewerList = proxyCallable("getViewerList");
 export const getStatistics = proxyCallable("getStatistics");
 export const embedRedirect = proxy("embedRedirect", "/embedRedirect");
 export const metadata = proxy("metadata", "/metadata");
-export const getViewerList = proxyCallable("getViewerList");
-export const search = proxyCallable("search");
-export const setRealTimeCashAddress = proxyCallable("setRealTimeCashAddress");
+export const eventsub = proxy("eventsub", "/twitch/eventsub");
 export const kickWebhook = proxy("kickWebhook", "/kick/webhook");
 export const alchemyWebhook = proxy("alchemyWebhook", "/alchemy/webhook");
-export const eventsub = proxy("eventsub", "/twitch/eventsub");
-export const subscribe = proxyCallable("subscribe");
 
-export const auth = withYouTube.https.onRequest(authApp);
+// signing in to youtube needs the google oauth client.
+export const auth = functions
+  .runWith({ secrets: YOUTUBE_OAUTH_SECRETS })
+  .https.onRequest(authApp);
