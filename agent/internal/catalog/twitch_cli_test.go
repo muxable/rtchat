@@ -124,9 +124,11 @@ func TestCatalogWithTwitchCLI(t *testing.T) {
 		beforeFollowed := len(captured["/helix/streams/followed"])
 		delete(tokens.user, "uid:twitch")
 		defer func() { tokens.user["uid:twitch"] = userToken }()
-		invoke(t, s, "search", `{"provider":"twitch","query":""}`, "uid")
-		if len(captured["/helix/search/channels"]) != beforeSearch+1 || len(captured["/helix/streams/followed"]) != beforeFollowed || requestAuth["/helix/search/channels"] != "Bearer "+mock.AppToken {
-			t.Fatal("missing user token did not fall back to app-token search")
+		// Without a user token there is nothing to list, and Twitch rejects an
+		// empty channel search, so the fallback answers with no results.
+		status, result = invoke(t, s, "search", `{"provider":"twitch","query":""}`, "uid")
+		if status != 200 || result["result"] == nil || len(array(result["result"])) != 0 || len(captured["/helix/search/channels"]) != beforeSearch || len(captured["/helix/streams/followed"]) != beforeFollowed {
+			t.Fatal("missing user token did not fall back to an empty search", status, result)
 		}
 
 	})
