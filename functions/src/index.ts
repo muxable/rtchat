@@ -3,7 +3,6 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { alchemyWebhook, setRealTimeCashAddress } from "./alchemy_webhook";
 import { app as authApp } from "./auth";
-import { getBadges } from "./badges";
 import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
 import { getEmotes } from "./emotes";
 import {
@@ -23,6 +22,7 @@ import {
   TWITCH_CLIENT_ID,
   YOUTUBE_OAUTH_SECRETS,
 } from "./oauth";
+import { proxyCallable } from "./proxy";
 import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
 import * as twitch from "./twitch";
@@ -502,10 +502,12 @@ export {
   updateKickChannelMetadata,
   search,
   getEmotes,
-  getBadges,
   getViewerList,
   setRealTimeCashAddress,
   alchemyWebhook,
   updateFollowerAndViewerCount,
 };
+// moved to the agent; forwards clients that still call the function URL.
+export const getBadges = proxyCallable("getBadges");
+
 export const auth = withYouTube.https.onRequest(authApp);
