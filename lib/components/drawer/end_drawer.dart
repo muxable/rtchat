@@ -22,7 +22,7 @@ class EndDrawerWidget extends StatefulWidget {
 }
 
 class EndDrawerWidgetState extends State<EndDrawerWidget> {
-  String _search = '';
+  String _search = "";
   Viewers? _viewers;
   bool _isLoading = true;
   bool _isError = false;
@@ -102,7 +102,6 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
     }
 
     final filtered = _viewers!.query(_search);
-    final localizations = AppLocalizations.of(context)!;
 
     return Container(
       color: Theme.of(context).canvasColor,
@@ -118,7 +117,7 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
                 title: Padding(
                   padding: const EdgeInsets.only(left: 16),
                   child: Text(
-                    localizations.searchViewers,
+                    AppLocalizations.of(context)!.searchViewers,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -136,7 +135,9 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
             if (filtered.broadcaster.isNotEmpty) ...[
               SliverPadding(
                 padding: const EdgeInsets.only(top: 8, left: 8),
-                sliver: SliverTitleWidget(title: localizations.broadcaster),
+                sliver: SliverTitleWidget(
+                  title: AppLocalizations.of(context)!.broadcaster,
+                ),
               ),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
@@ -151,7 +152,9 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
             if (filtered.moderators.isNotEmpty) ...[
               SliverPadding(
                 padding: const EdgeInsets.only(top: 8, left: 8),
-                sliver: SliverTitleWidget(title: localizations.moderators),
+                sliver: SliverTitleWidget(
+                  title: AppLocalizations.of(context)!.moderators,
+                ),
               ),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
@@ -166,7 +169,9 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
             if (filtered.vips.isNotEmpty) ...[
               SliverPadding(
                 padding: const EdgeInsets.only(top: 8, left: 8),
-                sliver: SliverTitleWidget(title: localizations.communityVips),
+                sliver: SliverTitleWidget(
+                  title: AppLocalizations.of(context)!.communityVips,
+                ),
               ),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
@@ -181,7 +186,9 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
             if (filtered.viewers.isNotEmpty) ...[
               SliverPadding(
                 padding: const EdgeInsets.only(top: 8, left: 8),
-                sliver: SliverTitleWidget(title: localizations.viewers),
+                sliver: SliverTitleWidget(
+                  title: AppLocalizations.of(context)!.viewers,
+                ),
               ),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
