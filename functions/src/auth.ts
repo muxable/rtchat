@@ -1,9 +1,9 @@
 import * as crypto from "crypto";
-import * as express from "express";
+import express from "express";
 import { rateLimit } from "express-rate-limit";
-import * as expressSession from "express-session";
+import expressSession from "express-session";
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import fetch from "cross-fetch";
 import { AuthorizationCode } from "simple-oauth2";
 import {

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
-	"github.com/gempir/go-twitch-irc/v3"
+	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"go.uber.org/zap"

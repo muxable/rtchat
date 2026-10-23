@@ -2,21 +2,21 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_tts/flutter_tts.dart';
+import 'system_tts_platform.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'tts_engine.dart';
 import 'tts_voice.dart';
 
-/// Speaks with the platform's own voices through `flutter_tts`.
+/// Speaks with the platform's own voices through the native system speech adapter.
 ///
 /// On Android, synthesizes a temporary WAV and plays it inside this process,
 /// so the app's foreground service covers background audio playback.
 /// On iOS speech plays in the playback audio category, mixed with other
 /// audio, so it keeps going in the background and doesn't pause music.
 class SystemTtsEngine implements TtsEngine {
-  final FlutterTts _tts;
+  final SystemTtsPlatform _tts;
   final String? Function() _platformLanguage;
   final Future<Directory> Function() _tempDirectory;
   AudioPlayer? _player;
@@ -28,26 +28,22 @@ class SystemTtsEngine implements TtsEngine {
   TtsVoice? _voice;
   String? _language;
 
-  /// Creates an engine on [tts], or on a new [FlutterTts] when omitted.
+  /// Creates an engine on [tts], or on a new [SystemTtsPlatform] when omitted.
   ///
   /// [platformLanguage] is the language to go back to after speaking in
   /// another one, on platforms where clearing the voice doesn't restore it:
   /// by default the device's language on iOS and macOS, and nothing
   /// elsewhere (Android's default voice carries its language).
   SystemTtsEngine({
-    FlutterTts? tts,
+    SystemTtsPlatform? tts,
     String? Function()? platformLanguage,
     @visibleForTesting AudioPlayer? audioPlayer,
     @visibleForTesting Future<Directory> Function()? tempDirectory,
-  }) : _tts = tts ?? FlutterTts(),
+  }) : _tts = tts ?? SystemTtsPlatform(),
        _platformLanguage = platformLanguage ?? _devicePlatformLanguage,
        _player = audioPlayer,
        _tempDirectory = tempDirectory ?? getTemporaryDirectory {
-    _tts
-      ..setSharedInstance(true)
-      ..setIosAudioCategory(IosTextToSpeechAudioCategory.playback, [
-        IosTextToSpeechAudioCategoryOptions.mixWithOthers,
-      ], IosTextToSpeechAudioMode.voicePrompt);
+    _tts.configureAudioSession();
   }
 
   static String? _devicePlatformLanguage() => switch (defaultTargetPlatform) {
@@ -134,7 +130,7 @@ class SystemTtsEngine implements TtsEngine {
               .timeout(const Duration(seconds: 30)),
         );
       } catch (_) {
-        // Reset flutter_tts's synthesis state after a timeout or platform error.
+        // Reset the native synthesis state after a timeout or platform error.
         // Cancellation already stops the platform before releasing this wait.
         if (!utterance.canceled) await _tts.stop();
         rethrow;

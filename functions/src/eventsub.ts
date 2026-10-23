@@ -103,6 +103,9 @@ export async function checkEventSubSubscriptions(userId: string) {
     { scopes: [] },
   );
   const appAccessToken = credentials.token.access_token;
+  if (typeof appAccessToken !== "string") {
+    throw new Error("Twitch did not return an access token");
+  }
   const snapshot = await admin
     .database()
     .ref("userIds")

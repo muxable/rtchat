@@ -97,7 +97,7 @@ class NeuralTtsEngine implements TtsEngine {
 
   /// Maps a [TtsEngine] rate (0..1, 0.5 normal) to the native speed (1.0
   /// normal) as `2 × rate`, clamped to [minSpeed]..[maxSpeed]. That is how
-  /// `flutter_tts` sets Android's speech rate, so a rate sounds about as fast
+  /// The system speech adapter sets Android's speech rate, so a rate sounds about as fast
   /// as with the system voices there: 0.8 (the app's Android default) is
   /// 1.6×.
   static double speedForRate(double rate) =>

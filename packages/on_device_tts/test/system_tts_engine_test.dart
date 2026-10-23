@@ -9,7 +9,7 @@ import 'package:just_audio/just_audio.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const channel = MethodChannel('flutter_tts');
+  const channel = MethodChannel('on_device_tts/system');
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
 
