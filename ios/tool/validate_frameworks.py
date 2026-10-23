@@ -24,7 +24,21 @@ def minimum_os(binary):
     )
     # vtool prints minos for LC_BUILD_VERSION and version for the legacy
     # LC_VERSION_MIN_IPHONEOS load command, once for each architecture.
-    values = re.findall(r'^\s*(?:minos|version)\s+(\d+(?:\.\d+){1,2})\s*$', output, re.M)
+    # LC_BUILD_VERSION also contains a tool's version; that is not an OS target.
+    values = []
+    command = None
+    for line in output.splitlines():
+        fields = line.split()
+        if len(fields) != 2:
+            continue
+        key, value = fields
+        if key == 'cmd':
+            command = value
+        elif ((command == 'LC_BUILD_VERSION' and key == 'minos') or
+              (command == 'LC_VERSION_MIN_IPHONEOS' and key == 'version')):
+            if not re.fullmatch(r'\d+(?:\.\d+){1,2}', value):
+                raise ValueError(f'Invalid deployment target {value} in {binary}')
+            values.append(value)
     if not values:
         raise ValueError(f'No deployment target found in {binary}')
     return max(values, key=version)
