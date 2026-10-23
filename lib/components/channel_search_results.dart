@@ -121,50 +121,54 @@ Stream<List<SearchResult>> searchChannels(
   Api api, {
   List<Channel> followedChannels = const [],
 }) async* {
-  final followedForProvider = followedChannels
-      .where((channel) => channel.provider == provider)
-      .toList();
+  final followedForProvider =
+      followedChannels
+          .where((channel) => channel.provider == provider)
+          .toList();
 
-  final followedChannelKeys = followedForProvider
-      .map((channel) => _channelKey(channel.provider, channel.channelId))
-      .toSet();
+  final followedChannelKeys =
+      followedForProvider
+          .map((channel) => _channelKey(channel.provider, channel.channelId))
+          .toSet();
 
   // Fetch recently active channels.
   final recent = await fastSearch();
 
   // Include followed channels even if they aren't in the recent results.
-  final followedResults = followedForProvider.map((channel) {
-    final existing = recent.where(
-      (result) =>
-          result.provider == channel.provider &&
-          result.channelId == channel.channelId,
-    );
+  final followedResults = followedForProvider
+      .map((channel) {
+        final existing = recent.where(
+          (result) =>
+              result.provider == channel.provider &&
+              result.channelId == channel.channelId,
+        );
 
-    if (existing.isNotEmpty) {
-      return existing.first;
-    }
+        if (existing.isNotEmpty) {
+          return existing.first;
+        }
 
-    return SearchResult(
-      channelId: channel.channelId,
-      provider: channel.provider,
-      login: channel.displayName,
-      displayName: channel.displayName,
-      isOnline: false,
-      imageUrl: Uri.parse(
-        'https://rtirl.com/pfp.png'
-        '?provider=${channel.provider}'
-        '&channelId=${channel.channelId}',
-      ),
-      title: null,
-      language: null,
-      isPromoted: false,
-    );
-  }).where(
-    (result) =>
-        (result.displayName.toLowerCase().contains(query.toLowerCase()) ||
-            result.login.toLowerCase().contains(query.toLowerCase())) &&
-        (!isShowOnlyOnline || result.isOnline),
-  );
+        return SearchResult(
+          channelId: channel.channelId,
+          provider: channel.provider,
+          login: channel.displayName,
+          displayName: channel.displayName,
+          isOnline: false,
+          imageUrl: Uri.parse(
+            'https://rtirl.com/pfp.png'
+            '?provider=${channel.provider}'
+            '&channelId=${channel.channelId}',
+          ),
+          title: null,
+          language: null,
+          isPromoted: false,
+        );
+      })
+      .where(
+        (result) =>
+            (result.displayName.toLowerCase().contains(query.toLowerCase()) ||
+                result.login.toLowerCase().contains(query.toLowerCase())) &&
+            (!isShowOnlyOnline || result.isOnline),
+      );
 
   final followedByKey = <String, SearchResult>{
     for (final result in followedResults)
@@ -176,9 +180,7 @@ Stream<List<SearchResult>> searchChannels(
     query,
     provider,
     followedChannelKeys: followedChannelKeys,
-  ).where(
-    (result) => !isShowOnlyOnline || result.isOnline,
-  );
+  ).where((result) => !isShowOnlyOnline || result.isOnline);
 
   final mergedFast = <String, SearchResult>{};
 
@@ -198,26 +200,25 @@ Stream<List<SearchResult>> searchChannels(
   yield mergedFast.values.toList();
 
   // Fetch the full provider search.
-  final slow = await api.callable('search')({
-    'query': query,
-    'provider': provider,
-  }).then((result) {
-    return (result.data as List<dynamic>)
-        .map(
-          (data) => SearchResult(
-            channelId: data['channelId'],
-            provider: data['provider'],
-            login: data['login'],
-            displayName: data['displayName'],
-            isOnline: data['isOnline'],
-            imageUrl: Uri.parse(data['imageUrl']),
-            title: data['title'],
-            language: data['language'],
-            isPromoted: false,
-          ),
-        )
-        .toList();
-  });
+  final slow = await api
+      .callable('search')({'query': query, 'provider': provider})
+      .then((result) {
+        return (result.data as List<dynamic>)
+            .map(
+              (data) => SearchResult(
+                channelId: data['channelId'],
+                provider: data['provider'],
+                login: data['login'],
+                displayName: data['displayName'],
+                isOnline: data['isOnline'],
+                imageUrl: Uri.parse(data['imageUrl']),
+                title: data['title'],
+                language: data['language'],
+                isPromoted: false,
+              ),
+            )
+            .toList();
+      });
 
   final combined = <String, SearchResult>{...mergedFast};
 
@@ -314,7 +315,7 @@ class _ChannelSearchResultsWidgetState
     extends State<ChannelSearchResultsWidget> {
   late Stream<List<SearchResult>> _results;
   Timer? _debounce;
-@override
+  @override
   void initState() {
     super.initState();
     _results = _search();
@@ -324,11 +325,7 @@ class _ChannelSearchResultsWidgetState
     final search = widget.search;
 
     if (search != null) {
-      return search(
-        widget.query,
-        widget.provider,
-        widget.isShowOnlyOnline,
-      );
+      return search(widget.query, widget.provider, widget.isShowOnlyOnline);
     }
 
     final api = Provider.of<UserModel>(
@@ -352,7 +349,7 @@ class _ChannelSearchResultsWidgetState
     if (oldWidget.provider != widget.provider ||
         oldWidget.followedChannels != widget.followedChannels) {
       _debounce?.cancel();
-_results = _search();
+      _results = _search();
     } else if (oldWidget.query != widget.query ||
         oldWidget.isShowOnlyOnline != widget.isShowOnlyOnline) {
       _debounce?.cancel();
