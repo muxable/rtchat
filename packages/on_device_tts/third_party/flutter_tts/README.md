@@ -1,6 +1,7 @@
 # System speech adapters
 
-The Android and iOS `SystemTtsPlugin` files are adapted from
+The Android and iOS `SystemTtsPlugin` files and the iOS `AudioCategory`,
+`AudioCategoryOptions`, and `AudioModes` helpers are adapted from
 [flutter_tts 4.2.5](https://pub.dev/packages/flutter_tts/versions/4.2.5).
 They retain the upstream MIT license in `LICENSE` (also included in the
 package license for Flutter's license bundle).
