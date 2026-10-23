@@ -14,7 +14,6 @@ import { kickWebhook } from "./kick_webhook";
 import { eventsub } from "./eventsub";
 import { getAccessToken, YOUTUBE_OAUTH_SECRETS } from "./oauth";
 import { proxy, proxyCallable } from "./proxy";
-import { search } from "./search";
 import { subscribe, unsubscribe } from "./subscriptions";
 import * as twitch from "./twitch";
 import { WebSocket } from "ws";
@@ -319,7 +318,6 @@ export {
   eventsub,
   kickWebhook,
   updateKickChannelMetadata,
-  search,
   setRealTimeCashAddress,
   alchemyWebhook,
   updateFollowerAndViewerCount,
@@ -331,5 +329,6 @@ export const getStatistics = proxyCallable("getStatistics");
 export const embedRedirect = proxy("embedRedirect", "/embedRedirect");
 export const metadata = proxy("metadata", "/metadata");
 export const getViewerList = proxyCallable("getViewerList");
+export const search = proxyCallable("search");
 
 export const auth = withYouTube.https.onRequest(authApp);
