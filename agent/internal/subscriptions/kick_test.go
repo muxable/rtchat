@@ -70,7 +70,7 @@ func TestKickReconciliationConcurrencyAndPartialFailure(t *testing.T) {
 			fixture := &kickFixture{state: map[string][]kickSubscription{}, partial: partial}
 			server := httptest.NewServer(http.HandlerFunc(fixture.handler))
 			defer server.Close()
-			service := &Service{DB: db, Enabled: true, API: &API{Tokens: fakeTokens{}, Client: server.Client(), KickURL: server.URL}}
+			service := &Service{DB: db, API: &API{Tokens: fakeTokens{}, Client: server.Client(), KickURL: server.URL}}
 			if partial {
 				response := call(service, "subscribe", "", `{"provider":"kick","channelId":123}`)
 				if response.Code != 503 {
@@ -124,7 +124,7 @@ func TestKickCapacityAndAmbiguousFailureReservation(t *testing.T) {
 	fixture := &kickFixture{state: map[string][]kickSubscription{}}
 	server := httptest.NewServer(http.HandlerFunc(fixture.handler))
 	defer server.Close()
-	service := &Service{DB: db, Enabled: true, KickChannelLimit: 1, API: &API{Tokens: fakeTokens{}, Client: server.Client(), KickURL: server.URL}}
+	service := &Service{DB: db, KickChannelLimit: 1, API: &API{Tokens: fakeTokens{}, Client: server.Client(), KickURL: server.URL}}
 	if _, err := db.Collection("webhooks").Doc("kick:456").Set(ctx, map[string]interface{}{"lastActiveAt": time.Now()}); err != nil {
 		t.Fatal(err)
 	}
@@ -189,7 +189,7 @@ func TestKickSubscribeAndCleanupShareLifecycleLease(t *testing.T) {
 	}))
 	defer server.Close()
 	api := &API{Tokens: fakeTokens{}, Client: server.Client(), KickURL: server.URL}
-	service := &Service{DB: db, Enabled: true, API: api}
+	service := &Service{DB: db, API: api}
 	cleanup := &jobs.Service{Client: db, API: &jobs.API{Tokens: fakeTokens{}, Client: server.Client(), KickURL: server.URL}}
 	cleanupDone := make(chan error, 1)
 	go func() { cleanupDone <- cleanup.Cleanup(ctx) }()

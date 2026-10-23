@@ -197,7 +197,6 @@ func main() {
 		subscriptionService := &subscriptions.Service{
 			DB:             client,
 			API:            &subscriptions.API{Tokens: provider.NewService(client, &http.Client{Timeout: 10 * time.Second})},
-			Enabled:        os.Getenv("AGENT_PROVIDER_SUBSCRIPTIONS_ENABLED") == "true",
 			TwitchSecret:   secrets.TwitchEventSubSecret,
 			MaticWebhookID: secrets.AlchemyMaticWebhookID,
 		}
