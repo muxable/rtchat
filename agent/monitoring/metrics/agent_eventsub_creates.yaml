@@ -1,0 +1,15 @@
+description: Twitch EventSub subscription creations by the queue, by type and outcome.
+filter: >-
+  resource.type="gce_instance"
+  logName="projects/rtchat-47692/logs/cos_containers"
+  jsonPayload.message="twitch eventsub create"
+labelExtractors:
+  type: EXTRACT(jsonPayload.type)
+  outcome: EXTRACT(jsonPayload.outcome)
+metricDescriptor:
+  metricKind: DELTA
+  valueType: INT64
+  unit: "1"
+  labels:
+  - key: type
+  - key: outcome
