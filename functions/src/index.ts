@@ -109,41 +109,7 @@ export const send = withYouTube.https.onCall(async (data, context) => {
   throw new functions.https.HttpsError("invalid-argument", "invalid provider");
 });
 
-export const ban = withYouTube.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("permission-denied", "missing auth");
-  }
-  const provider = data?.provider;
-  const channelId = data?.channelId;
-  const username = data?.username;
-  const userId = data?.userId;
-  if (!provider || !channelId || (!username && !userId)) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId, username",
-    );
-  }
-
-  switch (provider) {
-    case "twitch":
-      const banUserId = userId ? userId : await twitch.getTwitchId(username);
-      return await twitch.ban(context.auth.uid, channelId, banUserId);
-    case "kick":
-      return await banKickUser(
-        context.auth.uid,
-        channelId,
-        userId ?? (await resolveKickUserId(username)),
-      );
-    case "youtube":
-      // youtube users are banned by channel id; there are no logins.
-      await banYouTubeUser(context.auth.uid, channelId, userId, {
-        videoId: parseVideoId(data?.videoId),
-      });
-      return;
-  }
-
-  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
-});
+export const ban = proxyCallable("ban");
 
 export const unban = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
