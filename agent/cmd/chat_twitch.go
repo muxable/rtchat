@@ -88,6 +88,10 @@ func (s *chatRoutes) twitch(ctx context.Context, uid, token, action string, r ch
 	case "raid":
 		var started time.Time
 		started, err = client.StartRaid(ctx, r.From, r.To)
+		var rejected *twitch.RaidRejected
+		if errors.As(err, &rejected) {
+			return nil, &callable.Error{Code: "failed-precondition", Message: rejected.Message}
+		}
 		if err == nil && !started.IsZero() {
 			if user, lookupErr := client.User(ctx, "id", r.To); lookupErr == nil {
 				user.ID = r.To
@@ -104,6 +108,10 @@ func (s *chatRoutes) twitch(ctx context.Context, uid, token, action string, r ch
 		}
 	case "cancelRaid":
 		err = client.CancelRaid(ctx, r.ChannelID)
+		var rejected *twitch.RaidRejected
+		if errors.As(err, &rejected) {
+			return nil, &callable.Error{Code: "failed-precondition", Message: rejected.Message}
+		}
 		if err == nil && s.store.RaidCancel(ctx, r.ChannelID, time.Now()) != nil {
 			zap.L().Warn("failed to record raid cancel")
 		}

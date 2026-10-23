@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/muxable/rtchat/agent/internal/callable"
+	"github.com/muxable/rtchat/agent/internal/clients"
 	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"github.com/muxable/rtchat/agent/internal/provider"
 )
@@ -86,15 +87,23 @@ func registerChat(api *callable.Server, s *chatRoutes) {
 			if err != nil {
 				return nil, err
 			}
+			var result any
 			switch r.Provider {
 			case "twitch":
-				return s.twitch(ctx, callable.UID(ctx), token, name, r)
+				result, err = s.twitch(ctx, callable.UID(ctx), token, name, r)
 			case "kick":
-				return s.kick(ctx, token, name, r)
+				result, err = s.kick(ctx, token, name, r)
 			case "youtube":
-				return s.youtube(ctx, callable.UID(ctx), token, name, r)
+				result, err = s.youtube(ctx, callable.UID(ctx), token, name, r)
+			default:
+				return nil, invalid("invalid provider")
 			}
-			return nil, invalid("invalid provider")
+			// A provider rate limit is the user acting too fast, not a server error.
+			var status *clients.HTTPError
+			if errors.As(err, &status) && status.Status == http.StatusTooManyRequests {
+				return nil, &callable.Error{Code: "resource-exhausted", Message: "too many requests, try again shortly"}
+			}
+			return result, err
 		})
 	}
 }
