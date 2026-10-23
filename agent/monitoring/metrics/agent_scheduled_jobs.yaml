@@ -1,0 +1,15 @@
+description: Agent scheduled job runs by job and outcome.
+filter: >-
+  resource.type="gce_instance"
+  logName="projects/rtchat-47692/logs/cos_containers"
+  jsonPayload.message=~"^scheduled job (completed|failed)$"
+labelExtractors:
+  job: EXTRACT(jsonPayload.job)
+  outcome: REGEXP_EXTRACT(jsonPayload.message, "^scheduled job (\\w+)$")
+metricDescriptor:
+  metricKind: DELTA
+  valueType: INT64
+  unit: "1"
+  labels:
+  - key: job
+  - key: outcome

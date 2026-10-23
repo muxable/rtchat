@@ -193,13 +193,16 @@ func main() {
 		catalog.Register(api, client, provider.NewService(client, nil))
 		// Register every callable package before Mount so readiness and webhooks remain intact.
 		api.Mount(server.Mux)
-		if err := publichttp.Register(server.Mux, client, provider.NewService(client, nil)); err != nil {
+		public := http.NewServeMux()
+		if err := publichttp.Register(public, client, provider.NewService(client, nil)); err != nil {
 			zap.L().Warn("public HTTP configuration invalid; routes disabled")
-			for _, path := range []string{"/embed", "/embedRedirect", "/metadata", "/api/metadata"} {
-				server.Mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-					http.Error(w, "temporarily unavailable", http.StatusServiceUnavailable)
-				})
-			}
+			public = http.NewServeMux()
+			public.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, "temporarily unavailable", http.StatusServiceUnavailable)
+			})
+		}
+		for _, path := range []string{"/embed", "/embedRedirect", "/metadata", "/api/metadata"} {
+			server.Mux.Handle(path, webhook.LoggingMiddleware(public))
 		}
 		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
 		server.RegisterProvider("/twitch/", webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client, twitchClientID, twitchClientSecret))

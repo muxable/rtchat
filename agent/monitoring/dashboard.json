@@ -1,0 +1,336 @@
+{
+  "displayName": "rtchat agent migration",
+  "mosaicLayout": {
+    "columns": 48,
+    "tiles": [
+      {
+        "xPos": 0,
+        "yPos": 0,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Agent requests/s by route",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"logging.googleapis.com/user/agent_http_requests\" resource.type=\"gce_instance\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "groupByFields": [
+                        "metric.label.path"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 0,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Agent 5xx/s by route",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"logging.googleapis.com/user/agent_http_requests\" resource.type=\"gce_instance\" metric.label.status=monitoring.regex.full_match(\"5..\")",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "groupByFields": [
+                        "metric.label.path"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 16,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Agent 4xx/s by route",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"logging.googleapis.com/user/agent_http_requests\" resource.type=\"gce_instance\" metric.label.status=monitoring.regex.full_match(\"4..\")",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "groupByFields": [
+                        "metric.label.path"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 16,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Agent requests/s by provider",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"logging.googleapis.com/user/agent_http_requests\" resource.type=\"gce_instance\" metric.label.provider!=\"\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "groupByFields": [
+                        "metric.label.provider"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 32,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Agent p95 latency (ms) by route",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"logging.googleapis.com/user/agent_http_latency\" resource.type=\"gce_instance\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_DELTA",
+                      "crossSeriesReducer": "REDUCE_PERCENTILE_95",
+                      "groupByFields": [
+                        "metric.label.path"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 32,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Cloud Functions executions/s (legacy traffic)",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"cloudfunctions.googleapis.com/function/execution_count\" resource.type=\"cloud_function\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "groupByFields": [
+                        "resource.label.function_name"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 48,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Cloud Functions errors/s",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"cloudfunctions.googleapis.com/function/execution_count\" resource.type=\"cloud_function\" metric.label.status!=\"ok\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "groupByFields": [
+                        "resource.label.function_name"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 48,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Agent scheduled job runs by job and outcome",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "STACKED_BAR",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"logging.googleapis.com/user/agent_scheduled_jobs\" resource.type=\"gce_instance\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_DELTA",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "groupByFields": [
+                        "metric.label.job",
+                        "metric.label.outcome"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 64,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Channels written per metadata refresh",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"logging.googleapis.com/user/agent_channels_written\" resource.type=\"gce_instance\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_DELTA",
+                      "crossSeriesReducer": "REDUCE_MEAN",
+                      "groupByFields": [
+                        "metric.label.provider"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 64,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Chat messages written/s",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"logging.googleapis.com/user/messages\" resource.type=\"gce_instance\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM"
+                    }
+                  }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

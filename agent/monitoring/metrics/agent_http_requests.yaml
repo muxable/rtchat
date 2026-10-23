@@ -1,0 +1,17 @@
+description: Agent HTTP requests (callables, webhooks, preview and metadata) by route and status.
+filter: >-
+  resource.type="gce_instance"
+  logName="projects/rtchat-47692/logs/cos_containers"
+  jsonPayload.message="http request"
+labelExtractors:
+  path: REGEXP_EXTRACT(jsonPayload.path, "^(/[A-Za-z]*(?:/[A-Za-z]+)?)")
+  status: EXTRACT(jsonPayload.status)
+  provider: EXTRACT(jsonPayload.provider)
+metricDescriptor:
+  metricKind: DELTA
+  valueType: INT64
+  unit: "1"
+  labels:
+  - key: path
+  - key: status
+  - key: provider
