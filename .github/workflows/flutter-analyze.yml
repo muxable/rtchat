@@ -19,6 +19,8 @@ jobs:
       # the analyzer resolves the package's files with its own dependencies.
       - run: flutter pub get
         working-directory: packages/on_device_tts
+      - name: Test iOS framework validation
+        run: python3 -m unittest discover -s ios/tool -v
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed .
       - name: Run flutter analyze

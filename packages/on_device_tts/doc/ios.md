@@ -34,9 +34,8 @@ prevent this wrapper from being embedded.
 Runner's final build phase runs `ios/tool/validate_frameworks.py --repair-onnx`.
 It reads the binary's deployment target with `vtool`, updates only ONNX
 Runtime's plist to match, and re-signs that framework before Runner is signed.
-It refuses binaries that require a newer OS than the app supports. CI also
-validates the completed unsigned device archive without repair, so an incorrect
-build-phase ordering or a mismatch in another framework fails the check.
+It refuses binaries that require a newer OS than the app supports. The existing iOS build workflow runs this phase during archive creation.
+The validator can also check a completed archive without `--repair-onnx`.
 App Store acceptance still requires Apple's processing of a signed upload.
 
 The podspec remains available for other apps using CocoaPods.
