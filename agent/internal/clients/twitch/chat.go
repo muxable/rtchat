@@ -117,6 +117,22 @@ func (c *Client) CancelRaid(ctx context.Context, channel string) error {
 	return c.write(ctx, "DELETE", "/raids?"+url.Values{"broadcaster_id": {channel}}.Encode(), nil)
 }
 
+// Shoutout returns an empty reason when accepted, or Twitch's message when
+// rejected, e.g. because the channel is offline or on cooldown.
+func (c *Client) Shoutout(ctx context.Context, from, to, moderator string) (string, error) {
+	response, err := c.Do(ctx, "POST", "/chat/shoutouts?"+url.Values{"from_broadcaster_id": {from}, "to_broadcaster_id": {to}, "moderator_id": {moderator}}.Encode(), nil)
+	if err != nil {
+		return "", err
+	}
+	if response.StatusCode == 400 || response.StatusCode == 429 {
+		var result struct{ Message string }
+		if response.Decode(&result) == nil && result.Message != "" {
+			return result.Message, nil
+		}
+	}
+	return "", response.Err()
+}
+
 func (c *Client) write(ctx context.Context, method, path string, body any) error {
 	response, err := c.Do(ctx, method, path, body)
 	if err != nil {
