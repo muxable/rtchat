@@ -67,7 +67,7 @@ jobs:
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-          
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -95,11 +95,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       - uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: 'projects/832669896677/locations/global/workloadIdentityPools/github-actions/providers/github-actions'
-          service_account: 'github-action-356868763@rtchat-47692.iam.gserviceaccount.com'
+          workload_identity_provider: "projects/832669896677/locations/global/workloadIdentityPools/github-actions/providers/github-actions"
+          service_account: "github-action-356868763@rtchat-47692.iam.gserviceaccount.com"
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2

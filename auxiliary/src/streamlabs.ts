@@ -34,7 +34,7 @@ function listenForSingleUserId(userId: string) {
       .firestore()
       .collection("streamlabs")
       .doc(userId)
-      .onSnapshot((doc) => subscriber.next(doc))
+      .onSnapshot((doc) => subscriber.next(doc)),
   ).pipe(
     // distinct on token
     distinctUntilChanged((a, b) => a.get("token") === b.get("token")),
@@ -85,7 +85,7 @@ function listenForSingleUserId(userId: string) {
       }
       async function socketToken() {
         const response = await fetch(
-          `https://streamlabs.com/api/v1.0/socket/token?access_token=${accessToken}`
+          `https://streamlabs.com/api/v1.0/socket/token?access_token=${accessToken}`,
         );
         const json = await response.json();
         return json["socket_token"] as string;
@@ -105,7 +105,7 @@ function listenForSingleUserId(userId: string) {
                 `https://sockets.streamlabs.com/?token=${token}`,
                 {
                   transports: ["websocket"],
-                }
+                },
               );
               streamlabs.on("event", (eventData: any) => {
                 if (!eventData.for && eventData.type === "donation") {
@@ -125,8 +125,8 @@ function listenForSingleUserId(userId: string) {
               });
               return () => streamlabs.disconnect();
             });
-          })
-        )
+          }),
+        ),
       ).pipe(
         tap((donation) => {
           // write the after value to the database.
@@ -137,7 +137,7 @@ function listenForSingleUserId(userId: string) {
               tx.update(doc.ref, { after: donation.id });
             }
           });
-        })
+        }),
       );
     }),
     // log the donation to bunyan.
@@ -156,9 +156,11 @@ function listenForSingleUserId(userId: string) {
           ...donation,
           type: "streamlabs.donation",
           timestamp: admin.firestore.Timestamp.fromDate(donation.timestamp),
-          expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 1000 * 86400 * 7 * 2),
+          expiresAt: admin.firestore.Timestamp.fromMillis(
+            Date.now() + 1000 * 86400 * 7 * 2,
+          ),
         });
-    })
+    }),
   );
 }
 
@@ -166,7 +168,7 @@ export const streamlabs$ = new Observable<
   admin.firestore.QueryDocumentSnapshot<admin.firestore.DocumentData>
 >((subscriber) => {
   const threshold = admin.firestore.Timestamp.fromMillis(
-    new Date().getTime() - 3 * 86400 * 1000
+    new Date().getTime() - 3 * 86400 * 1000,
   );
   return admin
     .firestore()
@@ -185,7 +187,7 @@ export const streamlabs$ = new Observable<
       catchError((error) => {
         log.error({ userId: doc.id, error: error.message }, "got error");
         return new Observable<never>((subscriber) => subscriber.complete());
-      })
-    )
-  )
+      }),
+    ),
+  ),
 );

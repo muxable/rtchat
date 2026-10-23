@@ -30,17 +30,17 @@ window.Actions = {
   SetVolume: 11,
 };
 
-window.action = function(eventName, params) {
+window.action = function (eventName, params) {
   ifr.contentWindow.postMessage(
     { eventName, params, namespace: "twitch-embed-player-proxy" },
-    "*"
+    "*",
   );
-}
+};
 
 if (Flutter) {
   window.addEventListener(
     "message",
     (e) => Flutter.postMessage(JSON.stringify(e.data)),
-    false
+    false,
   );
 }
