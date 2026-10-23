@@ -95,3 +95,41 @@ func TestTwitchLegacyFunctionCallbackCountsAsPresent(t *testing.T) {
 		t.Fatal("changed subscriptions that the legacy function forwards", mutations)
 	}
 }
+
+func TestTwitchRejectedTypesDoNotFailTheRest(t *testing.T) {
+	posts := map[string]int{}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			fmt.Fprint(w, `{"data":[]}`)
+			return
+		}
+		var body struct {
+			Type string `json:"type"`
+		}
+		json.NewDecoder(r.Body).Decode(&body)
+		posts[body.Type]++
+		switch {
+		case strings.HasPrefix(body.Type, "channel.hype_train."):
+			w.WriteHeader(400)
+			fmt.Fprint(w, `{"error":"Bad Request","status":400,"message":"invalid subscription type and version"}`)
+		case body.Type == "stream.online":
+			// the cost limit is full, with rate-limit budget left.
+			w.Header().Set("Ratelimit-Remaining", "700")
+			w.WriteHeader(429)
+			fmt.Fprint(w, `{"error":"Too Many Requests","status":429,"message":"subscription limit exceeded"}`)
+		default:
+			w.WriteHeader(202)
+		}
+	}))
+	defer server.Close()
+	service := &Service{TwitchSecret: "dedicated-secret", API: &API{Tokens: fakeTokens{}, Client: server.Client(), TwitchURL: server.URL}}
+	if err := service.ensureTwitch(context.Background(), "123", "app-token"); err != nil {
+		t.Fatal(err)
+	}
+	if posts["stream.online"] != 1 || posts["channel.hype_train.begin"] != 1 {
+		t.Fatal("rejected types were retried", posts)
+	}
+	if posts["channel.follow"] != 1 || posts["stream.offline"] != 1 {
+		t.Fatal("types after a rejection were not created", posts)
+	}
+}

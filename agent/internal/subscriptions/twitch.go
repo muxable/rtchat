@@ -236,6 +236,13 @@ func (s *Service) ensureTwitch(ctx context.Context, id, token string) error {
 			zap.L().Warn("Twitch EventSub scope unavailable", zap.String("type", wanted.Type), zap.String("channel", id))
 			continue
 		}
+		// Like the Cloud Function, one rejected type does not fail the rest:
+		// Twitch answers 429 when the client's EventSub cost limit is full and
+		// 400 for retired types or versions.
+		if isStatus(err, 429) || isStatus(err, 400) {
+			zap.L().Warn("Twitch EventSub subscription rejected", zap.String("type", wanted.Type), zap.String("channel", id), zap.Error(err))
+			continue
+		}
 		if err != nil {
 			return err
 		}

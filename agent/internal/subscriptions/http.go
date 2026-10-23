@@ -59,6 +59,11 @@ func request(ctx context.Context, client *clients.Client, method, path string, b
 		if response.Err() == nil {
 			return response.Decode(out)
 		}
+		// Twitch also answers 429 when the EventSub cost limit is full, with
+		// rate-limit budget left. Retrying that cannot succeed.
+		if response.StatusCode == 429 && response.Header.Get("Ratelimit-Remaining") != "" && response.Header.Get("Ratelimit-Remaining") != "0" {
+			return response.Err()
+		}
 		if response.StatusCode == 429 || (method == http.MethodGet && response.StatusCode >= 500) {
 			delay := clients.RetryDelay(response.Header, attempt)
 			if attempt == 2 || delay > 30*time.Second {
