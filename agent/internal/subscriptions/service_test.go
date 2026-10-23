@@ -60,7 +60,7 @@ func call(s *Service, route, uid, payload string) *httptest.ResponseRecorder {
 	server.ServeHTTP(recorder, request)
 	return recorder
 }
-func TestValidationAndRolloutGate(t *testing.T) {
+func TestValidationAndAuthentication(t *testing.T) {
 	service := &Service{}
 	for _, payload := range []string{`{}`, `{"provider":"unknown","channelId":"1"}`, `{"provider":"youtube","channelId":"../../users"}`, `{"provider":"kick","channelId":"9007199254740992"}`, `{"provider":"kick","channelId":"0"}`, `{"provider":"twitch","channelId":"1/2"}`, `{"provider":"kick","channelId":true}`} {
 		response := call(service, "subscribe", "", payload)
@@ -68,11 +68,7 @@ func TestValidationAndRolloutGate(t *testing.T) {
 			t.Fatal(payload, response.Code, response.Body.String())
 		}
 	}
-	response := call(service, "subscribe", "", `{"provider":"twitch","channelId":"123"}`)
-	if response.Code != 400 || !strings.Contains(response.Body.String(), "FAILED_PRECONDITION") {
-		t.Fatal(response.Code, response.Body.String())
-	}
-	response = call(service, "subscribe", "invalid", `{"provider":"twitch","channelId":"123"}`)
+	response := call(service, "subscribe", "invalid", `{"provider":"twitch","channelId":"123"}`)
 	if response.Code != 401 {
 		t.Fatal(response.Code)
 	}
@@ -112,7 +108,7 @@ func TestGuestYouTubeAndTwitchAssignments(t *testing.T) {
 		fmt.Fprint(w, `{"data":[{"id":"123","login":"owner"}]}`)
 	}))
 	defer server.Close()
-	service := &Service{DB: db, Enabled: true, API: &API{Tokens: fakeTokens{}, Client: server.Client(), TwitchURL: server.URL}}
+	service := &Service{DB: db, API: &API{Tokens: fakeTokens{}, Client: server.Client(), TwitchURL: server.URL}}
 	for _, payload := range []string{`{"provider":"youtube","channelId":"UC` + strings.Repeat("a", 22) + `"}`, `{"provider":"twitch","channelId":"123"}`} {
 		response := call(service, "subscribe", "", payload)
 		if response.Code != 200 {
@@ -182,7 +178,7 @@ func TestSignedTwitchConcurrencyWelcomeAndIdentity(t *testing.T) {
 		w.WriteHeader(202)
 	}))
 	defer server.Close()
-	service := &Service{DB: db, Enabled: true, TwitchSecret: "dedicated-signing-secret", API: &API{Tokens: fakeTokens{}, Client: server.Client(), TwitchURL: server.URL}}
+	service := &Service{DB: db, TwitchSecret: "dedicated-signing-secret", API: &API{Tokens: fakeTokens{}, Client: server.Client(), TwitchURL: server.URL}}
 	service.Queue = NewTwitchQueue(service)
 	var wg sync.WaitGroup
 	for i := 0; i < 3; i++ {
@@ -278,7 +274,7 @@ func TestTwitchStaleIdentityAndLegacyCallbackGate(t *testing.T) {
 				fmt.Fprint(w, `{"data":[{"id":"legacy","type":"channel.follow","version":"2","status":"enabled","condition":{"broadcaster_user_id":"123","moderator_user_id":"123"},"transport":{"method":"webhook","callback":"https://legacy.example/eventsub"}}]}`)
 			}))
 			defer server.Close()
-			service := &Service{DB: db, Enabled: true, TwitchSecret: "dedicated-signing-secret", API: &API{Tokens: fakeTokens{Missing: mode == "missing-token"}, Client: server.Client(), TwitchURL: server.URL}}
+			service := &Service{DB: db, TwitchSecret: "dedicated-signing-secret", API: &API{Tokens: fakeTokens{Missing: mode == "missing-token"}, Client: server.Client(), TwitchURL: server.URL}}
 			service.Queue = NewTwitchQueue(service)
 			response := call(service, "subscribe", "owner", `{"provider":"twitch","channelId":"123"}`)
 			// The identity gate still answers the caller. The callback gate runs
