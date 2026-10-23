@@ -2,13 +2,7 @@ import * as functions from "firebase-functions";
 import { alchemyWebhook, setRealTimeCashAddress } from "./alchemy_webhook";
 import { app as authApp } from "./auth";
 import { updateFollowerAndViewerCount } from "./chat-status";
-import {
-  banKickUser,
-  deleteKickMessage,
-  resolveKickUserId,
-  sendKickMessage,
-  unbanKickUser,
-} from "./kick_actions";
+import { sendKickMessage } from "./kick_actions";
 import { updateKickChannelMetadata } from "./kick_subscriptions";
 import { kickWebhook } from "./kick_webhook";
 import { eventsub } from "./eventsub";
@@ -17,12 +11,7 @@ import { proxy, proxyCallable } from "./proxy";
 import { subscribe, unsubscribe } from "./subscriptions";
 import * as twitch from "./twitch";
 import { WebSocket } from "ws";
-import {
-  banYouTubeUser,
-  deleteYouTubeMessage,
-  parseVideoId,
-  sendYouTubeMessage,
-} from "./youtube_actions";
+import { parseVideoId, sendYouTubeMessage } from "./youtube_actions";
 
 // functions that act with a user's youtube token need the google oauth client
 // to refresh it.
@@ -111,172 +100,17 @@ export const send = withYouTube.https.onCall(async (data, context) => {
 
 export const ban = proxyCallable("ban");
 
-export const unban = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("permission-denied", "missing auth");
-  }
-  const provider = data?.provider;
-  const channelId = data?.channelId;
-  const username = data?.username;
-  const userId = data?.userId;
-  if (!provider || !channelId || (!username && !userId)) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId, username",
-    );
-  }
+export const unban = proxyCallable("unban");
 
-  switch (provider) {
-    case "twitch":
-      const banUserId = userId ? userId : await twitch.getTwitchId(username);
-      return await twitch.unban(context.auth.uid, channelId, banUserId);
-    case "kick":
-      return await unbanKickUser(
-        context.auth.uid,
-        channelId,
-        userId ?? (await resolveKickUserId(username)),
-      );
-  }
+export const timeout = proxyCallable("timeout");
 
-  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
-});
+export const deleteMessage = proxyCallable("deleteMessage");
 
-export const timeout = withYouTube.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("permission-denied", "missing auth");
-  }
-  const provider = data?.provider;
-  const channelId = data?.channelId;
-  const username = data?.username;
-  const userId = data?.userId;
-  const length = data?.length;
-  const reason = data?.reason;
-  if (!provider || !channelId || (!username && !userId) || !length || !reason) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId, username, length, reason",
-    );
-  }
+export const clear = proxyCallable("clear");
 
-  switch (provider) {
-    case "twitch":
-      const banUserId = userId ? userId : await twitch.getTwitchId(username);
-      return await twitch.timeout(
-        context.auth.uid,
-        channelId,
-        banUserId,
-        length,
-        reason,
-      );
-    case "kick":
-      return await banKickUser(
-        context.auth.uid,
-        channelId,
-        userId ?? (await resolveKickUserId(username)),
-        { durationSeconds: length, reason },
-      );
-    case "youtube":
-      // youtube bans have no reason.
-      await banYouTubeUser(context.auth.uid, channelId, userId, {
-        durationSeconds: length,
-        videoId: parseVideoId(data?.videoId),
-      });
-      return;
-  }
+export const raid = proxyCallable("raid");
 
-  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
-});
-
-export const deleteMessage = withYouTube.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("permission-denied", "missing auth");
-  }
-  const provider = data?.provider;
-  const channelId = data?.channelId;
-  const messageId = data?.messageId;
-  if (!provider || !channelId || !messageId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId, messageId",
-    );
-  }
-
-  switch (provider) {
-    case "twitch":
-      // chat message documents are keyed "twitch:<message id>".
-      return await twitch.deleteMessage(
-        context.auth.uid,
-        channelId,
-        messageId.replace(/^twitch:/, ""),
-      );
-    case "kick":
-      return await deleteKickMessage(context.auth.uid, messageId);
-    case "youtube":
-      return await deleteYouTubeMessage(context.auth.uid, messageId);
-  }
-
-  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
-});
-
-export const clear = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("permission-denied", "missing auth");
-  }
-  const provider = data?.provider;
-  const channelId = data?.channelId;
-  if (!provider || !channelId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId",
-    );
-  }
-
-  switch (provider) {
-    case "twitch":
-      return await twitch.clearChat(context.auth.uid, channelId);
-  }
-
-  throw new functions.https.HttpsError("invalid-argument", "invalid provider");
-});
-
-export const raid = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("permission-denied", "missing auth");
-  }
-  const provider = data?.provider;
-  const fromChannelId = data?.fromChannelId;
-  const toChannelId = data?.toChannelId;
-  if (!provider || !fromChannelId || !toChannelId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, fromChannelId, toChannelId",
-    );
-  }
-
-  switch (provider) {
-    case "twitch":
-      return await twitch.raid(context.auth.uid, fromChannelId, toChannelId);
-  }
-});
-
-export const cancelRaid = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("permission-denied", "missing auth");
-  }
-  const provider = data?.provider;
-  const channelId = data?.channelId;
-  if (!provider || !channelId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing provider, channelId",
-    );
-  }
-
-  switch (provider) {
-    case "twitch":
-      return await twitch.cancelRaid(context.auth.uid, channelId);
-  }
-});
+export const cancelRaid = proxyCallable("cancelRaid");
 
 export {
   subscribe,
