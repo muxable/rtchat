@@ -158,27 +158,19 @@ func TestTwitchHTTP(t *testing.T) {
 
 func TestTwitchWritesAndRetries(t *testing.T) {
 	for _, test := range []struct {
-		name, eventType, wantPath           string
-		setError, updateError, refreshError error
-		wantStatus, wantWrites, wantRefresh int
+		name, eventType, wantPath string
+		setError, updateError     error
+		wantStatus, wantWrites    int
 	}{
 		{name: "follow counted once", eventType: "channel.follow", wantPath: "channels/twitch:1337/messages/twitch:follow:42", wantStatus: 200, wantWrites: 3},
 		{name: "follow update failure ignored", eventType: "channel.follow", wantPath: "channels/twitch:1337/messages/twitch:follow:42", updateError: errors.New("missing channel"), wantStatus: 200, wantWrites: 3},
 		{name: "follow failure retried", eventType: "channel.follow", wantPath: "channels/twitch:1337/messages/twitch:follow:42", setError: errors.New("unavailable"), wantStatus: 500, wantWrites: 2},
 		{name: "message failure retried", eventType: "stream.offline", setError: errors.New("unavailable"), wantStatus: 500, wantWrites: 2},
-		{name: "online refresh", eventType: "stream.online", wantStatus: 200, wantWrites: 4, wantRefresh: 2},
-		{name: "refresh failure retried", eventType: "stream.online", refreshError: errors.New("unavailable"), wantStatus: 500, wantWrites: 4, wantRefresh: 2},
+		{name: "online", eventType: "stream.online", wantStatus: 200, wantWrites: 4},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			store := &fakeTwitchStore{setError: test.setError, updateError: test.updateError}
-			refreshes := 0
-			h := &TwitchHandler{Secret: "secret", Store: store, now: func() time.Time { return twitchTestNow }, RefreshChannel: func(_ context.Context, id string) error {
-				if id != "twitch:1337" {
-					t.Fatalf("refresh id %q", id)
-				}
-				refreshes++
-				return test.refreshError
-			}}
+			h := &TwitchHandler{Secret: "secret", Store: store, now: func() time.Time { return twitchTestNow }}
 			body := `{"subscription":{"type":"` + test.eventType + `","version":"2","status":"enabled"},"event":{"broadcaster_user_id":"1337","user_id":"42"}}`
 			for i := 0; i < 2; i++ {
 				recorder := httptest.NewRecorder()
@@ -187,8 +179,8 @@ func TestTwitchWritesAndRetries(t *testing.T) {
 					t.Fatalf("status %d", recorder.Code)
 				}
 			}
-			if len(store.writes) != test.wantWrites || refreshes != test.wantRefresh {
-				t.Fatalf("writes %d, refreshes %d", len(store.writes), refreshes)
+			if len(store.writes) != test.wantWrites {
+				t.Fatalf("writes %d", len(store.writes))
 			}
 			wantPath := test.wantPath
 			if wantPath == "" {

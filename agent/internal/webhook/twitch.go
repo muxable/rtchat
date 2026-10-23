@@ -125,8 +125,7 @@ type twitchDocument struct {
 }
 
 type twitchNotification struct {
-	Documents        []twitchDocument
-	RefreshChannelID string
+	Documents []twitchDocument
 }
 
 // mapTwitchNotification mirrors eventsub.ts: all event types share the same
@@ -170,7 +169,6 @@ func mapTwitchNotification(payload twitchPayload, messageID string, timestamp, n
 	switch payload.Subscription.Type {
 	case "stream.online":
 		data = map[string]interface{}{"onlineAt": firestore.ServerTimestamp}
-		notification.RefreshChannelID = channelID
 	case "stream.offline":
 		data = map[string]interface{}{"onlineAt": nil}
 	case "channel.follow":
@@ -191,19 +189,16 @@ func mapTwitchNotification(payload twitchPayload, messageID string, timestamp, n
 	return notification, nil
 }
 
-// TwitchHandler serves only /twitch/eventsub. RefreshChannel refreshes Helix
-// statistics after stream.online, just as the TypeScript callback does.
+// TwitchHandler serves only /twitch/eventsub. Channel statistics are refreshed
+// by the scheduled updateFollowerAndViewerCount job, not per notification.
 type TwitchHandler struct {
-	Secret         string
-	Store          twitchStore
-	RefreshChannel func(context.Context, string) error
-	now            func() time.Time
+	Secret string
+	Store  twitchStore
+	now    func() time.Time
 }
 
-func NewTwitchHandler(secret string, client *firestore.Client, clientID, clientSecret string) *TwitchHandler {
-	store := twitchFirestoreStore{client: client}
-	stats := twitchStats{store: store, client: &http.Client{Timeout: 15 * time.Second}, clientID: clientID, clientSecret: clientSecret}
-	return &TwitchHandler{Secret: secret, Store: store, RefreshChannel: stats.refresh, now: time.Now}
+func NewTwitchHandler(secret string, client *firestore.Client) *TwitchHandler {
+	return &TwitchHandler{Secret: secret, Store: twitchFirestoreStore{client: client}, now: time.Now}
 }
 
 func verifyTwitchSignature(secret, messageID, timestamp, signature string, body []byte) bool {
@@ -311,9 +306,6 @@ func (h *TwitchHandler) writeNotification(ctx context.Context, notification twit
 		if err != nil && !doc.IgnoreError {
 			return err
 		}
-	}
-	if notification.RefreshChannelID != "" && h.RefreshChannel != nil {
-		return h.RefreshChannel(ctx, notification.RefreshChannelID)
 	}
 	return nil
 }
