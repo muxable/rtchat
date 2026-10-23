@@ -143,8 +143,12 @@ func TestFirestoreMetadataOrdering(t *testing.T) {
 	started := time.Now().Add(-time.Second)
 	ref := db.Collection("channels").Doc("kick:1")
 	ref.Set(ctx, map[string]interface{}{"viewerCount": int64(100), "title": "new webhook"})
-	if err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"viewerCount": int64(1), "title": "stale poll"}}}); err != nil {
+	written, err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"viewerCount": int64(1), "title": "stale poll"}}})
+	if err != nil {
 		t.Fatal(err)
+	}
+	if written != 0 {
+		t.Fatalf("stale poll counted %d writes", written)
 	}
 	doc, err := ref.Get(ctx)
 	if err != nil {
@@ -153,8 +157,8 @@ func TestFirestoreMetadataOrdering(t *testing.T) {
 	if doc.Data()["title"] != "new webhook" {
 		t.Fatal(doc.Data())
 	}
-	if err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"followerCount": int64(42)}}}); err != nil {
-		t.Fatal(err)
+	if written, err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"followerCount": int64(42)}}}); err != nil || written != 1 {
+		t.Fatal(written, err)
 	}
 	doc, _ = ref.Get(ctx)
 	if doc.Data()["followerCount"] != int64(42) {
