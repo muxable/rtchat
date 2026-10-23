@@ -1,5 +1,3 @@
-import fetch from "cross-fetch";
-import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { alchemyWebhook, setRealTimeCashAddress } from "./alchemy_webhook";
 import { app as authApp } from "./auth";
@@ -315,71 +313,6 @@ export const cancelRaid = functions.https.onCall(async (data, context) => {
   }
 });
 
-async function validate(
-  provider: string,
-  token: string,
-): Promise<{ clientId: string; docId: string } | null> {
-  switch (provider) {
-    case "twitch":
-      // make sure the token is valid
-      const response = await fetch("https://id.twitch.tv/oauth2/validate", {
-        headers: {
-          Authorization: `OAuth ${token}`,
-        },
-      });
-      const json = await response.json();
-      if (!json["client_id"]) {
-        return null;
-      }
-      return {
-        clientId: json["client_id"],
-        docId: `twitch:${json["user_id"]}`,
-      };
-  }
-  return null;
-}
-
-const CLIENT_IDS: { [id: string]: string } = {};
-
-export const metadata = functions.https.onRequest(async (req, res) => {
-  // make sure this is a post request.
-  if (req.method !== "POST") {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "only POST requests are allowed",
-    );
-  }
-  const { key, value, token, provider } = req.body;
-  if (!key || !value || !token || !provider) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "missing key, value, token, or provider",
-    );
-  }
-  const data = await validate(provider, token);
-  if (!data) {
-    throw new functions.https.HttpsError("unauthenticated", "invalid token");
-  }
-  if (!CLIENT_IDS[data.clientId]) {
-    throw new functions.https.HttpsError(
-      "unauthenticated",
-      "client id not registered, contact kevin@muxable.com",
-    );
-  }
-  await admin
-    .firestore()
-    .collection("channels")
-    .doc(data.docId)
-    .collection("third-party")
-    .add({
-      key,
-      value,
-      clientId: data.clientId,
-      name: CLIENT_IDS[data.clientId],
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-});
-
 export {
   subscribe,
   unsubscribe,
@@ -397,5 +330,6 @@ export const getBadges = proxyCallable("getBadges");
 export const getEmotes = proxyCallable("getEmotes");
 export const getStatistics = proxyCallable("getStatistics");
 export const embedRedirect = proxy("embedRedirect", "/embedRedirect");
+export const metadata = proxy("metadata", "/metadata");
 
 export const auth = withYouTube.https.onRequest(authApp);
