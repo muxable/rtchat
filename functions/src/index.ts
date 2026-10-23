@@ -4,7 +4,6 @@ import * as functions from "firebase-functions";
 import { alchemyWebhook, setRealTimeCashAddress } from "./alchemy_webhook";
 import { app as authApp } from "./auth";
 import { getViewerList, updateFollowerAndViewerCount } from "./chat-status";
-import { getEmotes } from "./emotes";
 import {
   banKickUser,
   deleteKickMessage,
@@ -501,7 +500,6 @@ export {
   kickWebhook,
   updateKickChannelMetadata,
   search,
-  getEmotes,
   getViewerList,
   setRealTimeCashAddress,
   alchemyWebhook,
@@ -509,5 +507,6 @@ export {
 };
 // moved to the agent; forwards clients that still call the function URL.
 export const getBadges = proxyCallable("getBadges");
+export const getEmotes = proxyCallable("getEmotes");
 
 export const auth = withYouTube.https.onRequest(authApp);
