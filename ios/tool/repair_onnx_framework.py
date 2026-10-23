@@ -59,9 +59,8 @@ def repair(app):
     with plist.open('wb') as destination:
         plistlib.dump(info, destination, fmt=plistlib.FMT_BINARY)
     if os.environ.get('CODE_SIGNING_ALLOWED') != 'NO':
-        identity = os.environ.get('EXPANDED_CODE_SIGN_IDENTITY')
-        if not identity:
-            raise ValueError('Cannot re-sign repaired ONNX Runtime without a signing identity')
+        # CI may archive unsigned and apply distribution signing during export.
+        identity = os.environ.get('EXPANDED_CODE_SIGN_IDENTITY') or '-'
         subprocess.run(
             ['codesign', '--force', '--sign', identity,
              '--preserve-metadata=identifier,entitlements,flags', str(framework)],
