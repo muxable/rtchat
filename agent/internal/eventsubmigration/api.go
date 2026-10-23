@@ -1,13 +1,17 @@
 // Package eventsubmigration moves app-owned EventSub callbacks without deleting
-// an old subscription before its replacement is enabled.
+// an old subscription before its replacement is enabled, except where the
+// EventSub cost cap forces a checkpointed break-before-make.
 package eventsubmigration
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/muxable/rtchat/agent/internal/clients"
@@ -44,8 +48,35 @@ type API struct {
 	Client                   *http.Client
 	BaseURL, ClientID, Token string
 	Pause                    func(context.Context, time.Duration) error
+	// Pacer, when set, spaces every request and yields to production when the
+	// shared app-token bucket runs low.
+	Pacer *Pacer
+	// Cost is the most recent total_cost/max_total_cost Twitch reported.
+	Cost struct {
+		Known      bool
+		Total, Max int
+	}
 }
 type HTTPError = clients.HTTPError
+
+// ErrCostLimit means Twitch rejected a creation because the client is at its
+// EventSub max_total_cost (HTTP 429 "subscription limit exceeded"). It is a
+// definite rejection, not a rate limit, so it is never retried.
+var ErrCostLimit = errors.New("EventSub cost limit reached")
+
+// costLimited distinguishes Twitch's cost-cap 429 from a rate-limit 429: the
+// former names the subscription limit, and arrives with points still left in
+// the rate-limit bucket.
+func costLimited(response *clients.Response) bool {
+	var body struct{ Message string }
+	json.Unmarshal(response.Body, &body)
+	message := strings.ToLower(body.Message)
+	if strings.Contains(message, "subscription limit") || strings.Contains(message, "cost") {
+		return true
+	}
+	remaining, err := strconv.Atoi(response.Header.Get("Ratelimit-Remaining"))
+	return err == nil && remaining > 0
+}
 
 func (a *API) sleep(ctx context.Context, delay time.Duration) error {
 	if a.Pause != nil {
@@ -66,6 +97,9 @@ func (a *API) request(ctx context.Context, method string, q url.Values, body, ou
 		return err
 	}
 	for attempt := 0; attempt < 4; attempt++ {
+		if err := a.Pacer.Wait(ctx); err != nil {
+			return failure(err)
+		}
 		response, err := client.Do(ctx, method, "/eventsub/subscriptions?"+q.Encode(), body)
 		if err != nil {
 			if method != http.MethodGet {
@@ -80,11 +114,15 @@ func (a *API) request(ctx context.Context, method string, q url.Values, body, ou
 			}
 			continue
 		}
+		a.Pacer.Observe(response.Header)
 		if response.Err() == nil {
 			return response.Decode(out)
 		}
 		if response.StatusCode == 404 && method == http.MethodDelete {
 			return nil
+		}
+		if response.StatusCode == 429 && method == http.MethodPost && costLimited(response) {
+			return failure(fmt.Errorf("%w (HTTP 429)", ErrCostLimit))
 		}
 		if method != http.MethodGet && response.StatusCode >= 500 {
 			uncertain = true
@@ -121,6 +159,7 @@ func (a *API) List(ctx context.Context, q url.Values) (Listing, error) {
 		}
 		all.TotalCost = page.TotalCost
 		all.MaxTotalCost = page.MaxTotalCost
+		a.Cost.Known, a.Cost.Total, a.Cost.Max = true, page.TotalCost, page.MaxTotalCost
 		for _, sub := range page.Data {
 			if !ids[sub.ID] {
 				all.Data = append(all.Data, sub)
