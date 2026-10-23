@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_attribution.dart';
 import 'package:rtchat/components/chat_history/message.dart';
+import 'package:rtchat/components/chat_history/twitch/raid_event.dart';
 import 'package:rtchat/components/chat_history/separator.dart';
 import 'package:rtchat/components/connection_status.dart';
 import 'package:rtchat/components/pinnable/reverse_refresh_indicator.dart';
@@ -60,10 +61,10 @@ class _RebuildableWidgetState extends State<RebuildableWidget> {
   }
 
   @override
-  void dispose() {
-    _clearTimers();
-    super.dispose();
-  }
+void dispose() {
+  _clearTimers();
+  super.dispose();
+}
 
   void _setTimers() {
     final now = DateTime.now();
@@ -205,11 +206,15 @@ class _DisplayedMessage {
   final MessageModel message;
   final String key;
   final String? followGroupKey;
+  final String? raidGroupKey;
+  final List<TwitchRaidEventModel>? raidGroup;
 
   const _DisplayedMessage({
     required this.message,
     required this.key,
     this.followGroupKey,
+    this.raidGroupKey,
+    this.raidGroup,
   });
 }
 
@@ -225,14 +230,22 @@ class ChatPanelWidget extends StatefulWidget {
 class _ChatPanelWidgetState extends State<ChatPanelWidget>
     with TickerProviderStateMixin {
   final Set<String> _expandedFollowGroups = {};
+  final Set<String> _expandedRaidGroups = {};
+
+  static const _raidCollapseDelay = Duration(minutes: 10);
+
+  final Map<String, Timer> _raidCollapseTimers = {};
+  final Map<String, String> _raidGroupLatestMessageIds = {};
+  final Map<String, DateTime> _raidCollapseAt = {};
+
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
   final _controller = ScrollController(keepScrollOffset: true);
 
-  // don't render anything after this message if not null.
   MessageModel? _pauseAt;
   MessageModel? _lastMessage;
+
   var _atBottom = true;
   var _refreshPending = false;
   var _showScrollNotification = true;
@@ -249,9 +262,20 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
 
     if (oldWidget.channel != widget.channel) {
       _expandedFollowGroups.clear();
+      _expandedRaidGroups.clear();
+
+      for (final timer in _raidCollapseTimers.values) {
+        timer.cancel();
+      }
+
+      _raidCollapseTimers.clear();
+      _raidGroupLatestMessageIds.clear();
+      _raidCollapseAt.clear();
+
       if (_controller.hasClients) {
         _controller.jumpTo(0);
       }
+
       setState(() {
         _atBottom = true;
         _pauseAt = null;
@@ -263,8 +287,56 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
   void dispose() {
     _controller.removeListener(updateScrollPosition);
     _controller.dispose();
+
+    for (final timer in _raidCollapseTimers.values) {
+      timer.cancel();
+    }
+
+    _raidCollapseTimers.clear();
+
     super.dispose();
   }
+
+  DateTime _scheduleRaidCollapse(
+  String groupKey,
+  String latestRaidMessageId,
+  DateTime latestRaidTimestamp,
+) {
+  if (_raidGroupLatestMessageIds[groupKey] != latestRaidMessageId) {
+    _raidCollapseTimers.remove(groupKey)?.cancel();
+
+    final collapseAt = latestRaidTimestamp.add(_raidCollapseDelay);
+    _raidGroupLatestMessageIds[groupKey] = latestRaidMessageId;
+    _raidCollapseAt[groupKey] = collapseAt;
+
+    final remaining = collapseAt.difference(DateTime.now());
+
+    if (remaining > Duration.zero) {
+      _raidCollapseTimers[groupKey] = Timer(remaining, () {
+        if (!mounted) return;
+
+        _raidCollapseTimers.remove(groupKey);
+        setState(() {});
+      });
+    }
+  }
+
+  return _raidCollapseAt[groupKey]!;
+}
+  
+void _cleanupRaidCollapseGroups(Set<String> activeGroupKeys) {
+  final staleKeys = _raidGroupLatestMessageIds.keys
+      .where((key) => !activeGroupKeys.contains(key))
+      .toList();
+
+  for (final key in staleKeys) {
+    _raidCollapseTimers.remove(key)?.cancel();
+    _raidGroupLatestMessageIds.remove(key);
+    _raidCollapseAt.remove(key);
+    _expandedRaidGroups.remove(key);
+  }
+}
+
 
   void updateScrollPosition() async {
     if (!_controller.hasClients) return;
@@ -353,6 +425,92 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
             for (var index = 0; index < messages.length; index++) {
               final message = messages[index];
 
+              // Group consecutive raids from the same channel.
+              if (message is TwitchRaidEventModel) {
+                final channel = message.channel;
+
+                bool sameRun(MessageModel element) =>
+                    element is TwitchRaidEventModel &&
+                    element.channel == channel;
+
+                // Process only the end of each adjacent run.
+                if (index != messages.length - 1 &&
+                    sameRun(messages[index + 1])) {
+                  continue;
+                }
+
+                final lastIndex = messages.lastIndexWhere(
+                  (element) => !sameRun(element),
+                  index,
+                );
+
+                final raids =
+                    messages
+                        .sublist(lastIndex + 1, index + 1)
+                        .reversed
+                        .whereType<TwitchRaidEventModel>()
+                        .toList();
+
+                // A single raid stays a normal individual event.
+                if (raids.length == 1) {
+                  displayedMessages.add(
+                    _DisplayedMessage(
+                      message: raids.first,
+                      key: raids.first.messageId,
+                    ),
+                  );
+                  continue;
+                }
+
+                final groupKey = 'raid-$channel-${raids.first.messageId}';
+
+                if (_expandedRaidGroups.contains(groupKey)) {
+                  for (final raid in raids) {
+                    displayedMessages.add(
+                      _DisplayedMessage(
+                        message: raid,
+                        key: '$groupKey-${raid.messageId}',
+                      ),
+                    );
+                  }
+                } else {
+                  final latestRaid = raids.reduce(
+                    (a, b) => a.timestamp.isAfter(b.timestamp) ? a : b,
+                  );
+
+                  final collapseAt = _scheduleRaidCollapse(
+  groupKey,
+  latestRaid.messageId,
+  latestRaid.timestamp,
+);
+
+                  if (DateTime.now().isBefore(collapseAt)) {
+                    // Keep individual raids visible during the 10-minute delay.
+                    for (final raid in raids) {
+                      displayedMessages.add(
+                        _DisplayedMessage(
+                          message: raid,
+                          key: '$groupKey-${raid.messageId}',
+                        ),
+                      );
+                    }
+                  } else {
+                    // Collapse the group after the delay.
+                    displayedMessages.add(
+                      _DisplayedMessage(
+                        message: raids.first,
+                        key: groupKey,
+                        raidGroupKey: groupKey,
+                        raidGroup: raids,
+                      ),
+                    );
+                  }
+                }
+
+                continue;
+              }
+
+              // Existing follow grouping.
               if (message is! TwitchFollowEventModel) {
                 displayedMessages.add(
                   _DisplayedMessage(message: message, key: message.messageId),
@@ -415,16 +573,55 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
               }
             }
 
-            final expirations =
-                displayedMessages
-                    .map(
-                      (entry) => _getExpiration(
-                        entry.message,
-                        eventSubConfigurationModel,
-                        messagesModel,
-                      ),
-                    )
-                    .toList();
+            
+final activeRaidGroupKeys = <String>{};
+
+for (var i = 0; i < messages.length; i++) {
+  final message = messages[i];
+
+  if (message is! TwitchRaidEventModel) continue;
+
+  final channel = message.channel;
+
+  bool sameRun(MessageModel element) =>
+      element is TwitchRaidEventModel && element.channel == channel;
+
+  // Process only the end of each consecutive raid run.
+  if (i != messages.length - 1 && sameRun(messages[i + 1])) {
+    continue;
+  }
+
+  final lastIndex = messages.lastIndexWhere(
+    (element) => !sameRun(element),
+    i,
+  );
+
+  final raids = messages
+      .sublist(lastIndex + 1, i + 1)
+      .reversed
+      .whereType<TwitchRaidEventModel>()
+      .toList();
+
+  if (raids.length > 1) {
+    activeRaidGroupKeys.add(
+      'raid-$channel-${raids.first.messageId}',
+    );
+  }
+}
+
+_cleanupRaidCollapseGroups(activeRaidGroupKeys);
+
+final expirations =
+    displayedMessages
+        .map(
+          (entry) => _getExpiration(
+            entry.message,
+            eventSubConfigurationModel,
+            messagesModel,
+          ),
+        )
+        .toList();
+
             return Stack(
               alignment: Alignment.topCenter,
               children: [
@@ -484,20 +681,35 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                                 // in a merged view, actions like shoutouts go to
                                 // the channel the message came from.
                                 final source = message.channel;
-                                final chatMessage = ChatHistoryMessage(
-                                  message: message,
-                                  channel: source ?? widget.channel,
-                                  onFollowExpand:
-                                      entry.followGroupKey == null
-                                          ? null
-                                          : () {
-                                            setState(() {
-                                              _expandedFollowGroups.add(
-                                                entry.followGroupKey!,
-                                              );
-                                            });
-                                          },
-                                );
+                                final Widget chatMessage;
+                                if (entry.raidGroup != null) {
+                                  chatMessage = TwitchRaidEventGroupWidget(
+                                    raids: entry.raidGroup!,
+                                    channel: source ?? widget.channel,
+                                    onExpand: () {
+                                      setState(() {
+                                        _expandedRaidGroups.add(
+                                          entry.raidGroupKey!,
+                                        );
+                                      });
+                                    },
+                                  );
+                                } else {
+                                  chatMessage = ChatHistoryMessage(
+                                    message: message,
+                                    channel: source ?? widget.channel,
+                                    onFollowExpand:
+                                        entry.followGroupKey == null
+                                            ? null
+                                            : () {
+                                              setState(() {
+                                                _expandedFollowGroups.add(
+                                                  entry.followGroupKey!,
+                                                );
+                                              });
+                                            },
+                                  );
+                                }
                                 final Widget messageWidget =
                                     messagesModel.channels.length > 1 &&
                                             source != null
