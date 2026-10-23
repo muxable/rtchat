@@ -1,5 +1,4 @@
 import * as functions from "firebase-functions";
-import { alchemyWebhook } from "./alchemy_webhook";
 import { app as authApp } from "./auth";
 import { updateFollowerAndViewerCount } from "./chat-status";
 import { sendKickMessage } from "./kick_actions";
@@ -116,7 +115,6 @@ export {
   unsubscribe,
   eventsub,
   updateKickChannelMetadata,
-  alchemyWebhook,
   updateFollowerAndViewerCount,
 };
 // moved to the agent; forwards clients that still call the function URL.
@@ -129,5 +127,6 @@ export const getViewerList = proxyCallable("getViewerList");
 export const search = proxyCallable("search");
 export const setRealTimeCashAddress = proxyCallable("setRealTimeCashAddress");
 export const kickWebhook = proxy("kickWebhook", "/kick/webhook");
+export const alchemyWebhook = proxy("alchemyWebhook", "/alchemy/webhook");
 
 export const auth = withYouTube.https.onRequest(authApp);
