@@ -315,6 +315,33 @@ class _ChannelSearchResultsWidgetState
     extends State<ChannelSearchResultsWidget> {
   late Stream<List<SearchResult>> _results;
   Timer? _debounce;
+  String _channelDisplayName(SearchResult result) {
+    final language = result.language?.toLowerCase().replaceAll('_', '-');
+
+    final showLogin = {
+      'ar',
+      'ja',
+      'ko',
+      'uk',
+      'ru',
+      'bg',
+      'sr',
+      'zh',
+      'zh-cn',
+      'zh-tw',
+      'zh-hans',
+      'zh-hant',
+      'zh-hans-cn',
+      'zh-hant-tw',
+      'zh-hk',
+      'zh-mo',
+    }.contains(language);
+
+    return showLogin
+        ? '${result.displayName} (${result.login})'
+        : result.displayName;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -502,7 +529,7 @@ class _ChannelSearchResultsWidgetState
                 ),
                 Flexible(
                   child: Text(
-                    result.displayName,
+                    _channelDisplayName(result),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
