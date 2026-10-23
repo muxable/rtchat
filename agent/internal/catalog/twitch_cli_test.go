@@ -215,24 +215,27 @@ func TestCatalogWithTwitchCLI(t *testing.T) {
 		if status != 200 || len(items) == 0 || !reflect.DeepEqual(batches, []int{1, 25}) {
 			t.Fatalf("CLI emote set batching: %v, result=%+v", emoteBatches, result)
 		}
-		want := map[string]map[string]any{}
+		// The CLI's random sets can repeat an emote, so compare as a multiset.
+		want := map[string]int{}
+		total := 0
 		for _, raw := range sources {
 			for _, source := range array(raw["data"]) {
 				scales, _ := source["scale"].([]any)
 				scale := fmt.Sprint(scales[len(scales)-1])
 				image := strings.NewReplacer("{{id}}", text(source["id"]), "{{format}}", "default", "{{theme_mode}}", "dark", "{{scale}}", scale).Replace(text(raw["template"]))
-				want[text(source["id"])] = map[string]any{"provider": "twitch", "id": source["id"], "code": source["name"], "imageUrl": image}
+				want[fmt.Sprint("twitch|", source["id"], "|", source["name"], "|", image)]++
+				total++
 			}
 		}
-		if len(items) != len(want) {
-			t.Fatalf("CLI emotes: got %d, want %d", len(items), len(want))
+		if len(items) != total {
+			t.Fatalf("CLI emotes: got %d, want %d", len(items), total)
 		}
 		for _, item := range items {
-			expected := want[text(item["id"])]
-			if expected == nil || item["provider"] != expected["provider"] || item["code"] != expected["code"] || item["imageUrl"] != expected["imageUrl"] {
+			key := fmt.Sprint(item["provider"], "|", item["id"], "|", item["code"], "|", item["imageUrl"])
+			if want[key] == 0 {
 				t.Fatal("CLI emote transformation differs")
 			}
-			delete(want, text(item["id"]))
+			want[key]--
 		}
 
 	})
