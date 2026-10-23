@@ -523,3 +523,24 @@ func TestTwitchRaidRejected(t *testing.T) {
 		})
 	}
 }
+
+func TestTwitchCancelRaidRejectedAndRateLimited(t *testing.T) {
+	for _, tc := range []struct {
+		name, body, status string
+		code               int
+		httpStatus         int
+	}{{"no pending raid", `{"error":"Not Found","status":404,"message":"The broadcaster doesn't have a pending raid to cancel."}`, "FAILED_PRECONDITION", 400, 404}, {"rate limited", `{"error":"Too Many Requests","status":429,"message":"Too many requests"}`, "RESOURCE_EXHAUSTED", 429, 429}} {
+		t.Run(tc.name, func(t *testing.T) {
+			s, _ := newMock(func(r *http.Request) (*http.Response, error) {
+				if r.Method != "DELETE" || r.URL.Path != "/helix/raids" {
+					t.Fatal(r.Method, r.URL)
+				}
+				return respond(tc.httpStatus, tc.body), nil
+			})
+			code, body := call(t, s, "cancelRaid", map[string]any{"provider": "twitch", "channelId": own}, true)
+			if code != tc.code || field(object(body["error"]), "status") != tc.status {
+				t.Fatalf("%d %v", code, body)
+			}
+		})
+	}
+}
