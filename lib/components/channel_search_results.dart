@@ -201,7 +201,7 @@ Stream<List<SearchResult>> searchChannels(
 
   // Fetch the full provider search.
   final slow = await api
-      .callable("search")({"query": query, "provider": provider})
+      .callable('search')({'query': query, 'provider': provider})
       .then((result) {
         return (result.data as List<dynamic>)
             .map(
@@ -315,21 +315,6 @@ class _ChannelSearchResultsWidgetState
     extends State<ChannelSearchResultsWidget> {
   late Stream<List<SearchResult>> _results;
   Timer? _debounce;
-  String _channelDisplayName(SearchResult result) {
-    final language = result.language?.trim().toLowerCase().replaceAll('_', '-');
-    if (language == null || language.isEmpty) {
-      return result.displayName;
-    }
-    final showLogin =
-        const {'ar', 'ja', 'ko', 'uk', 'ru', 'bg', 'sr'}.contains(language) ||
-        language == 'zh' ||
-        language.startsWith('zh-');
-
-    return showLogin
-        ? '${result.displayName} (${result.login})'
-        : result.displayName;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -517,7 +502,7 @@ class _ChannelSearchResultsWidgetState
                 ),
                 Flexible(
                   child: Text(
-                    _channelDisplayName(result),
+                    result.displayName,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
