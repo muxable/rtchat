@@ -30,6 +30,13 @@ class SettingsScreen extends StatelessWidget {
           return ListView(
             children: [
               ListTile(
+                title: Text(AppLocalizations.of(context)!.accounts),
+                subtitle: Text(AppLocalizations.of(context)!.accountsSubtitle),
+                onTap: () {
+                  Navigator.pushNamed(context, "/settings/accounts");
+                },
+              ),
+              ListTile(
                 title: Text(AppLocalizations.of(context)!.defaultChannels),
                 subtitle: Text(
                   AppLocalizations.of(context)!.defaultChannelsSubtitle,

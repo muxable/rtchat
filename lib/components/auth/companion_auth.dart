@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
-import 'package:rtchat/models/user.dart';
 import 'package:uuid/uuid.dart';
 
 class CompanionAuthWidget extends StatefulWidget {
@@ -26,12 +26,13 @@ class _CompanionAuthWidgetState extends State<CompanionAuthWidget> {
   @override
   void initState() {
     super.initState();
-    final user = Provider.of<UserModel>(context, listen: false);
+    final accounts = Provider.of<AccountsModel>(context, listen: false);
     final navigator = Navigator.of(context);
     ProfilesAdapter.instance
         .getCompanionAuthToken(sessionUuid: sessionUuid)
         .then((token) async {
-          await user.signIn(token);
+          // on the provider's slot, next to the accounts already signed in.
+          await accounts.signIn(widget.provider, token);
           if (!mounted) {
             return;
           }

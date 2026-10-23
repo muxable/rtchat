@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rtchat/api.dart';
+import 'package:rtchat/models/accounts.dart';
 
 class StreamlabsConfig {
   final String? currency;
@@ -17,12 +18,13 @@ class DonationsAdapter {
 
   DonationsAdapter._({required this.db, required this.api});
 
-  static DonationsAdapter get instance =>
-      _instance ??= DonationsAdapter._(
-        db: FirebaseFirestore.instance,
-        api: Api.instance,
+  /// Reads and writes [account]'s own connections, which are owner-only.
+  static DonationsAdapter forAccount(Account account) =>
+      _forApp[account.app.name] ??= DonationsAdapter._(
+        db: FirebaseFirestore.instanceFor(app: account.app),
+        api: Api.forAccount(account),
       );
-  static DonationsAdapter? _instance;
+  static final Map<String, DonationsAdapter> _forApp = {};
 
   Stream<String?> forRealtimeChatAddress({required String userId}) {
     return db

@@ -1074,6 +1074,14 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
+  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+
+  @override
+  String sendAMessageTo(String channel) {
+    return 'Send a message to $channel...';
+  }
+
+  @override
   String replaceChannel(String channel) {
     return '$channel প্রতিস্থাপন করুন';
   }
@@ -1175,4 +1183,28 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get neuralFallbackLoadFailed =>
       'The neural voice couldn\'t load, so chat is read with the system voice.';
+
+  @override
+  String get accounts => 'Accounts';
+
+  @override
+  String get accountsSubtitle => 'Sign in to each platform you stream on';
+
+  @override
+  String addProviderAccount(String provider) {
+    return 'Add $provider account';
+  }
+
+  @override
+  String signInWithProvider(String provider) {
+    return 'Sign in with $provider';
+  }
+
+  @override
+  String signOutOfAccount(String channel, String provider) {
+    return 'Sign out of $channel on $provider?';
+  }
+
+  @override
+  String get signOutOfAll => 'Sign out of all accounts';
 }

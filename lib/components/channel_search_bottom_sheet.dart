@@ -14,7 +14,7 @@ class ChannelSearchBottomSheetWidget extends StatefulWidget {
   final void Function(Channel) onChannelSelect;
   final void Function(Channel)? onRaid;
   final bool? isRaid;
-  final ChannelSearch search;
+  final ChannelSearch? search;
 
   /// Adds a swiped result to [channels] without closing the sheet,
   /// replacing the one on its provider.
@@ -32,7 +32,7 @@ class ChannelSearchBottomSheetWidget extends StatefulWidget {
     required this.onChannelSelect,
     this.onRaid,
     this.isRaid,
-    this.search = searchChannels,
+    this.search,
     this.onChannelAdd,
     this.channels = const [],
     this.header,
@@ -57,7 +57,10 @@ class _ChannelSearchBottomSheetWidgetState
     _raid = widget.isRaid ?? false;
     try {
       final userProvider =
-          Provider.of<UserModel>(context, listen: false).userChannel?.provider;
+          Provider.of<UserModel>(
+            context,
+            listen: false,
+          ).userChannels.firstOrNull?.provider;
       if (searchProviders.containsKey(userProvider)) {
         _provider = userProvider!;
       }

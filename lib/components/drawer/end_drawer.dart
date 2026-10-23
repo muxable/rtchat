@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rtchat/components/drawer/sliver_search_bar.dart';
 import 'package:rtchat/components/drawer/sliver_title.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/chat_state.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/user.dart';
 
 class EndDrawerWidget extends StatefulWidget {
   final Channel channel;
+  final VoidCallback onClose;
 
-  const EndDrawerWidget({required this.channel, super.key});
+  const EndDrawerWidget({
+    required this.channel,
+    required this.onClose,
+    super.key,
+  });
 
   @override
   State<EndDrawerWidget> createState() => EndDrawerWidgetState();
@@ -20,29 +27,59 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
   bool _isLoading = true;
   bool _isError = false;
 
+  // Incremented for each request so older requests cannot update the UI.
+  int _requestId = 0;
+
   @override
   void initState() {
     super.initState();
     _loadViewers();
   }
 
-  void _loadViewers() async {
+  @override
+  void didUpdateWidget(covariant EndDrawerWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.channel != widget.channel) {
+      _search = '';
+      _viewers = null;
+      _isLoading = true;
+      _isError = false;
+      _loadViewers();
+    }
+  }
+
+  Future<void> _loadViewers() async {
+    final requestId = ++_requestId;
     try {
-      final viewers = await ChatStateAdapter.instance.getViewers(
-        channelId: widget.channel.toString(),
-      );
-      if (!mounted) return;
+      // Twitch lists chatters with the caller's token when the channel's own
+      // isn't stored, so call as the account on its provider.
+      final api = Provider.of<UserModel>(
+        context,
+        listen: false,
+      ).apiOn(widget.channel.provider);
+
+      final viewers = await ChatStateAdapter(
+        api,
+      ).getViewers(channelId: widget.channel.toString());
+      if (!mounted || requestId != _requestId) return;
       setState(() {
         _viewers = viewers;
         _isLoading = false;
+        _isError = false;
       });
-    } catch (e) {
-      if (!mounted) return;
+    } catch (error, stackTrace) {
+      // Ignore failures from requests belonging to an older channel.
+      if (!mounted || requestId != _requestId) return;
+      debugPrint('Failed to load viewers: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
       setState(() {
         _isLoading = false;
         _isError = true;
       });
       _showTemporaryError();
+      widget.onClose();
     }
   }
 
@@ -58,17 +95,10 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const CircularProgressIndicator();
+      return const Center(child: CircularProgressIndicator());
     }
-    // Check if viewers data is available and build UI accordingly
-    if (_viewers == null || _isError) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-      });
-      // Show loading or empty state
-      return const CircularProgressIndicator();
+    if (_isError || _viewers == null) {
+      return const SizedBox.shrink();
     }
 
     final filtered = _viewers!.query(_search);
@@ -98,8 +128,9 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
               ),
             ),
             SliverSearchBarWidget(
-              onFilterBySearchBarText:
-                  (value) => setState(() => _search = value),
+              onFilterBySearchBarText: (value) {
+                setState(() => _search = value);
+              },
             ),
             if (filtered.broadcaster.isNotEmpty) ...[
               SliverPadding(
@@ -109,13 +140,12 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
                 ),
               ),
               SliverList(
-                delegate: SliverChildListDelegate(
-                  filtered.broadcaster.map((name) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 24),
-                      child: Text(name),
-                    );
-                  }).toList(),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.only(left: 24),
+                    child: Text(filtered.broadcaster[index]),
+                  ),
+                  childCount: filtered.broadcaster.length,
                 ),
               ),
             ],
@@ -127,13 +157,12 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
                 ),
               ),
               SliverList(
-                delegate: SliverChildListDelegate(
-                  filtered.moderators.map((name) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 24),
-                      child: Text(name),
-                    );
-                  }).toList(),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.only(left: 24),
+                    child: Text(filtered.moderators[index]),
+                  ),
+                  childCount: filtered.moderators.length,
                 ),
               ),
             ],
@@ -145,13 +174,12 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
                 ),
               ),
               SliverList(
-                delegate: SliverChildListDelegate(
-                  filtered.vips.map((name) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 24),
-                      child: Text(name),
-                    );
-                  }).toList(),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.only(left: 24),
+                    child: Text(filtered.vips[index]),
+                  ),
+                  childCount: filtered.vips.length,
                 ),
               ),
             ],
@@ -163,13 +191,12 @@ class EndDrawerWidgetState extends State<EndDrawerWidget> {
                 ),
               ),
               SliverList(
-                delegate: SliverChildListDelegate(
-                  filtered.viewers.map((name) {
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 24),
-                      child: Text(name),
-                    );
-                  }).toList(),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.only(left: 24),
+                    child: Text(filtered.viewers[index]),
+                  ),
+                  childCount: filtered.viewers.length,
                 ),
               ),
             ],

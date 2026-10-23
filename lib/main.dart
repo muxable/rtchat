@@ -16,6 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/firebase_options.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/commands.dart';
@@ -35,6 +36,7 @@ import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/views.dart';
 import 'package:rtchat/screens/home.dart';
 import 'package:rtchat/screens/onboarding.dart';
+import 'package:rtchat/screens/settings/accounts.dart';
 import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
@@ -64,6 +66,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await AccountsModel.initializeApps();
   final prefs = await StreamingSharedPreferences.instance;
   final voicePacks = VoicePackRepository(
     directory: Directory(
@@ -140,7 +143,14 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => UserModel()),
+        ChangeNotifierProvider(
+          create: (context) => AccountsModel.fromFirebase(),
+        ),
+        ChangeNotifierProvider(
+          create:
+              (context) =>
+                  UserModel(Provider.of<AccountsModel>(context, listen: false)),
+        ),
         ChangeNotifierProvider(
           create: (context) {
             final model = ActivityFeedModel.fromJson(
@@ -231,6 +241,8 @@ class _AppState extends State<App> {
                 player.play(AssetSource('message-sound.wav'));
               }
             };
+            // subscribing and emotes call as the user's account.
+            model.apiOn = Provider.of<UserModel>(context, listen: false).apiOn;
             model.channels =
                 Provider.of<ViewsModel>(context, listen: false).channels;
             model.tts = Provider.of<TtsModel>(context, listen: false);
@@ -358,14 +370,18 @@ class _AppState extends State<App> {
                 widget.prefs.getString("audio", defaultValue: '{}').getValue(),
               ),
             );
+            // the first account's channel, like analytics.
             model.hostChannel =
-                Provider.of<UserModel>(context, listen: false).userChannel;
+                Provider.of<UserModel>(
+                  context,
+                  listen: false,
+                ).userChannels.firstOrNull;
             return model..addListener(() {
               widget.prefs.setString('audio', jsonEncode(model.toJson()));
             });
           },
           update: (context, userModel, model) {
-            model!.hostChannel = userModel.userChannel;
+            model!.hostChannel = userModel.userChannels.firstOrNull;
             return model;
           },
           lazy: false,
@@ -426,6 +442,7 @@ class _AppState extends State<App> {
                 );
               },
               '/settings': (context) => const SettingsScreen(),
+              '/settings/accounts': (context) => const AccountsScreen(),
               '/settings/badges': (context) => const TwitchBadgesScreen(),
               '/settings/default-channels':
                   (context) => const DefaultChannelsScreen(),

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/views.dart';
 
+import '../fakes/fake_accounts.dart';
 import '../fakes/fake_user_model.dart';
 
 final twitch = Channel(Providers.twitch, '1', 'muxfd');
@@ -13,6 +14,10 @@ final otherKick = Channel(Providers.kick, '4', 'friend');
 
 ViewsModel signedInAs(Channel? channel) =>
     ViewsModel()..update(FakeUserModel(userChannel: channel));
+
+FakeUserModel signedInToAll(List<Channel> channels) => FakeUserModel(
+  accounts: [for (final channel in channels) fakeAccount(channel)],
+);
 
 ViewsModel restart(ViewsModel views) => ViewsModel.fromJson(
   jsonDecode(jsonEncode(views.toJson())) as Map<String, dynamic>,
@@ -25,6 +30,25 @@ void main() {
       expect(views.defaultChannels, [kick]);
       expect(views.channels, [kick]);
       expect(views.primaryChannel, kick);
+    });
+
+    test("are all of the signed-in user's channels until picked", () {
+      final views = ViewsModel()..update(signedInToAll([twitch, kick]));
+      expect(views.defaultChannels, [twitch, kick]);
+      expect(views.channels, [twitch, kick]);
+      expect(views.hasCustomDefaultChannels, isFalse);
+    });
+
+    test("follow accounts being added and removed", () {
+      var notifications = 0;
+      final views = signedInAs(twitch)..addListener(() => notifications++);
+      views.update(signedInToAll([twitch, kick]));
+      expect(views.channels, [twitch, kick]);
+      views.update(signedInToAll([twitch, kick]));
+      expect(notifications, 1);
+      views.update(signedInToAll([kick]));
+      expect(views.channels, [kick]);
+      expect(notifications, 2);
     });
 
     test("are empty for signed-out users until picked", () {
@@ -250,24 +274,70 @@ void main() {
   });
 
   group("messages are sent", () {
-    test("to the channel on the account's provider", () {
+    test("to the channels shown on a provider the user has an account on", () {
       final views =
           signedInAs(kick)
             ..openChannel(twitch)
             ..addChannel(kick);
-      expect(views.sendChannel(kick), kick);
-      expect(views.sendChannel(twitch), twitch);
+      expect(views.sendableChannels, [kick]);
     });
 
-    test("nowhere when no channel shown is on the account's provider", () {
+    test("to every channel shown with accounts on all their providers", () {
+      final views = ViewsModel()..update(signedInToAll([twitch, kick]));
+      expect(views.sendableChannels, [twitch, kick]);
+      // accounts can chat in others' channels on their provider.
+      views.addChannel(otherKick);
+      expect(views.sendableChannels, [twitch, otherKick]);
+    });
+
+    test("nowhere when no channel shown is on an account's provider", () {
       final views = signedInAs(kick)..openChannel(twitch);
-      expect(views.sendChannel(kick), isNull);
-      expect(views.sendChannel(null), isNull);
+      expect(views.sendableChannels, isEmpty);
+      expect(signedInAs(null).sendableChannels, isEmpty);
     });
 
     test("to the channel opened, like before views", () {
       final views = signedInAs(twitch)..openChannel(other);
-      expect(views.sendChannel(twitch), other);
+      expect(views.sendableChannels, [other]);
+    });
+  });
+
+  group("the channel sent to", () {
+    test("is the first sendable channel until another is picked", () {
+      final views = ViewsModel()..update(signedInToAll([twitch, kick]));
+      expect(views.sendChannel, twitch);
+      views.sendChannel = kick;
+      expect(views.sendChannel, kick);
+    });
+
+    test("is the one picked while it's sendable", () {
+      var notifications = 0;
+      final views =
+          ViewsModel()
+            ..update(signedInToAll([twitch, kick]))
+            ..sendChannel = kick
+            ..addListener(() => notifications++);
+      views.removeChannel(kick);
+      expect(views.sendChannel, twitch);
+      // picked again once it's shown again.
+      views.addChannel(kick);
+      expect(views.sendChannel, kick);
+      views.sendChannel = kick;
+      expect(notifications, 2);
+    });
+
+    test("is none when nothing shown can be sent to", () {
+      final views = signedInAs(kick)..openChannel(twitch);
+      expect(views.sendChannel, isNull);
+    });
+
+    test("is remembered across a restart", () {
+      final views =
+          ViewsModel()
+            ..update(signedInToAll([twitch, kick]))
+            ..sendChannel = kick;
+      final restored = restart(views)..update(signedInToAll([twitch, kick]));
+      expect(restored.sendChannel, kick);
     });
   });
 }

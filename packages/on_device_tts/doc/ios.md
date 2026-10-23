@@ -127,7 +127,7 @@ There is one `AVAudioSession` per app, and three things set it:
 - audioplayers (`audioplayers_darwin` 6.5.0) applies `.playback` with no
   options when the plugin registers; `lib/main.dart` then sets the global
   context to `.ambient` (for the message ping, which respects the silent
-  switch). `AudioModel` plays `silence.mp3` every 5 minutes with
+  switch). `SpeakerKeepAlive` plays an inaudible clip every 5 minutes with
   `AudioContextConfig(focus: mixWithOthers)`, which on iOS replaces the
   *global* context with `.playback` + `.mixWithOthers` (iOS has no
   per-player context). Whenever no audioplayers player is playing any more
@@ -140,7 +140,7 @@ minutes, and the session can be deactivated under it. The engine therefore
 asserts `.playback` + `.mixWithOthers` + `.voicePrompt` and calls
 `setActive(true)` before every utterance (`AudioOutput.configureSharedSession`),
 and never deactivates the session, like `flutter_tts`. A switch in the
-middle of an utterance (only possible when `silence.mp3` starts or ends
+middle of an utterance (only possible when that clip starts or ends
 during it) ends it through the configuration-change path above at worst.
 The app needs no change for this engine. `SystemTtsEngine` still only sets
 its category once, so after `.ambient` the system voices follow the silent

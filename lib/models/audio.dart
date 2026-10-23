@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:core';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/audio_channel.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/profiles.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/speaker_keep_alive.dart';
 
 class AudioSource {
   final String? name;
@@ -40,7 +40,7 @@ class AudioSource {
 
 class AudioModel extends ChangeNotifier {
   final List<AudioSource> _sources = [];
-  late final Timer _speakerDisconnectTimer;
+  final SpeakerKeepAlive _speakerKeepAlive;
 
   bool _isOnline = false;
   bool _isSettingsVisible = false;
@@ -52,7 +52,7 @@ class AudioModel extends ChangeNotifier {
   @override
   void dispose() {
     _hostChannelStateSubscription?.cancel();
-    _speakerDisconnectTimer.cancel();
+    _speakerKeepAlive.dispose();
 
     super.dispose();
   }
@@ -183,18 +183,8 @@ class AudioModel extends ChangeNotifier {
     );
   }
 
-  AudioModel.fromJson(Map<String, dynamic> json) {
-    final player = AudioPlayer();
-    _speakerDisconnectTimer = Timer.periodic(
-      const Duration(minutes: 5),
-      (_) => player.play(
-        AssetSource("silence.mp3"),
-        ctx:
-            AudioContextConfig(
-              focus: AudioContextConfigFocus.mixWithOthers,
-            ).build(),
-      ),
-    );
+  AudioModel.fromJson(Map<String, dynamic> json)
+    : _speakerKeepAlive = SpeakerKeepAlive() {
     final sources = json['sources'];
     if (sources != null) {
       for (dynamic source in sources) {

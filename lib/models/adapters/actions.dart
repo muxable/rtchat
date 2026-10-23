@@ -1,15 +1,18 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:rtchat/api.dart';
+import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/channels.dart';
 
 class ActionsAdapter {
   final Api api;
 
-  ActionsAdapter._({required this.api});
+  ActionsAdapter(this.api);
 
-  static ActionsAdapter get instance =>
-      _instance ??= ActionsAdapter._(api: Api.instance);
-  static ActionsAdapter? _instance;
+  /// Acts as [account]. The backend sends and moderates with the token of
+  /// the account it's called as, so this must be the one on the channel's
+  /// provider.
+  factory ActionsAdapter.forAccount(Account account) =>
+      ActionsAdapter(Api.forAccount(account));
 
   Future<String?> send(Channel channel, String message) async {
     final call = api.callable('send');

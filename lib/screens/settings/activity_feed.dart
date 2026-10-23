@@ -7,7 +7,6 @@ import 'package:rtchat/components/scanner_error.dart';
 import 'package:rtchat/components/scanner_settings.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/activity_feed.dart';
-import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -94,7 +93,6 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
           builder: (context, activityFeedModel, userModel, layoutModel, child) {
             Uri? uri;
 
-            final channel = userModel.userChannel;
             if (activityFeedModel.isCustom) {
               final tryUri = Uri.tryParse(activityFeedModel.customUrl);
               if (tryUri != null) {
@@ -103,13 +101,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                         ? Uri.tryParse("https://$tryUri")
                         : tryUri;
               }
-            } else if (channel != null) {
-              switch (channel.provider) {
-                case Providers.twitch:
-                  uri = Uri.tryParse(
-                    "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed",
-                  );
-              }
+            } else {
+              uri = userModel.activityFeedUri;
             }
 
             if (uri != null) {

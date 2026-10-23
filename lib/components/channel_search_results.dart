@@ -2,15 +2,15 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rtchat/api.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/components/provider_icon.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/user.dart';
 import 'package:rtchat/models/views.dart';
-
-final _search = Api.instance.callable("search");
 
 Future<List<SearchResult>> fastSearch() async {
   // fast query firestore and slow query the functions. tag firestore results
@@ -112,80 +112,96 @@ List<SearchResult> filterRecentChannels(
   return [...followed, ...others.take(5)];
 }
 
+/// Searches as the user [api] calls as. With no query, Twitch lists the
+/// channels that user follows.
 Stream<List<SearchResult>> searchChannels(
   String query,
   String provider,
-  bool isShowOnlyOnline, {
+  bool isShowOnlyOnline,
+  Api api, {
   List<Channel> followedChannels = const [],
 }) async* {
-  final followedForProvider =
-      followedChannels
-          .where((channel) => channel.provider == provider)
-          .toList();
-  final followedChannelKeys =
-      followedForProvider
-          .map((channel) => _channelKey(channel.provider, channel.channelId))
-          .toSet();
-  // Fetch recent channels and prioritize followed streamers.
+  final followedForProvider = followedChannels
+      .where((channel) => channel.provider == provider)
+      .toList();
+
+  final followedChannelKeys = followedForProvider
+      .map((channel) => _channelKey(channel.provider, channel.channelId))
+      .toSet();
+
+  // Fetch recently active channels.
   final recent = await fastSearch();
-  // Convert followed channels missing from the recent query into search
-  // results, so following a streamer doesn't depend on recent activity.
-  final followedResults = followedForProvider
-      .map((channel) {
-        final existing = recent.where(
-          (result) =>
-              result.provider == channel.provider &&
-              result.channelId == channel.channelId,
-        );
-        if (existing.isNotEmpty) {
-          return existing.first;
-        }
-        return SearchResult(
-          channelId: channel.channelId,
-          provider: channel.provider,
-          login: channel.displayName,
-          displayName: channel.displayName,
-          isOnline: false,
-          imageUrl: Uri.parse(
-            "https://rtirl.com/pfp.png?provider=${channel.provider}"
-            "&channelId=${channel.channelId}",
-          ),
-          title: null,
-          language: null,
-          isPromoted: false,
-        );
-      })
-      .where(
-        (result) =>
-            result.displayName.toLowerCase().contains(query.toLowerCase()) ||
-            result.login.toLowerCase().contains(query.toLowerCase()),
-      );
-  final followedByKey = {
+
+  // Include followed channels even if they aren't in the recent results.
+  final followedResults = followedForProvider.map((channel) {
+    final existing = recent.where(
+      (result) =>
+          result.provider == channel.provider &&
+          result.channelId == channel.channelId,
+    );
+
+    if (existing.isNotEmpty) {
+      return existing.first;
+    }
+
+    return SearchResult(
+      channelId: channel.channelId,
+      provider: channel.provider,
+      login: channel.displayName,
+      displayName: channel.displayName,
+      isOnline: false,
+      imageUrl: Uri.parse(
+        'https://rtirl.com/pfp.png'
+        '?provider=${channel.provider}'
+        '&channelId=${channel.channelId}',
+      ),
+      title: null,
+      language: null,
+      isPromoted: false,
+    );
+  }).where(
+    (result) =>
+        (result.displayName.toLowerCase().contains(query.toLowerCase()) ||
+            result.login.toLowerCase().contains(query.toLowerCase())) &&
+        (!isShowOnlyOnline || result.isOnline),
+  );
+
+  final followedByKey = <String, SearchResult>{
     for (final result in followedResults)
       _channelKey(result.provider, result.channelId): result,
   };
+
   final fastRanked = filterRecentChannels(
     recent,
     query,
     provider,
     followedChannelKeys: followedChannelKeys,
+  ).where(
+    (result) => !isShowOnlyOnline || result.isOnline,
   );
+
   final mergedFast = <String, SearchResult>{};
-  // Followed streamers always appear before other recently active streamers.
+
+  // Followed channels always appear first.
   for (final result in followedByKey.values) {
     mergedFast[_channelKey(result.provider, result.channelId)] = result;
   }
+
   for (final result in fastRanked) {
     mergedFast.putIfAbsent(
       _channelKey(result.provider, result.channelId),
       () => result,
     );
   }
+
+  // Emit quick results before the full provider search completes.
   yield mergedFast.values.toList();
+
   // Fetch the full provider search.
-  final slow = await _search({"query": query, "provider": provider}).then((
-    result,
-  ) {
+  final slow = await api.callable('search')({
+    'query': query,
+    'provider': provider,
+  }).then((result) {
     return (result.data as List<dynamic>)
         .map(
           (data) => SearchResult(
@@ -204,13 +220,19 @@ Stream<List<SearchResult>> searchChannels(
   });
 
   final combined = <String, SearchResult>{...mergedFast};
+
   for (final result in slow) {
     final key = _channelKey(result.provider, result.channelId);
-    if (result.provider != provider || combined.containsKey(key)) {
+
+    if (result.provider != provider ||
+        combined.containsKey(key) ||
+        (isShowOnlyOnline && !result.isOnline)) {
       continue;
     }
+
     combined[key] = result;
   }
+
   yield combined.values.toList();
 }
 
@@ -248,7 +270,10 @@ class ChannelSearchResultsWidget extends StatefulWidget {
   final String query;
   final String provider;
   final bool isShowOnlyOnline;
-  final ChannelSearch search;
+
+  /// Finds the results. Defaults to [searchChannels], as the account on
+  /// [provider].
+  final ChannelSearch? search;
   final Function(Channel) onChannelSelect;
   final ScrollController? controller;
 
@@ -270,7 +295,7 @@ class ChannelSearchResultsWidget extends StatefulWidget {
     super.key,
     required this.query,
     this.provider = "twitch",
-    this.search = searchChannels,
+    this.search,
     required this.onChannelSelect,
     required this.isShowOnlyOnline,
     this.controller,
@@ -289,26 +314,35 @@ class _ChannelSearchResultsWidgetState
     extends State<ChannelSearchResultsWidget> {
   late Stream<List<SearchResult>> _results;
   Timer? _debounce;
-  Stream<List<SearchResult>> _createSearch() {
-    if (widget.search == searchChannels) {
-      return searchChannels(
+@override
+  void initState() {
+    super.initState();
+    _results = _search();
+  }
+
+  Stream<List<SearchResult>> _search() {
+    final search = widget.search;
+
+    if (search != null) {
+      return search(
         widget.query,
         widget.provider,
         widget.isShowOnlyOnline,
-        followedChannels: widget.followedChannels,
       );
     }
-    return widget.search(
+
+    final api = Provider.of<UserModel>(
+      context,
+      listen: false,
+    ).apiOn(widget.provider);
+
+    return searchChannels(
       widget.query,
       widget.provider,
       widget.isShowOnlyOnline,
+      api,
+      followedChannels: widget.followedChannels,
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _results = _createSearch();
   }
 
   @override
@@ -318,14 +352,15 @@ class _ChannelSearchResultsWidgetState
     if (oldWidget.provider != widget.provider ||
         oldWidget.followedChannels != widget.followedChannels) {
       _debounce?.cancel();
-      _results = _createSearch();
-    } else if (oldWidget.query != widget.query) {
+_results = _search();
+    } else if (oldWidget.query != widget.query ||
+        oldWidget.isShowOnlyOnline != widget.isShowOnlyOnline) {
       _debounce?.cancel();
       _debounce = Timer(const Duration(milliseconds: 500), () {
         if (!mounted) return;
 
         setState(() {
-          _results = _createSearch();
+          _results = _search();
         });
       });
     }
