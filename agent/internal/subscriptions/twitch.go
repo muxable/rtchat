@@ -2,14 +2,17 @@ package subscriptions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -170,6 +173,118 @@ func (s *Service) checkTwitchSecret() error {
 		return &callable.Error{Code: "failed-precondition", Message: "dedicated Twitch webhook signing secret is not configured"}
 	}
 	return nil
+}
+
+// twitchCall sends one request to /eventsub/subscriptions.
+type twitchCall func(ctx context.Context, method string, q url.Values, body, out any) error
+
+func listTwitch(ctx context.Context, id string, call twitchCall) ([]twitchSubscription, error) {
+	var subscriptions []twitchSubscription
+	seen := map[string]bool{}
+	q := url.Values{"user_id": {id}}
+	for {
+		var result struct {
+			Data       []twitchSubscription `json:"data"`
+			Pagination struct {
+				Cursor string `json:"cursor"`
+			} `json:"pagination"`
+		}
+		if err := call(ctx, http.MethodGet, q, nil, &result); err != nil {
+			return nil, err
+		}
+		if result.Data == nil {
+			return nil, fmt.Errorf("Twitch subscriptions response missing data")
+		}
+		subscriptions = append(subscriptions, result.Data...)
+		cursor := result.Pagination.Cursor
+		if cursor == "" {
+			return subscriptions, nil
+		}
+		if seen[cursor] {
+			return nil, fmt.Errorf("Twitch subscription pagination loop")
+		}
+		seen[cursor] = true
+		q.Set("after", cursor)
+	}
+}
+
+type twitchReconcile struct {
+	created int
+	skipped []string
+	held    []string
+}
+
+// reconcileTwitch lists a broadcaster's subscriptions and creates the missing
+// ones. Every attempt lists first, so a POST with an uncertain outcome is not
+// created twice. Types Twitch rejects are skipped and types over the cost
+// limit are returned as held; any other failure stops the attempt.
+func (s *Service) reconcileTwitch(ctx context.Context, id string, call twitchCall) (twitchReconcile, error) {
+	var result twitchReconcile
+	if err := s.checkTwitchSecret(); err != nil {
+		return result, err
+	}
+	existing, err := listTwitch(ctx, id, call)
+	if err != nil {
+		return result, err
+	}
+	wantedSubscriptions := twitchConditions(id)
+	// Validate the entire existing set before any creation/deletion. A later
+	// legacy callback conflict must not leave a partially migrated broadcaster.
+	for _, wanted := range wantedSubscriptions {
+		for _, sub := range existing {
+			if sub.Type == wanted.Type && sub.Version == wanted.Version && reflect.DeepEqual(sub.Condition, wanted.Condition) && !ownCallback(sub) {
+				return result, &callable.Error{Code: "failed-precondition", Message: "Twitch callbacks require coordinated migration before enabling subscriptions"}
+			}
+		}
+	}
+	for _, wanted := range wantedSubscriptions {
+		found := false
+		for _, sub := range existing {
+			if sub.Type != wanted.Type || sub.Version != wanted.Version || !reflect.DeepEqual(sub.Condition, wanted.Condition) {
+				continue
+			}
+			if sub.Status == "enabled" || sub.Status == "webhook_callback_verification_pending" {
+				found = true
+				break
+			}
+			// Failed subscriptions at our own callback may be replaced safely. Never
+			// delete a legacy or unknown transport as a side effect of app activity.
+			if err = call(ctx, http.MethodDelete, url.Values{"id": {sub.ID}}, nil, nil); err != nil && !isStatus(err, 404) {
+				return result, err
+			}
+		}
+		if found {
+			continue
+		}
+		body := map[string]interface{}{"type": wanted.Type, "version": wanted.Version, "condition": wanted.Condition, "transport": map[string]interface{}{"method": "webhook", "callback": TwitchCallback, "secret": s.TwitchSecret}}
+		err = call(ctx, http.MethodPost, nil, body, nil)
+		outcome := "created"
+		switch {
+		case err == nil:
+			result.created++
+		case isStatus(err, 403):
+			outcome = "scope_unavailable"
+			result.skipped = append(result.skipped, wanted.Type)
+		case errors.As(err, new(*costLimitError)):
+			outcome = "cost_limited"
+			result.held = append(result.held, wanted.Type)
+		case isStatus(err, 400):
+			// Retired types or versions.
+			outcome = "rejected"
+			result.skipped = append(result.skipped, wanted.Type)
+		case errors.Is(err, errTwitchBudget):
+			return result, err
+		case isStatus(err, 429):
+			outcome = "rate_limited"
+		default:
+			outcome = "error"
+		}
+		zap.L().Info("twitch eventsub create", zap.String("channel", id), zap.String("type", wanted.Type), zap.String("outcome", outcome), zap.Error(err))
+		if outcome == "rate_limited" || outcome == "error" {
+			return result, err
+		}
+	}
+	return result, nil
 }
 
 func (s *Service) welcome(ctx context.Context, uid, channel, login string) error {

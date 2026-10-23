@@ -12,26 +12,17 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
 )
 
-type fakeClock struct {
-	mu  sync.Mutex
-	now time.Time
-}
+// fakeClock is only read and advanced on the goroutine driving step.
+type fakeClock struct{ now time.Time }
 
-func (c *fakeClock) Now() time.Time {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	return c.now
-}
-func (c *fakeClock) Advance(d time.Duration) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.now = c.now.Add(d)
-}
+func (c *fakeClock) Now() time.Time          { return c.now }
+func (c *fakeClock) Advance(d time.Duration) { c.now = c.now.Add(d) }
 
-// testQueue runs the worker against server without Firestore leases. Its
-// clock starts at the real time so Ratelimit-Reset headers stay meaningful.
+// testQueue runs the worker against server without Firestore leases.
 func testQueue(server *httptest.Server) (*TwitchQueue, *fakeClock) {
 	clock := &fakeClock{now: time.Now()}
 	service := &Service{TwitchSecret: "dedicated-secret", API: &API{Tokens: fakeTokens{}, Client: server.Client(), TwitchURL: server.URL}}
@@ -42,13 +33,19 @@ func testQueue(server *httptest.Server) (*TwitchQueue, *fakeClock) {
 	return queue, clock
 }
 
+func depth(queue *TwitchQueue) int {
+	queue.mu.Lock()
+	defer queue.mu.Unlock()
+	return len(queue.pending)
+}
+
 // drain steps the worker, skipping the fake clock over every wait, and returns
 // the total time waited.
 func drain(t *testing.T, queue *TwitchQueue, clock *fakeClock) time.Duration {
 	t.Helper()
 	var waited time.Duration
 	for i := 0; i < 100; i++ {
-		if queue.depth() == 0 {
+		if depth(queue) == 0 {
 			return waited
 		}
 		delay := queue.step(context.Background())
@@ -106,7 +103,7 @@ func TestTwitchQueueDedupesPendingBroadcasters(t *testing.T) {
 	for _, channel := range []string{"123", "123", "456", "123", "789"} {
 		queue.Enqueue(channel)
 	}
-	if queue.depth() != 2 || queue.pending["789"] != nil {
+	if depth(queue) != 2 || queue.pending["789"] != nil {
 		t.Fatal("expected one item per broadcaster and a full queue to drop", queue.pending)
 	}
 	drain(t, queue, clock)
@@ -141,8 +138,8 @@ func TestTwitchQueueWaitsForRateLimitReset(t *testing.T) {
 	if delay := queue.step(context.Background()); delay != 0 {
 		t.Fatal(delay)
 	}
-	if queue.depth() != 1 || fake.posts["channel.raid"] != 0 {
-		t.Fatal("rate-limited item not kept", queue.depth(), fake.posts)
+	if depth(queue) != 1 || fake.posts["channel.raid"] != 0 {
+		t.Fatal("rate-limited item not kept", depth(queue), fake.posts)
 	}
 	waited := drain(t, queue, clock)
 	if waited < 3*time.Minute {
@@ -195,8 +192,8 @@ func TestTwitchQueueHoldsCostLimitedTypesUntilHeadroom(t *testing.T) {
 	queue, clock := testQueue(server)
 	queue.Enqueue("123")
 	queue.step(context.Background())
-	if queue.depth() != 1 || len(fake.state) != 26 {
-		t.Fatal("cost-limited item not held", queue.depth(), len(fake.state))
+	if depth(queue) != 1 || len(fake.state) != 26 {
+		t.Fatal("cost-limited item not held", depth(queue), len(fake.state))
 	}
 	// Twitch still reports no headroom: the item stays held.
 	delay := queue.step(context.Background())
@@ -208,8 +205,8 @@ func TestTwitchQueueHoldsCostLimitedTypesUntilHeadroom(t *testing.T) {
 		t.Fatal(delay)
 	}
 	mu.Lock()
-	if checks != 1 || fake.posts["stream.online"] != 1 || queue.depth() != 1 {
-		t.Fatal(checks, fake.posts["stream.online"], queue.depth())
+	if checks != 1 || fake.posts["stream.online"] != 1 || depth(queue) != 1 {
+		t.Fatal(checks, fake.posts["stream.online"], depth(queue))
 	}
 	full = false
 	mu.Unlock()
@@ -287,8 +284,78 @@ func TestTwitchQueueGivesUpAfterRepeatedFailures(t *testing.T) {
 	}
 }
 
-func TestTwitchQueueRunStopsOnCancel(t *testing.T) {
+func TestTwitchQueueReschedulesBusyLeaseWithoutFailing(t *testing.T) {
 	fake := &fakeEventSub{}
+	server := httptest.NewServer(fake)
+	defer server.Close()
+	queue, clock := testQueue(server)
+	busy := true
+	queue.lock = func(ctx context.Context, _ string, work func(context.Context) error) error {
+		if busy {
+			busy = false
+			return subscriptionlock.ErrBusy
+		}
+		return work(ctx)
+	}
+	queue.Enqueue("123")
+	if delay := queue.step(context.Background()); delay != 0 {
+		t.Fatal(delay)
+	}
+	item := queue.pending["123"]
+	if item == nil || item.attempts != 0 || !item.ready.Equal(clock.Now().Add(twitchBusyDelay)) || fake.gets != 0 {
+		t.Fatal("busy lease counted as a failure", item, fake.gets)
+	}
+	if waited := drain(t, queue, clock); waited != twitchBusyDelay || len(fake.state) != 27 {
+		t.Fatal(waited, len(fake.state))
+	}
+}
+
+func TestTwitchQueueEnqueueDuringProcessingKeepsState(t *testing.T) {
+	var queue *TwitchQueue
+	fake := &fakeEventSub{}
+	fake.reply = func(w http.ResponseWriter, kind string, attempt int) bool {
+		// Another open of the same channel, and a different channel that the
+		// in-flight item leaves no room for.
+		queue.Enqueue("123")
+		queue.Enqueue("456")
+		switch {
+		case kind == "channel.cheer" && attempt == 1:
+			w.WriteHeader(503)
+		case kind == "stream.online" && attempt == 1:
+			w.Header().Set("Ratelimit-Remaining", "700")
+			w.WriteHeader(429)
+		default:
+			return false
+		}
+		return true
+	}
+	server := httptest.NewServer(fake)
+	defer server.Close()
+	queue, clock := testQueue(server)
+	queue.capacity = 1
+	queue.Enqueue("123")
+	queue.step(context.Background())
+	item := queue.pending["123"]
+	if depth(queue) != 1 || item == nil || item.attempts != 1 || item.ready.Before(clock.Now().Add(90*time.Second)) || item.running {
+		t.Fatal("retry state lost", depth(queue), item)
+	}
+	clock.Advance(item.ready.Sub(clock.Now()))
+	queue.step(context.Background())
+	item = queue.pending["123"]
+	if depth(queue) != 1 || item == nil || !item.costHeld || item.attempts != 1 {
+		t.Fatal("cost hold lost", depth(queue), item)
+	}
+}
+
+func TestTwitchQueueRunStopsOnCancel(t *testing.T) {
+	created := make(chan struct{})
+	fake := &fakeEventSub{}
+	fake.reply = func(w http.ResponseWriter, kind string, _ int) bool {
+		if len(fake.state) == 26 {
+			defer close(created)
+		}
+		return false
+	}
 	server := httptest.NewServer(fake)
 	defer server.Close()
 	queue, _ := testQueue(server)
@@ -297,24 +364,49 @@ func TestTwitchQueueRunStopsOnCancel(t *testing.T) {
 	done := make(chan struct{})
 	go func() { queue.Run(ctx); close(done) }()
 	queue.Enqueue("123")
-	deadline := time.Now().Add(5 * time.Second)
-	for {
-		fake.mu.Lock()
-		created := len(fake.state)
-		fake.mu.Unlock()
-		if created == 27 {
-			break
-		}
-		if time.Now().After(deadline) {
-			t.Fatal("worker did not wake for an enqueue", created)
-		}
-		time.Sleep(10 * time.Millisecond)
+	select {
+	case <-created:
+	case <-time.After(5 * time.Second):
+		t.Fatal("worker did not wake for an enqueue")
 	}
 	cancel()
 	select {
 	case <-done:
 	case <-time.After(5 * time.Second):
 		t.Fatal("worker did not stop")
+	}
+}
+
+func TestTwitchQueueStopsWhileBlocked(t *testing.T) {
+	for _, mode := range []string{"request", "lease"} {
+		t.Run(mode, func(t *testing.T) {
+			entered := make(chan struct{})
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				close(entered)
+				<-r.Context().Done()
+			}))
+			defer server.Close()
+			queue, _ := testQueue(server)
+			queue.now = time.Now
+			if mode == "lease" {
+				queue.lock = func(ctx context.Context, _ string, _ func(context.Context) error) error {
+					close(entered)
+					<-ctx.Done()
+					return ctx.Err()
+				}
+			}
+			ctx, cancel := context.WithCancel(context.Background())
+			done := make(chan struct{})
+			go func() { queue.Run(ctx); close(done) }()
+			queue.Enqueue("123")
+			<-entered
+			cancel()
+			select {
+			case <-done:
+			case <-time.After(5 * time.Second):
+				t.Fatal("worker did not stop")
+			}
+		})
 	}
 }
 
@@ -367,5 +459,23 @@ func TestTwitchLegacyFunctionCallbackCountsAsPresent(t *testing.T) {
 	drain(t, queue, clock)
 	if mutations != 0 {
 		t.Fatal("changed subscriptions that the legacy function forwards", mutations)
+	}
+}
+
+func TestTwitchQueueBudgetIgnoresUserTokenBuckets(t *testing.T) {
+	reset := strconv.FormatInt(time.Now().Add(time.Minute).Unix(), 10)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// The owner's user-token bucket is separate from the app token's.
+		w.Header().Set("Ratelimit-Remaining", "0")
+		w.Header().Set("Ratelimit-Reset", reset)
+		fmt.Fprint(w, `{"data":[{"id":"123","login":"owner"}]}`)
+	}))
+	defer server.Close()
+	queue, clock := testQueue(server)
+	if _, err := queue.service.twitchUser(context.Background(), "user-token", nil); err != nil {
+		t.Fatal(err)
+	}
+	if delay := queue.budgetWait(clock.Now()); delay != 0 {
+		t.Fatal("user-token response paced the queue", delay)
 	}
 }

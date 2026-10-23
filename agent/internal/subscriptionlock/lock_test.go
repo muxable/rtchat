@@ -2,6 +2,7 @@ package subscriptionlock
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -54,6 +55,12 @@ func TestLeaseExclusionExpiryAndCancellation(t *testing.T) {
 		t.Fatal("expired lease not taken", err)
 	}
 	if _, err := db.Collection("subscriptionLeases").Doc("kick:busy").Set(ctx, map[string]interface{}{"owner": "live", "until": time.Now().Add(time.Minute)}); err != nil {
+		t.Fatal(err)
+	}
+	if err := TryWith(ctx, db, "kick:busy", func(context.Context) error { t.Error("entered busy lease"); return nil }); !errors.Is(err, ErrBusy) {
+		t.Fatal("busy lease not reported", err)
+	}
+	if err := TryWith(ctx, db, "kick:free", func(context.Context) error { return nil }); err != nil {
 		t.Fatal(err)
 	}
 	bounded, cancel := context.WithTimeout(ctx, 30*time.Millisecond)

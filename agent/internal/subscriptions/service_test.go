@@ -202,10 +202,10 @@ func TestSignedTwitchConcurrencyWelcomeAndIdentity(t *testing.T) {
 		t.Fatal("EventSub called inline", posts)
 	}
 	mu.Unlock()
-	if service.Queue.depth() != 1 {
-		t.Fatal(service.Queue.depth())
+	if depth(service.Queue) != 1 {
+		t.Fatal(depth(service.Queue))
 	}
-	for service.Queue.depth() > 0 {
+	for depth(service.Queue) > 0 {
 		service.Queue.step(ctx)
 	}
 	if posts != 27 {
@@ -230,7 +230,7 @@ func TestSignedTwitchConcurrencyWelcomeAndIdentity(t *testing.T) {
 	if response := call(service, "subscribe", "viewer", `{"provider":"twitch","channelId":"123"}`); response.Code != 200 {
 		t.Fatal(response.Body.String())
 	}
-	if posts != 27 || service.Queue.depth() != 0 {
+	if posts != 27 || depth(service.Queue) != 0 {
 		t.Fatal(posts)
 	}
 	// Simulate interruption after the first welcome write. A retry repairs the
@@ -284,14 +284,14 @@ func TestTwitchStaleIdentityAndLegacyCallbackGate(t *testing.T) {
 			// The identity gate still answers the caller. The callback gate runs
 			// on the worker, which drops the broadcaster without creating anything.
 			if mode == "legacy" {
-				if response.Code != 200 || service.Queue.depth() != 1 {
+				if response.Code != 200 || depth(service.Queue) != 1 {
 					t.Fatal(response.Code, response.Body.String())
 				}
 				service.Queue.step(ctx)
-			} else if response.Code < 400 || service.Queue.depth() != 0 {
+			} else if response.Code < 400 || depth(service.Queue) != 0 {
 				t.Fatal(response.Code, response.Body.String())
 			}
-			if posts != 0 || service.Queue.depth() != 0 {
+			if posts != 0 || depth(service.Queue) != 0 {
 				t.Fatal("created before identity/callback gate", posts)
 			}
 		})

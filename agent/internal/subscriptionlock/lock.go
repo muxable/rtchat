@@ -22,10 +22,23 @@ type UncertainError struct{ Err error }
 func (e *UncertainError) Error() string { return "provider mutation outcome uncertain" }
 func (e *UncertainError) Unwrap() error { return e.Err }
 
+// ErrBusy means another holder has the lease.
+var ErrBusy = errors.New("subscription lease busy")
+
 // With gives work a 45-second deadline and holds its distributed lease for
 // 90 seconds. All provider requests must honor this context. Lease expiry lets
 // another replica recover a dead instance; ownership guards stale releases.
 func With(ctx context.Context, db *firestore.Client, key string, work func(context.Context) error) error {
+	return with(ctx, db, key, true, work)
+}
+
+// TryWith is With without waiting: it returns ErrBusy while another holder has
+// the lease, so a worker can move on to other keys.
+func TryWith(ctx context.Context, db *firestore.Client, key string, work func(context.Context) error) error {
+	return with(ctx, db, key, false, work)
+}
+
+func with(ctx context.Context, db *firestore.Client, key string, wait bool, work func(context.Context) error) error {
 	var id [16]byte
 	if _, err := rand.Read(id[:]); err != nil {
 		return err
@@ -57,6 +70,9 @@ func With(ctx context.Context, db *firestore.Client, key string, work func(conte
 		}
 		if acquired {
 			break
+		}
+		if !wait {
+			return ErrBusy
 		}
 		timer := time.NewTimer(200 * time.Millisecond)
 		select {

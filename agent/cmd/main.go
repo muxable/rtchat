@@ -177,6 +177,10 @@ func main() {
 	}
 	httpServer := &http.Server{Addr: ":" + port}
 	draining := &atomic.Bool{}
+	// The EventSub worker starts once secrets load; shutdown cancels and joins it.
+	queueCtx, stopQueue := context.WithCancel(ctx)
+	defer stopQueue()
+	queueDone := make(chan struct{})
 	go func() {
 		// Optional webhook credentials must not delay the chat snapshot loop.
 		secretsCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -198,7 +202,10 @@ func main() {
 			MaticWebhookID: secrets.AlchemyMaticWebhookID,
 		}
 		subscriptionService.Queue = subscriptions.NewTwitchQueue(subscriptionService)
-		go subscriptionService.Queue.Run(ctx)
+		go func() {
+			defer close(queueDone)
+			subscriptionService.Queue.Run(queueCtx)
+		}()
 		subscriptionService.Register(api)
 		catalog.Register(api, client, provider.NewService(client, nil))
 		// Register every callable package before Mount so readiness and webhooks remain intact.
@@ -250,7 +257,12 @@ func main() {
 				time.Sleep(5 * time.Second)
 			}
 			shutdown, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+			stopQueue()
 			httpServer.Shutdown(shutdown)
+			select {
+			case <-queueDone:
+			case <-shutdown.Done():
+			}
 			cancel()
 			return
 		}
