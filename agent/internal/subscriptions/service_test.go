@@ -183,6 +183,7 @@ func TestSignedTwitchConcurrencyWelcomeAndIdentity(t *testing.T) {
 	}))
 	defer server.Close()
 	service := &Service{DB: db, Enabled: true, TwitchSecret: "dedicated-signing-secret", API: &API{Tokens: fakeTokens{}, Client: server.Client(), TwitchURL: server.URL}}
+	service.Queue = NewTwitchQueue(service)
 	var wg sync.WaitGroup
 	for i := 0; i < 3; i++ {
 		wg.Add(1)
@@ -195,6 +196,18 @@ func TestSignedTwitchConcurrencyWelcomeAndIdentity(t *testing.T) {
 		}()
 	}
 	wg.Wait()
+	// subscribe leaves EventSub to the worker, and the three opens share one item.
+	mu.Lock()
+	if posts != 0 || state != nil {
+		t.Fatal("EventSub called inline", posts)
+	}
+	mu.Unlock()
+	if service.Queue.depth() != 1 {
+		t.Fatal(service.Queue.depth())
+	}
+	for service.Queue.depth() > 0 {
+		service.Queue.step(ctx)
+	}
 	if posts != 27 {
 		t.Fatal("duplicate EventSub posts", posts)
 	}
@@ -217,7 +230,7 @@ func TestSignedTwitchConcurrencyWelcomeAndIdentity(t *testing.T) {
 	if response := call(service, "subscribe", "viewer", `{"provider":"twitch","channelId":"123"}`); response.Code != 200 {
 		t.Fatal(response.Body.String())
 	}
-	if posts != 27 {
+	if posts != 27 || service.Queue.depth() != 0 {
 		t.Fatal(posts)
 	}
 	// Simulate interruption after the first welcome write. A retry repairs the
@@ -266,11 +279,19 @@ func TestTwitchStaleIdentityAndLegacyCallbackGate(t *testing.T) {
 			}))
 			defer server.Close()
 			service := &Service{DB: db, Enabled: true, TwitchSecret: "dedicated-signing-secret", API: &API{Tokens: fakeTokens{Missing: mode == "missing-token"}, Client: server.Client(), TwitchURL: server.URL}}
+			service.Queue = NewTwitchQueue(service)
 			response := call(service, "subscribe", "owner", `{"provider":"twitch","channelId":"123"}`)
-			if response.Code < 400 {
+			// The identity gate still answers the caller. The callback gate runs
+			// on the worker, which drops the broadcaster without creating anything.
+			if mode == "legacy" {
+				if response.Code != 200 || service.Queue.depth() != 1 {
+					t.Fatal(response.Code, response.Body.String())
+				}
+				service.Queue.step(ctx)
+			} else if response.Code < 400 || service.Queue.depth() != 0 {
 				t.Fatal(response.Code, response.Body.String())
 			}
-			if posts != 0 {
+			if posts != 0 || service.Queue.depth() != 0 {
 				t.Fatal("created before identity/callback gate", posts)
 			}
 		})

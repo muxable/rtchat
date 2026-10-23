@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"reflect"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
-	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -91,9 +89,12 @@ func (s *Service) subscribeTwitch(ctx context.Context, uid, channel string) (int
 		if current.ID != channel {
 			return &callable.Error{Code: "permission-denied", Message: "Twitch identity no longer matches profile"}
 		}
-		if err = s.ensureTwitch(ctx, channel, token); err != nil {
+		if err := s.checkTwitchSecret(); err != nil {
 			return err
 		}
+		// Twitch's rate and cost limits make EventSub creation too slow and
+		// too likely to fail for the request; the worker reconciles it.
+		s.Queue.Enqueue(channel)
 		pending := false
 		if err := s.DB.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 			pending = false
@@ -164,88 +165,9 @@ func twitchConditions(id string) []twitchWanted {
 	}
 	return wanted
 }
-func (s *Service) listTwitch(ctx context.Context, id, token string) ([]twitchSubscription, error) {
-	var subscriptions []twitchSubscription
-	seen := map[string]bool{}
-	q := url.Values{"user_id": {id}}
-	for {
-		var result struct {
-			Data       []twitchSubscription `json:"data"`
-			Pagination struct {
-				Cursor string `json:"cursor"`
-			} `json:"pagination"`
-		}
-		if err := s.API.twitch(ctx, token, http.MethodGet, "/eventsub/subscriptions", q, nil, &result); err != nil {
-			return nil, err
-		}
-		if result.Data == nil {
-			return nil, fmt.Errorf("Twitch subscriptions response missing data")
-		}
-		subscriptions = append(subscriptions, result.Data...)
-		cursor := result.Pagination.Cursor
-		if cursor == "" {
-			return subscriptions, nil
-		}
-		if seen[cursor] {
-			return nil, fmt.Errorf("Twitch subscription pagination loop")
-		}
-		seen[cursor] = true
-		q.Set("after", cursor)
-	}
-}
-func (s *Service) ensureTwitch(ctx context.Context, id, token string) error {
+func (s *Service) checkTwitchSecret() error {
 	if len(s.TwitchSecret) < 10 || len(s.TwitchSecret) > 100 {
 		return &callable.Error{Code: "failed-precondition", Message: "dedicated Twitch webhook signing secret is not configured"}
-	}
-	existing, err := s.listTwitch(ctx, id, token)
-	if err != nil {
-		return err
-	}
-	wantedSubscriptions := twitchConditions(id)
-	// Validate the entire existing set before any creation/deletion. A later
-	// legacy callback conflict must not leave a partially migrated broadcaster.
-	for _, wanted := range wantedSubscriptions {
-		for _, sub := range existing {
-			if sub.Type == wanted.Type && sub.Version == wanted.Version && reflect.DeepEqual(sub.Condition, wanted.Condition) && !ownCallback(sub) {
-				return &callable.Error{Code: "failed-precondition", Message: "Twitch callbacks require coordinated migration before enabling subscriptions"}
-			}
-		}
-	}
-	for _, wanted := range wantedSubscriptions {
-		found := false
-		for _, sub := range existing {
-			if sub.Type != wanted.Type || sub.Version != wanted.Version || !reflect.DeepEqual(sub.Condition, wanted.Condition) {
-				continue
-			}
-			if sub.Status == "enabled" || sub.Status == "webhook_callback_verification_pending" {
-				found = true
-				break
-			}
-			// Failed subscriptions at our own callback may be replaced safely. Never
-			// delete a legacy or unknown transport as a side effect of app activity.
-			if err = s.API.twitch(ctx, token, http.MethodDelete, "/eventsub/subscriptions", url.Values{"id": {sub.ID}}, nil, nil); err != nil && !isStatus(err, 404) {
-				return err
-			}
-		}
-		if found {
-			continue
-		}
-		body := map[string]interface{}{"type": wanted.Type, "version": wanted.Version, "condition": wanted.Condition, "transport": map[string]interface{}{"method": "webhook", "callback": TwitchCallback, "secret": s.TwitchSecret}}
-		err = s.API.twitch(ctx, token, http.MethodPost, "/eventsub/subscriptions", nil, body, nil)
-		if isStatus(err, 403) {
-			zap.L().Warn("Twitch EventSub scope unavailable", zap.String("type", wanted.Type), zap.String("channel", id))
-			continue
-		}
-		// Like the Cloud Function, one rejected type does not fail the rest:
-		// Twitch answers 429 when the client's EventSub cost limit is full and
-		// 400 for retired types or versions.
-		if isStatus(err, 429) || isStatus(err, 400) {
-			zap.L().Warn("Twitch EventSub subscription rejected", zap.String("type", wanted.Type), zap.String("channel", id), zap.Error(err))
-			continue
-		}
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }

@@ -1,0 +1,13 @@
+description: Twitch EventSub queue reconciles by outcome.
+filter: >-
+  resource.type="gce_instance"
+  logName="projects/rtchat-47692/logs/cos_containers"
+  jsonPayload.message="twitch eventsub reconcile"
+labelExtractors:
+  outcome: EXTRACT(jsonPayload.outcome)
+metricDescriptor:
+  metricKind: DELTA
+  valueType: INT64
+  unit: "1"
+  labels:
+  - key: outcome

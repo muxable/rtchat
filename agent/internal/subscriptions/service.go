@@ -28,6 +28,8 @@ type Service struct {
 	TwitchSecret     string
 	MaticWebhookID   string
 	KickChannelLimit int
+	// Queue reconciles Twitch EventSub subscriptions off the request path.
+	Queue *TwitchQueue
 }
 
 func (s *Service) Register(server *callable.Server) {
