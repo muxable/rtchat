@@ -81,6 +81,11 @@ func registerChat(api *callable.Server, s *chatRoutes) {
 			}
 			token, err := s.tokens.AccessToken(ctx, callable.UID(ctx), r.Provider)
 			if errors.Is(err, provider.ErrNoToken) || (err == nil && token == "") {
+				// The app shows a string result from send to the user. The Cloud
+				// Function answered a Twitch send without a Twitch account this way.
+				if name == "send" && r.Provider == "twitch" {
+					return "not signed in with twitch", nil
+				}
 				return nil, &callable.Error{Code: "failed-precondition", Message: r.Provider + " account not linked"}
 			}
 			if err != nil {

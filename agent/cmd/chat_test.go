@@ -436,7 +436,17 @@ func TestMissingTokensAndUnsupportedActions(t *testing.T) {
 			t.Fatal(code, body)
 		}
 	}
-	s, _ := newMock(nil)
+	s, _ := newMock(func(r *http.Request) (*http.Response, error) { t.Fatal("request without grant"); return nil, nil })
+	s.tokens = mockTokens{err: provider.ErrNoToken}
+	code, body := call(t, s, "send", map[string]any{"provider": "twitch", "channelId": own, "message": "hello"}, true)
+	if code != 200 || body["result"] != "not signed in with twitch" {
+		t.Fatal("twitch send without a token should tell the user to sign in", code, body)
+	}
+	code, body = call(t, s, "ban", map[string]any{"provider": "twitch", "channelId": own, "username": "someone"}, true)
+	if code != 400 || field(object(body["error"]), "status") != "FAILED_PRECONDITION" {
+		t.Fatal(code, body)
+	}
+	s, _ = newMock(nil)
 	for _, p := range []string{"kick", "youtube"} {
 		code, body := call(t, s, "clear", map[string]any{"provider": p, "channelId": "channel"}, true)
 		if code != 400 {
