@@ -68,8 +68,50 @@ func TestTwitchEmoteOwnerCategories(t *testing.T) {
 		}
 		return response(200, `{"data":[{"login":"streamer"}]}`), nil
 	})}
-	emotes, err := s.twitchEmotes(context.Background(), "user-token")
+	emotes, err := s.twitchEmotes(context.Background(), "user-token", "123")
 	if err != nil || len(emotes) != 2 || emotes[0].Category != nil || emotes[1].Category != "Category" {
 		t.Fatalf("owner categories: %+v %v", emotes, err)
+	}
+}
+
+func TestTwitchUserEmotesWithFallback(t *testing.T) {
+	for _, scoped := range []bool{true, false} {
+		s, _, _ := fixture()
+		irc := false
+		s.EmoteSets = func(context.Context, string, string) ([]string, error) { irc = true; return []string{"1"}, nil }
+		pages := 0
+		s.HTTP = &http.Client{Transport: transport(func(r *http.Request) (*http.Response, error) {
+			q := r.URL.Query()
+			switch {
+			case r.URL.Path == "/helix/chat/emotes/user":
+				if !scoped {
+					return response(403, `{"error":"Forbidden"}`), nil
+				}
+				if q.Get("user_id") != "7" || q.Get("broadcaster_id") != "123" {
+					t.Fatalf("user emotes query %s", r.URL.RawQuery)
+				}
+				pages++
+				if q.Get("after") == "" {
+					return response(200, `{"template":"https://cdn/{{id}}/{{format}}/{{theme_mode}}/{{scale}}","data":[{"id":"a","name":"Kappa","owner_id":"0","scale":["1.0","3.0"]}],"pagination":{"cursor":"next"}}`), nil
+				}
+				return response(200, `{"template":"https://cdn/{{id}}/{{format}}/{{theme_mode}}/{{scale}}","data":[{"id":"b","name":"Follow","owner_id":"42","scale":["1.0"]}],"pagination":{}}`), nil
+			case r.URL.Path == "/helix/chat/emotes/set":
+				return response(200, `{"template":"https://cdn/{{id}}/{{format}}/{{theme_mode}}/{{scale}}","data":[{"id":"s","name":"SetEmote","owner_id":"42","scale":["2.0"]}]}`), nil
+			case q.Get("id") == "42":
+				return response(200, `{"data":[{"id":"42","display_name":"Streamer"}]}`), nil
+			}
+			return response(200, `{"data":[{"id":"7","login":"viewer"}]}`), nil
+		})}
+		emotes, err := s.twitchEmotes(context.Background(), "user-token", "123")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if scoped {
+			if irc || pages != 2 || len(emotes) != 2 || emotes[0].ImageURL != "https://cdn/a/default/dark/3.0" || emotes[0].Category != nil || emotes[1].Category != "Streamer" {
+				t.Fatalf("user emotes: irc=%v pages=%d %+v", irc, pages, emotes)
+			}
+		} else if !irc || len(emotes) != 1 || emotes[0].Code != "SetEmote" || emotes[0].Category != "Streamer" {
+			t.Fatalf("fallback: irc=%v %+v", irc, emotes)
+		}
 	}
 }
