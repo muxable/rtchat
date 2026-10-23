@@ -1,4 +1,4 @@
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { app as authApp } from "./auth";
 import { updateFollowerAndViewerCount } from "./chat-status";
 import { sendKickMessage } from "./kick_actions";

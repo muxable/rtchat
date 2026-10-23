@@ -1,5 +1,5 @@
 import fetch from "cross-fetch";
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 
 type Request = functions.https.Request;
 type Response = Awaited<ReturnType<typeof fetch>>;
@@ -81,7 +81,7 @@ function forward(req: Request, name: string, path: string) {
   return fetch(url, {
     method: req.method,
     headers: forwardedHeaders(req, name),
-    body: hasBody ? req.rawBody : undefined,
+    body: hasBody ? new Uint8Array(req.rawBody).buffer : undefined,
     redirect: "manual",
   });
 }

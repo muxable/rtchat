@@ -2,14 +2,14 @@ group = "com.muxable.ondevicetts"
 version = "1.0-SNAPSHOT"
 
 buildscript {
-    val kotlinVersion = "2.4.0"
+    val kotlinVersion = "2.4.21"
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:9.1.0")
+        classpath("com.android.tools.build:gradle:9.4.1")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
@@ -27,7 +27,7 @@ plugins {
 
 // The official ONNX Runtime (MIT). Pinned: bump it deliberately, and rerun the
 // parity and emulator tests when you do.
-val onnxRuntimeVersion = "1.30.0"
+val onnxRuntimeVersion = "1.31.0"
 
 android {
     namespace = "com.muxable.ondevicetts"
@@ -88,8 +88,8 @@ dependencies {
     implementation("com.microsoft.onnxruntime:onnxruntime-android:$onnxRuntimeVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.4")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.3")
     if (System.getenv("SUPERTONIC_PARITY_DIR") != null) {
         testRuntimeOnly("com.microsoft.onnxruntime:onnxruntime:$onnxRuntimeVersion")
     }

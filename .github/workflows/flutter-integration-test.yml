@@ -43,12 +43,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/firebase/emulators
-          key: firebase-emulators-15.33.0
+          key: firebase-emulators-15.34.1
       - name: Download Firebase emulators
         run: |
           for emulator in firestore database; do
             for attempt in 1 2 3; do
-              npx -y firebase-tools@15.33.0 setup:emulators:$emulator && break
+              npx -y firebase-tools@15.34.1 setup:emulators:$emulator && break
               [ $attempt = 3 ] && exit 1
               sleep 10
             done
@@ -61,4 +61,4 @@ jobs:
           target: google_apis
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: npx -y firebase-tools@15.33.0 emulators:exec --only auth,firestore,database --project rtchat-47692 "bash .github/scripts/integration-test.sh"
+          script: npx -y firebase-tools@15.34.1 emulators:exec --only auth,firestore,database --project rtchat-47692 "bash .github/scripts/integration-test.sh"

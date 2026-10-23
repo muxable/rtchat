@@ -1,6 +1,6 @@
 import fetch from "cross-fetch";
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { getAccessToken } from "./oauth";
 
 // Chat actions on YouTube, taken on behalf of the signed-in user with their
