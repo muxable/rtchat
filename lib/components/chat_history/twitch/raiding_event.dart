@@ -21,9 +21,11 @@ class TwitchRaidingEventWidget extends StatelessWidget {
       return StreamBuilder<int>(
         stream: Stream.periodic(const Duration(milliseconds: 500), (x) => x),
         builder: (context, snapshot) {
-          final flash = snapshot.data == null || snapshot.data! % 2 == 0;
           final expiration = model.timestamp.add(model.duration);
           final remaining = expiration.difference(DateTime.now());
+          final flash =
+              remaining > Duration.zero &&
+              (snapshot.data == null || snapshot.data! % 2 == 0);
           return Stack(
             children: [
               Positioned.fill(
