@@ -721,7 +721,7 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
                 val file = File(fileName)
                 fullPath = file.path
 
-                tts!!.synthesizeToFile(text, bundle!!, file!!, SYNTHESIZE_TO_FILE_PREFIX + uuid)
+                tts!!.synthesizeToFile(text, bundle!!, file, SYNTHESIZE_TO_FILE_PREFIX + uuid)
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val resolver = this.context?.contentResolver
                 val contentValues = ContentValues().apply {
@@ -739,7 +739,7 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
                 val file = File(musicDir, fileName)
                 fullPath = file.path
 
-                tts!!.synthesizeToFile(text, bundle!!, file!!, SYNTHESIZE_TO_FILE_PREFIX + uuid)
+                tts!!.synthesizeToFile(text, bundle!!, file, SYNTHESIZE_TO_FILE_PREFIX + uuid)
             }
 
         if (result == TextToSpeech.SUCCESS) {
@@ -804,6 +804,8 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
                 .build()
             audioManager?.requestAudioFocus(audioFocusRequest!!)
         } else {
+            // minSdk is 24; AudioFocusRequest needs API 26.
+            @Suppress("DEPRECATION")
             audioManager?.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
         }
     }
@@ -812,6 +814,7 @@ class SystemTtsPlugin : MethodCallHandler, FlutterPlugin {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             audioFocusRequest?.let { audioManager?.abandonAudioFocusRequest(it) }
         } else {
+            @Suppress("DEPRECATION")
             audioManager?.abandonAudioFocus(null)
         }
     }
