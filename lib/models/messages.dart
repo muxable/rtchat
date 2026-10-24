@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:core';
 
-import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/api.dart';
@@ -19,12 +19,12 @@ class MessagesModel extends ChangeNotifier {
 
   /// The [Api] to call as the user on a provider, from `UserModel.apiOn`.
   Api Function(String provider) apiOn =
-      (provider) => Api.forApp(Firebase.app());
+      (provider) => Api(FirebaseFunctions.instance);
 
   @visibleForTesting
-late Stream<DeltaEvent> Function(Channel channel) forChannel =
-    (channel) => MessagesAdapter.instance.forChannel(channel);
-  
+  late Stream<DeltaEvent> Function(Channel channel) forChannel = (channel) =>
+      MessagesAdapter.instance.forChannel(channel, apiOn(channel.provider));
+
   List<ChannelEvent> _events = [];
   List<MessageModel> _messages = [];
   Set<int> _separators = {};
@@ -80,9 +80,8 @@ late Stream<DeltaEvent> Function(Channel channel) forChannel =
 
   /// Whether [channel] is streaming, which gates message alerts.
   @visibleForTesting
-  Stream<bool> Function(Channel channel) isOnline =
-      (channel) =>
-          ProfilesAdapter.instance.getIsOnline(channelId: channel.toString());
+  Stream<bool> Function(Channel channel) isOnline = (channel) =>
+      ProfilesAdapter.instance.getIsOnline(channelId: channel.toString());
 
   @visibleForTesting
   void addEvent(Channel channel, DeltaEvent event) => _onEvent(channel, event);
@@ -190,40 +189,41 @@ late Stream<DeltaEvent> Function(Channel channel) forChannel =
     final history = <ChannelEvent>[];
 
     for (final channel in _channels) {
-  final oldest = futureEvents
-      .where((entry) => entry.channel == channel)
-      .map((entry) => entry.event.timestamp)
-      .firstOrNull;
+      final oldest = futureEvents
+          .where((entry) => entry.channel == channel)
+          .map((entry) => entry.event.timestamp)
+          .firstOrNull;
 
-  if (oldest == null) {
-    continue;
-  }
+      if (oldest == null) {
+        continue;
+      }
 
-  final events = await MessagesAdapter.instance.forChannelHistory(
-    channel,
-    oldest,
-  );
+      final events = await MessagesAdapter.instance.forChannelHistory(
+        channel,
+        oldest,
+        apiOn(channel.provider),
+      );
 
-  history.addAll(
-    events.map((event) => (channel: channel, event: event)),
-  );
-}
+      history.addAll(
+        events.map((event) => (channel: channel, event: event)),
+      );
+    }
 
-if (history.isEmpty || _disposed) {
-  return;
-}
+    if (history.isEmpty || _disposed) {
+      return;
+    }
 
     _events = [...history, ...futureEvents];
 
-_messages = _channels.length > 1
-    ? replayEvents(_events)
-    : _events.fold(
-        <MessageModel>[],
-        (messages, entry) => applyDeltaEvent(messages, entry.event),
-      );
+    _messages = _channels.length > 1
+        ? replayEvents(_events)
+        : _events.fold(
+            <MessageModel>[],
+            (messages, entry) => applyDeltaEvent(messages, entry.event),
+          );
 
-_separators = computeSeparators(_messages);
-notifyListeners();
+    _separators = computeSeparators(_messages);
+    notifyListeners();
   }
 
   void pruneMessages() {
@@ -311,9 +311,9 @@ notifyListeners();
   }
 
   Map<String, dynamic> toJson() => {
-    "announcementPinDuration": _announcementPinDuration.inSeconds.toInt(),
-    "pingMinGapDuration": _pingMinGapDuration.inSeconds.toInt(),
-  };
+        "announcementPinDuration": _announcementPinDuration.inSeconds.toInt(),
+        "pingMinGapDuration": _pingMinGapDuration.inSeconds.toInt(),
+      };
 
   BuildContext? _getContext() {
     return navigatorKey.currentContext;
@@ -346,7 +346,7 @@ List<MessageModel> applyDeltaEvent(
   Channel? channel,
   void Function(MessageModel model)? onAppend,
   void Function(DeltaEvent event, MessageModel previous, MessageModel updated)?
-  onUpdate,
+      onUpdate,
 }) {
   if (event is AppendDeltaEvent) {
     _insert(messages, event.model);
