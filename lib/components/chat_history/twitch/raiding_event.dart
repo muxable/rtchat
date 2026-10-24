@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
@@ -9,7 +11,7 @@ import 'package:styled_text/styled_text.dart';
 
 class TwitchRaidingEventWidget extends StatelessWidget {
   final TwitchRaidingEventModel model;
-  final VoidCallback? onCancel;
+  final Future<void> Function()? onCancel;
 
   const TwitchRaidingEventWidget(this.model, {super.key, this.onCancel});
 
@@ -19,16 +21,19 @@ class TwitchRaidingEventWidget extends StatelessWidget {
       return StreamBuilder<int>(
         stream: Stream.periodic(const Duration(milliseconds: 500), (x) => x),
         builder: (context, snapshot) {
-          final flash = snapshot.data == null || snapshot.data! % 2 == 0;
           final expiration = model.timestamp.add(model.duration);
           final remaining = expiration.difference(DateTime.now());
+          final countdownActive = remaining > Duration.zero;
+          final flash = snapshot.data == null || snapshot.data! % 2 == 0;
           return Stack(
             children: [
               Positioned.fill(
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 500),
                   color:
-                      flash
+                      !countdownActive
+                          ? Theme.of(context).highlightColor
+                          : flash
                           ? Theme.of(context).highlightColor
                           : Theme.of(context).colorScheme.secondary,
                 ),
@@ -68,11 +73,9 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                     ),
-                    if (onCancel != null)
-                      TextButton(
-                        onPressed: onCancel,
-                        child: Text(AppLocalizations.of(context)!.cancel),
-                      ),
+                    if (onCancel != null &&
+                        remaining > const Duration(seconds: 1))
+                      _RaidCancelButton(onCancel: onCancel!),
                   ],
                 ),
               ),
@@ -131,5 +134,38 @@ class TwitchRaidingEventWidget extends StatelessWidget {
         ),
       );
     }
+  }
+}
+
+class _RaidCancelButton extends StatefulWidget {
+  final Future<void> Function() onCancel;
+
+  const _RaidCancelButton({required this.onCancel});
+
+  @override
+  State<_RaidCancelButton> createState() => _RaidCancelButtonState();
+}
+
+class _RaidCancelButtonState extends State<_RaidCancelButton> {
+  bool _inFlight = false;
+
+  Future<void> _cancel() async {
+    if (_inFlight) return;
+    setState(() => _inFlight = true);
+    try {
+      await widget.onCancel();
+    } finally {
+      if (mounted) {
+        setState(() => _inFlight = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: _inFlight ? null : _cancel,
+      child: Text(AppLocalizations.of(context)!.cancel),
+    );
   }
 }
