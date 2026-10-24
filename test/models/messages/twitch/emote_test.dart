@@ -68,6 +68,8 @@ void main() {
         );
     functions = _Functions();
     reported = [];
+    emoteRetryDelay = Duration.zero;
+    reportEmoteError = (error, stack) => reported.add(error);
   });
 
   tearDown(() {
@@ -79,12 +81,7 @@ void main() {
     temp.deleteSync(recursive: true);
   });
 
-  Future<List<Emote>> getEmotesForTest() => getEmotes(
-    channel,
-    Api(functions),
-    retryDelay: Duration.zero,
-    reportError: (error, stack) => reported.add(error),
-  );
+  Future<List<Emote>> getEmotesForTest() => getEmotes(channel, Api(functions));
 
   test('fetches and caches the emotes', () async {
     functions.emotes = [_emote('Kappa')];

@@ -210,11 +210,20 @@ class _ScrollToBottomWidget extends StatelessWidget {
 @visibleForTesting
 List<String> uniqueKeys(List<String> keys) {
   final seen = <String>{};
+  // The next suffix to try for each repeated key, so a key repeated many
+  // times doesn't retry every suffix it has already taken.
+  final nextRepeat = <String, int>{};
   final unique = List.of(keys);
   for (var index = keys.length - 1; index >= 0; index--) {
-    var key = keys[index];
-    for (var repeat = 1; !seen.add(key); repeat++) {
-      key = '${keys[index]}#$repeat';
+    final base = keys[index];
+    var key = base;
+    if (!seen.add(key)) {
+      var repeat = nextRepeat[base] ?? 1;
+      do {
+        key = '$base#$repeat';
+        repeat++;
+      } while (!seen.add(key));
+      nextRepeat[base] = repeat;
     }
     unique[index] = key;
   }
@@ -448,6 +457,10 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
             final keys = uniqueKeys([
               for (final entry in displayedMessages) entry.key,
             ]);
+            final keyIndexes = {
+              for (var index = 0; index < keys.length; index++)
+                keys[index]: index,
+            };
             return Stack(
               alignment: Alignment.topCenter,
               children: [
@@ -558,7 +571,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                           );
                         },
                         findChildIndexCallback: (key) {
-                          return keys.indexWhere((k) => key == Key(k));
+                          return key is ValueKey<String>
+                              ? keyIndexes[key.value]
+                              : null;
                         },
                         isPinnedBuilder: (index) {
                           final expiration = expirations[index];

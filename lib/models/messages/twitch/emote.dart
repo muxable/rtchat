@@ -9,20 +9,19 @@ import 'package:rtchat/api.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
 
-void _recordToCrashlytics(Object error, StackTrace stack) =>
-    FirebaseCrashlytics.instance.recordError(error, stack);
+/// How long to wait before fetching the emotes again after a failure.
+@visibleForTesting
+var emoteRetryDelay = const Duration(seconds: 1);
+
+/// Reports emotes that couldn't be fetched, to Crashlytics by default.
+@visibleForTesting
+void Function(Object error, StackTrace stack) reportEmoteError =
+    FirebaseCrashlytics.instance.recordError;
 
 /// The emotes usable in [channel]. Twitch's include those of the user [api]
 /// calls as. If they can't be fetched, e.g. the backend is briefly
 /// unavailable, they come from an outdated cache, or there are none.
-Future<List<Emote>> getEmotes(
-  Channel channel,
-  Api api, {
-  @visibleForTesting Duration retryDelay = const Duration(seconds: 1),
-  @visibleForTesting
-  void Function(Object error, StackTrace stack) reportError =
-      _recordToCrashlytics,
-}) async {
+Future<List<Emote>> getEmotes(Channel channel, Api api) async {
   final temp = await getTemporaryDirectory();
   final cacheFile = File('${temp.path}/emotes/${channel.toString()}.json');
   List<Emote>? cached;
@@ -44,37 +43,40 @@ Future<List<Emote>> getEmotes(
     await _deleteCache(cacheFile);
   }
 
-  for (int i = 0; i < 3; i++) {
-    final dynamic data;
-    final List<Emote> emotes;
+  final dynamic data;
+  final List<Emote> emotes;
+  try {
+    data = await _fetchEmotes(channel, api);
+    emotes = (data as List).map(Emote.fromJson).toList();
+  } catch (e, st) {
+    reportEmoteError(e, st);
+    return cached ?? [];
+  }
+  try {
+    await cacheFile.create(recursive: true);
+    await cacheFile.writeAsString(jsonEncode(data));
+  } catch (_) {
+    // the emotes are still usable without the cache.
+    await _deleteCache(cacheFile);
+  }
+  return emotes;
+}
+
+/// The emotes' JSON from the backend, retried as it can be briefly
+/// unavailable.
+Future<dynamic> _fetchEmotes(Channel channel, Api api) async {
+  for (var attempt = 1; ; attempt++) {
     try {
       final response = await api.callable("getEmotes")({
         "provider": channel.provider,
         "channelId": channel.channelId,
       });
-      data = response.data;
-      emotes =
-          (data as List)
-              .map((individualEmote) => Emote.fromJson(individualEmote))
-              .toList();
-    } catch (e, st) {
-      if (i == 2) {
-        reportError(e, st);
-      } else {
-        await Future.delayed(retryDelay);
-      }
-      continue;
-    }
-    try {
-      await cacheFile.create(recursive: true);
-      await cacheFile.writeAsString(jsonEncode(data));
+      return response.data;
     } catch (_) {
-      // the emotes are still usable without the cache.
-      await _deleteCache(cacheFile);
+      if (attempt == 3) rethrow;
+      await Future.delayed(emoteRetryDelay);
     }
-    return emotes;
   }
-  return cached ?? [];
 }
 
 Future<void> _deleteCache(File cacheFile) async {
