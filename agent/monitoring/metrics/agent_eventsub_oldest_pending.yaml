@@ -2,7 +2,7 @@ description: Age of the oldest broadcaster waiting in a replica's Twitch EventSu
 filter: >-
   resource.type="gce_instance"
   logName="projects/rtchat-47692/logs/cos_containers"
-  jsonPayload.message=~"^twitch eventsub (reconcile|cost check)$"
+  jsonPayload.message=~"^twitch eventsub (reconcile|remove|cost check)$"
 valueExtractor: EXTRACT(jsonPayload.oldest_pending_ms)
 bucketOptions:
   exponentialBuckets:

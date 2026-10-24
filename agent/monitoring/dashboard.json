@@ -490,6 +490,39 @@
             }
           }
         }
+      },
+      {
+        "xPos": 24,
+        "yPos": 112,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Twitch EventSub removals for deauthorized broadcasters by outcome",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "STACKED_BAR",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"logging.googleapis.com/user/agent_eventsub_removals\" resource.type=\"gce_instance\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_DELTA",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "groupByFields": [
+                        "metric.label.outcome"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
       }
     ]
   }

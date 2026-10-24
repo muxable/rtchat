@@ -73,6 +73,8 @@ type twitchPayload struct {
 		Type    string `json:"type"`
 		Version string `json:"version"`
 		Status  string `json:"status"`
+		// Condition is only read for revocations.
+		Condition map[string]interface{} `json:"condition"`
 	} `json:"subscription"`
 	Challenge *string                `json:"challenge"`
 	Event     map[string]interface{} `json:"event"`
@@ -194,7 +196,34 @@ func mapTwitchNotification(payload twitchPayload, messageID string, timestamp, n
 type TwitchHandler struct {
 	Secret string
 	Store  twitchStore
-	now    func() time.Time
+	// OnDeauthorized is called with a broadcaster who revoked the app, from a
+	// user.authorization.revoke notification or an authorization_revoked
+	// revocation. It must not block: Twitch expects a prompt 2xx.
+	OnDeauthorized func(broadcasterID string)
+	now            func() time.Time
+}
+
+func validTwitchID(id string) bool {
+	if id == "" {
+		return false
+	}
+	for _, c := range id {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+func (h *TwitchHandler) deauthorized(id, source string) {
+	if !validTwitchID(id) {
+		zap.L().Warn("twitch eventsub deauthorization without broadcaster", zap.String("source", source), zap.String("broadcaster", id))
+		return
+	}
+	zap.L().Info("twitch eventsub deauthorization", zap.String("source", source), zap.String("broadcaster", id))
+	if h.OnDeauthorized != nil {
+		h.OnDeauthorized(id)
+	}
 }
 
 func NewTwitchHandler(secret string, client *firestore.Client) *TwitchHandler {
@@ -274,7 +303,22 @@ func (h *TwitchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	case "revocation":
 		zap.L().Info("twitch eventsub subscription revoked", zap.String("type", payload.Subscription.Type), zap.String("status", payload.Subscription.Status))
+		// Other statuses, such as notification_failures_exceeded, are
+		// replaced by the next reconcile instead.
+		if payload.Subscription.Status == "authorization_revoked" {
+			id, _ := payload.Subscription.Condition["broadcaster_user_id"].(string)
+			if id == "" {
+				id, _ = payload.Subscription.Condition["to_broadcaster_user_id"].(string)
+			}
+			h.deauthorized(id, "revocation")
+		}
 	case "notification":
+		// The app's own subscription; it isn't a channel event.
+		if payload.Subscription.Type == "user.authorization.revoke" {
+			id, _ := payload.Event["user_id"].(string)
+			h.deauthorized(id, "notification")
+			break
+		}
 		notification, err := mapTwitchNotification(payload, messageID, timestamp, now)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
