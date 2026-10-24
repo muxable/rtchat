@@ -1,15 +1,28 @@
-FROM golang:1.27-alpine AS builder
+# syntax=docker/dockerfile:1
 
-WORKDIR /go/src/app
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS builder
 
-COPY go.mod ./
-COPY go.sum ./
+WORKDIR /src
 
-RUN go mod download
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
 COPY . .
 
-RUN go build -o /go/bin/app ./cmd
+ARG TARGETOS
+ARG TARGETARCH
+# a static binary, so it runs on distroless. time zones are embedded with
+# time/tzdata; TLS roots come from the base image.
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
+    go build -trimpath -ldflags="-s -w" -o /out/app ./cmd
+
+# ca-certificates, tzdata and a nonroot user, nothing else.
+FROM gcr.io/distroless/static-debian13:nonroot
+
+COPY --from=builder /out/app /go/bin/app
 
 EXPOSE 8080
 
