@@ -14,6 +14,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
 )
 
 // pagedEventSub filters subscriptions like Helix, by user_id or type, and
@@ -246,6 +248,44 @@ func TestTwitchQueueLatestIntentWins(t *testing.T) {
 		drain(t, queue, clock)
 		if got := fmt.Sprint(fake.ids()); got != "[foreign moderated other]" {
 			t.Fatal("kept", got)
+		}
+	})
+	t.Run("stale revocation while reconcile is parked", func(t *testing.T) {
+		fake := deauthorizedState()
+		server := httptest.NewServer(fake)
+		defer server.Close()
+		queue, clock := testQueue(server)
+		queue.reauthorized = func(context.Context, string) (bool, error) { return true, nil }
+		// subscribe still holds the lease when it enqueues, so the reconcile is
+		// parked busy when a revocation from an earlier deauthorization lands.
+		busy := true
+		queue.lock = func(ctx context.Context, _ string, work func(context.Context) error) error {
+			if busy {
+				busy = false
+				return subscriptionlock.ErrBusy
+			}
+			return work(ctx)
+		}
+		queue.Enqueue("123")
+		queue.step(context.Background())
+		queue.Deauthorized("123", true)
+		drain(t, queue, clock)
+		// The removal is skipped and the reconcile still runs, replacing only
+		// the revoked cheer.
+		if len(fake.deleted) != 1 || fake.deleted[0] != "cheer" || len(fake.posts) == 0 {
+			t.Fatal(fake.posts, fake.deleted)
+		}
+	})
+	t.Run("re-authorized without a reconcile", func(t *testing.T) {
+		fake := deauthorizedState()
+		server := httptest.NewServer(fake)
+		defer server.Close()
+		queue, clock := testQueue(server)
+		queue.reauthorized = func(context.Context, string) (bool, error) { return true, nil }
+		queue.EnqueueRemove("123")
+		drain(t, queue, clock)
+		if len(fake.deleted) != 0 || len(fake.posts) != 0 {
+			t.Fatal(fake.posts, fake.deleted)
 		}
 	})
 	t.Run("removal while cost limit is full", func(t *testing.T) {

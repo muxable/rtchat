@@ -194,9 +194,11 @@ func main() {
 		}
 		api := callable.NewServer(verifier)
 		registerChat(api, &chatRoutes{tokens: provider.NewService(client, nil), store: chatFirestore{DB: client}})
+		// One client for token refreshes and provider requests, so connections are reused.
+		subscriptionHTTP := &http.Client{Timeout: 10 * time.Second}
 		subscriptionService := &subscriptions.Service{
 			DB:             client,
-			API:            &subscriptions.API{Tokens: provider.NewService(client, &http.Client{Timeout: 10 * time.Second})},
+			API:            &subscriptions.API{Tokens: provider.NewService(client, subscriptionHTTP), Client: subscriptionHTTP},
 			TwitchSecret:   secrets.TwitchEventSubSecret,
 			MaticWebhookID: secrets.AlchemyMaticWebhookID,
 		}
