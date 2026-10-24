@@ -244,6 +244,7 @@ func TestTwitchDeauthorization(t *testing.T) {
 	for _, test := range []struct {
 		name, body, messageType string
 		want                    []string
+		appRevoked              bool
 	}{
 		{name: "user.authorization.revoke", messageType: "notification", want: []string{"1337"},
 			body: `{"subscription":{"type":"user.authorization.revoke","version":"1","status":"enabled","condition":{"client_id":"client"}},"event":{"client_id":"client","user_id":"1337","user_login":"broadcaster","user_name":"Broadcaster"}}`},
@@ -259,13 +260,24 @@ func TestTwitchDeauthorization(t *testing.T) {
 			body: `{"subscription":{"type":"channel.cheer","version":"1","status":"notification_failures_exceeded","condition":{"broadcaster_user_id":"1337"}}}`},
 		{name: "user_removed", messageType: "revocation",
 			body: `{"subscription":{"type":"channel.cheer","version":"1","status":"user_removed","condition":{"broadcaster_user_id":"1337"}}}`},
+		{name: "app subscription revoked", messageType: "revocation", appRevoked: true,
+			body: `{"subscription":{"type":"user.authorization.revoke","version":"1","status":"notification_failures_exceeded","condition":{"client_id":"client"}}}`},
 		{name: "path in condition", messageType: "revocation",
 			body: `{"subscription":{"type":"channel.cheer","version":"1","status":"authorization_revoked","condition":{"broadcaster_user_id":"1/2"}}}`},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			store := &fakeTwitchStore{}
 			var got []string
-			h := &TwitchHandler{Secret: "secret", Store: store, now: func() time.Time { return twitchTestNow }, OnDeauthorized: func(id string) { got = append(got, id) }}
+			appRevoked := false
+			h := &TwitchHandler{Secret: "secret", Store: store, now: func() time.Time { return twitchTestNow },
+				OnDeauthorized: func(id string, revocation bool) {
+					if revocation != (test.messageType == "revocation") {
+						t.Errorf("revocation %v for %s", revocation, test.messageType)
+					}
+					got = append(got, id)
+				},
+				OnAppRevoked: func() { appRevoked = true },
+			}
 			recorder := httptest.NewRecorder()
 			h.ServeHTTP(recorder, signedTwitchRequest(test.body, test.messageType, twitchTestNow.Format(time.RFC3339Nano)))
 			if recorder.Code != http.StatusOK {
@@ -273,6 +285,9 @@ func TestTwitchDeauthorization(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, test.want) {
 				t.Fatalf("deauthorized %v, want %v", got, test.want)
+			}
+			if appRevoked != test.appRevoked {
+				t.Fatalf("app revoked %v, want %v", appRevoked, test.appRevoked)
 			}
 			if len(store.writes) != 0 {
 				t.Fatalf("writes %#v", store.writes)

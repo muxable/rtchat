@@ -3,6 +3,7 @@ package subscriptions
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -282,8 +284,11 @@ func TestTwitchAppAuthorizationSubscription(t *testing.T) {
 		{name: "failed", created: true, deleted: "app", setup: func(f *pagedEventSub) {
 			f.add("app", twitchAppType, "notification_failures_exceeded", TwitchCallback, appCondition)
 		}},
-		{name: "other callback or client", created: true, setup: func(f *pagedEventSub) {
+		{name: "legacy callback", setup: func(f *pagedEventSub) {
 			f.add("legacy", twitchAppType, "enabled", LegacyTwitchCallback, appCondition)
+		}},
+		{name: "other callback or client", created: true, setup: func(f *pagedEventSub) {
+			f.add("foreign", twitchAppType, "enabled", "https://other.example/eventsub", appCondition)
 			f.add("client", twitchAppType, "enabled", TwitchCallback, map[string]string{"client_id": "other"})
 		}},
 	} {
@@ -386,4 +391,182 @@ func TestTwitchQueueRunEnsuresAppSubscription(t *testing.T) {
 		}
 	}
 	t.Fatal("worker did not create the app subscription")
+}
+
+func TestTwitchQueueSkipsRemovalAfterReauthorization(t *testing.T) {
+	fake := deauthorizedState()
+	server := httptest.NewServer(fake)
+	defer server.Close()
+	queue, clock := testQueue(server)
+	checks := 0
+	queue.reauthorized = func(_ context.Context, id string) (bool, error) {
+		checks++
+		if checks == 1 {
+			return false, errors.New("firestore unavailable")
+		}
+		return id == "123", nil
+	}
+	queue.EnqueueRemove("123")
+	drain(t, queue, clock)
+	// A failed check retries rather than deleting blind.
+	if checks != 2 || len(fake.deleted) != 0 || len(fake.gets) != 0 {
+		t.Fatal(checks, fake.deleted, fake.gets)
+	}
+}
+
+func TestTwitchReauthorized(t *testing.T) {
+	for _, test := range []struct {
+		name    string
+		id      interface{}
+		missing bool
+		users   int
+		want    bool
+	}{
+		{name: "no profile", id: "999"},
+		{name: "revoked grant", id: "123", users: 401},
+		{name: "no grant", id: "123", missing: true},
+		{name: "reauthorized", id: "123", want: true},
+		{name: "numeric profile id", id: int64(123), want: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			db := database(t)
+			ctx := context.Background()
+			if _, err := db.Collection("profiles").Doc("owner").Set(ctx, map[string]interface{}{"twitch": map[string]interface{}{"id": test.id}}); err != nil {
+				t.Fatal(err)
+			}
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path != "/users" || r.Header.Get("Authorization") != "Bearer user-token" {
+					t.Errorf("unexpected %s %s", r.URL.Path, r.Header.Get("Authorization"))
+				}
+				if test.users != 0 {
+					w.WriteHeader(test.users)
+					return
+				}
+				fmt.Fprint(w, `{"data":[{"id":"123","login":"owner"}]}`)
+			}))
+			defer server.Close()
+			service := &Service{DB: db, API: &API{Tokens: fakeTokens{Missing: test.missing}, Client: server.Client(), TwitchURL: server.URL}}
+			got, err := service.twitchReauthorized(ctx, "123")
+			if err != nil || got != test.want {
+				t.Fatal(got, err)
+			}
+		})
+	}
+}
+
+func TestTwitchQueueIgnoresRepeatedRevocations(t *testing.T) {
+	fake := deauthorizedState()
+	server := httptest.NewServer(fake)
+	defer server.Close()
+	queue, clock := testQueue(server)
+	queue.Deauthorized("123", true)
+	drain(t, queue, clock)
+	lists := len(fake.gets)
+	// The rest of the deauthorization's revocations arrive after the removal.
+	queue.Deauthorized("123", true)
+	queue.Deauthorized("123", true)
+	if depth(queue) != 0 {
+		t.Fatal("repeated revocation queued a removal")
+	}
+	// The notification always removes: the broadcaster may have
+	// re-authorized through another replica and deauthorized again.
+	queue.Deauthorized("123", false)
+	if depth(queue) != 1 {
+		t.Fatal("notification ignored")
+	}
+	drain(t, queue, clock)
+	clock.Advance(twitchRemovedTTL)
+	queue.Deauthorized("123", true)
+	if depth(queue) != 1 {
+		t.Fatal("revocation ignored after the TTL")
+	}
+	drain(t, queue, clock)
+	if len(fake.gets) != lists+2 {
+		t.Fatal(fake.gets)
+	}
+}
+
+func TestTwitchQueueRunRechecksAppSubscription(t *testing.T) {
+	fake := &pagedEventSub{}
+	server := httptest.NewServer(fake)
+	defer server.Close()
+	queue, _ := testQueue(server)
+	var offset atomic.Int64
+	start := time.Now()
+	queue.now = func() time.Time { return start.Add(time.Duration(offset.Load())) }
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() { queue.Run(ctx); close(done) }()
+	defer func() { cancel(); <-done }()
+	posts := func() int {
+		fake.mu.Lock()
+		defer fake.mu.Unlock()
+		return len(fake.posts)
+	}
+	waitFor := func(n int) {
+		for deadline := time.Now().Add(5 * time.Second); time.Now().Before(deadline); time.Sleep(10 * time.Millisecond) {
+			if posts() == n {
+				return
+			}
+		}
+		t.Fatal("posts", posts(), "want", n)
+	}
+	waitFor(1)
+	// Twitch revoked the app subscription without a delivered revocation.
+	fake.mu.Lock()
+	fake.state = nil
+	fake.mu.Unlock()
+	offset.Store(int64(twitchAppInterval))
+	queue.signal()
+	waitFor(2)
+}
+
+func TestTwitchQueueRemovalReleasesCostHold(t *testing.T) {
+	fake := deauthorizedState()
+	server := httptest.NewServer(fake)
+	defer server.Close()
+	queue, clock := testQueue(server)
+	queue.cappedUntil = clock.Now().Add(twitchCostCheckInterval)
+	queue.costCheck = clock.Now().Add(twitchCostCheckInterval)
+	queue.pending["456"] = &twitchItem{channel: "456", enqueued: clock.Now(), costHeld: true}
+	queue.EnqueueRemove("123")
+	queue.step(context.Background())
+	queue.mu.Lock()
+	capped, check := queue.cappedUntil, queue.costCheck
+	queue.mu.Unlock()
+	if !capped.IsZero() || check.After(clock.Now()) {
+		t.Fatal("removal kept the cost hold", capped, check)
+	}
+	queue.Enqueue("789")
+	if depth(queue) != 2 {
+		t.Fatal("reconcile dropped after removal freed cost")
+	}
+}
+
+func TestTwitchQueueReconcilesAgainAfterRemovalIntent(t *testing.T) {
+	fake := deauthorizedState()
+	server := httptest.NewServer(fake)
+	defer server.Close()
+	queue, clock := testQueue(server)
+	reconciles := 0
+	fake.reply = func(w http.ResponseWriter, r *http.Request) bool {
+		if r.Method == http.MethodGet && r.URL.Query().Get("after") == "" {
+			reconciles++
+			if reconciles == 1 {
+				// Deauthorized and re-authorized while the first reconcile ran.
+				queue.EnqueueRemove("123")
+				queue.Enqueue("123")
+			}
+		}
+		return false
+	}
+	queue.Enqueue("123")
+	queue.step(context.Background())
+	if depth(queue) != 1 {
+		t.Fatal("reconcile after re-authorization lost")
+	}
+	drain(t, queue, clock)
+	if reconciles != 2 || len(fake.deleted) != 1 {
+		t.Fatal(reconciles, fake.deleted)
+	}
 }

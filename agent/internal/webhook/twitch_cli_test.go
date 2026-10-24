@@ -108,7 +108,7 @@ type twitchCLIServer struct {
 
 func newTwitchCLIServer(t *testing.T) *twitchCLIServer {
 	s := &twitchCLIServer{store: &lockedTwitchStore{}}
-	h := &TwitchHandler{Secret: twitchCLISecret, Store: s.store, OnDeauthorized: func(id string) {
+	h := &TwitchHandler{Secret: twitchCLISecret, Store: s.store, OnDeauthorized: func(id string, _ bool) {
 		s.mu.Lock()
 		defer s.mu.Unlock()
 		s.deauthorized = append(s.deauthorized, id)

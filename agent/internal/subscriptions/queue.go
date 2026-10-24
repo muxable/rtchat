@@ -23,6 +23,12 @@ const (
 	twitchBusyDelay         = 5 * time.Second
 	twitchMaxAttempts       = 6
 	twitchIdle              = time.Hour
+	// twitchAppInterval is how often each replica rechecks the app
+	// subscription, in case Twitch revoked it without a delivered revocation.
+	twitchAppInterval = time.Hour
+	// twitchRemovedTTL is how long revocations for a broadcaster just removed
+	// are ignored. One deauthorization revokes every scoped subscription.
+	twitchRemovedTTL = 5 * time.Minute
 )
 
 var errTwitchBudget = errors.New("Twitch rate-limit reserve reached")
@@ -51,6 +57,9 @@ type twitchItem struct {
 	attempts int
 	costHeld bool
 	running  bool
+	// changed is set when the job changes while the item runs, even back to
+	// the running job, so the latest intent still runs after it.
+	changed bool
 }
 
 // TwitchQueue reconciles broadcasters' EventSub subscriptions, and removes
@@ -59,19 +68,24 @@ type twitchItem struct {
 // every channel open, so a lost reconcile is redone, but a removal lost to a
 // restart leaves that broadcaster's unscoped subscriptions behind.
 type TwitchQueue struct {
-	service  *Service
-	now      func() time.Time
-	lock     func(context.Context, string, func(context.Context) error) error
-	capacity int
-	wake     chan struct{}
+	service *Service
+	now     func() time.Time
+	lock    func(context.Context, string, func(context.Context) error) error
+	// reauthorized reports whether a broadcaster authorized the app again
+	// after a deauthorization, so their removal must be skipped.
+	reauthorized func(context.Context, string) (bool, error)
+	capacity     int
+	wake         chan struct{}
 
 	// remaining and reset are the app token's Helix bucket as last reported
 	// to the worker. Every replica and job using the client ID shares it.
 	remaining int
 	reset     time.Time
 
-	mu        sync.Mutex
-	pending   map[string]*twitchItem
+	mu      sync.Mutex
+	pending map[string]*twitchItem
+	// removed is when each broadcaster's removal last finished.
+	removed   map[string]time.Time
 	costCheck time.Time
 	// cappedUntil is when the last report that Twitch's EventSub cost limit
 	// is full stops applying. Twitch then rejects every new subscription, so
@@ -86,9 +100,11 @@ func NewTwitchQueue(s *Service) *TwitchQueue {
 		lock: func(ctx context.Context, key string, work func(context.Context) error) error {
 			return subscriptionlock.TryWith(ctx, s.DB, key, work)
 		},
-		capacity: twitchQueueCapacity,
-		pending:  map[string]*twitchItem{},
-		wake:     make(chan struct{}, 1),
+		reauthorized: s.twitchReauthorized,
+		capacity:     twitchQueueCapacity,
+		pending:      map[string]*twitchItem{},
+		removed:      map[string]time.Time{},
+		wake:         make(chan struct{}, 1),
 	}
 }
 
@@ -100,6 +116,27 @@ func (q *TwitchQueue) Enqueue(channel string) { q.enqueue(channel, twitchReconci
 // EnqueueRemove schedules the deletion of a broadcaster's subscriptions after
 // they deauthorize the app.
 func (q *TwitchQueue) EnqueueRemove(channel string) { q.enqueue(channel, twitchRemoveJob) }
+
+// Deauthorized schedules a removal for a deauthorization. Revocations for a
+// broadcaster removed within twitchRemovedTTL are repeats of the same
+// deauthorization and are ignored. The user.authorization.revoke notification
+// always removes, since the broadcaster may have re-authorized on another
+// replica and deauthorized again.
+func (q *TwitchQueue) Deauthorized(channel string, revocation bool) {
+	if q != nil && revocation {
+		q.mu.Lock()
+		at, ok := q.removed[channel]
+		q.mu.Unlock()
+		if ok && q.now().Sub(at) < twitchRemovedTTL {
+			return
+		}
+	}
+	q.EnqueueRemove(channel)
+}
+
+// EnsureApp schedules a check of the app's user.authorization.revoke
+// subscription, recreating it if it is missing or failed.
+func (q *TwitchQueue) EnsureApp() { q.enqueue(twitchAppKey, twitchAppJob) }
 
 // enqueue keeps one item per broadcaster, and the latest intent wins: enqueuing
 // the other job switches a waiting item to it with fresh retry state, and one
@@ -119,6 +156,7 @@ func (q *TwitchQueue) enqueue(channel string, job twitchJob) {
 			return
 		}
 		item.job = job
+		item.changed = item.running
 		if !item.running {
 			item.attempts, item.costHeld, item.ready = 0, false, now
 		}
@@ -146,11 +184,19 @@ func (q *TwitchQueue) signal() {
 }
 
 // Run drains the queue until ctx ends. Pending items are dropped on shutdown.
-// Every replica first checks the app subscription; the lease lets one create it.
+// Every replica checks the app subscription at start and every
+// twitchAppInterval; the lease lets one create it.
 func (q *TwitchQueue) Run(ctx context.Context) {
-	q.enqueue(twitchAppKey, twitchAppJob)
+	var appAt time.Time
 	for ctx.Err() == nil {
+		if now := q.now(); !now.Before(appAt) {
+			q.EnsureApp()
+			appAt = now.Add(twitchAppInterval)
+		}
 		delay := q.step(ctx)
+		if wait := appAt.Sub(q.now()); delay > wait {
+			delay = wait
+		}
 		if delay <= 0 {
 			continue
 		}
@@ -290,7 +336,7 @@ func (q *TwitchQueue) next(now time.Time) (*twitchItem, twitchJob, time.Duration
 	if found == nil {
 		return nil, 0, delay
 	}
-	found.running = true
+	found.running, found.changed = true, false
 	return found, found.job, delay
 }
 
@@ -332,6 +378,7 @@ func after(now, at time.Time, fallback time.Duration) time.Time {
 func (q *TwitchQueue) process(ctx context.Context, item *twitchItem, job twitchJob) {
 	var result twitchReconcile
 	deleted := 0
+	reauthorized := false
 	token, err := q.service.API.Tokens.AppAccessToken(ctx, "twitch")
 	if err == nil {
 		// Removals take the reconcile's lease so the two never interleave.
@@ -339,7 +386,10 @@ func (q *TwitchQueue) process(ctx context.Context, item *twitchItem, job twitchJ
 			var err error
 			switch job {
 			case twitchRemoveJob:
-				deleted, err = q.service.removeTwitch(ctx, item.channel, q.call(token))
+				// Checked under the lease, which subscribe also takes.
+				if reauthorized, err = q.reauthorized(ctx, item.channel); err == nil && !reauthorized {
+					deleted, err = q.service.removeTwitch(ctx, item.channel, q.call(token))
+				}
 			case twitchAppJob:
 				result, err = q.service.ensureTwitchApp(ctx, q.call(token))
 			default:
@@ -359,9 +409,12 @@ func (q *TwitchQueue) process(ctx context.Context, item *twitchItem, job twitchJ
 	q.mu.Lock()
 	item.running = false
 	switch {
-	case item.job != job:
-		// The other job was enqueued while this one ran; it runs next.
+	case item.changed:
+		// Another job was enqueued while this one ran; the latest runs next.
+		// A reconcile, removal, then reconcile again must reconcile again: the
+		// first may have run before the deauthorization revoked anything.
 		outcome = "superseded"
+		item.changed = false
 		item.attempts, item.costHeld, item.ready = 0, false, now
 	case errors.Is(err, subscriptionlock.ErrBusy):
 		// Another request or replica holds the broadcaster; not a failure.
@@ -376,6 +429,21 @@ func (q *TwitchQueue) process(ctx context.Context, item *twitchItem, job twitchJ
 		q.cappedUntil = now.Add(twitchCostCheckInterval)
 	case err == nil:
 		delete(q.pending, item.channel)
+		if job == twitchRemoveJob {
+			if deleted > 0 {
+				// Freed cost: stop dropping reconciles, and recheck held ones.
+				q.cappedUntil, q.costCheck = time.Time{}, now
+			}
+			if reauthorized {
+				outcome = "reauthorized"
+			}
+			for channel, at := range q.removed {
+				if now.Sub(at) >= twitchRemovedTTL {
+					delete(q.removed, channel)
+				}
+			}
+			q.removed[item.channel] = now
+		}
 	case errors.Is(err, errTwitchBudget):
 		outcome = "rate_limited"
 		item.ready = after(now, q.reset, time.Minute)

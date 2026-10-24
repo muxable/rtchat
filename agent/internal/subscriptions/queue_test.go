@@ -29,6 +29,7 @@ func testQueue(server *httptest.Server) (*TwitchQueue, *fakeClock) {
 	queue := NewTwitchQueue(service)
 	queue.now = clock.Now
 	queue.lock = func(ctx context.Context, _ string, work func(context.Context) error) error { return work(ctx) }
+	queue.reauthorized = func(context.Context, string) (bool, error) { return false, nil }
 	service.Queue = queue
 	return queue, clock
 }
