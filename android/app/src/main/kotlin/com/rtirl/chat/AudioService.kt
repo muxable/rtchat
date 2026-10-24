@@ -32,6 +32,7 @@ class AudioService : Service() {
     private const val PACKAGE_NAME = BuildConfig.APPLICATION_ID + ".AudioService"
     const val ACTION_START_SERVICE = "$PACKAGE_NAME.start_service"
     const val ACTION_RELOAD_SOURCES = "$PACKAGE_NAME.reload_sources"
+    const val EXTRA_URL = "url"
   }
 
   private val views = mutableMapOf<String, WebView>()
@@ -67,8 +68,9 @@ class AudioService : Service() {
       requestedUrls != null -> updateSources(requestedUrls)
 
       intent?.action == ACTION_RELOAD_SOURCES -> {
-        // Reload only when explicitly requested.
-        views.values.forEach { it.reload() }
+        // Reload only when explicitly requested, and only the requested source.
+        val url = intent.getStringExtra(EXTRA_URL)
+        if (url == null) views.values.forEach { it.reload() } else views[url]?.reload()
       }
 
       // A start without URLs must not reload active sources.
