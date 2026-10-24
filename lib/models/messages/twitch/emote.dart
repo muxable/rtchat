@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -16,27 +17,37 @@ var emoteRetryDelay = const Duration(seconds: 1);
 /// Reports emotes that couldn't be fetched, to Crashlytics by default.
 @visibleForTesting
 void Function(Object error, StackTrace stack) reportEmoteError =
-    FirebaseCrashlytics.instance.recordError;
+    _recordToCrashlytics;
+
+void _recordToCrashlytics(Object error, StackTrace stack) =>
+    FirebaseCrashlytics.instance.recordError(error, stack);
+
+/// The user [api] calls as, as the emotes usable depend on who's signed in.
+@visibleForTesting
+String Function(Api api) emoteCaller = _signedInUid;
+
+String _signedInUid(Api api) =>
+    FirebaseAuth.instanceFor(app: api.app).currentUser?.uid ?? 'anon';
 
 /// The emotes usable in [channel]. Twitch's include those of the user [api]
 /// calls as. If they can't be fetched, e.g. the backend is briefly
 /// unavailable, they come from an outdated cache, or there are none.
 ///
-/// Concurrent requests for the same channel, e.g. from the chat and the
-/// message input opening it together, share one fetch so they don't write
-/// the cache at the same time.
+/// Concurrent requests for the same channel as the same user, e.g. from the
+/// chat and the message input opening it together, share one fetch so they
+/// don't write the cache at the same time.
 Future<List<Emote>> getEmotes(Channel channel, Api api) {
-  final key = channel.toString();
-  return _inFlight[key] ??= _getEmotes(channel, api).whenComplete(() {
+  final key = '${emoteCaller(api)}/$channel';
+  return _inFlight[key] ??= _getEmotes(channel, api, key).whenComplete(() {
     _inFlight.remove(key);
   });
 }
 
 final _inFlight = <String, Future<List<Emote>>>{};
 
-Future<List<Emote>> _getEmotes(Channel channel, Api api) async {
+Future<List<Emote>> _getEmotes(Channel channel, Api api, String key) async {
   final temp = await getTemporaryDirectory();
-  final cacheFile = File('${temp.path}/emotes/${channel.toString()}.json');
+  final cacheFile = File('${temp.path}/emotes/$key.json');
   List<Emote>? cached;
   try {
     if (await cacheFile.exists()) {

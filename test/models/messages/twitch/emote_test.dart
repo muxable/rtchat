@@ -57,10 +57,14 @@ void main() {
   late File cacheFile;
   late _Functions functions;
   late List<Object> reported;
+  late Map<Api, String> callers;
+  final defaultRetryDelay = emoteRetryDelay;
+  final defaultReportError = reportEmoteError;
+  final defaultCaller = emoteCaller;
 
   setUp(() {
     temp = Directory.systemTemp.createTempSync('emotes-');
-    cacheFile = File('${temp.path}/emotes/twitch:123.json');
+    cacheFile = File('${temp.path}/emotes/user/twitch:123.json');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           const MethodChannel('plugins.flutter.io/path_provider'),
@@ -70,6 +74,8 @@ void main() {
     reported = [];
     emoteRetryDelay = Duration.zero;
     reportEmoteError = (error, stack) => reported.add(error);
+    callers = {};
+    emoteCaller = (api) => callers[api] ?? 'user';
   });
 
   tearDown(() {
@@ -79,6 +85,9 @@ void main() {
           null,
         );
     temp.deleteSync(recursive: true);
+    emoteRetryDelay = defaultRetryDelay;
+    reportEmoteError = defaultReportError;
+    emoteCaller = defaultCaller;
   });
 
   Future<List<Emote>> getEmotesForTest() => getEmotes(channel, Api(functions));
@@ -102,6 +111,30 @@ void main() {
     expect(results.map((emotes) => emotes.length), [1, 1]);
     expect(jsonDecode(cacheFile.readAsStringSync()), [_emote('Kappa')]);
     expect(functions.calls, 1);
+  });
+
+  test("doesn't share a fetch or cache between users", () async {
+    functions.emotes = [_emote('Kappa')];
+    final otherFunctions =
+        _Functions()..emotes = [_emote('Kappa'), _emote('Pog')];
+    final otherApi = Api(otherFunctions);
+    callers[otherApi] = 'other';
+
+    final results = await Future.wait([
+      getEmotesForTest(),
+      getEmotes(channel, otherApi),
+    ]);
+
+    expect(results.map((emotes) => emotes.length), [1, 2]);
+    expect(functions.calls, 1);
+    expect(otherFunctions.calls, 1);
+    expect(jsonDecode(cacheFile.readAsStringSync()), [_emote('Kappa')]);
+    expect(
+      jsonDecode(
+        File('${temp.path}/emotes/other/twitch:123.json').readAsStringSync(),
+      ),
+      [_emote('Kappa'), _emote('Pog')],
+    );
   });
 
   test('fetches the emotes again when the cache is cut short', () async {
