@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.annotation.NonNull
+import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -53,14 +54,24 @@ class MainActivity : FlutterActivity() {
         .setMethodCallHandler { call, result ->
           when (call.method) {
             "set" -> {
+              val urls = call.argument<List<String>>("urls") ?: listOf()
               val intent = Intent(this, AudioService::class.java)
-              intent.putStringArrayListExtra(
-                  "urls",
-                  ArrayList(call.argument<List<String>>("urls") ?: listOf()),
-              )
-              intent.action = AudioService.ACTION_START_SERVICE
-              startService(intent)
-              result.success(true)
+              if (urls.isEmpty()) {
+                // startService() throws while the app is in the background,
+                // and clearing the sources only needs the service gone.
+                stopService(intent)
+                result.success(true)
+              } else {
+                intent.putStringArrayListExtra("urls", ArrayList(urls))
+                intent.action = AudioService.ACTION_START_SERVICE
+                try {
+                  ContextCompat.startForegroundService(this, intent)
+                  result.success(true)
+                } catch (_: IllegalStateException) {
+                  // Android may still refuse to start it from the background.
+                  result.success(false)
+                }
+              }
             }
             "reload" -> {
               val intent = Intent(this, AudioService::class.java)
