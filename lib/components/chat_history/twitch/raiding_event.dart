@@ -23,16 +23,17 @@ class TwitchRaidingEventWidget extends StatelessWidget {
         builder: (context, snapshot) {
           final expiration = model.timestamp.add(model.duration);
           final remaining = expiration.difference(DateTime.now());
-          final flash =
-              remaining > Duration.zero &&
-              (snapshot.data == null || snapshot.data! % 2 == 0);
+          final countdownActive = remaining > Duration.zero;
+          final flash = snapshot.data == null || snapshot.data! % 2 == 0;
           return Stack(
             children: [
               Positioned.fill(
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 500),
                   color:
-                      flash
+                      !countdownActive
+                          ? Theme.of(context).highlightColor
+                          : flash
                           ? Theme.of(context).highlightColor
                           : Theme.of(context).colorScheme.secondary,
                 ),
