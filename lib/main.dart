@@ -63,9 +63,10 @@ import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 /// Whether [details] should be recorded as a crash. Images that fail to
-/// download or decode only leave a blank image behind, so they aren't.
+/// download or decode only leave a blank image behind, so they aren't, nor
+/// are errors Flutter marks as silent.
 bool isFatalFlutterError(FlutterErrorDetails details) =>
-    details.library != 'image resource service';
+    !details.silent && details.library != 'image resource service';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,13 +80,11 @@ void main() async {
   );
 
   if (!kDebugMode) {
-    FlutterError.onError = (details) {
-      if (isFatalFlutterError(details)) {
-        FirebaseCrashlytics.instance.recordFlutterFatalError(details);
-      } else {
-        FirebaseCrashlytics.instance.recordFlutterError(details);
-      }
-    };
+    FlutterError.onError =
+        (details) => FirebaseCrashlytics.instance.recordFlutterError(
+          details,
+          fatal: isFatalFlutterError(details),
+        );
     PlatformDispatcher.instance.onError = (error, stack) {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;

@@ -139,6 +139,9 @@ class _StreamPreviewState extends State<StreamPreview> {
                   "window.action(window.Actions.SetQuality, '360p')",
                 );
                 await Future.delayed(const Duration(seconds: 2));
+                if (!mounted || !_isTwitch) {
+                  return;
+                }
                 await _runJavaScript(
                   "window.action(window.Actions.SetQuality, '360p30')",
                 );
@@ -154,6 +157,7 @@ class _StreamPreviewState extends State<StreamPreview> {
     super.dispose();
 
     _promptTimer?.cancel();
+    _overlayTimer?.cancel();
 
     // on iOS, the webview is not disposed when the widget is disposed.
     // this causes audio to keep playing even when the widget is closed.
@@ -296,6 +300,9 @@ class _StreamPreviewState extends State<StreamPreview> {
                                             await Future.delayed(
                                               const Duration(seconds: 2),
                                             );
+                                            if (!mounted || !_isTwitch) {
+                                              return;
+                                            }
                                             await _runJavaScript(
                                               "window.action(window.Actions.SetQuality, '360p30')",
                                             );

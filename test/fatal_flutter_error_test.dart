@@ -29,6 +29,19 @@ void main() {
     expect(isFatalFlutterError(reported.single), isFalse);
   });
 
+  test('silent flutter errors are not fatal', () {
+    expect(
+      isFatalFlutterError(
+        FlutterErrorDetails(
+          exception: StateError('x'),
+          library: 'widgets library',
+          silent: true,
+        ),
+      ),
+      isFalse,
+    );
+  });
+
   test('other flutter errors are fatal', () {
     expect(
       isFatalFlutterError(

@@ -18,16 +18,6 @@ bool _sameChannelsAndMetadata(List<Channel> a, List<Channel> b) {
   return true;
 }
 
-List<Channel> _channelsFromJson(dynamic json) => [
-  for (final channel in (json as List?) ?? const [])
-    Channel(
-      channel['provider'],
-      channel['channelId'],
-      channel['displayName'] ?? '',
-      language: channel['language'],
-    ),
-];
-
 /// [channels] without any after the first on each provider.
 List<Channel> _onePerProvider(List<Channel> channels) {
   final providers = <String>{};
@@ -90,13 +80,10 @@ class ViewsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// The channels the app opens with: those of every signed-in account, in
-  /// the order the accounts are listed.
-  List<Channel> get defaultChannels => _userChannels;
-
-  /// The channels shown in chat.
-  List<Channel> get channels =>
-      _channels == null ? defaultChannels : List.unmodifiable(_channels!);
+  /// The channels shown in chat. Until they're changed, those the app opens
+  /// with: the channels of every signed-in account, in the order the accounts
+  /// are listed.
+  List<Channel> get channels => _channels ?? _userChannels;
 
   bool contains(Channel channel) => channels.contains(channel);
 
@@ -188,10 +175,15 @@ class ViewsModel extends ChangeNotifier {
   // defaults are now always the signed-in accounts' channels. they're dropped
   // from what's saved next.
   ViewsModel.fromJson(Map<String, dynamic> json) {
-    _sendTarget =
-        _channelsFromJson([
-          if (json['sendChannel'] != null) json['sendChannel'],
-        ]).firstOrNull;
+    final sendChannel = json['sendChannel'];
+    if (sendChannel != null) {
+      _sendTarget = Channel(
+        sendChannel['provider'],
+        sendChannel['channelId'],
+        sendChannel['displayName'] ?? '',
+        language: sendChannel['language'],
+      );
+    }
   }
 
   Map<String, dynamic> toJson() => {

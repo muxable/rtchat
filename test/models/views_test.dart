@@ -27,14 +27,12 @@ void main() {
   group("default channels", () {
     test("are the signed-in user's channel", () {
       final views = signedInAs(kick);
-      expect(views.defaultChannels, [kick]);
       expect(views.channels, [kick]);
       expect(views.primaryChannel, kick);
     });
 
     test("are all of the signed-in accounts' channels, in order", () {
       final views = ViewsModel()..update(signedInToAll([twitch, kick]));
-      expect(views.defaultChannels, [twitch, kick]);
       expect(views.channels, [twitch, kick]);
       expect(views.primaryChannel, twitch);
     });
@@ -55,7 +53,7 @@ void main() {
 
     test("are empty for signed-out users", () {
       final views = signedInAs(null);
-      expect(views.defaultChannels, isEmpty);
+      expect(views.channels, isEmpty);
       expect(views.primaryChannel, isNull);
     });
 
@@ -79,7 +77,6 @@ void main() {
       final restored = ViewsModel.fromJson({
         'defaultChannels': [other.toJson(), otherKick.toJson()],
       })..update(FakeUserModel(userChannel: twitch));
-      expect(restored.defaultChannels, [twitch]);
       expect(restored.channels, [twitch]);
       expect(restored.toJson().containsKey('defaultChannels'), isFalse);
       expect(
@@ -222,7 +219,7 @@ void main() {
     test("the signed-in accounts' channels keep one per provider", () {
       final views =
           ViewsModel()..update(signedInToAll([kick, twitch, otherKick, other]));
-      expect(views.defaultChannels, [kick, twitch]);
+      expect(views.channels, [kick, twitch]);
     });
   });
 
