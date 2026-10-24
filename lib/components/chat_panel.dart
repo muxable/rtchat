@@ -201,6 +201,26 @@ class _ScrollToBottomWidget extends StatelessWidget {
   }
 }
 
+/// Suffixes repeated [keys] so every list item has its own key. The chat list
+/// finds moved items by key, and two items with the same key corrupt its
+/// children when they move, which then fails every paint and hit test. A
+/// message can be repeated, e.g. an event delivered twice or a shared chat
+/// message merged from two channels. Repeats are numbered from the end (the
+/// oldest) so keys stay the same as newer messages arrive.
+@visibleForTesting
+List<String> uniqueKeys(List<String> keys) {
+  final seen = <String>{};
+  final unique = List.of(keys);
+  for (var index = keys.length - 1; index >= 0; index--) {
+    var key = keys[index];
+    for (var repeat = 1; !seen.add(key); repeat++) {
+      key = '${keys[index]}#$repeat';
+    }
+    unique[index] = key;
+  }
+  return unique;
+}
+
 class _DisplayedMessage {
   final MessageModel message;
   final String key;
@@ -425,6 +445,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                       ),
                     )
                     .toList();
+            final keys = uniqueKeys([
+              for (final entry in displayedMessages) entry.key,
+            ]);
             return Stack(
               alignment: Alignment.topCenter,
               children: [
@@ -453,7 +476,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                           final message = entry.message;
 
                           return StyleModelTheme(
-                            key: Key(entry.key),
+                            key: Key(keys[index]),
                             child: Builder(
                               builder: (context) {
                                 // Suppress redundant subscription events.
@@ -535,9 +558,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                           );
                         },
                         findChildIndexCallback: (key) {
-                          return displayedMessages.indexWhere(
-                            (entry) => key == Key(entry.key),
-                          );
+                          return keys.indexWhere((k) => key == Key(k));
                         },
                         isPinnedBuilder: (index) {
                           final expiration = expirations[index];
