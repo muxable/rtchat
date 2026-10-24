@@ -6,19 +6,17 @@ version: 0.1.0
 publish_to: "none"
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.7.0 <4.0.0"
   flutter: ">=3.10.0"
 
 dependencies:
-  # 9.6.4 came out last week.
-  background_downloader: ">=9.6.3 <9.6.4"
-  crypto: ^3.0.6
+  background_downloader: ^9.6.4
+  crypto: ^3.0.7
   flutter:
     sdk: flutter
-  flutter_tts: ^4.2.5
   just_audio: ^0.10.6
   path_provider: ^2.1.6
-  path: ^1.9.0
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:

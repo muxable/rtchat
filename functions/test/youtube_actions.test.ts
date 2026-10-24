@@ -52,7 +52,7 @@ function html(body: string, status = 200) {
 function apiError(status: number, reason: string) {
   return json(
     { error: { code: status, message: reason, errors: [{ reason }] } },
-    status
+    status,
   );
 }
 
@@ -98,21 +98,21 @@ describe("toHttpsError", () => {
     expect(
       toHttpsError(403, {
         error: { errors: [{ reason: "rateLimitExceeded" }] },
-      }).code
+      }).code,
     ).toBe("resource-exhausted");
   });
 
   it("maps ended chats, auth and permission errors", () => {
     const reason = (r: string) => ({ error: { errors: [{ reason: r }] } });
     expect(toHttpsError(403, reason("liveChatEnded")).code).toBe(
-      "failed-precondition"
+      "failed-precondition",
     );
     expect(toHttpsError(404, reason("liveChatNotFound")).code).toBe(
-      "failed-precondition"
+      "failed-precondition",
     );
     expect(toHttpsError(401, reason("authError")).code).toBe("unauthenticated");
     expect(toHttpsError(403, reason("forbidden")).code).toBe(
-      "permission-denied"
+      "permission-denied",
     );
     expect(toHttpsError(404, null).code).toBe("not-found");
     expect(toHttpsError(503, null).code).toBe("unavailable");
@@ -144,7 +144,7 @@ describe("getYouTubeProfile", () => {
       email: null,
     });
     expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe(
-      "Bearer token"
+      "Bearer token",
     );
   });
 
@@ -158,7 +158,7 @@ describe("findLiveVideoId", () => {
   it("reads the canonical watch link of the /live page", async () => {
     route({
       [`/channel/${OTHER}/live`]: html(
-        `<html><head><link rel="canonical" href="https://www.youtube.com/watch?v=${VIDEO}"></head></html>`
+        `<html><head><link rel="canonical" href="https://www.youtube.com/watch?v=${VIDEO}"></head></html>`,
       ),
     });
     await expect(findLiveVideoId(OTHER)).resolves.toBe(VIDEO);
@@ -167,7 +167,7 @@ describe("findLiveVideoId", () => {
   it("returns null when the channel isn't live", async () => {
     route({
       "/live": html(
-        `<link rel="canonical" href="https://www.youtube.com/channel/${OTHER}">`
+        `<link rel="canonical" href="https://www.youtube.com/channel/${OTHER}">`,
       ),
     });
     await expect(findLiveVideoId(OTHER)).resolves.toBeNull();
@@ -181,7 +181,7 @@ describe("sendYouTubeMessage", () => {
       "/liveChat/messages": json({ id: "msg-1" }),
     });
     await expect(sendYouTubeMessage("uid", OWN, "hello")).resolves.toBe(
-      "youtube:msg-1"
+      "youtube:msg-1",
     );
     expect(userToken).toHaveBeenCalledWith("uid", "youtube");
     expect(calls("/liveBroadcasts")[0][0]).toContain("broadcastStatus=active");
@@ -198,7 +198,7 @@ describe("sendYouTubeMessage", () => {
   it("finds another channel's chat through its live video", async () => {
     route({
       [`/channel/${OTHER}/live`]: html(
-        `<link rel="canonical" href="https://www.youtube.com/watch?v=${VIDEO}">`
+        `<link rel="canonical" href="https://www.youtube.com/watch?v=${VIDEO}">`,
       ),
       "/videos?": json({
         items: [
@@ -241,7 +241,7 @@ describe("sendYouTubeMessage", () => {
 
     ended = true;
     await expect(sendYouTubeMessage("uid", OWN, "three")).rejects.toMatchObject(
-      { code: "failed-precondition" }
+      { code: "failed-precondition" },
     );
     ended = false;
     await sendYouTubeMessage("uid", OWN, "four");
@@ -272,14 +272,14 @@ describe("sendYouTubeMessage", () => {
 
   it("validates input and requires a linked account", async () => {
     await expect(sendYouTubeMessage("uid", "nope", "hi")).rejects.toThrow(
-      /invalid channel/
+      /invalid channel/,
     );
     await expect(
-      sendYouTubeMessage("uid", OWN, "x".repeat(201))
+      sendYouTubeMessage("uid", OWN, "x".repeat(201)),
     ).rejects.toThrow(/at most 200/);
     userToken.mockResolvedValue(null);
     await expect(sendYouTubeMessage("uid", OWN, "hi")).rejects.toThrow(
-      /not linked/
+      /not linked/,
     );
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -290,7 +290,7 @@ describe("deleteYouTubeMessage", () => {
     route({ "/liveChat/messages": json(null, 204) });
     await deleteYouTubeMessage("uid", "youtube:LCC.abc");
     expect(calls("/liveChat/messages")[0][0]).toBe(
-      "https://www.googleapis.com/youtube/v3/liveChat/messages?id=LCC.abc"
+      "https://www.googleapis.com/youtube/v3/liveChat/messages?id=LCC.abc",
     );
     expect(calls("/liveChat/messages")[0][1].method).toBe("DELETE");
   });
@@ -298,7 +298,7 @@ describe("deleteYouTubeMessage", () => {
   it("maps quota errors", async () => {
     route({ "/liveChat/messages": apiError(403, "quotaExceeded") });
     await expect(
-      deleteYouTubeMessage("uid", "youtube:x")
+      deleteYouTubeMessage("uid", "youtube:x"),
     ).rejects.toMatchObject({ code: "resource-exhausted" });
   });
 });
@@ -332,7 +332,7 @@ describe("banYouTubeUser", () => {
 
   it("needs youtube channel ids", async () => {
     await expect(banYouTubeUser("uid", OWN, "someone")).rejects.toThrow(
-      /invalid user/
+      /invalid user/,
     );
   });
 });

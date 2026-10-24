@@ -34,22 +34,37 @@ void main() {
     });
 
     test('have Supertonic 3', () {
-      final supertonic =
-          bundledVoicePacks.singleWhere((pack) => pack.id == 'supertonic-3');
+      final supertonic = bundledVoicePacks.singleWhere(
+        (pack) => pack.id == 'supertonic-3',
+      );
       expect(supertonic.modelType, VoicePackModelType.supertonic);
       expect(supertonic.languages, hasLength(31));
       expect(supertonic.speaks('ru'), isTrue);
-      expect(supertonic.speakers.map((speaker) => speaker.name),
-          ['F1', 'F2', 'F3', 'F4', 'F5', 'M1', 'M2', 'M3', 'M4', 'M5']);
+      expect(supertonic.speakers.map((speaker) => speaker.name), [
+        'F1',
+        'F2',
+        'F3',
+        'F4',
+        'F5',
+        'M1',
+        'M2',
+        'M3',
+        'M4',
+        'M5',
+      ]);
       // Loose files from Hugging Face, pinned to a revision.
       for (final file in supertonic.files) {
         expect(file.url.host, 'huggingface.co');
-        expect(file.url.path,
-            contains('/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/'));
+        expect(
+          file.url.path,
+          contains('/resolve/3cadd1ee6394adea1bd021217a0e650ede09a323/'),
+        );
         expect(file.url.path, endsWith('/${file.path}'));
       }
-      expect((supertonic.config['voice_styles'] as List).length,
-          supertonic.speakers.length);
+      expect(
+        (supertonic.config['voice_styles'] as List).length,
+        supertonic.speakers.length,
+      );
     });
   });
 

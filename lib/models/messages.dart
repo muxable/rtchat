@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:core';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:rtchat/api.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/main.dart';
 import 'package:rtchat/models/adapters/messages.dart';
@@ -15,10 +17,14 @@ import 'package:rtchat/models/tts.dart';
 class MessagesModel extends ChangeNotifier {
   final List<StreamSubscription<void>> _subscriptions = [];
 
-  @visibleForTesting
-  late Stream<DeltaEvent> Function(Channel channel) forChannel =
-      (channel) => MessagesAdapter.instance.forChannel(channel);
+  /// The [Api] to call as the user on a provider, from `UserModel.apiOn`.
+  Api Function(String provider) apiOn =
+      (provider) => Api.forApp(Firebase.app());
 
+  @visibleForTesting
+late Stream<DeltaEvent> Function(Channel channel) forChannel =
+    (channel) => MessagesAdapter.instance.forChannel(channel);
+  
   List<ChannelEvent> _events = [];
   List<MessageModel> _messages = [];
   Set<int> _separators = {};
@@ -74,8 +80,9 @@ class MessagesModel extends ChangeNotifier {
 
   /// Whether [channel] is streaming, which gates message alerts.
   @visibleForTesting
-  Stream<bool> Function(Channel channel) isOnline = (channel) =>
-      ProfilesAdapter.instance.getIsOnline(channelId: channel.toString());
+  Stream<bool> Function(Channel channel) isOnline =
+      (channel) =>
+          ProfilesAdapter.instance.getIsOnline(channelId: channel.toString());
 
   @visibleForTesting
   void addEvent(Channel channel, DeltaEvent event) => _onEvent(channel, event);
@@ -183,38 +190,40 @@ class MessagesModel extends ChangeNotifier {
     final history = <ChannelEvent>[];
 
     for (final channel in _channels) {
-      final oldest = futureEvents
-          .where((entry) => entry.channel == channel)
-          .map((entry) => entry.event.timestamp)
-          .firstOrNull;
+  final oldest = futureEvents
+      .where((entry) => entry.channel == channel)
+      .map((entry) => entry.event.timestamp)
+      .firstOrNull;
 
-      if (oldest == null) {
-        continue;
-      }
+  if (oldest == null) {
+    continue;
+  }
 
-      final events = await MessagesAdapter.instance.forChannelHistory(
-        channel,
-        oldest,
-      );
+  final events = await MessagesAdapter.instance.forChannelHistory(
+    channel,
+    oldest,
+  );
 
-      history.addAll(events.map((event) => (channel: channel, event: event)));
-    }
+  history.addAll(
+    events.map((event) => (channel: channel, event: event)),
+  );
+}
 
-    if (history.isEmpty || _disposed) {
-      return;
-    }
+if (history.isEmpty || _disposed) {
+  return;
+}
 
     _events = [...history, ...futureEvents];
 
-    _messages = _channels.length > 1
-        ? replayEvents(_events)
-        : _events.fold(
-            <MessageModel>[],
-            (messages, entry) => applyDeltaEvent(messages, entry.event),
-          );
+_messages = _channels.length > 1
+    ? replayEvents(_events)
+    : _events.fold(
+        <MessageModel>[],
+        (messages, entry) => applyDeltaEvent(messages, entry.event),
+      );
 
-    _separators = computeSeparators(_messages);
-    notifyListeners();
+_separators = computeSeparators(_messages);
+notifyListeners();
   }
 
   void pruneMessages() {
@@ -225,7 +234,6 @@ class MessagesModel extends ChangeNotifier {
       _events.removeWhere(
         (entry) => entry.event.timestamp.isBefore(_messages.first.timestamp),
       );
-
       _separators = computeSeparators(_messages);
     }
   }
@@ -303,9 +311,9 @@ class MessagesModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-        "announcementPinDuration": _announcementPinDuration.inSeconds.toInt(),
-        "pingMinGapDuration": _pingMinGapDuration.inSeconds.toInt(),
-      };
+    "announcementPinDuration": _announcementPinDuration.inSeconds.toInt(),
+    "pingMinGapDuration": _pingMinGapDuration.inSeconds.toInt(),
+  };
 
   BuildContext? _getContext() {
     return navigatorKey.currentContext;
@@ -338,7 +346,7 @@ List<MessageModel> applyDeltaEvent(
   Channel? channel,
   void Function(MessageModel model)? onAppend,
   void Function(DeltaEvent event, MessageModel previous, MessageModel updated)?
-      onUpdate,
+  onUpdate,
 }) {
   if (event is AppendDeltaEvent) {
     _insert(messages, event.model);
@@ -385,10 +393,10 @@ List<MessageModel> applyDeltaEvent(
 void _insert(List<MessageModel> messages, MessageModel model) {
   if (messages.isNotEmpty &&
       model.timestamp.isBefore(messages.last.timestamp)) {
+    // this message is out of order, so we need to insert it in the right place
     final index = messages.indexWhere(
       (element) => element.timestamp.isAfter(model.timestamp),
     );
-
     messages.insert(index, model);
   } else {
     messages.add(model);

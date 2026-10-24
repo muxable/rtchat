@@ -9,7 +9,7 @@ import 'package:just_audio/just_audio.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const channel = MethodChannel('flutter_tts');
+  const channel = MethodChannel('on_device_tts/system');
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
 
@@ -37,8 +37,10 @@ void main() {
     SystemTtsEngine();
     await pumpEventQueue();
     expect(methods(), contains('setSharedInstance'));
-    expect(calls.firstWhere((c) => c.method == 'setSharedInstance').arguments,
-        isTrue);
+    expect(
+      calls.firstWhere((c) => c.method == 'setSharedInstance').arguments,
+      isTrue,
+    );
   });
 
   test('speaks with the rate and pitch, waiting for completion', () async {
@@ -111,19 +113,21 @@ void main() {
   group('language', () {
     setUp(() {
       // the platform has voices for these languages.
-      handler = (call) async => call.method != 'setLanguage' ||
-              {'en', 'es', 'ja', 'pt'}.contains(call.arguments)
-          ? 1
-          : 0;
+      handler =
+          (call) async =>
+              call.method != 'setLanguage' ||
+                      {'en', 'es', 'ja', 'pt'}.contains(call.arguments)
+                  ? 1
+                  : 0;
     });
 
     List<Object?> languageCalls() => [
-          for (final call in calls)
-            if (call.method == 'setLanguage')
-              call.arguments
-            else if (call.method == 'clearVoice')
-              'clearVoice',
-        ];
+      for (final call in calls)
+        if (call.method == 'setLanguage')
+          call.arguments
+        else if (call.method == 'clearVoice')
+          'clearVoice',
+    ];
 
     Future<SystemTtsEngine> engine({String? platformLanguage}) async {
       final engine = SystemTtsEngine(platformLanguage: () => platformLanguage);
@@ -138,31 +142,37 @@ void main() {
       await tts.speak('otra vez', language: 'es');
       await tts.speak('konnichiwa', language: 'ja');
       expect(languageCalls(), ['es', 'ja']);
-      expect(methods().indexOf('setLanguage'),
-          lessThan(methods().indexOf('speak')));
+      expect(
+        methods().indexOf('setLanguage'),
+        lessThan(methods().indexOf('speak')),
+      );
     });
 
-    test('falls back to the primary language, then the default voice',
-        () async {
-      final tts = await engine();
-      await tts.speak('oi', language: 'pt-BR');
-      expect(languageCalls(), ['pt-BR', 'pt']);
+    test(
+      'falls back to the primary language, then the default voice',
+      () async {
+        final tts = await engine();
+        await tts.speak('oi', language: 'pt-BR');
+        expect(languageCalls(), ['pt-BR', 'pt']);
 
-      calls.clear();
-      await tts.speak('ni hao', language: 'zh');
-      expect(languageCalls(), ['zh', 'clearVoice']);
-    });
+        calls.clear();
+        await tts.speak('ni hao', language: 'zh');
+        expect(languageCalls(), ['zh', 'clearVoice']);
+      },
+    );
 
-    test('goes back to the default voice and platform language without one',
-        () async {
-      final tts = await engine(platformLanguage: 'en-US');
-      await tts.speak('hello');
-      expect(languageCalls(), isEmpty, reason: 'already the default');
+    test(
+      'goes back to the default voice and platform language without one',
+      () async {
+        final tts = await engine(platformLanguage: 'en-US');
+        await tts.speak('hello');
+        expect(languageCalls(), isEmpty, reason: 'already the default');
 
-      await tts.speak('hola', language: 'es');
-      await tts.speak('hello');
-      expect(languageCalls(), ['es', 'clearVoice', 'en-US']);
-    });
+        await tts.speak('hola', language: 'es');
+        await tts.speak('hello');
+        expect(languageCalls(), ['es', 'clearVoice', 'en-US']);
+      },
+    );
 
     test('a voice wins over the language', () async {
       final tts = await engine();
@@ -196,7 +206,9 @@ void main() {
       directory = await Directory.systemTemp.createTemp('system-tts-test-');
       player = FakeAudioPlayer();
       engine = SystemTtsEngine(
-          audioPlayer: player, tempDirectory: () async => directory);
+        audioPlayer: player,
+        tempDirectory: () async => directory,
+      );
       handler = (call) async {
         if (call.method == 'synthesizeToFile') {
           await File(call.arguments['fileName'] as String).writeAsBytes([1, 2]);
@@ -211,49 +223,66 @@ void main() {
       await directory.delete(recursive: true);
     });
 
-    test('synthesizes full paths with the selected language, rate and pitch',
-        () async {
-      final speaking =
-          engine.speak('hola', language: 'es', rate: 0.8, pitch: 1.5);
-      await pumpEventQueue(times: 100);
-      expect(player.paths, hasLength(1));
-      final synthesis =
-          calls.singleWhere((c) => c.method == 'synthesizeToFile');
-      expect(synthesis.arguments, {
-        'text': 'hola',
-        'fileName': player.paths.single,
-        'isFullPath': true,
-      });
-      expect(File(player.paths.single).existsSync(), isTrue);
-      expect(
-          calls.singleWhere((c) => c.method == 'setLanguage').arguments, 'es');
-      expect(
-          calls.singleWhere((c) => c.method == 'setSpeechRate').arguments, 0.8);
-      expect(calls.singleWhere((c) => c.method == 'setPitch').arguments, 1.5);
-      expect(methods(), isNot(contains('speak')));
-      expect(methods().indexOf('awaitSynthCompletion'),
-          lessThan(methods().indexOf('synthesizeToFile')));
-      player.complete();
-      await speaking;
-      expect(player.stopCount, 1);
-      expect(directory.listSync(), isEmpty);
-    });
-
-    test('waits for completion even when play returns immediately, repeatedly',
-        () async {
-      for (var i = 0; i < 3; i++) {
-        var finished = false;
-        final speaking = engine.speak('hello $i').then((_) => finished = true);
+    test(
+      'synthesizes full paths with the selected language, rate and pitch',
+      () async {
+        final speaking = engine.speak(
+          'hola',
+          language: 'es',
+          rate: 0.8,
+          pitch: 1.5,
+        );
         await pumpEventQueue(times: 100);
-        expect(player.playCount, i + 1);
-        expect(finished, isFalse);
+        expect(player.paths, hasLength(1));
+        final synthesis = calls.singleWhere(
+          (c) => c.method == 'synthesizeToFile',
+        );
+        expect(synthesis.arguments, {
+          'text': 'hola',
+          'fileName': player.paths.single,
+          'isFullPath': true,
+        });
+        expect(File(player.paths.single).existsSync(), isTrue);
+        expect(
+          calls.singleWhere((c) => c.method == 'setLanguage').arguments,
+          'es',
+        );
+        expect(
+          calls.singleWhere((c) => c.method == 'setSpeechRate').arguments,
+          0.8,
+        );
+        expect(calls.singleWhere((c) => c.method == 'setPitch').arguments, 1.5);
+        expect(methods(), isNot(contains('speak')));
+        expect(
+          methods().indexOf('awaitSynthCompletion'),
+          lessThan(methods().indexOf('synthesizeToFile')),
+        );
         player.complete();
         await speaking;
-        expect(player.stopCount, i + 1);
+        expect(player.stopCount, 1);
         expect(directory.listSync(), isEmpty);
-      }
-      expect(player.paths.toSet(), hasLength(3));
-    });
+      },
+    );
+
+    test(
+      'waits for completion even when play returns immediately, repeatedly',
+      () async {
+        for (var i = 0; i < 3; i++) {
+          var finished = false;
+          final speaking = engine
+              .speak('hello $i')
+              .then((_) => finished = true);
+          await pumpEventQueue(times: 100);
+          expect(player.playCount, i + 1);
+          expect(finished, isFalse);
+          player.complete();
+          await speaking;
+          expect(player.stopCount, i + 1);
+          expect(directory.listSync(), isEmpty);
+        }
+        expect(player.paths.toSet(), hasLength(3));
+      },
+    );
 
     test('stop releases playback and the next utterance can speak', () async {
       final speaking = engine.speak('first');
@@ -271,9 +300,11 @@ void main() {
     test('stop releases stalled synthesis without playing it later', () async {
       final synthesis = Completer<Object?>();
       final normalHandler = handler;
-      handler = (call) => call.method == 'synthesizeToFile'
-          ? synthesis.future
-          : normalHandler(call);
+      handler =
+          (call) =>
+              call.method == 'synthesizeToFile'
+                  ? synthesis.future
+                  : normalHandler(call);
       final speaking = engine.speak('canceled');
       await pumpEventQueue(times: 100);
       expect(methods(), contains('synthesizeToFile'));
@@ -306,30 +337,39 @@ void main() {
       expect(directory.listSync(), isEmpty);
     });
 
-    test('synthesis timeout stops the platform and permits the next utterance',
-        () async {
-      final synthesis = Completer<Object?>();
-      final normalHandler = handler;
-      handler = (call) => call.method == 'synthesizeToFile'
-          ? synthesis.future
-          : normalHandler(call);
-      await expectLater(
-          engine.speak('stalled'), throwsA(isA<TimeoutException>()));
-      expect(methods(), contains('stop'));
-      expect(player.playCount, 0);
-      expect(directory.listSync(), isEmpty);
-      synthesis.complete(1);
-      handler = normalHandler;
-      final next = engine.speak('next');
-      await pumpEventQueue(times: 100);
-      player.complete();
-      await next;
-      expect(player.playCount, 1);
-    }, timeout: const Timeout(Duration(seconds: 45)));
+    test(
+      'synthesis timeout stops the platform and permits the next utterance',
+      () async {
+        final synthesis = Completer<Object?>();
+        final normalHandler = handler;
+        handler =
+            (call) =>
+                call.method == 'synthesizeToFile'
+                    ? synthesis.future
+                    : normalHandler(call);
+        await expectLater(
+          engine.speak('stalled'),
+          throwsA(isA<TimeoutException>()),
+        );
+        expect(methods(), contains('stop'));
+        expect(player.playCount, 0);
+        expect(directory.listSync(), isEmpty);
+        synthesis.complete(1);
+        handler = normalHandler;
+        final next = engine.speak('next');
+        await pumpEventQueue(times: 100);
+        player.complete();
+        await next;
+        expect(player.playCount, 1);
+      },
+      timeout: const Timeout(Duration(seconds: 45)),
+    );
 
     test('playback timeout releases the queue and cleans up', () async {
       await expectLater(
-          engine.speak('stalled'), throwsA(isA<TimeoutException>()));
+        engine.speak('stalled'),
+        throwsA(isA<TimeoutException>()),
+      );
       expect(player.stopCount, 1);
       expect(directory.listSync(), isEmpty);
       final next = engine.speak('next');
@@ -383,10 +423,13 @@ void main() {
 
     test('filters by language', () async {
       final engine = SystemTtsEngine();
-      expect((await engine.voices(language: 'en')).map((v) => v.name),
-          ['Samantha', 'Daniel']);
-      expect((await engine.voices(language: 'en-GB')).map((v) => v.name),
-          ['Daniel']);
+      expect((await engine.voices(language: 'en')).map((v) => v.name), [
+        'Samantha',
+        'Daniel',
+      ]);
+      expect((await engine.voices(language: 'en-GB')).map((v) => v.name), [
+        'Daniel',
+      ]);
       expect(await engine.voices(language: 'fr'), isEmpty);
     });
 
@@ -411,8 +454,12 @@ class FakeAudioPlayer implements AudioPlayer {
   Stream<ProcessingState> get processingStateStream => states.stream;
 
   @override
-  Future<Duration?> setFilePath(String filePath,
-      {Duration? initialPosition, bool preload = true, dynamic tag}) async {
+  Future<Duration?> setFilePath(
+    String filePath, {
+    Duration? initialPosition,
+    bool preload = true,
+    dynamic tag,
+  }) async {
     paths.add(filePath);
     if (loadError != null) throw loadError!;
     return const Duration(seconds: 1);

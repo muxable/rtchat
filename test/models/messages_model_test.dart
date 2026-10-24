@@ -10,19 +10,26 @@ import 'package:rtchat/models/messages/twitch/user.dart';
 
 final t0 = DateTime(2024, 1, 1, 12);
 
-TwitchMessageModel chat(String id, DateTime timestamp,
-        {String userId = 'u1', bool deleted = false}) =>
-    TwitchMessageModel(
-        messageId: id,
-        author: TwitchUserModel(userId: userId, login: 'login$userId'),
-        message: 'message $id',
-        tags: const {},
-        annotations: const TwitchMessageAnnotationsModel(
-            isAction: false, isFirstTimeChatter: false, announcement: null),
-        thirdPartyEmotes: const [],
-        timestamp: timestamp,
-        deleted: deleted,
-        channelId: 'twitch:1');
+TwitchMessageModel chat(
+  String id,
+  DateTime timestamp, {
+  String userId = 'u1',
+  bool deleted = false,
+}) => TwitchMessageModel(
+  messageId: id,
+  author: TwitchUserModel(userId: userId, login: 'login$userId'),
+  message: 'message $id',
+  tags: const {},
+  annotations: const TwitchMessageAnnotationsModel(
+    isAction: false,
+    isFirstTimeChatter: false,
+    announcement: null,
+  ),
+  thirdPartyEmotes: const [],
+  timestamp: timestamp,
+  deleted: deleted,
+  channelId: 'twitch:1',
+);
 
 StreamStateEventModel streamState(String id, DateTime timestamp) =>
     StreamStateEventModel(messageId: id, isOnline: true, timestamp: timestamp);
@@ -38,9 +45,11 @@ void main() {
       final appended = <MessageModel>[];
       var messages = <MessageModel>[];
       for (var i = 0; i < 3; i++) {
-        messages = applyDeltaEvent(messages,
-            AppendDeltaEvent(chat('m$i', t0.add(Duration(seconds: i)))),
-            onAppend: appended.add);
+        messages = applyDeltaEvent(
+          messages,
+          AppendDeltaEvent(chat('m$i', t0.add(Duration(seconds: i)))),
+          onAppend: appended.add,
+        );
       }
       expect(ids(messages), ['m0', 'm1', 'm2']);
       expect(ids(appended), ['m0', 'm1', 'm2']);
@@ -49,8 +58,11 @@ void main() {
     test('messages with equal timestamps are appended', () {
       final appended = <MessageModel>[];
       var messages = <MessageModel>[chat('a', t0)];
-      messages = applyDeltaEvent(messages, AppendDeltaEvent(chat('b', t0)),
-          onAppend: appended.add);
+      messages = applyDeltaEvent(
+        messages,
+        AppendDeltaEvent(chat('b', t0)),
+        onAppend: appended.add,
+      );
       expect(ids(messages), ['a', 'b']);
       expect(ids(appended), ['b']);
     });
@@ -62,15 +74,19 @@ void main() {
         chat('c', t0.add(const Duration(seconds: 2))),
         chat('d', t0.add(const Duration(seconds: 3))),
       ];
-      messages = applyDeltaEvent(messages,
-          AppendDeltaEvent(chat('b', t0.add(const Duration(seconds: 1)))),
-          onAppend: appended.add);
+      messages = applyDeltaEvent(
+        messages,
+        AppendDeltaEvent(chat('b', t0.add(const Duration(seconds: 1)))),
+        onAppend: appended.add,
+      );
       expect(ids(messages), ['a', 'b', 'c', 'd']);
       expect(ids(appended), ['b']);
 
-      messages = applyDeltaEvent(messages,
-          AppendDeltaEvent(chat('z', t0.subtract(const Duration(seconds: 1)))),
-          onAppend: appended.add);
+      messages = applyDeltaEvent(
+        messages,
+        AppendDeltaEvent(chat('z', t0.subtract(const Duration(seconds: 1)))),
+        onAppend: appended.add,
+      );
       expect(ids(messages), ['z', 'a', 'b', 'c', 'd']);
       expect(ids(appended), ['b', 'z']);
     });
@@ -83,11 +99,15 @@ void main() {
         chat('b', t0),
       ];
       final result = applyDeltaEvent(
-          messages,
-          UpdateDeltaEvent(
-              'b', t0, (m) => (m as TwitchMessageModel).withDeleted(true)),
-          onUpdate: (event, previous, updated) =>
-              updates.add((previous, updated)));
+        messages,
+        UpdateDeltaEvent(
+          'b',
+          t0,
+          (m) => (m as TwitchMessageModel).withDeleted(true),
+        ),
+        onUpdate:
+            (event, previous, updated) => updates.add((previous, updated)),
+      );
       expect(result, same(messages));
       expect((result[0] as TwitchMessageModel).deleted, isFalse);
       expect((result[1] as TwitchMessageModel).deleted, isTrue);
@@ -101,8 +121,10 @@ void main() {
       var called = false;
       final messages = <MessageModel>[chat('a', t0)];
       final result = applyDeltaEvent(
-          messages, UpdateDeltaEvent('missing', t0, (m) => m),
-          onUpdate: (_, __, ___) => called = true);
+        messages,
+        UpdateDeltaEvent('missing', t0, (m) => m),
+        onUpdate: (messageId, oldMessage, newMessage) => called = true,
+      );
       expect(ids(result), ['a']);
       expect(called, isFalse);
     });
@@ -115,14 +137,15 @@ void main() {
         chat('b', t0, userId: 'u2'),
       ];
       final result = applyDeltaEvent(
-          messages,
-          UpdateAllDeltaEvent(t0, (m) {
-            if (m is TwitchMessageModel && m.author.userId == 'u1') {
-              return m.withDeleted(true);
-            }
-            return m;
-          }),
-          onUpdate: (event, previous, next) => updated.add(next));
+        messages,
+        UpdateAllDeltaEvent(t0, (m) {
+          if (m is TwitchMessageModel && m.author.userId == 'u1') {
+            return m.withDeleted(true);
+          }
+          return m;
+        }),
+        onUpdate: (event, previous, next) => updated.add(next),
+      );
       expect((result[0] as TwitchMessageModel).deleted, isTrue);
       expect(result[1], isA<StreamStateEventModel>());
       expect((result[2] as TwitchMessageModel).deleted, isFalse);
@@ -133,7 +156,9 @@ void main() {
       final messages = <MessageModel>[chat('a', t0), chat('b', t0)];
       final clearedAt = t0.add(const Duration(minutes: 1));
       final result = applyDeltaEvent(
-          messages, ClearDeltaEvent(messageId: 'clear', timestamp: clearedAt));
+        messages,
+        ClearDeltaEvent(messageId: 'clear', timestamp: clearedAt),
+      );
       expect(result, isNot(same(messages)));
       expect(result.single, isA<ChatClearedEventModel>());
       expect(result.single.messageId, 'clear');
@@ -163,7 +188,7 @@ void main() {
 
     test('adds a separator every 50 chat messages', () {
       final models = [
-        for (var i = 0; i < 120; i++) chat('m$i', t0.add(Duration(seconds: i)))
+        for (var i = 0; i < 120; i++) chat('m$i', t0.add(Duration(seconds: i))),
       ];
       expect(appendAll(models), [0, 49, 98]);
     });
@@ -171,7 +196,7 @@ void main() {
     test('non-chat messages do not trigger the 50 message separator', () {
       final models = <MessageModel>[
         for (var i = 0; i < 60; i++)
-          streamState('s$i', t0.add(Duration(seconds: i)))
+          streamState('s$i', t0.add(Duration(seconds: i))),
       ];
       expect(appendAll(models), [0]);
     });
@@ -294,9 +319,10 @@ void main() {
 
       setUp(() {
         pings = 0;
-        model = MessagesModel.fromJson({'pingMinGapDuration': 60})
-          ..isOnline = ((_) => Stream.value(true))
-          ..onMessagePing = (() => pings++);
+        model =
+            MessagesModel.fromJson({'pingMinGapDuration': 60})
+              ..isOnline = ((_) => Stream.value(true))
+              ..onMessagePing = (() => pings++);
         model.addEvent(a, LiveStateDeltaEvent(t0));
         model.addEvent(b, LiveStateDeltaEvent(t0));
       });
@@ -304,24 +330,24 @@ void main() {
       test('ping on the appended message, not the previous ones', () async {
         model.addEvent(a, AppendDeltaEvent(from(a, 'a1', t0)));
         model.addEvent(
-            a,
-            AppendDeltaEvent(
-                from(a, 'a2', t0.add(const Duration(seconds: 10)))));
+          a,
+          AppendDeltaEvent(from(a, 'a2', t0.add(const Duration(seconds: 10)))),
+        );
         await pumpEventQueue();
         expect(pings, 0);
 
         model.addEvent(
-            a,
-            AppendDeltaEvent(
-                from(a, 'a3', t0.add(const Duration(seconds: 200)))));
+          a,
+          AppendDeltaEvent(from(a, 'a3', t0.add(const Duration(seconds: 200)))),
+        );
         await pumpEventQueue();
         expect(pings, 1);
 
         // the gap is small, so no ping even though the previous one had one.
         model.addEvent(
-            a,
-            AppendDeltaEvent(
-                from(a, 'a4', t0.add(const Duration(seconds: 205)))));
+          a,
+          AppendDeltaEvent(from(a, 'a4', t0.add(const Duration(seconds: 205)))),
+        );
         await pumpEventQueue();
         expect(pings, 1);
       });

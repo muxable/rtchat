@@ -95,11 +95,12 @@ func (s *chatRoutes) youtube(ctx context.Context, uid, token, action string, r c
 	if err != nil {
 		return nil, err
 	}
-	if action == "send" {
+	switch action {
+	case "send":
 		err = client.SendMessage(ctx, chat, r.Message)
-	} else if action == "timeout" {
+	case "timeout":
 		err = client.Ban(ctx, chat, r.UserID, r.Length)
-	} else {
+	default:
 		err = client.Ban(ctx, chat, r.UserID, 0)
 	}
 	var apiErr *youtube.APIError

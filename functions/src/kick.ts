@@ -46,7 +46,7 @@ export function toKickProfile(user: any, channel: any): KickProfile {
 export async function kickApi(
   accessToken: string,
   path: string,
-  init: RequestInit = {}
+  init: RequestInit = {},
 ) {
   const response = await fetch(`${KICK_API}${path}`, {
     ...init,
@@ -61,7 +61,7 @@ export async function kickApi(
     throw new Error(
       `kick api ${init.method ?? "GET"} ${path}: ${
         response.status
-      } ${await response.text()}`
+      } ${await response.text()}`,
     );
   }
   return response.status === 204 ? null : await response.json();
@@ -107,7 +107,7 @@ export async function searchKickChannel(appToken: string, query: string) {
   const slug = query.trim().toLowerCase();
   const channels = await kickApi(
     appToken,
-    `/channels?slug=${encodeURIComponent(slug)}`
+    `/channels?slug=${encodeURIComponent(slug)}`,
   );
   const channel = channels?.data?.[0];
   if (!channel) {
@@ -115,7 +115,7 @@ export async function searchKickChannel(appToken: string, query: string) {
   }
   const users = await kickApi(
     appToken,
-    `/users?id=${channel.broadcaster_user_id}`
+    `/users?id=${channel.broadcaster_user_id}`,
   ).catch(() => null);
   return [toSearchResult(channel, users?.data?.[0])];
 }
@@ -123,7 +123,7 @@ export async function searchKickChannel(appToken: string, query: string) {
 export async function getKickSlug(appToken: string, broadcasterId: string) {
   const channels = await kickApi(
     appToken,
-    `/channels?broadcaster_user_id=${encodeURIComponent(broadcasterId)}`
+    `/channels?broadcaster_user_id=${encodeURIComponent(broadcasterId)}`,
   );
   return (channels?.data?.[0]?.slug as string | undefined) ?? null;
 }

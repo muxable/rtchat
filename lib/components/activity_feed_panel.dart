@@ -3,7 +3,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/models/activity_feed.dart';
-import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -30,13 +29,15 @@ class _ActivityFeedPanelWidgetState extends State<ActivityFeedPanelWidget> {
 
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       _controller = WebViewController.fromPlatformCreationParams(
-          WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const {},
-      ));
+        WebKitWebViewControllerCreationParams(
+          allowsInlineMediaPlayback: true,
+          mediaTypesRequiringUserAction: const {},
+        ),
+      );
     } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
       _controller = WebViewController.fromPlatformCreationParams(
-          AndroidWebViewControllerCreationParams());
+        AndroidWebViewControllerCreationParams(),
+      );
     } else {
       throw UnsupportedError("Unsupported platform");
     }
@@ -63,25 +64,19 @@ class _ActivityFeedPanelWidgetState extends State<ActivityFeedPanelWidget> {
   }
 
   Uri? getUri() {
-    final activityFeedModel =
-        Provider.of<ActivityFeedModel>(context, listen: false);
+    final activityFeedModel = Provider.of<ActivityFeedModel>(
+      context,
+      listen: false,
+    );
     final userModel = Provider.of<UserModel>(context, listen: false);
-    final channel = userModel.userChannel;
     if (activityFeedModel.isCustom) {
       final tryUri = Uri.tryParse(activityFeedModel.customUrl);
       if (tryUri != null && !tryUri.hasScheme) {
         return Uri.tryParse("https://${activityFeedModel.customUrl}");
       }
       return tryUri;
-    } else if (channel == null) {
-      return null;
     }
-    switch (channel.provider) {
-      case Providers.twitch:
-        return Uri.tryParse(
-            "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
-    }
-    return null;
+    return userModel.activityFeedUri;
   }
 
   @override

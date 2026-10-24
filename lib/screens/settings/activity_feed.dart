@@ -7,7 +7,6 @@ import 'package:rtchat/components/scanner_error.dart';
 import 'package:rtchat/components/scanner_settings.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/activity_feed.dart';
-import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/user.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -43,13 +42,15 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
 
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       _controller = WebViewController.fromPlatformCreationParams(
-          WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const {},
-      ));
+        WebKitWebViewControllerCreationParams(
+          allowsInlineMediaPlayback: true,
+          mediaTypesRequiringUserAction: const {},
+        ),
+      );
     } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
       _controller = WebViewController.fromPlatformCreationParams(
-          AndroidWebViewControllerCreationParams());
+        AndroidWebViewControllerCreationParams(),
+      );
     } else {
       throw UnsupportedError("Unsupported platform");
     }
@@ -69,78 +70,82 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _showControls
-          ? AppBar(
-              title: Text(AppLocalizations.of(context)!.activityFeed),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.cookie_outlined),
-                  tooltip: AppLocalizations.of(context)!.clearCookies,
-                  onPressed: () async {
-                    final cookieManager = WebViewCookieManager();
-                    if (await cookieManager.clearCookies()) {
-                      _controller.reload();
-                    }
-                  },
-                ),
-              ],
-            )
-          : null,
+      appBar:
+          _showControls
+              ? AppBar(
+                title: Text(AppLocalizations.of(context)!.activityFeed),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.cookie_outlined),
+                    tooltip: AppLocalizations.of(context)!.clearCookies,
+                    onPressed: () async {
+                      final cookieManager = WebViewCookieManager();
+                      if (await cookieManager.clearCookies()) {
+                        _controller.reload();
+                      }
+                    },
+                  ),
+                ],
+              )
+              : null,
       body: SafeArea(
-        child: Consumer3<ActivityFeedModel, UserModel, LayoutModel>(builder:
-            (context, activityFeedModel, userModel, layoutModel, child) {
-          Uri? uri;
+        child: Consumer3<ActivityFeedModel, UserModel, LayoutModel>(
+          builder: (context, activityFeedModel, userModel, layoutModel, child) {
+            Uri? uri;
 
-          final channel = userModel.userChannel;
-          if (activityFeedModel.isCustom) {
-            final tryUri = Uri.tryParse(activityFeedModel.customUrl);
-            if (tryUri != null) {
-              uri = tryUri.scheme.isEmpty
-                  ? Uri.tryParse("https://$tryUri")
-                  : tryUri;
+            if (activityFeedModel.isCustom) {
+              final tryUri = Uri.tryParse(activityFeedModel.customUrl);
+              if (tryUri != null) {
+                uri =
+                    tryUri.scheme.isEmpty
+                        ? Uri.tryParse("https://$tryUri")
+                        : tryUri;
+              }
+            } else {
+              uri = userModel.activityFeedUri;
             }
-          } else if (channel != null) {
-            switch (channel.provider) {
-              case Providers.twitch:
-                uri = Uri.tryParse(
-                    "https://dashboard.twitch.tv/popout/u/${channel.displayName}/stream-manager/activity-feed");
+
+            if (uri != null) {
+              _controller.loadRequest(uri);
+            } else {
+              _controller.loadHtmlString(" ");
             }
-          }
 
-          if (uri != null) {
-            _controller.loadRequest(uri);
-          } else {
-            _controller.loadHtmlString(" ");
-          }
+            final mode =
+                !activityFeedModel.isEnabled
+                    ? _FeedMode.disabled
+                    : activityFeedModel.isCustom
+                    ? _FeedMode.custom
+                    : _FeedMode.twitch;
 
-          final mode = !activityFeedModel.isEnabled
-              ? _FeedMode.disabled
-              : activityFeedModel.isCustom
-                  ? _FeedMode.custom
-                  : _FeedMode.twitch;
-
-          final content = Column(children: [
-            if (_showControls)
-              RadioListTile(
-                title: Text(AppLocalizations.of(context)!.disabled),
-                value: _FeedMode.disabled,
-              ),
-            if (_showControls)
-              RadioListTile(
-                title: Text(AppLocalizations.of(context)!.twitchActivityFeed),
-                subtitle: userModel.isSignedIn()
-                    ? null
-                    : Text(AppLocalizations.of(context)!.signInToEnable),
-                value: _FeedMode.twitch,
-                enabled: userModel.isSignedIn(),
-              ),
-            if (_showControls)
-              RadioListTile(
-                title: Form(
-                  key: _formKey,
-                  child: TextFormField(
-                      controller: _textEditingController,
-                      decoration: InputDecoration(
+            final content = Column(
+              children: [
+                if (_showControls)
+                  RadioListTile(
+                    title: Text(AppLocalizations.of(context)!.disabled),
+                    value: _FeedMode.disabled,
+                  ),
+                if (_showControls)
+                  RadioListTile(
+                    title: Text(
+                      AppLocalizations.of(context)!.twitchActivityFeed,
+                    ),
+                    subtitle:
+                        userModel.isSignedIn()
+                            ? null
+                            : Text(
+                              AppLocalizations.of(context)!.signInToEnable,
+                            ),
+                    value: _FeedMode.twitch,
+                    enabled: userModel.isSignedIn(),
+                  ),
+                if (_showControls)
+                  RadioListTile(
+                    title: Form(
+                      key: _formKey,
+                      child: TextFormField(
+                        controller: _textEditingController,
+                        decoration: InputDecoration(
                           hintText: AppLocalizations.of(context)!.customUrl,
                           suffixIcon: IconButton(
                             icon: const Icon(Icons.qr_code_scanner),
@@ -156,7 +161,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                                       MobileScanner(
                                         errorBuilder: (context, error) {
                                           return ScannerErrorWidget(
-                                              error: error);
+                                            error: error,
+                                          );
                                         },
                                         controller: _scanController,
                                         onDetect: (capture) {
@@ -164,22 +170,30 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                                               capture.barcodes;
 
                                           if (barcodes.isEmpty) {
-                                            messenger.showSnackBar(SnackBar(
+                                            messenger.showSnackBar(
+                                              SnackBar(
                                                 content: Text(
-                                                    AppLocalizations.of(
-                                                            context)!
-                                                        .invalidUrlErrorText)));
+                                                  AppLocalizations.of(
+                                                    context,
+                                                  )!.invalidUrlErrorText,
+                                                ),
+                                              ),
+                                            );
                                           }
 
                                           final barcode = barcodes.first;
 
                                           if (barcode.rawValue == null ||
                                               barcode.rawValue!.isEmpty) {
-                                            messenger.showSnackBar(SnackBar(
+                                            messenger.showSnackBar(
+                                              SnackBar(
                                                 content: Text(
-                                                    AppLocalizations.of(
-                                                            context)!
-                                                        .invalidUrlErrorText)));
+                                                  AppLocalizations.of(
+                                                    context,
+                                                  )!.invalidUrlErrorText,
+                                                ),
+                                              ),
+                                            );
 
                                             Navigator.pop(ctx);
                                           }
@@ -195,7 +209,8 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                                         left: 0,
                                         right: 0,
                                         child: ScannerSettings(
-                                            scanController: _scanController),
+                                          scanController: _scanController,
+                                        ),
                                       ),
                                     ],
                                   );
@@ -213,78 +228,89 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> {
                           errorText:
                               Uri.tryParse(activityFeedModel.customUrl) == null
                                   ? "That's not a valid URL"
-                                  : null),
-                      validator: (value) {
-                        if (value != null && Uri.tryParse(value) == null) {
-                          return AppLocalizations.of(context)!
-                              .invalidUrlErrorText;
-                        }
-                        return null;
-                      },
-                      onChanged: (value) {
-                        activityFeedModel.isEnabled =
-                            Uri.tryParse(value) != null;
-                        activityFeedModel.customUrl = value;
-                        activityFeedModel.isCustom = true;
-                        _formKey.currentState?.validate();
-                      }),
-                ),
-                value: _FeedMode.custom,
-              ),
-            GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _showControls = !_showControls;
-                  });
-                },
-                child: Padding(
+                                  : null,
+                        ),
+                        validator: (value) {
+                          if (value != null && Uri.tryParse(value) == null) {
+                            return AppLocalizations.of(
+                              context,
+                            )!.invalidUrlErrorText;
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          activityFeedModel.isEnabled =
+                              Uri.tryParse(value) != null;
+                          activityFeedModel.customUrl = value;
+                          activityFeedModel.isCustom = true;
+                          _formKey.currentState?.validate();
+                        },
+                      ),
+                    ),
+                    value: _FeedMode.custom,
+                  ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _showControls = !_showControls;
+                    });
+                  },
+                  child: Padding(
                     padding: const EdgeInsets.only(top: 16),
                     child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(_showControls
-                              ? Icons.unfold_more
-                              : Icons.unfold_less),
-                          Text(AppLocalizations.of(context)!.preview),
-                        ]))),
-            activityFeedModel.isEnabled
-                ? Expanded(
-                    child: Padding(
-                        padding: _showControls
-                            ? const EdgeInsets.all(16)
-                            : const EdgeInsets.only(top: 16),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          _showControls ? Icons.unfold_more : Icons.unfold_less,
+                        ),
+                        Text(AppLocalizations.of(context)!.preview),
+                      ],
+                    ),
+                  ),
+                ),
+                activityFeedModel.isEnabled
+                    ? Expanded(
+                      child: Padding(
+                        padding:
+                            _showControls
+                                ? const EdgeInsets.all(16)
+                                : const EdgeInsets.only(top: 16),
                         child: WebViewWidget(
                           controller: _controller,
                           gestureRecognizers: {
                             Factory<OneSequenceGestureRecognizer>(
-                                () => EagerGestureRecognizer()),
+                              () => EagerGestureRecognizer(),
+                            ),
                           },
-                        )),
-                  )
-                : Container(),
-          ]);
+                        ),
+                      ),
+                    )
+                    : Container(),
+              ],
+            );
 
-          return RadioGroup<_FeedMode>(
-            groupValue: mode,
-            onChanged: (value) {
-              switch (value) {
-                case _FeedMode.disabled:
-                  activityFeedModel.isEnabled = false;
-                  layoutModel.isShowNotifications = false;
-                case _FeedMode.twitch:
-                  activityFeedModel.isEnabled = true;
-                  activityFeedModel.isCustom = false;
-                case _FeedMode.custom:
-                  final uri = Uri.tryParse(activityFeedModel.customUrl);
-                  activityFeedModel.isEnabled = uri != null;
-                  activityFeedModel.isCustom = true;
-                case null:
-                  break;
-              }
-            },
-            child: content,
-          );
-        }),
+            return RadioGroup<_FeedMode>(
+              groupValue: mode,
+              onChanged: (value) {
+                switch (value) {
+                  case _FeedMode.disabled:
+                    activityFeedModel.isEnabled = false;
+                    layoutModel.isShowNotifications = false;
+                  case _FeedMode.twitch:
+                    activityFeedModel.isEnabled = true;
+                    activityFeedModel.isCustom = false;
+                  case _FeedMode.custom:
+                    final uri = Uri.tryParse(activityFeedModel.customUrl);
+                    activityFeedModel.isEnabled = uri != null;
+                    activityFeedModel.isCustom = true;
+                  case null:
+                    break;
+                }
+              },
+              child: content,
+            );
+          },
+        ),
       ),
     );
   }

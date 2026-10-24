@@ -18,8 +18,11 @@ class TwitchShoutoutCreateEventWidget extends StatelessWidget {
             'Shoutout was given to <b>${model.toBroadcasterUserName}</b> with ${model.viewerCount} viewers',
         tags: const {
           'b': StyledTextTag(
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.purpleAccent)),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.purpleAccent,
+            ),
+          ),
         },
       ),
     );
@@ -40,8 +43,11 @@ class TwitchShoutoutReceiveEventWidget extends StatelessWidget {
             '<b>${model.fromBroadcasterUserName}</b> gave you a shoutout to ${model.viewerCount} viewers',
         tags: const {
           'b': StyledTextTag(
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.purpleAccent)),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.purpleAccent,
+            ),
+          ),
         },
       ),
     );

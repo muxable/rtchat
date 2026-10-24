@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -76,8 +77,9 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String streamOnline(DateTime date, DateTime time) {
-    final intl.DateFormat dateDateFormat =
-        intl.DateFormat.yMMMMEEEEd(localeName);
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMMEEEEd(
+      localeName,
+    );
     final String dateString = dateDateFormat.format(date);
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
@@ -87,8 +89,9 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String streamOffline(DateTime date, DateTime time) {
-    final intl.DateFormat dateDateFormat =
-        intl.DateFormat.yMMMMEEEEd(localeName);
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMMEEEEd(
+      localeName,
+    );
     final String dateString = dateDateFormat.format(date);
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
@@ -98,8 +101,9 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String chatCleared(DateTime date, DateTime time) {
-    final intl.DateFormat dateDateFormat =
-        intl.DateFormat.yMMMMEEEEd(localeName);
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMMEEEEd(
+      localeName,
+    );
     final String dateString = dateDateFormat.format(date);
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
@@ -278,9 +282,12 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String followingEvent3(
-      String displayName, String displayNameTwo, int numOthers) {
-    final intl.NumberFormat numOthersNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    String displayName,
+    String displayNameTwo,
+    int numOthers,
+  ) {
+    final intl.NumberFormat numOthersNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
     return '<b>$displayName</b>, <b>$displayNameTwo</b>, এবং $numOthersString জন আপনাকে অনুসরণ করছে';
@@ -527,10 +534,11 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
-    final intl.NumberFormat viewerCountNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String viewerCountString =
-        viewerCountNumberFormat.format(viewerCount);
+    final intl.NumberFormat viewerCountNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
+    final String viewerCountString = viewerCountNumberFormat.format(
+      viewerCount,
+    );
 
     return '<b>$displayName</b> $viewerCountString দর্শক নিয়ে রেইড করছে!';
   }
@@ -545,8 +553,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String raidingEventTimeRemaining(int seconds) {
-    final intl.NumberFormat secondsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat secondsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
     return '$secondsString সেকেন্ড বাকি';
@@ -572,40 +580,55 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String subscriptionGiftEvent(
-      String gifterUserName, int total, String tier, int cumulativeTotal) {
-    final intl.NumberFormat totalNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    String gifterUserName,
+    int total,
+    String tier,
+    int cumulativeTotal,
+  ) {
+    final intl.NumberFormat totalNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
-    final intl.NumberFormat cumulativeTotalNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String cumulativeTotalString =
-        cumulativeTotalNumberFormat.format(cumulativeTotal);
+    final intl.NumberFormat cumulativeTotalNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
+    final String cumulativeTotalString = cumulativeTotalNumberFormat.format(
+      cumulativeTotal,
+    );
 
     return '<b>$gifterUserName</b> $totalString টি টিয়ার $tier সাব উপহার দিয়েছে, মোট $cumulativeTotalString!';
   }
 
   @override
   String subscriptionMessageEvent(
-      String subscriberUserName, int cumulativeMonths, String tier) {
-    final intl.NumberFormat cumulativeMonthsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String cumulativeMonthsString =
-        cumulativeMonthsNumberFormat.format(cumulativeMonths);
+    String subscriberUserName,
+    int cumulativeMonths,
+    String tier,
+  ) {
+    final intl.NumberFormat cumulativeMonthsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
+    final String cumulativeMonthsString = cumulativeMonthsNumberFormat.format(
+      cumulativeMonths,
+    );
 
     return '<b>$subscriberUserName</b> টিয়ার $tier এ $cumulativeMonthsString মাসের জন্য সাবস্ক্রাইব করেছে!';
   }
 
   @override
-  String subscriptionMessageMultiMonthEvent(String subscriberUserName,
-      String tier, int durationMonths, int cumulativeMonths) {
-    final intl.NumberFormat durationMonthsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String durationMonthsString =
-        durationMonthsNumberFormat.format(durationMonths);
-    final intl.NumberFormat cumulativeMonthsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
-    final String cumulativeMonthsString =
-        cumulativeMonthsNumberFormat.format(cumulativeMonths);
+  String subscriptionMessageMultiMonthEvent(
+    String subscriberUserName,
+    String tier,
+    int durationMonths,
+    int cumulativeMonths,
+  ) {
+    final intl.NumberFormat durationMonthsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
+    final String durationMonthsString = durationMonthsNumberFormat.format(
+      durationMonths,
+    );
+    final intl.NumberFormat cumulativeMonthsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
+    final String cumulativeMonthsString = cumulativeMonthsNumberFormat.format(
+      cumulativeMonths,
+    );
 
     return '<b>$subscriberUserName</b> টিয়ার $tier-এ $durationMonthsString মাস আগাম সাবস্ক্রাইব করেছেন, মোট $cumulativeMonthsString মাস!';
   }
@@ -631,10 +654,14 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String channelPointRedemptionWithUserInput(String redeemerUsername,
-      String rewardName, int rewardCost, String userInput) {
-    final intl.NumberFormat rewardCostNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+  String channelPointRedemptionWithUserInput(
+    String redeemerUsername,
+    String rewardName,
+    int rewardCost,
+    String userInput,
+  ) {
+    final intl.NumberFormat rewardCostNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
     return '<b>$redeemerUsername</b> <b>$rewardName</b> <b>$rewardCostString</b> পয়েন্টের জন্য রিডিম করেছে। $userInput';
@@ -642,9 +669,12 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String channelPointRedemptionWithoutUserInput(
-      String redeemerUsername, String rewardName, int rewardCost) {
-    final intl.NumberFormat rewardCostNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    String redeemerUsername,
+    String rewardName,
+    int rewardCost,
+  ) {
+    final intl.NumberFormat rewardCostNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
     return '<b>$redeemerUsername</b> <b>$rewardName</b> <b>$rewardCostString</b> পয়েন্টের জন্য রিডিম করেছে।';
@@ -652,8 +682,9 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String cheerEventMessage(String name, int bits, String cheerMessage) {
-    final intl.NumberFormat bitsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat bitsNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
     final String bitsString = bitsNumberFormat.format(bits);
 
     return '<b>$name</b> <b>$bitsString</b> বিটস চিয়ার করেছে। $cheerMessage';
@@ -664,8 +695,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
-    final intl.NumberFormat viewersNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat viewersNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
     return '<b>$fromDisplayName</b> <b>$viewersString</b> জনের পার্টি নিয়ে হোস্ট করছে।';
@@ -678,8 +709,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String hypeTrainEventEndedSuccessful(int level) {
-    final intl.NumberFormat levelNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat levelNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
     return 'হাইপ ট্রেন লেভেল <b>$levelString</b> সফল হয়েছে।';
@@ -687,8 +718,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String hypeTrainEventEndedUnsuccessful(int level) {
-    final intl.NumberFormat levelNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat levelNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
     return 'হাইপ ট্রেন লেভেল <b>$levelString</b> ব্যর্থ হয়েছে।';
@@ -978,8 +1009,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String kickResubscriptionEvent(String subscriberName, int months) {
-    final intl.NumberFormat monthsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat monthsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
     return '<b>$subscriberName</b> $monthsString মাসের জন্য আবার সাবস্ক্রাইব করেছেন!';
@@ -987,8 +1018,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String kickGiftedSubscriptionsEvent(String gifterName, int count) {
-    final intl.NumberFormat countNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat countNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
     return '<b>$gifterName</b> $countStringটি সাব উপহার দিয়েছেন!';
@@ -996,8 +1027,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String kicksGiftedEvent(String senderName, int amount) {
-    final intl.NumberFormat amountNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat amountNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
     return '<b>$senderName</b> $amountString Kicks পাঠিয়েছেন!';
@@ -1014,23 +1045,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get turnOffTextToSpeech => 'বন্ধ করুন';
 
   @override
-  String get addChannel => 'চ্যানেল যোগ করুন';
-
-  @override
   String get addToChat => 'চ্যাটে যোগ করুন';
-
-  @override
-  String get defaultChannels => 'ডিফল্ট চ্যানেল';
-
-  @override
-  String get defaultChannelsSubtitle =>
-      'অ্যাপ খোলার সময় যে চ্যানেলগুলো দেখানো হয়';
-
-  @override
-  String get save => 'সংরক্ষণ করুন';
-
-  @override
-  String get resetToMyChannel => 'আমার চ্যানেলে রিসেট করুন';
 
   @override
   String get inChat => 'চ্যাটে';
@@ -1044,105 +1059,124 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
+  String get cantChatWithAccounts =>
+      'আপনার অ্যাকাউন্টগুলো দিয়ে এখানে চ্যাট করা যাবে না';
+
+  @override
+  String sendAMessageTo(String channel) {
+    return '$channel-এ একটি বার্তা পাঠান...';
+  }
+
+  @override
   String replaceChannel(String channel) {
     return '$channel প্রতিস্থাপন করুন';
   }
 
   @override
-  String get removeChannel => 'সরান';
-
-  @override
-  String get voicePacks => 'Voice packs';
+  String get voicePacks => 'ভয়েস প্যাক';
 
   @override
   String get voicePacksDescription =>
-      'Voice packs read chat with natural-sounding voices that run on your device, offline once downloaded. The voices are machine-generated by AI, not recorded by a person.';
+      'ভয়েস প্যাক আপনার ডিভাইসে স্বাভাবিক কণ্ঠে চ্যাট পড়ে শোনায় এবং ডাউনলোডের পর অফলাইনেও কাজ করে। কণ্ঠগুলো AI দিয়ে তৈরি, কোনো মানুষের রেকর্ড করা নয়।';
 
   @override
   String voicePackDetails(int voices, String size) {
-    String _temp0 = intl.Intl.pluralLogic(
-      voices,
-      locale: localeName,
-      other: '$voices voices',
-      one: '1 voice',
-    );
-    return '$_temp0 · $size';
+    return '$voicesটি কণ্ঠ · $size';
   }
 
   @override
   String voicePackLanguages(int count, String languages) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count languages',
-      one: '1 language',
-    );
-    return '$_temp0: $languages';
+    return '$countটি ভাষা: $languages';
   }
 
   @override
   String get voicePackOpenRailNotice =>
-      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+      'এই মডেলের লাইসেন্স (OpenRAIL-M) ক্ষতিকর ব্যবহার নিষিদ্ধ করে, যেমন অন্য কারও পরিচয় ধারণ করা বা বিভ্রান্তিকর তথ্য ছড়ানো। এই বিধিনিষেধ আপনার ক্ষেত্রেও প্রযোজ্য।';
 
   @override
   String voicePackDeleteConfirm(String pack, String size) {
-    return 'Delete $pack? This frees $size.';
+    return '$pack মুছে ফেলবেন? এতে $size জায়গা খালি হবে।';
   }
 
   @override
-  String get voicePackDownload => 'Download';
+  String get voicePackDownload => 'ডাউনলোড';
 
   @override
-  String get voicePackUpdate => 'Update';
+  String get voicePackUpdate => 'আপডেট';
 
   @override
-  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+  String get voicePackWaitingForWifi => 'Wi-Fi-এর জন্য অপেক্ষা করা হচ্ছে';
 
   @override
-  String get voicePackUseMobileData => 'Use mobile data';
+  String get voicePackUseMobileData => 'মোবাইল ডেটা ব্যবহার করুন';
 
   @override
   String voicePackDownloading(String downloaded, String total) {
-    return 'Downloading: $downloaded of $total';
+    return 'ডাউনলোড হচ্ছে: $total-এর মধ্যে $downloaded';
   }
 
   @override
-  String get voicePackInstalling => 'Installing';
+  String get voicePackInstalling => 'ইনস্টল হচ্ছে';
 
   @override
   String voicePackInstallFailed(String pack) {
-    return 'Couldn\'t install $pack. Check your connection and try again.';
+    return '$pack ইনস্টল করা যায়নি। আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।';
   }
 
   @override
-  String get voices => 'Voices';
+  String get voices => 'কণ্ঠ';
 
   @override
-  String get perViewerVoice => 'Per-viewer voice';
+  String get perViewerVoice => 'প্রতি দর্শকের জন্য আলাদা কণ্ঠ';
 
   @override
   String get perViewerVoiceSubtitle =>
-      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+      'প্রত্যেক দর্শক আলাদা কণ্ঠ পায়। আপনার বেছে নেওয়া কণ্ঠ সতর্কবার্তা পড়ে শোনায়, আর এই বিকল্প বন্ধ থাকলে সবকিছু পড়ে শোনায়।';
 
   @override
-  String get streamLanguage => 'Stream language';
+  String get streamLanguage => 'স্ট্রিমের ভাষা';
 
   @override
-  String get ttsEngineNeural => 'Neural voice (on-device)';
+  String get ttsEngineNeural => 'নিউরাল কণ্ঠ (ডিভাইসে)';
 
   @override
-  String get ttsEngineSystem => 'System voice';
+  String get ttsEngineSystem => 'সিস্টেমের কণ্ঠ';
 
   @override
   String languageUnsupported(String language) {
-    return '$language isn\'t supported by your voice packs; the system voice will be used';
+    return 'আপনার ভয়েস প্যাকগুলো $language সমর্থন করে না; সিস্টেমের কণ্ঠ ব্যবহার করা হবে';
   }
 
   @override
   String get neuralFallbackLowMemory =>
-      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+      'এই ডিভাইসে নিউরাল কণ্ঠের জন্য পর্যাপ্ত মেমরি নেই, তাই সিস্টেমের কণ্ঠে চ্যাট পড়ে শোনানো হচ্ছে।';
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'নিউরাল কণ্ঠ লোড করা যায়নি, তাই সিস্টেমের কণ্ঠে চ্যাট পড়ে শোনানো হচ্ছে।';
+
+  @override
+  String get accounts => 'অ্যাকাউন্ট';
+
+  @override
+  String get accountsSubtitle =>
+      'আপনি যেসব প্ল্যাটফর্মে স্ট্রিম করেন, প্রতিটিতে সাইন ইন করুন';
+
+  @override
+  String addProviderAccount(String provider) {
+    return '$provider অ্যাকাউন্ট যোগ করুন';
+  }
+
+  @override
+  String signInWithProvider(String provider) {
+    return '$provider দিয়ে সাইন ইন করুন';
+  }
+
+  @override
+  String signOutOfAccount(String channel, String provider) {
+    return '$provider-এ $channel অ্যাকাউন্ট থেকে সাইন আউট করবেন?';
+  }
+
+  @override
+  String get signOutOfAll => 'সব অ্যাকাউন্ট থেকে সাইন আউট করুন';
 }

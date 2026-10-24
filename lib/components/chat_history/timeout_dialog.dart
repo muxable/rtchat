@@ -5,15 +5,18 @@ class TimeoutDialog extends StatefulWidget {
   final String title;
   final void Function(Duration) onPressed;
 
-  const TimeoutDialog(
-      {super.key, required this.title, required this.onPressed});
+  const TimeoutDialog({
+    super.key,
+    required this.title,
+    required this.onPressed,
+  });
 
   @override
   State<TimeoutDialog> createState() => _TimeoutDialogState();
 }
 
 class _TimeoutDialogState extends State<TimeoutDialog> {
-  var _value = 5;
+  var _value = 3;
 
   String? getLabel(BuildContext context) {
     switch (_value) {
@@ -90,28 +93,30 @@ class _TimeoutDialogState extends State<TimeoutDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: Text(widget.title),
-        content: SizedBox(
-          height: 56,
-          child: Slider(
-            value: _value.toDouble(),
-            min: 1,
-            max: 9,
-            divisions: 9,
-            label: getLabel(context),
-            onChanged: (double value) {
-              setState(() {
-                _value = value.toInt();
-              });
-            },
-          ),
+      title: Text(widget.title),
+      content: SizedBox(
+        height: 56,
+        child: Slider(
+          value: _value.toDouble(),
+          min: 1,
+          max: 9,
+          divisions: 9,
+          label: getLabel(context),
+          onChanged: (double value) {
+            setState(() {
+              _value = value.toInt();
+            });
+          },
         ),
-        actions: [
-          TextButton(
-              child: Text(getPrompt(context)),
-              onPressed: () {
-                widget.onPressed(_duration);
-              })
-        ]);
+      ),
+      actions: [
+        TextButton(
+          child: Text(getPrompt(context)),
+          onPressed: () {
+            widget.onPressed(_duration);
+          },
+        ),
+      ],
+    );
   }
 }

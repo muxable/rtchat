@@ -24,10 +24,14 @@ void main() {
   });
 
   test("profilePictureUrl uses the channel's provider and id", () {
-    expect(Channel(Providers.twitch, "123", "Foo").profilePictureUrl.toString(),
-        "https://rtirl.com/pfp.png?provider=twitch&channelId=123");
-    expect(Channel(Providers.kick, "9", "Foo").profilePictureUrl.toString(),
-        "https://rtirl.com/pfp.png?provider=kick&channelId=9");
+    expect(
+      Channel(Providers.twitch, "123", "Foo").profilePictureUrl.toString(),
+      "https://rtirl.com/pfp.png?provider=twitch&channelId=123",
+    );
+    expect(
+      Channel(Providers.kick, "9", "Foo").profilePictureUrl.toString(),
+      "https://rtirl.com/pfp.png?provider=kick&channelId=9",
+    );
   });
 
   test("toJson", () {

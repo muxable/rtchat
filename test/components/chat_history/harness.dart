@@ -10,15 +10,14 @@ import '../l10n.dart';
 Widget buildEventWidget(Widget child) {
   return ChangeNotifierProvider<StyleModel>.value(
     value: StyleModel.fromJson({}),
-    child: MaterialApp(
-      home: TestLocalizations(child: Material(child: child)),
-    ),
+    child: MaterialApp(home: TestLocalizations(child: Material(child: child))),
   );
 }
 
 /// Finds rich text (e.g. from StyledText) whose plain text matches [text].
 Finder findRichText(String text) => find.byWidgetPredicate(
-    (widget) => widget is RichText && widget.text.toPlainText() == text);
+  (widget) => widget is RichText && widget.text.toPlainText() == text,
+);
 
 /// Pumps [widget] and waits for localizations to load.
 Future<void> pumpEvent(WidgetTester tester, Widget widget) async {

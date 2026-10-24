@@ -10,7 +10,5 @@
     "skipLibCheck": true,
     "strict": true
   },
-  "exclude": [
-    "test/**/*"
-  ]
+  "exclude": ["test/**/*"]
 }

@@ -17,15 +17,17 @@ Future<void> openUrl(Uri url) async {
       ),
     );
   } else if (url.isScheme("http") || url.isScheme("https")) {
-    await customtabs.launchUrl(url,
-        customTabsOptions: const customtabs.CustomTabsOptions(
-          shareState: customtabs.CustomTabsShareState.on,
-          urlBarHidingEnabled: true,
-          showTitle: true,
-        ),
-        safariVCOptions: const customtabs.SafariViewControllerOptions(
-          barCollapsingEnabled: true,
-        ));
+    await customtabs.launchUrl(
+      url,
+      customTabsOptions: const customtabs.CustomTabsOptions(
+        shareState: customtabs.CustomTabsShareState.on,
+        urlBarHidingEnabled: true,
+        showTitle: true,
+      ),
+      safariVCOptions: const customtabs.SafariViewControllerOptions(
+        barCollapsingEnabled: true,
+      ),
+    );
   } else {
     await launchUrl(url);
   }

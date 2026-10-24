@@ -77,7 +77,7 @@ import 'app_localizations_zh.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -100,11 +100,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -124,7 +124,7 @@ abstract class AppLocalizations {
     Locale('sv'),
     Locale('uk'),
     Locale('zh'),
-    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant')
+    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
   /// Message input field placeholder text
@@ -564,7 +564,10 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'<b>{displayName}</b>, <b>{displayNameTwo}</b>, and {numOthers} others are following you'**
   String followingEvent3(
-      String displayName, String displayNameTwo, int numOthers);
+    String displayName,
+    String displayNameTwo,
+    int numOthers,
+  );
 
   /// Unmute option shown when long pressing on a chat message
   ///
@@ -997,21 +1000,32 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'<b>{gifterUserName}</b> has gifted {total} Tier {tier} subs, totaling {cumulativeTotal}!'**
   String subscriptionGiftEvent(
-      String gifterUserName, int total, String tier, int cumulativeTotal);
+    String gifterUserName,
+    int total,
+    String tier,
+    int cumulativeTotal,
+  );
 
   /// Message displayed when a subscription message event occurs
   ///
   /// In en, this message translates to:
   /// **'<b>{subscriberUserName}</b> has subscribed for {cumulativeMonths} months at Tier {tier}!'**
   String subscriptionMessageEvent(
-      String subscriberUserName, int cumulativeMonths, String tier);
+    String subscriberUserName,
+    int cumulativeMonths,
+    String tier,
+  );
 
   /// Message displayed when a subscriber pays for multiple months at once
   ///
   /// In en, this message translates to:
   /// **'<b>{subscriberUserName}</b> has subscribed at Tier {tier} for {durationMonths} months in advance, {cumulativeMonths} months in total!'**
-  String subscriptionMessageMultiMonthEvent(String subscriberUserName,
-      String tier, int durationMonths, int cumulativeMonths);
+  String subscriptionMessageMultiMonthEvent(
+    String subscriberUserName,
+    String tier,
+    int durationMonths,
+    int cumulativeMonths,
+  );
 
   /// Message displayed when a RealtimeCash tip is made with a donor name
   ///
@@ -1041,15 +1055,22 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points. {userInput}'**
-  String channelPointRedemptionWithUserInput(String redeemerUsername,
-      String rewardName, int rewardCost, String userInput);
+  String channelPointRedemptionWithUserInput(
+    String redeemerUsername,
+    String rewardName,
+    int rewardCost,
+    String userInput,
+  );
 
   /// Message displayed when a channel point redemption event occurs without user input
   ///
   /// In en, this message translates to:
   /// **'<b>{redeemerUsername}</b> redeemed <b>{rewardName}</b> for <b>{rewardCost}</b> points.'**
   String channelPointRedemptionWithoutUserInput(
-      String redeemerUsername, String rewardName, int rewardCost);
+    String redeemerUsername,
+    String rewardName,
+    int rewardCost,
+  );
 
   /// Message displayed when a cheer event occurs
   ///
@@ -1621,41 +1642,11 @@ abstract class AppLocalizations {
   /// **'Turn off'**
   String get turnOffTextToSpeech;
 
-  /// Button to add a channel to the default channels
-  ///
-  /// In en, this message translates to:
-  /// **'Add channel'**
-  String get addChannel;
-
   /// Button on a channel search result that adds the channel to the channels shown in chat
   ///
   /// In en, this message translates to:
   /// **'Add to chat'**
   String get addToChat;
-
-  /// Title of the settings page for the channels the app opens with
-  ///
-  /// In en, this message translates to:
-  /// **'Default channels'**
-  String get defaultChannels;
-
-  /// Explains what the default channels are
-  ///
-  /// In en, this message translates to:
-  /// **'The channels shown when the app opens'**
-  String get defaultChannelsSubtitle;
-
-  /// Button on the default channels page that saves the channels currently shown as the default channels
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get save;
-
-  /// Button on the default channels page that clears the picked default channels, so the app opens the signed-in user's own channel, and closes the page
-  ///
-  /// In en, this message translates to:
-  /// **'Reset to my channel'**
-  String get resetToMyChannel;
 
   /// Heading in the channel search sheet for the channels currently shown in chat
   ///
@@ -1675,17 +1666,23 @@ abstract class AppLocalizations {
   /// **'Your {provider} account can\'t chat here'**
   String cantChatWithAccount(String provider);
 
+  /// Hint in the disabled message input when none of the channels shown are on the platform of any of the signed-in accounts
+  ///
+  /// In en, this message translates to:
+  /// **'Your accounts can\'t chat here'**
+  String get cantChatWithAccounts;
+
+  /// Message input field placeholder text when there are several channels to send to, naming the one picked
+  ///
+  /// In en, this message translates to:
+  /// **'Send a message to {channel}...'**
+  String sendAMessageTo(String channel);
+
   /// Shown while swiping a channel search result whose platform already has a channel in chat: adding it replaces that channel
   ///
   /// In en, this message translates to:
   /// **'Replace {channel}'**
   String replaceChannel(String channel);
-
-  /// Shown while swiping a default channel away to remove it from the default channels
-  ///
-  /// In en, this message translates to:
-  /// **'Remove'**
-  String get removeChannel;
 
   /// Title of the screen that lists the neural voice packs that can be downloaded, and of the row in the text to speech settings that opens it
   ///
@@ -1818,6 +1815,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The neural voice couldn\'t load, so chat is read with the system voice.'**
   String get neuralFallbackLoadFailed;
+
+  /// Title of the settings page that lists the streaming accounts the app is signed in to
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get accounts;
+
+  /// Explains the accounts settings page: the app can be signed in to one account on each streaming platform at the same time
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to each platform you stream on'**
+  String get accountsSubtitle;
+
+  /// Button on the accounts page that signs in to an account on a platform the app isn't signed in to yet, alongside the accounts it is
+  ///
+  /// In en, this message translates to:
+  /// **'Add {provider} account'**
+  String addProviderAccount(String provider);
+
+  /// Button to sign in with an account on a streaming platform
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with {provider}'**
+  String signInWithProvider(String provider);
+
+  /// Confirmation shown before signing out of one account; the others stay signed in
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of {channel} on {provider}?'**
+  String signOutOfAccount(String channel, String provider);
+
+  /// Button on the accounts page that signs out of every account at once
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of all accounts'**
+  String get signOutOfAll;
 }
 
 class _AppLocalizationsDelegate
@@ -1831,23 +1864,23 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) => <String>[
-        'ar',
-        'bn',
-        'de',
-        'en',
-        'es',
-        'fr',
-        'it',
-        'ja',
-        'ko',
-        'nl',
-        'pl',
-        'pt',
-        'ru',
-        'sv',
-        'uk',
-        'zh'
-      ].contains(locale.languageCode);
+    'ar',
+    'bn',
+    'de',
+    'en',
+    'es',
+    'fr',
+    'it',
+    'ja',
+    'ko',
+    'nl',
+    'pl',
+    'pt',
+    'ru',
+    'sv',
+    'uk',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1903,8 +1936,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

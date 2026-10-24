@@ -151,6 +151,11 @@ func (s *Server) Search(ctx context.Context, data json.RawMessage) (any, error) 
 	return results, nil
 }
 func (s *Server) searchTwitch(ctx context.Context, query string) ([]map[string]any, error) {
+	// The app searches with an empty query before anything is typed. Twitch
+	// rejects that, and the Cloud Function answered it with no results.
+	if query == "" {
+		return []map[string]any{}, nil
+	}
 	token, err := s.Tokens.AppAccessToken(ctx, "twitch")
 	if err != nil {
 		return nil, unavailable()

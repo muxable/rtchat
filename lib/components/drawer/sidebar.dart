@@ -6,6 +6,7 @@ import 'package:rtchat/components/drawer/quicklinks_listview.dart';
 import 'package:rtchat/components/in_chat_channels.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/adapters/actions.dart';
 import 'package:rtchat/models/audio.dart';
 import 'package:rtchat/models/channels.dart';
@@ -24,95 +25,122 @@ class _DrawerHeader extends StatelessWidget {
     return SizedBox(
       height: 146,
       child: DrawerHeader(
-          padding: EdgeInsets.zero,
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: () => openUrl(Uri.parse("https://muxable.com")),
-                child: SizedBox(
-                  height: 50,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Consumer<LayoutModel>(
-                      builder: (context, value, child) {
-                        return ColorFiltered(
-                            colorFilter: value.themeMode == ThemeMode.light
+        padding: EdgeInsets.zero,
+        child: Column(
+          children: [
+            GestureDetector(
+              onTap: () => openUrl(Uri.parse("https://muxable.com")),
+              child: SizedBox(
+                height: 50,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Consumer<LayoutModel>(
+                    builder: (context, value, child) {
+                      return ColorFiltered(
+                        colorFilter:
+                            value.themeMode == ThemeMode.light
                                 ? const ColorFilter.matrix(<double>[
-                                    -1.0, 0.0, 0.0, 0.0, 255.0, //
-                                    0.0, -1.0, 0.0, 0.0, 255.0, //
-                                    0.0, 0.0, -1.0, 0.0, 255.0, //
-                                    0.0, 0.0, 0.0, 1.0, 0.0, //
-                                  ])
+                                  -1.0, 0.0, 0.0, 0.0, 255.0, //
+                                  0.0, -1.0, 0.0, 0.0, 255.0, //
+                                  0.0, 0.0, -1.0, 0.0, 255.0, //
+                                  0.0, 0.0, 0.0, 1.0, 0.0, //
+                                ])
                                 : const ColorFilter.matrix(<double>[
-                                    1.0, 0.0, 0.0, 0.0, 0.0, //
-                                    0.0, 1.0, 0.0, 0.0, 0.0, //
-                                    0.0, 0.0, 1.0, 0.0, 0.0, //
-                                    0.0, 0.0, 0.0, 1.0, 0.0, //
-                                  ]),
-                            child: Image.asset("assets/muxable.png"));
-                      },
-                    ),
+                                  1.0, 0.0, 0.0, 0.0, 0.0, //
+                                  0.0, 1.0, 0.0, 0.0, 0.0, //
+                                  0.0, 0.0, 1.0, 0.0, 0.0, //
+                                  0.0, 0.0, 0.0, 1.0, 0.0, //
+                                ]),
+                        child: Image.asset("assets/muxable.png"),
+                      );
+                    },
                   ),
                 ),
               ),
-              Row(
-                children: [
-                  Expanded(
-                    child:
-                        Consumer<UserModel>(builder: (context, model, child) {
-                      final userChannel = model.userChannel;
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Consumer<UserModel>(
+                    builder: (context, model, child) {
+                      // the user's own channels, which the app opens with.
+                      final userChannels = model.userChannels;
+                      final userChannel = userChannels.firstOrNull;
                       return InkWell(
                         borderRadius: BorderRadius.circular(10.0),
                         onTap: () {
-                          Provider.of<ViewsModel>(context, listen: false)
-                              .showDefaultChannels();
+                          Provider.of<ViewsModel>(
+                            context,
+                            listen: false,
+                          ).showDefaultChannels();
                           Navigator.of(context).pop();
                         },
-                        child: Row(children: [
-                          if (userChannel != null) const SizedBox(width: 16),
-                          if (userChannel != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(24),
-                              child: CrossFadeImage(
-                                  placeholder: userChannel
-                                      .profilePicture.placeholderImage,
+                        child: Row(
+                          children: [
+                            if (userChannel != null) const SizedBox(width: 16),
+                            if (userChannel != null)
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(24),
+                                child: CrossFadeImage(
+                                  placeholder:
+                                      userChannel
+                                          .profilePicture
+                                          .placeholderImage,
                                   image: userChannel.profilePicture,
                                   height: 36,
-                                  width: 36),
-                            ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  userChannel?.displayName ??
-                                      AppLocalizations.of(context)!.notSignedIn,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.bodyLarge,
+                                  width: 36,
                                 ),
-                                const SizedBox(height: 8),
-                                Text("twitch.tv",
+                              ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    userChannels.isEmpty
+                                        ? AppLocalizations.of(
+                                          context,
+                                        )!.notSignedIn
+                                        : {
+                                          for (final channel in userChannels)
+                                            channel.displayName,
+                                        }.join(", "),
                                     overflow: TextOverflow.ellipsis,
                                     style:
-                                        Theme.of(context).textTheme.bodyMedium),
-                              ],
+                                        Theme.of(context).textTheme.bodyLarge,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    userChannels
+                                        .map(
+                                          (channel) =>
+                                              providerName(channel.provider),
+                                        )
+                                        .join(" · "),
+                                    overflow: TextOverflow.ellipsis,
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ]),
+                          ],
+                        ),
                       );
-                    }),
+                    },
                   ),
-                  const VerticalDivider(
-                    width: 4,
-                    thickness: 2,
-                    indent: 8,
-                    endIndent: 8,
-                  ),
-                  Consumer<UserModel>(builder: (context, model, child) {
-                    final userChannel = model.userChannel;
-                    if (userChannel == null) {
+                ),
+                const VerticalDivider(
+                  width: 4,
+                  thickness: 2,
+                  indent: 8,
+                  endIndent: 8,
+                ),
+                Consumer<UserModel>(
+                  builder: (context, model, child) {
+                    final account = model.accounts.firstOrNull;
+                    if (account == null) {
                       return Container();
                     }
                     return Padding(
@@ -132,20 +160,23 @@ class _DrawerHeader extends StatelessWidget {
                                 child: Consumer<QRModel>(
                                   builder: (context, qrModel, child) {
                                     return Container(
-                                      width: MediaQuery.of(context)
-                                                  .orientation ==
-                                              Orientation.landscape
-                                          ? MediaQuery.of(context).size.width *
-                                              0.01
-                                          : double.infinity,
+                                      width:
+                                          MediaQuery.of(context).orientation ==
+                                                  Orientation.landscape
+                                              ? MediaQuery.of(
+                                                    context,
+                                                  ).size.width *
+                                                  0.01
+                                              : double.infinity,
                                       decoration: BoxDecoration(
                                         gradient: qrModel.currentGradient,
                                         borderRadius:
                                             const BorderRadius.vertical(
-                                                top: Radius.circular(25.0),
-                                                bottom: Radius.circular(25.0)),
+                                              top: Radius.circular(25.0),
+                                              bottom: Radius.circular(25.0),
+                                            ),
                                       ),
-                                      child: const QRDisplay(),
+                                      child: QRDisplay(account: account),
                                     );
                                   },
                                 ),
@@ -155,55 +186,63 @@ class _DrawerHeader extends StatelessWidget {
                         },
                       ),
                     );
-                  }),
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: IconButton(
-                      icon: const Icon(Icons.search),
-                      iconSize: 32,
-                      splashRadius: 24,
-                      tooltip: AppLocalizations.of(context)!.searchChannels,
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        FirebaseAnalytics.instance.logEvent(
-                            name: 'search_channels', parameters: null);
-                        showModalBottomSheet<void>(
-                          context: context,
-                          isScrollControlled: true,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.vertical(top: Radius.circular(16)),
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: IconButton(
+                    icon: const Icon(Icons.search),
+                    iconSize: 32,
+                    splashRadius: 24,
+                    tooltip: AppLocalizations.of(context)!.searchChannels,
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      FirebaseAnalytics.instance.logEvent(
+                        name: 'search_channels',
+                        parameters: null,
+                      );
+                      showModalBottomSheet<void>(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(16),
                           ),
-                          builder: (context) {
-                            return DraggableScrollableSheet(
-                              initialChildSize: 0.8,
-                              maxChildSize: 0.9,
-                              expand: false,
-                              builder: (context, controller) {
-                                final views = Provider.of<ViewsModel>(context);
-                                final raidFrom = _raidableChannel(context);
-                                return ChannelSearchBottomSheetWidget(
-                                  onChannelSelect: views.openChannel,
-                                  onChannelAdd: views.addChannel,
-                                  channels: views.channels,
-                                  header: const InChatChannels(),
-                                  onRaid: raidFrom == null
-                                      ? null
-                                      : (channel) => ActionsAdapter.instance
-                                          .raid(raidFrom, channel),
-                                  controller: controller,
-                                );
-                              },
-                            );
-                          },
-                        );
-                      },
-                    ),
+                        ),
+                        builder: (context) {
+                          return DraggableScrollableSheet(
+                            initialChildSize: 0.8,
+                            maxChildSize: 0.9,
+                            expand: false,
+                            builder: (context, controller) {
+                              final views = Provider.of<ViewsModel>(context);
+                              final raider = _raidingAccount(context);
+                              return ChannelSearchBottomSheetWidget(
+                                onChannelSelect: views.openChannel,
+                                onChannelAdd: views.addChannel,
+                                channels: views.channels,
+                                header: const InChatChannels(),
+                                onRaid:
+                                    raider == null
+                                        ? null
+                                        : (channel) =>
+                                            ActionsAdapter.forAccount(
+                                              raider,
+                                            ).raid(raider.channel, channel),
+                                controller: controller,
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
                   ),
-                ],
-              ),
-            ],
-          )),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -222,97 +261,121 @@ class _SidebarState extends State<Sidebar> {
   Widget build(BuildContext context) {
     final tiles = <Widget>[
       ListTile(
-          leading: const Icon(Icons.add_link_sharp),
-          title: Text(AppLocalizations.of(context)!.configureQuickLinks),
-          onTap: () =>
-              Navigator.of(context).pushNamed("/settings/quick-links")),
+        leading: const Icon(Icons.add_link_sharp),
+        title: Text(AppLocalizations.of(context)!.configureQuickLinks),
+        onTap: () => Navigator.of(context).pushNamed("/settings/quick-links"),
+      ),
 
       const Divider(),
 
       // setting
-      Consumer<LayoutModel>(builder: (context, layoutModel, child) {
-        if (!layoutModel.locked) {
+      Consumer<LayoutModel>(
+        builder: (context, layoutModel, child) {
+          if (!layoutModel.locked) {
+            return ListTile(
+              leading: const Icon(Icons.thunderstorm),
+              title: Text(AppLocalizations.of(context)!.enableRainMode),
+              subtitle: Text(
+                AppLocalizations.of(context)!.enableRainModeSubtitle,
+                overflow: TextOverflow.ellipsis,
+              ),
+              onTap: () async {
+                layoutModel.locked = !layoutModel.locked;
+                Navigator.pop(context);
+              },
+            );
+          }
+
           return ListTile(
             leading: const Icon(Icons.thunderstorm),
-            title: Text(AppLocalizations.of(context)!.enableRainMode),
-            subtitle: Text(AppLocalizations.of(context)!.enableRainModeSubtitle,
-                overflow: TextOverflow.ellipsis),
+            title: Text(AppLocalizations.of(context)!.disableRainMode),
+            subtitle: Text(
+              AppLocalizations.of(context)!.disableRainModeSubtitle,
+              overflow: TextOverflow.ellipsis,
+            ),
             onTap: () async {
               layoutModel.locked = !layoutModel.locked;
               Navigator.pop(context);
             },
           );
-        }
+        },
+      ),
 
-        return ListTile(
-          leading: const Icon(Icons.thunderstorm),
-          title: Text(AppLocalizations.of(context)!.disableRainMode),
-          subtitle: Text(AppLocalizations.of(context)!.disableRainModeSubtitle,
-              overflow: TextOverflow.ellipsis),
-          onTap: () async {
-            layoutModel.locked = !layoutModel.locked;
-            Navigator.pop(context);
-          },
-        );
-      }),
-
-      Consumer<AudioModel>(builder: (context, audioModel, child) {
-        if (audioModel.sources.isEmpty) {
-          return Container();
-        }
-        return ListTile(
-          leading: const Icon(Icons.cached_outlined),
-          title: Text(AppLocalizations.of(context)!.refreshAudioSources),
-          onTap: () async {
-            final scaffoldMessenger = ScaffoldMessenger.of(context);
-            final count = await audioModel.refreshAllSources();
-            if (!context.mounted) return;
-            scaffoldMessenger.showSnackBar(SnackBar(
-                content: Text(AppLocalizations.of(context)!
-                    .refreshAudioSourcesCount(count))));
-          },
-        );
-      }),
+      Consumer<AudioModel>(
+        builder: (context, audioModel, child) {
+          if (audioModel.sources.isEmpty) {
+            return Container();
+          }
+          return ListTile(
+            leading: const Icon(Icons.cached_outlined),
+            title: Text(AppLocalizations.of(context)!.refreshAudioSources),
+            onTap: () async {
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              final count = await audioModel.refreshAllSources();
+              if (!context.mounted) return;
+              scaffoldMessenger.showSnackBar(
+                SnackBar(
+                  content: Text(
+                    AppLocalizations.of(
+                      context,
+                    )!.refreshAudioSourcesCount(count),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
 
       //raid
-      Consumer<UserModel>(builder: (context, model, child) {
-        return ListTile(
-          leading: const Icon(Icons.connect_without_contact),
-          title: Text(AppLocalizations.of(context)!.raidAChannel),
-          onTap: () {
-            Navigator.of(context).pop();
-            showModalBottomSheet<void>(
-              context: context,
-              isScrollControlled: true,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              builder: (context) {
-                return DraggableScrollableSheet(
-                  initialChildSize: 0.8,
-                  maxChildSize: 0.9,
-                  expand: false,
-                  builder: (context, controller) {
-                    final views = Provider.of<ViewsModel>(context);
-                    final raidFrom = _raidableChannel(context);
-                    return ChannelSearchBottomSheetWidget(
-                      isRaid: true,
-                      onChannelSelect: views.openChannel,
-                      onChannelAdd: views.addChannel,
-                      channels: views.channels,
-                      onRaid: raidFrom == null
-                          ? null
-                          : (channel) =>
-                              ActionsAdapter.instance.raid(raidFrom, channel),
-                      controller: controller,
-                    );
-                  },
-                );
-              },
-            );
-          },
-        );
-      }),
+      Consumer<UserModel>(
+        builder: (context, model, child) {
+          final channel = widget.channel;
+          final raidingAccount =
+              channel.provider == Providers.twitch
+                  ? model.accountFor(channel)
+                  : null;
+          // hide the raid option if this isn't your own twitch channel
+          if (raidingAccount == null) {
+            return const SizedBox.shrink();
+          }
+          return ListTile(
+            leading: const Icon(Icons.connect_without_contact),
+            title: Text(AppLocalizations.of(context)!.raidAChannel),
+            onTap: () {
+              Navigator.of(context).pop();
+              showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                builder: (context) {
+                  return DraggableScrollableSheet(
+                    initialChildSize: 0.8,
+                    maxChildSize: 0.9,
+                    expand: false,
+                    builder: (context, controller) {
+                      final views = Provider.of<ViewsModel>(context);
+                      return ChannelSearchBottomSheetWidget(
+                        isRaid: true,
+                        onChannelSelect: views.openChannel,
+                        onChannelAdd: views.addChannel,
+                        channels: views.channels,
+                        onRaid:
+                            (channel) => ActionsAdapter.forAccount(
+                              raidingAccount,
+                            ).raid(raidingAccount.channel, channel),
+                        controller: controller,
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
 
       ListTile(
         leading: const Icon(Icons.build_outlined),
@@ -321,46 +384,58 @@ class _SidebarState extends State<Sidebar> {
           await Navigator.pushNamed(context, "/settings");
         },
       ),
-      Consumer<UserModel>(builder: (context, model, child) {
-        if (!model.isSignedIn()) {
-          return Container();
-        }
-        return ListTile(
-          leading: const Icon(Icons.logout_outlined),
-          iconColor: Colors.redAccent,
-          title: Text(AppLocalizations.of(context)!.signOut),
-          onTap: () async {
-            await showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text(AppLocalizations.of(context)!.signOut),
-                  content:
-                      Text(AppLocalizations.of(context)!.signOutConfirmation),
-                  actions: [
-                    TextButton(
-                      child: Text(AppLocalizations.of(context)!.cancel),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
+      ListTile(
+        leading: const Icon(Icons.manage_accounts_outlined),
+        title: Text(AppLocalizations.of(context)!.accounts),
+        onTap: () async {
+          await Navigator.pushNamed(context, "/settings/accounts");
+        },
+      ),
+      Consumer<UserModel>(
+        builder: (context, model, child) {
+          if (!model.isSignedIn()) {
+            return Container();
+          }
+          return ListTile(
+            leading: const Icon(Icons.logout_outlined),
+            iconColor: Colors.redAccent,
+            title: Text(AppLocalizations.of(context)!.signOut),
+            onTap: () async {
+              await showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text(AppLocalizations.of(context)!.signOut),
+                    content: Text(
+                      AppLocalizations.of(context)!.signOutConfirmation,
                     ),
-                    TextButton(
-                      child: Text(AppLocalizations.of(context)!.signOut),
-                      onPressed: () async {
-                        final navigator = Navigator.of(context);
-                        await Provider.of<UserModel>(context, listen: false)
-                            .signOut();
-                        if (!mounted) return;
-                        navigator.pop();
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        );
-      }),
+                    actions: [
+                      TextButton(
+                        child: Text(AppLocalizations.of(context)!.cancel),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      TextButton(
+                        child: Text(AppLocalizations.of(context)!.signOut),
+                        onPressed: () async {
+                          final navigator = Navigator.of(context);
+                          await Provider.of<UserModel>(
+                            context,
+                            listen: false,
+                          ).signOut();
+                          if (!mounted) return;
+                          navigator.pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
     ];
     return Drawer(
       child: SafeArea(
@@ -369,26 +444,33 @@ class _SidebarState extends State<Sidebar> {
             const _DrawerHeader(),
 
             // quicklinks
-            Expanded(child: Builder(builder: (context) {
-              final orientation = MediaQuery.of(context).orientation;
-              if (orientation == Orientation.portrait) {
-                return CustomScrollView(shrinkWrap: true, slivers: [
-                  const SliverToBoxAdapter(
-                    child: QuicklinksListView(),
-                  ),
-                  SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: tiles,
-                      ))
-                ]);
-              } else {
-                return ListView(
-                    padding: EdgeInsets.zero,
-                    children: [const QuicklinksListView(), ...tiles]);
-              }
-            }))
+            Expanded(
+              child: Builder(
+                builder: (context) {
+                  final orientation = MediaQuery.of(context).orientation;
+                  if (orientation == Orientation.portrait) {
+                    return CustomScrollView(
+                      shrinkWrap: true,
+                      slivers: [
+                        const SliverToBoxAdapter(child: QuicklinksListView()),
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: tiles,
+                          ),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return ListView(
+                      padding: EdgeInsets.zero,
+                      children: [const QuicklinksListView(), ...tiles],
+                    );
+                  }
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -396,16 +478,13 @@ class _SidebarState extends State<Sidebar> {
   }
 }
 
-/// The channel the user can raid from: the one they're viewing, if it's their
-/// own Twitch channel (raids are Twitch-only).
-Channel? _raidableChannel(BuildContext context) {
+/// The account the user can raid as: the one whose channel they're viewing,
+/// if it's Twitch (raids are Twitch-only).
+Account? _raidingAccount(BuildContext context) {
   final channel =
       Provider.of<ViewsModel>(context, listen: false).primaryChannel;
-  final userModel = Provider.of<UserModel>(context, listen: false);
-  if (channel == null ||
-      channel.provider != Providers.twitch ||
-      userModel.userChannel != channel) {
+  if (channel == null || channel.provider != Providers.twitch) {
     return null;
   }
-  return channel;
+  return Provider.of<UserModel>(context, listen: false).accountFor(channel);
 }

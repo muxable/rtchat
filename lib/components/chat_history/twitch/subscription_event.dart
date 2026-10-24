@@ -29,22 +29,24 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final channelLocale =
-        Provider.of<ViewsModel>(context).channelLocale(context);
+    final channelLocale = Provider.of<ViewsModel>(
+      context,
+    ).channelLocale(context);
     final localizations = lookupAppLocalizations(channelLocale);
 
     return DecoratedEventWidget.icon(
       icon: Icons.star,
       child: StyledText(
         text: localizations.subscriptionEvent(
-            model.subscriberUserName, model.tier.replaceAll("000", "")),
+          model.subscriberUserName,
+          model.tier.replaceAll("000", ""),
+        ),
         tags: {
           'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
         },
-        style: Theme.of(context)
-            .textTheme
-            .titleSmall
-            ?.copyWith(color: tierColor(context, model.tier)),
+        style: Theme.of(
+          context,
+        ).textTheme.titleSmall?.copyWith(color: tierColor(context, model.tier)),
       ),
     );
   }
@@ -57,25 +59,26 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final channelLocale =
-        Provider.of<ViewsModel>(context).channelLocale(context);
+    final channelLocale = Provider.of<ViewsModel>(
+      context,
+    ).channelLocale(context);
     final localizations = lookupAppLocalizations(channelLocale);
 
     return DecoratedEventWidget.icon(
       icon: Icons.redeem,
       child: StyledText(
         text: localizations.subscriptionGiftEvent(
-            model.gifterUserName,
-            model.total,
-            model.tier.replaceAll("000", ""),
-            model.cumulativeTotal),
+          model.gifterUserName,
+          model.total,
+          model.tier.replaceAll("000", ""),
+          model.cumulativeTotal,
+        ),
         tags: {
           'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
         },
-        style: Theme.of(context)
-            .textTheme
-            .titleSmall
-            ?.copyWith(color: tierColor(context, model.tier)),
+        style: Theme.of(
+          context,
+        ).textTheme.titleSmall?.copyWith(color: tierColor(context, model.tier)),
       ),
     );
   }
@@ -87,45 +90,55 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
   const TwitchSubscriptionMessageEventWidget(this.model, {super.key});
 
   Iterable<InlineSpan> _render(
-      BuildContext context, StyleModel styleModel, MessageToken token) sync* {
+    BuildContext context,
+    StyleModel styleModel,
+    MessageToken token,
+  ) sync* {
     final tagStyleStreamer = TextStyle(
-        color: Theme.of(context).brightness == Brightness.light
-            ? Colors.white
-            : Colors.black,
-        backgroundColor: Theme.of(context).brightness == Brightness.light
-            ? Colors.black
-            : Colors.white);
+      color:
+          Theme.of(context).brightness == Brightness.light
+              ? Colors.white
+              : Colors.black,
+      backgroundColor:
+          Theme.of(context).brightness == Brightness.light
+              ? Colors.black
+              : Colors.white,
+    );
     //for streamermention
 
     final tagStyle = TextStyle(
-        backgroundColor: Theme.of(context).highlightColor); //for usermention
+      backgroundColor: Theme.of(context).highlightColor,
+    ); //for usermention
 
     if (token is TextToken) {
       yield TextSpan(text: token.text);
     } else if (token is EmoteToken) {
       yield WidgetSpan(
-          alignment: PlaceholderAlignment.middle,
-          child: Tooltip(
-              message: token.code,
-              preferBelow: false,
-              child: Image(
-                  height: styleModel.fontSize,
-                  image: ResilientNetworkImage(token.url),
-                  errorBuilder: (context, error, stackTrace) =>
-                      Text(token.code))));
+        alignment: PlaceholderAlignment.middle,
+        child: Tooltip(
+          message: token.code,
+          preferBelow: false,
+          child: Image(
+            height: styleModel.fontSize,
+            image: ResilientNetworkImage(token.url),
+            errorBuilder: (context, error, stackTrace) => Text(token.code),
+          ),
+        ),
+      );
     } else if (token is UserMentionToken) {
       final userModel = Provider.of<UserModel>(context, listen: false);
-      final loginChannel = userModel.userChannel?.displayName;
-      if (token.username.toLowerCase() == loginChannel?.toLowerCase()) {
+      if (userModel.isOwnName(token.username)) {
         yield TextSpan(
-            // wrap tag with nonbreaking spaces
-            text: "\u{00A0}@${token.username}\u{00A0}",
-            style: tagStyleStreamer);
+          // wrap tag with nonbreaking spaces
+          text: "\u{00A0}@${token.username}\u{00A0}",
+          style: tagStyleStreamer,
+        );
       } else {
         yield TextSpan(
-            // wrap tag with nonbreaking spaces
-            text: "\u{00A0}@${token.username}\u{00A0}",
-            style: tagStyle);
+          // wrap tag with nonbreaking spaces
+          text: "\u{00A0}@${token.username}\u{00A0}",
+          style: tagStyle,
+        );
       }
     } else {
       throw Exception("invalid token");
@@ -135,38 +148,46 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme.titleSmall;
-    final channelLocale =
-        Provider.of<ViewsModel>(context).channelLocale(context);
+    final channelLocale = Provider.of<ViewsModel>(
+      context,
+    ).channelLocale(context);
     final localizations = lookupAppLocalizations(channelLocale);
 
     return DecoratedEventWidget.icon(
       icon: Icons.star,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        StyledText(
-          text: model.localizedText(localizations),
-          tags: {
-            'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
-          },
-          style: Theme.of(context)
-              .textTheme
-              .titleSmall
-              ?.copyWith(color: tierColor(context, model.tier)),
-        ),
-        if (model.text.isNotEmpty)
-          Consumer<StyleModel>(builder: (context, styleModel, child) {
-            return Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(text: model.subscriberUserName, style: textTheme),
-                  const TextSpan(text: ": "),
-                  ...model.tokenize().expand((token) {
-                    return _render(context, styleModel, token);
-                  }),
-                ],
-              ),
-            );
-          }),
-      ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          StyledText(
+            text: model.localizedText(localizations),
+            tags: {
+              'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
+            },
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: tierColor(context, model.tier),
+            ),
+          ),
+          if (model.text.isNotEmpty)
+            Consumer<StyleModel>(
+              builder: (context, styleModel, child) {
+                return Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: model.subscriberUserName,
+                        style: textTheme,
+                      ),
+                      const TextSpan(text: ": "),
+                      ...model.tokenize().expand((token) {
+                        return _render(context, styleModel, token);
+                      }),
+                    ],
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
     );
   }
 }

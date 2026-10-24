@@ -34,14 +34,15 @@ class ResizableWidget extends StatefulWidget {
   final Function(double) onResizeWidth;
   final Widget child;
 
-  const ResizableWidget(
-      {super.key,
-      required this.resizable,
-      required this.height,
-      required this.width,
-      required this.onResizeHeight,
-      required this.onResizeWidth,
-      required this.child});
+  const ResizableWidget({
+    super.key,
+    required this.resizable,
+    required this.height,
+    required this.width,
+    required this.onResizeHeight,
+    required this.onResizeWidth,
+    required this.child,
+  });
 
   @override
   State<ResizableWidget> createState() => _ResizableWidgetState();
@@ -62,85 +63,98 @@ class _ResizableWidgetState extends State<ResizableWidget> {
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
     if (orientation == Orientation.portrait) {
-      return Column(children: [
-        SizedBox(
-          height: _height.clamp(
-              57, math.max(57, MediaQuery.of(context).size.height - 300)),
-          child: widget.child,
-        ),
-        if (widget.resizable)
-          GestureDetector(
-            onVerticalDragStart: (details) {
-              setState(() {
-                _height = widget.height;
-              });
-            },
-            onVerticalDragEnd: (details) {
-              widget.onResizeHeight(_height.clamp(
-                  57, math.max(57, MediaQuery.of(context).size.height - 300)));
-            },
-            onVerticalDragUpdate: (details) {
-              setState(() {
-                _height += details.delta.dy;
-              });
-            },
-            child: const SizedBox(
-              width: double.infinity,
-              height: 30,
-              child: Center(
-                child: Icon(Icons.drag_handle_outlined),
-              ),
+      return Column(
+        children: [
+          SizedBox(
+            height: _height.clamp(
+              57,
+              math.max(57, MediaQuery.of(context).size.height - 300),
             ),
-          )
-        else
-          const SizedBox.shrink(),
-      ]);
+            child: widget.child,
+          ),
+          if (widget.resizable)
+            GestureDetector(
+              onVerticalDragStart: (details) {
+                setState(() {
+                  _height = widget.height;
+                });
+              },
+              onVerticalDragEnd: (details) {
+                widget.onResizeHeight(
+                  _height.clamp(
+                    57,
+                    math.max(57, MediaQuery.of(context).size.height - 300),
+                  ),
+                );
+              },
+              onVerticalDragUpdate: (details) {
+                setState(() {
+                  _height += details.delta.dy;
+                });
+              },
+              child: const SizedBox(
+                width: double.infinity,
+                height: 30,
+                child: Center(child: Icon(Icons.drag_handle_outlined)),
+              ),
+            )
+          else
+            const SizedBox.shrink(),
+        ],
+      );
     } else {
-      return Row(children: [
-        SizedBox(
-          width: _width.clamp(
-              57, math.max(57, MediaQuery.of(context).size.width - 400)),
-          child: widget.child,
-        ),
-        if (widget.resizable)
-          RawGestureDetector(
-            gestures: {
-              EagerHorizontalDragRecognizer:
-                  GestureRecognizerFactoryWithHandlers<
-                      EagerHorizontalDragRecognizer>(
-                () => EagerHorizontalDragRecognizer()
-                  ..onStart = (details) {
-                    setState(() {
-                      _width = widget.width;
-                    });
-                  }
-                  ..onEnd = (details) {
-                    widget.onResizeWidth(
-                      _width.clamp(
-                          57,
-                          math.max(
-                              57, MediaQuery.of(context).size.width - 400)),
-                    );
-                  }
-                  ..onUpdate = (details) {
-                    setState(() {
-                      _width += details.delta.dx;
-                    });
-                  },
-                (instance) {},
-              )
-            },
-            child: const SizedBox(
-              height: double.infinity,
-              width: 30,
-              child: Center(
-                child: Icon(Icons.drag_indicator),
-              ),
+      return Row(
+        children: [
+          SizedBox(
+            width: _width.clamp(
+              57,
+              math.max(57, MediaQuery.of(context).size.width - 400),
             ),
-          )
-        else
-          const SizedBox.shrink(),
-      ]);
+            child: widget.child,
+          ),
+          if (widget.resizable)
+            RawGestureDetector(
+              gestures: {
+                EagerHorizontalDragRecognizer:
+                    GestureRecognizerFactoryWithHandlers<
+                      EagerHorizontalDragRecognizer
+                    >(
+                      () =>
+                          EagerHorizontalDragRecognizer()
+                            ..onStart = (details) {
+                              setState(() {
+                                _width = widget.width;
+                              });
+                            }
+                            ..onEnd = (details) {
+                              widget.onResizeWidth(
+                                _width.clamp(
+                                  57,
+                                  math.max(
+                                    57,
+                                    MediaQuery.of(context).size.width - 400,
+                                  ),
+                                ),
+                              );
+                            }
+                            ..onUpdate = (details) {
+                              setState(() {
+                                _width += details.delta.dx;
+                              });
+                            },
+                      (instance) {},
+                    ),
+              },
+              child: const SizedBox(
+                height: double.infinity,
+                width: 30,
+                child: Center(child: Icon(Icons.drag_indicator)),
+              ),
+            )
+          else
+            const SizedBox.shrink(),
+        ],
+      );
     }
   }
 }
@@ -165,6 +179,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   late StreamSubscription<bool> keyboardSubscription;
   bool _isKeyboardVisible = false;
+  bool _viewerDrawerOnCooldown = false;
   TtsForegroundService? _ttsService;
 
   @override
@@ -176,8 +191,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (!mounted) return;
       debugPrint("Post frame callback post executed");
       _ttsService = TtsForegroundService(
-          Provider.of<TtsModel>(context, listen: false),
-          () => AppLocalizations.of(context)!);
+        Provider.of<TtsModel>(context, listen: false),
+        () => AppLocalizations.of(context)!,
+      );
       final model = Provider.of<AudioModel>(context, listen: false);
 
       if (model.sources.isEmpty || (await AudioChannel.hasPermission())) {
@@ -191,8 +207,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     final keyboardVisibilityController = KeyboardVisibilityController();
     // Subscribe to keyboard visibility changes.
-    keyboardSubscription =
-        keyboardVisibilityController.onChange.listen((visible) {
+    keyboardSubscription = keyboardVisibilityController.onChange.listen((
+      visible,
+    ) {
       if (!mounted || _isKeyboardVisible == visible) return;
 
       setState(() {
@@ -209,6 +226,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  static const _viewerDrawerCooldownDuration = Duration(seconds: 5);
+  void _startViewerDrawerCooldown() {
+    if (_viewerDrawerOnCooldown) return;
+    setState(() {
+      _viewerDrawerOnCooldown = true;
+    });
+    Future<void>.delayed(_viewerDrawerCooldownDuration, () {
+      if (!mounted) return;
+      setState(() {
+        _viewerDrawerOnCooldown = false;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.orientationOf(context);
@@ -222,86 +253,107 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             key: _scaffoldKey,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             drawer: Sidebar(channel: widget.channel),
-            endDrawer: userModel.isSignedIn()
-                ? EndDrawerWidget(channel: widget.channel)
-                : null,
+            endDrawer:
+                userModel.isSignedIn() && !_viewerDrawerOnCooldown
+                    ? EndDrawerWidget(
+                      channel: widget.channel,
+                      onClose: () {
+                        _scaffoldKey.currentState?.closeEndDrawer();
+                        _startViewerDrawerCooldown();
+                      },
+                    )
+                    : null,
             drawerEdgeDragWidth: MediaQuery.sizeOf(context).width * 0.6,
-            onDrawerChanged: (isOpened) =>
-                FocusManager.instance.primaryFocus?.unfocus(),
-            onEndDrawerChanged: (isOpened) =>
-                FocusManager.instance.primaryFocus?.unfocus(),
-            appBar: orientation == Orientation.landscape && _isKeyboardVisible
-                ? null
-                : HeaderBarWidget(
-                    onChannelSelect: widget.onChannelSelect,
-                    channel: widget.channel,
-                    actions: [
-                      Consumer2<ActivityFeedModel, LayoutModel>(
-                        builder:
-                            (context, activityFeedModel, layoutModel, child) {
-                          if (!activityFeedModel.isEnabled) {
-                            return const SizedBox.shrink();
-                          }
-                          return IconButton(
-                            icon: Icon(layoutModel.isShowNotifications
-                                ? Icons.notifications
-                                : Icons.notifications_outlined),
-                            tooltip: AppLocalizations.of(context)!.activityFeed,
-                            onPressed: () {
-                              layoutModel.isShowNotifications =
-                                  !layoutModel.isShowNotifications;
-                            },
-                          );
-                        },
-                      ),
-                      if (width > 256)
-                        Consumer<LayoutModel>(
-                          builder: (context, layoutModel, child) {
+            onDrawerChanged:
+                (isOpened) => FocusManager.instance.primaryFocus?.unfocus(),
+            onEndDrawerChanged:
+                (isOpened) => FocusManager.instance.primaryFocus?.unfocus(),
+            appBar:
+                orientation == Orientation.landscape && _isKeyboardVisible
+                    ? null
+                    : HeaderBarWidget(
+                      onChannelSelect: widget.onChannelSelect,
+                      channel: widget.channel,
+                      actions: [
+                        Consumer2<ActivityFeedModel, LayoutModel>(
+                          builder: (
+                            context,
+                            activityFeedModel,
+                            layoutModel,
+                            child,
+                          ) {
+                            if (!activityFeedModel.isEnabled) {
+                              return const SizedBox.shrink();
+                            }
                             return IconButton(
-                              icon: Icon(layoutModel.isShowPreview
-                                  ? Icons.preview
-                                  : Icons.preview_outlined),
+                              icon: Icon(
+                                layoutModel.isShowNotifications
+                                    ? Icons.notifications
+                                    : Icons.notifications_outlined,
+                              ),
                               tooltip:
-                                  AppLocalizations.of(context)!.streamPreview,
+                                  AppLocalizations.of(context)!.activityFeed,
                               onPressed: () {
-                                layoutModel.isShowPreview =
-                                    !layoutModel.isShowPreview;
+                                layoutModel.isShowNotifications =
+                                    !layoutModel.isShowNotifications;
                               },
                             );
                           },
                         ),
-                      Consumer<TtsModel>(
-                        builder: (context, ttsModel, child) {
-                          return IconButton(
-                            icon: Builder(builder: (context) {
-                              switch (ttsModel.mode) {
-                                case TtsMode.disabled:
-                                  return const Icon(Icons.volume_off);
-                                case TtsMode.enabled:
-                                  return const Icon(Icons.volume_up);
-                                case TtsMode.alertsOnly:
-                                  return const Icon(Icons.campaign);
-                              }
-                            }),
-                            tooltip: AppLocalizations.of(context)!.textToSpeech,
-                            onPressed: () async {
-                              final localizations =
-                                  AppLocalizations.of(context)!;
-                              ttsModel.toggleMode(localizations);
+                        if (width > 256)
+                          Consumer<LayoutModel>(
+                            builder: (context, layoutModel, child) {
+                              return IconButton(
+                                icon: Icon(
+                                  layoutModel.isShowPreview
+                                      ? Icons.preview
+                                      : Icons.preview_outlined,
+                                ),
+                                tooltip:
+                                    AppLocalizations.of(context)!.streamPreview,
+                                onPressed: () {
+                                  layoutModel.isShowPreview =
+                                      !layoutModel.isShowPreview;
+                                },
+                              );
                             },
-                          );
-                        },
-                      ),
-                      if (userModel.isSignedIn() && width > 256)
-                        IconButton(
-                          icon: const Icon(Icons.people),
-                          tooltip: AppLocalizations.of(context)!.currentViewers,
-                          onPressed: () {
-                            _scaffoldKey.currentState?.openEndDrawer();
+                          ),
+                        Consumer<TtsModel>(
+                          builder: (context, ttsModel, child) {
+                            return IconButton(
+                              icon: Builder(
+                                builder: (context) {
+                                  switch (ttsModel.mode) {
+                                    case TtsMode.disabled:
+                                      return const Icon(Icons.volume_off);
+                                    case TtsMode.enabled:
+                                      return const Icon(Icons.volume_up);
+                                    case TtsMode.alertsOnly:
+                                      return const Icon(Icons.campaign);
+                                  }
+                                },
+                              ),
+                              tooltip:
+                                  AppLocalizations.of(context)!.textToSpeech,
+                              onPressed: () async {
+                                final localizations =
+                                    AppLocalizations.of(context)!;
+                                ttsModel.toggleMode(localizations);
+                              },
+                            );
                           },
                         ),
-                    ],
-                  ),
+                        if (userModel.isSignedIn() && width > 256)
+                          IconButton(
+                            icon: const Icon(Icons.people),
+                            tooltip:
+                                AppLocalizations.of(context)!.currentViewers,
+                            onPressed: () {
+                              _scaffoldKey.currentState?.openEndDrawer();
+                            },
+                          ),
+                      ],
+                    ),
             body: SafeArea(
               child: Builder(
                 builder: (context) {
@@ -323,11 +375,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   Padding(
                                     padding: const EdgeInsets.all(8),
                                     child: Text(
-                                      AppLocalizations.of(context)!
-                                          .signInToSendMessages,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelLarge,
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.signInToSendMessages,
+                                      style:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.labelLarge,
                                     ),
                                   ),
                                   const Flexible(child: Divider()),
@@ -338,13 +392,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           );
                         }
 
-                        // an account can only post on its own provider,
-                        // and at most one channel per provider is shown.
+                        // an account can only post on its own provider.
                         return Consumer<ViewsModel>(
-                          builder: (context, views, child) =>
-                              MessageInputWidget(
-                                  channel:
-                                      views.sendChannel(userModel.userChannel)),
+                          builder:
+                              (context, views, child) => MessageInputWidget(
+                                channel: views.sendChannel,
+                                channels: views.sendableChannels,
+                                onChannelSelected:
+                                    (channel) => views.sendChannel = channel,
+                              ),
                         );
                       },
                     ),
@@ -382,7 +438,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   return AspectRatio(
                                     aspectRatio: 16 / 9,
                                     child: ViewStreamPreview(
-                                        fallback: widget.channel),
+                                      fallback: widget.channel,
+                                    ),
                                   );
                                 } else {
                                   return const SizedBox.shrink();
@@ -419,7 +476,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     return const ActivityFeedPanelWidget();
                                   } else if (layoutModel.isShowPreview) {
                                     return ViewStreamPreview(
-                                        fallback: widget.channel);
+                                      fallback: widget.channel,
+                                    );
                                   } else {
                                     return const SizedBox.shrink();
                                   }
@@ -434,8 +492,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               Expanded(
                                 child: DiscoWidget(
                                   isEnabled: widget.isDiscoModeEnabled,
-                                  child:
-                                      ChatPanelWidget(channel: widget.channel),
+                                  child: ChatPanelWidget(
+                                    channel: widget.channel,
+                                  ),
                                 ),
                               ),
                               chatPanelFooter,

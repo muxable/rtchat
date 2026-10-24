@@ -161,8 +161,9 @@ class TtsModel extends ChangeNotifier {
     _channels = channels;
     _primaryChannel = model.primaryChannel;
     _channelLanguages.removeWhere((channel, _) => !channels.contains(channel));
-    _languageLookedUpAt
-        .removeWhere((channel, _) => !channels.contains(channel));
+    _languageLookedUpAt.removeWhere(
+      (channel, _) => !channels.contains(channel),
+    );
     for (final channel in channels) {
       _lookUpLanguageOf(channel);
     }
@@ -178,17 +179,20 @@ class TtsModel extends ChangeNotifier {
       return;
     }
     _languageLookedUpAt[channel] = now;
-    Future.sync(() => _lookUpLanguage(channel)).then((code) {
-      final language = streamLanguage(code);
-      // the channel may have been closed in the meantime.
-      if (_isDisposed || language == null || !_channels.contains(channel)) {
-        return;
-      }
-      _channelLanguages[channel] = language;
-    }, onError: (Object error) {
-      // e.g. offline: the channel's language stays unknown for now.
-      debugPrint('no stream language for $channel: $error');
-    });
+    Future.sync(() => _lookUpLanguage(channel)).then(
+      (code) {
+        final language = streamLanguage(code);
+        // the channel may have been closed in the meantime.
+        if (_isDisposed || language == null || !_channels.contains(channel)) {
+          return;
+        }
+        _channelLanguages[channel] = language;
+      },
+      onError: (Object error) {
+        // e.g. offline: the channel's language stays unknown for now.
+        debugPrint('no stream language for $channel: $error');
+      },
+    );
   }
 
   /// The language to read a stream's chat in, from the language its
@@ -216,26 +220,32 @@ class TtsModel extends ChangeNotifier {
     return _channelLanguages[channel] ?? streamLanguage(channel.language);
   }
 
-  String getVocalization(AppLocalizations l10n, MessageModel model,
-      {bool includeAuthorPrelude = false}) {
+  String getVocalization(
+    AppLocalizations l10n,
+    MessageModel model, {
+    bool includeAuthorPrelude = false,
+  }) {
     if (model is ChatMessage) {
       final text = model.tokenized
-          .where((token) =>
-              token is TextToken ||
-              (!_isEmoteMuted && token is EmoteToken) ||
-              token is UserMentionToken ||
-              token is LinkToken)
+          .where(
+            (token) =>
+                token is TextToken ||
+                (!_isEmoteMuted && token is EmoteToken) ||
+                token is UserMentionToken ||
+                token is LinkToken,
+          )
           .map((token) {
-        if (token is TextToken) {
-          return token.text;
-        } else if (token is EmoteToken) {
-          return token.code;
-        } else if (token is UserMentionToken) {
-          return token.username.replaceAll("_", " ");
-        } else if (token is LinkToken) {
-          return token.url.host;
-        }
-      }).join("");
+            if (token is TextToken) {
+              return token.text;
+            } else if (token is EmoteToken) {
+              return token.code;
+            } else if (token is UserMentionToken) {
+              return token.username.replaceAll("_", " ");
+            } else if (token is LinkToken) {
+              return token.url.host;
+            }
+          })
+          .join("");
       if (text.trim().isEmpty) {
         return "";
       }
@@ -260,7 +270,9 @@ class TtsModel extends ChangeNotifier {
           : l10n.kickSubscriptionEvent(model.subscriber.name);
     } else if (model is KickGiftedSubscriptionsEventModel) {
       return l10n.kickGiftedSubscriptionsEvent(
-          model.gifter?.name ?? l10n.anonymous, model.giftees.length);
+        model.gifter?.name ?? l10n.anonymous,
+        model.giftees.length,
+      );
     } else if (model is KicksGiftedEventModel) {
       return l10n.kicksGiftedEvent(model.sender.name, model.amount);
     } else if (model is StreamStateEventModel) {
@@ -274,15 +286,22 @@ class TtsModel extends ChangeNotifier {
       return l10n.raidEventMessage(model.from.displayName ?? "", model.viewers);
     } else if (model is TwitchSubscriptionEventModel) {
       return l10n.subscriptionEvent(
-          model.subscriberUserName, model.tier.replaceAll("000", ""));
+        model.subscriberUserName,
+        model.tier.replaceAll("000", ""),
+      );
     } else if (model is TwitchSubscriptionGiftEventModel) {
-      return l10n.subscriptionGiftEvent(model.gifterUserName, model.total,
-          model.tier.replaceAll("000", ""), model.cumulativeTotal);
+      return l10n.subscriptionGiftEvent(
+        model.gifterUserName,
+        model.total,
+        model.tier.replaceAll("000", ""),
+        model.cumulativeTotal,
+      );
     } else if (model is TwitchSubscriptionMessageEventModel) {
       return model.localizedText(l10n);
     } else if (model is TwitchFollowEventModel) {
       return l10n.followingEvent(
-          model.followers.first.displayName ?? model.followers.first.login);
+        model.followers.first.displayName ?? model.followers.first.login,
+      );
     } else if (model is TwitchCheerEventModel) {
     } else if (model is TwitchPollEventModel) {
     } else if (model is TwitchChannelPointRedemptionEventModel) {
@@ -335,19 +354,25 @@ class TtsModel extends ChangeNotifier {
     _mode = mode;
     switch (mode) {
       case TtsMode.alertsOnly:
-        say(localizations,
-            SystemMessageModel(text: localizations.alertsEnabled),
-            force: true);
+        say(
+          localizations,
+          SystemMessageModel(text: localizations.alertsEnabled),
+          force: true,
+        );
         break;
       case TtsMode.enabled:
-        say(localizations,
-            SystemMessageModel(text: localizations.textToSpeechEnabled),
-            force: true);
+        say(
+          localizations,
+          SystemMessageModel(text: localizations.textToSpeechEnabled),
+          force: true,
+        );
         break;
       case TtsMode.disabled:
-        say(localizations,
-            SystemMessageModel(text: localizations.textToSpeechDisabled),
-            force: true);
+        say(
+          localizations,
+          SystemMessageModel(text: localizations.textToSpeechDisabled),
+          force: true,
+        );
         _releaseNeuralModelsWhenOff();
         break;
     }
@@ -467,9 +492,10 @@ class TtsModel extends ChangeNotifier {
   /// Identifies [user] for picking their voice: their provider and user id,
   /// or login if there's no id. Hashed with [fnv1a32], so a chatter keeps
   /// their voice across restarts and devices.
-  static String voiceKey(ChatUser user) => user.userId.isNotEmpty
-      ? '${user.provider}:${user.userId}'
-      : '${user.provider}:login:${user.login.toLowerCase()}';
+  static String voiceKey(ChatUser user) =>
+      user.userId.isNotEmpty
+          ? '${user.provider}:${user.userId}'
+          : '${user.provider}:login:${user.login.toLowerCase()}';
 
   static String _voiceKeyFor(String language) =>
       LanguageTag.parse(language).toString();
@@ -518,11 +544,13 @@ class TtsModel extends ChangeNotifier {
         await _releasing;
         final route =
             _neuralFallback == null ? await _router.route(language) : null;
-        await route?.engine.speak(text,
-            voice: route.voiceWithId(voiceId),
-            rate: _speed,
-            pitch: _pitch,
-            language: route.language);
+        await route?.engine.speak(
+          text,
+          voice: route.voiceWithId(voiceId),
+          rate: _speed,
+          pitch: _pitch,
+          language: route.language,
+        );
       } catch (e, st) {
         _reportError(e, st);
       } finally {
@@ -533,8 +561,11 @@ class TtsModel extends ChangeNotifier {
     return completer.future;
   }
 
-  void say(AppLocalizations localizations, MessageModel model,
-      {bool force = false}) async {
+  void say(
+    AppLocalizations localizations,
+    MessageModel model, {
+    bool force = false,
+  }) async {
     if (_mode == TtsMode.disabled && !force) {
       return;
     }
@@ -631,8 +662,11 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  Future<void> _speak(AppLocalizations localizations, MessageModel model,
-      String vocalization) async {
+  Future<void> _speak(
+    AppLocalizations localizations,
+    MessageModel model,
+    String vocalization,
+  ) async {
     _activeMessage = model;
 
     bool shouldSpeak() =>
@@ -648,24 +682,28 @@ class TtsModel extends ChangeNotifier {
     // a model being unloaded can't speak; the engine loads it again.
     await _releasing;
 
-    final language = model is ChatMessage
-        ? languageFor(model).languageCode
-        : localizations.localeName.replaceAll('_', '-');
+    final language =
+        model is ChatMessage
+            ? languageFor(model).languageCode
+            : localizations.localeName.replaceAll('_', '-');
     final route =
         _neuralFallback == null ? await _router.route(language) : null;
     if (route != null) {
       if (!shouldSpeak()) {
         return;
       }
-      final voice = model is ChatMessage && _isRandomVoiceEnabled
-          ? route.voiceForKey(voiceKey(model.author))
-          : route.voiceWithId(_chosenVoiceId(language, route.language));
+      final voice =
+          model is ChatMessage && _isRandomVoiceEnabled
+              ? route.voiceForKey(voiceKey(model.author))
+              : route.voiceWithId(_chosenVoiceId(language, route.language));
       try {
-        await route.engine.speak(vocalization,
-            voice: voice,
-            rate: _speed,
-            pitch: _pitch,
-            language: route.language);
+        await route.engine.speak(
+          vocalization,
+          voice: voice,
+          rate: _speed,
+          pitch: _pitch,
+          language: route.language,
+        );
         return;
       } on NeuralTtsLoadException catch (e, st) {
         _reportError(e, st);
@@ -684,8 +722,12 @@ class TtsModel extends ChangeNotifier {
       // otherwise, and for alerts, they keep their default.
       final systemLanguage =
           model is ChatMessage ? _knownLanguageFor(model) : null;
-      await _systemEngine.speak(vocalization,
-          rate: _speed, pitch: _pitch, language: systemLanguage?.languageCode);
+      await _systemEngine.speak(
+        vocalization,
+        rate: _speed,
+        pitch: _pitch,
+        language: systemLanguage?.languageCode,
+      );
     } catch (e, st) {
       _reportError(e, st);
     }
@@ -704,9 +746,10 @@ class TtsModel extends ChangeNotifier {
       return;
     }
     _neuralEngine = engine;
-    _router = engine == null
-        ? VoiceRouter.empty
-        : VoiceRouter([engine], onError: _reportError);
+    _router =
+        engine == null
+            ? VoiceRouter.empty
+            : VoiceRouter([engine], onError: _reportError);
     // another pack may load where the old one didn't.
     if (_neuralFallback == NeuralTtsFallback.loadFailed) {
       _neuralFallback = null;
@@ -793,15 +836,17 @@ class TtsModel extends ChangeNotifier {
   /// Once what is queued (e.g. "text to speech disabled") has been read,
   /// releases the neural model if text to speech is still off.
   void _releaseNeuralModelsWhenOff() => _afterQueue(() async {
-        if (_mode == TtsMode.disabled) await releaseNeuralModels();
-      });
+    if (_mode == TtsMode.disabled) await releaseNeuralModels();
+  });
 
   void _turnOffForBacklog(AppLocalizations localizations) {
     _pending.clear();
     _mode = TtsMode.disabled;
-    say(localizations,
-        SystemMessageModel(text: localizations.textToSpeechTooManyMessages),
-        force: true);
+    say(
+      localizations,
+      SystemMessageModel(text: localizations.textToSpeechTooManyMessages),
+      force: true,
+    );
     _releaseNeuralModelsWhenOff();
     // cut off the current utterance; everything queued behind it is dropped.
     _neuralEngine?.stop().catchError((_) {});
@@ -881,16 +926,17 @@ class TtsModel extends ChangeNotifier {
   /// [reportError], Crashlytics by default. [lookUpStreamLanguage] finds a
   /// channel's stream language, from its Firestore metadata by default;
   /// [clock] tells the time for retrying lookups.
-  TtsModel.fromJson(Map<String, dynamic> json,
-      {TtsEngine? engine,
-      TtsErrorReporter? reportError,
-      StreamLanguageLookup? lookUpStreamLanguage,
-      DateTime Function()? clock,
-      this.neuralIdleTimeout = defaultNeuralIdleTimeout})
-      : _systemEngine = engine ?? SystemTtsEngine(),
-        _reportError = reportError ?? _recordToCrashlytics,
-        _lookUpLanguage = lookUpStreamLanguage ?? _lookUpStreamLanguage,
-        _now = clock ?? DateTime.now {
+  TtsModel.fromJson(
+    Map<String, dynamic> json, {
+    TtsEngine? engine,
+    TtsErrorReporter? reportError,
+    StreamLanguageLookup? lookUpStreamLanguage,
+    DateTime Function()? clock,
+    this.neuralIdleTimeout = defaultNeuralIdleTimeout,
+  }) : _systemEngine = engine ?? SystemTtsEngine(),
+       _reportError = reportError ?? _recordToCrashlytics,
+       _lookUpLanguage = lookUpStreamLanguage ?? _lookUpStreamLanguage,
+       _now = clock ?? DateTime.now {
     _updateFromJsonInternal(json);
   }
 
@@ -912,14 +958,14 @@ class TtsModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-        "isBotMuted": isBotMuted,
-        "isEmoteMuted": isEmoteMuted,
-        "isPreludeMuted": isPreludeMuted,
-        "isRandomVoiceEnabled": isRandomVoiceEnabled,
-        "language": language.languageCode,
-        "pitch": pitch,
-        "speed": speed,
-        "neuralVoices": Map.of(_neuralVoices),
-        'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
-      };
+    "isBotMuted": isBotMuted,
+    "isEmoteMuted": isEmoteMuted,
+    "isPreludeMuted": isPreludeMuted,
+    "isRandomVoiceEnabled": isRandomVoiceEnabled,
+    "language": language.languageCode,
+    "pitch": pitch,
+    "speed": speed,
+    "neuralVoices": Map.of(_neuralVoices),
+    'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
+  };
 }

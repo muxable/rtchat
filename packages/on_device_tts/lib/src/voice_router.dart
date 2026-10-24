@@ -48,10 +48,11 @@ class VoiceRouter {
 
   /// [onError] hears about engines whose voices can't be listed; they are
   /// skipped, and listed again next time.
-  VoiceRouter(Iterable<TtsEngine> engines,
-      {void Function(Object error, StackTrace stack)? onError})
-      : engines = List.unmodifiable(engines),
-        _onError = onError;
+  VoiceRouter(
+    Iterable<TtsEngine> engines, {
+    void Function(Object error, StackTrace stack)? onError,
+  }) : engines = List.unmodifiable(engines),
+       _onError = onError;
 
   /// Routes nothing: every language goes to the fallback.
   static final empty = VoiceRouter(const []);
@@ -61,8 +62,9 @@ class VoiceRouter {
   Future<VoiceRoute?> route(String language) async {
     for (final engine in engines) {
       final voices = await _voicesOf(engine);
-      final match =
-          LanguageTag.bestMatch(language, {for (final v in voices) v.locale});
+      final match = LanguageTag.bestMatch(language, {
+        for (final v in voices) v.locale,
+      });
       if (match == null) continue;
       return VoiceRoute(engine, match, [
         for (final voice in voices)
@@ -73,7 +75,8 @@ class VoiceRouter {
   }
 
   /// Every language the engines speak, as their own tags, without repeats.
-  Future<List<String>> languages() async => {
+  Future<List<String>> languages() async =>
+      {
         for (final engine in engines)
           for (final voice in await _voicesOf(engine)) voice.locale,
       }.toList();

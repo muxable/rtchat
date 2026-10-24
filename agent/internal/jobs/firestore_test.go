@@ -143,8 +143,12 @@ func TestFirestoreMetadataOrdering(t *testing.T) {
 	started := time.Now().Add(-time.Second)
 	ref := db.Collection("channels").Doc("kick:1")
 	ref.Set(ctx, map[string]interface{}{"viewerCount": int64(100), "title": "new webhook"})
-	if err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"viewerCount": int64(1), "title": "stale poll"}}}); err != nil {
+	written, err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"viewerCount": int64(1), "title": "stale poll"}}})
+	if err != nil {
 		t.Fatal(err)
+	}
+	if written != 0 {
+		t.Fatalf("stale poll counted %d writes", written)
 	}
 	doc, err := ref.Get(ctx)
 	if err != nil {
@@ -153,8 +157,8 @@ func TestFirestoreMetadataOrdering(t *testing.T) {
 	if doc.Data()["title"] != "new webhook" {
 		t.Fatal(doc.Data())
 	}
-	if err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"followerCount": int64(42)}}}); err != nil {
-		t.Fatal(err)
+	if written, err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"followerCount": int64(42)}}}); err != nil || written != 1 {
+		t.Fatal(written, err)
 	}
 	doc, _ = ref.Get(ctx)
 	if doc.Data()["followerCount"] != int64(42) {
@@ -165,14 +169,25 @@ func TestFirestoreKickActiveBatching(t *testing.T) {
 	db := emulator(t)
 	ctx := context.Background()
 	now := time.Now()
-	writes := db.Batch()
-	for i := 0; i < 52; i++ {
-		writes.Set(db.Collection("webhooks").Doc(fmt.Sprint("kick:", i)), map[string]interface{}{"lastActiveAt": now})
+	writes := db.BulkWriter(ctx)
+	var jobs []*firestore.BulkWriterJob
+	set := func(id string, data map[string]interface{}) {
+		job, err := writes.Set(db.Collection("webhooks").Doc(id), data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		jobs = append(jobs, job)
 	}
-	writes.Set(db.Collection("webhooks").Doc("kick:idle"), map[string]interface{}{"lastActiveAt": now.Add(-25 * time.Hour)})
-	writes.Set(db.Collection("webhooks").Doc("twitch:123"), map[string]interface{}{"lastActiveAt": now})
-	if _, err := writes.Commit(ctx); err != nil {
-		t.Fatal(err)
+	for i := 0; i < 52; i++ {
+		set(fmt.Sprint("kick:", i), map[string]interface{}{"lastActiveAt": now})
+	}
+	set("kick:idle", map[string]interface{}{"lastActiveAt": now.Add(-25 * time.Hour)})
+	set("twitch:123", map[string]interface{}{"lastActiveAt": now})
+	writes.End()
+	for _, job := range jobs {
+		if _, err := job.Results(); err != nil {
+			t.Fatal(err)
+		}
 	}
 	calls, total := 0, 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

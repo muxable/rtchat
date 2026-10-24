@@ -1,0 +1,28 @@
+# Covered by its own Prettier check (functions/package.json format:check).
+functions/
+
+# Go code, checked with gofmt.
+agent/
+
+# Dart app sources and generated localizations.
+lib/
+
+# Generated or tool-managed files.
+**/package-lock.json
+android/
+ios/
+macos/
+linux/
+windows/
+web/
+build/
+.dart_tool/
+node_modules/
+coverage/
+
+# Test fixtures may be compared byte-for-byte.
+test/fixtures/
+**/Fixtures/
+
+# Prose docs: reflowing wide tables and list markers is churn, not a fix.
+*.md

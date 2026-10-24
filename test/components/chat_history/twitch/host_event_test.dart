@@ -14,42 +14,55 @@ import '../../l10n.dart';
 void main() {
   AutomatedTestWidgetsFlutterBinding();
   HttpOverrides.global = null;
-  testWidgets('host event should have channel name and viewer count',
-      // the avatar is a real network image that flutter's image cache keeps.
-      experimentalLeakTesting: LeakTesting.settings
-          .withIgnored(classes: ['ImageStreamCompleterHandle', '_LiveImage']),
-      (WidgetTester tester) async {
-    final model = TwitchHostEventModel(
-      timestamp: DateTime.now(),
-      messageId: "testMessageId",
-      from: const TwitchUserModel(
-          userId: '158394109', login: "automux", displayName: "automux"),
-      viewers: 10,
-    );
-    await tester.pumpWidget(buildWidget(model));
+  testWidgets(
+    'host event should have channel name and viewer count',
+    // the avatar is a real network image that flutter's image cache keeps.
+    experimentalLeakTesting: LeakTesting.settings.withIgnored(
+      classes: ['ImageStreamCompleterHandle', '_LiveImage'],
+    ),
+    (WidgetTester tester) async {
+      final model = TwitchHostEventModel(
+        timestamp: DateTime.now(),
+        messageId: "testMessageId",
+        from: const TwitchUserModel(
+          userId: '158394109',
+          login: "automux",
+          displayName: "automux",
+        ),
+        viewers: 10,
+      );
+      await tester.pumpWidget(buildWidget(model));
 
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    final findText = find.byWidgetPredicate((Widget widget) =>
-        widget is RichText &&
-        widget.text.toPlainText() == "automux is hosting with a party of 10.");
+      final findText = find.byWidgetPredicate(
+        (Widget widget) =>
+            widget is RichText &&
+            widget.text.toPlainText() ==
+                "automux is hosting with a party of 10.",
+      );
 
-    expect(findText, findsOneWidget);
-  });
+      expect(findText, findsOneWidget);
+    },
+  );
 }
 
 Widget buildWidget(TwitchHostEventModel model) {
   return TestLocalizations(
     child: ChangeNotifierProvider<StyleModel>(
-        create: (_) => StyleModel.fromJson({
-              "fontSize": 20.0,
-              "lightnessBoost": 0.179,
-              "isDeletedMessagesVisible": true
-            }),
-        child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: MediaQuery(
-                data: const MediaQueryData(),
-                child: TwitchHostEventWidget(model)))),
+      create:
+          (_) => StyleModel.fromJson({
+            "fontSize": 20.0,
+            "lightnessBoost": 0.179,
+            "isDeletedMessagesVisible": true,
+          }),
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: MediaQuery(
+          data: const MediaQueryData(),
+          child: TwitchHostEventWidget(model),
+        ),
+      ),
+    ),
   );
 }

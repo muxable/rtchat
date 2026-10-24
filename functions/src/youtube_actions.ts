@@ -1,6 +1,6 @@
 import fetch from "cross-fetch";
 import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import { getAccessToken } from "./oauth";
 
 // Chat actions on YouTube, taken on behalf of the signed-in user with their
@@ -38,55 +38,55 @@ export function toHttpsError(status: number, body: any) {
       return new functions.https.HttpsError(
         "resource-exhausted",
         QUOTA_EXCEEDED_MESSAGE,
-        details
+        details,
       );
     case "rateLimitExceeded":
     case "userRateLimitExceeded":
       return new functions.https.HttpsError(
         "resource-exhausted",
         "YouTube is rate limiting chat actions. Try again in a moment.",
-        details
+        details,
       );
   }
   if (reason && LIVE_CHAT_GONE.has(reason)) {
     return new functions.https.HttpsError(
       "failed-precondition",
       "This YouTube live chat isn't active.",
-      details
+      details,
     );
   }
   if (status === 401) {
     return new functions.https.HttpsError(
       "unauthenticated",
       "YouTube sign-in expired. Sign in with YouTube again.",
-      details
+      details,
     );
   }
   if (status === 403) {
     return new functions.https.HttpsError(
       "permission-denied",
       "YouTube didn't allow this action.",
-      details
+      details,
     );
   }
   if (status === 404) {
     return new functions.https.HttpsError(
       "not-found",
       "Not found on YouTube.",
-      details
+      details,
     );
   }
   return new functions.https.HttpsError(
     status >= 500 ? "unavailable" : "internal",
     "YouTube request failed.",
-    details
+    details,
   );
 }
 
 export async function youtubeApi(
   accessToken: string,
   path: string,
-  init: RequestInit = {}
+  init: RequestInit = {},
 ) {
   const response = await fetch(`${YOUTUBE_API}${path}`, {
     ...init,
@@ -121,11 +121,11 @@ export interface YouTubeProfile {
 // The signed-in user's own channel, stored at profiles/{uid}.youtube. Accounts
 // without a YouTube channel can't chat, so they get null.
 export async function getYouTubeProfile(
-  accessToken: string
+  accessToken: string,
 ): Promise<YouTubeProfile | null> {
   const response = await youtubeApi(
     accessToken,
-    "/channels?part=snippet&mine=true"
+    "/channels?part=snippet&mine=true",
   );
   const channel = response?.items?.[0];
   if (!channel?.id) {
@@ -149,7 +149,7 @@ async function userToken(uid: string) {
   if (!token) {
     throw new functions.https.HttpsError(
       "failed-precondition",
-      "youtube account not linked"
+      "youtube account not linked",
     );
   }
   return token;
@@ -176,7 +176,7 @@ export function toYouTubeMessageId(messageId: string) {
 export async function findLiveVideoId(channelId: string) {
   const response = await fetch(
     `https://www.youtube.com/channel/${encodeURIComponent(channelId)}/live`,
-    { headers: { "Accept-Language": "en" } }
+    { headers: { "Accept-Language": "en" } },
   );
   if (!response.ok) {
     return null;
@@ -184,7 +184,7 @@ export async function findLiveVideoId(channelId: string) {
   const html = await response.text();
   const match =
     /<link[^>]+rel="canonical"[^>]+href="https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})"/.exec(
-      html
+      html,
     );
   return match ? match[1] : null;
 }
@@ -209,7 +209,7 @@ export async function findLiveChatId(
   uid: string,
   accessToken: string,
   channelId: string,
-  videoId?: string
+  videoId?: string,
 ) {
   const cached = liveChatIds.get(channelId);
   if (!videoId && cached && cached.expiresAt > Date.now()) {
@@ -219,12 +219,12 @@ export async function findLiveChatId(
   if (!videoId && (await ownChannelId(uid)) === channelId) {
     const response = await youtubeApi(
       accessToken,
-      "/liveBroadcasts?part=snippet&broadcastStatus=active&broadcastType=all&maxResults=50"
+      "/liveBroadcasts?part=snippet&broadcastStatus=active&broadcastType=all&maxResults=50",
     );
     liveChatId = (response?.items ?? []).find(
       (item: any) =>
         item?.snippet?.liveChatId &&
-        (!item.snippet.channelId || item.snippet.channelId === channelId)
+        (!item.snippet.channelId || item.snippet.channelId === channelId),
     )?.snippet?.liveChatId;
   }
   if (!liveChatId) {
@@ -233,8 +233,8 @@ export async function findLiveChatId(
       const response = await youtubeApi(
         accessToken,
         `/videos?part=liveStreamingDetails,snippet&id=${encodeURIComponent(
-          video
-        )}`
+          video,
+        )}`,
       );
       const item = response?.items?.[0];
       if (!item?.snippet?.channelId || item.snippet.channelId === channelId) {
@@ -246,7 +246,7 @@ export async function findLiveChatId(
     throw new functions.https.HttpsError(
       "failed-precondition",
       "This YouTube channel isn't live.",
-      { provider: "youtube", reason: "notLive" }
+      { provider: "youtube", reason: "notLive" },
     );
   }
   liveChatIds.set(channelId, {
@@ -262,7 +262,7 @@ async function withLiveChat<T>(
   uid: string,
   channelId: string,
   videoId: string | undefined,
-  action: (token: string, liveChatId: string) => Promise<T>
+  action: (token: string, liveChatId: string) => Promise<T>,
 ) {
   const token = await userToken(uid);
   const liveChatId = await findLiveChatId(uid, token, channelId, videoId);
@@ -293,13 +293,13 @@ export async function sendYouTubeMessage(
   uid: string,
   channelId: string,
   message: string,
-  videoId?: string
+  videoId?: string,
 ) {
   requireChannelId(channelId);
   if ([...message].length > MAX_MESSAGE_LENGTH) {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      `YouTube messages can be at most ${MAX_MESSAGE_LENGTH} characters.`
+      `YouTube messages can be at most ${MAX_MESSAGE_LENGTH} characters.`,
     );
   }
   const response = await withLiveChat(
@@ -316,7 +316,7 @@ export async function sendYouTubeMessage(
             textMessageDetails: { messageText: message },
           },
         }),
-      })
+      }),
   );
   return response?.id ? `youtube:${response.id}` : null;
 }
@@ -329,7 +329,7 @@ export async function deleteYouTubeMessage(uid: string, messageId: string) {
   await youtubeApi(
     await userToken(uid),
     `/liveChat/messages?id=${encodeURIComponent(id)}`,
-    { method: "DELETE" }
+    { method: "DELETE" },
   );
 }
 
@@ -339,7 +339,7 @@ export async function banYouTubeUser(
   uid: string,
   channelId: string,
   userChannelId: string,
-  options: { durationSeconds?: number; videoId?: string } = {}
+  options: { durationSeconds?: number; videoId?: string } = {},
 ) {
   requireChannelId(channelId);
   requireChannelId(userChannelId, "user");
@@ -364,7 +364,7 @@ export async function banYouTubeUser(
             bannedUserDetails: { channelId: userChannelId },
           },
         }),
-      })
+      }),
   );
   return (response?.id as string | undefined) ?? null;
 }

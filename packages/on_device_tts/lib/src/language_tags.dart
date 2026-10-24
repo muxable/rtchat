@@ -93,8 +93,8 @@ class LanguageTag {
   /// The normalized tag, e.g. `zh-hant-tw`.
   @override
   String toString() => [
-        language,
-        if (script != null) script,
-        if (region != null) region,
-      ].join('-');
+    language,
+    if (script != null) script,
+    if (region != null) region,
+  ].join('-');
 }

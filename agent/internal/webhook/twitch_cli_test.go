@@ -99,20 +99,19 @@ type twitchDelivery struct {
 // what the CLI sent and what the handler answered.
 type twitchCLIServer struct {
 	*httptest.Server
-	store     *lockedTwitchStore
-	refreshes []string
+	store *lockedTwitchStore
 
-	mu         sync.Mutex
-	deliveries []twitchDelivery
+	mu           sync.Mutex
+	deliveries   []twitchDelivery
+	deauthorized []string
 }
 
 func newTwitchCLIServer(t *testing.T) *twitchCLIServer {
 	s := &twitchCLIServer{store: &lockedTwitchStore{}}
-	h := &TwitchHandler{Secret: twitchCLISecret, Store: s.store, RefreshChannel: func(_ context.Context, id string) error {
+	h := &TwitchHandler{Secret: twitchCLISecret, Store: s.store, OnDeauthorized: func(id string, _ bool) {
 		s.mu.Lock()
 		defer s.mu.Unlock()
-		s.refreshes = append(s.refreshes, id)
-		return nil
+		s.deauthorized = append(s.deauthorized, id)
 	}}
 	server := NewServer(Secrets{})
 	server.RegisterProvider("/twitch/", h)
@@ -154,12 +153,6 @@ func (s *twitchCLIServer) delivery(t *testing.T) twitchDelivery {
 	return s.deliveries[0]
 }
 
-func (s *twitchCLIServer) refreshed() []string {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return append([]string(nil), s.refreshes...)
-}
-
 // lockedTwitchStore records writes made on the server's goroutines.
 type lockedTwitchStore struct {
 	mu    sync.Mutex
@@ -170,6 +163,12 @@ func (s *lockedTwitchStore) Set(ctx context.Context, path string, data map[strin
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.store.Set(ctx, path, data, merge)
+}
+
+func (s *lockedTwitchStore) Create(ctx context.Context, path string, data map[string]interface{}) (bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.store.Create(ctx, path, data)
 }
 
 func (s *lockedTwitchStore) Update(ctx context.Context, path string, data map[string]interface{}) error {
@@ -263,7 +262,11 @@ func TestTwitchCLINotifications(t *testing.T) {
 				t.Fatal("no writes")
 			}
 			message := writes[0]
-			if message.Path != twitchCLIChannel+"/messages/twitch:"+messageID || message.Merge || message.Update {
+			messagePath := twitchCLIChannel + "/messages/twitch:" + messageID
+			if test.eventType == "channel.follow" {
+				messagePath = twitchCLIChannel + "/messages/twitch:follow:" + event["user_id"].(string)
+			}
+			if message.Path != messagePath || message.Merge || message.Update || message.Create != (test.eventType == "channel.follow") {
 				t.Fatalf("message written as %#v", message)
 			}
 			if message.Data["channelId"] != "twitch:"+twitchCLIBroadcaster || message.Data["type"] != test.eventType {
@@ -288,11 +291,9 @@ func TestTwitchCLINotifications(t *testing.T) {
 				channel = writes[1:]
 			}
 			var want []twitchDocument
-			var refreshes []string
 			switch test.eventType {
 			case "stream.online":
 				want = []twitchDocument{{Path: twitchCLIChannel, Data: map[string]interface{}{"onlineAt": firestore.ServerTimestamp}, Merge: true}}
-				refreshes = []string{"twitch:" + twitchCLIBroadcaster}
 			case "stream.offline":
 				want = []twitchDocument{{Path: twitchCLIChannel, Data: map[string]interface{}{"onlineAt": nil}, Merge: true}}
 			case "channel.follow":
@@ -307,10 +308,40 @@ func TestTwitchCLINotifications(t *testing.T) {
 			if !reflect.DeepEqual(channel, want) {
 				t.Fatalf("channel writes %#v, want %#v", channel, want)
 			}
-			if got := s.refreshed(); !reflect.DeepEqual(got, refreshes) {
-				t.Fatalf("refreshed %v, want %v", got, refreshes)
-			}
 		})
+	}
+}
+
+// Twitch sometimes sends two follows, with different message ids, for one
+// follower. Only the first is recorded and counted.
+func TestTwitchCLIRepeatedFollow(t *testing.T) {
+	twitchCLI(t)
+	s := newTwitchCLIServer(t)
+	first := triggerTwitchCLI(t, s, twitchCLISecret, "channel.follow", "2", "-f", "5678")
+	second := triggerTwitchCLI(t, s, twitchCLISecret, "channel.follow", "2", "-f", "5678")
+	if first == second {
+		t.Fatal("cli reused the message id")
+	}
+	s.mu.Lock()
+	for _, d := range s.deliveries {
+		if d.status != http.StatusOK {
+			t.Fatalf("status %d, want 200", d.status)
+		}
+	}
+	s.mu.Unlock()
+	want := []twitchDocument{
+		{Path: twitchCLIChannel + "/messages/twitch:follow:5678", Create: true},
+		{Path: twitchCLIChannel, Update: true},
+		{Path: twitchCLIChannel + "/messages/twitch:follow:5678", Create: true},
+	}
+	writes := s.store.writes()
+	if len(writes) != len(want) {
+		t.Fatalf("writes %#v", writes)
+	}
+	for i, write := range writes {
+		if write.Path != want[i].Path || write.Create != want[i].Create || write.Update != want[i].Update {
+			t.Fatalf("write %d %#v, want %#v", i, write, want[i])
+		}
 	}
 }
 
@@ -377,9 +408,6 @@ func TestTwitchCLIWrongSecret(t *testing.T) {
 		if writes := s.store.writes(); len(writes) != 0 {
 			t.Fatalf("writes %#v", writes)
 		}
-		if got := s.refreshed(); len(got) != 0 {
-			t.Fatalf("refreshed %v", got)
-		}
 	})
 	t.Run("challenge", func(t *testing.T) {
 		s := newTwitchCLIServer(t)
@@ -390,4 +418,31 @@ func TestTwitchCLIWrongSecret(t *testing.T) {
 			t.Fatalf("status %d, want 403", d.status)
 		}
 	})
+}
+
+// The app's user.authorization.revoke subscription is acknowledged without a
+// chat message and reports the broadcaster.
+func TestTwitchCLIAuthorizationRevoke(t *testing.T) {
+	twitchCLI(t)
+	s := newTwitchCLIServer(t)
+	// The CLI sends the --from-user as the user who revoked.
+	args := []string{"event", "trigger", "user.authorization.revoke", "--transport=webhook", "-F", s.callback(), "-s", twitchCLISecret, "--no-config", "-f", twitchCLIBroadcaster, "--client-id", "client"}
+	if out, err := runTwitchCLI(t, args...); err != nil {
+		t.Fatalf("twitch %v: %v\n%s", args, err, out)
+	}
+	d := s.delivery(t)
+	if d.status != http.StatusOK {
+		t.Fatalf("status %d, want 200", d.status)
+	}
+	if event := sentEvent(t, d); event["user_id"] != twitchCLIBroadcaster || event["client_id"] != "client" {
+		t.Fatalf("cli sent %#v", event)
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if !reflect.DeepEqual(s.deauthorized, []string{twitchCLIBroadcaster}) {
+		t.Fatalf("deauthorized %v", s.deauthorized)
+	}
+	if writes := s.store.writes(); len(writes) != 0 {
+		t.Fatalf("writes %#v", writes)
+	}
 }

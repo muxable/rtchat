@@ -6,8 +6,8 @@ import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 // (controllers, notifiers, focus nodes, images...).
 FutureOr<void> testExecutable(FutureOr<void> Function() testMain) async {
   LeakTesting.enable();
-  LeakTesting.settings = LeakTesting.settings
-      .withTrackedAll()
-      .withIgnored(createdByTestHelpers: true);
+  LeakTesting.settings = LeakTesting.settings.withTrackedAll().withIgnored(
+    createdByTestHelpers: true,
+  );
   await testMain();
 }

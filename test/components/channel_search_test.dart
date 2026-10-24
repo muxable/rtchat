@@ -7,15 +7,16 @@ import 'l10n.dart';
 
 SearchResult result(String provider, String login, {bool isOnline = false}) =>
     SearchResult(
-        channelId: login,
-        provider: provider,
-        login: login,
-        displayName: login,
-        isOnline: isOnline,
-        imageUrl: Uri.parse("https://example.com/$login.png"),
-        title: null,
-        isPromoted: true,
-        language: null);
+      channelId: login,
+      provider: provider,
+      login: login,
+      displayName: login,
+      isOnline: isOnline,
+      imageUrl: Uri.parse("https://example.com/$login.png"),
+      title: null,
+      isPromoted: true,
+      language: null,
+    );
 
 void main() {
   group("filterRecentChannels", () {
@@ -28,36 +29,57 @@ void main() {
 
     test("keeps only the selected provider's channels", () {
       expect(
-          filterRecentChannels(recent, "xqc", "kick")
-              .map((r) => "${r.provider}:${r.login}"),
-          ["kick:xqcshadow", "kick:xqc"]);
+        filterRecentChannels(
+          recent,
+          "xqc",
+          "kick",
+        ).map((r) => "${r.provider}:${r.login}"),
+        ["kick:xqcshadow", "kick:xqc"],
+      );
       expect(
-          filterRecentChannels(recent, "", "twitch")
-              .map((r) => "${r.provider}:${r.login}"),
-          ["twitch:xqc", "twitch:muxfd"]);
+        filterRecentChannels(
+          recent,
+          "",
+          "twitch",
+        ).map((r) => "${r.provider}:${r.login}"),
+        ["twitch:xqc", "twitch:muxfd"],
+      );
     });
 
     test("matches the query case-insensitively", () {
-      expect(filterRecentChannels(recent, "MUX", "twitch").map((r) => r.login),
-          ["muxfd"]);
+      expect(
+        filterRecentChannels(recent, "MUX", "twitch").map((r) => r.login),
+        ["muxfd"],
+      );
       expect(filterRecentChannels(recent, "MUX", "kick"), isEmpty);
     });
   });
 
-  testWidgets("the provider dropdown switches which provider is searched",
-      (tester) async {
+  testWidgets("the provider dropdown switches which provider is searched", (
+    tester,
+  ) async {
     final calls = <String>[];
     Stream<List<SearchResult>> fakeSearch(
-        String query, String provider, bool isShowOnlyOnline) {
+      String query,
+      String provider,
+      bool isShowOnlyOnline,
+    ) {
       calls.add("$provider:$query");
       return Stream.value(const []);
     }
 
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(
+      MaterialApp(
         home: TestLocalizations(
-            child: Material(
-                child: ChannelSearchBottomSheetWidget(
-                    onChannelSelect: (_) {}, search: fakeSearch)))));
+          child: Material(
+            child: ChannelSearchBottomSheetWidget(
+              onChannelSelect: (_) {},
+              search: fakeSearch,
+            ),
+          ),
+        ),
+      ),
+    );
     await tester.pump();
 
     expect(find.text("twitch.tv/"), findsOneWidget);

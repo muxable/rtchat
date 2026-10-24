@@ -8,13 +8,13 @@ class FollowEventConfig {
   FollowEventConfig(this.showEvent, this.eventDuration);
 
   FollowEventConfig.fromJson(Map<String, dynamic> json)
-      : showEvent = json['showEvent'],
-        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+    : showEvent = json['showEvent'],
+      eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
-        "showEvent": showEvent,
-        "eventDuration": eventDuration.inSeconds.toInt(),
-      };
+    "showEvent": showEvent,
+    "eventDuration": eventDuration.inSeconds.toInt(),
+  };
 }
 
 class SubscriptionEventConfig {
@@ -23,18 +23,21 @@ class SubscriptionEventConfig {
   Duration eventDuration;
 
   SubscriptionEventConfig(
-      this.showEvent, this.showIndividualGifts, this.eventDuration);
+    this.showEvent,
+    this.showIndividualGifts,
+    this.eventDuration,
+  );
 
   SubscriptionEventConfig.fromJson(Map<String, dynamic> json)
-      : showEvent = json['showEvent'],
-        showIndividualGifts = json['showIndividualGifts'],
-        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+    : showEvent = json['showEvent'],
+      showIndividualGifts = json['showIndividualGifts'],
+      eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
-        "showEvent": showEvent,
-        "showIndividualGifts": showIndividualGifts,
-        "eventDuration": eventDuration.inSeconds.toInt(),
-      };
+    "showEvent": showEvent,
+    "showIndividualGifts": showIndividualGifts,
+    "eventDuration": eventDuration.inSeconds.toInt(),
+  };
 }
 
 class CheerEventConfig {
@@ -44,13 +47,13 @@ class CheerEventConfig {
   CheerEventConfig(this.showEvent, this.eventDuration);
 
   CheerEventConfig.fromJson(Map<String, dynamic> json)
-      : showEvent = json['showEvent'],
-        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+    : showEvent = json['showEvent'],
+      eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
-        "showEvent": showEvent,
-        "eventDuration": eventDuration.inSeconds.toInt(),
-      };
+    "showEvent": showEvent,
+    "eventDuration": eventDuration.inSeconds.toInt(),
+  };
 }
 
 class RaidEventConfig {
@@ -59,18 +62,21 @@ class RaidEventConfig {
   bool enableShoutoutButton;
 
   RaidEventConfig(
-      this.showEvent, this.eventDuration, this.enableShoutoutButton);
+    this.showEvent,
+    this.eventDuration,
+    this.enableShoutoutButton,
+  );
 
   RaidEventConfig.fromJson(Map<String, dynamic> json)
-      : showEvent = json['showEvent'],
-        eventDuration = Duration(seconds: json['eventDuration'].toInt()),
-        enableShoutoutButton = json['enableShoutoutButton'] ?? false;
+    : showEvent = json['showEvent'],
+      eventDuration = Duration(seconds: json['eventDuration'].toInt()),
+      enableShoutoutButton = json['enableShoutoutButton'] ?? false;
 
   Map<String, dynamic> toJson() => {
-        "showEvent": showEvent,
-        "eventDuration": eventDuration.inSeconds.toInt(),
-        "enableShoutoutButton": enableShoutoutButton,
-      };
+    "showEvent": showEvent,
+    "eventDuration": eventDuration.inSeconds.toInt(),
+    "enableShoutoutButton": enableShoutoutButton,
+  };
 }
 
 class HostEventConfig {
@@ -80,13 +86,13 @@ class HostEventConfig {
   HostEventConfig(this.showEvent, this.eventDuration);
 
   HostEventConfig.fromJson(Map<String, dynamic> json)
-      : showEvent = json['showEvent'],
-        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+    : showEvent = json['showEvent'],
+      eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
-        "showEvent": showEvent,
-        "eventDuration": eventDuration.inSeconds.toInt(),
-      };
+    "showEvent": showEvent,
+    "eventDuration": eventDuration.inSeconds.toInt(),
+  };
 }
 
 class ChannelPointRedemptionEventConfig {
@@ -95,20 +101,24 @@ class ChannelPointRedemptionEventConfig {
   Duration unfulfilledAdditionalDuration;
 
   ChannelPointRedemptionEventConfig(
-      this.showEvent, this.eventDuration, this.unfulfilledAdditionalDuration);
+    this.showEvent,
+    this.eventDuration,
+    this.unfulfilledAdditionalDuration,
+  );
 
   ChannelPointRedemptionEventConfig.fromJson(Map<String, dynamic> json)
-      : showEvent = json['showEvent'],
-        eventDuration = Duration(seconds: json['eventDuration'].toInt()),
-        unfulfilledAdditionalDuration =
-            Duration(seconds: json['unfulfilledAdditionalDuration'].toInt());
+    : showEvent = json['showEvent'],
+      eventDuration = Duration(seconds: json['eventDuration'].toInt()),
+      unfulfilledAdditionalDuration = Duration(
+        seconds: json['unfulfilledAdditionalDuration'].toInt(),
+      );
 
   Map<String, dynamic> toJson() => {
-        "showEvent": showEvent,
-        "eventDuration": eventDuration.inSeconds.toInt(),
-        "unfulfilledAdditionalDuration":
-            unfulfilledAdditionalDuration.inSeconds.toInt(),
-      };
+    "showEvent": showEvent,
+    "eventDuration": eventDuration.inSeconds.toInt(),
+    "unfulfilledAdditionalDuration":
+        unfulfilledAdditionalDuration.inSeconds.toInt(),
+  };
 }
 
 class PollEventConfig {
@@ -118,13 +128,13 @@ class PollEventConfig {
   PollEventConfig(this.showEvent, this.eventDuration);
 
   PollEventConfig.fromJson(Map<String, dynamic> json)
-      : showEvent = json['showEvent'],
-        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+    : showEvent = json['showEvent'],
+      eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
-        "showEvent": showEvent,
-        "eventDuration": eventDuration.inSeconds.toInt(),
-      };
+    "showEvent": showEvent,
+    "eventDuration": eventDuration.inSeconds.toInt(),
+  };
 }
 
 class HypetrainEventConfig {
@@ -134,13 +144,13 @@ class HypetrainEventConfig {
   HypetrainEventConfig(this.showEvent, this.eventDuration);
 
   HypetrainEventConfig.fromJson(Map<String, dynamic> json)
-      : showEvent = json['showEvent'],
-        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+    : showEvent = json['showEvent'],
+      eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
-        "showEvent": showEvent,
-        "eventDuration": eventDuration.inSeconds.toInt(),
-      };
+    "showEvent": showEvent,
+    "eventDuration": eventDuration.inSeconds.toInt(),
+  };
 }
 
 class PredictionEventConfig {
@@ -150,37 +160,58 @@ class PredictionEventConfig {
   PredictionEventConfig(this.showEvent, this.eventDuration);
 
   PredictionEventConfig.fromJson(Map<String, dynamic> json)
-      : showEvent = json['showEvent'],
-        eventDuration = Duration(seconds: json['eventDuration'].toInt());
+    : showEvent = json['showEvent'],
+      eventDuration = Duration(seconds: json['eventDuration'].toInt());
 
   Map<String, dynamic> toJson() => {
-        "showEvent": showEvent,
-        "eventDuration": eventDuration.inSeconds.toInt(),
-      };
+    "showEvent": showEvent,
+    "eventDuration": eventDuration.inSeconds.toInt(),
+  };
 }
 
 class EventSubConfigurationModel extends ChangeNotifier {
-  FollowEventConfig followEventConfig =
-      FollowEventConfig(true, const Duration(seconds: 2));
-  SubscriptionEventConfig subscriptionEventConfig =
-      SubscriptionEventConfig(true, false, const Duration(seconds: 6));
-  CheerEventConfig cheerEventConfig =
-      CheerEventConfig(true, const Duration(seconds: 6));
-  RaidEventConfig raidEventConfig =
-      RaidEventConfig(true, const Duration(seconds: 6), false);
-  HostEventConfig hostEventConfig =
-      HostEventConfig(true, const Duration(seconds: 6));
+  FollowEventConfig followEventConfig = FollowEventConfig(
+    true,
+    const Duration(seconds: 2),
+  );
+  SubscriptionEventConfig subscriptionEventConfig = SubscriptionEventConfig(
+    true,
+    false,
+    const Duration(seconds: 6),
+  );
+  CheerEventConfig cheerEventConfig = CheerEventConfig(
+    true,
+    const Duration(seconds: 6),
+  );
+  RaidEventConfig raidEventConfig = RaidEventConfig(
+    true,
+    const Duration(seconds: 6),
+    false,
+  );
+  HostEventConfig hostEventConfig = HostEventConfig(
+    true,
+    const Duration(seconds: 6),
+  );
   ChannelPointRedemptionEventConfig channelPointRedemptionEventConfig =
       ChannelPointRedemptionEventConfig(
-          true, const Duration(seconds: 6), const Duration(seconds: 0));
-  PollEventConfig pollEventConfig =
-      PollEventConfig(true, const Duration(seconds: 6));
-  HypetrainEventConfig hypetrainEventConfig =
-      HypetrainEventConfig(true, const Duration(seconds: 6));
-  PredictionEventConfig predictionEventConfig =
-      PredictionEventConfig(true, const Duration(seconds: 6));
+        true,
+        const Duration(seconds: 6),
+        const Duration(seconds: 0),
+      );
+  PollEventConfig pollEventConfig = PollEventConfig(
+    true,
+    const Duration(seconds: 6),
+  );
+  HypetrainEventConfig hypetrainEventConfig = HypetrainEventConfig(
+    true,
+    const Duration(seconds: 6),
+  );
+  PredictionEventConfig predictionEventConfig = PredictionEventConfig(
+    true,
+    const Duration(seconds: 6),
+  );
   RaidingEventConfig
-      raidingEventConfig = // 90 seconds for raid + 10 for join prompt.
+  raidingEventConfig = // 90 seconds for raid + 10 for join prompt.
       RaidingEventConfig(true, const Duration(seconds: 100));
   // other configs
   // final HypeTrainEventConfig;
@@ -246,7 +277,8 @@ class EventSubConfigurationModel extends ChangeNotifier {
   }
 
   void setChannelPointRedemptionEventUnfulfilledAdditionalDuration(
-      Duration value) {
+    Duration value,
+  ) {
     channelPointRedemptionEventConfig.unfulfilledAdditionalDuration = value;
     notifyListeners();
   }
@@ -306,8 +338,9 @@ class EventSubConfigurationModel extends ChangeNotifier {
       followEventConfig = FollowEventConfig.fromJson(json['followEventConfig']);
     }
     if (json['subscriptionEventConfig'] != null) {
-      subscriptionEventConfig =
-          SubscriptionEventConfig.fromJson(json['subscriptionEventConfig']);
+      subscriptionEventConfig = SubscriptionEventConfig.fromJson(
+        json['subscriptionEventConfig'],
+      );
     }
     if (json['cheerEventConfig'] != null) {
       cheerEventConfig = CheerEventConfig.fromJson(json['cheerEventConfig']);
@@ -321,36 +354,40 @@ class EventSubConfigurationModel extends ChangeNotifier {
     if (json['channelPointRedemptionEventConfig'] != null) {
       channelPointRedemptionEventConfig =
           ChannelPointRedemptionEventConfig.fromJson(
-              json['channelPointRedemptionEventConfig']);
+            json['channelPointRedemptionEventConfig'],
+          );
     }
     if (json['pollEventConfig'] != null) {
       pollEventConfig = PollEventConfig.fromJson(json['pollEventConfig']);
     }
     if (json['hypetrainEventConfig'] != null) {
-      hypetrainEventConfig =
-          HypetrainEventConfig.fromJson(json['hypetrainEventConfig']);
+      hypetrainEventConfig = HypetrainEventConfig.fromJson(
+        json['hypetrainEventConfig'],
+      );
     }
     if (json['predictionEventConfig'] != null) {
-      predictionEventConfig =
-          PredictionEventConfig.fromJson(json['predictionEventConfig']);
+      predictionEventConfig = PredictionEventConfig.fromJson(
+        json['predictionEventConfig'],
+      );
     }
     if (json['raidingEventConfig'] != null) {
-      raidingEventConfig =
-          RaidingEventConfig.fromJson(json['raidingEventConfig']);
+      raidingEventConfig = RaidingEventConfig.fromJson(
+        json['raidingEventConfig'],
+      );
     }
   }
 
   Map<String, dynamic> toJson() => {
-        "followEventConfig": followEventConfig.toJson(),
-        "subscriptionEventConfig": subscriptionEventConfig.toJson(),
-        "cheerEventConfig": cheerEventConfig.toJson(),
-        "raidEventConfig": raidEventConfig.toJson(),
-        "pollEventConfig": pollEventConfig.toJson(),
-        "channelPointRedemptionEventConfig":
-            channelPointRedemptionEventConfig.toJson(),
-        "hostEventConfig": hostEventConfig.toJson(),
-        "hypetrainEventConfig": hypetrainEventConfig.toJson(),
-        "predictionEventConfig": predictionEventConfig.toJson(),
-        "raidingEventConfig": raidingEventConfig.toJson(),
-      };
+    "followEventConfig": followEventConfig.toJson(),
+    "subscriptionEventConfig": subscriptionEventConfig.toJson(),
+    "cheerEventConfig": cheerEventConfig.toJson(),
+    "raidEventConfig": raidEventConfig.toJson(),
+    "pollEventConfig": pollEventConfig.toJson(),
+    "channelPointRedemptionEventConfig":
+        channelPointRedemptionEventConfig.toJson(),
+    "hostEventConfig": hostEventConfig.toJson(),
+    "hypetrainEventConfig": hypetrainEventConfig.toJson(),
+    "predictionEventConfig": predictionEventConfig.toJson(),
+    "raidingEventConfig": raidingEventConfig.toJson(),
+  };
 }

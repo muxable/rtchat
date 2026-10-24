@@ -3,8 +3,10 @@ package webhook
 import (
 	"net/http"
 	"sync"
+	"sync/atomic"
 	"time"
 
+	"github.com/muxable/rtchat/agent/internal/callable"
 	"go.uber.org/zap"
 )
 
@@ -12,6 +14,9 @@ import (
 type Server struct {
 	Mux     *http.ServeMux
 	Secrets Secrets
+	// Draining, when set, fails /healthz so the load balancer stops routing
+	// here before the process shuts down.
+	Draining *atomic.Bool
 
 	mu        sync.RWMutex
 	providers map[string]http.Handler
@@ -29,6 +34,10 @@ func NewServer(secrets Secrets) *Server {
 	}
 	// not logged: the load balancer probes this every few seconds.
 	s.Mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		if s.Draining != nil && s.Draining.Load() {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
 		w.Write([]byte("ok"))
 	})
 	for _, prefix := range providerPrefixes {
@@ -67,6 +76,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 		zap.L().Info("http request",
 			zap.String("method", r.Method),
 			zap.String("path", r.URL.Path),
+			zap.String("via", callable.Via(r)),
 			zap.Int("status", writer.status),
 			zap.Float64("latency_ms", float64(time.Since(start))/float64(time.Millisecond)),
 		)

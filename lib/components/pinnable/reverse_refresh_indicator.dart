@@ -228,12 +228,18 @@ class ReverseRefreshIndicatorState extends State<ReverseRefreshIndicator>
   bool? _isIndicatorAtTop;
   double? _dragOffset;
 
-  static final Animatable<double> _threeQuarterTween =
-      Tween<double>(begin: 0.0, end: 0.75);
-  static final Animatable<double> _kDragSizeFactorLimitTween =
-      Tween<double>(begin: 0.0, end: _kDragSizeFactorLimit);
-  static final Animatable<double> _oneToZeroTween =
-      Tween<double>(begin: 1.0, end: 0.0);
+  static final Animatable<double> _threeQuarterTween = Tween<double>(
+    begin: 0.0,
+    end: 0.75,
+  );
+  static final Animatable<double> _kDragSizeFactorLimitTween = Tween<double>(
+    begin: 0.0,
+    end: _kDragSizeFactorLimit,
+  );
+  static final Animatable<double> _oneToZeroTween = Tween<double>(
+    begin: 1.0,
+    end: 0.0,
+  );
 
   @override
   void initState() {
@@ -241,7 +247,8 @@ class ReverseRefreshIndicatorState extends State<ReverseRefreshIndicator>
     _positionController = AnimationController(vsync: this);
     _positionFactor = _positionController.drive(_kDragSizeFactorLimitTween);
     _value = _positionController.drive(
-        _threeQuarterTween); // The "value" of the circular progress indicator during a drag.
+      _threeQuarterTween,
+    ); // The "value" of the circular progress indicator during a drag.
 
     _scaleController = AnimationController(vsync: this);
     _scaleFactor = _scaleController.drive(_oneToZeroTween);
@@ -252,12 +259,13 @@ class ReverseRefreshIndicatorState extends State<ReverseRefreshIndicator>
     final ThemeData theme = Theme.of(context);
     _valueColor = _positionController.drive(
       ColorTween(
-        begin:
-            (widget.color ?? theme.colorScheme.primary).withValues(alpha: 0.0),
+        begin: (widget.color ?? theme.colorScheme.primary).withValues(
+          alpha: 0.0,
+        ),
         end: (widget.color ?? theme.colorScheme.primary).withValues(alpha: 1.0),
-      ).chain(CurveTween(
-        curve: const Interval(0.0, 1.0 / _kDragSizeFactorLimit),
-      )),
+      ).chain(
+        CurveTween(curve: const Interval(0.0, 1.0 / _kDragSizeFactorLimit)),
+      ),
     );
     super.didChangeDependencies();
   }
@@ -269,13 +277,15 @@ class ReverseRefreshIndicatorState extends State<ReverseRefreshIndicator>
       final ThemeData theme = Theme.of(context);
       _valueColor = _positionController.drive(
         ColorTween(
-          begin: (widget.color ?? theme.colorScheme.primary)
-              .withValues(alpha: 0.0),
-          end: (widget.color ?? theme.colorScheme.primary)
-              .withValues(alpha: 1.0),
-        ).chain(CurveTween(
-          curve: const Interval(0.0, 1.0 / _kDragSizeFactorLimit),
-        )),
+          begin: (widget.color ?? theme.colorScheme.primary).withValues(
+            alpha: 0.0,
+          ),
+          end: (widget.color ?? theme.colorScheme.primary).withValues(
+            alpha: 1.0,
+          ),
+        ).chain(
+          CurveTween(curve: const Interval(0.0, 1.0 / _kDragSizeFactorLimit)),
+        ),
       );
     }
   }
@@ -403,15 +413,19 @@ class ReverseRefreshIndicatorState extends State<ReverseRefreshIndicator>
   }
 
   void _checkDragOffset(double containerExtent) {
-    assert(_mode == _RefreshIndicatorMode.drag ||
-        _mode == _RefreshIndicatorMode.armed);
+    assert(
+      _mode == _RefreshIndicatorMode.drag ||
+          _mode == _RefreshIndicatorMode.armed,
+    );
     double newValue =
         _dragOffset! / (containerExtent * _kDragContainerExtentPercentage);
     if (_mode == _RefreshIndicatorMode.armed) {
       newValue = math.max(newValue, 1.0 / _kDragSizeFactorLimit);
     }
-    _positionController.value =
-        newValue.clamp(0.0, 1.0); // this triggers various rebuilds
+    _positionController.value = newValue.clamp(
+      0.0,
+      1.0,
+    ); // this triggers various rebuilds
     if (_mode == _RefreshIndicatorMode.drag && _valueColor.value!.a == 0xFF) {
       _mode = _RefreshIndicatorMode.armed;
     }
@@ -423,19 +437,25 @@ class ReverseRefreshIndicatorState extends State<ReverseRefreshIndicator>
     // This can only be called from _show() when refreshing and
     // _handleScrollNotification in response to a ScrollEndNotification or
     // direction change.
-    assert(newMode == _RefreshIndicatorMode.canceled ||
-        newMode == _RefreshIndicatorMode.done);
+    assert(
+      newMode == _RefreshIndicatorMode.canceled ||
+          newMode == _RefreshIndicatorMode.done,
+    );
     setState(() {
       _mode = newMode;
     });
     switch (_mode!) {
       case _RefreshIndicatorMode.done:
-        await _scaleController.animateTo(1.0,
-            duration: _kIndicatorScaleDuration);
+        await _scaleController.animateTo(
+          1.0,
+          duration: _kIndicatorScaleDuration,
+        );
         break;
       case _RefreshIndicatorMode.canceled:
-        await _positionController.animateTo(0.0,
-            duration: _kIndicatorScaleDuration);
+        await _positionController.animateTo(
+          0.0,
+          duration: _kIndicatorScaleDuration,
+        );
         break;
       case _RefreshIndicatorMode.armed:
       case _RefreshIndicatorMode.drag:
@@ -459,24 +479,26 @@ class ReverseRefreshIndicatorState extends State<ReverseRefreshIndicator>
     _pendingRefreshFuture = completer.future;
     _mode = _RefreshIndicatorMode.snap;
     _positionController
-        .animateTo(1.0 / _kDragSizeFactorLimit,
-            duration: _kIndicatorSnapDuration)
+        .animateTo(
+          1.0 / _kDragSizeFactorLimit,
+          duration: _kIndicatorSnapDuration,
+        )
         .then<void>((void value) {
-      if (mounted && _mode == _RefreshIndicatorMode.snap) {
-        setState(() {
-          // Show the indeterminate progress indicator.
-          _mode = _RefreshIndicatorMode.refresh;
-        });
+          if (mounted && _mode == _RefreshIndicatorMode.snap) {
+            setState(() {
+              // Show the indeterminate progress indicator.
+              _mode = _RefreshIndicatorMode.refresh;
+            });
 
-        final Future<void> refreshResult = widget.onRefresh();
-        refreshResult.whenComplete(() {
-          if (mounted && _mode == _RefreshIndicatorMode.refresh) {
-            completer.complete();
-            _dismiss(_RefreshIndicatorMode.done);
+            final Future<void> refreshResult = widget.onRefresh();
+            refreshResult.whenComplete(() {
+              if (mounted && _mode == _RefreshIndicatorMode.refresh) {
+                completer.complete();
+                _dismiss(_RefreshIndicatorMode.done);
+              }
+            });
           }
         });
-      }
-    });
   }
 
   /// Show the refresh indicator and run the refresh callback as if it had
@@ -527,7 +549,7 @@ class ReverseRefreshIndicatorState extends State<ReverseRefreshIndicator>
 
     final bool showIndeterminateIndicator =
         _mode == _RefreshIndicatorMode.refresh ||
-            _mode == _RefreshIndicatorMode.done;
+        _mode == _RefreshIndicatorMode.done;
 
     return Stack(
       children: <Widget>[
@@ -542,21 +564,25 @@ class ReverseRefreshIndicatorState extends State<ReverseRefreshIndicator>
               alignment: Alignment(-1.0, _isIndicatorAtTop! ? 1.0 : -1.0),
               sizeFactor: _positionFactor, // this is what brings it down
               child: Container(
-                padding: _isIndicatorAtTop!
-                    ? EdgeInsets.only(top: widget.displacement)
-                    : EdgeInsets.only(bottom: widget.displacement),
-                alignment: _isIndicatorAtTop!
-                    ? Alignment.topCenter
-                    : Alignment.bottomCenter,
+                padding:
+                    _isIndicatorAtTop!
+                        ? EdgeInsets.only(top: widget.displacement)
+                        : EdgeInsets.only(bottom: widget.displacement),
+                alignment:
+                    _isIndicatorAtTop!
+                        ? Alignment.topCenter
+                        : Alignment.bottomCenter,
                 child: ScaleTransition(
                   scale: _scaleFactor,
                   child: AnimatedBuilder(
                     animation: _positionController,
                     builder: (BuildContext context, Widget? child) {
                       return RefreshProgressIndicator(
-                        semanticsLabel: widget.semanticsLabel ??
-                            MaterialLocalizations.of(context)
-                                .refreshIndicatorSemanticLabel,
+                        semanticsLabel:
+                            widget.semanticsLabel ??
+                            MaterialLocalizations.of(
+                              context,
+                            ).refreshIndicatorSemanticLabel,
                         semanticsValue: widget.semanticsValue,
                         value: showIndeterminateIndicator ? null : _value.value,
                         valueColor: _valueColor,
