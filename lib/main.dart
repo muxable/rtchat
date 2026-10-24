@@ -248,7 +248,15 @@ class _AppState extends State<App> {
               // don't play alerts while the app is in the background.
               if (WidgetsBinding.instance.lifecycleState ==
                   AppLifecycleState.resumed) {
-                player.play(AssetSource('message-sound.wav'));
+                // the player gives up preparing the sound after 30 seconds;
+                // a missed ping isn't worth crashing over.
+                player
+                    .play(AssetSource('message-sound.wav'))
+                    .catchError(
+                      (Object error, StackTrace stack) => FirebaseCrashlytics
+                          .instance
+                          .recordError(error, stack),
+                    );
               }
             };
             // subscribing and emotes call as the user's account.
