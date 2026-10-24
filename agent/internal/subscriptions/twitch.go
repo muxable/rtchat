@@ -267,6 +267,9 @@ func (s *Service) reconcileTwitch(ctx context.Context, id string, call twitchCal
 		switch {
 		case err == nil:
 			result.created++
+		case isStatus(err, 409):
+			// Created concurrently, such as by migrate-eventsub or another replica.
+			outcome = "exists"
 		case isStatus(err, 403):
 			outcome = "scope_unavailable"
 			result.skipped = append(result.skipped, wanted.Type)
