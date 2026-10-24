@@ -21,7 +21,20 @@ void Function(Object error, StackTrace stack) reportEmoteError =
 /// The emotes usable in [channel]. Twitch's include those of the user [api]
 /// calls as. If they can't be fetched, e.g. the backend is briefly
 /// unavailable, they come from an outdated cache, or there are none.
-Future<List<Emote>> getEmotes(Channel channel, Api api) async {
+///
+/// Concurrent requests for the same channel, e.g. from the chat and the
+/// message input opening it together, share one fetch so they don't write
+/// the cache at the same time.
+Future<List<Emote>> getEmotes(Channel channel, Api api) {
+  final key = channel.toString();
+  return _inFlight[key] ??= _getEmotes(channel, api).whenComplete(() {
+    _inFlight.remove(key);
+  });
+}
+
+final _inFlight = <String, Future<List<Emote>>>{};
+
+Future<List<Emote>> _getEmotes(Channel channel, Api api) async {
   final temp = await getTemporaryDirectory();
   final cacheFile = File('${temp.path}/emotes/${channel.toString()}.json');
   List<Emote>? cached;

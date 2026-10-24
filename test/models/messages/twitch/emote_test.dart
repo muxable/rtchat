@@ -94,6 +94,16 @@ void main() {
     expect(functions.calls, 1);
   });
 
+  test('shares one fetch between concurrent requests', () async {
+    functions.emotes = [_emote('Kappa')];
+
+    final results = await Future.wait([getEmotesForTest(), getEmotesForTest()]);
+
+    expect(results.map((emotes) => emotes.length), [1, 1]);
+    expect(jsonDecode(cacheFile.readAsStringSync()), [_emote('Kappa')]);
+    expect(functions.calls, 1);
+  });
+
   test('fetches the emotes again when the cache is cut short', () async {
     cacheFile.createSync(recursive: true);
     // e.g. the disk filled up while it was written.

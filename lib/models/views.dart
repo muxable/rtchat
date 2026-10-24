@@ -83,8 +83,7 @@ class ViewsModel extends ChangeNotifier {
   /// The channels shown in chat. Until they're changed, those the app opens
   /// with: the channels of every signed-in account, in the order the accounts
   /// are listed.
-  List<Channel> get channels =>
-      _channels == null ? _userChannels : List.unmodifiable(_channels!);
+  List<Channel> get channels => _channels ?? _userChannels;
 
   bool contains(Channel channel) => channels.contains(channel);
 
