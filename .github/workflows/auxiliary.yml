@@ -61,7 +61,7 @@ jobs:
     needs: build
     concurrency:
       group: auxiliary-deploy
-      cancel-in-progress: true
+      cancel-in-progress: false
 
     steps:
       - name: Checkout repository

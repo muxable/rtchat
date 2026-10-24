@@ -87,9 +87,11 @@ jobs:
       id-token: write
       contents: read
     needs: [test, build]
+    # queue deploys instead of cancelling a running one; the newest pending
+    # deploy still runs last and rolls out the latest :main image.
     concurrency:
       group: agent-deploy
-      cancel-in-progress: true
+      cancel-in-progress: false
     environment:
       name: agent
       url: https://console.cloud.google.com/compute/instanceGroups/details/us-west1/agent-small-us-west1?project=rtchat-47692
