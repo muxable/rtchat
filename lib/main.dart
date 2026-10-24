@@ -63,6 +63,11 @@ import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+/// Whether [details] should be recorded as a crash. Images that fail to
+/// download or decode only leave a blank image behind, so they aren't.
+bool isFatalFlutterError(FlutterErrorDetails details) =>
+    details.library != 'image resource service';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -75,7 +80,13 @@ void main() async {
   );
 
   if (!kDebugMode) {
-    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    FlutterError.onError = (details) {
+      if (isFatalFlutterError(details)) {
+        FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+      } else {
+        FirebaseCrashlytics.instance.recordFlutterError(details);
+      }
+    };
     PlatformDispatcher.instance.onError = (error, stack) {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;
