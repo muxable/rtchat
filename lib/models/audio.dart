@@ -49,8 +49,17 @@ class AudioModel extends ChangeNotifier {
   Channel? _hostChannel;
   StreamSubscription? _hostChannelStateSubscription;
 
+  // Android may refuse to start the audio service from the background, so a
+  // failed sync is retried when the app resumes.
+  late final AppLifecycleListener _lifecycleListener;
+  bool _syncFailed = false;
+  int _syncId = 0;
+  // syncs run one at a time so an older one can't land after a newer one.
+  Future<void> _sync = Future.value();
+
   @override
   void dispose() {
+    _lifecycleListener.dispose();
     _hostChannelStateSubscription?.cancel();
     _speakerKeepAlive.dispose();
 
@@ -126,24 +135,33 @@ class AudioModel extends ChangeNotifier {
   }
 
   Future<int> refreshAllSources() async {
-    final activeSources = _sources.where((element) => !element.muted).toList();
-    for (final source in activeSources) {
-      await AudioChannel.reload(source.url.toString());
+    if (!enabled) {
+      return 0;
     }
-    return activeSources.length;
+    final count = _sources.where((element) => !element.muted).length;
+    if (count > 0) {
+      await AudioChannel.reload();
+    }
+    return count;
   }
 
-  void _syncWebViews() {
-    if (enabled) {
-      AudioChannel.set(
-        _sources
-            .where((element) => !element.muted)
-            .map((element) => element.url.toString())
-            .toList(),
-      );
-    } else {
-      AudioChannel.set([]);
-    }
+  Future<void> _syncWebViews() {
+    final id = ++_syncId;
+    return _sync = _sync.then((_) {}, onError: (_) {}).then((_) async {
+      // a newer sync is queued and will apply the latest state.
+      if (id != _syncId) {
+        return;
+      }
+      _syncFailed =
+          !await AudioChannel.set(
+            enabled
+                ? _sources
+                    .where((element) => !element.muted)
+                    .map((element) => element.url.toString())
+                    .toList()
+                : [],
+          );
+    });
   }
 
   Future<void> showAudioPermissionDialog(BuildContext context) {
@@ -185,6 +203,13 @@ class AudioModel extends ChangeNotifier {
 
   AudioModel.fromJson(Map<String, dynamic> json)
     : _speakerKeepAlive = SpeakerKeepAlive() {
+    _lifecycleListener = AppLifecycleListener(
+      onResume: () {
+        if (_syncFailed) {
+          _syncWebViews();
+        }
+      },
+    );
     final sources = json['sources'];
     if (sources != null) {
       for (dynamic source in sources) {
