@@ -1642,41 +1642,11 @@ abstract class AppLocalizations {
   /// **'Turn off'**
   String get turnOffTextToSpeech;
 
-  /// Button to add a channel to the default channels
-  ///
-  /// In en, this message translates to:
-  /// **'Add channel'**
-  String get addChannel;
-
   /// Button on a channel search result that adds the channel to the channels shown in chat
   ///
   /// In en, this message translates to:
   /// **'Add to chat'**
   String get addToChat;
-
-  /// Title of the settings page for the channels the app opens with
-  ///
-  /// In en, this message translates to:
-  /// **'Default channels'**
-  String get defaultChannels;
-
-  /// Explains what the default channels are
-  ///
-  /// In en, this message translates to:
-  /// **'The channels shown when the app opens'**
-  String get defaultChannelsSubtitle;
-
-  /// Button on the default channels page that saves the channels currently shown as the default channels
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get save;
-
-  /// Button on the default channels page that clears the picked default channels, so the app opens the signed-in user's own channel, and closes the page
-  ///
-  /// In en, this message translates to:
-  /// **'Reset to my channel'**
-  String get resetToMyChannel;
 
   /// Heading in the channel search sheet for the channels currently shown in chat
   ///
@@ -1713,12 +1683,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Replace {channel}'**
   String replaceChannel(String channel);
-
-  /// Shown while swiping a default channel away to remove it from the default channels
-  ///
-  /// In en, this message translates to:
-  /// **'Remove'**
-  String get removeChannel;
 
   /// Title of the screen that lists the neural voice packs that can be downloaded, and of the row in the text to speech settings that opens it
   ///

@@ -1052,23 +1052,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get turnOffTextToSpeech => 'Uitschakelen';
 
   @override
-  String get addChannel => 'Kanaal toevoegen';
-
-  @override
   String get addToChat => 'Toevoegen aan chat';
-
-  @override
-  String get defaultChannels => 'Standaardkanalen';
-
-  @override
-  String get defaultChannelsSubtitle =>
-      'De kanalen die worden getoond wanneer de app opent';
-
-  @override
-  String get save => 'Opslaan';
-
-  @override
-  String get resetToMyChannel => 'Terugzetten naar mijn kanaal';
 
   @override
   String get inChat => 'In de chat';
@@ -1093,9 +1077,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String replaceChannel(String channel) {
     return '$channel vervangen';
   }
-
-  @override
-  String get removeChannel => 'Verwijderen';
 
   @override
   String get voicePacks => 'Stempakketten';

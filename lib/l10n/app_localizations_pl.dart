@@ -1058,23 +1058,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get turnOffTextToSpeech => 'Wyłącz';
 
   @override
-  String get addChannel => 'Dodaj kanał';
-
-  @override
   String get addToChat => 'Dodaj do czatu';
-
-  @override
-  String get defaultChannels => 'Domyślne kanały';
-
-  @override
-  String get defaultChannelsSubtitle =>
-      'Kanały wyświetlane po otwarciu aplikacji';
-
-  @override
-  String get save => 'Zapisz';
-
-  @override
-  String get resetToMyChannel => 'Przywróć mój kanał';
 
   @override
   String get inChat => 'W czacie';
@@ -1099,9 +1083,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String replaceChannel(String channel) {
     return 'Zastąp $channel';
   }
-
-  @override
-  String get removeChannel => 'Usuń';
 
   @override
   String get voicePacks => 'Pakiety głosowe';

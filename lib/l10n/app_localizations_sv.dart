@@ -1045,22 +1045,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get turnOffTextToSpeech => 'Stäng av';
 
   @override
-  String get addChannel => 'Lägg till kanal';
-
-  @override
   String get addToChat => 'Lägg till i chatten';
-
-  @override
-  String get defaultChannels => 'Standardkanaler';
-
-  @override
-  String get defaultChannelsSubtitle => 'Kanalerna som visas när appen öppnas';
-
-  @override
-  String get save => 'Spara';
-
-  @override
-  String get resetToMyChannel => 'Återställ till min kanal';
 
   @override
   String get inChat => 'I chatten';
@@ -1085,9 +1070,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String replaceChannel(String channel) {
     return 'Ersätt $channel';
   }
-
-  @override
-  String get removeChannel => 'Ta bort';
 
   @override
   String get voicePacks => 'Röstpaket';

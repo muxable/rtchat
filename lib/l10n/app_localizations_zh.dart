@@ -1020,22 +1020,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get turnOffTextToSpeech => '关闭';
 
   @override
-  String get addChannel => '添加频道';
-
-  @override
   String get addToChat => '添加到聊天';
-
-  @override
-  String get defaultChannels => '默认频道';
-
-  @override
-  String get defaultChannelsSubtitle => '打开应用时显示的频道';
-
-  @override
-  String get save => '保存';
-
-  @override
-  String get resetToMyChannel => '重置为我的频道';
 
   @override
   String get inChat => '聊天中';
@@ -1060,9 +1045,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String replaceChannel(String channel) {
     return '替换 $channel';
   }
-
-  @override
-  String get removeChannel => '移除';
 
   @override
   String get voicePacks => '语音包';
@@ -2185,22 +2167,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get turnOffTextToSpeech => '關閉';
 
   @override
-  String get addChannel => '新增頻道';
-
-  @override
   String get addToChat => '新增至聊天';
-
-  @override
-  String get defaultChannels => '預設頻道';
-
-  @override
-  String get defaultChannelsSubtitle => '開啟應用程式時顯示的頻道';
-
-  @override
-  String get save => '儲存';
-
-  @override
-  String get resetToMyChannel => '重設為我的頻道';
 
   @override
   String get inChat => '聊天中';
@@ -2225,9 +2192,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String replaceChannel(String channel) {
     return '替換 $channel';
   }
-
-  @override
-  String get removeChannel => '移除';
 
   @override
   String get voicePacks => '語音包';

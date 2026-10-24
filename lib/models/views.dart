@@ -59,15 +59,13 @@ List<Channel> _withChannel(List<Channel> channels, Channel channel) {
 }
 
 /// The channels shown in chat, on any providers. The app opens with the
-/// default channels (the signed-in user's own channels unless others were
-/// picked); channels can then be opened, added and removed. None of this
-/// needs an account, so signed-out users can use it too.
+/// default channels: those of every signed-in account, so a simulcaster
+/// opens to merged chat. Channels can then be opened, added and removed for
+/// the session. None of this needs an account, so signed-out users can use it
+/// too.
 class ViewsModel extends ChangeNotifier {
   // the signed-in accounts' own channels, one per provider.
   List<Channel> _userChannels = const [];
-
-  // the picked default channels; empty means the user's own channels.
-  List<Channel> _defaultChannels = const [];
 
   // the current channels once they've been changed from the defaults. like
   // a channel opened from search before, these aren't remembered across
@@ -92,42 +90,9 @@ class ViewsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// The channels the app opens with: all of the user's own, so a
-  /// simulcaster opens to merged chat, unless others were picked.
-  List<Channel> get defaultChannels =>
-      _defaultChannels.isNotEmpty
-          ? List.unmodifiable(_defaultChannels)
-          : _userChannels;
-
-  /// Whether default channels were picked, rather than being the user's own.
-  bool get hasCustomDefaultChannels => _defaultChannels.isNotEmpty;
-
-  set defaultChannels(List<Channel> channels) {
-    _defaultChannels = List.unmodifiable(_onePerProvider(channels));
-    notifyListeners();
-  }
-
-  /// Adds [channel] to the default channels, replacing the one on its
-  /// provider.
-  void addDefaultChannel(Channel channel) {
-    if (_defaultChannels.contains(channel)) {
-      return;
-    }
-    defaultChannels = _withChannel(defaultChannels, channel);
-  }
-
-  void removeDefaultChannel(Channel channel) {
-    if (!_defaultChannels.contains(channel)) {
-      return;
-    }
-    defaultChannels =
-        _defaultChannels.where((other) => other != channel).toList();
-  }
-
-  void useCurrentChannelsAsDefault() => defaultChannels = channels;
-
-  /// Opens with the user's own channels again.
-  void resetDefaultChannels() => defaultChannels = const [];
+  /// The channels the app opens with: those of every signed-in account, in
+  /// the order the accounts are listed.
+  List<Channel> get defaultChannels => _userChannels;
 
   /// The channels shown in chat.
   List<Channel> get channels =>
@@ -219,12 +184,10 @@ class ViewsModel extends ChangeNotifier {
     return Localizations.localeOf(context);
   }
 
-  // saved views from before are ignored: they never shipped. defaults saved
-  // with several channels on one provider keep only the first of them.
+  // saved views and picked default channels from before are ignored: the
+  // defaults are now always the signed-in accounts' channels. they're dropped
+  // from what's saved next.
   ViewsModel.fromJson(Map<String, dynamic> json) {
-    _defaultChannels = List.unmodifiable(
-      _onePerProvider(_channelsFromJson(json['defaultChannels'])),
-    );
     _sendTarget =
         _channelsFromJson([
           if (json['sendChannel'] != null) json['sendChannel'],
@@ -232,8 +195,6 @@ class ViewsModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-    'defaultChannels':
-        _defaultChannels.map((channel) => channel.toJson()).toList(),
     if (_sendTarget != null) 'sendChannel': _sendTarget!.toJson(),
   };
 }

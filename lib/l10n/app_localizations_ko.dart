@@ -1022,22 +1022,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get turnOffTextToSpeech => '끄기';
 
   @override
-  String get addChannel => '채널 추가';
-
-  @override
   String get addToChat => '채팅에 추가';
-
-  @override
-  String get defaultChannels => '기본 채널';
-
-  @override
-  String get defaultChannelsSubtitle => '앱을 열 때 표시되는 채널';
-
-  @override
-  String get save => '저장';
-
-  @override
-  String get resetToMyChannel => '내 채널로 재설정';
 
   @override
   String get inChat => '채팅에 표시 중';
@@ -1062,9 +1047,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String replaceChannel(String channel) {
     return '$channel 대체';
   }
-
-  @override
-  String get removeChannel => '삭제';
 
   @override
   String get voicePacks => '음성 팩';

@@ -1049,22 +1049,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get turnOffTextToSpeech => 'إيقاف';
 
   @override
-  String get addChannel => 'إضافة قناة';
-
-  @override
   String get addToChat => 'إضافة إلى الدردشة';
-
-  @override
-  String get defaultChannels => 'القنوات الافتراضية';
-
-  @override
-  String get defaultChannelsSubtitle => 'القنوات المعروضة عند فتح التطبيق';
-
-  @override
-  String get save => 'حفظ';
-
-  @override
-  String get resetToMyChannel => 'إعادة التعيين إلى قناتي';
 
   @override
   String get inChat => 'في الدردشة';
@@ -1089,9 +1074,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String replaceChannel(String channel) {
     return 'استبدال $channel';
   }
-
-  @override
-  String get removeChannel => 'إزالة';
 
   @override
   String get voicePacks => 'حزم الأصوات';
