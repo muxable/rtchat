@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strconv"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	"github.com/muxable/rtchat/agent/internal/callable"
+	"github.com/muxable/rtchat/agent/internal/provider"
 	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -306,6 +308,44 @@ func twitchTargets(sub twitchSubscription, id string) bool {
 	return false
 }
 
+// twitchReauthorized reports whether the broadcaster has authorized the app
+// again since a deauthorization: a profile linked to them holds a Twitch grant
+// that Twitch accepts as theirs. A removal delayed past re-authorization would
+// otherwise delete what subscribe, perhaps on another replica, just created.
+// The stored grant has no timestamp of its own, so it is checked with Twitch.
+func (s *Service) twitchReauthorized(ctx context.Context, id string) (bool, error) {
+	ids := []interface{}{id}
+	if n, err := strconv.ParseInt(id, 10, 64); err == nil {
+		// Older profiles store the id as a number.
+		ids = append(ids, n)
+	}
+	docs, err := s.DB.Collection("profiles").Where("twitch.id", "in", ids).Limit(10).Documents(ctx).GetAll()
+	if err != nil {
+		return false, err
+	}
+	for _, doc := range docs {
+		token, err := s.API.Tokens.AccessToken(ctx, doc.Ref.ID, "twitch")
+		if errors.Is(err, provider.ErrNoToken) {
+			continue
+		}
+		if err != nil {
+			return false, err
+		}
+		user, err := s.twitchUser(ctx, token, nil)
+		if isStatus(err, 401) {
+			// The grant the deauthorization revoked.
+			continue
+		}
+		if err != nil {
+			return false, err
+		}
+		if user.ID == id {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // removeTwitch deletes a deauthorized broadcaster's subscriptions at our
 // callbacks. Twitch revokes the ones that needed their authorization, but
 // keeps the unscoped ones, such as stream.online, enabled and counted against
@@ -337,7 +377,7 @@ func (s *Service) removeTwitch(ctx context.Context, id string, call twitchCall) 
 const twitchAppType = "user.authorization.revoke"
 
 // ensureTwitchApp creates the app's user.authorization.revoke subscription
-// unless one at TwitchCallback is enabled or verifying. Like reconcileTwitch,
+// unless one at our callbacks is enabled or verifying. Like reconcileTwitch,
 // it lists first, replaces a failed one, and holds on the cost limit.
 func (s *Service) ensureTwitchApp(ctx context.Context, call twitchCall) (twitchReconcile, error) {
 	var result twitchReconcile
@@ -353,7 +393,7 @@ func (s *Service) ensureTwitchApp(ctx context.Context, call twitchCall) (twitchR
 		return result, err
 	}
 	for _, sub := range existing {
-		if sub.Type != twitchAppType || sub.Condition["client_id"] != credentials.ClientID || sub.Transport.Method != "webhook" || sub.Transport.Callback != TwitchCallback {
+		if sub.Type != twitchAppType || sub.Condition["client_id"] != credentials.ClientID || !ownCallback(sub) {
 			continue
 		}
 		if sub.Status == "enabled" || sub.Status == "webhook_callback_verification_pending" {

@@ -54,7 +54,7 @@ func (s *chatRoutes) twitch(ctx context.Context, uid, token, action string, r ch
 				return nil, err
 			}
 			if sender.Login == "" {
-				return nil, errors.New("Twitch sender unavailable")
+				return nil, errors.New("sender unavailable on Twitch")
 			}
 			return nil, s.sendIRC(ctx, token, sender.Login, target.Login, r.Message)
 		}

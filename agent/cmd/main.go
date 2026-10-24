@@ -222,7 +222,8 @@ func main() {
 		}
 		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
 		twitchWebhook := webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client)
-		twitchWebhook.OnDeauthorized = subscriptionService.Queue.EnqueueRemove
+		twitchWebhook.OnDeauthorized = subscriptionService.Queue.Deauthorized
+		twitchWebhook.OnAppRevoked = subscriptionService.Queue.EnsureApp
 		server.RegisterProvider("/twitch/", twitchWebhook)
 		server.RegisterProvider("/alchemy/", webhook.NewAlchemyHandler(webhook.AlchemyConfig{
 			Secrets:        secrets,
