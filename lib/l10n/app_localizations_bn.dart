@@ -1045,23 +1045,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get turnOffTextToSpeech => 'বন্ধ করুন';
 
   @override
-  String get addChannel => 'চ্যানেল যোগ করুন';
-
-  @override
   String get addToChat => 'চ্যাটে যোগ করুন';
-
-  @override
-  String get defaultChannels => 'ডিফল্ট চ্যানেল';
-
-  @override
-  String get defaultChannelsSubtitle =>
-      'অ্যাপ খোলার সময় যে চ্যানেলগুলো দেখানো হয়';
-
-  @override
-  String get save => 'সংরক্ষণ করুন';
-
-  @override
-  String get resetToMyChannel => 'আমার চ্যানেলে রিসেট করুন';
 
   @override
   String get inChat => 'চ্যাটে';
@@ -1087,9 +1071,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String replaceChannel(String channel) {
     return '$channel প্রতিস্থাপন করুন';
   }
-
-  @override
-  String get removeChannel => 'সরান';
 
   @override
   String get voicePacks => 'ভয়েস প্যাক';

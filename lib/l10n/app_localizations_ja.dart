@@ -1022,22 +1022,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get turnOffTextToSpeech => 'オフにする';
 
   @override
-  String get addChannel => 'チャンネルを追加';
-
-  @override
   String get addToChat => 'チャットに追加';
-
-  @override
-  String get defaultChannels => 'デフォルトのチャンネル';
-
-  @override
-  String get defaultChannelsSubtitle => 'アプリを開いたときに表示されるチャンネル';
-
-  @override
-  String get save => '保存';
-
-  @override
-  String get resetToMyChannel => '自分のチャンネルに戻す';
 
   @override
   String get inChat => 'チャットに表示中';
@@ -1062,9 +1047,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String replaceChannel(String channel) {
     return '$channelと入れ替える';
   }
-
-  @override
-  String get removeChannel => '削除';
 
   @override
   String get voicePacks => '音声パック';

@@ -37,15 +37,6 @@ class SettingsScreen extends StatelessWidget {
                 },
               ),
               ListTile(
-                title: Text(AppLocalizations.of(context)!.defaultChannels),
-                subtitle: Text(
-                  AppLocalizations.of(context)!.defaultChannelsSubtitle,
-                ),
-                onTap: () {
-                  Navigator.pushNamed(context, "/settings/default-channels");
-                },
-              ),
-              ListTile(
                 title: Text(AppLocalizations.of(context)!.activityFeed),
                 subtitle: Text(
                   AppLocalizations.of(context)!.activityFeedSubtitle,
