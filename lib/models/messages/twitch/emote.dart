@@ -35,17 +35,26 @@ String _signedInUid(Api api) =>
 ///
 /// Concurrent requests for the same channel as the same user, e.g. from the
 /// chat and the message input opening it together, share one fetch so they
-/// don't write the cache at the same time.
+/// don't write the cache at the same time. Emotes fetched after the user
+/// changes aren't theirs, so they're neither cached nor returned.
 Future<List<Emote>> getEmotes(Channel channel, Api api) {
-  final key = '${emoteCaller(api)}/$channel';
-  return _inFlight[key] ??= _getEmotes(channel, api, key).whenComplete(() {
-    _inFlight.remove(key);
-  });
+  final caller = emoteCaller(api);
+  final key = '$caller/$channel';
+  return _inFlight[key] ??= _getEmotes(channel, api, caller, key).whenComplete(
+    () {
+      _inFlight.remove(key);
+    },
+  );
 }
 
 final _inFlight = <String, Future<List<Emote>>>{};
 
-Future<List<Emote>> _getEmotes(Channel channel, Api api, String key) async {
+Future<List<Emote>> _getEmotes(
+  Channel channel,
+  Api api,
+  String caller,
+  String key,
+) async {
   final temp = await getTemporaryDirectory();
   final cacheFile = File('${temp.path}/emotes/$key.json');
   List<Emote>? cached;
@@ -70,10 +79,15 @@ Future<List<Emote>> _getEmotes(Channel channel, Api api, String key) async {
   final dynamic data;
   final List<Emote> emotes;
   try {
-    data = await _fetchEmotes(channel, api);
+    data = await _fetchEmotes(channel, api, caller);
     emotes = (data as List).map(Emote.fromJson).toList();
+  } on _CallerChanged {
+    return cached ?? [];
   } catch (e, st) {
     reportEmoteError(e, st);
+    return cached ?? [];
+  }
+  if (emoteCaller(api) != caller) {
     return cached ?? [];
   }
   try {
@@ -86,10 +100,14 @@ Future<List<Emote>> _getEmotes(Channel channel, Api api, String key) async {
   return emotes;
 }
 
-/// The emotes' JSON from the backend, retried as it can be briefly
-/// unavailable.
-Future<dynamic> _fetchEmotes(Channel channel, Api api) async {
+/// The emotes' JSON from the backend as [caller], retried as it can be
+/// briefly unavailable. Throws [_CallerChanged] if the user [api] calls as
+/// is no longer [caller].
+Future<dynamic> _fetchEmotes(Channel channel, Api api, String caller) async {
   for (var attempt = 1; ; attempt++) {
+    if (emoteCaller(api) != caller) {
+      throw _CallerChanged();
+    }
     try {
       final response = await api.callable("getEmotes")({
         "provider": channel.provider,
@@ -102,6 +120,8 @@ Future<dynamic> _fetchEmotes(Channel channel, Api api) async {
     }
   }
 }
+
+class _CallerChanged implements Exception {}
 
 Future<void> _deleteCache(File cacheFile) async {
   try {

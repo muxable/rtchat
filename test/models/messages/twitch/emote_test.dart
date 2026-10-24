@@ -137,6 +137,28 @@ void main() {
     );
   });
 
+  test("drops a fetch when the user changes during a retry", () async {
+    functions.error = FirebaseFunctionsException(
+      code: 'unavailable',
+      message: 'UNAVAILABLE',
+    );
+    // the user switches accounts after the first attempt fails.
+    emoteCaller = (api) => functions.calls == 0 ? 'user' : 'other';
+
+    expect(await getEmotesForTest(), isEmpty);
+    expect(functions.calls, 1);
+    expect(reported, isEmpty);
+  });
+
+  test("doesn't cache emotes fetched after the user changes", () async {
+    functions.emotes = [_emote('Kappa')];
+    emoteCaller = (api) => functions.calls == 0 ? 'user' : 'other';
+
+    expect(await getEmotesForTest(), isEmpty);
+    expect(functions.calls, 1);
+    expect(Directory('${temp.path}/emotes').existsSync(), isFalse);
+  });
+
   test('fetches the emotes again when the cache is cut short', () async {
     cacheFile.createSync(recursive: true);
     // e.g. the disk filled up while it was written.
