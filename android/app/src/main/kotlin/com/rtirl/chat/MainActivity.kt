@@ -56,27 +56,24 @@ class MainActivity : FlutterActivity() {
             "set" -> {
               val urls = call.argument<List<String>>("urls") ?: listOf()
               val intent = Intent(this, AudioService::class.java)
-              if (urls.isEmpty()) {
-                // startService() throws while the app is in the background,
-                // and clearing the sources only needs the service gone.
-                stopService(intent)
+              intent.putStringArrayListExtra("urls", ArrayList(urls))
+              intent.action = AudioService.ACTION_START_SERVICE
+              try {
+                // Clearing goes through the service too: stopService() could
+                // land before a just-requested start promotes itself, which
+                // crashes the app. The service stops itself once empty.
+                ContextCompat.startForegroundService(this, intent)
                 result.success(true)
-              } else {
-                intent.putStringArrayListExtra("urls", ArrayList(urls))
-                intent.action = AudioService.ACTION_START_SERVICE
-                try {
-                  ContextCompat.startForegroundService(this, intent)
-                  result.success(true)
-                } catch (_: IllegalStateException) {
-                  // Android may still refuse to start it from the background.
-                  result.success(false)
-                }
+              } catch (_: IllegalStateException) {
+                // Android may refuse to start it from the background, in which
+                // case no start is pending and stopping directly is safe.
+                if (urls.isEmpty()) stopService(intent)
+                result.success(urls.isEmpty())
               }
             }
             "reload" -> {
               val intent = Intent(this, AudioService::class.java)
               intent.action = AudioService.ACTION_RELOAD_SOURCES
-              intent.putExtra(AudioService.EXTRA_URL, call.argument<String>("url"))
               try {
                 startService(intent)
                 result.success(true)

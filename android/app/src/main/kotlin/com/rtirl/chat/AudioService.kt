@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
@@ -19,7 +20,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.app.NotificationCompat
-import androidx.multidex.BuildConfig
+import androidx.core.app.ServiceCompat
 import io.flutter.Log
 
 class AudioService : Service() {
@@ -29,10 +30,9 @@ class AudioService : Service() {
     private const val CHANNEL_ID = "AudioSources"
     private const val WAKE_LOCK_TAG = "RealtimeChat::Wakelock"
     private const val EXTRA_URLS = "urls"
-    private const val PACKAGE_NAME = BuildConfig.APPLICATION_ID + ".AudioService"
+    private const val PACKAGE_NAME = "com.rtirl.chat.AudioService"
     const val ACTION_START_SERVICE = "$PACKAGE_NAME.start_service"
     const val ACTION_RELOAD_SOURCES = "$PACKAGE_NAME.reload_sources"
-    const val EXTRA_URL = "url"
   }
 
   private val views = mutableMapOf<String, WebView>()
@@ -62,16 +62,26 @@ class AudioService : Service() {
       flags: Int,
       startId: Int,
   ): Int {
+    // startForegroundService() crashes the app unless startForeground() is
+    // called promptly, so promote before building views, which may all fail.
+    ServiceCompat.startForeground(
+        this,
+        NOTIFICATION_ID,
+        buildNotification(),
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+        } else {
+          0
+        },
+    )
+
     val requestedUrls = intent?.getStringArrayListExtra(EXTRA_URLS)?.toSet()
 
     when {
       requestedUrls != null -> updateSources(requestedUrls)
 
-      intent?.action == ACTION_RELOAD_SOURCES -> {
-        // Reload only when explicitly requested, and only the requested source.
-        val url = intent.getStringExtra(EXTRA_URL)
-        if (url == null) views.values.forEach { it.reload() } else views[url]?.reload()
-      }
+      // Reload only when explicitly requested.
+      intent?.action == ACTION_RELOAD_SOURCES -> views.values.forEach { it.reload() }
 
       // A start without URLs must not reload active sources.
       else -> Unit
@@ -82,10 +92,10 @@ class AudioService : Service() {
       return START_NOT_STICKY
     }
 
-    startForeground(NOTIFICATION_ID, buildNotification())
     acquireWakeLockIfNeeded()
 
-    return START_STICKY
+    // The sources live in the app's process, so a restart has nothing to play.
+    return START_NOT_STICKY
   }
 
   private fun createWakeLock() {
@@ -191,7 +201,6 @@ class AudioService : Service() {
         javaScriptEnabled = true
         mediaPlaybackRequiresUserGesture = false
         domStorageEnabled = true
-        databaseEnabled = true
         mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
       }
 
@@ -264,7 +273,7 @@ class AudioService : Service() {
   }
 
   private fun stopAudioService() {
-    stopForeground(true)
+    ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
     notificationManager?.cancel(NOTIFICATION_ID)
     releaseWakeLock()
     stopSelf()

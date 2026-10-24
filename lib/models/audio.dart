@@ -49,8 +49,15 @@ class AudioModel extends ChangeNotifier {
   Channel? _hostChannel;
   StreamSubscription? _hostChannelStateSubscription;
 
+  // Android may refuse to start the audio service from the background, so a
+  // failed sync is retried when the app resumes.
+  late final AppLifecycleListener _lifecycleListener;
+  bool _syncFailed = false;
+  int _syncId = 0;
+
   @override
   void dispose() {
+    _lifecycleListener.dispose();
     _hostChannelStateSubscription?.cancel();
     _speakerKeepAlive.dispose();
 
@@ -126,23 +133,29 @@ class AudioModel extends ChangeNotifier {
   }
 
   Future<int> refreshAllSources() async {
-    final activeSources = _sources.where((element) => !element.muted).toList();
-    for (final source in activeSources) {
-      await AudioChannel.reload(source.url.toString());
+    if (!enabled) {
+      return 0;
     }
-    return activeSources.length;
+    final count = _sources.where((element) => !element.muted).length;
+    if (count > 0) {
+      await AudioChannel.reload();
+    }
+    return count;
   }
 
-  void _syncWebViews() {
-    if (enabled) {
-      AudioChannel.set(
-        _sources
-            .where((element) => !element.muted)
-            .map((element) => element.url.toString())
-            .toList(),
-      );
-    } else {
-      AudioChannel.set([]);
+  Future<void> _syncWebViews() async {
+    final id = ++_syncId;
+    final ok = await AudioChannel.set(
+      enabled
+          ? _sources
+              .where((element) => !element.muted)
+              .map((element) => element.url.toString())
+              .toList()
+          : [],
+    );
+    // only the latest sync reflects the requested state.
+    if (id == _syncId) {
+      _syncFailed = !ok;
     }
   }
 
@@ -185,6 +198,13 @@ class AudioModel extends ChangeNotifier {
 
   AudioModel.fromJson(Map<String, dynamic> json)
     : _speakerKeepAlive = SpeakerKeepAlive() {
+    _lifecycleListener = AppLifecycleListener(
+      onResume: () {
+        if (_syncFailed) {
+          _syncWebViews();
+        }
+      },
+    );
     final sources = json['sources'];
     if (sources != null) {
       for (dynamic source in sources) {
