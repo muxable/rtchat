@@ -75,9 +75,15 @@ class MainActivity : FlutterActivity() {
             }
             "reload" -> {
               val intent = Intent(this, AudioService::class.java)
-              intent.action = AudioService.ACTION_START_SERVICE
-              startService(intent)
-              result.success(true)
+              intent.action = AudioService.ACTION_RELOAD_SOURCES
+              intent.putExtra(AudioService.EXTRA_URL, call.argument<String>("url"))
+              try {
+                startService(intent)
+                result.success(true)
+              } catch (_: IllegalStateException) {
+                // The service isn't running, so there's nothing to reload.
+                result.success(false)
+              }
             }
             "hasPermission" -> {
               result.success(
