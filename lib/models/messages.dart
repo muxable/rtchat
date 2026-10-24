@@ -74,9 +74,8 @@ class MessagesModel extends ChangeNotifier {
 
   /// Whether [channel] is streaming, which gates message alerts.
   @visibleForTesting
-  Stream<bool> Function(Channel channel) isOnline =
-      (channel) =>
-          ProfilesAdapter.instance.getIsOnline(channelId: channel.toString());
+  Stream<bool> Function(Channel channel) isOnline = (channel) =>
+      ProfilesAdapter.instance.getIsOnline(channelId: channel.toString());
 
   @visibleForTesting
   void addEvent(Channel channel, DeltaEvent event) => _onEvent(channel, event);
@@ -184,11 +183,10 @@ class MessagesModel extends ChangeNotifier {
     final history = <ChannelEvent>[];
 
     for (final channel in _channels) {
-      final oldest =
-          futureEvents
-              .where((entry) => entry.channel == channel)
-              .map((entry) => entry.event.timestamp)
-              .firstOrNull;
+      final oldest = futureEvents
+          .where((entry) => entry.channel == channel)
+          .map((entry) => entry.event.timestamp)
+          .firstOrNull;
 
       if (oldest == null) {
         continue;
@@ -208,13 +206,12 @@ class MessagesModel extends ChangeNotifier {
 
     _events = [...history, ...futureEvents];
 
-    _messages =
-        _channels.length > 1
-            ? replayEvents(_events)
-            : _events.fold(
-              <MessageModel>[],
-              (messages, entry) => applyDeltaEvent(messages, entry.event),
-            );
+    _messages = _channels.length > 1
+        ? replayEvents(_events)
+        : _events.fold(
+            <MessageModel>[],
+            (messages, entry) => applyDeltaEvent(messages, entry.event),
+          );
 
     _separators = computeSeparators(_messages);
     notifyListeners();
@@ -306,9 +303,9 @@ class MessagesModel extends ChangeNotifier {
   }
 
   Map<String, dynamic> toJson() => {
-    "announcementPinDuration": _announcementPinDuration.inSeconds.toInt(),
-    "pingMinGapDuration": _pingMinGapDuration.inSeconds.toInt(),
-  };
+        "announcementPinDuration": _announcementPinDuration.inSeconds.toInt(),
+        "pingMinGapDuration": _pingMinGapDuration.inSeconds.toInt(),
+      };
 
   BuildContext? _getContext() {
     return navigatorKey.currentContext;
@@ -341,7 +338,7 @@ List<MessageModel> applyDeltaEvent(
   Channel? channel,
   void Function(MessageModel model)? onAppend,
   void Function(DeltaEvent event, MessageModel previous, MessageModel updated)?
-  onUpdate,
+      onUpdate,
 }) {
   if (event is AppendDeltaEvent) {
     _insert(messages, event.model);
@@ -405,11 +402,11 @@ typedef ChannelEvent = ({Channel channel, DeltaEvent event});
 /// (keeping the received order for events with the same timestamp).
 @visibleForTesting
 List<MessageModel> replayEvents(List<ChannelEvent> events) {
-  final ordered =
-      events.indexed.toList()..sort((a, b) {
-        final byTime = a.$2.event.timestamp.compareTo(b.$2.event.timestamp);
-        return byTime != 0 ? byTime : a.$1.compareTo(b.$1);
-      });
+  final ordered = events.indexed.toList()
+    ..sort((a, b) {
+      final byTime = a.$2.event.timestamp.compareTo(b.$2.event.timestamp);
+      return byTime != 0 ? byTime : a.$1.compareTo(b.$1);
+    });
 
   var messages = <MessageModel>[];
 
