@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -170,6 +169,25 @@ func twitchConditions(id string) []twitchWanted {
 	}
 	return wanted
 }
+
+// sameCondition compares EventSub conditions, treating an empty value as
+// absent. Twitch lists every condition field of a type, so a raid sent to the
+// broadcaster comes back with from_broadcaster_user_id "" and a redemption
+// without a reward with reward_id "".
+func sameCondition(a, b map[string]string) bool {
+	for key, value := range a {
+		if value != "" && b[key] != value {
+			return false
+		}
+	}
+	for key, value := range b {
+		if value != "" && a[key] != value {
+			return false
+		}
+	}
+	return true
+}
+
 func (s *Service) checkTwitchSecret() error {
 	if len(s.TwitchSecret) < 10 || len(s.TwitchSecret) > 100 {
 		return &callable.Error{Code: "failed-precondition", Message: "dedicated Twitch webhook signing secret is not configured"}
@@ -239,7 +257,7 @@ func (s *Service) reconcileTwitch(ctx context.Context, id string, call twitchCal
 	// legacy callback conflict must not leave a partially migrated broadcaster.
 	for _, wanted := range wantedSubscriptions {
 		for _, sub := range existing {
-			if sub.Type == wanted.Type && sub.Version == wanted.Version && reflect.DeepEqual(sub.Condition, wanted.Condition) && !ownCallback(sub) {
+			if sub.Type == wanted.Type && sub.Version == wanted.Version && sameCondition(sub.Condition, wanted.Condition) && !ownCallback(sub) {
 				return result, &callable.Error{Code: "failed-precondition", Message: "Twitch callbacks require coordinated migration before enabling subscriptions"}
 			}
 		}
@@ -247,7 +265,7 @@ func (s *Service) reconcileTwitch(ctx context.Context, id string, call twitchCal
 	for _, wanted := range wantedSubscriptions {
 		found := false
 		for _, sub := range existing {
-			if sub.Type != wanted.Type || sub.Version != wanted.Version || !reflect.DeepEqual(sub.Condition, wanted.Condition) {
+			if sub.Type != wanted.Type || sub.Version != wanted.Version || !sameCondition(sub.Condition, wanted.Condition) {
 				continue
 			}
 			if sub.Status == "enabled" || sub.Status == "webhook_callback_verification_pending" {
