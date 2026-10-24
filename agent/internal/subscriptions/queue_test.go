@@ -267,6 +267,29 @@ func TestTwitchQueueListsBeforeRetryingUncertainPost(t *testing.T) {
 	}
 }
 
+func TestTwitchQueueCountsConflictAsPresent(t *testing.T) {
+	fake := &fakeEventSub{}
+	fake.reply = func(w http.ResponseWriter, kind string, _ int) bool {
+		if kind != "channel.cheer" {
+			return false
+		}
+		// Another replica created it after this attempt listed.
+		w.WriteHeader(409)
+		fmt.Fprint(w, `{"error":"Conflict","status":409,"message":"subscription already exists"}`)
+		return true
+	}
+	server := httptest.NewServer(fake)
+	defer server.Close()
+	queue, clock := testQueue(server)
+	queue.Enqueue("123")
+	if waited := drain(t, queue, clock); waited != 0 {
+		t.Fatal("retried a conflict", waited)
+	}
+	if fake.gets != 1 || fake.posts["channel.cheer"] != 1 || len(fake.state) != 26 {
+		t.Fatal(fake.gets, fake.posts["channel.cheer"], len(fake.state))
+	}
+}
+
 func TestTwitchQueueGivesUpAfterRepeatedFailures(t *testing.T) {
 	var gets atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
