@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -122,5 +124,39 @@ void main() {
     model.isSettingsVisible = true;
     expect(await model.refreshAllSources(), 2);
     expect(reloads, [null]);
+  });
+
+  test("a clear isn't overtaken by an older sync", () async {
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    const channel = MethodChannel('com.rtirl.chat/audio');
+    final permission = Completer<bool>();
+    final sets = <List<Object?>>[];
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      switch (call.method) {
+        case 'hasPermission':
+          return permission.future;
+        case 'set':
+          sets.add((call.arguments as Map)['urls']);
+      }
+      return true;
+    });
+    addTearDown(
+      () => messenger.setMockMethodCallHandler(channel, (call) async => true),
+    );
+
+    final model = AudioModel.fromJson({
+      "sources": [
+        {"name": "a", "url": "https://example.com/a", "muted": false},
+      ],
+    });
+    model.isSettingsVisible = true;
+    await pumpEventQueue();
+    model.isSettingsVisible = false;
+    await pumpEventQueue();
+    permission.complete(true);
+    await pumpEventQueue();
+
+    expect(sets.last, isEmpty);
   });
 }

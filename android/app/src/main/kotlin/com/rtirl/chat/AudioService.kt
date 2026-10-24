@@ -88,7 +88,7 @@ class AudioService : Service() {
     }
 
     if (views.isEmpty()) {
-      stopAudioService()
+      stopAudioService(startId)
       return START_NOT_STICKY
     }
 
@@ -272,11 +272,15 @@ class AudioService : Service() {
     webView.destroy()
   }
 
-  private fun stopAudioService() {
+  private fun stopAudioService(startId: Int) {
+    // A newer start may already be queued, e.g. a clear followed by new
+    // sources, and it must not be cancelled.
+    if (!stopSelfResult(startId)) {
+      return
+    }
     ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
     notificationManager?.cancel(NOTIFICATION_ID)
     releaseWakeLock()
-    stopSelf()
   }
 
   override fun onDestroy() {

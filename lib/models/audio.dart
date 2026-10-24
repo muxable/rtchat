@@ -54,6 +54,8 @@ class AudioModel extends ChangeNotifier {
   late final AppLifecycleListener _lifecycleListener;
   bool _syncFailed = false;
   int _syncId = 0;
+  // syncs run one at a time so an older one can't land after a newer one.
+  Future<void> _sync = Future.value();
 
   @override
   void dispose() {
@@ -143,20 +145,23 @@ class AudioModel extends ChangeNotifier {
     return count;
   }
 
-  Future<void> _syncWebViews() async {
+  Future<void> _syncWebViews() {
     final id = ++_syncId;
-    final ok = await AudioChannel.set(
-      enabled
-          ? _sources
-              .where((element) => !element.muted)
-              .map((element) => element.url.toString())
-              .toList()
-          : [],
-    );
-    // only the latest sync reflects the requested state.
-    if (id == _syncId) {
-      _syncFailed = !ok;
-    }
+    return _sync = _sync.then((_) {}, onError: (_) {}).then((_) async {
+      // a newer sync is queued and will apply the latest state.
+      if (id != _syncId) {
+        return;
+      }
+      _syncFailed =
+          !await AudioChannel.set(
+            enabled
+                ? _sources
+                    .where((element) => !element.muted)
+                    .map((element) => element.url.toString())
+                    .toList()
+                : [],
+          );
+    });
   }
 
   Future<void> showAudioPermissionDialog(BuildContext context) {
