@@ -5,16 +5,32 @@ on:
     branches:
       - main
   pull_request:
+    # skip PRs that only touch the backend or docs.
+    paths-ignore:
+      - "agent/**"
+      - "functions/**"
+      - "auxiliary/**"
+      - "**.md"
+      - ".github/workflows/agent.yml"
+      - ".github/workflows/auxiliary.yml"
+      - ".github/workflows/firebase*.yml"
   workflow_dispatch:
+
+# cancel superseded PR runs; runs on main each get their own group.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
+        with:
+          cache: true
       - run: flutter test
       - name: Test on_device_tts
         run: flutter test
@@ -24,13 +40,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+        uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: "temurin"
           java-version: "17"
+      - uses: gradle/actions/setup-gradle@v6
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
+        with:
+          cache: true
       # Generates android/local.properties and the Gradle wrapper.
       - run: flutter build apk --config-only
       - name: Test the on_device_tts plugin's Kotlin code (JVM)
