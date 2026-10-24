@@ -1393,29 +1393,9 @@
   "@turnOffTextToSpeech": {
     "description": "Button in the text to speech notification that turns text to speech off"
   },
-  "addChannel": "Add channel",
-  "@addChannel": {
-    "description": "Button to add a channel to the default channels"
-  },
   "addToChat": "Add to chat",
   "@addToChat": {
     "description": "Button on a channel search result that adds the channel to the channels shown in chat"
-  },
-  "defaultChannels": "Default channels",
-  "@defaultChannels": {
-    "description": "Title of the settings page for the channels the app opens with"
-  },
-  "defaultChannelsSubtitle": "The channels shown when the app opens",
-  "@defaultChannelsSubtitle": {
-    "description": "Explains what the default channels are"
-  },
-  "save": "Save",
-  "@save": {
-    "description": "Button on the default channels page that saves the channels currently shown as the default channels"
-  },
-  "resetToMyChannel": "Reset to my channel",
-  "@resetToMyChannel": {
-    "description": "Button on the default channels page that clears the picked default channels, so the app opens the signed-in user's own channel, and closes the page"
   },
   "inChat": "In chat",
   "@inChat": {
@@ -1458,10 +1438,6 @@
         "example": "xQc"
       }
     }
-  },
-  "removeChannel": "Remove",
-  "@removeChannel": {
-    "description": "Shown while swiping a default channel away to remove it from the default channels"
   },
   "voicePacks": "Voice packs",
   "@voicePacks": {

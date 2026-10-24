@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.annotation.NonNull
+import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -53,20 +54,33 @@ class MainActivity : FlutterActivity() {
         .setMethodCallHandler { call, result ->
           when (call.method) {
             "set" -> {
+              val urls = call.argument<List<String>>("urls") ?: listOf()
               val intent = Intent(this, AudioService::class.java)
-              intent.putStringArrayListExtra(
-                  "urls",
-                  ArrayList(call.argument<List<String>>("urls") ?: listOf()),
-              )
+              intent.putStringArrayListExtra("urls", ArrayList(urls))
               intent.action = AudioService.ACTION_START_SERVICE
-              startService(intent)
-              result.success(true)
+              try {
+                // Clearing goes through the service too: stopService() could
+                // land before a just-requested start promotes itself, which
+                // crashes the app. The service stops itself once empty.
+                ContextCompat.startForegroundService(this, intent)
+                result.success(true)
+              } catch (_: IllegalStateException) {
+                // Android may refuse to start it from the background, in which
+                // case no start is pending and stopping directly is safe.
+                if (urls.isEmpty()) stopService(intent)
+                result.success(urls.isEmpty())
+              }
             }
             "reload" -> {
               val intent = Intent(this, AudioService::class.java)
-              intent.action = AudioService.ACTION_START_SERVICE
-              startService(intent)
-              result.success(true)
+              intent.action = AudioService.ACTION_RELOAD_SOURCES
+              try {
+                startService(intent)
+                result.success(true)
+              } catch (_: IllegalStateException) {
+                // The service isn't running, so there's nothing to reload.
+                result.success(false)
+              }
             }
             "hasPermission" -> {
               result.success(

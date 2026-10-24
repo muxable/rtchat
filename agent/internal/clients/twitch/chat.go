@@ -90,10 +90,22 @@ func moderationPath(path, channel, moderator string, params url.Values) string {
 	return path + "?" + params.Encode()
 }
 
+// RaidRejected is Twitch's reason for refusing to start or cancel a raid, e.g.
+// because the target doesn't accept raids or there is no raid to cancel.
+type RaidRejected struct{ Message string }
+
+func (e *RaidRejected) Error() string { return e.Message }
+
 func (c *Client) StartRaid(ctx context.Context, from, to string) (time.Time, error) {
 	response, err := c.Do(ctx, "POST", "/raids?"+url.Values{"from_broadcaster_id": {from}, "to_broadcaster_id": {to}}.Encode(), nil)
 	if err != nil {
 		return time.Time{}, err
+	}
+	if response.StatusCode == 400 {
+		var result struct{ Message string }
+		if response.Decode(&result) == nil && result.Message != "" {
+			return time.Time{}, &RaidRejected{Message: result.Message}
+		}
 	}
 	if err := response.Err(); err != nil {
 		return time.Time{}, err
@@ -113,8 +125,21 @@ func (c *Client) StartRaid(ctx context.Context, from, to string) (time.Time, err
 	return started, nil
 }
 
+// CancelRaid returns a RaidRejected with Twitch's message when there is no
+// pending raid to cancel, e.g. because it already went through.
 func (c *Client) CancelRaid(ctx context.Context, channel string) error {
-	return c.write(ctx, "DELETE", "/raids?"+url.Values{"broadcaster_id": {channel}}.Encode(), nil)
+	response, err := c.Do(ctx, "DELETE", "/raids?"+url.Values{"broadcaster_id": {channel}}.Encode(), nil)
+	if err != nil {
+		return err
+	}
+	if response.StatusCode == 404 {
+		var result struct{ Message string }
+		if response.Decode(&result) == nil && result.Message != "" {
+			return &RaidRejected{Message: result.Message}
+		}
+		return &RaidRejected{Message: "no pending raid"}
+	}
+	return response.Err()
 }
 
 // Shoutout returns an empty reason when accepted, or Twitch's message when

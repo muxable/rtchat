@@ -158,27 +158,19 @@ func TestTwitchHTTP(t *testing.T) {
 
 func TestTwitchWritesAndRetries(t *testing.T) {
 	for _, test := range []struct {
-		name, eventType, wantPath           string
-		setError, updateError, refreshError error
-		wantStatus, wantWrites, wantRefresh int
+		name, eventType, wantPath string
+		setError, updateError     error
+		wantStatus, wantWrites    int
 	}{
 		{name: "follow counted once", eventType: "channel.follow", wantPath: "channels/twitch:1337/messages/twitch:follow:42", wantStatus: 200, wantWrites: 3},
 		{name: "follow update failure ignored", eventType: "channel.follow", wantPath: "channels/twitch:1337/messages/twitch:follow:42", updateError: errors.New("missing channel"), wantStatus: 200, wantWrites: 3},
 		{name: "follow failure retried", eventType: "channel.follow", wantPath: "channels/twitch:1337/messages/twitch:follow:42", setError: errors.New("unavailable"), wantStatus: 500, wantWrites: 2},
 		{name: "message failure retried", eventType: "stream.offline", setError: errors.New("unavailable"), wantStatus: 500, wantWrites: 2},
-		{name: "online refresh", eventType: "stream.online", wantStatus: 200, wantWrites: 4, wantRefresh: 2},
-		{name: "refresh failure retried", eventType: "stream.online", refreshError: errors.New("unavailable"), wantStatus: 500, wantWrites: 4, wantRefresh: 2},
+		{name: "online", eventType: "stream.online", wantStatus: 200, wantWrites: 4},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			store := &fakeTwitchStore{setError: test.setError, updateError: test.updateError}
-			refreshes := 0
-			h := &TwitchHandler{Secret: "secret", Store: store, now: func() time.Time { return twitchTestNow }, RefreshChannel: func(_ context.Context, id string) error {
-				if id != "twitch:1337" {
-					t.Fatalf("refresh id %q", id)
-				}
-				refreshes++
-				return test.refreshError
-			}}
+			h := &TwitchHandler{Secret: "secret", Store: store, now: func() time.Time { return twitchTestNow }}
 			body := `{"subscription":{"type":"` + test.eventType + `","version":"2","status":"enabled"},"event":{"broadcaster_user_id":"1337","user_id":"42"}}`
 			for i := 0; i < 2; i++ {
 				recorder := httptest.NewRecorder()
@@ -187,8 +179,8 @@ func TestTwitchWritesAndRetries(t *testing.T) {
 					t.Fatalf("status %d", recorder.Code)
 				}
 			}
-			if len(store.writes) != test.wantWrites || refreshes != test.wantRefresh {
-				t.Fatalf("writes %d, refreshes %d", len(store.writes), refreshes)
+			if len(store.writes) != test.wantWrites {
+				t.Fatalf("writes %d", len(store.writes))
 			}
 			wantPath := test.wantPath
 			if wantPath == "" {
@@ -245,5 +237,61 @@ func TestDecodeTwitchFirestoreTypes(t *testing.T) {
 	}
 	if _, err := decodeTwitchPayload([]byte(`{"event":{}} {}`)); err == nil {
 		t.Fatal("accepted trailing JSON")
+	}
+}
+
+func TestTwitchDeauthorization(t *testing.T) {
+	for _, test := range []struct {
+		name, body, messageType string
+		want                    []string
+		appRevoked              bool
+	}{
+		{name: "user.authorization.revoke", messageType: "notification", want: []string{"1337"},
+			body: `{"subscription":{"type":"user.authorization.revoke","version":"1","status":"enabled","condition":{"client_id":"client"}},"event":{"client_id":"client","user_id":"1337","user_login":"broadcaster","user_name":"Broadcaster"}}`},
+		{name: "deleted user", messageType: "notification", want: []string{"1337"},
+			body: `{"subscription":{"type":"user.authorization.revoke","version":"1","status":"enabled","condition":{"client_id":"client"}},"event":{"client_id":"client","user_id":"1337","user_login":null,"user_name":null}}`},
+		{name: "revoke without user", messageType: "notification",
+			body: `{"subscription":{"type":"user.authorization.revoke","version":"1","status":"enabled","condition":{"client_id":"client"}},"event":{"client_id":"client"}}`},
+		{name: "authorization_revoked", messageType: "revocation", want: []string{"1337"},
+			body: `{"subscription":{"type":"channel.cheer","version":"1","status":"authorization_revoked","condition":{"broadcaster_user_id":"1337"}}}`},
+		{name: "authorization_revoked raid", messageType: "revocation", want: []string{"1337"},
+			body: `{"subscription":{"type":"channel.raid","version":"1","status":"authorization_revoked","condition":{"from_broadcaster_user_id":"","to_broadcaster_user_id":"1337"}}}`},
+		{name: "notification_failures_exceeded", messageType: "revocation",
+			body: `{"subscription":{"type":"channel.cheer","version":"1","status":"notification_failures_exceeded","condition":{"broadcaster_user_id":"1337"}}}`},
+		{name: "user_removed", messageType: "revocation",
+			body: `{"subscription":{"type":"channel.cheer","version":"1","status":"user_removed","condition":{"broadcaster_user_id":"1337"}}}`},
+		{name: "app subscription revoked", messageType: "revocation", appRevoked: true,
+			body: `{"subscription":{"type":"user.authorization.revoke","version":"1","status":"notification_failures_exceeded","condition":{"client_id":"client"}}}`},
+		{name: "path in condition", messageType: "revocation",
+			body: `{"subscription":{"type":"channel.cheer","version":"1","status":"authorization_revoked","condition":{"broadcaster_user_id":"1/2"}}}`},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			store := &fakeTwitchStore{}
+			var got []string
+			appRevoked := false
+			h := &TwitchHandler{Secret: "secret", Store: store, now: func() time.Time { return twitchTestNow },
+				OnDeauthorized: func(id string, revocation bool) {
+					if revocation != (test.messageType == "revocation") {
+						t.Errorf("revocation %v for %s", revocation, test.messageType)
+					}
+					got = append(got, id)
+				},
+				OnAppRevoked: func() { appRevoked = true },
+			}
+			recorder := httptest.NewRecorder()
+			h.ServeHTTP(recorder, signedTwitchRequest(test.body, test.messageType, twitchTestNow.Format(time.RFC3339Nano)))
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("status %d, want 200", recorder.Code)
+			}
+			if !reflect.DeepEqual(got, test.want) {
+				t.Fatalf("deauthorized %v, want %v", got, test.want)
+			}
+			if appRevoked != test.appRevoked {
+				t.Fatalf("app revoked %v, want %v", appRevoked, test.appRevoked)
+			}
+			if len(store.writes) != 0 {
+				t.Fatalf("writes %#v", store.writes)
+			}
+		})
 	}
 }

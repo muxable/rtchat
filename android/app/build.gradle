@@ -34,43 +34,41 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace 'com.rtirl.chat'
-    compileSdkVersion flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    namespace = 'com.rtirl.chat'
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     defaultConfig {
-        applicationId "com.rtirl.chat"
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
-        versionCode vcode
-        versionName flutterVersionName
-        multiDexEnabled true
+        applicationId = "com.rtirl.chat"
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = vcode
+        versionName = flutterVersionName
     }
 
     signingConfigs {
         release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-            storePassword keystoreProperties['storePassword']
+            keyAlias = keystoreProperties['keyAlias']
+            keyPassword = keystoreProperties['keyPassword']
+            storeFile = keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword = keystoreProperties['storePassword']
         }
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            signingConfig = signingConfigs.release
         }
     }
-    namespace 'com.rtirl.chat'
 }
 
 kotlin {
@@ -80,12 +78,11 @@ kotlin {
 }
 
 flutter {
-    source '../..'
+    source = '../..'
 }
 
 dependencies {
-    implementation "androidx.media:media:1.4.1"
-    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation "androidx.media:media:1.7.1"
     implementation 'com.google.android.play:app-update:2.1.0'
     implementation 'com.google.android.play:feature-delivery:2.1.0'
 }

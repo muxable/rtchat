@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -208,27 +209,33 @@ func TestCatalogWithTwitchCLI(t *testing.T) {
 		status, result := invoke(t, s, "getEmotes", body(map[string]any{"provider": "twitch", "channelId": user.ID}), "uid")
 		items := array(result["result"])
 		sources := captured["/helix/chat/emotes/set"]
-		if status != 200 || len(items) == 0 || !reflect.DeepEqual(emoteBatches, []int{25, 1}) {
+		// set batches run concurrently, so they may be requested in any order.
+		batches := append([]int(nil), emoteBatches...)
+		sort.Ints(batches)
+		if status != 200 || len(items) == 0 || !reflect.DeepEqual(batches, []int{1, 25}) {
 			t.Fatalf("CLI emote set batching: %v, result=%+v", emoteBatches, result)
 		}
-		index := 0
+		// The CLI's random sets can repeat an emote, so compare as a multiset.
+		want := map[string]int{}
+		total := 0
 		for _, raw := range sources {
 			for _, source := range array(raw["data"]) {
-				if index >= len(items) {
-					t.Fatal("CLI emotes dropped")
-				}
-				item := items[index]
-				index++
 				scales, _ := source["scale"].([]any)
 				scale := fmt.Sprint(scales[len(scales)-1])
 				image := strings.NewReplacer("{{id}}", text(source["id"]), "{{format}}", "default", "{{theme_mode}}", "dark", "{{scale}}", scale).Replace(text(raw["template"]))
-				if item["provider"] != "twitch" || item["id"] != source["id"] || item["code"] != source["name"] || item["imageUrl"] != image {
-					t.Fatal("CLI emote transformation differs")
-				}
+				want[fmt.Sprint("twitch|", source["id"], "|", source["name"], "|", image)]++
+				total++
 			}
 		}
-		if index != len(items) {
-			t.Fatal("unexpected extra Twitch emotes")
+		if len(items) != total {
+			t.Fatalf("CLI emotes: got %d, want %d", len(items), total)
+		}
+		for _, item := range items {
+			key := fmt.Sprint(item["provider"], "|", item["id"], "|", item["code"], "|", item["imageUrl"])
+			if want[key] == 0 {
+				t.Fatal("CLI emote transformation differs")
+			}
+			want[key]--
 		}
 
 	})

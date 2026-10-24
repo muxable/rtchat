@@ -6,11 +6,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:provider/provider.dart';
 import 'package:rtchat/components/channel_attribution.dart';
 import 'package:rtchat/components/message_input.dart';
 import 'package:rtchat/main.dart';
 import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/views.dart';
+import 'package:rtchat/screens/onboarding.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
 import 'package:rtchat/tts_foreground_service.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
@@ -231,25 +234,7 @@ void main() {
   testWidgets('signed out users can view twitch and kick chat together', (
     tester,
   ) async {
-    // default channels are saved on the device and need no account.
     final prefs = await freshPrefs();
-    await prefs.setString(
-      'views',
-      jsonEncode({
-        'defaultChannels': [
-          {
-            'provider': 'twitch',
-            'channelId': channelId,
-            'displayName': 'e2estreamer',
-          },
-          {
-            'provider': 'kick',
-            'channelId': kickChannelId,
-            'displayName': 'E2EKick',
-          },
-        ],
-      }),
-    );
     final start = DateTime.now().subtract(const Duration(minutes: 5));
     await seeder.setDocument(
       '$channelPath/t1',
@@ -265,6 +250,15 @@ void main() {
     );
 
     await tester.pumpWidget(App(prefs: prefs));
+
+    // opening and adding channels needs no account.
+    await pumpUntil(tester, find.byType(OnboardingScreen));
+    Provider.of<ViewsModel>(
+        tester.element(find.byType(OnboardingScreen)),
+        listen: false,
+      )
+      ..openChannel(Channel(Providers.twitch, channelId, 'e2estreamer'))
+      ..addChannel(Channel(Providers.kick, kickChannelId, 'E2EKick'));
 
     await pumpUntil(tester, find.text('/e2estreamer +1'));
     await pumpUntil(tester, findRichText('kick second'));

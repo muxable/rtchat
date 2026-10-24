@@ -10,6 +10,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -73,6 +74,8 @@ type twitchPayload struct {
 		Type    string `json:"type"`
 		Version string `json:"version"`
 		Status  string `json:"status"`
+		// Condition is only read for revocations.
+		Condition map[string]interface{} `json:"condition"`
 	} `json:"subscription"`
 	Challenge *string                `json:"challenge"`
 	Event     map[string]interface{} `json:"event"`
@@ -125,8 +128,7 @@ type twitchDocument struct {
 }
 
 type twitchNotification struct {
-	Documents        []twitchDocument
-	RefreshChannelID string
+	Documents []twitchDocument
 }
 
 // mapTwitchNotification mirrors eventsub.ts: all event types share the same
@@ -170,7 +172,6 @@ func mapTwitchNotification(payload twitchPayload, messageID string, timestamp, n
 	switch payload.Subscription.Type {
 	case "stream.online":
 		data = map[string]interface{}{"onlineAt": firestore.ServerTimestamp}
-		notification.RefreshChannelID = channelID
 	case "stream.offline":
 		data = map[string]interface{}{"onlineAt": nil}
 	case "channel.follow":
@@ -191,19 +192,42 @@ func mapTwitchNotification(payload twitchPayload, messageID string, timestamp, n
 	return notification, nil
 }
 
-// TwitchHandler serves only /twitch/eventsub. RefreshChannel refreshes Helix
-// statistics after stream.online, just as the TypeScript callback does.
+// TwitchHandler serves only /twitch/eventsub. Channel statistics are refreshed
+// by the scheduled updateFollowerAndViewerCount job, not per notification.
 type TwitchHandler struct {
-	Secret         string
-	Store          twitchStore
-	RefreshChannel func(context.Context, string) error
-	now            func() time.Time
+	Secret string
+	Store  twitchStore
+	// OnDeauthorized is called with a broadcaster who revoked the app, from a
+	// user.authorization.revoke notification or, with revocation set, an
+	// authorization_revoked revocation. One deauthorization revokes every
+	// scoped subscription, so revocations repeat. It must not block: Twitch
+	// expects a prompt 2xx.
+	OnDeauthorized func(broadcasterID string, revocation bool)
+	// OnAppRevoked is called when Twitch revokes the app's own
+	// user.authorization.revoke subscription, so it can be recreated. It must
+	// not block.
+	OnAppRevoked func()
+	now          func() time.Time
 }
 
-func NewTwitchHandler(secret string, client *firestore.Client, clientID, clientSecret string) *TwitchHandler {
-	store := twitchFirestoreStore{client: client}
-	stats := twitchStats{store: store, client: &http.Client{Timeout: 15 * time.Second}, clientID: clientID, clientSecret: clientSecret}
-	return &TwitchHandler{Secret: secret, Store: store, RefreshChannel: stats.refresh, now: time.Now}
+func validTwitchID(id string) bool {
+	_, err := strconv.ParseUint(id, 10, 64)
+	return err == nil
+}
+
+func (h *TwitchHandler) deauthorized(id, source string) {
+	if !validTwitchID(id) {
+		zap.L().Warn("twitch eventsub deauthorization without broadcaster", zap.String("source", source), zap.String("broadcaster", id))
+		return
+	}
+	zap.L().Info("twitch eventsub deauthorization", zap.String("source", source), zap.String("broadcaster", id))
+	if h.OnDeauthorized != nil {
+		h.OnDeauthorized(id, source == "revocation")
+	}
+}
+
+func NewTwitchHandler(secret string, client *firestore.Client) *TwitchHandler {
+	return &TwitchHandler{Secret: secret, Store: twitchFirestoreStore{client: client}, now: time.Now}
 }
 
 func verifyTwitchSignature(secret, messageID, timestamp, signature string, body []byte) bool {
@@ -248,6 +272,7 @@ func (h *TwitchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	messageID := r.Header.Get("Twitch-Eventsub-Message-Id")
 	timestampHeader := r.Header.Get("Twitch-Eventsub-Message-Timestamp")
 	if !verifyTwitchSignature(h.Secret, messageID, timestampHeader, r.Header.Get("Twitch-Eventsub-Message-Signature"), body) {
+		zap.L().Warn("twitch eventsub rejected", zap.String("reason", "bad signature"), zap.String("type", r.Header.Get("Twitch-Eventsub-Subscription-Type")), zap.String("messageId", messageID))
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -257,6 +282,7 @@ func (h *TwitchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	timestamp, err := time.Parse(time.RFC3339Nano, timestampHeader)
 	if err != nil || now.Sub(timestamp) > 10*time.Minute {
+		zap.L().Warn("twitch eventsub rejected", zap.String("reason", "stale timestamp"), zap.String("type", r.Header.Get("Twitch-Eventsub-Subscription-Type")), zap.String("messageId", messageID), zap.String("timestamp", timestampHeader))
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -277,7 +303,28 @@ func (h *TwitchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	case "revocation":
 		zap.L().Info("twitch eventsub subscription revoked", zap.String("type", payload.Subscription.Type), zap.String("status", payload.Subscription.Status))
+		// A broadcaster's subscriptions revoked for other reasons, such as
+		// notification_failures_exceeded, are replaced the next time
+		// subscribe reconciles the broadcaster.
+		switch {
+		case payload.Subscription.Type == "user.authorization.revoke":
+			if h.OnAppRevoked != nil {
+				h.OnAppRevoked()
+			}
+		case payload.Subscription.Status == "authorization_revoked":
+			id, _ := payload.Subscription.Condition["broadcaster_user_id"].(string)
+			if id == "" {
+				id, _ = payload.Subscription.Condition["to_broadcaster_user_id"].(string)
+			}
+			h.deauthorized(id, "revocation")
+		}
 	case "notification":
+		// The app's own subscription; it isn't a channel event.
+		if payload.Subscription.Type == "user.authorization.revoke" {
+			id, _ := payload.Event["user_id"].(string)
+			h.deauthorized(id, "notification")
+			break
+		}
 		notification, err := mapTwitchNotification(payload, messageID, timestamp, now)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -311,9 +358,6 @@ func (h *TwitchHandler) writeNotification(ctx context.Context, notification twit
 		if err != nil && !doc.IgnoreError {
 			return err
 		}
-	}
-	if notification.RefreshChannelID != "" && h.RefreshChannel != nil {
-		return h.RefreshChannel(ctx, notification.RefreshChannelID)
 	}
 	return nil
 }

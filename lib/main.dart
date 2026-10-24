@@ -41,7 +41,6 @@ import 'package:rtchat/screens/settings/activity_feed.dart';
 import 'package:rtchat/screens/settings/audio_sources.dart';
 import 'package:rtchat/screens/settings/backup.dart';
 import 'package:rtchat/screens/settings/chat_history.dart';
-import 'package:rtchat/screens/settings/default_channels.dart';
 import 'package:rtchat/screens/settings/events.dart';
 import 'package:rtchat/screens/settings/events/channel_point.dart';
 import 'package:rtchat/screens/settings/events/cheer.dart';
@@ -63,6 +62,11 @@ import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+/// Whether [details] should be recorded as a crash. Images that fail to
+/// download or decode only leave a blank image behind, so they aren't.
+bool isFatalFlutterError(FlutterErrorDetails details) =>
+    details.library != 'image resource service';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -75,7 +79,13 @@ void main() async {
   );
 
   if (!kDebugMode) {
-    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    FlutterError.onError = (details) {
+      if (isFatalFlutterError(details)) {
+        FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+      } else {
+        FirebaseCrashlytics.instance.recordFlutterError(details);
+      }
+    };
     PlatformDispatcher.instance.onError = (error, stack) {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;
@@ -238,7 +248,15 @@ class _AppState extends State<App> {
               // don't play alerts while the app is in the background.
               if (WidgetsBinding.instance.lifecycleState ==
                   AppLifecycleState.resumed) {
-                player.play(AssetSource('message-sound.wav'));
+                // the player gives up preparing the sound after 30 seconds;
+                // a missed ping isn't worth crashing over.
+                player
+                    .play(AssetSource('message-sound.wav'))
+                    .catchError(
+                      (Object error, StackTrace stack) => FirebaseCrashlytics
+                          .instance
+                          .recordError(error, stack),
+                    );
               }
             };
             // subscribing and emotes call as the user's account.
@@ -444,8 +462,6 @@ class _AppState extends State<App> {
               '/settings': (context) => const SettingsScreen(),
               '/settings/accounts': (context) => const AccountsScreen(),
               '/settings/badges': (context) => const TwitchBadgesScreen(),
-              '/settings/default-channels':
-                  (context) => const DefaultChannelsScreen(),
               '/settings/activity-feed':
                   (context) => const ActivityFeedScreen(),
               '/settings/audio-sources':

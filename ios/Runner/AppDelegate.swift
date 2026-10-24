@@ -47,15 +47,7 @@ import WebKit
                     }
                     result(Bool(true))
                 case "reload":
-                    guard let args = call.arguments as? [String: Any],
-                          let url = args["url"] as? String,
-                          let view = views[url]
-                    else {
-                        result(Bool(false))
-                        return
-                    }
-
-                    view.reload()
+                    views.values.forEach { $0.reload() }
                     result(Bool(true))
                 case "hasPermission":
                     result(Bool(true))

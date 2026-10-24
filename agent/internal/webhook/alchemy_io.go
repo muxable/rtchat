@@ -125,7 +125,7 @@ func (rpc *AlchemyRPC) Input(ctx context.Context, hash string) (string, error) {
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("Infura HTTP status %d", response.StatusCode)
+		return "", fmt.Errorf("unexpected Infura HTTP status %d", response.StatusCode)
 	}
 	var result struct {
 		Result *struct {
@@ -140,7 +140,7 @@ func (rpc *AlchemyRPC) Input(ctx context.Context, hash string) (string, error) {
 		return "", err
 	}
 	if result.Error != nil {
-		return "", fmt.Errorf("Infura RPC error %d: %s", result.Error.Code, result.Error.Message)
+		return "", fmt.Errorf("unexpected Infura RPC error %d: %s", result.Error.Code, result.Error.Message)
 	}
 	if result.Result == nil {
 		return "", fmt.Errorf("transaction %s not found", hash)
