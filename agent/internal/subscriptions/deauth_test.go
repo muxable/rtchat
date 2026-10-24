@@ -570,3 +570,63 @@ func TestTwitchQueueReconcilesAgainAfterRemovalIntent(t *testing.T) {
 		t.Fatal(reconciles, fake.deleted)
 	}
 }
+
+func TestTwitchQueueDeauthorizationDuringRemovalRunsAgain(t *testing.T) {
+	fake := deauthorizedState()
+	server := httptest.NewServer(fake)
+	defer server.Close()
+	queue, clock := testQueue(server)
+	checks := 0
+	queue.reauthorized = func(context.Context, string) (bool, error) {
+		checks++
+		if checks == 1 {
+			// The check sees the fresh grant, then the broadcaster
+			// deauthorizes again before the removal finishes.
+			queue.Deauthorized("123", false)
+			return true, nil
+		}
+		return false, nil
+	}
+	queue.Deauthorized("123", true)
+	queue.step(context.Background())
+	if depth(queue) != 1 || len(fake.deleted) != 0 {
+		t.Fatal("deauthorization during the removal lost", depth(queue), fake.deleted)
+	}
+	// A removal skipped for re-authorization doesn't suppress revocations.
+	queue.mu.Lock()
+	_, suppressed := queue.removed["123"]
+	queue.mu.Unlock()
+	if suppressed {
+		t.Fatal("skipped removal started the suppression window")
+	}
+	drain(t, queue, clock)
+	if checks != 2 || len(fake.deleted) != 5 {
+		t.Fatal(checks, fake.deleted)
+	}
+}
+
+func TestTwitchQueuePartialRemovalReleasesCostHold(t *testing.T) {
+	fake := deauthorizedState()
+	deletes := 0
+	fake.reply = func(w http.ResponseWriter, r *http.Request) bool {
+		if r.Method == http.MethodDelete {
+			if deletes++; deletes == 2 {
+				w.WriteHeader(500)
+				return true
+			}
+		}
+		return false
+	}
+	server := httptest.NewServer(fake)
+	defer server.Close()
+	queue, clock := testQueue(server)
+	queue.cappedUntil = clock.Now().Add(twitchCostCheckInterval)
+	queue.EnqueueRemove("123")
+	queue.step(context.Background())
+	queue.mu.Lock()
+	capped := queue.cappedUntil
+	queue.mu.Unlock()
+	if depth(queue) != 1 || len(fake.deleted) != 1 || !capped.IsZero() {
+		t.Fatal("partial removal kept the cost hold", depth(queue), fake.deleted, capped)
+	}
+}

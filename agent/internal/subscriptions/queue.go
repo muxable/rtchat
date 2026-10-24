@@ -153,6 +153,11 @@ func (q *TwitchQueue) enqueue(channel string, job twitchJob) {
 	now := q.now()
 	if item := q.pending[channel]; item != nil {
 		if item.job == job {
+			// A removal already running may have checked re-authorization
+			// before this deauthorization, so it runs again.
+			if job == twitchRemoveJob && item.running {
+				item.changed = true
+			}
 			return
 		}
 		item.job = job
@@ -408,6 +413,11 @@ func (q *TwitchQueue) process(ctx context.Context, item *twitchItem, job twitchJ
 	var uncertain *subscriptionlock.UncertainError
 	q.mu.Lock()
 	item.running = false
+	if deleted > 0 {
+		// Freed cost, even if the removal then failed or was superseded: stop
+		// dropping reconciles, and recheck held ones.
+		q.cappedUntil, q.costCheck = time.Time{}, now
+	}
 	switch {
 	case item.changed:
 		// Another job was enqueued while this one ran; the latest runs next.
@@ -429,14 +439,12 @@ func (q *TwitchQueue) process(ctx context.Context, item *twitchItem, job twitchJ
 		q.cappedUntil = now.Add(twitchCostCheckInterval)
 	case err == nil:
 		delete(q.pending, item.channel)
-		if job == twitchRemoveJob {
-			if deleted > 0 {
-				// Freed cost: stop dropping reconciles, and recheck held ones.
-				q.cappedUntil, q.costCheck = time.Time{}, now
-			}
-			if reauthorized {
-				outcome = "reauthorized"
-			}
+		switch {
+		case job == twitchRemoveJob && reauthorized:
+			// Not a removal, so it doesn't suppress the revocations of a
+			// later deauthorization.
+			outcome = "reauthorized"
+		case job == twitchRemoveJob:
 			for channel, at := range q.removed {
 				if now.Sub(at) >= twitchRemovedTTL {
 					delete(q.removed, channel)
