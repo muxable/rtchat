@@ -70,8 +70,9 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                     ),
-                    if (onCancel != null && remaining > const Duration(seconds: 1))
-  _RaidCancelButton(onCancel: onCancel!),
+                    if (onCancel != null &&
+                        remaining > const Duration(seconds: 1))
+                      _RaidCancelButton(onCancel: onCancel!),
                   ],
                 ),
               ),
@@ -146,18 +147,16 @@ class _RaidCancelButtonState extends State<_RaidCancelButton> {
   bool _inFlight = false;
 
   Future<void> _cancel() async {
-  if (_inFlight) return;
-
-  setState(() => _inFlight = true);
-
-  try {
-    await widget.onCancel();
-  } finally {
-    if (mounted) {
-      setState(() => _inFlight = false);
+    if (_inFlight) return;
+    setState(() => _inFlight = true);
+    try {
+      await widget.onCancel();
+    } finally {
+      if (mounted) {
+        setState(() => _inFlight = false);
+      }
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
