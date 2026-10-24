@@ -29,7 +29,7 @@ plugins {
 // parity and emulator tests when you do.
 val onnxRuntimeVersion = "1.31.0"
 
-android {
+configure<com.android.build.api.dsl.LibraryExtension> {
     namespace = "com.muxable.ondevicetts"
 
     compileSdk = 36
@@ -41,10 +41,10 @@ android {
 
     sourceSets {
         getByName("main") {
-            java.srcDirs("src/main/kotlin")
+            java.directories.add("src/main/kotlin")
         }
         getByName("test") {
-            java.srcDirs("src/test/kotlin")
+            java.directories.add("src/test/kotlin")
         }
     }
 
