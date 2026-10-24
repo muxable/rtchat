@@ -39,7 +39,7 @@ void main() {
         buildWidget(
           TwitchRaidingEventWidget(
             raiding(),
-            onCancel: () {
+            onCancel: () async {
               cancelled++;
             },
           ),
@@ -48,8 +48,11 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       await tester.tap(find.text('Cancel'));
+      await tester.pump();
+
       expect(cancelled, 1);
-      // stop the countdown's periodic stream.
+
+      // Stop the countdown's periodic stream.
       await tester.pumpWidget(Container());
     },
   );
@@ -60,7 +63,10 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         buildWidget(
-          TwitchRaidingEventWidget(raiding().withSuccessful(), onCancel: () {}),
+          TwitchRaidingEventWidget(
+            raiding().withSuccessful(),
+            onCancel: () async {},
+          ),
         ),
       );
       await tester.pump(const Duration(seconds: 1));
