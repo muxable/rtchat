@@ -40,8 +40,6 @@ jobs:
           java-version: "21"
       # the app's Gradle build runs inside the emulator step via flutter.
       - uses: gradle/actions/setup-gradle@v6
-        with:
-          cache-read-only: false
       - uses: actions/setup-node@v7
         with:
           node-version: 22
