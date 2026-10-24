@@ -49,10 +49,8 @@ void main() {
 
       await tester.tap(find.text('Cancel'));
       await tester.pump();
-
       expect(cancelled, 1);
-
-      // Stop the countdown's periodic stream.
+      // stop the countdown's periodic stream.
       await tester.pumpWidget(Container());
     },
   );
