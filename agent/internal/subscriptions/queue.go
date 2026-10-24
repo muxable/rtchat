@@ -60,6 +60,10 @@ type twitchItem struct {
 	// changed is set when the job changes while the item runs, even back to
 	// the running job, so the latest intent still runs after it.
 	changed bool
+	// reconcile is set once a reconcile is requested, so a removal that finds
+	// the broadcaster re-authorized runs it instead of dropping it. A stale
+	// revocation may otherwise replace a waiting reconcile.
+	reconcile bool
 }
 
 // TwitchQueue reconciles broadcasters' EventSub subscriptions, and removes
@@ -152,6 +156,9 @@ func (q *TwitchQueue) enqueue(channel string, job twitchJob) {
 	defer q.mu.Unlock()
 	now := q.now()
 	if item := q.pending[channel]; item != nil {
+		if job == twitchReconcileJob {
+			item.reconcile = true
+		}
 		if item.job == job {
 			// A removal already running may have checked re-authorization
 			// before this deauthorization, so it runs again.
@@ -177,7 +184,7 @@ func (q *TwitchQueue) enqueue(channel string, job twitchJob) {
 		zap.L().Warn("twitch eventsub queue full", zap.String("channel", channel), zap.Int("queue_depth", len(q.pending)))
 		return
 	}
-	q.pending[channel] = &twitchItem{channel: channel, job: job, enqueued: now, ready: now}
+	q.pending[channel] = &twitchItem{channel: channel, job: job, enqueued: now, ready: now, reconcile: job == twitchReconcileJob}
 	q.signal()
 }
 
@@ -437,14 +444,19 @@ func (q *TwitchQueue) process(ctx context.Context, item *twitchItem, job twitchJ
 			q.costCheck = now.Add(twitchCostCheckInterval)
 		}
 		q.cappedUntil = now.Add(twitchCostCheckInterval)
+	case err == nil && job == twitchRemoveJob && reauthorized:
+		// Not a removal, so it doesn't suppress the revocations of a later
+		// deauthorization.
+		outcome = "reauthorized"
+		if item.reconcile {
+			item.job = twitchReconcileJob
+			item.attempts, item.costHeld, item.ready = 0, false, now
+		} else {
+			delete(q.pending, item.channel)
+		}
 	case err == nil:
 		delete(q.pending, item.channel)
-		switch {
-		case job == twitchRemoveJob && reauthorized:
-			// Not a removal, so it doesn't suppress the revocations of a
-			// later deauthorization.
-			outcome = "reauthorized"
-		case job == twitchRemoveJob:
+		if job == twitchRemoveJob {
 			for channel, at := range q.removed {
 				if now.Sub(at) >= twitchRemovedTTL {
 					delete(q.removed, channel)
