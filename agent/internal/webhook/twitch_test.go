@@ -239,3 +239,44 @@ func TestDecodeTwitchFirestoreTypes(t *testing.T) {
 		t.Fatal("accepted trailing JSON")
 	}
 }
+
+func TestTwitchDeauthorization(t *testing.T) {
+	for _, test := range []struct {
+		name, body, messageType string
+		want                    []string
+	}{
+		{name: "user.authorization.revoke", messageType: "notification", want: []string{"1337"},
+			body: `{"subscription":{"type":"user.authorization.revoke","version":"1","status":"enabled","condition":{"client_id":"client"}},"event":{"client_id":"client","user_id":"1337","user_login":"broadcaster","user_name":"Broadcaster"}}`},
+		{name: "deleted user", messageType: "notification", want: []string{"1337"},
+			body: `{"subscription":{"type":"user.authorization.revoke","version":"1","status":"enabled","condition":{"client_id":"client"}},"event":{"client_id":"client","user_id":"1337","user_login":null,"user_name":null}}`},
+		{name: "revoke without user", messageType: "notification",
+			body: `{"subscription":{"type":"user.authorization.revoke","version":"1","status":"enabled","condition":{"client_id":"client"}},"event":{"client_id":"client"}}`},
+		{name: "authorization_revoked", messageType: "revocation", want: []string{"1337"},
+			body: `{"subscription":{"type":"channel.cheer","version":"1","status":"authorization_revoked","condition":{"broadcaster_user_id":"1337"}}}`},
+		{name: "authorization_revoked raid", messageType: "revocation", want: []string{"1337"},
+			body: `{"subscription":{"type":"channel.raid","version":"1","status":"authorization_revoked","condition":{"from_broadcaster_user_id":"","to_broadcaster_user_id":"1337"}}}`},
+		{name: "notification_failures_exceeded", messageType: "revocation",
+			body: `{"subscription":{"type":"channel.cheer","version":"1","status":"notification_failures_exceeded","condition":{"broadcaster_user_id":"1337"}}}`},
+		{name: "user_removed", messageType: "revocation",
+			body: `{"subscription":{"type":"channel.cheer","version":"1","status":"user_removed","condition":{"broadcaster_user_id":"1337"}}}`},
+		{name: "path in condition", messageType: "revocation",
+			body: `{"subscription":{"type":"channel.cheer","version":"1","status":"authorization_revoked","condition":{"broadcaster_user_id":"1/2"}}}`},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			store := &fakeTwitchStore{}
+			var got []string
+			h := &TwitchHandler{Secret: "secret", Store: store, now: func() time.Time { return twitchTestNow }, OnDeauthorized: func(id string) { got = append(got, id) }}
+			recorder := httptest.NewRecorder()
+			h.ServeHTTP(recorder, signedTwitchRequest(test.body, test.messageType, twitchTestNow.Format(time.RFC3339Nano)))
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("status %d, want 200", recorder.Code)
+			}
+			if !reflect.DeepEqual(got, test.want) {
+				t.Fatalf("deauthorized %v, want %v", got, test.want)
+			}
+			if len(store.writes) != 0 {
+				t.Fatalf("writes %#v", store.writes)
+			}
+		})
+	}
+}

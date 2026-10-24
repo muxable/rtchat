@@ -27,8 +27,25 @@ const (
 
 var errTwitchBudget = errors.New("Twitch rate-limit reserve reached")
 
+// twitchJob is what an item does for its broadcaster.
+type twitchJob int
+
+const (
+	// twitchReconcileJob creates a broadcaster's missing subscriptions.
+	twitchReconcileJob twitchJob = iota
+	// twitchRemoveJob deletes a deauthorized broadcaster's subscriptions.
+	twitchRemoveJob
+	// twitchAppJob ensures the app's user.authorization.revoke subscription.
+	twitchAppJob
+)
+
+// twitchAppKey is the app subscription's item and lease key. It isn't numeric,
+// so it can't collide with a broadcaster.
+const twitchAppKey = "app-authorization"
+
 type twitchItem struct {
 	channel  string
+	job      twitchJob
 	enqueued time.Time
 	ready    time.Time
 	attempts int
@@ -36,9 +53,11 @@ type twitchItem struct {
 	running  bool
 }
 
-// TwitchQueue reconciles broadcasters' EventSub subscriptions on one worker
-// per replica, paced by Twitch's rate and cost limits. It is not durable:
-// subscribe runs on every channel open, so work lost to a restart is redone.
+// TwitchQueue reconciles broadcasters' EventSub subscriptions, and removes
+// them when a broadcaster deauthorizes the app, on one worker per replica,
+// paced by Twitch's rate and cost limits. It is not durable: subscribe runs on
+// every channel open, so a lost reconcile is redone, but a removal lost to a
+// restart leaves that broadcaster's unscoped subscriptions behind.
 type TwitchQueue struct {
 	service  *Service
 	now      func() time.Time
@@ -74,19 +93,40 @@ func NewTwitchQueue(s *Service) *TwitchQueue {
 }
 
 // Enqueue schedules a broadcaster's reconcile. A broadcaster already waiting
-// or in progress keeps its item, including any backoff or cost hold.
-func (q *TwitchQueue) Enqueue(channel string) {
+// or in progress for a reconcile keeps its item, including any backoff or cost
+// hold.
+func (q *TwitchQueue) Enqueue(channel string) { q.enqueue(channel, twitchReconcileJob) }
+
+// EnqueueRemove schedules the deletion of a broadcaster's subscriptions after
+// they deauthorize the app.
+func (q *TwitchQueue) EnqueueRemove(channel string) { q.enqueue(channel, twitchRemoveJob) }
+
+// enqueue keeps one item per broadcaster, and the latest intent wins: enqueuing
+// the other job switches a waiting item to it with fresh retry state, and one
+// that arrives while the item runs keeps the item queued to run the new job
+// next. A subscribe after re-authorization therefore replaces a pending
+// removal, and a deauthorization after a subscribe removes.
+func (q *TwitchQueue) enqueue(channel string, job twitchJob) {
 	if q == nil {
 		zap.L().Error("twitch eventsub queue not configured", zap.String("channel", channel))
 		return
 	}
 	q.mu.Lock()
 	defer q.mu.Unlock()
-	if q.pending[channel] != nil {
+	now := q.now()
+	if item := q.pending[channel]; item != nil {
+		if item.job == job {
+			return
+		}
+		item.job = job
+		if !item.running {
+			item.attempts, item.costHeld, item.ready = 0, false, now
+		}
+		q.signal()
 		return
 	}
-	now := q.now()
-	if now.Before(q.cappedUntil) {
+	// Removals free cost, and the app subscription costs nothing.
+	if job == twitchReconcileJob && now.Before(q.cappedUntil) {
 		zap.L().Info("twitch eventsub reconcile skipped while cost limit is full", zap.String("channel", channel))
 		return
 	}
@@ -94,7 +134,11 @@ func (q *TwitchQueue) Enqueue(channel string) {
 		zap.L().Warn("twitch eventsub queue full", zap.String("channel", channel), zap.Int("queue_depth", len(q.pending)))
 		return
 	}
-	q.pending[channel] = &twitchItem{channel: channel, enqueued: now, ready: now}
+	q.pending[channel] = &twitchItem{channel: channel, job: job, enqueued: now, ready: now}
+	q.signal()
+}
+
+func (q *TwitchQueue) signal() {
 	select {
 	case q.wake <- struct{}{}:
 	default:
@@ -102,7 +146,9 @@ func (q *TwitchQueue) Enqueue(channel string) {
 }
 
 // Run drains the queue until ctx ends. Pending items are dropped on shutdown.
+// Every replica first checks the app subscription; the lease lets one create it.
 func (q *TwitchQueue) Run(ctx context.Context) {
+	q.enqueue(twitchAppKey, twitchAppJob)
 	for ctx.Err() == nil {
 		delay := q.step(ctx)
 		if delay <= 0 {
@@ -129,11 +175,11 @@ func (q *TwitchQueue) step(ctx context.Context) time.Duration {
 		q.checkCost(ctx, now)
 		now = q.now()
 	}
-	item, delay := q.next(now)
+	item, job, delay := q.next(now)
 	if item == nil {
 		return delay
 	}
-	q.process(ctx, item)
+	q.process(ctx, item, job)
 	return 0
 }
 
@@ -219,9 +265,9 @@ func (q *TwitchQueue) checkCost(ctx context.Context, now time.Time) {
 	zap.L().Info("twitch eventsub cost check", zap.Int("total_cost", result.TotalCost), zap.Int("max_total_cost", result.MaxTotalCost), zap.Bool("headroom", headroom), zap.Int("held", held), zap.Int("queue_depth", depth), zap.Int64("oldest_pending_ms", oldest.Milliseconds()))
 }
 
-// next marks the oldest ready item running, or returns how long until one may
-// be ready.
-func (q *TwitchQueue) next(now time.Time) (*twitchItem, time.Duration) {
+// next marks the oldest ready item running and returns the job it runs, or
+// returns how long until one may be ready.
+func (q *TwitchQueue) next(now time.Time) (*twitchItem, twitchJob, time.Duration) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	var found *twitchItem
@@ -241,10 +287,11 @@ func (q *TwitchQueue) next(now time.Time) (*twitchItem, time.Duration) {
 			found = item
 		}
 	}
-	if found != nil {
-		found.running = true
+	if found == nil {
+		return nil, 0, delay
 	}
-	return found, delay
+	found.running = true
+	return found, found.job, delay
 }
 
 // stats must be called with q.mu held.
@@ -282,13 +329,22 @@ func after(now, at time.Time, fallback time.Duration) time.Time {
 	return now.Add(fallback)
 }
 
-func (q *TwitchQueue) process(ctx context.Context, item *twitchItem) {
+func (q *TwitchQueue) process(ctx context.Context, item *twitchItem, job twitchJob) {
 	var result twitchReconcile
+	deleted := 0
 	token, err := q.service.API.Tokens.AppAccessToken(ctx, "twitch")
 	if err == nil {
+		// Removals take the reconcile's lease so the two never interleave.
 		err = q.lock(ctx, "twitch:"+item.channel, func(ctx context.Context) error {
 			var err error
-			result, err = q.service.reconcileTwitch(ctx, item.channel, q.call(token))
+			switch job {
+			case twitchRemoveJob:
+				deleted, err = q.service.removeTwitch(ctx, item.channel, q.call(token))
+			case twitchAppJob:
+				result, err = q.service.ensureTwitchApp(ctx, q.call(token))
+			default:
+				result, err = q.service.reconcileTwitch(ctx, item.channel, q.call(token))
+			}
 			return err
 		})
 	}
@@ -303,6 +359,10 @@ func (q *TwitchQueue) process(ctx context.Context, item *twitchItem) {
 	q.mu.Lock()
 	item.running = false
 	switch {
+	case item.job != job:
+		// The other job was enqueued while this one ran; it runs next.
+		outcome = "superseded"
+		item.attempts, item.costHeld, item.ready = 0, false, now
 	case errors.Is(err, subscriptionlock.ErrBusy):
 		// Another request or replica holds the broadcaster; not a failure.
 		outcome = "busy"
@@ -348,9 +408,16 @@ func (q *TwitchQueue) process(ctx context.Context, item *twitchItem) {
 	depth, oldest := q.stats(now)
 	attempts := item.attempts
 	q.mu.Unlock()
-	fields := []zap.Field{zap.String("channel", item.channel), zap.String("outcome", outcome), zap.Int("created", result.created), zap.Strings("skipped", result.skipped), zap.Strings("held", result.held), zap.Int("attempts", attempts), zap.Int64("wait_ms", now.Sub(item.enqueued).Milliseconds()), zap.Int("queue_depth", depth), zap.Int64("oldest_pending_ms", oldest.Milliseconds())}
+	fields := []zap.Field{zap.String("channel", item.channel), zap.String("outcome", outcome), zap.Int("attempts", attempts), zap.Int64("wait_ms", now.Sub(item.enqueued).Milliseconds()), zap.Int("queue_depth", depth), zap.Int64("oldest_pending_ms", oldest.Milliseconds())}
 	if err != nil {
 		fields = append(fields, zap.Error(err))
 	}
-	zap.L().Info("twitch eventsub reconcile", fields...)
+	switch job {
+	case twitchRemoveJob:
+		zap.L().Info("twitch eventsub remove", append(fields, zap.Int("deleted", deleted))...)
+	case twitchAppJob:
+		zap.L().Info("twitch eventsub app authorization", append(fields, zap.Int("created", result.created), zap.Strings("held", result.held))...)
+	default:
+		zap.L().Info("twitch eventsub reconcile", append(fields, zap.Int("created", result.created), zap.Strings("skipped", result.skipped), zap.Strings("held", result.held))...)
+	}
 }

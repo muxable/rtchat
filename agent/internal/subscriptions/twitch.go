@@ -178,10 +178,15 @@ func (s *Service) checkTwitchSecret() error {
 // twitchCall sends one request to /eventsub/subscriptions.
 type twitchCall func(ctx context.Context, method string, q url.Values, body, out any) error
 
-func listTwitch(ctx context.Context, id string, call twitchCall) ([]twitchSubscription, error) {
+// listTwitch pages through the subscriptions matching filter, such as user_id
+// or type.
+func listTwitch(ctx context.Context, filter url.Values, call twitchCall) ([]twitchSubscription, error) {
 	var subscriptions []twitchSubscription
 	seen := map[string]bool{}
-	q := url.Values{"user_id": {id}}
+	q := url.Values{}
+	for key, values := range filter {
+		q[key] = values
+	}
 	for {
 		var result struct {
 			Data       []twitchSubscription `json:"data"`
@@ -223,7 +228,7 @@ func (s *Service) reconcileTwitch(ctx context.Context, id string, call twitchCal
 	if err := s.checkTwitchSecret(); err != nil {
 		return result, err
 	}
-	existing, err := listTwitch(ctx, id, call)
+	existing, err := listTwitch(ctx, url.Values{"user_id": {id}}, call)
 	if err != nil {
 		return result, err
 	}
@@ -283,6 +288,89 @@ func (s *Service) reconcileTwitch(ctx context.Context, id string, call twitchCal
 		if outcome == "rate_limited" || outcome == "error" {
 			return result, err
 		}
+	}
+	return result, nil
+}
+
+// twitchTargets reports whether a subscription's condition is about the
+// broadcaster, as every subscription twitchConditions creates is.
+func twitchTargets(sub twitchSubscription, id string) bool {
+	for _, key := range []string{"broadcaster_user_id", "to_broadcaster_user_id", "from_broadcaster_user_id"} {
+		if sub.Condition[key] == id {
+			return true
+		}
+	}
+	return false
+}
+
+// removeTwitch deletes a deauthorized broadcaster's subscriptions at our
+// callbacks. Twitch revokes the ones that needed their authorization, but
+// keeps the unscoped ones, such as stream.online, enabled and counted against
+// the client's cost limit. Every attempt lists first, so a retry only deletes
+// what is left.
+func (s *Service) removeTwitch(ctx context.Context, id string, call twitchCall) (int, error) {
+	existing, err := listTwitch(ctx, url.Values{"user_id": {id}}, call)
+	if err != nil {
+		return 0, err
+	}
+	deleted := 0
+	for _, sub := range existing {
+		if !ownCallback(sub) || !twitchTargets(sub, id) {
+			continue
+		}
+		err := call(ctx, http.MethodDelete, url.Values{"id": {sub.ID}}, nil, nil)
+		switch {
+		case err == nil:
+			deleted++
+		case !isStatus(err, 404):
+			return deleted, err
+		}
+	}
+	return deleted, nil
+}
+
+// twitchAppType tells the app when a user deauthorizes it. Twitch delivers it
+// only to webhooks, and it costs nothing.
+const twitchAppType = "user.authorization.revoke"
+
+// ensureTwitchApp creates the app's user.authorization.revoke subscription
+// unless one at TwitchCallback is enabled or verifying. Like reconcileTwitch,
+// it lists first, replaces a failed one, and holds on the cost limit.
+func (s *Service) ensureTwitchApp(ctx context.Context, call twitchCall) (twitchReconcile, error) {
+	var result twitchReconcile
+	if err := s.checkTwitchSecret(); err != nil {
+		return result, err
+	}
+	credentials, err := s.API.Tokens.Credentials(ctx, "twitch")
+	if err != nil {
+		return result, err
+	}
+	existing, err := listTwitch(ctx, url.Values{"type": {twitchAppType}}, call)
+	if err != nil {
+		return result, err
+	}
+	for _, sub := range existing {
+		if sub.Type != twitchAppType || sub.Condition["client_id"] != credentials.ClientID || sub.Transport.Method != "webhook" || sub.Transport.Callback != TwitchCallback {
+			continue
+		}
+		if sub.Status == "enabled" || sub.Status == "webhook_callback_verification_pending" {
+			return result, nil
+		}
+		if err := call(ctx, http.MethodDelete, url.Values{"id": {sub.ID}}, nil, nil); err != nil && !isStatus(err, 404) {
+			return result, err
+		}
+	}
+	body := map[string]interface{}{"type": twitchAppType, "version": "1", "condition": map[string]string{"client_id": credentials.ClientID}, "transport": map[string]interface{}{"method": "webhook", "callback": TwitchCallback, "secret": s.TwitchSecret}}
+	err = call(ctx, http.MethodPost, nil, body, nil)
+	switch {
+	case err == nil:
+		result.created++
+	case isStatus(err, 409):
+		// Created by an attempt whose response was lost.
+	case errors.As(err, new(*costLimitError)):
+		result.held = append(result.held, twitchAppType)
+	default:
+		return result, err
 	}
 	return result, nil
 }

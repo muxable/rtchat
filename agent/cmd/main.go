@@ -221,7 +221,9 @@ func main() {
 			server.Mux.Handle(path, webhook.LoggingMiddleware(public))
 		}
 		server.RegisterProvider("/kick/", webhook.NewKickHandler(webhook.NewKickFirestoreStore(client)))
-		server.RegisterProvider("/twitch/", webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client))
+		twitchWebhook := webhook.NewTwitchHandler(secrets.TwitchEventSubSecret, client)
+		twitchWebhook.OnDeauthorized = subscriptionService.Queue.EnqueueRemove
+		server.RegisterProvider("/twitch/", twitchWebhook)
 		server.RegisterProvider("/alchemy/", webhook.NewAlchemyHandler(webhook.AlchemyConfig{
 			Secrets:        secrets,
 			MaticWebhookID: secrets.AlchemyMaticWebhookID,
