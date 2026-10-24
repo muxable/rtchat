@@ -169,14 +169,25 @@ func TestFirestoreKickActiveBatching(t *testing.T) {
 	db := emulator(t)
 	ctx := context.Background()
 	now := time.Now()
-	writes := db.Batch()
-	for i := 0; i < 52; i++ {
-		writes.Set(db.Collection("webhooks").Doc(fmt.Sprint("kick:", i)), map[string]interface{}{"lastActiveAt": now})
+	writes := db.BulkWriter(ctx)
+	var jobs []*firestore.BulkWriterJob
+	set := func(id string, data map[string]interface{}) {
+		job, err := writes.Set(db.Collection("webhooks").Doc(id), data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		jobs = append(jobs, job)
 	}
-	writes.Set(db.Collection("webhooks").Doc("kick:idle"), map[string]interface{}{"lastActiveAt": now.Add(-25 * time.Hour)})
-	writes.Set(db.Collection("webhooks").Doc("twitch:123"), map[string]interface{}{"lastActiveAt": now})
-	if _, err := writes.Commit(ctx); err != nil {
-		t.Fatal(err)
+	for i := 0; i < 52; i++ {
+		set(fmt.Sprint("kick:", i), map[string]interface{}{"lastActiveAt": now})
+	}
+	set("kick:idle", map[string]interface{}{"lastActiveAt": now.Add(-25 * time.Hour)})
+	set("twitch:123", map[string]interface{}{"lastActiveAt": now})
+	writes.End()
+	for _, job := range jobs {
+		if _, err := job.Results(); err != nil {
+			t.Fatal(err)
+		}
 	}
 	calls, total := 0, 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

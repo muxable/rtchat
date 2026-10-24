@@ -107,7 +107,7 @@ func (a *API) request(ctx context.Context, method string, q url.Values, body, ou
 			}
 			// A lost POST response may hide a successful creation. Resume must discover it.
 			if method == http.MethodPost || attempt == 3 || ctx.Err() != nil {
-				return failure(fmt.Errorf("Twitch EventSub transport failure"))
+				return failure(errors.New("transport failure calling Twitch EventSub"))
 			}
 			if err := a.sleep(ctx, time.Duration(1<<attempt)*time.Second); err != nil {
 				return failure(err)
@@ -140,7 +140,7 @@ func (a *API) request(ctx context.Context, method string, q url.Values, body, ou
 		}
 		return failure(response.Err())
 	}
-	return failure(fmt.Errorf("Twitch EventSub retries exhausted"))
+	return failure(errors.New("retries exhausted calling Twitch EventSub"))
 }
 func (a *API) List(ctx context.Context, q url.Values) (Listing, error) {
 	if q == nil {
@@ -155,7 +155,7 @@ func (a *API) List(ctx context.Context, q url.Values) (Listing, error) {
 			return all, err
 		}
 		if page.Data == nil {
-			return all, fmt.Errorf("Twitch subscriptions response missing data")
+			return all, errors.New("missing data in Twitch subscriptions response")
 		}
 		all.TotalCost = page.TotalCost
 		all.MaxTotalCost = page.MaxTotalCost
@@ -171,7 +171,7 @@ func (a *API) List(ctx context.Context, q url.Values) (Listing, error) {
 			return all, nil
 		}
 		if seen[cursor] {
-			return all, fmt.Errorf("Twitch pagination cursor repeated")
+			return all, errors.New("repeated pagination cursor in Twitch subscriptions response")
 		}
 		seen[cursor] = true
 		q.Set("after", cursor)
@@ -184,7 +184,7 @@ func (a *API) Create(ctx context.Context, source Subscription, callback, secret 
 		return Subscription{}, err
 	}
 	if len(result.Data) != 1 {
-		return Subscription{}, fmt.Errorf("Twitch creation response must contain one subscription")
+		return Subscription{}, errors.New("expected one subscription in Twitch creation response")
 	}
 	return result.Data[0], nil
 }

@@ -97,20 +97,20 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Referrer-Policy", "no-referrer")
 	if r.Method != "GET" {
-		http.Error(w, "method not allowed", 405)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 	if len(s.SessionKey) < 32 {
-		http.Error(w, "OAuth unavailable", 503)
+		http.Error(w, "OAuth unavailable", http.StatusServiceUnavailable)
 		return
 	}
 	allowed, err := s.Store.Allow(r.Context(), s.peer(r))
 	if err != nil {
-		http.Error(w, "temporarily unavailable", 503)
+		http.Error(w, "temporarily unavailable", http.StatusServiceUnavailable)
 		return
 	}
 	if !allowed {
-		http.Error(w, "too many requests", 429)
+		http.Error(w, "too many requests", http.StatusTooManyRequests)
 		return
 	}
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
@@ -121,7 +121,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	name := parts[1]
 	p, ok := s.Providers[name]
 	if !ok || p.ClientID == "" || p.ClientSecret == "" {
-		http.Error(w, "provider unavailable", 503)
+		http.Error(w, "provider unavailable", http.StatusServiceUnavailable)
 		return
 	}
 	switch parts[2] {
@@ -137,11 +137,11 @@ func (s *Server) redirect(w http.ResponseWriter, r *http.Request, name string, p
 	// The cookie must be issued on the callback host. Canonicalize before saving state.
 	origin, err := url.Parse(s.CallbackOrigin)
 	if err != nil || origin.Scheme != "https" || origin.Host == "" {
-		http.Error(w, "OAuth unavailable", 503)
+		http.Error(w, "OAuth unavailable", http.StatusServiceUnavailable)
 		return
 	}
 	if r.Host != origin.Host {
-		http.Redirect(w, r, s.CallbackOrigin+r.URL.RequestURI(), 302)
+		http.Redirect(w, r, s.CallbackOrigin+r.URL.RequestURI(), http.StatusFound)
 		return
 	}
 
@@ -153,7 +153,7 @@ func (s *Server) redirect(w http.ResponseWriter, r *http.Request, name string, p
 	if name == "streamlabs" || name == "streamelements" {
 		uid, e := s.Store.Verify(r.Context(), r.URL.Query().Get("token"))
 		if e != nil || uid == "" {
-			http.Error(w, "invalid token", 401)
+			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
 		session.UID = uid
@@ -180,17 +180,17 @@ func (s *Server) redirect(w http.ResponseWriter, r *http.Request, name string, p
 	}
 	id := random()
 	if err := s.Store.SaveSession(r.Context(), id, session); err != nil {
-		http.Error(w, "temporarily unavailable", 503)
+		http.Error(w, "temporarily unavailable", http.StatusServiceUnavailable)
 		return
 	}
 	http.SetCookie(w, &http.Cookie{Name: "__session", Value: id + "." + s.signature(id), Path: "/", Secure: true, HttpOnly: true, SameSite: http.SameSiteLaxMode, MaxAge: 60})
-	http.Redirect(w, r, p.AuthorizeURL+"?"+q.Encode(), 302)
+	http.Redirect(w, r, p.AuthorizeURL+"?"+q.Encode(), http.StatusFound)
 }
 func (s *Server) fail(w http.ResponseWriter, r *http.Request, session Session, code string) {
 	if session.Companion != "" {
 		http.Error(w, code, 400)
 	} else {
-		http.Redirect(w, r, "com.rtirl.chat://error?message="+code, 302)
+		http.Redirect(w, r, "com.rtirl.chat://error?message="+code, http.StatusFound)
 	}
 }
 func (s *Server) complete(w http.ResponseWriter, r *http.Request, name string, p Provider) {
@@ -222,7 +222,7 @@ func (s *Server) complete(w http.ResponseWriter, r *http.Request, name string, p
 			s.fail(w, r, session, "sign_in_failed")
 			return
 		}
-		http.Redirect(w, r, "com.rtirl.chat://success?token=1", 302)
+		http.Redirect(w, r, "com.rtirl.chat://success?token=1", http.StatusFound)
 		return
 	}
 	profile, err := s.profile(r.Context(), name, p.ClientID, fmt.Sprint(token["access_token"]))
@@ -244,7 +244,7 @@ func (s *Server) complete(w http.ResponseWriter, r *http.Request, name string, p
 		io.WriteString(w, "Logged in successfully.")
 		return
 	}
-	http.Redirect(w, r, "com.rtirl.chat://success?token="+url.QueryEscape(custom), 302)
+	http.Redirect(w, r, "com.rtirl.chat://success?token="+url.QueryEscape(custom), http.StatusFound)
 }
 func (s *Server) exchange(ctx context.Context, p Provider, values url.Values) (map[string]any, error) {
 	var body io.Reader = strings.NewReader(values.Encode())
