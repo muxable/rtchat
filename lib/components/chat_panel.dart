@@ -295,16 +295,18 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     super.dispose();
   }
 
-  void updateScrollPosition() async {
+  void updateScrollPosition() => _updateScrollPosition();
+
+  Future<void> _updateScrollPosition({bool fill = false}) async {
     if (!_controller.hasClients) return;
     final model = Provider.of<MessagesModel>(context, listen: false);
     if (_controller.position.maxScrollExtent - _controller.offset < 100 &&
         !_refreshPending &&
-        model.canLoadMoreHistory) {
+        (fill ? model.canFillWithHistory : model.canLoadMoreHistory)) {
       _refreshPending = true;
       final messenger = ScaffoldMessenger.of(context);
       final localizations = AppLocalizations.of(context)!;
-      await model.pullMoreMessages();
+      await model.pullMoreMessages(fill: fill);
       _refreshPending = false;
       if (!mounted) return;
       // channels switched to during the load had their fill wait on it, and
@@ -346,13 +348,13 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
         !Provider.of<MessagesModel>(
           context,
           listen: false,
-        ).canLoadMoreHistory ||
+        ).canFillWithHistory ||
         !_controller.hasClients ||
         !_controller.position.hasContentDimensions) {
       return;
     }
     if (_controller.position.maxScrollExtent - _controller.offset < 100) {
-      updateScrollPosition();
+      _updateScrollPosition(fill: true);
     }
   }
 

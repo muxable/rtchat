@@ -474,5 +474,74 @@ void main() {
       m.addEvent(channel, AppendDeltaEvent(chat('m1', t0)));
       expect(m.canLoadMoreHistory, isTrue);
     });
+
+    test('nothing is paged back from before a clear', () async {
+      var calls = 0;
+      final m = model((channel, from) async {
+        calls++;
+        return page([chat('m0', t0.subtract(const Duration(minutes: 1)))]);
+      });
+      m.addEvent(
+        channel,
+        ClearDeltaEvent(
+          messageId: 'clear',
+          timestamp: t0.add(const Duration(seconds: 1)),
+        ),
+      );
+      expect(m.canLoadMoreHistory, isFalse);
+      await m.pullMoreMessages();
+      expect(calls, 0);
+    });
+
+    test('a page with a clear is the last one', () async {
+      final older = t0.subtract(const Duration(minutes: 1));
+      final m = model(
+        (channel, from) async => (
+          events: <DeltaEvent>[
+            AppendDeltaEvent(chat('m0', older)),
+            ClearDeltaEvent(
+              messageId: 'clear',
+              timestamp: older.add(const Duration(seconds: 1)),
+            ),
+          ],
+          oldest: older,
+          isLast: false,
+        ),
+      );
+      await m.pullMoreMessages();
+      expect(m.canLoadMoreHistory, isFalse);
+    });
+
+    test('a short initial load has no history', () async {
+      final m = model((channel, from) async => page([]));
+      m.addEvent(channel, LiveStateDeltaEvent(t0, isHistoryComplete: true));
+      expect(m.canLoadMoreHistory, isFalse);
+    });
+
+    test('filling the screen is capped per channel open', () async {
+      var calls = 0;
+      final m = model((channel, from) async {
+        calls++;
+        // full pages of documents that aren't shown.
+        return (
+          events: <DeltaEvent>[],
+          oldest: from.subtract(const Duration(minutes: 1)),
+          isLast: false,
+        );
+      });
+      for (var i = 0; i < MessagesModel.maxFillPages + 3; i++) {
+        await m.pullMoreMessages(fill: true);
+      }
+      expect(calls, MessagesModel.maxFillPages);
+      expect(m.canFillWithHistory, isFalse);
+      // scrolling back still pages.
+      expect(m.canLoadMoreHistory, isTrue);
+      await m.pullMoreMessages();
+      expect(calls, MessagesModel.maxFillPages + 1);
+      // a new channel can fill again.
+      m.channel = other;
+      m.addEvent(other, AppendDeltaEvent(chat('o1', t0)..channel = other));
+      expect(m.canFillWithHistory, isTrue);
+    });
   });
 }
