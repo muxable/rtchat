@@ -42,6 +42,7 @@ class MessagesModel extends ChangeNotifier {
   // load that was in flight is dropped.
   var _generation = 0;
   Future<void>? _pulling;
+  var _pullingGeneration = 0;
 
   @visibleForTesting
   late Future<HistoryPage> Function(Channel channel, DateTime from)
@@ -219,8 +220,22 @@ class MessagesModel extends ChangeNotifier {
   /// document loaded from it. Only one load runs at a time: callers share
   /// it. A load is dropped if the channels change or messages are pruned
   /// while it's in flight.
-  Future<void> pullMoreMessages() =>
-      _pulling ??= _pullMoreMessages().whenComplete(() => _pulling = null);
+  Future<void> pullMoreMessages() {
+    final pulling = _pulling;
+    // a load for channels or messages that have since changed is dropped,
+    // so it can't be shared.
+    if (pulling != null && _pullingGeneration == _generation) {
+      return pulling;
+    }
+    _pullingGeneration = _generation;
+    late final Future<void> next;
+    next = _pullMoreMessages().whenComplete(() {
+      if (identical(_pulling, next)) {
+        _pulling = null;
+      }
+    });
+    return _pulling = next;
+  }
 
   Future<void> _pullMoreMessages() async {
     final generation = _generation;
@@ -240,6 +255,10 @@ class MessagesModel extends ChangeNotifier {
       final page = await forChannelHistory(channel, oldest);
       if (_disposed || generation != _generation) {
         return;
+      }
+      if (_historyExhausted.contains(channel)) {
+        // cleared while loading, so nothing before the clear is shown.
+        continue;
       }
       final pageOldest = page.oldest;
       if (page.isLast ||

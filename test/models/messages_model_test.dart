@@ -560,5 +560,49 @@ void main() {
       expect(m.messages.length, 1000);
       expect(ids(m.messages), isNot(contains('m0')));
     });
+
+    test('a load after a channel switch does not reuse the old one', () async {
+      final loads = <Channel, Completer<HistoryPage>>{};
+      final m = model((channel, from) => (loads[channel] = Completer()).future);
+      final stale = m.pullMoreMessages();
+      m.channel = other;
+      m.addEvent(other, AppendDeltaEvent(chat('o1', t0)..channel = other));
+      final fresh = m.pullMoreMessages();
+      expect(loads.keys, [channel, other]);
+      loads[other]!.complete(
+        page([
+          chat('o0', t0.subtract(const Duration(minutes: 1)))..channel = other,
+        ]),
+      );
+      await fresh;
+      loads[channel]!.complete(page([]));
+      await stale;
+      expect(ids(m.messages), ['o0', 'o1']);
+      // the stale load finishing doesn't drop the current one's slot.
+      expect(m.pullMoreMessages(), isNot(same(fresh)));
+    });
+
+    test('a clear during a load drops the page from before it', () async {
+      final loading = Completer<HistoryPage>();
+      final m = model((channel, from) => loading.future);
+      final pull = m.pullMoreMessages();
+      m.addEvent(
+        channel,
+        ClearDeltaEvent(
+          messageId: 'clear',
+          timestamp: t0.add(const Duration(seconds: 1)),
+        ),
+      );
+      final shown = ids(m.messages);
+      var notified = 0;
+      m.addListener(() => notified++);
+      loading.complete(
+        page([chat('m0', t0.subtract(const Duration(minutes: 1)))]),
+      );
+      await pull;
+      // the page is dropped rather than merged in and hidden by the clear.
+      expect(notified, 0);
+      expect(ids(m.messages), shown);
+    });
   });
 }
