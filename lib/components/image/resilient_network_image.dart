@@ -110,17 +110,23 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
   static Future<Directory>? _cacheDirectory;
 
   static Future<Directory> get cacheDirectory =>
-      _cacheDirectory ??= getTemporaryDirectory().catchError((Object e) {
+      _cacheDirectory ??= getTemporaryDirectory().catchError((
+        Object e,
+        StackTrace stack,
+      ) {
         _cacheDirectory = null;
-        throw e;
+        Error.throwWithStackTrace(e, stack);
       });
 
   /// The cached bytes for [uri]. Its validators live in a `.meta` sidecar.
   static Future<File> cacheFileFor(Uri uri) async =>
       File('${(await cacheDirectory).path}/${fnv1a64(uri.toString())}');
 
-  static final Map<String, Future<Codec>> _pending = {};
+  // In-flight downloads, shared by concurrent loads. Only bytes are shared:
+  // each completer owns and disposes its own codec.
+  static final Map<String, Future<(Uint8List, HttpHeaders)>> _pending = {};
   static final Map<String, Future<void>> _revalidating = {};
+  static int _tempCounter = 0;
 
   /// Completes once all in-flight background revalidations finish.
   @visibleForTesting
@@ -142,16 +148,9 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
     ImageDecoderCallback decode,
   ) {
     final chunkEvents = StreamController<ImageChunkEvent>();
-    final hash = key.hash;
     return MultiFrameImageStreamCompleter(
       chunkEvents: chunkEvents.stream,
-      codec:
-          _pending[hash] ??= _loadAsync(key, chunkEvents, decode).whenComplete(
-            () {
-              // A block body: returning the removed future would deadlock.
-              _pending.remove(hash);
-            },
-          ),
+      codec: _loadAsync(key, chunkEvents, decode),
       scale: scale,
       debugLabel: key.uri.toString(),
       informationCollector: _imageStreamInformationCollector(key),
@@ -178,49 +177,84 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
     StreamController<ImageChunkEvent> chunkEvents,
     ImageDecoderCallback decode,
   ) async {
-    final cacheFile = await cacheFileFor(key.uri);
-    final metaFile = File('${cacheFile.path}.meta');
-
-    // Serve a disk hit immediately and revalidate it in the background once
-    // it goes stale.
     try {
-      final stat = await cacheFile.stat();
-      if (stat.type == FileSystemEntityType.file) {
-        final bytes = await cacheFile.readAsBytes();
-        if (bytes.isNotEmpty) {
-          final codec = await decode(
-            await ImmutableBuffer.fromUint8List(bytes),
-          );
-          chunkEvents.add(
-            ImageChunkEvent(
-              cumulativeBytesLoaded: bytes.lengthInBytes,
-              expectedTotalBytes: bytes.lengthInBytes,
-            ),
-          );
-          chunkEvents.close();
-          if (DateTime.now().difference(stat.modified) > freshness) {
-            _revalidating[key.hash] ??= _revalidate(
-              key.uri,
-              cacheFile,
-              metaFile,
-            ).whenComplete(() {
-              _revalidating.remove(key.hash);
-            });
-          }
-          return codec;
-        }
-      }
-    } catch (e) {
-      // Unreadable or undecodable cache entry, fall back to the network.
-      FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
-    }
+      final hash = key.hash;
+      final cacheFile = await cacheFileFor(key.uri);
+      final metaFile = File('${cacheFile.path}.meta');
 
+      // Serve a disk hit immediately and revalidate it in the background once
+      // it goes stale.
+      try {
+        final stat = await cacheFile.stat();
+        if (stat.type == FileSystemEntityType.file) {
+          final bytes = await cacheFile.readAsBytes();
+          if (bytes.isNotEmpty) {
+            final Codec codec;
+            try {
+              codec = await decode(await ImmutableBuffer.fromUint8List(bytes));
+            } catch (_) {
+              // Undecodable entry, drop it and refetch.
+              await _deleteCache(cacheFile, metaFile);
+              rethrow;
+            }
+            chunkEvents.add(
+              ImageChunkEvent(
+                cumulativeBytesLoaded: bytes.lengthInBytes,
+                expectedTotalBytes: bytes.lengthInBytes,
+              ),
+            );
+            if (DateTime.now().difference(stat.modified) > freshness) {
+              _revalidating[hash] ??= _revalidate(
+                key.uri,
+                cacheFile,
+                metaFile,
+              ).whenComplete(() {
+                _revalidating.remove(hash);
+              });
+            }
+            return codec;
+          }
+        }
+      } catch (e) {
+        // Unreadable or undecodable cache entry, fall back to the network.
+        FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
+      }
+
+      final pending = _pending[hash];
+      final fetch =
+          pending ??
+          (_pending[hash] = _fetch(key.uri, chunkEvents).whenComplete(() {
+            // A block body: returning the removed future would deadlock.
+            _pending.remove(hash);
+          }));
+      final (bytes, headers) = await fetch;
+      // Decode errors are not retried, and undecodable bytes aren't cached.
+      final codec = await decode(await ImmutableBuffer.fromUint8List(bytes));
+      if (pending == null) {
+        await _writeCache(cacheFile, metaFile, bytes, headers);
+      }
+      return codec;
+    } on NetworkImageLoadException {
+      scheduleMicrotask(() {
+        PaintingBinding.instance.imageCache.evict(key);
+      });
+      rethrow;
+    } finally {
+      chunkEvents.close();
+    }
+  }
+
+  /// Downloads [uri], retrying everything but 4xx responses.
+  static Future<(Uint8List, HttpHeaders)> _fetch(
+    Uri uri,
+    StreamController<ImageChunkEvent> chunkEvents,
+  ) async {
     var delay = const Duration(seconds: 1);
     Object? lastError;
 
     for (var i = 0; i < 30; i++) {
       try {
-        final request = await _httpClient.getUrl(key.uri);
+        final request = await _httpClient.getUrl(uri);
         final response = await request.close();
 
         if (response.statusCode != HttpStatus.ok) {
@@ -228,7 +262,7 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
           if (response.statusCode >= 400 && response.statusCode < 500) {
             throw NetworkImageLoadException(
               statusCode: response.statusCode,
-              uri: key.uri,
+              uri: uri,
             );
           } else {
             // assume this is a retriable error.
@@ -239,6 +273,7 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
         final bytes = await consolidateHttpClientResponseBytes(
           response,
           onBytesReceived: (int cumulative, int? total) {
+            if (chunkEvents.isClosed) return;
             chunkEvents.add(
               ImageChunkEvent(
                 cumulativeBytesLoaded: cumulative,
@@ -249,18 +284,11 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
         );
 
         if (bytes.lengthInBytes == 0) {
-          throw Exception('ResilientNetworkImage is an empty file: ${key.uri}');
+          throw Exception('ResilientNetworkImage is an empty file: $uri');
         }
 
-        await _writeCache(cacheFile, metaFile, bytes, response.headers);
-
-        chunkEvents.close();
-        return await decode(await ImmutableBuffer.fromUint8List(bytes));
+        return (bytes, response.headers);
       } on NetworkImageLoadException {
-        chunkEvents.close();
-        scheduleMicrotask(() {
-          PaintingBinding.instance.imageCache.evict(key);
-        });
         rethrow;
       } catch (e) {
         // retry this error
@@ -269,7 +297,6 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
         lastError = e;
       }
     }
-    chunkEvents.close();
     if (lastError != null) {
       throw lastError;
     }
@@ -305,10 +332,17 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
       } else if (response.statusCode == HttpStatus.ok) {
         final bytes = await consolidateHttpClientResponseBytes(response);
         if (bytes.isNotEmpty) {
+          // Don't replace a good entry with something undecodable.
+          (await instantiateImageCodec(bytes)).dispose();
           await _writeCache(cacheFile, metaFile, bytes, response.headers);
         }
       } else {
         await response.drain<List<int>>(<int>[]);
+        if (response.statusCode == HttpStatus.notFound ||
+            response.statusCode == HttpStatus.gone) {
+          // The image is gone, so the next load errors like a cold miss.
+          await _deleteCache(cacheFile, metaFile);
+        }
       }
     } catch (e) {
       debugPrint('ResilientNetworkImage revalidation failed: $uri: $e');
@@ -323,25 +357,35 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
     Uint8List bytes,
     HttpHeaders headers,
   ) async {
+    final suffix =
+        '${DateTime.now().microsecondsSinceEpoch}-${_tempCounter++}.tmp';
+    final tmpMeta = File('${metaFile.path}.$suffix');
+    final tmpBytes = File('${cacheFile.path}.$suffix');
     try {
-      final suffix = '${DateTime.now().microsecondsSinceEpoch}.tmp';
       final meta = {
         if (headers[HttpHeaders.etagHeader]?.first case final etag?)
           'etag': etag,
         if (headers[HttpHeaders.lastModifiedHeader]?.first case final lm?)
           'lastModified': lm,
       };
-      final tmpMeta = await File(
-        '${metaFile.path}.$suffix',
-      ).writeAsString(jsonEncode(meta), flush: true);
-      final tmpBytes = await File(
-        '${cacheFile.path}.$suffix',
-      ).writeAsBytes(bytes, flush: true);
+      await tmpMeta.writeAsString(jsonEncode(meta));
+      await tmpBytes.writeAsBytes(bytes);
       // Bytes first: a new body with old validators only costs a refetch.
       await tmpBytes.rename(cacheFile.path);
       await tmpMeta.rename(metaFile.path);
     } catch (e) {
       debugPrint('ResilientNetworkImage cache write failed: $e');
+      await _deleteCache(tmpBytes, tmpMeta);
+    }
+  }
+
+  static Future<void> _deleteCache(File cacheFile, File metaFile) async {
+    for (final file in [cacheFile, metaFile]) {
+      try {
+        await file.delete();
+      } catch (_) {
+        // Already gone.
+      }
     }
   }
 

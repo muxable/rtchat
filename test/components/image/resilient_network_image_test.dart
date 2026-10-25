@@ -161,6 +161,59 @@ void main() {
     expect(client.requests, hasLength(1));
   });
 
+  test('a stale hit drops the cache entry on 404', () async {
+    final uri = Uri.parse('https://example.com/deleted.png');
+    final (cacheFile, metaFile) = await seed(
+      uri,
+      small,
+      meta: {'etag': '"v1"'},
+      age: const Duration(days: 2),
+    );
+    client.handler = (request) async => _FakeResponse(404, Uint8List(0));
+
+    expect(await _loadWidth(ResilientNetworkImage(uri)), 1);
+    await ResilientNetworkImage.debugRevalidations();
+
+    expect(cacheFile.existsSync(), isFalse);
+    expect(metaFile.existsSync(), isFalse);
+  });
+
+  test('an undecodable response is not cached or retried', () async {
+    final uri = Uri.parse('https://example.com/html.png');
+    client.handler =
+        (request) async =>
+            _FakeResponse(200, Uint8List.fromList(utf8.encode('<html>')));
+
+    await expectLater(
+      _loadWidth(ResilientNetworkImage(uri)),
+      throwsA(anything),
+    );
+
+    expect(client.requests, hasLength(1));
+    final cacheFile = await ResilientNetworkImage.cacheFileFor(uri);
+    expect(cacheFile.existsSync(), isFalse);
+  });
+
+  test('concurrent cold loads share one request', () async {
+    final uri = Uri.parse('https://example.com/concurrent.png');
+    final gate = Completer<void>();
+    client.handler = (request) async {
+      await gate.future;
+      return _FakeResponse(200, large);
+    };
+
+    final loads = Future.wait([
+      _loadWidth(ResilientNetworkImage(uri)),
+      _loadWidth(ResilientNetworkImage(uri, scale: 2)),
+    ]);
+    await pumpEventQueue();
+    gate.complete();
+    final widths = await loads;
+
+    expect(widths, [2, 2]);
+    expect(client.requests, hasLength(1));
+  });
+
   test('a cold miss fetches and writes the cache', () async {
     final uri = Uri.parse('https://example.com/cold.png');
     client.handler =
