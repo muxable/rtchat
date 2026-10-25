@@ -200,10 +200,14 @@ func (s *Service) twitchLogins(ctx context.Context) ([]string, error) {
 	return logins, nil
 }
 
-func (s *Service) Twitch(ctx context.Context) (err error) {
+// TwitchFinished and KickFinished take the runner's result for each slot,
+// which decides whether the next slot may reuse this replica's cache.
+func (s *Service) TwitchFinished(slot string, success bool) { s.twitchCache.end(slot, success) }
+func (s *Service) KickFinished(slot string, success bool)   { s.kickCache.end(slot, success) }
+
+func (s *Service) Twitch(ctx context.Context) error {
 	started := time.Now()
-	s.twitchCache.begin(started)
-	defer func() { s.twitchCache.end(started, err) }()
+	s.twitchCache.begin(RunSlot(ctx))
 	logins, err := s.twitchLogins(ctx)
 	if err != nil {
 		return err
@@ -217,10 +221,9 @@ func (s *Service) Twitch(ctx context.Context) (err error) {
 	logRefresh("twitch", len(logins), written)
 	return err
 }
-func (s *Service) Kick(ctx context.Context) (err error) {
+func (s *Service) Kick(ctx context.Context) error {
 	started := time.Now()
-	s.kickCache.begin(started)
-	defer func() { s.kickCache.end(started, err) }()
+	s.kickCache.begin(RunSlot(ctx))
 	docs, err := s.Client.Collection("webhooks").Where("lastActiveAt", ">", started.Add(-24*time.Hour)).Documents(ctx).GetAll()
 	if err != nil {
 		return err

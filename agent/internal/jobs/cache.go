@@ -53,16 +53,9 @@ func (a *Assignments) Logins(prefix string) ([]string, bool) {
 	return logins, true
 }
 
-const (
-	// cacheTTL bounds how long a channel can go without a transactional
-	// check, in case another writer changed it to a value the poll no longer
-	// reports.
-	cacheTTL = 30 * time.Minute
-	// cacheGap is the longest gap between this replica's runs for which the
-	// cache stays valid. A longer gap means another replica may have run a
-	// slot and written values this replica has not seen.
-	cacheGap = 6 * time.Minute
-)
+// cacheTTL bounds how long a channel can go without a transactional check,
+// in case another writer changed it to a value the poll no longer reports.
+const cacheTTL = 30 * time.Minute
 
 type cachedChannel struct {
 	data    map[string]interface{}
@@ -74,34 +67,48 @@ type cachedChannel struct {
 type channelCache struct {
 	mu       sync.Mutex
 	channels map[string]cachedChannel
-	lastRun  time.Time
+	// completed is the last slot this replica's run of the job succeeded in.
+	completed string
 }
 
-// begin clears the cache unless this replica also ran the previous slot.
-func (c *channelCache) begin(started time.Time) {
+// begin clears the cache unless this replica completed the slot just before
+// slot. Otherwise another replica may have run it and written values this
+// replica has not seen.
+func (c *channelCache) begin(slot string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if c.lastRun.IsZero() || started.Sub(c.lastRun) > cacheGap {
+	if slot == "" || c.completed == "" || c.completed != previousSlot(slot) {
 		c.channels = nil
 	}
-	c.lastRun = time.Time{}
+	c.completed = ""
 }
 
-// end keeps the cache for the next run only if this one succeeded, since a
-// failed run may have been taken over by another replica.
-func (c *channelCache) end(started time.Time, err error) {
+// end keeps the cache for the next slot only if the runner recorded this run
+// as a success, since a failed run may be retried by another replica.
+func (c *channelCache) end(slot string, success bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if err != nil {
+	if !success || slot == "" {
 		c.channels = nil
+		c.completed = ""
 		return
 	}
-	c.lastRun = started
+	c.completed = slot
+	now := time.Now()
 	for id, channel := range c.channels {
-		if started.Sub(channel.checked) > cacheTTL {
+		if now.Sub(channel.checked) > cacheTTL {
 			delete(c.channels, id)
 		}
 	}
+}
+
+// previousSlot returns the 4-minute slot before slot, or "" if slot is not one.
+func previousSlot(slot string) string {
+	at, err := time.Parse(time.RFC3339, slot)
+	if err != nil {
+		return ""
+	}
+	return Slot(at.Add(-slotLength), false)
 }
 
 func (c *channelCache) fresh(id string, data map[string]interface{}, now time.Time) bool {

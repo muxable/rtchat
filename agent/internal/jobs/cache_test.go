@@ -3,7 +3,6 @@ package jobs
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,38 +20,90 @@ func TestPollIntervalDividesSlot(t *testing.T) {
 func TestChannelCacheLifetime(t *testing.T) {
 	var c channelCache
 	now := time.Now()
+	slot := func(n int) string { return Slot(now.Add(time.Duration(n)*slotLength), false) }
 	data := map[string]interface{}{"viewerCount": int64(1)}
-	c.begin(now)
+	c.begin(slot(0))
 	c.store("a", data, now)
-	c.end(now, nil)
-	next := now.Add(4 * time.Minute)
-	c.begin(next)
-	if !c.fresh("a", data, next) {
-		t.Fatal("consecutive run lost the cache")
+	c.end(slot(0), true)
+	c.begin(slot(1))
+	if !c.fresh("a", data, now) {
+		t.Fatal("consecutive slot lost the cache")
 	}
-	if c.fresh("a", map[string]interface{}{"viewerCount": int64(2)}, next) {
+	if c.fresh("a", map[string]interface{}{"viewerCount": int64(2)}, now) {
 		t.Fatal("changed value treated as cached")
 	}
 	if c.fresh("a", data, now.Add(cacheTTL+time.Second)) {
 		t.Fatal("expired entry treated as cached")
 	}
-	c.end(next, errors.New("failed"))
-	c.begin(next.Add(4 * time.Minute))
-	if c.fresh("a", data, next.Add(4*time.Minute)) {
+	c.end(slot(1), false)
+	c.begin(slot(2))
+	if c.fresh("a", data, now) {
 		t.Fatal("cache kept after a failed run")
 	}
-	c.store("a", data, next)
-	c.end(next, nil)
-	// Another replica ran the slot in between.
-	later := next.Add(8 * time.Minute)
-	c.begin(later)
-	if c.fresh("a", data, later) {
+	c.store("a", data, now)
+	c.end(slot(2), true)
+	c.begin(slot(4))
+	if c.fresh("a", data, now) {
 		t.Fatal("cache kept across a skipped slot")
 	}
 	c.store("a", data, now)
-	c.end(now.Add(cacheTTL+time.Minute), nil)
+	c.end(slot(4), true)
+	// Outside a runner there is no slot, so nothing carries over.
+	c.begin("")
+	if c.fresh("a", data, now) {
+		t.Fatal("cache kept without a slot")
+	}
+	c.store("a", data, now.Add(-cacheTTL-time.Minute))
+	c.end(slot(5), true)
 	if len(c.channels) != 0 {
 		t.Fatal("expired entries not pruned", c.channels)
+	}
+}
+
+// Replica A runs slot S late, B runs S+1, and A runs S+2 less than six
+// minutes after its previous run. A must not trust what it cached in S.
+func TestChannelCacheReplicaHandoff(t *testing.T) {
+	base := time.Date(2026, 10, 25, 12, 0, 0, 0, time.UTC)
+	s0, s1, s2 := Slot(base, false), Slot(base.Add(slotLength), false), Slot(base.Add(2*slotLength), false)
+	if previousSlot(s1) != s0 || previousSlot(s2) != s1 || previousSlot("2026-10-25") != "" {
+		t.Fatal(previousSlot(s1), previousSlot(s2))
+	}
+	var a, b channelCache
+	offline := map[string]interface{}{"viewerCount": int64(0), "onlineAt": nil}
+	a.begin(s0)
+	a.store("twitch:1", offline, time.Now())
+	a.end(s0, true)
+	b.begin(s1)
+	b.store("twitch:1", map[string]interface{}{"viewerCount": int64(50), "onlineAt": base}, time.Now())
+	b.end(s1, true)
+	a.begin(s2)
+	if a.fresh("twitch:1", offline, time.Now()) {
+		t.Fatal("replica A reused its cache after B ran the previous slot")
+	}
+}
+
+func TestRunnerReportsFinalResult(t *testing.T) {
+	store := &memoryLeases{leases: map[string]Lease{}}
+	runner := Runner{Leases: store}
+	now := time.Now()
+	type result struct {
+		slot    string
+		success bool
+	}
+	var got []result
+	finished := func(slot string, success bool) { got = append(got, result{slot, success}) }
+	var seen string
+	ok := Job{Name: "ok", Timeout: time.Minute, Finished: finished, Run: func(ctx context.Context) error { seen = RunSlot(ctx); return nil }}
+	runner.Once(context.Background(), ok, now)
+	// Run ignores its deadline and returns nil; the runner still records a failure.
+	late := Job{Name: "late", Timeout: time.Millisecond, Finished: finished, Run: func(ctx context.Context) error { <-ctx.Done(); return nil }}
+	runner.Once(context.Background(), late, now)
+	slot := Slot(now, false)
+	if seen != slot || len(got) != 2 || got[0] != (result{slot, true}) || got[1] != (result{slot, false}) {
+		t.Fatal(seen, got)
+	}
+	if store.leases["late"].CompletedSlot != "" {
+		t.Fatal("timed-out run completed its slot")
 	}
 }
 
