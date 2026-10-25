@@ -25,15 +25,6 @@ class MessagesModel extends ChangeNotifier {
   late Stream<DeltaEvent> Function(Channel channel) forChannel =
       (channel) =>
           MessagesAdapter.instance.forChannel(channel, apiOn(channel.provider));
-
-  @visibleForTesting
-  late Future<HistoryPage> Function(Channel channel, DateTime from)
-  forChannelHistory =
-      (channel, from) => MessagesAdapter.instance.forChannelHistory(
-        channel,
-        from,
-        apiOn(channel.provider),
-      );
   List<ChannelEvent> _events = [];
   List<MessageModel> _messages = [];
   Set<int> _separators = {};
@@ -51,6 +42,15 @@ class MessagesModel extends ChangeNotifier {
   // load that was in flight is dropped.
   var _generation = 0;
   Future<void>? _pulling;
+
+  @visibleForTesting
+  late Future<HistoryPage> Function(Channel channel, DateTime from)
+  forChannelHistory =
+      (channel, from) => MessagesAdapter.instance.forChannelHistory(
+        channel,
+        from,
+        apiOn(channel.provider),
+      );
 
   // it's a bit odd to have this here, but tts only cares about the delta events
   // so it's easier to wire this way.
