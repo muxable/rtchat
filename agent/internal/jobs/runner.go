@@ -114,13 +114,19 @@ func Slot(now time.Time, daily bool) string {
 	return now.UTC().Truncate(4 * time.Minute).Format(time.RFC3339)
 }
 
+// pollInterval is how often each replica tries each job's lease. Every
+// attempt reads the lease doc. It divides the 4-minute slot evenly, so a
+// replica's ticks keep the same offset from each slot boundary and the same
+// replica tends to win every slot. A failed run is retried a minute later.
+const pollInterval = time.Minute
+
 func (r Runner) Run(ctx context.Context) {
 	// Each job has its own loop so slow cleanup cannot delay either refresh.
 	done := make(chan struct{}, len(r.Jobs))
 	for _, job := range r.Jobs {
 		go func(job Job) {
 			defer func() { done <- struct{}{} }()
-			ticker := time.NewTicker(15 * time.Second)
+			ticker := time.NewTicker(pollInterval)
 			defer ticker.Stop()
 			for {
 				r.Once(ctx, job, time.Now())

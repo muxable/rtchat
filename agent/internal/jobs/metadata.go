@@ -177,12 +177,19 @@ func min(a, b int) int {
 type Service struct {
 	Client *firestore.Client
 	API    *API
+	// Assignments, when set, replaces reading the assignments collection.
+	Assignments *Assignments
+
+	twitchCache, kickCache channelCache
 }
 
-func (s *Service) Twitch(ctx context.Context) error {
+func (s *Service) twitchLogins(ctx context.Context) ([]string, error) {
+	if logins, ok := s.Assignments.Logins("twitch:"); ok {
+		return logins, nil
+	}
 	docs, err := s.Client.Collection("assignments").Documents(ctx).GetAll()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var logins []string
 	for _, doc := range docs {
@@ -190,18 +197,30 @@ func (s *Service) Twitch(ctx context.Context) error {
 			logins = append(logins, strings.TrimPrefix(doc.Ref.ID, "twitch:"))
 		}
 	}
+	return logins, nil
+}
+
+func (s *Service) Twitch(ctx context.Context) (err error) {
 	started := time.Now()
+	s.twitchCache.begin(started)
+	defer func() { s.twitchCache.end(started, err) }()
+	logins, err := s.twitchLogins(ctx)
+	if err != nil {
+		return err
+	}
 	var written int
 	err = s.API.FetchTwitch(ctx, logins, func(updates []ChannelUpdate) error {
-		n, err := s.write(ctx, started, updates)
+		n, err := s.write(ctx, &s.twitchCache, started, updates)
 		written += n
 		return err
 	})
 	logRefresh("twitch", len(logins), written)
 	return err
 }
-func (s *Service) Kick(ctx context.Context) error {
+func (s *Service) Kick(ctx context.Context) (err error) {
 	started := time.Now()
+	s.kickCache.begin(started)
+	defer func() { s.kickCache.end(started, err) }()
 	docs, err := s.Client.Collection("webhooks").Where("lastActiveAt", ">", started.Add(-24*time.Hour)).Documents(ctx).GetAll()
 	if err != nil {
 		return err
@@ -232,7 +251,7 @@ func (s *Service) Kick(ctx context.Context) error {
 			}
 			updates = append(updates, ChannelUpdate{"kick:" + strconv.FormatInt(c.ID, 10), data})
 		}
-		n, err := s.write(ctx, started, updates)
+		n, err := s.write(ctx, &s.kickCache, started, updates)
 		written += n
 		if err != nil {
 			return err
@@ -247,13 +266,21 @@ func logRefresh(provider string, channels, written int) {
 	zap.L().Info("channel metadata refreshed", zap.String("provider", provider), zap.Int("channels", channels), zap.Int("written", written))
 }
 
-// write returns the number of channel documents it updated.
-func (s *Service) write(ctx context.Context, started time.Time, updates []ChannelUpdate) (int, error) {
+// write returns the number of channel documents it updated. A nil cache
+// checks every update in a transaction.
+func (s *Service) write(ctx context.Context, cache *channelCache, started time.Time, updates []ChannelUpdate) (int, error) {
 	var written int
 	for _, update := range updates {
+		checked := time.Now()
+		// The doc matched these values at this replica's last transaction.
+		if cache.fresh(update.ID, update.Data, checked) {
+			continue
+		}
 		skipped := false
+		var after map[string]interface{}
 		ref := s.Client.Collection("channels").Doc(update.ID)
 		err := s.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+			after = nil
 			doc, err := tx.Get(ref)
 			if err != nil && status.Code(err) != codes.NotFound {
 				return err
@@ -264,16 +291,25 @@ func (s *Service) write(ctx context.Context, started time.Time, updates []Channe
 			if skipped {
 				return nil
 			}
+			after = map[string]interface{}{}
+			if err == nil {
+				after = doc.Data()
+			}
 			// Unchanged data still costs a billed write, so leave the doc alone.
-			if err == nil && unchanged(doc.Data(), update.Data) {
+			if err == nil && unchanged(after, update.Data) {
 				skipped = true
 				return nil
+			}
+			for field, value := range update.Data {
+				after[field] = value
 			}
 			return tx.Set(ref, update.Data, firestore.MergeAll)
 		})
 		if err != nil {
+			cache.store(update.ID, nil, checked)
 			return written, err
 		}
+		cache.store(update.ID, after, checked)
 		if !skipped {
 			written++
 		}
