@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/muxable/rtchat/agent/internal/chatmessage"
 )
 
 // TestActionContract checks the full event mapping for each renderer. Its
@@ -36,7 +38,7 @@ func TestActionContract(t *testing.T) {
 			}
 			want := `{"id":"item","snippet":{"type":"` + tc.kind + `","liveChatId":"innertube:video","authorChannelId":"author","publishedAt":"2023-11-14T22:13:20.123456Z","hasDisplayContent":true,"displayMessage":"` + tc.display + `",` + tc.details + `},"authorDetails":{"channelId":"author","channelUrl":"https://www.youtube.com/channel/author","displayName":"@Given","profileImageUrl":"large","isVerified":true,"isChatOwner":true,"isChatSponsor":true,"isChatModerator":true}}`
 			assertJSON(t, data["event"], want)
-			if data["type"] != "youtube."+tc.kind || data["channelId"] != "youtube:channel" || data["timestamp"] != time.Unix(1700000000, 123456000).UTC() || data["expiresAt"] != now.Add(14*24*time.Hour) {
+			if data["type"] != "youtube."+tc.kind || data["channelId"] != "youtube:channel" || data["timestamp"] != time.Unix(1700000000, 123456000).UTC() || data["expiresAt"] != now.Add(chatmessage.TTL) {
 				t.Fatalf("incorrect envelope: %#v", data)
 			}
 		})

@@ -11,6 +11,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/muxable/rtchat/agent/internal/callable"
+	"github.com/muxable/rtchat/agent/internal/chatmessage"
 	"github.com/muxable/rtchat/agent/internal/provider"
 	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
 	"go.uber.org/zap"
@@ -442,7 +443,7 @@ func (s *Service) welcome(ctx context.Context, uid, channel, login string) error
 		ref := s.DB.Collection("channels").Doc("twitch:" + channel).Collection("messages").Doc(fmt.Sprintf("welcome-v1-%d", i+1))
 		_, err := ref.Create(ctx, map[string]interface{}{
 			"channelId": "twitch:" + channel, "annotations": map[string]interface{}{"isAction": false, "isFirstTimeChatter": false}, "author": map[string]interface{}{"displayName": "muxfd", "userId": "158394109", "color": ""}, "reply": nil, "timestamp": firestore.ServerTimestamp,
-			"tags": map[string]interface{}{"user-id": "158394109", "room-id": "158394109", "display-name": "muxfd", "color": "", "username": "muxfd", "badges": map[string]interface{}{}, "emotes-raw": "", "badges-raw": ""}, "type": "message", "message": message, "expiresAt": time.Now().Add(14 * 24 * time.Hour),
+			"tags": map[string]interface{}{"user-id": "158394109", "room-id": "158394109", "display-name": "muxfd", "color": "", "username": "muxfd", "badges": map[string]interface{}{}, "emotes-raw": "", "badges-raw": ""}, "type": "message", "message": message, "expiresAt": time.Now().Add(chatmessage.TTL),
 		})
 		if err != nil && status.Code(err) != codes.AlreadyExists {
 			return err

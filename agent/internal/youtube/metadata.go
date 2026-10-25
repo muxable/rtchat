@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/muxable/rtchat/agent/internal/chatmessage"
 	"go.uber.org/zap"
 )
 
@@ -331,7 +332,7 @@ func (c *Client) streamMessage(ctx context.Context, video, kind string, at time.
 	data := map[string]interface{}{
 		"channelId": "youtube:" + c.channel, "type": "stream." + kind,
 		"timestamp": at.UTC().Truncate(time.Millisecond),
-		"expiresAt": time.Now().UTC().Truncate(time.Millisecond).Add(14 * 24 * time.Hour),
+		"expiresAt": time.Now().UTC().Truncate(time.Millisecond).Add(chatmessage.TTL),
 		"event":     map[string]interface{}{"videoId": video},
 	}
 	return c.retryWrite(ctx, func() error { return c.store.Create(ctx, "youtube:"+c.channel, "youtube:"+video+":"+kind, data) })
