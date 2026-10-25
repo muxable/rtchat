@@ -12,6 +12,12 @@ class StreamElementsConfig {
   StreamElementsConfig();
 }
 
+class RealtimeKitConfig {
+  final String apiKey;
+
+  RealtimeKitConfig({required this.apiKey});
+}
+
 class DonationsAdapter {
   final FirebaseFirestore db;
   final Api api;
@@ -36,6 +42,20 @@ class DonationsAdapter {
 
   Future<void> setRealtimeCashAddress({required String address}) {
     return api.callable("setRealTimeCashAddress")({"address": address});
+  }
+
+  Stream<RealtimeKitConfig?> forRealtimeKitConfig({required String userId}) {
+    return db.collection("realtimekit").doc(userId).snapshots().map((doc) {
+      final apiKey = doc.data()?["apiKey"] as String?;
+      if (apiKey == null || apiKey.isEmpty) {
+        return null;
+      }
+      return RealtimeKitConfig(apiKey: apiKey);
+    });
+  }
+
+  Future<void> setRealtimeKitApiKey({required String apiKey}) {
+    return api.callable("setRealtimeKitApiKey")({"apiKey": apiKey});
   }
 
   Stream<StreamlabsConfig?> forStreamlabsConfig({required String userId}) {
