@@ -295,24 +295,17 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
     super.dispose();
   }
 
-  void updateScrollPosition() => _updateScrollPosition();
-
-  Future<void> _updateScrollPosition({bool fill = false}) async {
+  void updateScrollPosition() async {
     if (!_controller.hasClients) return;
-    final model = Provider.of<MessagesModel>(context, listen: false);
-    if (_controller.position.maxScrollExtent - _controller.offset < 100 &&
-        !_refreshPending &&
-        (fill ? model.canFillWithHistory : model.canLoadMoreHistory)) {
+    if (_controller.position.maxScrollExtent - _controller.offset < 100) {
+      if (_refreshPending) return;
       _refreshPending = true;
+      final model = Provider.of<MessagesModel>(context, listen: false);
       final messenger = ScaffoldMessenger.of(context);
       final localizations = AppLocalizations.of(context)!;
-      await model.pullMoreMessages(fill: fill);
+      await model.pullMoreMessages();
       _refreshPending = false;
       if (!mounted) return;
-      // channels switched to during the load had their fill wait on it, and
-      // a dropped load doesn't rebuild, so check again after the next frame.
-      WidgetsBinding.instance.addPostFrameCallback((_) => _fillViewport());
-      WidgetsBinding.instance.scheduleFrame();
       if (_showScrollNotification && model.messages.length > 5000) {
         messenger.showSnackBar(
           SnackBar(
@@ -336,25 +329,6 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
         _atBottom = value;
         _pauseAt = value ? null : _lastMessage;
       });
-    }
-  }
-
-  /// Only a screenful of chat is loaded at first, and older messages are
-  /// paged in as it's scrolled back. When what's loaded doesn't fill the
-  /// screen there's nothing to scroll, so page in more until it does.
-  void _fillViewport() {
-    if (!mounted ||
-        _refreshPending ||
-        !Provider.of<MessagesModel>(
-          context,
-          listen: false,
-        ).canFillWithHistory ||
-        !_controller.hasClients ||
-        !_controller.position.hasContentDimensions) {
-      return;
-    }
-    if (_controller.position.maxScrollExtent - _controller.offset < 100) {
-      _updateScrollPosition(fill: true);
     }
   }
 
@@ -402,9 +376,6 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
             } else {
               messagesModel.pruneMessages();
             }
-            WidgetsBinding.instance.addPostFrameCallback(
-              (_) => _fillViewport(),
-            );
 
             final displayedMessages = <_DisplayedMessage>[];
 

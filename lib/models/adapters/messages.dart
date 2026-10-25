@@ -62,13 +62,8 @@ class ClearDeltaEvent extends DeltaEvent {
 
 // this is a sentinel event to indicate that the messages that follow are
 // live messages.
-/// Marks the end of a channel's initial messages: the ones after it are new.
 class LiveStateDeltaEvent extends DeltaEvent {
-  /// Whether the initial messages are all the channel has, so there's no
-  /// history to page back.
-  final bool isHistoryComplete;
-
-  const LiveStateDeltaEvent(super.timestamp, {this.isHistoryComplete = false});
+  const LiveStateDeltaEvent(super.timestamp);
 }
 
 DeltaEvent? _toDeltaEvent(
@@ -437,10 +432,9 @@ class MessagesAdapter {
   }
 
   /// How many of a channel's latest messages its listener loads at first.
-  /// Each one is a billed read on every channel open, so this is kept to
-  /// about a screenful; older messages are paged in with [forChannelHistory]
-  /// as chat is scrolled back.
-  static const initialLoadSize = 50;
+  /// Each one is a billed read on every channel open; older messages are
+  /// paged in with [forChannelHistory] as chat is scrolled back.
+  static const initialLoadSize = 100;
 
   /// How many older messages [forChannelHistory] loads per page.
   static const historyPageSize = 100;
@@ -509,10 +503,7 @@ class MessagesAdapter {
               changes.isNotEmpty &&
               !snapshot.metadata.isFromCache) {
             isInitialSnapshot = false;
-            yield LiveStateDeltaEvent(
-              DateTime.now(),
-              isHistoryComplete: snapshot.docs.length < initialLoadSize,
-            );
+            yield LiveStateDeltaEvent(DateTime.now());
           }
         });
   }

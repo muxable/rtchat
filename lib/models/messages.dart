@@ -47,11 +47,10 @@ class MessagesModel extends ChangeNotifier {
   // document loaded, which may be older than the oldest event if some
   // documents aren't shown.
   final Map<Channel, DateTime> _historyBefore = {};
-  // pages loaded to fill the screen since the channels changed.
-  var _fillPages = 0;
-  // bumped when the channels change, so a history load for the previous ones
-  // is dropped.
+  // bumped when the channels change or messages are pruned, so a history
+  // load that was in flight is dropped.
   var _generation = 0;
+  Future<void>? _pulling;
 
   // it's a bit odd to have this here, but tts only cares about the delta events
   // so it's easier to wire this way.
@@ -73,7 +72,6 @@ class MessagesModel extends ChangeNotifier {
     _liveChannels.clear();
     _historyExhausted.clear();
     _historyBefore.clear();
-    _fillPages = 0;
     _generation++;
     if (_tts != null) {
       final localizations = _getLocalizations();
@@ -161,9 +159,6 @@ class MessagesModel extends ChangeNotifier {
       }
     } else if (event is LiveStateDeltaEvent) {
       _liveChannels.add(channel);
-      if (event.isHistoryComplete) {
-        _historyExhausted.add(channel);
-      }
     }
     if (event is ClearDeltaEvent) {
       // messages from before a clear are never shown.
@@ -203,41 +198,31 @@ class MessagesModel extends ChangeNotifier {
         .toSet();
   }
 
+  // the live marker is stamped by the client, so it's no paging cursor.
   DateTime? _oldestTimestamp(List<ChannelEvent> events, Channel channel) =>
       events
-          .where((entry) => entry.channel == channel)
+          .where(
+            (entry) =>
+                entry.channel == channel && entry.event is! LiveStateDeltaEvent,
+          )
           .map((entry) => entry.event.timestamp)
           .firstOrNull;
 
-  /// Whether some channel may have messages older than those loaded. One
-  /// without any messages yet has nothing to page back from, so it doesn't
-  /// count until its first message arrives.
+  /// Whether some channel may have messages older than those loaded.
   bool get canLoadMoreHistory => _channels.any(
     (channel) =>
         !_historyExhausted.contains(channel) &&
         _oldestTimestamp(_events, channel) != null,
   );
 
-  /// How many pages [pullMoreMessages] loads with `fill` (to fill the
-  /// screen rather than because chat was scrolled back) per channel open.
-  /// It bounds the reads for a channel whose documents mostly aren't shown,
-  /// e.g. poll progress.
-  static const maxFillPages = 5;
-
-  /// Whether loading older messages to fill the screen is still allowed.
-  bool get canFillWithHistory =>
-      canLoadMoreHistory && _fillPages < maxFillPages;
-
   /// Loads older messages for every channel, each from before the oldest
-  /// document loaded from it. Results that arrive after the channels changed
-  /// are dropped. [fill] counts the load against [maxFillPages].
-  Future<void> pullMoreMessages({bool fill = false}) async {
-    if (fill) {
-      if (!canFillWithHistory) {
-        return;
-      }
-      _fillPages++;
-    }
+  /// document loaded from it. Only one load runs at a time: callers share
+  /// it. A load is dropped if the channels change or messages are pruned
+  /// while it's in flight.
+  Future<void> pullMoreMessages() =>
+      _pulling ??= _pullMoreMessages().whenComplete(() => _pulling = null);
+
+  Future<void> _pullMoreMessages() async {
     final generation = _generation;
     final futureEvents = _events; // this prevents a race.
     final history = <ChannelEvent>[];
@@ -295,6 +280,7 @@ class MessagesModel extends ChangeNotifier {
       );
       // paging back starts again from the oldest message kept, unless a
       // clear hides everything before it.
+      _generation++;
       _historyBefore.clear();
       _historyExhausted.removeWhere(
         (channel) =>

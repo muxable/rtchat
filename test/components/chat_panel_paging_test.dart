@@ -88,27 +88,6 @@ void main() {
     return froms;
   }
 
-  testWidgets('pages in older messages until the screen is filled', (
-    tester,
-  ) async {
-    final froms = await pump(tester, loaded: 1, older: 5);
-    // pages of 2 until a short page, then stops asking.
-    expect(froms, [
-      t0,
-      t0.subtract(const Duration(minutes: 2)),
-      t0.subtract(const Duration(minutes: 4)),
-    ]);
-    await tester.pump(const Duration(seconds: 1));
-    expect(froms.length, 3);
-  });
-
-  testWidgets('does not page in when the screen is already full', (
-    tester,
-  ) async {
-    final froms = await pump(tester, loaded: 100, older: 5);
-    expect(froms, isEmpty);
-  });
-
   testWidgets('pages in older messages when scrolled back to the top', (
     tester,
   ) async {
