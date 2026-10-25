@@ -43,9 +43,16 @@ func idleTimeout() time.Duration {
 	return timeout
 }
 
+// idleAssignment reports whether an assignment's last subscribe and heartbeat
+// (subscriptions.HeartbeatField) are both before cutoff. One with neither is
+// kept.
 func idleAssignment(id string, data map[string]interface{}, cutoff time.Time) bool {
-	at, ok := data["subscribedAt"].(time.Time)
-	return id != "twitch:muxfd" && ok && at.Before(cutoff)
+	subscribed, hasSubscribed := data["subscribedAt"].(time.Time)
+	beat, hasBeat := data["heartbeatAt"].(time.Time)
+	if id == "twitch:muxfd" || (!hasSubscribed && !hasBeat) {
+		return false
+	}
+	return (!hasSubscribed || subscribed.Before(cutoff)) && (!hasBeat || beat.Before(cutoff))
 }
 func (s *Service) Cleanup(ctx context.Context) error {
 	cutoff := time.Now().Add(-idleTimeout())

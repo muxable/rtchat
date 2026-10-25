@@ -153,6 +153,52 @@ void main() {
       expect(source.hasListener, isFalse);
     });
 
+    test('skips beats in the background unless kept alive', () async {
+      var background = true;
+      var keepAlive = false;
+      var beats = 0;
+      final source = StreamController<int>();
+      final subscription = MessagesAdapter.withHeartbeat(
+        source.stream,
+        () => beats++,
+        interval: const Duration(milliseconds: 20),
+        isInBackground: () => background,
+        keepAliveInBackground: () => keepAlive,
+      ).listen((_) {});
+      await Future.delayed(const Duration(milliseconds: 70));
+      expect(beats, 0);
+      keepAlive = true;
+      await Future.delayed(const Duration(milliseconds: 70));
+      expect(beats, greaterThanOrEqualTo(2));
+      keepAlive = false;
+      background = false;
+      final before = beats;
+      await Future.delayed(const Duration(milliseconds: 70));
+      expect(beats, greaterThan(before));
+      await subscription.cancel();
+    });
+
+    test(
+      'beats on resume after beats were skipped in the background',
+      () async {
+        final binding = TestWidgetsFlutterBinding.instance;
+        var beats = 0;
+        final source = StreamController<int>();
+        final subscription = MessagesAdapter.withHeartbeat(
+          source.stream,
+          () => beats++,
+          interval: const Duration(milliseconds: 20),
+          isInBackground: () => true,
+        ).listen((_) {});
+        await Future.delayed(const Duration(milliseconds: 50));
+        expect(beats, 0);
+        binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+        binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        expect(beats, 1);
+        await subscription.cancel();
+      },
+    );
+
     test('does not beat before it is listened to', () async {
       var beats = 0;
       MessagesAdapter.withHeartbeat(

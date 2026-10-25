@@ -20,3 +20,26 @@ func TestIdleTimeout(t *testing.T) {
 		}
 	}
 }
+
+func TestIdleAssignmentHeartbeat(t *testing.T) {
+	cutoff := time.Now()
+	old, recent := cutoff.Add(-time.Hour), cutoff.Add(time.Hour)
+	for _, c := range []struct {
+		data map[string]interface{}
+		idle bool
+	}{
+		{map[string]interface{}{"subscribedAt": old}, true},
+		{map[string]interface{}{"subscribedAt": recent}, false},
+		{map[string]interface{}{"subscribedAt": old, "heartbeatAt": recent}, false},
+		{map[string]interface{}{"subscribedAt": recent, "heartbeatAt": old}, false},
+		{map[string]interface{}{"subscribedAt": old, "heartbeatAt": old}, true},
+		// recreated by a heartbeat after cleanup.
+		{map[string]interface{}{"heartbeatAt": recent}, false},
+		{map[string]interface{}{"heartbeatAt": old}, true},
+		{map[string]interface{}{}, false},
+	} {
+		if got := idleAssignment("twitch:user", c.data, cutoff); got != c.idle {
+			t.Errorf("%v: got %v, want %v", c.data, got, c.idle)
+		}
+	}
+}

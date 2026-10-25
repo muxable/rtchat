@@ -465,14 +465,27 @@ class MessagesAdapter {
   /// keeps collecting a channel for a day or more after its last subscribe.
   static const heartbeatInterval = Duration(hours: 1);
 
-  /// Calls [beat] every [interval] while [source] is listened to, including
-  /// in the background (e.g. for text to speech), and when the app resumes if
-  /// a beat was missed while it was suspended.
+  static bool _isInBackground() => switch (WidgetsBinding
+      .instance
+      .lifecycleState) {
+    AppLifecycleState.paused ||
+    AppLifecycleState.hidden ||
+    AppLifecycleState.detached => true,
+    _ => false,
+  };
+
+  /// Calls [beat] every [interval] while [source] is listened to, and when
+  /// the app resumes if a beat was missed. While the app is in the background
+  /// beats are skipped, so a channel left open in a backgrounded app isn't
+  /// kept collected for days, unless [keepAliveInBackground] (e.g. text to
+  /// speech reading it out) says it's still in use.
   @visibleForTesting
   static Stream<T> withHeartbeat<T>(
     Stream<T> source,
     void Function() beat, {
     Duration interval = heartbeatInterval,
+    bool Function()? keepAliveInBackground,
+    bool Function() isInBackground = _isInBackground,
     bool onResume = true,
   }) {
     late StreamController<T> controller;
@@ -481,6 +494,10 @@ class MessagesAdapter {
     AppLifecycleListener? lifecycle;
     var last = DateTime.now();
     void tick() {
+      if (isInBackground() && !(keepAliveInBackground?.call() ?? false)) {
+        // overdue by the time the app resumes, so it beats then.
+        return;
+      }
       last = DateTime.now();
       beat();
     }
@@ -500,7 +517,8 @@ class MessagesAdapter {
           lifecycle = AppLifecycleListener(
             onResume: () {
               if (DateTime.now().difference(last) >= interval) {
-                tick();
+                last = DateTime.now();
+                beat();
               }
             },
           );
@@ -524,7 +542,13 @@ class MessagesAdapter {
     return controller.stream;
   }
 
-  Stream<DeltaEvent> forChannel(Channel channel, Api api) {
+  /// Listens to [channel]'s chat. While the app is in the background, the
+  /// channel is only kept collected while [keepAliveInBackground] is true.
+  Stream<DeltaEvent> forChannel(
+    Channel channel,
+    Api api, {
+    bool Function()? keepAliveInBackground,
+  }) {
     subscribe(channel, api);
     final emotes = getEmotes(channel, api);
     var isInitialSnapshot = true;
@@ -560,6 +584,7 @@ class MessagesAdapter {
     return withHeartbeat(
       messages,
       () => subscribe(channel, api, heartbeat: true),
+      keepAliveInBackground: keepAliveInBackground,
     );
   }
 

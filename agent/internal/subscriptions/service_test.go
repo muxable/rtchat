@@ -347,3 +347,33 @@ func TestHeartbeatOnlyRefreshesAssignment(t *testing.T) {
 		t.Fatal("heartbeat touched the channel")
 	}
 }
+func TestHeartbeatRecreatesCleanedUpAssignmentAndKeepsSubscribedAt(t *testing.T) {
+	db := database(t)
+	ctx := context.Background()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `{"data":[{"id":"123","login":"owner"}]}`)
+	}))
+	defer server.Close()
+	service := &Service{DB: db, API: &API{Tokens: fakeTokens{}, Client: server.Client(), TwitchURL: server.URL}}
+	ref := db.Collection("assignments").Doc("twitch:owner")
+	subscribed := time.Unix(1000, 0).UTC()
+	if _, err := ref.Set(ctx, map[string]interface{}{"subscribedAt": subscribed}); err != nil {
+		t.Fatal(err)
+	}
+	if response := call(service, "subscribe", "", `{"provider":"twitch","channelId":"123","heartbeat":true}`); response.Code != 200 {
+		t.Fatal(response.Body.String())
+	}
+	doc, err := ref.Get(ctx)
+	if err != nil || !doc.Data()["subscribedAt"].(time.Time).Equal(subscribed) || doc.Data()[HeartbeatField] == nil {
+		t.Fatal(doc.Data(), err)
+	}
+	if _, err := ref.Delete(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if response := call(service, "subscribe", "", `{"provider":"twitch","channelId":"123","heartbeat":true}`); response.Code != 200 {
+		t.Fatal(response.Body.String())
+	}
+	if doc, err := ref.Get(ctx); err != nil || doc.Data()[HeartbeatField] == nil {
+		t.Fatal("heartbeat didn't recreate the assignment", err)
+	}
+}

@@ -23,8 +23,13 @@ class MessagesModel extends ChangeNotifier {
 
   @visibleForTesting
   late Stream<DeltaEvent> Function(Channel channel) forChannel =
-      (channel) =>
-          MessagesAdapter.instance.forChannel(channel, apiOn(channel.provider));
+      (channel) => MessagesAdapter.instance.forChannel(
+        channel,
+        apiOn(channel.provider),
+        // text to speech reads chat out with the app in the background.
+        keepAliveInBackground:
+            () => (_tts?.mode ?? TtsMode.disabled) != TtsMode.disabled,
+      );
   List<ChannelEvent> _events = [];
   List<MessageModel> _messages = [];
   Set<int> _separators = {};
