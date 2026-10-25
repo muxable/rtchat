@@ -165,6 +165,39 @@ func TestFirestoreMetadataOrdering(t *testing.T) {
 		t.Fatal(doc.Data())
 	}
 }
+func TestFirestoreMetadataSkipsUnchanged(t *testing.T) {
+	db := emulator(t)
+	ctx := context.Background()
+	service := Service{Client: db}
+	at := time.Now().UTC().Truncate(time.Millisecond)
+	data := map[string]interface{}{"viewerCount": int64(5), "login": "live", "onlineAt": at, "title": nil}
+	if written, err := service.write(ctx, time.Now(), []ChannelUpdate{{"kick:2", data}}); err != nil || written != 1 {
+		t.Fatal(written, err)
+	}
+	ref := db.Collection("channels").Doc("kick:2")
+	before, err := ref.Get(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	updates := []ChannelUpdate{{"kick:2", data}, {"kick:2", map[string]interface{}{"viewerCount": int64(5)}}}
+	if written, err := service.write(ctx, time.Now(), updates); err != nil || written != 0 {
+		t.Fatal("unchanged data written", written, err)
+	}
+	after, err := ref.Get(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !after.UpdateTime.Equal(before.UpdateTime) {
+		t.Fatal("unchanged data bumped the document")
+	}
+	if written, err := service.write(ctx, time.Now(), []ChannelUpdate{{"kick:2", map[string]interface{}{"viewerCount": int64(6), "followerCount": int64(1)}}}); err != nil || written != 1 {
+		t.Fatal(written, err)
+	}
+	after, _ = ref.Get(ctx)
+	if after.Data()["viewerCount"] != int64(6) || after.Data()["followerCount"] != int64(1) || after.Data()["login"] != "live" {
+		t.Fatal(after.Data())
+	}
+}
 func TestFirestoreKickActiveBatching(t *testing.T) {
 	db := emulator(t)
 	ctx := context.Background()
