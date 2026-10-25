@@ -59,6 +59,11 @@ func (s *Service) Subscribe(ctx context.Context, data json.RawMessage) (interfac
 	var input struct {
 		Provider  string          `json:"provider"`
 		ChannelID json.RawMessage `json:"channelId"`
+		// Heartbeat marks a repeat subscribe from a client that is still
+		// showing the channel. It only keeps the channel's assignment (or Kick
+		// webhooks) from going idle: the profile and owner work was done when
+		// the channel was opened.
+		Heartbeat bool `json:"heartbeat"`
 	}
 	if err := json.Unmarshal(data, &input); err != nil {
 		return nil, invalid("missing provider, channelId")
@@ -90,6 +95,9 @@ func (s *Service) Subscribe(ctx context.Context, data json.RawMessage) (interfac
 		return nil, invalid("invalid provider")
 	}
 	uid := callable.UID(ctx)
+	if input.Heartbeat {
+		uid = ""
+	}
 	switch input.Provider {
 	case "youtube":
 		_, err := s.DB.Collection("assignments").Doc("youtube:"+channel).Set(ctx, map[string]interface{}{"subscribedAt": firestore.ServerTimestamp})

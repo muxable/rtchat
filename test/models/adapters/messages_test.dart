@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/models/adapters/messages.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
@@ -127,6 +130,66 @@ Map<String, dynamic> raid() => {
 };
 
 void main() {
+  group('withHeartbeat', () {
+    TestWidgetsFlutterBinding.ensureInitialized();
+
+    test('beats while listened to and stops on cancel', () async {
+      final source = StreamController<int>();
+      var beats = 0;
+      final events = <int>[];
+      final subscription = MessagesAdapter.withHeartbeat(
+        source.stream,
+        () => beats++,
+        interval: const Duration(milliseconds: 20),
+      ).listen(events.add);
+      source.add(1);
+      await Future.delayed(const Duration(milliseconds: 70));
+      expect(events, [1]);
+      expect(beats, greaterThanOrEqualTo(2));
+      await subscription.cancel();
+      final after = beats;
+      await Future.delayed(const Duration(milliseconds: 60));
+      expect(beats, after);
+      expect(source.hasListener, isFalse);
+    });
+
+    test('does not beat before it is listened to', () async {
+      var beats = 0;
+      MessagesAdapter.withHeartbeat(
+        const Stream<int>.empty(),
+        () => beats++,
+        interval: const Duration(milliseconds: 10),
+      );
+      await Future.delayed(const Duration(milliseconds: 40));
+      expect(beats, 0);
+    });
+
+    test('beats on resume only when a beat is overdue', () async {
+      final binding = TestWidgetsFlutterBinding.instance;
+      final source = StreamController<int>.broadcast();
+      var beats = 0;
+      final subscription = MessagesAdapter.withHeartbeat(
+        source.stream,
+        () => beats++,
+        interval: const Duration(hours: 1),
+      ).listen((_) {});
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      expect(beats, 0);
+      await subscription.cancel();
+
+      final overdue = MessagesAdapter.withHeartbeat(
+        source.stream,
+        () => beats++,
+        interval: Duration.zero,
+      ).listen((_) {});
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      expect(beats, 1);
+      await overdue.cancel();
+    });
+  });
+
   group('toDeltaEvent', () {
     test('null data returns null', () {
       expect(toDeltaEvent(const [], 'id', null), isNull);

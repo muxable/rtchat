@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:rtchat/api.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
@@ -409,13 +409,23 @@ class MessagesAdapter {
   /// Starts collecting [channel]'s chat. [api] should call as the account on
   /// [channel]'s provider: when it's that account's own channel, the backend
   /// also sets up its events and lists it in search.
-  Future<void> subscribe(Channel channel, Api api) async {
+  ///
+  /// The backend stops collecting a channel's chat once nobody has subscribed
+  /// to it for a while, so [forChannel] calls this again with [heartbeat] every
+  /// [heartbeatInterval] while it's listened to. A heartbeat only keeps the
+  /// channel collected; the rest was done when the channel was opened.
+  Future<void> subscribe(
+    Channel channel,
+    Api api, {
+    bool heartbeat = false,
+  }) async {
     final subscribe = api.callable('subscribe');
     for (var i = 0; i < 3; i++) {
       try {
         await subscribe({
           "provider": channel.provider,
           "channelId": channel.channelId,
+          if (heartbeat) "heartbeat": true,
         });
         return;
       } catch (e, st) {
@@ -451,11 +461,74 @@ class MessagesAdapter {
         .toList();
   }
 
+  /// How often a listened-to channel is subscribed to again. The backend
+  /// keeps collecting a channel for a day or more after its last subscribe.
+  static const heartbeatInterval = Duration(hours: 1);
+
+  /// Calls [beat] every [interval] while [source] is listened to, including
+  /// in the background (e.g. for text to speech), and when the app resumes if
+  /// a beat was missed while it was suspended.
+  @visibleForTesting
+  static Stream<T> withHeartbeat<T>(
+    Stream<T> source,
+    void Function() beat, {
+    Duration interval = heartbeatInterval,
+    bool onResume = true,
+  }) {
+    late StreamController<T> controller;
+    StreamSubscription<T>? subscription;
+    Timer? timer;
+    AppLifecycleListener? lifecycle;
+    var last = DateTime.now();
+    void tick() {
+      last = DateTime.now();
+      beat();
+    }
+
+    void stop() {
+      timer?.cancel();
+      timer = null;
+      lifecycle?.dispose();
+      lifecycle = null;
+    }
+
+    controller = StreamController<T>(
+      onListen: () {
+        last = DateTime.now();
+        timer = Timer.periodic(interval, (_) => tick());
+        if (onResume) {
+          lifecycle = AppLifecycleListener(
+            onResume: () {
+              if (DateTime.now().difference(last) >= interval) {
+                tick();
+              }
+            },
+          );
+        }
+        subscription = source.listen(
+          controller.add,
+          onError: controller.addError,
+          onDone: () {
+            stop();
+            controller.close();
+          },
+        );
+      },
+      onPause: () => subscription?.pause(),
+      onResume: () => subscription?.resume(),
+      onCancel: () async {
+        stop();
+        await subscription?.cancel();
+      },
+    );
+    return controller.stream;
+  }
+
   Stream<DeltaEvent> forChannel(Channel channel, Api api) {
     subscribe(channel, api);
     final emotes = getEmotes(channel, api);
     var isInitialSnapshot = true;
-    return db
+    final messages = db
         .collection("channels")
         .doc(channel.toString())
         .collection("messages")
@@ -484,6 +557,10 @@ class MessagesAdapter {
             yield LiveStateDeltaEvent(DateTime.now());
           }
         });
+    return withHeartbeat(
+      messages,
+      () => subscribe(channel, api, heartbeat: true),
+    );
   }
 
   /// Returns a stream of the "stream online" time.
