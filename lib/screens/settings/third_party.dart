@@ -275,127 +275,176 @@ class _StreamElementsWidget extends StatelessWidget {
 }
 
 class _RealTimeKitWidget extends StatefulWidget {
+  final Account account;
+  final DonationsAdapter donations;
+
+  const _RealTimeKitWidget({
+    super.key,
+    required this.account,
+    required this.donations,
+  });
+
   @override
   State<_RealTimeKitWidget> createState() => _RealTimeKitWidgetState();
 }
 
 class _RealTimeKitWidgetState extends State<_RealTimeKitWidget> {
+  final _apiKeyController = TextEditingController();
+
   var _scanController = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
   );
 
-  String apiKey = "";
+  @override
+  void dispose() {
+    _apiKeyController.dispose();
+    _scanController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveApiKey(String value) async {
+    final apiKey = value.trim();
+    await widget.donations.setRealtimeKitApiKey(apiKey: apiKey);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        ListTile(
-          leading: const Image(image: AssetImage('assets/realtimekit.png')),
-          title: const Text("RealtimeKit"),
-          subtitle: const Text("Control OBS remotely"),
-          trailing: SizedBox(
-            width: 24,
-            height: 24,
-            child:
-                apiKey.isNotEmpty
-                    ? const Icon(Icons.check_circle, color: Colors.green)
-                    : const Icon(Icons.help),
-          ),
-          onTap:
-              () =>
-                  apiKey.isNotEmpty
-                      ? openUrl(Uri.parse(apiKey))
-                      : openUrl(Uri.parse("https://kit.rtirl.com/")),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 88, right: 16),
-          child: TextField(
-            controller: TextEditingController()..text = apiKey,
-            readOnly: false,
-            decoration: InputDecoration(
-              hintText: "API Key",
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.qr_code_scanner),
-                onPressed: () {
-                  final messenger = ScaffoldMessenger.of(context);
+    return StreamBuilder<RealtimeKitConfig?>(
+      stream: widget.donations.forRealtimeKitConfig(
+        userId: widget.account.user.uid,
+      ),
+      builder: (context, snapshot) {
+        final apiKey = snapshot.data?.apiKey ?? '';
 
-                  showModalBottomSheet(
-                    isScrollControlled: true,
-                    context: context,
-                    builder: (ctx) {
-                      return Stack(
-                        children: [
-                          MobileScanner(
-                            errorBuilder: (context, error) {
-                              return ScannerErrorWidget(error: error);
-                            },
-                            controller: _scanController,
-                            onDetect: (capture) {
-                              final List<Barcode> barcodes = capture.barcodes;
+        // Sync persisted values without overwriting text being edited.
+        if (snapshot.hasData && _apiKeyController.text != apiKey) {
+          _apiKeyController.value = TextEditingValue(
+            text: apiKey,
+            selection: TextSelection.collapsed(offset: apiKey.length),
+          );
+        } else if (!snapshot.hasData &&
+            snapshot.connectionState != ConnectionState.waiting &&
+            _apiKeyController.text.isNotEmpty) {
+          _apiKeyController.clear();
+        }
 
-                              if (barcodes.isEmpty) {
-                                messenger.showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.invalidUrlErrorText,
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
+        return Column(
+          children: [
+            ListTile(
+              leading: const Image(image: AssetImage('assets/realtimekit.png')),
+              title: const Text('RealtimeKit'),
+              subtitle: const Text('Control OBS remotely'),
+              trailing: SizedBox(
+                width: 24,
+                height: 24,
+                child:
+                    apiKey.isNotEmpty
+                        ? const Icon(Icons.check_circle, color: Colors.green)
+                        : const Icon(Icons.help),
+              ),
+              onTap:
+                  () => openUrl(
+                    Uri.parse(
+                      apiKey.isNotEmpty ? apiKey : 'https://kit.rtirl.com/',
+                    ),
+                  ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 88, right: 16),
+              child: TextField(
+                controller: _apiKeyController,
+                decoration: InputDecoration(
+                  hintText: 'API Key',
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.qr_code_scanner),
+                    onPressed: () {
+                      final messenger = ScaffoldMessenger.of(context);
 
-                              final barcode = barcodes.first;
+                      showModalBottomSheet(
+                        isScrollControlled: true,
+                        context: context,
+                        builder: (ctx) {
+                          return Stack(
+                            children: [
+                              MobileScanner(
+                                errorBuilder: (context, error) {
+                                  return ScannerErrorWidget(error: error);
+                                },
+                                controller: _scanController,
+                                onDetect: (capture) async {
+                                  final barcode = capture.barcodes.firstOrNull;
+                                  final value = barcode?.rawValue?.trim();
 
-                              if (barcode.rawValue == null ||
-                                  barcode.rawValue!.isEmpty) {
-                                messenger.showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.invalidUrlErrorText,
-                                    ),
-                                  ),
-                                );
-                                Navigator.pop(ctx);
-                                return;
-                              }
+                                  if (value == null || value.isEmpty) {
+                                    messenger.showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          AppLocalizations.of(
+                                            context,
+                                          )!.invalidUrlErrorText,
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
 
-                              setState(() {
-                                apiKey = barcode.rawValue!;
-                              });
+                                  _apiKeyController.text = value;
+                                  Navigator.pop(ctx);
 
-                              Navigator.pop(ctx);
-                            },
-                          ),
-                          Positioned(
-                            top: 50,
-                            left: 0,
-                            right: 0,
-                            child: ScannerSettings(
-                              scanController: _scanController,
-                            ),
-                          ),
-                        ],
-                      );
+                                  try {
+                                    await _saveApiKey(value);
+                                  } catch (error) {
+                                    if (!mounted) return;
+                                    messenger.showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Could not save RealtimeKit API key: $error',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                              Positioned(
+                                top: 50,
+                                left: 0,
+                                right: 0,
+                                child: ScannerSettings(
+                                  scanController: _scanController,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ).whenComplete(() {
+                        _scanController.dispose();
+                        _scanController = MobileScannerController(
+                          detectionSpeed: DetectionSpeed.noDuplicates,
+                        );
+                      });
                     },
-                  ).then((value) {
-                    _scanController.dispose();
-
-                    _scanController = MobileScannerController(
-                      detectionSpeed: DetectionSpeed.noDuplicates,
+                  ),
+                ),
+                keyboardType: TextInputType.url,
+                onSubmitted: (value) async {
+                  try {
+                    await _saveApiKey(value);
+                  } catch (error) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Could not save RealtimeKit API key: $error',
+                        ),
+                      ),
                     );
-                  });
+                  }
                 },
               ),
             ),
-            keyboardType: TextInputType.url,
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }
@@ -454,7 +503,11 @@ class ThirdPartyScreen extends StatelessWidget {
                   donations: donations(account),
                 ),
                 const Divider(),
-                _RealTimeKitWidget(),
+                _RealTimeKitWidget(
+                  key: ValueKey('realtimekit-${account.app.name}'),
+                  account: account,
+                  donations: donations(account),
+                ),
                 const Divider(),
                 // External third-party services alphabetically sorted
                 _StreamElementsWidget(

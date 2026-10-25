@@ -37,6 +37,26 @@ class MessagesModel extends ChangeNotifier {
   List<Channel> _channels = const [];
   // channels whose initial history has loaded, so new events are live.
   final Set<Channel> _liveChannels = {};
+  // channels whose history has been paged back to their first message.
+  final Set<Channel> _historyExhausted = {};
+  // where each channel's history paging continues from: the oldest message
+  // document loaded, which may be older than the oldest event if some
+  // documents aren't shown.
+  final Map<Channel, DateTime> _historyBefore = {};
+  // bumped when the channels change or messages are pruned, so a history
+  // load that was in flight is dropped.
+  var _generation = 0;
+  Future<void>? _pulling;
+  var _pullingGeneration = 0;
+
+  @visibleForTesting
+  late Future<HistoryPage> Function(Channel channel, DateTime from)
+  forChannelHistory =
+      (channel, from) => MessagesAdapter.instance.forChannelHistory(
+        channel,
+        from,
+        apiOn(channel.provider),
+      );
 
   // it's a bit odd to have this here, but tts only cares about the delta events
   // so it's easier to wire this way.
@@ -56,6 +76,9 @@ class MessagesModel extends ChangeNotifier {
     _separators = {};
     _events = [];
     _liveChannels.clear();
+    _historyExhausted.clear();
+    _historyBefore.clear();
+    _generation++;
     if (_tts != null) {
       final localizations = _getLocalizations();
       if (localizations != null) {
@@ -143,6 +166,10 @@ class MessagesModel extends ChangeNotifier {
     } else if (event is LiveStateDeltaEvent) {
       _liveChannels.add(channel);
     }
+    if (event is ClearDeltaEvent) {
+      // messages from before a clear are never shown.
+      _historyExhausted.add(channel);
+    }
     notifyListeners();
   }
 
@@ -177,28 +204,83 @@ class MessagesModel extends ChangeNotifier {
         .toSet();
   }
 
+  // the live marker is stamped by the client, so it's no paging cursor.
+  DateTime? _oldestTimestamp(List<ChannelEvent> events, Channel channel) =>
+      events
+          .where(
+            (entry) =>
+                entry.channel == channel && entry.event is! LiveStateDeltaEvent,
+          )
+          .map((entry) => entry.event.timestamp)
+          .firstOrNull;
+
+  /// Whether some channel may have messages older than those loaded.
+  bool get canLoadMoreHistory => _channels.any(
+    (channel) =>
+        !_historyExhausted.contains(channel) &&
+        _oldestTimestamp(_events, channel) != null,
+  );
+
   /// Loads older messages for every channel, each from before the oldest
-  /// event received from it.
-  Future<void> pullMoreMessages() async {
+  /// document loaded from it. Only one load runs at a time: callers share
+  /// it. A load is dropped if the channels change or messages are pruned
+  /// while it's in flight.
+  Future<void> pullMoreMessages() {
+    final pulling = _pulling;
+    // a load for channels or messages that have since changed is dropped,
+    // so it can't be shared.
+    if (pulling != null && _pullingGeneration == _generation) {
+      return pulling;
+    }
+    _pullingGeneration = _generation;
+    late final Future<void> next;
+    next = _pullMoreMessages().whenComplete(() {
+      if (identical(_pulling, next)) {
+        _pulling = null;
+      }
+    });
+    return _pulling = next;
+  }
+
+  Future<void> _pullMoreMessages() async {
+    final generation = _generation;
     final futureEvents = _events; // this prevents a race.
     final history = <ChannelEvent>[];
+    final exhausted = <Channel>[];
+    final before = <Channel, DateTime>{};
     for (final channel in _channels) {
+      if (_historyExhausted.contains(channel)) {
+        continue;
+      }
       final oldest =
-          futureEvents
-              .where((entry) => entry.channel == channel)
-              .map((entry) => entry.event.timestamp)
-              .firstOrNull;
+          _historyBefore[channel] ?? _oldestTimestamp(futureEvents, channel);
       if (oldest == null) {
         continue;
       }
-      final events = await MessagesAdapter.instance.forChannelHistory(
-        channel,
-        oldest,
-        apiOn(channel.provider),
+      final page = await forChannelHistory(channel, oldest);
+      if (_disposed || generation != _generation) {
+        return;
+      }
+      if (_historyExhausted.contains(channel)) {
+        // cleared while loading, so nothing before the clear is shown.
+        continue;
+      }
+      final pageOldest = page.oldest;
+      if (page.isLast ||
+          pageOldest == null ||
+          // messages from before a clear are never shown.
+          page.events.any((event) => event is ClearDeltaEvent)) {
+        exhausted.add(channel);
+      } else {
+        before[channel] = pageOldest;
+      }
+      history.addAll(
+        page.events.map((event) => (channel: channel, event: event)),
       );
-      history.addAll(events.map((event) => (channel: channel, event: event)));
     }
-    if (history.isEmpty || _disposed) {
+    _historyExhausted.addAll(exhausted);
+    _historyBefore.addAll(before);
+    if (history.isEmpty) {
       return;
     }
     _events = [...history, ...futureEvents];
@@ -219,6 +301,17 @@ class MessagesModel extends ChangeNotifier {
       _messages.removeRange(0, _messages.length - 1000);
       _events.removeWhere(
         (entry) => entry.event.timestamp.isBefore(_messages.first.timestamp),
+      );
+      // paging back starts again from the oldest message kept, unless a
+      // clear hides everything before it.
+      _generation++;
+      _historyBefore.clear();
+      _historyExhausted.removeWhere(
+        (channel) =>
+            !_events.any(
+              (entry) =>
+                  entry.channel == channel && entry.event is ClearDeltaEvent,
+            ),
       );
       _separators = computeSeparators(_messages);
     }
