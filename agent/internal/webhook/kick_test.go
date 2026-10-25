@@ -497,3 +497,11 @@ func TestKickKeyRefreshIsThrottled(t *testing.T) {
 		t.Fatalf("fetches after the interval = %d, want 2", fetched)
 	}
 }
+
+func TestKickKind(t *testing.T) {
+	for in, want := range map[string]string{"kick.chat.message.sent": "message", "kick.channel.followed": "channel.followed", "stream.online": "stream.online"} {
+		if got := kickKind(in); got != want {
+			t.Errorf("kickKind(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
