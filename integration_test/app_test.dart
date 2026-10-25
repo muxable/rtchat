@@ -176,15 +176,19 @@ void main() {
     await pumpUntil(tester, find.byType(ChatHistoryScreen));
     // the option is below the fold, and ListView only builds visible items.
     final option = find.text('Compact individual messages');
-
-    final scrollable = find.descendant(
-      of: find.byType(ChatHistoryScreen),
-      matching: find.byKey(const Key('chatHistorySettingsList')),
+    await tester.scrollUntilVisible(
+      option,
+      200,
+      scrollable:
+          find
+              .descendant(
+                of: find.byType(ChatHistoryScreen),
+                matching: find.byType(Scrollable),
+              )
+              .first,
     );
-
-    await tester.scrollUntilVisible(option, 200, scrollable: scrollable);
     await tester.tap(option);
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     final style =
         jsonDecode(prefs.getString('style', defaultValue: '{}').getValue())
