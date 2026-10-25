@@ -143,7 +143,7 @@ func TestFirestoreMetadataOrdering(t *testing.T) {
 	started := time.Now().Add(-time.Second)
 	ref := db.Collection("channels").Doc("kick:1")
 	ref.Set(ctx, map[string]interface{}{"viewerCount": int64(100), "title": "new webhook"})
-	written, err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"viewerCount": int64(1), "title": "stale poll"}}})
+	written, err := service.write(ctx, nil, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"viewerCount": int64(1), "title": "stale poll"}}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,7 +157,7 @@ func TestFirestoreMetadataOrdering(t *testing.T) {
 	if doc.Data()["title"] != "new webhook" {
 		t.Fatal(doc.Data())
 	}
-	if written, err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"followerCount": int64(42)}}}); err != nil || written != 1 {
+	if written, err := service.write(ctx, nil, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"followerCount": int64(42)}}}); err != nil || written != 1 {
 		t.Fatal(written, err)
 	}
 	doc, _ = ref.Get(ctx)
@@ -171,7 +171,7 @@ func TestFirestoreMetadataSkipsUnchanged(t *testing.T) {
 	service := Service{Client: db}
 	at := time.Now().UTC().Truncate(time.Millisecond)
 	data := map[string]interface{}{"viewerCount": int64(5), "login": "live", "onlineAt": at, "title": nil}
-	if written, err := service.write(ctx, time.Now(), []ChannelUpdate{{"kick:2", data}}); err != nil || written != 1 {
+	if written, err := service.write(ctx, nil, time.Now(), []ChannelUpdate{{"kick:2", data}}); err != nil || written != 1 {
 		t.Fatal(written, err)
 	}
 	ref := db.Collection("channels").Doc("kick:2")
@@ -180,7 +180,7 @@ func TestFirestoreMetadataSkipsUnchanged(t *testing.T) {
 		t.Fatal(err)
 	}
 	updates := []ChannelUpdate{{"kick:2", data}, {"kick:2", map[string]interface{}{"viewerCount": int64(5)}}}
-	if written, err := service.write(ctx, time.Now(), updates); err != nil || written != 0 {
+	if written, err := service.write(ctx, nil, time.Now(), updates); err != nil || written != 0 {
 		t.Fatal("unchanged data written", written, err)
 	}
 	after, err := ref.Get(ctx)
@@ -190,7 +190,7 @@ func TestFirestoreMetadataSkipsUnchanged(t *testing.T) {
 	if !after.UpdateTime.Equal(before.UpdateTime) {
 		t.Fatal("unchanged data bumped the document")
 	}
-	if written, err := service.write(ctx, time.Now(), []ChannelUpdate{{"kick:2", map[string]interface{}{"viewerCount": int64(6), "followerCount": int64(1)}}}); err != nil || written != 1 {
+	if written, err := service.write(ctx, nil, time.Now(), []ChannelUpdate{{"kick:2", map[string]interface{}{"viewerCount": int64(6), "followerCount": int64(1)}}}); err != nil || written != 1 {
 		t.Fatal(written, err)
 	}
 	after, _ = ref.Get(ctx)
