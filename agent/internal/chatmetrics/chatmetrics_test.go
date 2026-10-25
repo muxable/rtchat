@@ -82,9 +82,10 @@ func TestFlushLogsDeltas(t *testing.T) {
 	}
 }
 
-func TestRunFlushesOnTickAndExit(t *testing.T) {
+func TestRunFlushesOnTick(t *testing.T) {
 	core, logs := observer.New(zap.InfoLevel)
 	defer zap.ReplaceGlobals(zap.New(core))()
+	defer func(saved *Counters) { Default = saved }(Default)
 	Default = &Counters{}
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
@@ -97,10 +98,12 @@ func TestRunFlushesOnTickAndExit(t *testing.T) {
 	if logs.Len() != 1 {
 		t.Fatalf("tick logged %d entries", logs.Len())
 	}
-	Record("twitch", "clearchat", Created)
 	cancel()
 	<-done
+	// Run does not flush on exit; main flushes after shutdown instead.
+	Record("twitch", "clearchat", Created)
+	Default.Flush(zap.L())
 	if logs.Len() != 2 {
-		t.Fatalf("exit flush missing: %d entries", logs.Len())
+		t.Fatalf("final flush logged %d entries in total, want 2", logs.Len())
 	}
 }

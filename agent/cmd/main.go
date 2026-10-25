@@ -114,6 +114,9 @@ func main() {
 		defer undo()
 	}
 
+	// Registered after the logger so it runs last, after the drain and shutdown.
+	defer chatmetrics.Default.Flush(zap.L())
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	client, err := firestore.NewClient(ctx, "rtchat-47692")

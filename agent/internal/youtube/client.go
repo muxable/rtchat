@@ -273,14 +273,12 @@ func (c *Client) stream(ctx context.Context, video, key, version string, page ch
 				last = c.store.Create(ctx, "youtube:"+c.channel, id, data)
 				return last
 			})
-			outcome := chatmetrics.OutcomeOf(last)
 			if !ok {
-				outcome = chatmetrics.Failed
-			}
-			chatmetrics.Record("youtube", youtubeKind(data["type"].(string)), outcome)
-			if !ok {
+				// retryWrite only gives up when ctx ends (shutdown or lease
+				// handoff); the next reader writes the event, so don't count it.
 				return
 			}
+			chatmetrics.Record("youtube", youtubeKind(data["type"].(string)), chatmetrics.OutcomeOf(last))
 		}
 		token, timeout := page.next()
 		if token == "" {

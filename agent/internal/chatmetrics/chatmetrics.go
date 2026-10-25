@@ -87,15 +87,14 @@ func (c *Counters) Flush(logger *zap.Logger) {
 	}
 }
 
-// Run flushes Default to the global logger every interval and once more when
-// ctx ends.
+// Run flushes Default to the global logger every interval until ctx ends. The
+// caller flushes once more after shutdown so counts from draining aren't lost.
 func Run(ctx context.Context, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			Default.Flush(zap.L())
 			return
 		case <-ticker.C:
 			Default.Flush(zap.L())

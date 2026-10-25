@@ -546,14 +546,14 @@
         "width": 24,
         "height": 16,
         "widget": {
-          "title": "Chat events received/min by provider and kind",
+          "title": "Chat events received/min by provider and kind (excluding cross-instance duplicates)",
           "xyChart": {
             "dataSets": [
               {
                 "plotType": "LINE",
                 "targetAxis": "Y1",
                 "timeSeriesQuery": {
-                  "prometheusQuery": "60 * sum by (provider, kind) (rate(logging_googleapis_com:user_agent_chat_events_sum{monitored_resource=\"gce_instance\"}[5m]))"
+                  "prometheusQuery": "60 * sum by (provider, kind) (rate(logging_googleapis_com:user_agent_chat_events_sum{monitored_resource=\"gce_instance\", outcome!=\"duplicate\"}[5m]))"
                 }
               }
             ],
