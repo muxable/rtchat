@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -98,7 +99,7 @@ func TestKickMetadataParity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if data["viewerCount"] != int64(12) || data["categoryId"] != float64(9) || data["onlineAt"].(time.Time).Hour() != 12 {
+	if data["viewerCount"] != int64(12) || data["categoryId"] != int64(9) || data["onlineAt"].(time.Time).Hour() != 12 {
 		t.Fatal(data)
 	}
 	channel.Stream.Live = false
@@ -189,5 +190,23 @@ func TestUnchanged(t *testing.T) {
 		if got := unchanged(current, tc.update); got != tc.want {
 			t.Errorf("unchanged(%v) = %v", tc.update, got)
 		}
+	}
+}
+
+func TestKickValueMatchesWebhook(t *testing.T) {
+	for _, tc := range []struct{ in, want interface{} }{
+		{float64(9), int64(9)},
+		{float64(-3), int64(-3)},
+		{1.5, 1.5},
+		{9007199254740992.0, 9007199254740992.0},
+		{"IRL", "IRL"},
+		{nil, nil},
+	} {
+		if got := kickValue(tc.in); got != tc.want {
+			t.Errorf("kickValue(%v) = %#v", tc.in, got)
+		}
+	}
+	if got := kickValue(math.Copysign(0, -1)); got != math.Copysign(0, -1) {
+		t.Errorf("negative zero = %#v", got)
 	}
 }

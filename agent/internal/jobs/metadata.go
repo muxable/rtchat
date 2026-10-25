@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"go.uber.org/zap"
+	"math"
 	"math/rand"
 	"net/http"
 	"reflect"
@@ -67,7 +68,16 @@ func (c KickChannel) Metadata() (map[string]interface{}, error) {
 			online = at.UTC().Truncate(time.Millisecond)
 		}
 	}
-	return map[string]interface{}{"login": c.Slug, "title": c.Title, "language": c.Stream.Language, "categoryId": c.Category.ID, "categoryName": c.Category.Name, "viewerCount": viewers, "onlineAt": online}, nil
+	return map[string]interface{}{"login": c.Slug, "title": kickValue(c.Title), "language": kickValue(c.Stream.Language), "categoryId": kickValue(c.Category.ID), "categoryName": kickValue(c.Category.Name), "viewerCount": viewers, "onlineAt": online}, nil
+}
+
+// kickValue stores integral JSON numbers as int64, matching the Kick
+// webhook's kickFirestoreValue, so a poll after a webhook is not a type change.
+func kickValue(value interface{}) interface{} {
+	if v, ok := value.(float64); ok && math.Abs(v) <= 9007199254740991 && math.Trunc(v) == v && !(v == 0 && math.Signbit(v)) {
+		return int64(v)
+	}
+	return value
 }
 
 // FetchTwitch preserves stream/offline metadata fields and samples at most
