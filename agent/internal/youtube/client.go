@@ -9,11 +9,13 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -257,6 +259,7 @@ func (c *Client) stream(ctx context.Context, video, key, version string, page ch
 			data := actionData(c.channel, video, raw, time.Now())
 			if data == nil {
 				c.counts.skipped.Add(1)
+				chatmetrics.Record("youtube", "unrecognized", chatmetrics.Skipped)
 				continue
 			}
 			id := "youtube:" + data["event"].(map[string]interface{})["id"].(string)
@@ -265,7 +268,17 @@ func (c *Client) stream(ctx context.Context, video, key, version string, page ch
 				// needs its own document or the create is a no-op.
 				id += ":tombstone"
 			}
-			if !c.retryWrite(ctx, func() error { return c.store.Create(ctx, "youtube:"+c.channel, id, data) }) {
+			var last error
+			ok := c.retryWrite(ctx, func() error {
+				last = c.store.Create(ctx, "youtube:"+c.channel, id, data)
+				return last
+			})
+			outcome := chatmetrics.OutcomeOf(last)
+			if !ok {
+				outcome = chatmetrics.Failed
+			}
+			chatmetrics.Record("youtube", youtubeKind(data["type"].(string)), outcome)
+			if !ok {
 				return
 			}
 		}
@@ -296,4 +309,14 @@ func (c *Client) stream(ctx context.Context, video, key, version string, page ch
 			delay = c.nextBackoff(delay)
 		}
 	}
+}
+
+// youtubeKind labels chat events like the other providers: text messages are
+// "message", everything else keeps its YouTube event type.
+func youtubeKind(documentType string) string {
+	kind := strings.TrimPrefix(documentType, "youtube.")
+	if kind == "textMessageEvent" {
+		return "message"
+	}
+	return kind
 }

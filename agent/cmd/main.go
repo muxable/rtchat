@@ -19,6 +19,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/catalog"
+	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"github.com/muxable/rtchat/agent/internal/oauthhttp"
 	"github.com/muxable/rtchat/agent/internal/provider"
@@ -147,6 +148,7 @@ func main() {
 			return twitch.NewClient(req)
 		}
 	})
+	go chatmetrics.Run(ctx, 60*time.Second)
 	go func() {
 		ticker := time.NewTicker(15 * time.Second)
 		defer ticker.Stop()

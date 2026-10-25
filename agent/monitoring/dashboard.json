@@ -307,21 +307,14 @@
         "width": 24,
         "height": 16,
         "widget": {
-          "title": "Chat messages written/s",
+          "title": "Chat messages created/min by provider",
           "xyChart": {
             "dataSets": [
               {
                 "plotType": "LINE",
                 "targetAxis": "Y1",
                 "timeSeriesQuery": {
-                  "timeSeriesFilter": {
-                    "filter": "metric.type=\"logging.googleapis.com/user/messages\" resource.type=\"gce_instance\"",
-                    "aggregation": {
-                      "alignmentPeriod": "60s",
-                      "perSeriesAligner": "ALIGN_RATE",
-                      "crossSeriesReducer": "REDUCE_SUM"
-                    }
-                  }
+                  "prometheusQuery": "60 * sum by (provider) (rate(logging_googleapis_com:user_agent_chat_events_sum{monitored_resource=\"gce_instance\", kind=\"message\", outcome=\"created\"}[5m]))"
                 }
               }
             ],
@@ -515,6 +508,52 @@
                       ]
                     }
                   }
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 0,
+        "yPos": 128,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Chat write duplicates and failures/min by provider",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "60 * sum by (provider, outcome) (rate(logging_googleapis_com:user_agent_chat_events_sum{monitored_resource=\"gce_instance\", outcome=~\"duplicate|failed\"}[5m]))"
+                }
+              }
+            ],
+            "yAxis": {
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 24,
+        "yPos": 128,
+        "width": 24,
+        "height": 16,
+        "widget": {
+          "title": "Chat events received/min by provider and kind",
+          "xyChart": {
+            "dataSets": [
+              {
+                "plotType": "LINE",
+                "targetAxis": "Y1",
+                "timeSeriesQuery": {
+                  "prometheusQuery": "60 * sum by (provider, kind) (rate(logging_googleapis_com:user_agent_chat_events_sum{monitored_resource=\"gce_instance\"}[5m]))"
                 }
               }
             ],

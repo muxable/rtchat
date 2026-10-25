@@ -21,10 +21,8 @@ type Store interface {
 type FirestoreStore struct{ Client *firestore.Client }
 
 func (s *FirestoreStore) Create(ctx context.Context, channel, id string, data map[string]interface{}) error {
+	// AlreadyExists is returned so callers can count duplicates; retryWrite treats it as success.
 	_, err := s.Client.Collection("channels").Doc(channel).Collection("messages").Doc(id).Create(ctx, data)
-	if status.Code(err) == codes.AlreadyExists {
-		return nil
-	}
 	return err
 }
 
