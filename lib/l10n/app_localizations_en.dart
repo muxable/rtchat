@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -1043,22 +1044,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get turnOffTextToSpeech => 'Turn off';
 
   @override
-  String get addChannel => 'Add channel';
-
-  @override
   String get addToChat => 'Add to chat';
-
-  @override
-  String get defaultChannels => 'Default channels';
-
-  @override
-  String get defaultChannelsSubtitle => 'The channels shown when the app opens';
-
-  @override
-  String get save => 'Save';
-
-  @override
-  String get resetToMyChannel => 'Reset to my channel';
 
   @override
   String get inChat => 'In chat';
@@ -1083,9 +1069,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String replaceChannel(String channel) {
     return 'Replace $channel';
   }
-
-  @override
-  String get removeChannel => 'Remove';
 
   @override
   String get voicePacks => 'Voice packs';

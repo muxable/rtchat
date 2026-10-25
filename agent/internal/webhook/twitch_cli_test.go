@@ -99,20 +99,19 @@ type twitchDelivery struct {
 // what the CLI sent and what the handler answered.
 type twitchCLIServer struct {
 	*httptest.Server
-	store     *lockedTwitchStore
-	refreshes []string
+	store *lockedTwitchStore
 
-	mu         sync.Mutex
-	deliveries []twitchDelivery
+	mu           sync.Mutex
+	deliveries   []twitchDelivery
+	deauthorized []string
 }
 
 func newTwitchCLIServer(t *testing.T) *twitchCLIServer {
 	s := &twitchCLIServer{store: &lockedTwitchStore{}}
-	h := &TwitchHandler{Secret: twitchCLISecret, Store: s.store, RefreshChannel: func(_ context.Context, id string) error {
+	h := &TwitchHandler{Secret: twitchCLISecret, Store: s.store, OnDeauthorized: func(id string, _ bool) {
 		s.mu.Lock()
 		defer s.mu.Unlock()
-		s.refreshes = append(s.refreshes, id)
-		return nil
+		s.deauthorized = append(s.deauthorized, id)
 	}}
 	server := NewServer(Secrets{})
 	server.RegisterProvider("/twitch/", h)
@@ -152,12 +151,6 @@ func (s *twitchCLIServer) delivery(t *testing.T) twitchDelivery {
 		t.Fatalf("got %d deliveries, want 1", len(s.deliveries))
 	}
 	return s.deliveries[0]
-}
-
-func (s *twitchCLIServer) refreshed() []string {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return append([]string(nil), s.refreshes...)
 }
 
 // lockedTwitchStore records writes made on the server's goroutines.
@@ -298,11 +291,9 @@ func TestTwitchCLINotifications(t *testing.T) {
 				channel = writes[1:]
 			}
 			var want []twitchDocument
-			var refreshes []string
 			switch test.eventType {
 			case "stream.online":
 				want = []twitchDocument{{Path: twitchCLIChannel, Data: map[string]interface{}{"onlineAt": firestore.ServerTimestamp}, Merge: true}}
-				refreshes = []string{"twitch:" + twitchCLIBroadcaster}
 			case "stream.offline":
 				want = []twitchDocument{{Path: twitchCLIChannel, Data: map[string]interface{}{"onlineAt": nil}, Merge: true}}
 			case "channel.follow":
@@ -316,9 +307,6 @@ func TestTwitchCLINotifications(t *testing.T) {
 			}
 			if !reflect.DeepEqual(channel, want) {
 				t.Fatalf("channel writes %#v, want %#v", channel, want)
-			}
-			if got := s.refreshed(); !reflect.DeepEqual(got, refreshes) {
-				t.Fatalf("refreshed %v, want %v", got, refreshes)
 			}
 		})
 	}
@@ -420,9 +408,6 @@ func TestTwitchCLIWrongSecret(t *testing.T) {
 		if writes := s.store.writes(); len(writes) != 0 {
 			t.Fatalf("writes %#v", writes)
 		}
-		if got := s.refreshed(); len(got) != 0 {
-			t.Fatalf("refreshed %v", got)
-		}
 	})
 	t.Run("challenge", func(t *testing.T) {
 		s := newTwitchCLIServer(t)
@@ -433,4 +418,31 @@ func TestTwitchCLIWrongSecret(t *testing.T) {
 			t.Fatalf("status %d, want 403", d.status)
 		}
 	})
+}
+
+// The app's user.authorization.revoke subscription is acknowledged without a
+// chat message and reports the broadcaster.
+func TestTwitchCLIAuthorizationRevoke(t *testing.T) {
+	twitchCLI(t)
+	s := newTwitchCLIServer(t)
+	// The CLI sends the --from-user as the user who revoked.
+	args := []string{"event", "trigger", "user.authorization.revoke", "--transport=webhook", "-F", s.callback(), "-s", twitchCLISecret, "--no-config", "-f", twitchCLIBroadcaster, "--client-id", "client"}
+	if out, err := runTwitchCLI(t, args...); err != nil {
+		t.Fatalf("twitch %v: %v\n%s", args, err, out)
+	}
+	d := s.delivery(t)
+	if d.status != http.StatusOK {
+		t.Fatalf("status %d, want 200", d.status)
+	}
+	if event := sentEvent(t, d); event["user_id"] != twitchCLIBroadcaster || event["client_id"] != "client" {
+		t.Fatalf("cli sent %#v", event)
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if !reflect.DeepEqual(s.deauthorized, []string{twitchCLIBroadcaster}) {
+		t.Fatalf("deauthorized %v", s.deauthorized)
+	}
+	if writes := s.store.writes(); len(writes) != 0 {
+		t.Fatalf("writes %#v", writes)
+	}
 }

@@ -14,10 +14,12 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -361,7 +363,9 @@ func (h *KickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		zap.L().Info("unhandled kick event", zap.String("type", delivery.Type))
 	}
 	for _, message := range docs.Messages {
-		if err := h.store.CreateMessage(r.Context(), docs.ChannelID, message.ID, message.Data); err != nil && status.Code(err) != codes.AlreadyExists {
+		err := h.store.CreateMessage(r.Context(), docs.ChannelID, message.ID, message.Data)
+		chatmetrics.Record("kick", kickKind(message.Data["type"].(string)), chatmetrics.OutcomeOf(err))
+		if err != nil && status.Code(err) != codes.AlreadyExists {
 			h.fail(w, err)
 			return
 		}
@@ -373,6 +377,15 @@ func (h *KickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+// kickKind labels chat events like the other providers: chat messages are
+// "message", everything else keeps its document type.
+func kickKind(documentType string) string {
+	if documentType == "kick.chat.message.sent" {
+		return "message"
+	}
+	return strings.TrimPrefix(documentType, "kick.")
 }
 
 func (h *KickHandler) fail(w http.ResponseWriter, err error) {

@@ -25,21 +25,19 @@ ViewsModel restart(ViewsModel views) => ViewsModel.fromJson(
 
 void main() {
   group("default channels", () {
-    test("are the signed-in user's channel until picked", () {
+    test("are the signed-in user's channel", () {
       final views = signedInAs(kick);
-      expect(views.defaultChannels, [kick]);
       expect(views.channels, [kick]);
       expect(views.primaryChannel, kick);
     });
 
-    test("are all of the signed-in user's channels until picked", () {
+    test("are all of the signed-in accounts' channels, in order", () {
       final views = ViewsModel()..update(signedInToAll([twitch, kick]));
-      expect(views.defaultChannels, [twitch, kick]);
       expect(views.channels, [twitch, kick]);
-      expect(views.hasCustomDefaultChannels, isFalse);
+      expect(views.primaryChannel, twitch);
     });
 
-    test("follow accounts being added and removed", () {
+    test("follow accounts being signed in to and out of", () {
       var notifications = 0;
       final views = signedInAs(twitch)..addListener(() => notifications++);
       views.update(signedInToAll([twitch, kick]));
@@ -49,63 +47,42 @@ void main() {
       views.update(signedInToAll([kick]));
       expect(views.channels, [kick]);
       expect(notifications, 2);
+      views.update(FakeUserModel());
+      expect(views.channels, isEmpty);
     });
 
-    test("are empty for signed-out users until picked", () {
+    test("are empty for signed-out users", () {
       final views = signedInAs(null);
-      expect(views.defaultChannels, isEmpty);
+      expect(views.channels, isEmpty);
       expect(views.primaryChannel, isNull);
     });
 
-    test("can be added to, removed from and replaced", () {
-      final views = signedInAs(twitch);
-      views.addDefaultChannel(kick);
-      expect(views.defaultChannels, [twitch, kick]);
-      views.addDefaultChannel(kick);
-      expect(views.defaultChannels, [twitch, kick]);
-      views.removeDefaultChannel(twitch);
-      expect(views.defaultChannels, [kick]);
-      // removing the last one goes back to the user's channel.
-      views.removeDefaultChannel(kick);
-      expect(views.defaultChannels, [twitch]);
-      expect(views.hasCustomDefaultChannels, isFalse);
-    });
-
-    test("can be copied from the current channels", () {
-      final views =
-          signedInAs(twitch)
-            ..openChannel(other)
-            ..addChannel(kick);
-      views.useCurrentChannelsAsDefault();
-      expect(views.defaultChannels, [other, kick]);
-    });
-
     test("are what the app opens with after a restart", () {
-      final views =
-          signedInAs(twitch)
-            ..addDefaultChannel(kick)
-            ..addChannel(other);
-      final restored = restart(views)
-        ..update(FakeUserModel(userChannel: twitch));
-      expect(restored.defaultChannels, [twitch, kick]);
+      final views = ViewsModel()..update(signedInToAll([twitch, kick]));
+      views.openChannel(other);
+      final restored = restart(views)..update(signedInToAll([twitch, kick]));
       expect(restored.channels, [twitch, kick]);
-      expect(restored.channels.first.displayName, 'muxfd');
     });
 
-    test("keep a channel's language across a restart", () {
-      final views = signedInAs(null)..addDefaultChannel(other);
-      expect(restart(views).channels.single.language, 'ja');
-    });
-
-    test("the current channels follow the defaults until changed", () {
-      final views = signedInAs(twitch);
-      views.addDefaultChannel(kick);
-      expect(views.channels, [twitch, kick]);
-      views.removeChannel(kick);
-      views.addDefaultChannel(otherKick);
-      expect(views.channels, [twitch]);
+    test("can be gone back to after changing channels", () {
+      final views = signedInAs(twitch)..openChannel(other);
+      views.update(signedInToAll([twitch, kick]));
+      // channels picked during the session stay until gone back.
+      expect(views.channels, [other]);
       views.showDefaultChannels();
-      expect(views.channels, [twitch, otherKick]);
+      expect(views.channels, [twitch, kick]);
+    });
+
+    test("picked before are ignored and dropped", () {
+      final restored = ViewsModel.fromJson({
+        'defaultChannels': [other.toJson(), otherKick.toJson()],
+      })..update(FakeUserModel(userChannel: twitch));
+      expect(restored.channels, [twitch]);
+      expect(restored.toJson().containsKey('defaultChannels'), isFalse);
+      expect(
+        ViewsModel.fromJson({'defaultChannels': 'junk'}).channels,
+        isEmpty,
+      );
     });
 
     test("old saved views are ignored", () {
@@ -239,37 +216,10 @@ void main() {
       expect(channelReplacedBy([twitch], kick), isNull);
     });
 
-    test("so does adding a default channel", () {
-      final views = signedInAs(twitch);
-      // the user's own channel is the default until others are picked.
-      views.addDefaultChannel(other);
-      expect(views.defaultChannels, [other]);
-      views.addDefaultChannel(kick);
-      views.addDefaultChannel(otherKick);
-      expect(views.defaultChannels, [other, otherKick]);
-    });
-
-    test("default channels set together keep the first of each provider", () {
-      final views = signedInAs(twitch);
-      views.defaultChannels = [kick, twitch, otherKick, other];
-      expect(views.defaultChannels, [kick, twitch]);
-    });
-
-    test("saved defaults keep the first channel of each provider", () {
-      final restored = ViewsModel.fromJson({
-        'defaultChannels': [
-          kick.toJson(),
-          twitch.toJson(),
-          otherKick.toJson(),
-          other.toJson(),
-        ],
-      });
-      expect(restored.defaultChannels, [kick, twitch]);
-      expect(restored.channels, [kick, twitch]);
-      expect(restored.toJson()['defaultChannels'], [
-        kick.toJson(),
-        twitch.toJson(),
-      ]);
+    test("the signed-in accounts' channels keep one per provider", () {
+      final views =
+          ViewsModel()..update(signedInToAll([kick, twitch, otherKick, other]));
+      expect(views.channels, [kick, twitch]);
     });
   });
 

@@ -201,6 +201,35 @@ class _ScrollToBottomWidget extends StatelessWidget {
   }
 }
 
+/// Suffixes repeated [keys] so every list item has its own key. The chat list
+/// finds moved items by key, and two items with the same key corrupt its
+/// children when they move, which then fails every paint and hit test. A
+/// message can be repeated, e.g. an event delivered twice or a shared chat
+/// message merged from two channels. Repeats are numbered from the end (the
+/// oldest) so keys stay the same as newer messages arrive.
+@visibleForTesting
+List<String> uniqueKeys(List<String> keys) {
+  final seen = <String>{};
+  // The next suffix to try for each repeated key, so a key repeated many
+  // times doesn't retry every suffix it has already taken.
+  final nextRepeat = <String, int>{};
+  final unique = List.of(keys);
+  for (var index = keys.length - 1; index >= 0; index--) {
+    final base = keys[index];
+    var key = base;
+    if (!seen.add(key)) {
+      var repeat = nextRepeat[base] ?? 1;
+      do {
+        key = '$base#$repeat';
+        repeat++;
+      } while (!seen.add(key));
+      nextRepeat[base] = repeat;
+    }
+    unique[index] = key;
+  }
+  return unique;
+}
+
 class _DisplayedMessage {
   final MessageModel message;
   final String key;
@@ -425,6 +454,13 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                       ),
                     )
                     .toList();
+            final keys = uniqueKeys([
+              for (final entry in displayedMessages) entry.key,
+            ]);
+            final keyIndexes = {
+              for (var index = 0; index < keys.length; index++)
+                keys[index]: index,
+            };
             return Stack(
               alignment: Alignment.topCenter,
               children: [
@@ -453,7 +489,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                           final message = entry.message;
 
                           return StyleModelTheme(
-                            key: Key(entry.key),
+                            key: Key(keys[index]),
                             child: Builder(
                               builder: (context) {
                                 // Suppress redundant subscription events.
@@ -535,9 +571,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
                           );
                         },
                         findChildIndexCallback: (key) {
-                          return displayedMessages.indexWhere(
-                            (entry) => key == Key(entry.key),
-                          );
+                          return key is ValueKey<String>
+                              ? keyIndexes[key.value]
+                              : null;
                         },
                         isPinnedBuilder: (index) {
                           final expiration = expirations[index];

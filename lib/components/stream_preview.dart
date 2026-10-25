@@ -106,36 +106,43 @@ class _StreamPreviewState extends State<StreamPreview> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (url) async {
-            // only twitch's player can be driven over the javascript tunnel.
-            if (!_isTwitch) {
+            // only twitch's player can be driven over the javascript tunnel,
+            // and dispose() loads a blank page that has no player at all.
+            if (!mounted || !_isTwitch) {
               return;
             }
-            await _controller.runJavaScript(
+            await _runJavaScript(
               await rootBundle.loadString('assets/twitch-tunnel.js'),
             );
             // wait a second for twitch to catch up.
             await Future.delayed(const Duration(seconds: 1));
+            if (!mounted) {
+              return;
+            }
             if (Platform.isIOS) {
-              await _controller.runJavaScript(
+              await _runJavaScript(
                 "window.action(window.Actions.SetMuted, ${model.volume == 0})",
               );
             } else {
-              await _controller.runJavaScript(
+              await _runJavaScript(
                 "window.action(window.Actions.SetMuted, false)",
               );
-              await _controller.runJavaScript(
+              await _runJavaScript(
                 "window.action(window.Actions.SetVolume, ${model.volume / 100})",
               );
               if (model.isHighDefinition) {
-                await _controller.runJavaScript(
+                await _runJavaScript(
                   "window.action(window.Actions.SetQuality, 'auto')",
                 );
               } else {
-                await _controller.runJavaScript(
+                await _runJavaScript(
                   "window.action(window.Actions.SetQuality, '360p')",
                 );
                 await Future.delayed(const Duration(seconds: 2));
-                await _controller.runJavaScript(
+                if (!mounted || !_isTwitch) {
+                  return;
+                }
+                await _runJavaScript(
                   "window.action(window.Actions.SetQuality, '360p30')",
                 );
               }
@@ -150,6 +157,7 @@ class _StreamPreviewState extends State<StreamPreview> {
     super.dispose();
 
     _promptTimer?.cancel();
+    _overlayTimer?.cancel();
 
     // on iOS, the webview is not disposed when the widget is disposed.
     // this causes audio to keep playing even when the widget is closed.
@@ -166,6 +174,17 @@ class _StreamPreviewState extends State<StreamPreview> {
     if (url != newUrl) {
       _controller.loadRequest(newUrl);
       url = newUrl;
+    }
+  }
+
+  /// Runs [javaScript] in the player, ignoring failures: the page may not
+  /// have loaded the tunnel yet or may have navigated away, and an uncaught
+  /// failure would otherwise be reported as a fatal crash.
+  Future<void> _runJavaScript(String javaScript) async {
+    try {
+      await _controller.runJavaScript(javaScript);
+    } on PlatformException catch (e) {
+      debugPrint('stream preview javascript failed: $e');
     }
   }
 
@@ -233,7 +252,7 @@ class _StreamPreviewState extends State<StreamPreview> {
                                           // SetVolume doesn't seem to work on ios so we use SetMuted instead and toggle between 0 and 100.
                                           model.volume =
                                               model.volume == 0 ? 100 : 0;
-                                          await _controller.runJavaScript(
+                                          await _runJavaScript(
                                             "window.action(window.Actions.SetMuted, ${model.volume == 0})",
                                           );
                                           return;
@@ -245,10 +264,10 @@ class _StreamPreviewState extends State<StreamPreview> {
                                         } else {
                                           model.volume = 0;
                                         }
-                                        await _controller.runJavaScript(
+                                        await _runJavaScript(
                                           "window.action(window.Actions.SetMuted, false)",
                                         );
-                                        await _controller.runJavaScript(
+                                        await _runJavaScript(
                                           "window.action(window.Actions.SetVolume, ${model.volume / 100})",
                                         );
                                       },
@@ -271,17 +290,20 @@ class _StreamPreviewState extends State<StreamPreview> {
                                           model.isHighDefinition =
                                               !model.isHighDefinition;
                                           if (model.isHighDefinition) {
-                                            await _controller.runJavaScript(
+                                            await _runJavaScript(
                                               "window.action(window.Actions.SetQuality, 'auto')",
                                             );
                                           } else {
-                                            await _controller.runJavaScript(
+                                            await _runJavaScript(
                                               "window.action(window.Actions.SetQuality, '360p')",
                                             );
                                             await Future.delayed(
                                               const Duration(seconds: 2),
                                             );
-                                            await _controller.runJavaScript(
+                                            if (!mounted || !_isTwitch) {
+                                              return;
+                                            }
+                                            await _runJavaScript(
                                               "window.action(window.Actions.SetQuality, '360p30')",
                                             );
                                           }

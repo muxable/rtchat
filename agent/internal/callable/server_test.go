@@ -8,6 +8,9 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
 )
 
 func TestTransport(t *testing.T) {
@@ -118,5 +121,36 @@ func TestMountedRoutesStayIsolated(t *testing.T) {
 		if w.Code != 200 || w.Body.String() != expected {
 			t.Errorf("%s: %d %s", path, w.Code, w.Body.String())
 		}
+	}
+}
+
+func TestRequestLog(t *testing.T) {
+	core, logs := observer.New(zap.InfoLevel)
+	defer zap.ReplaceGlobals(zap.New(core))()
+	s := NewServer(func(context.Context, string) (string, error) { return "uid", nil })
+	s.Register("ok", true, func(context.Context, json.RawMessage) (any, error) { return nil, nil })
+	s.Register("fail", false, func(context.Context, json.RawMessage) (any, error) { return nil, errors.New("boom") })
+	for _, tc := range []struct{ path, token, body string }{
+		{"/ok", "valid", `{"data":{"provider":"kick"}}`},
+		{"/fail", "", `{"data":"x"}`},
+	} {
+		req := httptest.NewRequest("POST", tc.path, strings.NewReader(tc.body))
+		req.Header.Set("Content-Type", "application/json")
+		if tc.token != "" {
+			req.Header.Set("Authorization", "Bearer "+tc.token)
+			req.Header.Set(ProxyHeader, "getBadges")
+		}
+		s.ServeHTTP(httptest.NewRecorder(), req)
+	}
+	entries := logs.FilterMessage("http request").AllUntimed()
+	if len(entries) != 2 {
+		t.Fatalf("got %d request logs", len(entries))
+	}
+	ok, fail := entries[0].ContextMap(), entries[1].ContextMap()
+	if ok["callable"] != "ok" || ok["status"] != int64(200) || ok["code"] != "ok" || ok["provider"] != "kick" || ok["authenticated"] != true || ok["via"] != "getBadges" {
+		t.Fatalf("unexpected success log %v", ok)
+	}
+	if entries[1].Level != zap.WarnLevel || fail["callable"] != "fail" || fail["status"] != int64(500) || fail["code"] != "internal" || fail["error"] != "boom" || fail["via"] != "" {
+		t.Fatalf("unexpected failure log %v", fail)
 	}
 }

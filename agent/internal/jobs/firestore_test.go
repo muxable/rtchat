@@ -143,8 +143,12 @@ func TestFirestoreMetadataOrdering(t *testing.T) {
 	started := time.Now().Add(-time.Second)
 	ref := db.Collection("channels").Doc("kick:1")
 	ref.Set(ctx, map[string]interface{}{"viewerCount": int64(100), "title": "new webhook"})
-	if err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"viewerCount": int64(1), "title": "stale poll"}}}); err != nil {
+	written, err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"viewerCount": int64(1), "title": "stale poll"}}})
+	if err != nil {
 		t.Fatal(err)
+	}
+	if written != 0 {
+		t.Fatalf("stale poll counted %d writes", written)
 	}
 	doc, err := ref.Get(ctx)
 	if err != nil {
@@ -153,26 +157,70 @@ func TestFirestoreMetadataOrdering(t *testing.T) {
 	if doc.Data()["title"] != "new webhook" {
 		t.Fatal(doc.Data())
 	}
-	if err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"followerCount": int64(42)}}}); err != nil {
-		t.Fatal(err)
+	if written, err := service.write(ctx, started, []ChannelUpdate{{"kick:1", map[string]interface{}{"followerCount": int64(42)}}}); err != nil || written != 1 {
+		t.Fatal(written, err)
 	}
 	doc, _ = ref.Get(ctx)
 	if doc.Data()["followerCount"] != int64(42) {
 		t.Fatal(doc.Data())
 	}
 }
+func TestFirestoreMetadataSkipsUnchanged(t *testing.T) {
+	db := emulator(t)
+	ctx := context.Background()
+	service := Service{Client: db}
+	at := time.Now().UTC().Truncate(time.Millisecond)
+	data := map[string]interface{}{"viewerCount": int64(5), "login": "live", "onlineAt": at, "title": nil}
+	if written, err := service.write(ctx, time.Now(), []ChannelUpdate{{"kick:2", data}}); err != nil || written != 1 {
+		t.Fatal(written, err)
+	}
+	ref := db.Collection("channels").Doc("kick:2")
+	before, err := ref.Get(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	updates := []ChannelUpdate{{"kick:2", data}, {"kick:2", map[string]interface{}{"viewerCount": int64(5)}}}
+	if written, err := service.write(ctx, time.Now(), updates); err != nil || written != 0 {
+		t.Fatal("unchanged data written", written, err)
+	}
+	after, err := ref.Get(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !after.UpdateTime.Equal(before.UpdateTime) {
+		t.Fatal("unchanged data bumped the document")
+	}
+	if written, err := service.write(ctx, time.Now(), []ChannelUpdate{{"kick:2", map[string]interface{}{"viewerCount": int64(6), "followerCount": int64(1)}}}); err != nil || written != 1 {
+		t.Fatal(written, err)
+	}
+	after, _ = ref.Get(ctx)
+	if after.Data()["viewerCount"] != int64(6) || after.Data()["followerCount"] != int64(1) || after.Data()["login"] != "live" {
+		t.Fatal(after.Data())
+	}
+}
 func TestFirestoreKickActiveBatching(t *testing.T) {
 	db := emulator(t)
 	ctx := context.Background()
 	now := time.Now()
-	writes := db.Batch()
-	for i := 0; i < 52; i++ {
-		writes.Set(db.Collection("webhooks").Doc(fmt.Sprint("kick:", i)), map[string]interface{}{"lastActiveAt": now})
+	writes := db.BulkWriter(ctx)
+	var jobs []*firestore.BulkWriterJob
+	set := func(id string, data map[string]interface{}) {
+		job, err := writes.Set(db.Collection("webhooks").Doc(id), data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		jobs = append(jobs, job)
 	}
-	writes.Set(db.Collection("webhooks").Doc("kick:idle"), map[string]interface{}{"lastActiveAt": now.Add(-25 * time.Hour)})
-	writes.Set(db.Collection("webhooks").Doc("twitch:123"), map[string]interface{}{"lastActiveAt": now})
-	if _, err := writes.Commit(ctx); err != nil {
-		t.Fatal(err)
+	for i := 0; i < 52; i++ {
+		set(fmt.Sprint("kick:", i), map[string]interface{}{"lastActiveAt": now})
+	}
+	set("kick:idle", map[string]interface{}{"lastActiveAt": now.Add(-25 * time.Hour)})
+	set("twitch:123", map[string]interface{}{"lastActiveAt": now})
+	writes.End()
+	for _, job := range jobs {
+		if _, err := job.Results(); err != nil {
+			t.Fatal(err)
+		}
 	}
 	calls, total := 0, 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

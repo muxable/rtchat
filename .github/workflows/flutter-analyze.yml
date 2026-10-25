@@ -7,22 +7,41 @@ on:
   pull_request:
   workflow_dispatch:
 
+# cancel superseded PR runs; runs on main each get their own group.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
+        with:
+          cache: true
       - run: flutter pub get
       # the analyzer resolves the package's files with its own dependencies.
       - run: flutter pub get
         working-directory: packages/on_device_tts
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed .
-      - name: Run flutter analyze
-        uses: invertase/github-action-dart-analyzer@v3
+      # what invertase/github-action-dart-analyzer did, without its Node 20
+      # runtime: fail on errors and warnings, annotate every issue.
+      - name: Run dart analyze
+        run: |
+          status=0
+          dart analyze --format=machine . > "$RUNNER_TEMP/analyze.txt" 2>&1 || status=$?
+          awk -F'|' 'NF >= 8 {
+            level = $1 == "ERROR" ? "error" : ($1 == "WARNING" ? "warning" : "notice")
+            msg = $8; for (i = 9; i <= NF; i++) msg = msg "|" $i
+            sub("^" ENVIRON["GITHUB_WORKSPACE"] "/", "", $4)
+            printf "::%s file=%s,line=%s,col=%s,title=%s::%s\n", level, $4, $5, $6, $3, msg
+          }' "$RUNNER_TEMP/analyze.txt"
+          echo "dart analyze exited with $status"
+          exit "$status"
       - name: Analyze on_device_tts
         run: flutter analyze
         working-directory: packages/on_device_tts

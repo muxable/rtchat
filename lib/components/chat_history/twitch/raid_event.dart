@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
@@ -56,10 +57,21 @@ class TwitchRaidEventWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                onTap: () {
-                  ActionsAdapter.forAccount(
-                    account,
-                  ).send(channel, "/shoutout ${model.from.login}");
+                onTap: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  try {
+                    await ActionsAdapter.forAccount(
+                      account,
+                    ).shoutout(channel, model.from.userId);
+                  } on FirebaseFunctionsException catch (e) {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text(e.message ?? e.code)),
+                    );
+                  } catch (e) {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text(e.toString())),
+                    );
+                  }
                 },
               );
             },

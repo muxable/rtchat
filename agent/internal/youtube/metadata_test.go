@@ -25,11 +25,13 @@ func describe(info streamInfo) string {
 	var b strings.Builder
 	v := reflect.ValueOf(info)
 	for i := 0; i < v.NumField(); i++ {
-		b.WriteString(v.Type().Field(i).Name + "=")
+		b.WriteString(v.Type().Field(i).Name)
+		b.WriteString("=")
 		if v.Field(i).IsNil() {
 			b.WriteString("nil ")
 		} else {
-			b.WriteString(strings.TrimSpace(strings.Replace(reflect.Indirect(v.Field(i)).String(), "<", "", 1)) + " ")
+			b.WriteString(strings.TrimSpace(strings.Replace(reflect.Indirect(v.Field(i)).String(), "<", "", 1)))
+			b.WriteString(" ")
 		}
 	}
 	return b.String()

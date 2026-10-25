@@ -5,6 +5,15 @@ on:
     branches:
       - main
   pull_request:
+    # skip PRs that only touch the backend or docs.
+    paths-ignore:
+      - "agent/**"
+      - "functions/**"
+      - "auxiliary/**"
+      - "**.md"
+      - ".github/workflows/agent.yml"
+      - ".github/workflows/auxiliary.yml"
+      - ".github/workflows/firebase*.yml"
   release:
     types: [released]
   workflow_dispatch:
@@ -14,7 +23,11 @@ jobs:
     uses: muxable/.github/.github/workflows/flutter-ios.yml@main
     concurrency:
       group: ios-${{ github.ref }}
+      # cancel superseded PR builds, never a publish.
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     with:
+      bundle-id: com.rtirl.chat
+      beta-group: Beta Testers
       environment-name: ios-${{ github.event_name == 'release' && 'app-store' || 'testflight' }}
       environment-url: https://appstoreconnect.apple.com/apps/1567720948/${{ github.event_name == 'release' && 'appstore' || 'testflight' }}
       publish: ${{ github.event_name != 'pull_request' }}
@@ -25,6 +38,7 @@ jobs:
     uses: muxable/.github/.github/workflows/flutter-android.yml@main
     concurrency:
       group: android-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     with:
       environment-name: android-${{ github.event_name == 'release' && 'production' || 'internal' }}
       environment-url: https://play.google.com/console/developers/8168733962061318282/app/4973471021781937122/tracks/${{ github.event_name == 'release' && 'production' || 'internal-testing' }}

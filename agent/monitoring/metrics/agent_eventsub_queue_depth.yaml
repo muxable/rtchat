@@ -1,0 +1,15 @@
+description: Broadcasters waiting in a replica's Twitch EventSub queue.
+filter: >-
+  resource.type="gce_instance"
+  logName="projects/rtchat-47692/logs/cos_containers"
+  jsonPayload.message=~"^twitch eventsub (reconcile|remove|cost check)$"
+valueExtractor: EXTRACT(jsonPayload.queue_depth)
+bucketOptions:
+  exponentialBuckets:
+    numFiniteBuckets: 20
+    growthFactor: 2
+    scale: 1
+metricDescriptor:
+  metricKind: DELTA
+  valueType: DISTRIBUTION
+  unit: "1"

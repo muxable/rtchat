@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/clients"
 	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"go.uber.org/zap"
@@ -53,7 +54,7 @@ func (s *chatRoutes) twitch(ctx context.Context, uid, token, action string, r ch
 				return nil, err
 			}
 			if sender.Login == "" {
-				return nil, errors.New("Twitch sender unavailable")
+				return nil, errors.New("sender unavailable on Twitch")
 			}
 			return nil, s.sendIRC(ctx, token, sender.Login, target.Login, r.Message)
 		}
@@ -87,6 +88,10 @@ func (s *chatRoutes) twitch(ctx context.Context, uid, token, action string, r ch
 	case "raid":
 		var started time.Time
 		started, err = client.StartRaid(ctx, r.From, r.To)
+		var rejected *twitch.RaidRejected
+		if errors.As(err, &rejected) {
+			return nil, &callable.Error{Code: "failed-precondition", Message: rejected.Message}
+		}
 		if err == nil && !started.IsZero() {
 			if user, lookupErr := client.User(ctx, "id", r.To); lookupErr == nil {
 				user.ID = r.To
@@ -95,8 +100,18 @@ func (s *chatRoutes) twitch(ctx context.Context, uid, token, action string, r ch
 				}
 			}
 		}
+	case "shoutout":
+		var reason string
+		reason, err = client.Shoutout(ctx, r.From, r.To, id)
+		if err == nil && reason != "" {
+			err = &callable.Error{Code: "failed-precondition", Message: reason}
+		}
 	case "cancelRaid":
 		err = client.CancelRaid(ctx, r.ChannelID)
+		var rejected *twitch.RaidRejected
+		if errors.As(err, &rejected) {
+			return nil, &callable.Error{Code: "failed-precondition", Message: rejected.Message}
+		}
 		if err == nil && s.store.RaidCancel(ctx, r.ChannelID, time.Now()) != nil {
 			zap.L().Warn("failed to record raid cancel")
 		}

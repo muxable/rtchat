@@ -4,7 +4,7 @@
 /// fall back between engines without knowing how the audio is made:
 ///
 /// * `SystemTtsEngine` speaks with the platform's voices through
-///   `flutter_tts`.
+///   the native system speech adapters.
 /// * `NeuralTtsEngine` speaks with an installed voice pack on `OnnxTts`,
 ///   which runs neural TTS models (Supertonic 3) natively on ONNX Runtime;
 ///   see `doc/native_contract.md` for its platform channels.

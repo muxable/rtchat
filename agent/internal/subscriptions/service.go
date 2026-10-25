@@ -24,10 +24,11 @@ var numericID = regexp.MustCompile(`^[0-9]+$`)
 type Service struct {
 	DB               *firestore.Client
 	API              *API
-	Enabled          bool
 	TwitchSecret     string
 	MaticWebhookID   string
 	KickChannelLimit int
+	// Queue reconciles Twitch EventSub subscriptions off the request path.
+	Queue *TwitchQueue
 }
 
 func (s *Service) Register(server *callable.Server) {
@@ -87,9 +88,6 @@ func (s *Service) Subscribe(ctx context.Context, data json.RawMessage) (interfac
 		}
 	default:
 		return nil, invalid("invalid provider")
-	}
-	if !s.Enabled {
-		return nil, &callable.Error{Code: "failed-precondition", Message: "subscription migration is not enabled"}
 	}
 	uid := callable.UID(ctx)
 	switch input.Provider {

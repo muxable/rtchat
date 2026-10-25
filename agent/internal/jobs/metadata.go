@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"go.uber.org/zap"
+	"math"
 	"math/rand"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -66,7 +68,16 @@ func (c KickChannel) Metadata() (map[string]interface{}, error) {
 			online = at.UTC().Truncate(time.Millisecond)
 		}
 	}
-	return map[string]interface{}{"login": c.Slug, "title": c.Title, "language": c.Stream.Language, "categoryId": c.Category.ID, "categoryName": c.Category.Name, "viewerCount": viewers, "onlineAt": online}, nil
+	return map[string]interface{}{"login": c.Slug, "title": kickValue(c.Title), "language": kickValue(c.Stream.Language), "categoryId": kickValue(c.Category.ID), "categoryName": kickValue(c.Category.Name), "viewerCount": viewers, "onlineAt": online}, nil
+}
+
+// kickValue stores integral JSON numbers as int64, matching the Kick
+// webhook's kickFirestoreValue, so a poll after a webhook is not a type change.
+func kickValue(value interface{}) interface{} {
+	if v, ok := value.(float64); ok && math.Abs(v) <= 9007199254740991 && math.Trunc(v) == v && !(v == 0 && math.Signbit(v)) {
+		return int64(v)
+	}
+	return value
 }
 
 // FetchTwitch preserves stream/offline metadata fields and samples at most
@@ -180,7 +191,14 @@ func (s *Service) Twitch(ctx context.Context) error {
 		}
 	}
 	started := time.Now()
-	return s.API.FetchTwitch(ctx, logins, func(updates []ChannelUpdate) error { return s.write(ctx, started, updates) })
+	var written int
+	err = s.API.FetchTwitch(ctx, logins, func(updates []ChannelUpdate) error {
+		n, err := s.write(ctx, started, updates)
+		written += n
+		return err
+	})
+	logRefresh("twitch", len(logins), written)
+	return err
 }
 func (s *Service) Kick(ctx context.Context) error {
 	started := time.Now()
@@ -194,6 +212,8 @@ func (s *Service) Kick(ctx context.Context) error {
 			ids = append(ids, strings.TrimPrefix(doc.Ref.ID, "kick:"))
 		}
 	}
+	var written int
+	defer func() { logRefresh("kick", len(ids), written) }()
 	for start := 0; start < len(ids); start += 50 {
 		var result struct {
 			Data []KickChannel `json:"data"`
@@ -212,14 +232,26 @@ func (s *Service) Kick(ctx context.Context) error {
 			}
 			updates = append(updates, ChannelUpdate{"kick:" + strconv.FormatInt(c.ID, 10), data})
 		}
-		if err := s.write(ctx, started, updates); err != nil {
+		n, err := s.write(ctx, started, updates)
+		written += n
+		if err != nil {
 			return err
 		}
 	}
 	return nil
 }
-func (s *Service) write(ctx context.Context, started time.Time, updates []ChannelUpdate) error {
+
+// logRefresh records how many channels a metadata job polled and wrote, so a
+// job that completes without writing anything is visible.
+func logRefresh(provider string, channels, written int) {
+	zap.L().Info("channel metadata refreshed", zap.String("provider", provider), zap.Int("channels", channels), zap.Int("written", written))
+}
+
+// write returns the number of channel documents it updated.
+func (s *Service) write(ctx context.Context, started time.Time, updates []ChannelUpdate) (int, error) {
+	var written int
 	for _, update := range updates {
+		skipped := false
 		ref := s.Client.Collection("channels").Doc(update.ID)
 		err := s.Client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 			doc, err := tx.Get(ref)
@@ -228,14 +260,44 @@ func (s *Service) write(ctx context.Context, started time.Time, updates []Channe
 			}
 			// A newer webhook wins over a poll that started before it. Follower-only
 			// writes do not touch stream metadata and may proceed independently.
-			if err == nil && doc.UpdateTime.After(started) && len(update.Data) > 1 {
+			skipped = err == nil && doc.UpdateTime.After(started) && len(update.Data) > 1
+			if skipped {
+				return nil
+			}
+			// Unchanged data still costs a billed write, so leave the doc alone.
+			if err == nil && unchanged(doc.Data(), update.Data) {
+				skipped = true
 				return nil
 			}
 			return tx.Set(ref, update.Data, firestore.MergeAll)
 		})
 		if err != nil {
-			return err
+			return written, err
+		}
+		if !skipped {
+			written++
 		}
 	}
-	return nil
+	return written, nil
+}
+
+// unchanged reports whether merging update into current would leave every
+// field as it is. Types must match: Firestore stores int64 and float64 as
+// distinct types, so a type change is a real write.
+func unchanged(current, update map[string]interface{}) bool {
+	for field, value := range update {
+		existing, ok := current[field]
+		if !ok || !sameValue(existing, value) {
+			return false
+		}
+	}
+	return true
+}
+
+func sameValue(a, b interface{}) bool {
+	if at, ok := a.(time.Time); ok {
+		bt, ok := b.(time.Time)
+		return ok && at.Equal(bt)
+	}
+	return reflect.DeepEqual(a, b)
 }

@@ -67,12 +67,18 @@ typedef ChannelSearch =
       bool isShowOnlyOnline,
     );
 
-// Recently active channels for [provider] matching [query], online first.
+String _channelKey(String provider, String channelId) => '$provider:$channelId';
+
+/// Recently active channels matching [query].
+///
+/// Followed channels are placed first and aren't limited to five.
+/// The five-result limit applies only to other recently active channels.
 List<SearchResult> filterRecentChannels(
   List<SearchResult> results,
   String query,
-  String provider,
-) {
+  String provider, {
+  Set<String> followedChannelKeys = const {},
+}) {
   final needle = query.toLowerCase();
   final matches = results.where(
     (result) =>
@@ -80,10 +86,30 @@ List<SearchResult> filterRecentChannels(
         (result.displayName.toLowerCase().contains(needle) ||
             result.login.toLowerCase().contains(needle)),
   );
-  return [
-    ...matches.where((element) => element.isOnline),
-    ...matches.where((element) => !element.isOnline),
-  ].take(5).toList();
+  final followed =
+      matches
+          .where(
+            (result) => followedChannelKeys.contains(
+              _channelKey(result.provider, result.channelId),
+            ),
+          )
+          .toList();
+  final others =
+      matches
+          .where(
+            (result) =>
+                !followedChannelKeys.contains(
+                  _channelKey(result.provider, result.channelId),
+                ),
+          )
+          .toList()
+        ..sort((a, b) {
+          if (a.isOnline != b.isOnline) {
+            return a.isOnline ? -1 : 1;
+          }
+          return 0;
+        });
+  return [...followed, ...others.take(5)];
 }
 
 /// Searches as the user [api] calls as. With no query, Twitch lists the
@@ -92,12 +118,90 @@ Stream<List<SearchResult>> searchChannels(
   String query,
   String provider,
   bool isShowOnlyOnline,
-  Api api,
-) async* {
-  final fastRanked = filterRecentChannels(await fastSearch(), query, provider);
-  yield fastRanked;
+  Api api, {
+  List<Channel> followedChannels = const [],
+}) async* {
+  final followedForProvider =
+      followedChannels
+          .where((channel) => channel.provider == provider)
+          .toList();
+
+  final followedChannelKeys =
+      followedForProvider
+          .map((channel) => _channelKey(channel.provider, channel.channelId))
+          .toSet();
+
+  // Fetch recently active channels.
+  final recent = await fastSearch();
+
+  // Include followed channels even if they aren't in the recent results.
+  final followedResults = followedForProvider
+      .map((channel) {
+        final existing = recent.where(
+          (result) =>
+              result.provider == channel.provider &&
+              result.channelId == channel.channelId,
+        );
+
+        if (existing.isNotEmpty) {
+          return existing.first;
+        }
+
+        return SearchResult(
+          channelId: channel.channelId,
+          provider: channel.provider,
+          login: channel.displayName,
+          displayName: channel.displayName,
+          isOnline: false,
+          imageUrl: Uri.parse(
+            'https://rtirl.com/pfp.png'
+            '?provider=${channel.provider}'
+            '&channelId=${channel.channelId}',
+          ),
+          title: null,
+          language: null,
+          isPromoted: false,
+        );
+      })
+      .where(
+        (result) =>
+            (result.displayName.toLowerCase().contains(query.toLowerCase()) ||
+                result.login.toLowerCase().contains(query.toLowerCase())) &&
+            (!isShowOnlyOnline || result.isOnline),
+      );
+
+  final followedByKey = <String, SearchResult>{
+    for (final result in followedResults)
+      _channelKey(result.provider, result.channelId): result,
+  };
+
+  final fastRanked = filterRecentChannels(
+    recent,
+    query,
+    provider,
+    followedChannelKeys: followedChannelKeys,
+  ).where((result) => !isShowOnlyOnline || result.isOnline);
+
+  final mergedFast = <String, SearchResult>{};
+
+  // Followed channels always appear first.
+  for (final result in followedByKey.values) {
+    mergedFast[_channelKey(result.provider, result.channelId)] = result;
+  }
+
+  for (final result in fastRanked) {
+    mergedFast.putIfAbsent(
+      _channelKey(result.provider, result.channelId),
+      () => result,
+    );
+  }
+
+  // Emit quick results before the full provider search completes.
+  yield mergedFast.values.toList();
+
+  // Fetch the full provider search.
   final slow = await api
-      .callable("search")({"query": query, "provider": provider})
+      .callable('search')({'query': query, 'provider': provider})
       .then((result) {
         return (result.data as List<dynamic>)
             .map(
@@ -115,13 +219,22 @@ Stream<List<SearchResult>> searchChannels(
             )
             .toList();
       });
-  final slowFiltered = slow.where(
-    (result) =>
-        result.provider == provider &&
-        !fastRanked.any((element) => element.channelId == result.channelId) &&
-        (!isShowOnlyOnline || result.isOnline),
-  );
-  yield [...fastRanked, ...slowFiltered];
+
+  final combined = <String, SearchResult>{...mergedFast};
+
+  for (final result in slow) {
+    final key = _channelKey(result.provider, result.channelId);
+
+    if (result.provider != provider ||
+        combined.containsKey(key) ||
+        (isShowOnlyOnline && !result.isOnline)) {
+      continue;
+    }
+
+    combined[key] = result;
+  }
+
+  yield combined.values.toList();
 }
 
 final url = Uri.https('chat.rtirl.com', '/auth/twitch/redirect');
@@ -165,6 +278,9 @@ class ChannelSearchResultsWidget extends StatefulWidget {
   final Function(Channel) onChannelSelect;
   final ScrollController? controller;
 
+  /// Followed channels are always prioritized in search results.
+  final List<Channel> followedChannels;
+
   /// Adds a swiped result to [channels], replacing the one on its provider.
   /// Results can't be swiped without it.
   final void Function(Channel)? onChannelAdd;
@@ -186,6 +302,7 @@ class ChannelSearchResultsWidget extends StatefulWidget {
     this.controller,
     this.onChannelAdd,
     this.channels = const [],
+    this.followedChannels = const [],
     this.header,
   });
 
@@ -198,7 +315,6 @@ class _ChannelSearchResultsWidgetState
     extends State<ChannelSearchResultsWidget> {
   late Stream<List<SearchResult>> _results;
   Timer? _debounce;
-
   @override
   void initState() {
     super.initState();
@@ -207,32 +323,39 @@ class _ChannelSearchResultsWidgetState
 
   Stream<List<SearchResult>> _search() {
     final search = widget.search;
+
     if (search != null) {
       return search(widget.query, widget.provider, widget.isShowOnlyOnline);
     }
+
     final api = Provider.of<UserModel>(
       context,
       listen: false,
     ).apiOn(widget.provider);
+
     return searchChannels(
       widget.query,
       widget.provider,
       widget.isShowOnlyOnline,
       api,
+      followedChannels: widget.followedChannels,
     );
   }
 
   @override
   void didUpdateWidget(covariant ChannelSearchResultsWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.provider != widget.provider) {
-      // switching provider searches right away.
+
+    if (oldWidget.provider != widget.provider ||
+        oldWidget.followedChannels != widget.followedChannels) {
       _debounce?.cancel();
       _results = _search();
     } else if (oldWidget.query != widget.query ||
         oldWidget.isShowOnlyOnline != widget.isShowOnlyOnline) {
       _debounce?.cancel();
       _debounce = Timer(const Duration(milliseconds: 500), () {
+        if (!mounted) return;
+
         setState(() {
           _results = _search();
         });
@@ -258,6 +381,9 @@ class _ChannelSearchResultsWidgetState
             return Column(
               children:
                   (snapshot.data ?? [])
+                      .where(
+                        (result) => !widget.isShowOnlyOnline || result.isOnline,
+                      )
                       .map((result) => _tile(context, result))
                       .toList(),
             );

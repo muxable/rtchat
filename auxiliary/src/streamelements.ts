@@ -69,7 +69,7 @@ function listenForSingleUserId(userId: string) {
       .firestore()
       .collection("streamelements")
       .doc(userId)
-      .onSnapshot((doc) => subscriber.next(doc))
+      .onSnapshot((doc) => subscriber.next(doc)),
   ).pipe(
     // distinct on token
     distinctUntilChanged((a, b) => a.get("token") === b.get("token")),
@@ -112,7 +112,7 @@ function listenForSingleUserId(userId: string) {
               "Content-Type": "application/json",
               Authorization: `OAuth ${accessToken}`,
             },
-          }
+          },
         )
           .then((response) => response.json())
           .then((json) => json["_id"]);
@@ -185,13 +185,13 @@ function listenForSingleUserId(userId: string) {
           streamelements.on("disconnect", () => {
             log.error({ userId }, "unexpected disconnect from streamelements");
             subscriber.error(
-              new Error("unexpected disconnect from streamelements")
+              new Error("unexpected disconnect from streamelements"),
             );
           });
           streamelements.on("unauthorized", (reason: any) => {
             log.error({ userId, reason }, "unauthorized from streamelements");
             subscriber.error(
-              new Error("unauthorized from streamelements: " + reason)
+              new Error("unauthorized from streamelements: " + reason),
             );
           });
           return () => streamelements.disconnect();
@@ -201,7 +201,7 @@ function listenForSingleUserId(userId: string) {
         // return an observable that starts by polling for any missed donations.
         from(poll()),
         // and merge with a socket that listens for new donations.
-        from(push().pipe(retry(5)))
+        from(push().pipe(retry(5))),
       ).pipe(
         tap((donation) => {
           // write the after value to the database.
@@ -212,7 +212,7 @@ function listenForSingleUserId(userId: string) {
               tx.update(doc.ref, { after: donation.timestamp.getTime() });
             }
           });
-        })
+        }),
       );
     }),
     // log the donation to bunyan.
@@ -232,10 +232,10 @@ function listenForSingleUserId(userId: string) {
           type: "streamelements.tip",
           timestamp: admin.firestore.Timestamp.fromDate(donation.timestamp),
           expiresAt: admin.firestore.Timestamp.fromMillis(
-            Date.now() + 1000 * 86400 * 7 * 2
+            Date.now() + 1000 * 86400 * 7 * 2,
           ),
         });
-    })
+    }),
   );
 }
 
@@ -243,7 +243,7 @@ export const streamelements$ = new Observable<
   admin.firestore.QueryDocumentSnapshot<admin.firestore.DocumentData>
 >((subscriber) => {
   const threshold = admin.firestore.Timestamp.fromMillis(
-    new Date().getTime() - 3 * 86400 * 1000
+    new Date().getTime() - 3 * 86400 * 1000,
   );
   return admin
     .firestore()
@@ -262,7 +262,7 @@ export const streamelements$ = new Observable<
       catchError((error) => {
         log.error({ userId: doc.id, error: error.message }, "got error");
         return new Observable<never>((subscriber) => subscriber.complete());
-      })
-    )
-  )
+      }),
+    ),
+  ),
 );
