@@ -370,4 +370,239 @@ void main() {
       await events.close();
     });
   });
+
+  group('pullMoreMessages', () {
+    final channel = Channel('twitch', '1', 'one');
+    final other = Channel('twitch', '2', 'two');
+
+    HistoryPage page(List<MessageModel> messages, {bool isLast = false}) => (
+      events: [for (final m in messages) AppendDeltaEvent(m)],
+      oldest: messages.firstOrNull?.timestamp,
+      isLast: isLast,
+    );
+
+    MessagesModel model(
+      Future<HistoryPage> Function(Channel, DateTime) history, {
+      bool withMessage = true,
+    }) {
+      final events = StreamController<DeltaEvent>.broadcast();
+      addTearDown(events.close);
+      final model =
+          MessagesModel.fromJson({})
+            ..forChannel = ((_) => events.stream)
+            ..forChannelHistory = history;
+      model.channel = channel;
+      if (withMessage) {
+        model.addEvent(channel, AppendDeltaEvent(chat('m1', t0)));
+      }
+      return model;
+    }
+
+    test('prepends older messages until the history runs out', () async {
+      final froms = <DateTime>[];
+      final older = t0.subtract(const Duration(minutes: 1));
+      final m = model((channel, from) async {
+        froms.add(from);
+        return froms.length == 1
+            ? page([chat('m0', older)])
+            : page([], isLast: true);
+      });
+      expect(m.canLoadMoreHistory, isTrue);
+      await m.pullMoreMessages();
+      expect(ids(m.messages), ['m0', 'm1']);
+      expect(m.canLoadMoreHistory, isTrue);
+      await m.pullMoreMessages();
+      expect(froms, [t0, older]);
+      expect(m.canLoadMoreHistory, isFalse);
+      // no more queries once exhausted.
+      await m.pullMoreMessages();
+      expect(froms.length, 2);
+    });
+
+    test('a short page is the last one', () async {
+      final m = model(
+        (channel, from) async => page([
+          chat('m0', t0.subtract(const Duration(minutes: 1))),
+        ], isLast: true),
+      );
+      await m.pullMoreMessages();
+      expect(ids(m.messages), ['m0', 'm1']);
+      expect(m.canLoadMoreHistory, isFalse);
+    });
+
+    test('pages back past documents that show no messages', () async {
+      final froms = <DateTime>[];
+      final hidden = t0.subtract(const Duration(hours: 1));
+      final m = model((channel, from) async {
+        froms.add(from);
+        // a full page of documents that don't parse into events.
+        return froms.length == 1
+            ? (events: <DeltaEvent>[], oldest: hidden, isLast: false)
+            : page([], isLast: true);
+      });
+      await m.pullMoreMessages();
+      expect(m.canLoadMoreHistory, isTrue);
+      await m.pullMoreMessages();
+      expect(froms, [t0, hidden]);
+    });
+
+    test('drops a load that finishes after the channels changed', () async {
+      final loading = Completer<HistoryPage>();
+      final m = model((channel, from) => loading.future);
+      final pull = m.pullMoreMessages();
+      m.channel = other;
+      m.addEvent(other, AppendDeltaEvent(chat('o1', t0)..channel = other));
+      loading.complete(
+        page([
+          chat('m0', t0.subtract(const Duration(minutes: 1))),
+        ], isLast: true),
+      );
+      await pull;
+      expect(ids(m.messages), ['o1']);
+      expect(m.canLoadMoreHistory, isTrue);
+    });
+
+    test('a channel without messages has nothing to page back', () async {
+      var calls = 0;
+      final m = model((channel, from) async {
+        calls++;
+        return page([]);
+      }, withMessage: false);
+      expect(m.canLoadMoreHistory, isFalse);
+      await m.pullMoreMessages();
+      expect(calls, 0);
+      m.addEvent(channel, AppendDeltaEvent(chat('m1', t0)));
+      expect(m.canLoadMoreHistory, isTrue);
+    });
+
+    test('nothing is paged back from before a clear', () async {
+      var calls = 0;
+      final m = model((channel, from) async {
+        calls++;
+        return page([chat('m0', t0.subtract(const Duration(minutes: 1)))]);
+      });
+      m.addEvent(
+        channel,
+        ClearDeltaEvent(
+          messageId: 'clear',
+          timestamp: t0.add(const Duration(seconds: 1)),
+        ),
+      );
+      expect(m.canLoadMoreHistory, isFalse);
+      await m.pullMoreMessages();
+      expect(calls, 0);
+    });
+
+    test('a page with a clear is the last one', () async {
+      final older = t0.subtract(const Duration(minutes: 1));
+      final m = model(
+        (channel, from) async => (
+          events: <DeltaEvent>[
+            AppendDeltaEvent(chat('m0', older)),
+            ClearDeltaEvent(
+              messageId: 'clear',
+              timestamp: older.add(const Duration(seconds: 1)),
+            ),
+          ],
+          oldest: older,
+          isLast: false,
+        ),
+      );
+      await m.pullMoreMessages();
+      expect(m.canLoadMoreHistory, isFalse);
+    });
+
+    test('the live marker is not a paging cursor', () async {
+      final froms = <DateTime>[];
+      final m = model((channel, from) async {
+        froms.add(from);
+        return page([], isLast: true);
+      }, withMessage: false);
+      m.addEvent(channel, LiveStateDeltaEvent(t0.add(const Duration(days: 1))));
+      expect(m.canLoadMoreHistory, isFalse);
+      m.addEvent(channel, AppendDeltaEvent(chat('m1', t0)));
+      await m.pullMoreMessages();
+      expect(froms, [t0]);
+    });
+
+    test('callers share one load at a time', () async {
+      final loading = Completer<HistoryPage>();
+      var calls = 0;
+      final m = model((channel, from) {
+        calls++;
+        return loading.future;
+      });
+      final first = m.pullMoreMessages();
+      final second = m.pullMoreMessages();
+      loading.complete(
+        page([chat('m0', t0.subtract(const Duration(minutes: 1)))]),
+      );
+      await Future.wait([first, second]);
+      expect(calls, 1);
+      expect(ids(m.messages), ['m0', 'm1']);
+    });
+
+    test('drops a load that finishes after messages were pruned', () async {
+      final loading = Completer<HistoryPage>();
+      final m = model((channel, from) => loading.future);
+      for (var i = 2; i <= 1100; i++) {
+        m.addEvent(
+          channel,
+          AppendDeltaEvent(chat('m$i', t0.add(Duration(seconds: i)))),
+        );
+      }
+      final pull = m.pullMoreMessages();
+      m.pruneMessages();
+      loading.complete(
+        page([chat('m0', t0.subtract(const Duration(minutes: 1)))]),
+      );
+      await pull;
+      expect(m.messages.length, 1000);
+      expect(ids(m.messages), isNot(contains('m0')));
+    });
+
+    test('a load after a channel switch does not reuse the old one', () async {
+      final loads = <Channel, Completer<HistoryPage>>{};
+      final m = model((channel, from) => (loads[channel] = Completer()).future);
+      final stale = m.pullMoreMessages();
+      m.channel = other;
+      m.addEvent(other, AppendDeltaEvent(chat('o1', t0)..channel = other));
+      final fresh = m.pullMoreMessages();
+      expect(loads.keys, [channel, other]);
+      loads[other]!.complete(
+        page([
+          chat('o0', t0.subtract(const Duration(minutes: 1)))..channel = other,
+        ]),
+      );
+      await fresh;
+      loads[channel]!.complete(page([]));
+      await stale;
+      expect(ids(m.messages), ['o0', 'o1']);
+      // the stale load finishing doesn't drop the current one's slot.
+      expect(m.pullMoreMessages(), isNot(same(fresh)));
+    });
+
+    test('a clear during a load drops the page from before it', () async {
+      final loading = Completer<HistoryPage>();
+      final m = model((channel, from) => loading.future);
+      final pull = m.pullMoreMessages();
+      m.addEvent(
+        channel,
+        ClearDeltaEvent(
+          messageId: 'clear',
+          timestamp: t0.add(const Duration(seconds: 1)),
+        ),
+      );
+      final shown = ids(m.messages);
+      var notified = 0;
+      m.addListener(() => notified++);
+      loading.complete(
+        page([chat('m0', t0.subtract(const Duration(minutes: 1)))]),
+      );
+      await pull;
+      // the page is dropped rather than merged in and hidden by the clear.
+      expect(notified, 0);
+      expect(ids(m.messages), shown);
+    });
+  });
 }

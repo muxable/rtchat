@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"go.uber.org/zap"
+	"math"
 	"math/rand"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -66,7 +68,16 @@ func (c KickChannel) Metadata() (map[string]interface{}, error) {
 			online = at.UTC().Truncate(time.Millisecond)
 		}
 	}
-	return map[string]interface{}{"login": c.Slug, "title": c.Title, "language": c.Stream.Language, "categoryId": c.Category.ID, "categoryName": c.Category.Name, "viewerCount": viewers, "onlineAt": online}, nil
+	return map[string]interface{}{"login": c.Slug, "title": kickValue(c.Title), "language": kickValue(c.Stream.Language), "categoryId": kickValue(c.Category.ID), "categoryName": kickValue(c.Category.Name), "viewerCount": viewers, "onlineAt": online}, nil
+}
+
+// kickValue stores integral JSON numbers as int64, matching the Kick
+// webhook's kickFirestoreValue, so a poll after a webhook is not a type change.
+func kickValue(value interface{}) interface{} {
+	if v, ok := value.(float64); ok && math.Abs(v) <= 9007199254740991 && math.Trunc(v) == v && !(v == 0 && math.Signbit(v)) {
+		return int64(v)
+	}
+	return value
 }
 
 // FetchTwitch preserves stream/offline metadata fields and samples at most
@@ -253,6 +264,11 @@ func (s *Service) write(ctx context.Context, started time.Time, updates []Channe
 			if skipped {
 				return nil
 			}
+			// Unchanged data still costs a billed write, so leave the doc alone.
+			if err == nil && unchanged(doc.Data(), update.Data) {
+				skipped = true
+				return nil
+			}
 			return tx.Set(ref, update.Data, firestore.MergeAll)
 		})
 		if err != nil {
@@ -263,4 +279,25 @@ func (s *Service) write(ctx context.Context, started time.Time, updates []Channe
 		}
 	}
 	return written, nil
+}
+
+// unchanged reports whether merging update into current would leave every
+// field as it is. Types must match: Firestore stores int64 and float64 as
+// distinct types, so a type change is a real write.
+func unchanged(current, update map[string]interface{}) bool {
+	for field, value := range update {
+		existing, ok := current[field]
+		if !ok || !sameValue(existing, value) {
+			return false
+		}
+	}
+	return true
+}
+
+func sameValue(a, b interface{}) bool {
+	if at, ok := a.(time.Time); ok {
+		bt, ok := b.(time.Time)
+		return ok && at.Equal(bt)
+	}
+	return reflect.DeepEqual(a, b)
 }

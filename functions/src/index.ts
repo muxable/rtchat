@@ -22,7 +22,6 @@ export const getViewerList = proxyCallable("getViewerList");
 export const getStatistics = proxyCallable("getStatistics");
 export const embedRedirect = proxy("embedRedirect", "/embedRedirect");
 export const metadata = proxy("metadata", "/metadata");
-export const eventsub = proxy("eventsub", "/twitch/eventsub");
 export const kickWebhook = proxy("kickWebhook", "/kick/webhook");
 export const alchemyWebhook = proxy("alchemyWebhook", "/alchemy/webhook");
 

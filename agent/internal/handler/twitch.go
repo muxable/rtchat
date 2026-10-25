@@ -12,6 +12,7 @@ import (
 	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
+	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc/codes"
@@ -87,38 +88,44 @@ func joinWithTimeout(client chatConnection, channel string, timeout time.Duratio
 	}
 }
 
-func (h *TwitchAgent) write(channelID, messageID string, data interface{}) {
+func (h *TwitchAgent) write(channelID, messageID string, data interface{}) chatmetrics.Outcome {
+	duplicate := false
 	if err := createMessage(context.Background(), func(ctx context.Context) error {
 		_, err := h.Firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Create(ctx, data)
+		duplicate = status.Code(err) == codes.AlreadyExists
 		return err
 	}); err != nil {
-		zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID), zap.Any("data", data))
+		zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID))
+		return chatmetrics.Failed
 	}
+	if duplicate {
+		return chatmetrics.Duplicate
+	}
+	return chatmetrics.Created
 }
 
 func (h *TwitchAgent) bindEvents(client *twitch.Client) {
 	client.OnUserNoticeMessage(func(message twitch.UserNoticeMessage) {
-		zap.L().Info("user notice", zap.String("message", message.Raw))
-		go h.writeDocument(userNoticeDocument(message, time.Now()))
+		go h.writeDocument("usernotice", userNoticeDocument(message, time.Now()))
 	})
 
 	// configure handlers
 	client.OnClearChatMessage(func(message twitch.ClearChatMessage) {
-		go h.writeDocument(clearChatDocument(message, time.Now()))
+		go h.writeDocument("clearchat", clearChatDocument(message, time.Now()))
 	})
 
 	client.OnClearMessage(func(message twitch.ClearMessage) {
 		userID, err := auth.TwitchUserIDFromUsername(h.Firestore, h.ClientID, h.ClientSecret, message.Channel)
 		if err != nil {
 			zap.L().Error("failed to get twitch user id", zap.Error(err))
+			chatmetrics.Record("twitch", "clearmsg", chatmetrics.Failed)
 			return
 		}
-		go h.writeDocument(clearMessageDocument(message, userID, time.Now()))
+		go h.writeDocument("clearmsg", clearMessageDocument(message, userID, time.Now()))
 	})
 
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
-		zap.L().Info("adding message", zap.String("content", message.Message), zap.String("channelId", "twitch:"+message.RoomID), zap.String("channel", message.Channel))
-		go h.writeDocument(privateMessageDocument(message, time.Now()))
+		go h.writeDocument("message", privateMessageDocument(message, time.Now()))
 	})
 }
 
@@ -191,10 +198,14 @@ func (h *TwitchAgent) JoinAnonymously(r *agent.Request) (*AnonymousTwitchClient,
 	return &AnonymousTwitchClient{client: client}, joinWithTimeout(client, r.Channel(), 5*time.Second)
 }
 
-func (h *TwitchAgent) writeDocument(doc *chatDocument) {
+// writeDocument counts every received event by kind; events without a
+// document (e.g. non-announcement user notices) count as skipped.
+func (h *TwitchAgent) writeDocument(kind string, doc *chatDocument) {
+	outcome := chatmetrics.Skipped
 	if doc != nil {
-		h.write(doc.channelID, doc.messageID, doc.data)
+		outcome = h.write(doc.channelID, doc.messageID, doc.data)
 	}
+	chatmetrics.Record("twitch", kind, outcome)
 }
 
 func (h *TwitchAgent) profile(userID string) (map[string]interface{}, error) {

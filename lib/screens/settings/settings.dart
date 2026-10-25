@@ -289,7 +289,8 @@ class SettingsScreen extends StatelessWidget {
                         context: context,
                         applicationName: appName,
                         applicationVersion: 'Version $version ($buildNumber)',
-                        applicationLegalese: '\u{a9} 2026 Muxable',
+                        applicationLegalese:
+                            '\u{a9} ${DateTime.now().year} Muxable',
                       );
                     },
                     onLongPress: () {
