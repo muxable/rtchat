@@ -370,4 +370,57 @@ void main() {
       await events.close();
     });
   });
+
+  group('pullMoreMessages', () {
+    final channel = Channel('twitch', '1', 'one');
+
+    MessagesModel model(
+      Future<List<DeltaEvent>> Function(Channel, DateTime) history,
+    ) {
+      final events = StreamController<DeltaEvent>();
+      addTearDown(events.close);
+      final model =
+          MessagesModel.fromJson({})
+            ..forChannel = ((_) => events.stream)
+            ..forChannelHistory = history;
+      model.channel = channel;
+      model.addEvent(channel, AppendDeltaEvent(chat('m1', t0)));
+      return model;
+    }
+
+    test('prepends older messages from before the oldest event', () async {
+      final froms = <DateTime>[];
+      final m = model((channel, from) async {
+        froms.add(from);
+        return [
+          AppendDeltaEvent(chat('m0', t0.subtract(const Duration(minutes: 1)))),
+        ];
+      });
+      expect(await m.pullMoreMessages(), isTrue);
+      expect(froms, [t0]);
+      expect(ids(m.messages), ['m0', 'm1']);
+    });
+
+    test('reports when there is nothing older', () async {
+      final m = model((channel, from) async => const []);
+      expect(await m.pullMoreMessages(), isFalse);
+      expect(ids(m.messages), ['m1']);
+    });
+
+    test('may have more while history has not loaded yet', () async {
+      final events = StreamController<DeltaEvent>();
+      addTearDown(events.close);
+      var calls = 0;
+      final m =
+          MessagesModel.fromJson({})
+            ..forChannel = ((_) => events.stream)
+            ..forChannelHistory = ((channel, from) async {
+              calls++;
+              return const [];
+            });
+      m.channel = channel;
+      expect(await m.pullMoreMessages(), isTrue);
+      expect(calls, 0);
+    });
+  });
 }

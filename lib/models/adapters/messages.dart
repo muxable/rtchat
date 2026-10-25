@@ -428,6 +428,15 @@ class MessagesAdapter {
     }
   }
 
+  /// How many of a channel's latest messages its listener loads at first.
+  /// Each one is a billed read on every channel open, so this is kept to
+  /// about a screenful; older messages are paged in with [forChannelHistory]
+  /// as chat is scrolled back.
+  static const initialLoadSize = 50;
+
+  /// How many older messages [forChannelHistory] loads per page.
+  static const historyPageSize = 100;
+
   Future<List<DeltaEvent>> forChannelHistory(
     Channel channel,
     DateTime from,
@@ -442,7 +451,7 @@ class MessagesAdapter {
             .collection("messages")
             .where("timestamp", isLessThan: from)
             .orderBy("timestamp")
-            .limitToLast(250)
+            .limitToLast(historyPageSize)
             .get();
 
     return results.docs
@@ -460,7 +469,7 @@ class MessagesAdapter {
         .doc(channel.toString())
         .collection("messages")
         .orderBy("timestamp")
-        .limitToLast(250)
+        .limitToLast(initialLoadSize)
         .snapshots()
         .asyncExpand((snapshot) async* {
           final changes = snapshot.docChanges.where(

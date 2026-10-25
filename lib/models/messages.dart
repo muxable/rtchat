@@ -25,6 +25,15 @@ class MessagesModel extends ChangeNotifier {
   late Stream<DeltaEvent> Function(Channel channel) forChannel =
       (channel) =>
           MessagesAdapter.instance.forChannel(channel, apiOn(channel.provider));
+
+  @visibleForTesting
+  late Future<List<DeltaEvent>> Function(Channel channel, DateTime from)
+  forChannelHistory =
+      (channel, from) => MessagesAdapter.instance.forChannelHistory(
+        channel,
+        from,
+        apiOn(channel.provider),
+      );
   List<ChannelEvent> _events = [];
   List<MessageModel> _messages = [];
   Set<int> _separators = {};
@@ -173,10 +182,12 @@ class MessagesModel extends ChangeNotifier {
   }
 
   /// Loads older messages for every channel, each from before the oldest
-  /// event received from it.
-  Future<void> pullMoreMessages() async {
+  /// event received from it. Resolves to false once there's nothing older to
+  /// load.
+  Future<bool> pullMoreMessages() async {
     final futureEvents = _events; // this prevents a race.
     final history = <ChannelEvent>[];
+    var hasEvents = true;
     for (final channel in _channels) {
       final oldest =
           futureEvents
@@ -184,17 +195,18 @@ class MessagesModel extends ChangeNotifier {
               .map((entry) => entry.event.timestamp)
               .firstOrNull;
       if (oldest == null) {
+        // its history hasn't loaded yet, so there may be more.
+        hasEvents = false;
         continue;
       }
-      final events = await MessagesAdapter.instance.forChannelHistory(
-        channel,
-        oldest,
-        apiOn(channel.provider),
-      );
+      final events = await forChannelHistory(channel, oldest);
       history.addAll(events.map((event) => (channel: channel, event: event)));
     }
-    if (history.isEmpty || _disposed) {
-      return;
+    if (_disposed) {
+      return false;
+    }
+    if (history.isEmpty) {
+      return !hasEvents;
     }
     _events = [...history, ...futureEvents];
     _messages =
@@ -206,6 +218,7 @@ class MessagesModel extends ChangeNotifier {
             );
     _separators = computeSeparators(_messages);
     notifyListeners();
+    return true;
   }
 
   void pruneMessages() {

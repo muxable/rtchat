@@ -264,6 +264,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
   MessageModel? _lastMessage;
   var _atBottom = true;
   var _refreshPending = false;
+  // set once paging back finds nothing older, so a short chat doesn't keep
+  // asking for more to fill the screen.
+  var _historyExhausted = false;
   var _showScrollNotification = true;
 
   @override
@@ -278,6 +281,7 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
 
     if (oldWidget.channel != widget.channel) {
       _expandedFollowGroups.clear();
+      _historyExhausted = false;
       if (_controller.hasClients) {
         _controller.jumpTo(0);
       }
@@ -303,8 +307,11 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
       final model = Provider.of<MessagesModel>(context, listen: false);
       final messenger = ScaffoldMessenger.of(context);
       final localizations = AppLocalizations.of(context)!;
-      await model.pullMoreMessages();
+      final hasMore = await model.pullMoreMessages();
       _refreshPending = false;
+      if (!hasMore) {
+        _historyExhausted = true;
+      }
       if (!mounted) return;
       if (_showScrollNotification && model.messages.length > 5000) {
         messenger.showSnackBar(
@@ -329,6 +336,22 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
         _atBottom = value;
         _pauseAt = value ? null : _lastMessage;
       });
+    }
+  }
+
+  /// Only a screenful of chat is loaded at first, and older messages are
+  /// paged in as it's scrolled back. When what's loaded doesn't fill the
+  /// screen there's nothing to scroll, so page in more until it does.
+  void _fillViewport() {
+    if (!mounted ||
+        _historyExhausted ||
+        _refreshPending ||
+        !_controller.hasClients ||
+        !_controller.position.hasContentDimensions) {
+      return;
+    }
+    if (_controller.position.maxScrollExtent - _controller.offset < 100) {
+      updateScrollPosition();
     }
   }
 
@@ -376,6 +399,9 @@ class _ChatPanelWidgetState extends State<ChatPanelWidget>
             } else {
               messagesModel.pruneMessages();
             }
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => _fillViewport(),
+            );
 
             final displayedMessages = <_DisplayedMessage>[];
 
