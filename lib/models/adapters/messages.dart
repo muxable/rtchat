@@ -397,6 +397,9 @@ DeltaEvent? toDeltaEvent(
   return null;
 }
 
+typedef HistoryPage =
+    ({List<DeltaEvent> events, DateTime? oldest, bool isLast});
+
 class MessagesAdapter {
   final FirebaseFirestore db;
 
@@ -428,7 +431,19 @@ class MessagesAdapter {
     }
   }
 
-  Future<List<DeltaEvent>> forChannelHistory(
+  /// How many of a channel's latest messages its listener loads at first.
+  /// Each one is a billed read on every channel open; older messages are
+  /// paged in with [forChannelHistory] as chat is scrolled back.
+  static const initialLoadSize = 100;
+
+  /// How many older messages [forChannelHistory] loads per page.
+  static const historyPageSize = 100;
+
+  /// Loads the page of [channel]'s messages from before [from]. [oldest] is
+  /// the timestamp of the oldest document in the page, whether or not it
+  /// parsed into an event, to page back from next. [isLast] is set when the
+  /// query returned fewer documents than a page, so there's nothing older.
+  Future<HistoryPage> forChannelHistory(
     Channel channel,
     DateTime from,
     Api api,
@@ -442,13 +457,20 @@ class MessagesAdapter {
             .collection("messages")
             .where("timestamp", isLessThan: from)
             .orderBy("timestamp")
-            .limitToLast(250)
+            .limitToLast(historyPageSize)
             .get();
 
-    return results.docs
-        .map((doc) => _toDeltaEvent(channel, emotes, doc))
-        .whereType<DeltaEvent>()
-        .toList();
+    return (
+      events:
+          results.docs
+              .map((doc) => _toDeltaEvent(channel, emotes, doc))
+              .whereType<DeltaEvent>()
+              .toList(),
+      oldest:
+          (results.docs.firstOrNull?.data()['timestamp'] as Timestamp?)
+              ?.toDate(),
+      isLast: results.docs.length < historyPageSize,
+    );
   }
 
   Stream<DeltaEvent> forChannel(Channel channel, Api api) {
@@ -460,7 +482,7 @@ class MessagesAdapter {
         .doc(channel.toString())
         .collection("messages")
         .orderBy("timestamp")
-        .limitToLast(250)
+        .limitToLast(initialLoadSize)
         .snapshots()
         .asyncExpand((snapshot) async* {
           final changes = snapshot.docChanges.where(
