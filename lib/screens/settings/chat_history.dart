@@ -82,6 +82,7 @@ class ChatHistoryScreen extends StatelessWidget {
       body: Consumer2<StyleModel, MessagesModel>(
         builder: (context, styleModel, messagesModel, child) {
           return ListView(
+            key: const Key('chatHistorySettingsList'),
             children: [
               SizedBox(
                 height: 180,
