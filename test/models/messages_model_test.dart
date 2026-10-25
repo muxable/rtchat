@@ -373,54 +373,106 @@ void main() {
 
   group('pullMoreMessages', () {
     final channel = Channel('twitch', '1', 'one');
+    final other = Channel('twitch', '2', 'two');
+
+    HistoryPage page(List<MessageModel> messages, {bool isLast = false}) => (
+      events: [for (final m in messages) AppendDeltaEvent(m)],
+      oldest: messages.firstOrNull?.timestamp,
+      isLast: isLast,
+    );
 
     MessagesModel model(
-      Future<List<DeltaEvent>> Function(Channel, DateTime) history,
-    ) {
-      final events = StreamController<DeltaEvent>();
+      Future<HistoryPage> Function(Channel, DateTime) history, {
+      bool withMessage = true,
+    }) {
+      final events = StreamController<DeltaEvent>.broadcast();
       addTearDown(events.close);
       final model =
           MessagesModel.fromJson({})
             ..forChannel = ((_) => events.stream)
             ..forChannelHistory = history;
       model.channel = channel;
-      model.addEvent(channel, AppendDeltaEvent(chat('m1', t0)));
+      if (withMessage) {
+        model.addEvent(channel, AppendDeltaEvent(chat('m1', t0)));
+      }
       return model;
     }
 
-    test('prepends older messages from before the oldest event', () async {
+    test('prepends older messages until the history runs out', () async {
       final froms = <DateTime>[];
+      final older = t0.subtract(const Duration(minutes: 1));
       final m = model((channel, from) async {
         froms.add(from);
-        return [
-          AppendDeltaEvent(chat('m0', t0.subtract(const Duration(minutes: 1)))),
-        ];
+        return froms.length == 1
+            ? page([chat('m0', older)])
+            : page([], isLast: true);
       });
-      expect(await m.pullMoreMessages(), isTrue);
-      expect(froms, [t0]);
+      expect(m.canLoadMoreHistory, isTrue);
+      await m.pullMoreMessages();
       expect(ids(m.messages), ['m0', 'm1']);
+      expect(m.canLoadMoreHistory, isTrue);
+      await m.pullMoreMessages();
+      expect(froms, [t0, older]);
+      expect(m.canLoadMoreHistory, isFalse);
+      // no more queries once exhausted.
+      await m.pullMoreMessages();
+      expect(froms.length, 2);
     });
 
-    test('reports when there is nothing older', () async {
-      final m = model((channel, from) async => const []);
-      expect(await m.pullMoreMessages(), isFalse);
-      expect(ids(m.messages), ['m1']);
+    test('a short page is the last one', () async {
+      final m = model(
+        (channel, from) async => page([
+          chat('m0', t0.subtract(const Duration(minutes: 1))),
+        ], isLast: true),
+      );
+      await m.pullMoreMessages();
+      expect(ids(m.messages), ['m0', 'm1']);
+      expect(m.canLoadMoreHistory, isFalse);
     });
 
-    test('may have more while history has not loaded yet', () async {
-      final events = StreamController<DeltaEvent>();
-      addTearDown(events.close);
+    test('pages back past documents that show no messages', () async {
+      final froms = <DateTime>[];
+      final hidden = t0.subtract(const Duration(hours: 1));
+      final m = model((channel, from) async {
+        froms.add(from);
+        // a full page of documents that don't parse into events.
+        return froms.length == 1
+            ? (events: <DeltaEvent>[], oldest: hidden, isLast: false)
+            : page([], isLast: true);
+      });
+      await m.pullMoreMessages();
+      expect(m.canLoadMoreHistory, isTrue);
+      await m.pullMoreMessages();
+      expect(froms, [t0, hidden]);
+    });
+
+    test('drops a load that finishes after the channels changed', () async {
+      final loading = Completer<HistoryPage>();
+      final m = model((channel, from) => loading.future);
+      final pull = m.pullMoreMessages();
+      m.channel = other;
+      m.addEvent(other, AppendDeltaEvent(chat('o1', t0)..channel = other));
+      loading.complete(
+        page([
+          chat('m0', t0.subtract(const Duration(minutes: 1))),
+        ], isLast: true),
+      );
+      await pull;
+      expect(ids(m.messages), ['o1']);
+      expect(m.canLoadMoreHistory, isTrue);
+    });
+
+    test('a channel without messages has nothing to page back', () async {
       var calls = 0;
-      final m =
-          MessagesModel.fromJson({})
-            ..forChannel = ((_) => events.stream)
-            ..forChannelHistory = ((channel, from) async {
-              calls++;
-              return const [];
-            });
-      m.channel = channel;
-      expect(await m.pullMoreMessages(), isTrue);
+      final m = model((channel, from) async {
+        calls++;
+        return page([]);
+      }, withMessage: false);
+      expect(m.canLoadMoreHistory, isFalse);
+      await m.pullMoreMessages();
       expect(calls, 0);
+      m.addEvent(channel, AppendDeltaEvent(chat('m1', t0)));
+      expect(m.canLoadMoreHistory, isTrue);
     });
   });
 }

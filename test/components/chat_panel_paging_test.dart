@@ -49,7 +49,11 @@ void main() {
                 AppendDeltaEvent(state(-i)),
             ];
             served += n;
-            return page;
+            return (
+              events: page,
+              oldest: page.firstOrNull?.timestamp,
+              isLast: n < pageSize,
+            );
           });
     model.channel = channel;
     for (var i = 0; i < loaded; i++) {
@@ -88,15 +92,14 @@ void main() {
     tester,
   ) async {
     final froms = await pump(tester, loaded: 1, older: 5);
-    // pages of 2 until the history runs out, then stops asking.
+    // pages of 2 until a short page, then stops asking.
     expect(froms, [
       t0,
       t0.subtract(const Duration(minutes: 2)),
       t0.subtract(const Duration(minutes: 4)),
-      t0.subtract(const Duration(minutes: 5)),
     ]);
     await tester.pump(const Duration(seconds: 1));
-    expect(froms.length, 4);
+    expect(froms.length, 3);
   });
 
   testWidgets('does not page in when the screen is already full', (

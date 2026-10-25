@@ -397,6 +397,9 @@ DeltaEvent? toDeltaEvent(
   return null;
 }
 
+typedef HistoryPage =
+    ({List<DeltaEvent> events, DateTime? oldest, bool isLast});
+
 class MessagesAdapter {
   final FirebaseFirestore db;
 
@@ -437,7 +440,11 @@ class MessagesAdapter {
   /// How many older messages [forChannelHistory] loads per page.
   static const historyPageSize = 100;
 
-  Future<List<DeltaEvent>> forChannelHistory(
+  /// Loads the page of [channel]'s messages from before [from]. [oldest] is
+  /// the timestamp of the oldest document in the page, whether or not it
+  /// parsed into an event, to page back from next. [isLast] is set when the
+  /// query returned fewer documents than a page, so there's nothing older.
+  Future<HistoryPage> forChannelHistory(
     Channel channel,
     DateTime from,
     Api api,
@@ -454,10 +461,17 @@ class MessagesAdapter {
             .limitToLast(historyPageSize)
             .get();
 
-    return results.docs
-        .map((doc) => _toDeltaEvent(channel, emotes, doc))
-        .whereType<DeltaEvent>()
-        .toList();
+    return (
+      events:
+          results.docs
+              .map((doc) => _toDeltaEvent(channel, emotes, doc))
+              .whereType<DeltaEvent>()
+              .toList(),
+      oldest:
+          (results.docs.firstOrNull?.data()['timestamp'] as Timestamp?)
+              ?.toDate(),
+      isLast: results.docs.length < historyPageSize,
+    );
   }
 
   Stream<DeltaEvent> forChannel(Channel channel, Api api) {
