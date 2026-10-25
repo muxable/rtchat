@@ -27,6 +27,7 @@ jobs:
       cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     with:
       bundle-id: com.rtirl.chat
+      beta-group: Beta Testers
       environment-name: ios-${{ github.event_name == 'release' && 'app-store' || 'testflight' }}
       environment-url: https://appstoreconnect.apple.com/apps/1567720948/${{ github.event_name == 'release' && 'appstore' || 'testflight' }}
       publish: ${{ github.event_name != 'pull_request' }}
