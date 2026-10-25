@@ -87,7 +87,22 @@ type Job struct {
 	Timeout time.Duration
 	Daily   bool
 	Run     func(context.Context) error
+	// Finished, if set, receives the slot and the result the runner recorded
+	// for it, including a timeout that Run itself did not report.
+	Finished func(slot string, success bool)
 }
+
+type slotKey struct{}
+
+// RunSlot returns the slot a job's Run was started for, or "" outside a runner.
+func RunSlot(ctx context.Context) string {
+	slot, _ := ctx.Value(slotKey{}).(string)
+	return slot
+}
+
+// slotLength is the schedule of every non-daily job.
+const slotLength = 4 * time.Minute
+
 type Runner struct {
 	Leases LeaseStore
 	Jobs   []Job
@@ -111,7 +126,7 @@ func Slot(now time.Time, daily bool) string {
 		}
 		return local.Format("2006-01-02")
 	}
-	return now.UTC().Truncate(4 * time.Minute).Format(time.RFC3339)
+	return now.UTC().Truncate(slotLength).Format(time.RFC3339)
 }
 
 // pollInterval is how often each replica tries each job's lease. Every
@@ -166,7 +181,7 @@ func (r Runner) Once(ctx context.Context, job Job, now time.Time) {
 		return
 	}
 	started := time.Now()
-	work, cancel := context.WithTimeout(ctx, job.Timeout)
+	work, cancel := context.WithTimeout(context.WithValue(ctx, slotKey{}, slot), job.Timeout)
 	err = job.Run(work)
 	if err == nil {
 		err = work.Err()
@@ -174,8 +189,13 @@ func (r Runner) Once(ctx context.Context, job Job, now time.Time) {
 	cancel()
 	finishCtx, finishCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer finishCancel()
-	if finishErr := r.Leases.Finish(finishCtx, job.Name, owner, slot, err == nil); finishErr != nil {
+	finishErr := r.Leases.Finish(finishCtx, job.Name, owner, slot, err == nil)
+	if finishErr != nil {
 		zap.L().Error("job lease completion failed", zap.String("job", job.Name), zap.Error(finishErr))
+	}
+	if job.Finished != nil {
+		// A lost lease means another replica may have run this slot too.
+		job.Finished(slot, err == nil && finishErr == nil)
 	}
 	if err != nil {
 		zap.L().Error("scheduled job failed", zap.String("job", job.Name), zap.String("slot", slot), zap.Duration("duration", time.Since(started)), zap.Error(err))
