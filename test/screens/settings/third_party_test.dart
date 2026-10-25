@@ -17,6 +17,22 @@ class FakeDonations extends Fake implements DonationsAdapter {
   final bool streamlabs;
   final reads = <String>[];
 
+  final realtimeKitKeys = <String, String>{};
+
+  @override
+  Stream<RealtimeKitConfig?> forRealtimeKitConfig({required String userId}) {
+    return Stream.value(
+      realtimeKitKeys[userId] == null
+          ? null
+          : RealtimeKitConfig(apiKey: realtimeKitKeys[userId]!),
+    );
+  }
+
+  @override
+  Future<void> setRealtimeKitApiKey({required String apiKey}) async {
+    realtimeKitKeys[account.user.uid] = apiKey;
+  }
+
   FakeDonations(this.account, {this.streamlabs = false});
 
   @override
@@ -87,6 +103,7 @@ void main() {
 
     expect(find.text('Streamlabs'), findsOneWidget);
     expect(find.text('TwitchMux'), findsNothing);
+    expect(find.text('RealtimeKit'), findsOneWidget);
     expect(donations[Providers.twitch]!.reads, everyElement(twitch.user.uid));
   });
 
@@ -97,8 +114,7 @@ void main() {
     expect(find.text('KickMux'), findsOneWidget);
     expect(find.text('Streamlabs'), findsNWidgets(2));
     expect(find.text('StreamElements'), findsNWidgets(2));
-    // RealtimeKit isn't tied to an account.
-    expect(find.text('RealtimeKit'), findsOneWidget);
+    expect(find.text('RealtimeKit'), findsNWidgets(2));
 
     // each section reads its own account's connections.
     expect(donations[Providers.twitch]!.reads, everyElement(twitch.user.uid));
