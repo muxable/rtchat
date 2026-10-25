@@ -163,7 +163,7 @@ func mapTwitchNotification(payload twitchPayload, messageID string, timestamp, n
 			"channelId": channelID, "type": payload.Subscription.Type,
 			// JavaScript Date.parse only retains millisecond precision.
 			"timestamp": timestamp.Truncate(time.Millisecond),
-			"expiresAt": now.Truncate(time.Millisecond).Add(messageTTL),
+			"expiresAt": now.Truncate(time.Millisecond).Add(messageTTLFor(payload.Subscription.Type)),
 			"event":     payload.Event,
 		},
 	}}}

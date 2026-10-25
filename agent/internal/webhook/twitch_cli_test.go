@@ -282,7 +282,7 @@ func TestTwitchCLINotifications(t *testing.T) {
 			if got, _ := message.Data["timestamp"].(time.Time); !got.Equal(sent.Truncate(time.Millisecond)) {
 				t.Fatalf("timestamp %v, cli sent %v", got, sent)
 			}
-			if expiresAt, _ := message.Data["expiresAt"].(time.Time); expiresAt.Before(before.Add(messageTTL).Truncate(time.Millisecond)) {
+			if expiresAt, _ := message.Data["expiresAt"].(time.Time); expiresAt.Before(before.Add(wantMessageTTL(test.eventType)).Truncate(time.Millisecond)) || expiresAt.After(time.Now().Add(wantMessageTTL(test.eventType))) {
 				t.Fatalf("expiresAt %v", message.Data["expiresAt"])
 			}
 

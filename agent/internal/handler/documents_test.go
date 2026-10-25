@@ -7,7 +7,6 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/gempir/go-twitch-irc/v4"
-	"github.com/muxable/rtchat/agent/internal/chatmessage"
 )
 
 func TestClearChatIDsDoNotCollide(t *testing.T) {
@@ -56,7 +55,7 @@ func TestPrivateMessageDocument(t *testing.T) {
 		t.Fatal("first message flag")
 	}
 	expiry := d.data["expiresAt"].(time.Time)
-	if !expiry.Equal(now.Add(chatmessage.TTL)) {
+	if !expiry.Equal(now.Add(7 * 24 * time.Hour)) {
 		t.Fatal(expiry)
 	}
 	m.Reply = nil

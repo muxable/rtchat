@@ -332,7 +332,7 @@ func (c *Client) streamMessage(ctx context.Context, video, kind string, at time.
 	data := map[string]interface{}{
 		"channelId": "youtube:" + c.channel, "type": "stream." + kind,
 		"timestamp": at.UTC().Truncate(time.Millisecond),
-		"expiresAt": time.Now().UTC().Truncate(time.Millisecond).Add(chatmessage.TTL),
+		"expiresAt": time.Now().UTC().Truncate(time.Millisecond).Add(chatmessage.StreamStateTTL),
 		"event":     map[string]interface{}{"videoId": video},
 	}
 	return c.retryWrite(ctx, func() error { return c.store.Create(ctx, "youtube:"+c.channel, "youtube:"+video+":"+kind, data) })

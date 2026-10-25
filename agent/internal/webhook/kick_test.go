@@ -93,7 +93,7 @@ func TestKickEventFixtures(t *testing.T) {
 			messages := []KickMessageDoc{}
 			if tc.id != "" {
 				messages = append(messages, KickMessageDoc{ID: tc.id, Data: map[string]interface{}{
-					"channelId": tc.channelID, "type": tc.messageType, "timestamp": testKickTime(t, tc.at), "expiresAt": now.Add(messageTTL), "event": event,
+					"channelId": tc.channelID, "type": tc.messageType, "timestamp": testKickTime(t, tc.at), "expiresAt": now.Add(wantMessageTTL(tc.messageType)), "event": event,
 				}})
 			}
 			if !reflect.DeepEqual(docs.Messages, messages) {
@@ -162,7 +162,7 @@ func TestKickToDocuments(t *testing.T) {
 			}
 			want := []KickMessageDoc{}
 			if tc.id != "" {
-				want = append(want, KickMessageDoc{ID: tc.id, Data: map[string]interface{}{"channelId": "kick:123", "type": tc.messageType, "timestamp": testKickTime(t, tc.at), "expiresAt": now.Add(messageTTL), "event": event}})
+				want = append(want, KickMessageDoc{ID: tc.id, Data: map[string]interface{}{"channelId": "kick:123", "type": tc.messageType, "timestamp": testKickTime(t, tc.at), "expiresAt": now.Add(wantMessageTTL(tc.messageType)), "event": event}})
 			}
 			if !reflect.DeepEqual(docs.Messages, want) {
 				t.Fatalf("messages: %#v, want %#v", docs.Messages, want)
