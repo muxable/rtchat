@@ -1,19 +1,14 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import 'package:path_provider/path_provider.dart';
 import 'package:rtchat/components/image/resilient_network_image.dart';
 
 class PlaceholderImage extends ImageProvider<PlaceholderImage> {
   final Uri uri;
   final double scale;
-
-  int get hash => uri.hashCode;
 
   const PlaceholderImage(this.uri, {this.scale = 1.0});
 
@@ -50,14 +45,11 @@ class PlaceholderImage extends ImageProvider<PlaceholderImage> {
     StreamController<ImageChunkEvent> chunkEvents,
     ImageDecoderCallback decode,
   ) async {
-    final temp = await getTemporaryDirectory();
-    final cacheFile = File('${temp.path}/${key.hash}');
-    final etagFile = File('${temp.path}/${key.hash}.etag');
-
     Codec? decodedCache;
 
-    if (await cacheFile.exists() && await etagFile.exists()) {
-      try {
+    try {
+      final cacheFile = await ResilientNetworkImage.cacheFileFor(key.uri);
+      if (await cacheFile.exists()) {
         final bytes = await cacheFile.readAsBytes();
         if (bytes.isNotEmpty) {
           decodedCache = await decode(
@@ -72,9 +64,9 @@ class PlaceholderImage extends ImageProvider<PlaceholderImage> {
           chunkEvents.close();
           return decodedCache;
         }
-      } catch (e) {
-        FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
       }
+    } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
     }
     return await decode(await ImmutableBuffer.fromUint8List(kTransparentImage));
   }

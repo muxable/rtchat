@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert' show jsonDecode, jsonEncode, utf8;
 import 'dart:io';
 import 'dart:ui';
 
@@ -76,6 +77,18 @@ final kTransparentImage = Uint8List.fromList(<int>[
   0xAE,
 ]);
 
+/// 64-bit FNV-1a hash of [input], as 16 hex digits. Used as a stable cache
+/// filename for a URL.
+String fnv1a64(String input) {
+  var hash = 0xcbf29ce484222325;
+  for (final byte in utf8.encode(input)) {
+    hash ^= byte;
+    hash *= 0x100000001b3;
+  }
+  return (hash >>> 32).toRadixString(16).padLeft(8, '0') +
+      (hash & 0xffffffff).toRadixString(16).padLeft(8, '0');
+}
+
 class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
   static final HttpClient _sharedHttpClient =
       HttpClient()..autoUncompress = false;
@@ -91,12 +104,33 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
     return client;
   }
 
-  static final Map<int, Future<Codec>> _pending = {};
+  /// How long a disk-cached image is served without revalidating it.
+  static const freshness = Duration(days: 1);
+
+  static Future<Directory>? _cacheDirectory;
+
+  static Future<Directory> get cacheDirectory =>
+      _cacheDirectory ??= getTemporaryDirectory().catchError((Object e) {
+        _cacheDirectory = null;
+        throw e;
+      });
+
+  /// The cached bytes for [uri]. Its validators live in a `.meta` sidecar.
+  static Future<File> cacheFileFor(Uri uri) async =>
+      File('${(await cacheDirectory).path}/${fnv1a64(uri.toString())}');
+
+  static final Map<String, Future<Codec>> _pending = {};
+  static final Map<String, Future<void>> _revalidating = {};
+
+  /// Completes once all in-flight background revalidations finish.
+  @visibleForTesting
+  static Future<void> debugRevalidations() =>
+      Future.wait(_revalidating.values.toList());
 
   final Uri uri;
   final double scale;
 
-  int get hash => uri.hashCode;
+  String get hash => fnv1a64(uri.toString());
 
   PlaceholderImage get placeholderImage => PlaceholderImage(uri, scale: scale);
 
@@ -108,13 +142,16 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
     ImageDecoderCallback decode,
   ) {
     final chunkEvents = StreamController<ImageChunkEvent>();
+    final hash = key.hash;
     return MultiFrameImageStreamCompleter(
       chunkEvents: chunkEvents.stream,
       codec:
-          _pending[hash] ??= _loadAsync(key, chunkEvents, decode).then((x) {
-            _pending.remove(hash);
-            return x;
-          }),
+          _pending[hash] ??= _loadAsync(key, chunkEvents, decode).whenComplete(
+            () {
+              // A block body: returning the removed future would deadlock.
+              _pending.remove(hash);
+            },
+          ),
       scale: scale,
       debugLabel: key.uri.toString(),
       informationCollector: _imageStreamInformationCollector(key),
@@ -141,26 +178,41 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
     StreamController<ImageChunkEvent> chunkEvents,
     ImageDecoderCallback decode,
   ) async {
-    final temp = await getTemporaryDirectory();
-    final cacheFile = File('${temp.path}/${key.hash}');
-    final etagFile = File('${temp.path}/${key.hash}.etag');
+    final cacheFile = await cacheFileFor(key.uri);
+    final metaFile = File('${cacheFile.path}.meta');
 
-    String? etagValue;
-
-    Codec? decodedCache;
-
-    if (await cacheFile.exists() && await etagFile.exists()) {
-      try {
+    // Serve a disk hit immediately and revalidate it in the background once
+    // it goes stale.
+    try {
+      final stat = await cacheFile.stat();
+      if (stat.type == FileSystemEntityType.file) {
         final bytes = await cacheFile.readAsBytes();
         if (bytes.isNotEmpty) {
-          decodedCache = await decode(
+          final codec = await decode(
             await ImmutableBuffer.fromUint8List(bytes),
           );
-          etagValue = await etagFile.readAsString();
+          chunkEvents.add(
+            ImageChunkEvent(
+              cumulativeBytesLoaded: bytes.lengthInBytes,
+              expectedTotalBytes: bytes.lengthInBytes,
+            ),
+          );
+          chunkEvents.close();
+          if (DateTime.now().difference(stat.modified) > freshness) {
+            _revalidating[key.hash] ??= _revalidate(
+              key.uri,
+              cacheFile,
+              metaFile,
+            ).whenComplete(() {
+              _revalidating.remove(key.hash);
+            });
+          }
+          return codec;
         }
-      } catch (e) {
-        FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
       }
+    } catch (e) {
+      // Unreadable or undecodable cache entry, fall back to the network.
+      FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
     }
 
     var delay = const Duration(seconds: 1);
@@ -169,30 +221,10 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
     for (var i = 0; i < 30; i++) {
       try {
         final request = await _httpClient.getUrl(key.uri);
-
-        if (etagValue != null && decodedCache != null) {
-          request.headers.add(HttpHeaders.ifNoneMatchHeader, etagValue);
-        }
-
         final response = await request.close();
 
         if (response.statusCode != HttpStatus.ok) {
           await response.drain<List<int>>(<int>[]);
-
-          if (response.statusCode == HttpStatus.notModified &&
-              etagValue != null &&
-              decodedCache != null) {
-            final bytes = await cacheFile.readAsBytes();
-            chunkEvents.add(
-              ImageChunkEvent(
-                cumulativeBytesLoaded: bytes.lengthInBytes,
-                expectedTotalBytes: bytes.lengthInBytes,
-              ),
-            );
-            chunkEvents.close();
-            await cacheFile.setLastModified(DateTime.now());
-            return decodedCache;
-          }
           if (response.statusCode >= 400 && response.statusCode < 500) {
             throw NetworkImageLoadException(
               statusCode: response.statusCode,
@@ -220,11 +252,7 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
           throw Exception('ResilientNetworkImage is an empty file: ${key.uri}');
         }
 
-        final etagHeader = response.headers[HttpHeaders.etagHeader]?.first;
-        if (etagHeader != null) {
-          await cacheFile.writeAsBytes(bytes);
-          await etagFile.writeAsString(etagHeader);
-        }
+        await _writeCache(cacheFile, metaFile, bytes, response.headers);
 
         chunkEvents.close();
         return await decode(await ImmutableBuffer.fromUint8List(bytes));
@@ -246,6 +274,75 @@ class ResilientNetworkImage extends ImageProvider<ResilientNetworkImage> {
       throw lastError;
     }
     throw Exception('Failed to fetch ResilientNetworkImage');
+  }
+
+  /// Conditionally refetches a stale cache entry. Failures are logged and
+  /// otherwise ignored; the entry stays stale and is retried on a later load.
+  static Future<void> _revalidate(
+    Uri uri,
+    File cacheFile,
+    File metaFile,
+  ) async {
+    try {
+      final request = await _httpClient.getUrl(uri);
+      try {
+        final meta = jsonDecode(await metaFile.readAsString());
+        final etag = meta['etag'];
+        final lastModified = meta['lastModified'];
+        if (etag is String) {
+          request.headers.add(HttpHeaders.ifNoneMatchHeader, etag);
+        }
+        if (lastModified is String) {
+          request.headers.add(HttpHeaders.ifModifiedSinceHeader, lastModified);
+        }
+      } catch (_) {
+        // No validators, fall back to an unconditional refetch.
+      }
+      final response = await request.close();
+      if (response.statusCode == HttpStatus.notModified) {
+        await response.drain<List<int>>(<int>[]);
+        await cacheFile.setLastModified(DateTime.now());
+      } else if (response.statusCode == HttpStatus.ok) {
+        final bytes = await consolidateHttpClientResponseBytes(response);
+        if (bytes.isNotEmpty) {
+          await _writeCache(cacheFile, metaFile, bytes, response.headers);
+        }
+      } else {
+        await response.drain<List<int>>(<int>[]);
+      }
+    } catch (e) {
+      debugPrint('ResilientNetworkImage revalidation failed: $uri: $e');
+    }
+  }
+
+  /// Writes the bytes and validators through temp files and renames, so a
+  /// concurrent reader never sees a partial file.
+  static Future<void> _writeCache(
+    File cacheFile,
+    File metaFile,
+    Uint8List bytes,
+    HttpHeaders headers,
+  ) async {
+    try {
+      final suffix = '${DateTime.now().microsecondsSinceEpoch}.tmp';
+      final meta = {
+        if (headers[HttpHeaders.etagHeader]?.first case final etag?)
+          'etag': etag,
+        if (headers[HttpHeaders.lastModifiedHeader]?.first case final lm?)
+          'lastModified': lm,
+      };
+      final tmpMeta = await File(
+        '${metaFile.path}.$suffix',
+      ).writeAsString(jsonEncode(meta), flush: true);
+      final tmpBytes = await File(
+        '${cacheFile.path}.$suffix',
+      ).writeAsBytes(bytes, flush: true);
+      // Bytes first: a new body with old validators only costs a refetch.
+      await tmpBytes.rename(cacheFile.path);
+      await tmpMeta.rename(metaFile.path);
+    } catch (e) {
+      debugPrint('ResilientNetworkImage cache write failed: $e');
+    }
   }
 
   @override
