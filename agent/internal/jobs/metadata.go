@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 	"math/rand"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -253,6 +254,11 @@ func (s *Service) write(ctx context.Context, started time.Time, updates []Channe
 			if skipped {
 				return nil
 			}
+			// Unchanged data still costs a billed write, so leave the doc alone.
+			if err == nil && unchanged(doc.Data(), update.Data) {
+				skipped = true
+				return nil
+			}
 			return tx.Set(ref, update.Data, firestore.MergeAll)
 		})
 		if err != nil {
@@ -263,4 +269,25 @@ func (s *Service) write(ctx context.Context, started time.Time, updates []Channe
 		}
 	}
 	return written, nil
+}
+
+// unchanged reports whether merging update into current would leave every
+// field as it is. Types must match: Firestore stores int64 and float64 as
+// distinct types, so a type change is a real write.
+func unchanged(current, update map[string]interface{}) bool {
+	for field, value := range update {
+		existing, ok := current[field]
+		if !ok || !sameValue(existing, value) {
+			return false
+		}
+	}
+	return true
+}
+
+func sameValue(a, b interface{}) bool {
+	if at, ok := a.(time.Time); ok {
+		bt, ok := b.(time.Time)
+		return ok && at.Equal(bt)
+	}
+	return reflect.DeepEqual(a, b)
 }

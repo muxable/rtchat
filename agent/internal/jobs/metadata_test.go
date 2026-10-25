@@ -167,3 +167,27 @@ func TestFollowerPermissionDoesNotFailMetadata(t *testing.T) {
 		t.Fatal(writes)
 	}
 }
+
+func TestUnchanged(t *testing.T) {
+	at := time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC)
+	current := map[string]interface{}{"viewerCount": int64(3), "login": "a", "onlineAt": at, "title": nil, "categoryId": float64(9)}
+	for _, tc := range []struct {
+		update map[string]interface{}
+		want   bool
+	}{
+		{map[string]interface{}{"viewerCount": int64(3), "login": "a", "onlineAt": at.In(time.FixedZone("x", 3600)), "title": nil}, true},
+		{map[string]interface{}{"categoryId": float64(9)}, true},
+		{map[string]interface{}{"viewerCount": int64(4)}, false},
+		{map[string]interface{}{"viewerCount": float64(3)}, false},
+		{map[string]interface{}{"categoryId": int64(9)}, false},
+		{map[string]interface{}{"onlineAt": nil}, false},
+		{map[string]interface{}{"onlineAt": at.Add(time.Millisecond)}, false},
+		{map[string]interface{}{"title": "new"}, false},
+		{map[string]interface{}{"followerCount": int64(0)}, false},
+		{map[string]interface{}{"language": nil}, false},
+	} {
+		if got := unchanged(current, tc.update); got != tc.want {
+			t.Errorf("unchanged(%v) = %v", tc.update, got)
+		}
+	}
+}
