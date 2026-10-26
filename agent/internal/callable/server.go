@@ -226,7 +226,7 @@ func readData(dec *json.Decoder) (json.RawMessage, error) {
 	if dec.Decode(new(any)) != io.EOF {
 		return nil, errors.New("trailing JSON")
 	}
-	return data, nil
+	return decodeData(data)
 }
 
 func invoke(ctx context.Context, data json.RawMessage, handler Handler) (result any, err error) {
