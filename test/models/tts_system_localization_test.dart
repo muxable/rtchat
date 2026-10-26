@@ -39,6 +39,29 @@ void main() {
     },
   );
 
+  test('every app locale can announce in its reading language', () async {
+    for (final locale in AppLocalizations.supportedLocales) {
+      final translated = lookupAppLocalizations(locale);
+      final engine = FakeTtsEngine();
+      final model = TtsModel.fromJson({
+        'language': locale.toLanguageTag(),
+      }, engine: engine);
+      addTearDown(model.dispose);
+      model.setMode(english, TtsMode.enabled);
+      await pumpEventQueue();
+      expect(
+        engine.spoken.single,
+        translated.textToSpeechEnabled,
+        reason: locale.toLanguageTag(),
+      );
+      expect(
+        engine.utterances.single.language,
+        translated.localeName.replaceAll('_', '-'),
+        reason: locale.toLanguageTag(),
+      );
+    }
+  });
+
   test(
     'announcements follow the primary stream language instead of the UI',
     () async {
