@@ -120,6 +120,9 @@ func (p *TwitchAuthProvider) Token() (*oauth2.Token, error) {
 	if err != nil {
 		return nil, err
 	}
+	// The shared service refreshes expiring grants with a five-minute buffer,
+	// covering the IRC authentication queue (at most two minutes) even though
+	// this adapter exposes only the access token rather than its stored expiry.
 	token := &oauth2.Token{AccessToken: access}
 	if err := validateToken(p.client, token); err != nil {
 		return nil, err
