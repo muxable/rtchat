@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -208,7 +209,22 @@ class ChatHistoryMessage extends StatelessWidget {
             onCancel:
                 host == null
                     ? null
-                    : () => ActionsAdapter.forAccount(host).cancelRaid(channel),
+                    : () async {
+                      try {
+                        await ActionsAdapter.forAccount(
+                          host,
+                        ).cancelRaid(channel);
+                      } catch (error) {
+                        if (!context.mounted) return;
+                        final message =
+                            error is FirebaseFunctionsException
+                                ? error.message ?? error.code
+                                : error.toString();
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(message)));
+                      }
+                    },
           );
         },
       );
