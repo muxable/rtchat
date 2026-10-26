@@ -17,13 +17,13 @@ import (
 
 // AGENT_SCHEDULED_JOBS is a comma-separated allowlist. Unset runs every job;
 // leases keep each to one replica. Set but empty disables them all.
-func startScheduledJobs(ctx context.Context, db *firestore.Client) func() {
+func startScheduledJobs(ctx context.Context, db *firestore.Client, assignments *jobs.Assignments) func() {
 	// One client for every job request, so connections are reused.
 	httpClient := &http.Client{Timeout: 15 * time.Second}
-	service := &jobs.Service{Client: db, API: &jobs.API{Tokens: provider.NewService(db, httpClient), Client: httpClient, TwitchClientID: auth.TwitchClientID()}}
+	service := &jobs.Service{Client: db, API: &jobs.API{Tokens: provider.NewService(db, httpClient), Client: httpClient, TwitchClientID: auth.TwitchClientID()}, Assignments: assignments}
 	all := map[string]jobs.Job{
-		"updateFollowerAndViewerCount": {Name: "updateFollowerAndViewerCount", Timeout: 3 * time.Minute, Run: service.Twitch},
-		"updateKickChannelMetadata":    {Name: "updateKickChannelMetadata", Timeout: 3 * time.Minute, Run: service.Kick},
+		"updateFollowerAndViewerCount": {Name: "updateFollowerAndViewerCount", Timeout: 3 * time.Minute, Run: service.Twitch, Finished: service.TwitchFinished},
+		"updateKickChannelMetadata":    {Name: "updateKickChannelMetadata", Timeout: 3 * time.Minute, Run: service.Kick, Finished: service.KickFinished},
 		"unsubscribe":                  {Name: "unsubscribe", Timeout: 30 * time.Minute, Daily: true, Run: service.Cleanup},
 	}
 	runner := jobs.Runner{Leases: jobs.FirestoreLeases{Client: db}}

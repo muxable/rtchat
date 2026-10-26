@@ -21,6 +21,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/catalog"
 	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"github.com/muxable/rtchat/agent/internal/handler"
+	"github.com/muxable/rtchat/agent/internal/jobs"
 	"github.com/muxable/rtchat/agent/internal/oauthhttp"
 	"github.com/muxable/rtchat/agent/internal/provider"
 	"github.com/muxable/rtchat/agent/internal/publichttp"
@@ -125,7 +126,9 @@ func main() {
 	}
 
 	defer client.Close()
-	stopJobs := startScheduledJobs(ctx, client)
+	// The metadata job reads assigned channels from the snapshot loop below.
+	assignments := &jobs.Assignments{}
+	stopJobs := startScheduledJobs(ctx, client, assignments)
 	defer stopJobs()
 
 	twitchClientID := auth.TwitchClientID()
@@ -275,6 +278,7 @@ func main() {
 			cancel()
 			return
 		}
+		assignments.Apply(snapshot.Changes)
 		for _, change := range snapshot.Changes {
 			req := (*agent.Request)(change.Doc.Ref)
 			zap.L().Info("got request", zap.String("id", req.String()))
