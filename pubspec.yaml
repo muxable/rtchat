@@ -47,6 +47,7 @@ dependencies:
   flutter_markdown_plus: ^1.0.12
 
 dev_dependencies:
+  webview_flutter_platform_interface: ^2.15.1
   audioplayers_platform_interface: ^7.2.0
   leak_tracker_flutter_testing: ^3.0.10
   flutter_test:
