@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -285,8 +286,8 @@ class AppLocalizationsBn extends AppLocalizations {
     String displayNameTwo,
     int numOthers,
   ) {
-    final intl.NumberFormat numOthersNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat numOthersNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
     return '<b>$displayName</b>, <b>$displayNameTwo</b>, এবং $numOthersString জন আপনাকে অনুসরণ করছে';
@@ -533,8 +534,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
-    final intl.NumberFormat viewerCountNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat viewerCountNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String viewerCountString = viewerCountNumberFormat.format(
       viewerCount,
     );
@@ -552,8 +553,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String raidingEventTimeRemaining(int seconds) {
-    final intl.NumberFormat secondsNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat secondsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
     return '$secondsString সেকেন্ড বাকি';
@@ -584,11 +585,11 @@ class AppLocalizationsBn extends AppLocalizations {
     String tier,
     int cumulativeTotal,
   ) {
-    final intl.NumberFormat totalNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
-    final intl.NumberFormat cumulativeTotalNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat cumulativeTotalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String cumulativeTotalString = cumulativeTotalNumberFormat.format(
       cumulativeTotal,
     );
@@ -602,8 +603,8 @@ class AppLocalizationsBn extends AppLocalizations {
     int cumulativeMonths,
     String tier,
   ) {
-    final intl.NumberFormat cumulativeMonthsNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat cumulativeMonthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String cumulativeMonthsString = cumulativeMonthsNumberFormat.format(
       cumulativeMonths,
     );
@@ -618,13 +619,13 @@ class AppLocalizationsBn extends AppLocalizations {
     int durationMonths,
     int cumulativeMonths,
   ) {
-    final intl.NumberFormat durationMonthsNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat durationMonthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String durationMonthsString = durationMonthsNumberFormat.format(
       durationMonths,
     );
-    final intl.NumberFormat cumulativeMonthsNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat cumulativeMonthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String cumulativeMonthsString = cumulativeMonthsNumberFormat.format(
       cumulativeMonths,
     );
@@ -659,8 +660,8 @@ class AppLocalizationsBn extends AppLocalizations {
     int rewardCost,
     String userInput,
   ) {
-    final intl.NumberFormat rewardCostNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat rewardCostNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
     return '<b>$redeemerUsername</b> <b>$rewardName</b> <b>$rewardCostString</b> পয়েন্টের জন্য রিডিম করেছে। $userInput';
@@ -672,8 +673,8 @@ class AppLocalizationsBn extends AppLocalizations {
     String rewardName,
     int rewardCost,
   ) {
-    final intl.NumberFormat rewardCostNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat rewardCostNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
     return '<b>$redeemerUsername</b> <b>$rewardName</b> <b>$rewardCostString</b> পয়েন্টের জন্য রিডিম করেছে।';
@@ -694,8 +695,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
-    final intl.NumberFormat viewersNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat viewersNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
     return '<b>$fromDisplayName</b> <b>$viewersString</b> জনের পার্টি নিয়ে হোস্ট করছে।';
@@ -708,8 +709,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String hypeTrainEventEndedSuccessful(int level) {
-    final intl.NumberFormat levelNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
     return 'হাইপ ট্রেন লেভেল <b>$levelString</b> সফল হয়েছে।';
@@ -717,8 +718,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String hypeTrainEventEndedUnsuccessful(int level) {
-    final intl.NumberFormat levelNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat levelNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
     return 'হাইপ ট্রেন লেভেল <b>$levelString</b> ব্যর্থ হয়েছে।';
@@ -1008,8 +1009,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String kickResubscriptionEvent(String subscriberName, int months) {
-    final intl.NumberFormat monthsNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat monthsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
     return '<b>$subscriberName</b> $monthsString মাসের জন্য আবার সাবস্ক্রাইব করেছেন!';
@@ -1017,8 +1018,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String kickGiftedSubscriptionsEvent(String gifterName, int count) {
-    final intl.NumberFormat countNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
     return '<b>$gifterName</b> $countStringটি সাব উপহার দিয়েছেন!';
@@ -1026,8 +1027,8 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String kicksGiftedEvent(String senderName, int amount) {
-    final intl.NumberFormat amountNumberFormat = intl
-        .NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat amountNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
     return '<b>$senderName</b> $amountString Kicks পাঠিয়েছেন!';
