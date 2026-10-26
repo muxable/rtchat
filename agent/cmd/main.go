@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"sync"
 	"sync/atomic"
@@ -22,6 +24,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"github.com/muxable/rtchat/agent/internal/handler"
 	"github.com/muxable/rtchat/agent/internal/oauthhttp"
+	"github.com/muxable/rtchat/agent/internal/observability"
 	"github.com/muxable/rtchat/agent/internal/provider"
 	"github.com/muxable/rtchat/agent/internal/publichttp"
 	"github.com/muxable/rtchat/agent/internal/subscriptions"
@@ -96,8 +99,11 @@ func (m *KeyedMutex) Lock(key string) func() {
 }
 
 func main() {
+	if err := observability.InstallCrashOutput(); err != nil {
+		panic(err)
+	}
 	if metadata.OnGCE() {
-		logger, err := loggerConfig.Build(zap.AddStacktrace(zap.ErrorLevel))
+		logger, err := loggerConfig.Build(zap.AddStacktrace(zap.WarnLevel), zap.WrapCore(observability.Wrap))
 		if err != nil {
 			panic(err)
 		}
@@ -112,6 +118,16 @@ func main() {
 		defer logger.Sync()
 		undo := zap.ReplaceGlobals(logger)
 		defer undo()
+	}
+
+	if len(os.Args) > 1 && os.Args[1] == "--supervise" {
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+		cmd := exec.Command(os.Args[0], os.Args[2:]...)
+		cmd.Stdout, cmd.Stderr, cmd.Stdin = os.Stdout, os.Stderr, os.Stdin
+		code := observability.Supervise(ctx, cmd, zap.L())
+		_ = zap.L().Sync()
+		os.Exit(code)
 	}
 
 	// Registered after the logger so it runs last, after the drain and shutdown.
@@ -180,7 +196,7 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	httpServer := &http.Server{Addr: ":" + port}
+	httpServer := &http.Server{Addr: ":" + port, ErrorLog: log.New(observability.HTTPLogWriter{Logger: zap.L()}, "", 0)}
 	draining := &atomic.Bool{}
 	// The EventSub worker starts once secrets load; shutdown cancels and joins it.
 	queueCtx, stopQueue := context.WithCancel(ctx)
@@ -238,9 +254,11 @@ func main() {
 		}, webhook.AlchemyFirestore{Client: client}, webhook.NewAlchemyRPC()))
 		if os.Getenv("ENABLE_AGENT_OAUTH") == "true" {
 			oauthCtx, oauthCancel := context.WithTimeout(context.Background(), 30*time.Second)
-			if err := oauthhttp.Register(oauthCtx, server.Mux, client); err != nil {
+			oauthMux := http.NewServeMux()
+			if err := oauthhttp.Register(oauthCtx, oauthMux, client); err != nil {
 				zap.L().Warn("OAuth HTTP unavailable", zap.Error(err))
 			}
+			server.Mux.Handle("/auth/", webhook.LoggingMiddleware(oauthMux))
 			oauthCancel()
 		}
 		server.Mux.Handle("/", recycleHandler)

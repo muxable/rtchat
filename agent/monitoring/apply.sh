@@ -20,3 +20,5 @@ if [ -n "$existing" ]; then
 else
   gcloud monitoring dashboards create --project="$project" --config-from-file=dashboard.json
 fi
+
+python3 apply_alerts.py --apply

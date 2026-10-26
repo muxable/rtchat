@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
 )
 
 // fakeClock is only read and advanced on the goroutine driving step.
@@ -292,6 +294,9 @@ func TestTwitchQueueCountsConflictAsPresent(t *testing.T) {
 }
 
 func TestTwitchQueueGivesUpAfterRepeatedFailures(t *testing.T) {
+	core, logs := observer.New(zap.InfoLevel)
+	undo := zap.ReplaceGlobals(zap.New(core))
+	defer undo()
 	var gets atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gets.Add(1)
@@ -303,12 +308,23 @@ func TestTwitchQueueGivesUpAfterRepeatedFailures(t *testing.T) {
 	if waited := drain(t, queue, clock); waited < 15*time.Minute {
 		t.Fatal("retries did not back off", waited)
 	}
+	if logs.FilterMessage("twitch eventsub reconcile").FilterLevelExact(zap.WarnLevel).Len() != twitchMaxAttempts {
+		t.Fatal("failed retries must be reported", logs.All())
+	}
 	if gets.Load() != twitchMaxAttempts {
 		t.Fatal(gets.Load())
 	}
 }
 
 func TestTwitchQueueReschedulesBusyLeaseWithoutFailing(t *testing.T) {
+	core, logs := observer.New(zap.InfoLevel)
+	undo := zap.ReplaceGlobals(zap.New(core))
+	defer undo()
+	defer func() {
+		if logs.FilterLevelExact(zap.WarnLevel).Len() != 0 {
+			t.Fatal("busy leases must not be reported", logs.All())
+		}
+	}()
 	fake := &fakeEventSub{}
 	server := httptest.NewServer(fake)
 	defer server.Close()

@@ -500,12 +500,16 @@ func (q *TwitchQueue) process(ctx context.Context, item *twitchItem, job twitchJ
 	if err != nil {
 		fields = append(fields, zap.Error(err))
 	}
+	level := zap.InfoLevel
+	if err != nil && !errors.Is(err, subscriptionlock.ErrBusy) && !errors.Is(err, errTwitchBudget) {
+		level = zap.WarnLevel
+	}
 	switch job {
 	case twitchRemoveJob:
-		zap.L().Info("twitch eventsub remove", append(fields, zap.Int("deleted", deleted))...)
+		zap.L().Log(level, "twitch eventsub remove", append(fields, zap.Int("deleted", deleted))...)
 	case twitchAppJob:
-		zap.L().Info("twitch eventsub app authorization", append(fields, zap.Int("created", result.created), zap.Strings("held", result.held))...)
+		zap.L().Log(level, "twitch eventsub app authorization", append(fields, zap.Int("created", result.created), zap.Strings("held", result.held))...)
 	default:
-		zap.L().Info("twitch eventsub reconcile", append(fields, zap.Int("created", result.created), zap.Strings("skipped", result.skipped), zap.Strings("held", result.held))...)
+		zap.L().Log(level, "twitch eventsub reconcile", append(fields, zap.Int("created", result.created), zap.Strings("skipped", result.skipped), zap.Strings("held", result.held))...)
 	}
 }
