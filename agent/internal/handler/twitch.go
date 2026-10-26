@@ -22,6 +22,9 @@ import (
 type TwitchAgent struct {
 	Firestore              *firestore.Client
 	ClientID, ClientSecret string
+	// WaitForAuth gates initial IRC logins across replicas, outside the handshake timeout.
+	WaitForAuth func(context.Context, string) error
+	Context     context.Context
 	// Optional dependencies allow lifecycle tests without external services.
 	loadProfile func(string) (map[string]interface{}, error)
 	tokenSource func(string) (oauth2.TokenSource, error)
@@ -174,6 +177,25 @@ func (h *TwitchAgent) JoinAsUser(r *agent.Request, asUserID string) (io.Closer, 
 		return nil, err
 	}
 
+	if h.WaitForAuth != nil {
+		ctx := h.Context
+		if ctx == nil {
+			ctx = context.Background()
+		}
+		bounded, cancel := context.WithTimeout(ctx, 2*time.Minute)
+		err := h.WaitForAuth(bounded, login)
+		cancel()
+		if err != nil {
+			return nil, fmt.Errorf("wait for IRC authentication slot: %w", err)
+		}
+		// The token may expire while waiting behind other channels during a rollout.
+		if !token.Valid() {
+			token, err = authProvider.Token()
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 	// create a new chat client and attempt to connect
 	client := h.chat(login, fmt.Sprintf("oauth:%s", token.AccessToken))
 

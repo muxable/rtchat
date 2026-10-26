@@ -23,6 +23,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/catalog"
 	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"github.com/muxable/rtchat/agent/internal/handler"
+	"github.com/muxable/rtchat/agent/internal/ircauth"
 	"github.com/muxable/rtchat/agent/internal/oauthhttp"
 	"github.com/muxable/rtchat/agent/internal/observability"
 	"github.com/muxable/rtchat/agent/internal/provider"
@@ -154,6 +155,8 @@ func main() {
 		Firestore:    client,
 		ClientID:     twitchClientID,
 		ClientSecret: twitchClientSecret,
+		WaitForAuth:  ircauth.NewFirestoreGate(client).Wait,
+		Context:      ctx,
 	}
 
 	// create a new RequestLock
