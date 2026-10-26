@@ -1,0 +1,5 @@
+{
+  "@@locale": "no",
+  "sampleMessage": "Dette er en eksempelmelding for tekst til tale.",
+  "saidMessage": "{author} sa: {text}"
+}

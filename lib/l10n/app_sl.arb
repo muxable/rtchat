@@ -1,0 +1,5 @@
+{
+  "@@locale": "sl",
+  "sampleMessage": "To je vzorčno sporočilo za pretvorbo besedila v govor.",
+  "saidMessage": "{author} je rekel: {text}"
+}

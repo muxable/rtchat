@@ -1,0 +1,5 @@
+{
+  "@@locale": "lv",
+  "sampleMessage": "Šis ir teksta pārvēršanas runā parauga ziņojums.",
+  "saidMessage": "{author} teica: {text}"
+}

@@ -1,0 +1,5 @@
+{
+  "@@locale": "et",
+  "sampleMessage": "See on kõnesünteesi näidissõnum.",
+  "saidMessage": "{author} ütles: {text}"
+}

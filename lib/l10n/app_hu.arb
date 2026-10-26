@@ -1,0 +1,5 @@
+{
+  "@@locale": "hu",
+  "sampleMessage": "Ez egy mintaszöveg a szövegfelolvasáshoz.",
+  "saidMessage": "{author} azt mondta: {text}"
+}

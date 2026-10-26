@@ -1,0 +1,5 @@
+{
+  "@@locale": "te",
+  "sampleMessage": "ఇది వచనాన్ని మాటగా మార్చడానికి ఒక నమూనా సందేశం.",
+  "saidMessage": "{author} చెప్పారు: {text}"
+}

@@ -1,0 +1,5 @@
+{
+  "@@locale": "is",
+  "sampleMessage": "Þetta eru prufuskilaboð fyrir talgervil.",
+  "saidMessage": "{author} sagði: {text}"
+}

@@ -1,0 +1,5 @@
+{
+  "@@locale": "ro",
+  "sampleMessage": "Acesta este un mesaj de probă pentru conversia textului în vorbire.",
+  "saidMessage": "{author} a spus: {text}"
+}

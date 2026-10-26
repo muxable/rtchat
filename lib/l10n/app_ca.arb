@@ -1,0 +1,5 @@
+{
+  "@@locale": "ca",
+  "sampleMessage": "Aquest és un missatge de mostra per a la síntesi de veu.",
+  "saidMessage": "{author} ha dit: {text}"
+}

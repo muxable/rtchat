@@ -1,0 +1,5 @@
+{
+  "@@locale": "af",
+  "sampleMessage": "Hierdie is ’n voorbeeldboodskap vir teks-na-spraak.",
+  "saidMessage": "{author} het gesê: {text}"
+}

@@ -1,0 +1,5 @@
+{
+  "@@locale": "tr",
+  "sampleMessage": "Bu, metni konuşmaya dönüştürmek için örnek bir mesajdır.",
+  "saidMessage": "{author} dedi: {text}"
+}

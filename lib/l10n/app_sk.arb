@@ -1,0 +1,5 @@
+{
+  "@@locale": "sk",
+  "sampleMessage": "Toto je ukážková správa pre prevod textu na reč.",
+  "saidMessage": "{author} povedal: {text}"
+}

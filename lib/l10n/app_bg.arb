@@ -1,0 +1,5 @@
+{
+  "@@locale": "bg",
+  "sampleMessage": "Това е примерно съобщение за преобразуване на текст в реч.",
+  "saidMessage": "{author} каза: {text}"
+}

@@ -1,0 +1,5 @@
+{
+  "@@locale": "ms",
+  "sampleMessage": "Ini ialah contoh mesej untuk penukaran teks kepada pertuturan.",
+  "saidMessage": "{author} berkata: {text}"
+}

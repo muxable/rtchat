@@ -1,0 +1,5 @@
+{
+  "@@locale": "da",
+  "sampleMessage": "Dette er en eksempelbesked til tekst til tale.",
+  "saidMessage": "{author} sagde: {text}"
+}

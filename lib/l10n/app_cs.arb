@@ -1,0 +1,5 @@
+{
+  "@@locale": "cs",
+  "sampleMessage": "Toto je ukázková zpráva pro převod textu na řeč.",
+  "saidMessage": "{author} řekl: {text}"
+}

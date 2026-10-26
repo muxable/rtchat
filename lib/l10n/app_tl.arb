@@ -1,0 +1,5 @@
+{
+  "@@locale": "tl",
+  "sampleMessage": "Ito ay isang halimbawang mensahe para sa pagbigkas ng teksto.",
+  "saidMessage": "{author} ay nagsabi: {text}"
+}

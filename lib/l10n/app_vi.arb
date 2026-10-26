@@ -1,0 +1,5 @@
+{
+  "@@locale": "vi",
+  "sampleMessage": "Đây là tin nhắn mẫu để chuyển văn bản thành giọng nói.",
+  "saidMessage": "{author} nói: {text}"
+}

@@ -713,7 +713,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get sampleMessage => '這是文字轉語音的訊息範例。';
+  String get sampleMessage => '这是文字转语音的信息示例。';
 
   @override
   String actionMessage(String author, String text) {
@@ -1860,7 +1860,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get sampleMessage => '这是文字转语音的信息示例。';
+  String get sampleMessage => '這是文字轉語音的訊息範例。';
 
   @override
   String actionMessage(String author, String text) {

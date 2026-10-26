@@ -1,0 +1,5 @@
+{
+  "@@locale": "gu",
+  "sampleMessage": "આ લખાણને વાણીમાં ફેરવવા માટેનો નમૂના સંદેશ છે.",
+  "saidMessage": "{author} કહ્યું: {text}"
+}

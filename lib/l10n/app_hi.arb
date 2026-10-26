@@ -1,0 +1,5 @@
+{
+  "@@locale": "hi",
+  "sampleMessage": "यह टेक्स्ट को आवाज़ में बदलने के लिए एक नमूना संदेश है।",
+  "saidMessage": "{author} ने कहा: {text}"
+}

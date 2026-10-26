@@ -1,0 +1,5 @@
+{
+  "@@locale": "pa",
+  "sampleMessage": "ਇਹ ਲਿਖਤ ਨੂੰ ਆਵਾਜ਼ ਵਿੱਚ ਬਦਲਣ ਲਈ ਇੱਕ ਨਮੂਨਾ ਸੁਨੇਹਾ ਹੈ।",
+  "saidMessage": "{author} ਨੇ ਕਿਹਾ: {text}"
+}

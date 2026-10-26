@@ -1,0 +1,5 @@
+{
+  "@@locale": "fi",
+  "sampleMessage": "Tämä on esimerkkiviesti tekstin puheeksi muuntamista varten.",
+  "saidMessage": "{author} sanoi: {text}"
+}

@@ -1,0 +1,5 @@
+{
+  "@@locale": "ta",
+  "sampleMessage": "இது உரையைப் பேச்சாக மாற்றுவதற்கான மாதிரி செய்தி.",
+  "saidMessage": "{author} கூறினார்: {text}"
+}

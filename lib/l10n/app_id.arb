@@ -1,0 +1,5 @@
+{
+  "@@locale": "id",
+  "sampleMessage": "Ini adalah contoh pesan untuk mengubah teks menjadi suara.",
+  "saidMessage": "{author} berkata: {text}"
+}

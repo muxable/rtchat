@@ -1,0 +1,5 @@
+{
+  "@@locale": "lt",
+  "sampleMessage": "Tai pavyzdinis teksto vertimo į kalbą pranešimas.",
+  "saidMessage": "{author} pasakė: {text}"
+}

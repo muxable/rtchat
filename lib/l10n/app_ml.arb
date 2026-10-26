@@ -1,0 +1,5 @@
+{
+  "@@locale": "ml",
+  "sampleMessage": "വാചകം ശബ്ദമാക്കുന്നതിനുള്ള ഒരു മാതൃകാ സന്ദേശമാണിത്.",
+  "saidMessage": "{author} പറഞ്ഞു: {text}"
+}
