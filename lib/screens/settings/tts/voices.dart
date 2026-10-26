@@ -154,10 +154,9 @@ class VoicePickerScreen extends StatelessWidget {
                           tooltip: l10n.playSampleMessage,
                           icon: const Icon(Icons.play_arrow),
                           onPressed:
-                              () => tts.previewVoice(
-                                language,
-                                voice.id,
-                                l10n.sampleMessage,
+                              () => tts.previewSample(
+                                language: language,
+                                voiceId: voice.id,
                               ),
                         ),
                       ),

@@ -113,4 +113,15 @@ void main() {
     expect(find.text('System voice'), findsNothing);
     expect(find.text('Voice packs'), findsNothing);
   });
+  testWidgets('previews French text from an English settings screen', (
+    tester,
+  ) async {
+    await open(tester, language: 'fr', neural: true);
+    await tester.tap(find.text('Play sample message'));
+    await tester.pumpAndSettle();
+    final spoken = (tts.neuralEngine! as FakeTtsEngine).utterances.single;
+    expect(spoken.text, contains('message pour la synthèse vocale'));
+    expect(spoken.language, 'fr');
+    await tts.releaseNeuralModels();
+  });
 }
