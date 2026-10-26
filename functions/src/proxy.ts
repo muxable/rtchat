@@ -12,12 +12,49 @@ type UpstreamResponse = {
 // Leave time for the 60-second function to encode and send a canonical error.
 const UPSTREAM_TIMEOUT_MS = 55_000;
 
+const TRANSPORT_CODES = new Set([
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "ECONNABORTED",
+  "ENOTFOUND",
+  "EAI_AGAIN",
+  "ETIMEDOUT",
+  "EHOSTUNREACH",
+  "ENETUNREACH",
+  "EPIPE",
+  "ERR_STREAM_PREMATURE_CLOSE",
+  "ABORT_ERR",
+  "CERT_HAS_EXPIRED",
+  "DEPTH_ZERO_SELF_SIGNED_CERT",
+  "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+  "ERR_TLS_CERT_ALTNAME_INVALID",
+]);
+const TRANSPORT_NAMES = new Set([
+  "FetchError",
+  "AbortError",
+  "TypeError",
+  "Error",
+]);
+
 class UpstreamError extends Error {
+  readonly transportName?: string;
+  readonly code?: string;
+
   constructor(
     readonly timedOut: boolean,
     error: unknown,
+    readonly status?: number,
   ) {
-    super(String(error));
+    super(timedOut ? "agent timeout" : "agent transport failure");
+    // FetchError messages contain the complete URL, including legacy auth
+    // query parameters. Keep only known transport diagnostics, never the cause.
+    const cause = error as { name?: unknown; code?: unknown } | null;
+    if (typeof cause?.name === "string" && TRANSPORT_NAMES.has(cause.name)) {
+      this.transportName = cause.name;
+    }
+    if (typeof cause?.code === "string" && TRANSPORT_CODES.has(cause.code)) {
+      this.code = cause.code;
+    }
   }
 }
 
@@ -102,6 +139,7 @@ async function forward(
   const hasBody = req.method !== "GET" && req.method !== "HEAD";
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMillis);
+  let status: number | undefined;
   try {
     const response = await fetch(url, {
       method: req.method,
@@ -110,12 +148,13 @@ async function forward(
       redirect: "manual",
       signal: controller.signal,
     });
+    status = response.status;
     // The deadline covers the body too. A reset after headers must not leave the
     // function waiting until its hard timeout, or commit partial response headers.
     const body = Buffer.from(await response.arrayBuffer());
     return { status: response.status, headers: response.headers, body };
   } catch (error) {
-    throw new UpstreamError(controller.signal.aborted, error);
+    throw new UpstreamError(controller.signal.aborted, error, status);
   } finally {
     clearTimeout(timeout);
   }
@@ -127,7 +166,17 @@ function transportError(
 ): functions.https.HttpsError {
   const timedOut = error instanceof UpstreamError && error.timedOut;
   const message = timedOut ? "agent timeout" : "agent unreachable";
-  functions.logger.error(message, { name, error: String(error) });
+  functions.logger.error(message, {
+    name,
+    timedOut,
+    ...(error instanceof UpstreamError
+      ? {
+          errorName: error.transportName,
+          errorCode: error.code,
+          status: error.status,
+        }
+      : {}),
+  });
   return new functions.https.HttpsError(
     timedOut ? "deadline-exceeded" : "unavailable",
     message,

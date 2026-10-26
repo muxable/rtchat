@@ -1,5 +1,6 @@
 import express from "express";
 import fetch from "cross-fetch";
+import * as functions from "firebase-functions/v1";
 import { createServer, IncomingHttpHeaders, Server } from "http";
 import { AddressInfo } from "net";
 import {
@@ -223,6 +224,38 @@ describe("proxyCallable", () => {
     expect(res.status).toBe(503);
     expect((await res.json()).error.status).toBe("UNAVAILABLE");
     expect(attempts).toBe(1);
+  });
+
+  test("keeps query credentials out of transport error reports", async () => {
+    const credential = "fake-query-token-for-privacy-test";
+    const reported = vi
+      .spyOn(functions.logger, "error")
+      .mockImplementation(() => {});
+    try {
+      reply = { status: 200, body: "", reset: true };
+      const res = await fetch(`${functionsUrl}/getBadges?token=${credential}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ data: {} }),
+      });
+      expect(res.status).toBe(503);
+      expect((await res.json()).error.status).toBe("UNAVAILABLE");
+      expect(seen.url).toBe(`/getBadges?token=${credential}`);
+      expect(JSON.stringify(reported.mock.calls)).not.toContain(credential);
+      expect(JSON.stringify(reported.mock.calls)).not.toContain("http://");
+      expect(reported).toHaveBeenCalledWith(
+        "agent unreachable",
+        expect.objectContaining({
+          name: "getBadges",
+          timedOut: false,
+          errorName: "FetchError",
+          errorCode: "ECONNRESET",
+        }),
+      );
+      expect(attempts).toBe(1);
+    } finally {
+      reported.mockRestore();
+    }
   });
 
   test("returns a bounded deadline when the upstream body is interrupted", async () => {
