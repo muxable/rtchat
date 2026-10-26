@@ -108,11 +108,12 @@ packages:
   cached_network_image:
     dependency: "direct main"
     description:
-      name: cached_network_image
-      sha256: "775542110bd3f668c41f9b6d0b4e3c51b1f6c267096739e91667ed4c34479bb9"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.5"
+      path: cached_network_image
+      ref: "2c3a592dc37f9383771a013a85dd0bb4e4b9e51d"
+      resolved-ref: "2c3a592dc37f9383771a013a85dd0bb4e4b9e51d"
+      url: "https://github.com/kevmo314/flutter_cached_network_image.git"
+    source: git
+    version: "4.0.6"
   cached_network_image_platform_interface:
     dependency: transitive
     description:

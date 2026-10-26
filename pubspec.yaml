@@ -45,7 +45,12 @@ dependencies:
   webview_flutter_wkwebview: ^3.27.2
   uuid: ^4.6.0
   flutter_markdown_plus: ^1.0.12
-  cached_network_image: ^4.0.5
+  cached_network_image:
+    git:
+      url: https://github.com/kevmo314/flutter_cached_network_image.git
+      # Queued-frame disposal fix: Baseflow/flutter_cached_network_image#1065.
+      ref: 2c3a592dc37f9383771a013a85dd0bb4e4b9e51d
+      path: cached_network_image
 
 dev_dependencies:
   audioplayers_platform_interface: ^7.2.0
