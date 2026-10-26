@@ -14,6 +14,7 @@ import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:rtchat/components/app_update_dialog.dart';
 import 'package:rtchat/firebase_options.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/accounts.dart';
@@ -27,6 +28,7 @@ import 'package:rtchat/models/messages/twitch/badge.dart';
 import 'package:rtchat/models/messages/twitch/eventsub_configuration.dart';
 import 'package:rtchat/models/qr_code.dart';
 import 'package:rtchat/models/quick_links.dart';
+import 'package:rtchat/models/store_version_search.dart';
 import 'package:rtchat/models/stream_preview.dart';
 import 'package:rtchat/models/style.dart';
 import 'package:rtchat/models/tts.dart';
@@ -137,9 +139,77 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   bool _isDiscoModeRunning = false;
+  bool _hasScheduledUpdateCheck = false;
   Timer? _discoModeTimer;
   NeuralEngineSelector? _neuralEngineSelector;
   MemoryPressureMonitor? _memoryPressureMonitor;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkForAppUpdate();
+    });
+  }
+
+  Future<void> _checkForAppUpdate() async {
+    try {
+      final result = await StoreVersionSearch().checkForUpdate();
+
+      if (!mounted || result == null || !result.updateAvailable) {
+        return;
+      }
+
+      // Read the last version we prompted the user about.
+      final saved =
+          jsonDecode(
+                widget.prefs
+                    .getString('app_update_prompt', defaultValue: '{}')
+                    .getValue(),
+              )
+              as Map<String, dynamic>;
+
+      final lastVersion = saved['version'] as String?;
+      final lastPromptMillis = saved['timestamp'] as int?;
+
+      final now = DateTime.now();
+
+      // A different version should be shown immediately.
+      // The same version is suppressed for seven days.
+      if (lastVersion == result.storeVersion && lastPromptMillis != null) {
+        final lastPrompt = DateTime.fromMillisecondsSinceEpoch(
+          lastPromptMillis,
+        );
+
+        if (now.difference(lastPrompt) < const Duration(days: 7)) {
+          return;
+        }
+      }
+
+      final dialogContext = navigatorKey.currentState?.overlay?.context;
+
+      if (dialogContext == null || !dialogContext.mounted) {
+        return;
+      }
+
+      // Save before showing the prompt so dismissing it also starts the seven-day cooldown.
+      widget.prefs.setString(
+        'app_update_prompt',
+        jsonEncode({
+          'version': result.storeVersion,
+          'timestamp': now.millisecondsSinceEpoch,
+        }),
+      );
+
+      await AppUpdateDialog.show(dialogContext, result);
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('App update check failed: $error');
+        debugPrintStack(stackTrace: stackTrace);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -450,6 +520,15 @@ class _AppState extends State<App> {
                         onChannelSelect: views.openChannel,
                       );
                     }
+
+                    // Only schedule the update check once, after onboarding.
+                    if (!_hasScheduledUpdateCheck) {
+                      _hasScheduledUpdateCheck = true;
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _checkForAppUpdate();
+                      });
+                    }
+
                     return HomeScreen(
                       isDiscoModeEnabled: _isDiscoModeRunning,
                       channel: channel,
