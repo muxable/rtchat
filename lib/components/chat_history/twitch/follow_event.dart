@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -110,7 +112,9 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
     final style = Theme.of(context).textTheme.titleSmall;
 
     return StyledText(
-      text: localizations.followingEvent(styleModel.getDisplayName(follower)),
+      text: localizations.followingEvent(
+        htmlEscape.convert(styleModel.getDisplayName(follower)),
+      ),
       tags: {'bold': StyledTextTag(style: style)},
     );
   }
@@ -127,7 +131,7 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
       case 1:
         return StyledText(
           text: localizations.followingEvent(
-            styleModel.getDisplayName(followers.first),
+            htmlEscape.convert(styleModel.getDisplayName(followers.first)),
           ),
           tags: {'bold': StyledTextTag(style: style)},
         );
@@ -135,8 +139,8 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
       case 2:
         return StyledText(
           text: localizations.followingEvent2(
-            styleModel.getDisplayName(followers.first),
-            styleModel.getDisplayName(followers.last),
+            htmlEscape.convert(styleModel.getDisplayName(followers.first)),
+            htmlEscape.convert(styleModel.getDisplayName(followers.last)),
           ),
           tags: {'bold': StyledTextTag(style: style)},
         );
@@ -144,8 +148,8 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
       default:
         return StyledText(
           text: localizations.followingEvent3(
-            styleModel.getDisplayName(followers.first),
-            styleModel.getDisplayName(followers.last),
+            htmlEscape.convert(styleModel.getDisplayName(followers.first)),
+            htmlEscape.convert(styleModel.getDisplayName(followers.last)),
             followers.length - 2,
           ),
           tags: {'bold': StyledTextTag(style: style)},

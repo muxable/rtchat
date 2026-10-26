@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -49,8 +51,9 @@ class KickFollowEventWidget extends StatelessWidget {
     model.follower,
     Icons.favorite,
     _KickEventText(
-      (l10n, style) =>
-          l10n.followingEvent(style.getDisplayName(model.follower)),
+      (l10n, style) => l10n.followingEvent(
+        htmlEscape.convert(style.getDisplayName(model.follower)),
+      ),
     ),
   );
 }
@@ -65,7 +68,7 @@ class KickSubscriptionEventWidget extends StatelessWidget {
     model.subscriber,
     Icons.star,
     _KickEventText((l10n, style) {
-      final name = style.getDisplayName(model.subscriber);
+      final name = htmlEscape.convert(style.getDisplayName(model.subscriber));
       return model.isRenewal
           ? l10n.kickResubscriptionEvent(name, model.months)
           : l10n.kickSubscriptionEvent(name);
@@ -85,7 +88,9 @@ class KickGiftedSubscriptionsEventWidget extends StatelessWidget {
     _KickEventText((l10n, style) {
       final gifter = model.gifter;
       return l10n.kickGiftedSubscriptionsEvent(
-        gifter == null ? l10n.anonymous : style.getDisplayName(gifter),
+        gifter == null
+            ? l10n.anonymous
+            : htmlEscape.convert(style.getDisplayName(gifter)),
         model.giftees.length,
       );
     }),
@@ -108,7 +113,7 @@ class KicksGiftedEventWidget extends StatelessWidget {
         children: [
           _KickEventText(
             (l10n, style) => l10n.kicksGiftedEvent(
-              style.getDisplayName(model.sender),
+              htmlEscape.convert(style.getDisplayName(model.sender)),
               model.amount,
             ),
           ),
@@ -129,19 +134,19 @@ class KickRewardRedemptionEventWidget extends StatelessWidget {
     model.redeemer,
     Icons.redeem,
     _KickEventText((l10n, style) {
-      final name = style.getDisplayName(model.redeemer);
+      final name = htmlEscape.convert(style.getDisplayName(model.redeemer));
       final input = model.userInput;
       return input == null
           ? l10n.channelPointRedemptionWithoutUserInput(
             name,
-            model.rewardTitle,
+            htmlEscape.convert(model.rewardTitle),
             model.cost,
           )
           : l10n.channelPointRedemptionWithUserInput(
             name,
-            model.rewardTitle,
+            htmlEscape.convert(model.rewardTitle),
             model.cost,
-            input,
+            htmlEscape.convert(input),
           );
     }),
   );

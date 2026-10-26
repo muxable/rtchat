@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
@@ -18,7 +20,9 @@ class TwitchHostEventWidget extends StatelessWidget {
       ),
       child: StyledText(
         text: AppLocalizations.of(context)!.hostEventMessage(
-          model.from.displayName ?? AppLocalizations.of(context)!.anonymous,
+          htmlEscape.convert(
+            model.from.displayName ?? AppLocalizations.of(context)!.anonymous,
+          ),
           model.viewers,
         ),
         tags: {

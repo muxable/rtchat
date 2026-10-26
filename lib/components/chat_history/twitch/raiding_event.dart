@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -43,8 +45,10 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                     Expanded(
                       child: StyledText(
                         text: AppLocalizations.of(context)!.raidingEventRaiding(
-                          model.targetUser.displayName ??
-                              AppLocalizations.of(context)!.anonymous,
+                          htmlEscape.convert(
+                            model.targetUser.displayName ??
+                                AppLocalizations.of(context)!.anonymous,
+                          ),
                         ),
                         tags: {
                           'b': StyledTextTag(
@@ -91,8 +95,10 @@ class TwitchRaidingEventWidget extends StatelessWidget {
               Expanded(
                 child: StyledText(
                   text: AppLocalizations.of(context)!.raidingEventRaided(
-                    model.targetUser.displayName ??
-                        AppLocalizations.of(context)!.anonymous,
+                    htmlEscape.convert(
+                      model.targetUser.displayName ??
+                          AppLocalizations.of(context)!.anonymous,
+                    ),
                   ),
                   tags: {
                     'b': StyledTextTag(
@@ -126,8 +132,10 @@ class TwitchRaidingEventWidget extends StatelessWidget {
         ),
         child: StyledText(
           text: AppLocalizations.of(context)!.raidingEventCanceled(
-            model.targetUser.displayName ??
-                AppLocalizations.of(context)!.anonymous,
+            htmlEscape.convert(
+              model.targetUser.displayName ??
+                  AppLocalizations.of(context)!.anonymous,
+            ),
           ),
           tags: {
             'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),

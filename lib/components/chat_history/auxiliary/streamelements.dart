@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
@@ -18,9 +20,10 @@ class StreamElementsTipEventWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           StyledText(
-            text: AppLocalizations.of(
-              context,
-            )!.streamElementsTipEventMessage(model.name, model.formattedAmount),
+            text: AppLocalizations.of(context)!.streamElementsTipEventMessage(
+              htmlEscape.convert(model.name),
+              htmlEscape.convert(model.formattedAmount),
+            ),
             tags: {
               'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
             },

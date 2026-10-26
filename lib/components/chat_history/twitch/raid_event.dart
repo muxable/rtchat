@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
@@ -27,9 +29,10 @@ class TwitchRaidEventWidget extends StatelessWidget {
         children: [
           Expanded(
             child: StyledText(
-              text: AppLocalizations.of(
-                context,
-              )!.raidEventMessage(model.from.displayName ?? "", model.viewers),
+              text: AppLocalizations.of(context)!.raidEventMessage(
+                htmlEscape.convert(model.from.displayName ?? ""),
+                model.viewers,
+              ),
               tags: {
                 'b': StyledTextTag(
                   style: Theme.of(context).textTheme.titleSmall,
