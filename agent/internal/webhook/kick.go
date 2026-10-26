@@ -161,7 +161,7 @@ func KickToDocuments(delivery KickDelivery, now time.Time) (*KickDocuments, erro
 			"channelId": docs.ChannelID,
 			"type":      messageType,
 			"timestamp": timestamp,
-			"expiresAt": now.UTC().Truncate(time.Millisecond).Add(14 * 24 * time.Hour),
+			"expiresAt": now.UTC().Truncate(time.Millisecond).Add(messageTTLFor(messageType)),
 			"event":     delivery.Event,
 		}})
 	}
