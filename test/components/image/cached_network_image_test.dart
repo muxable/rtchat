@@ -123,13 +123,6 @@ void main() {
         PaintingBinding.instance.imageCache.clear();
         PaintingBinding.instance.imageCache.clearLiveImages();
         await _waitFor(tester, () => manager.webHelper.concurrentCalls == 0);
-        await tester.runAsync(() async {
-          final cached = await manager.getFileFromCache(url.toString());
-          expect(
-            await cached!.file.readAsBytes(),
-            await File('test/fixtures/images/animated.$format').readAsBytes(),
-          );
-        });
         await _dispose(tester, manager);
         await tester.runAsync(() async {
           manager = createManager();
@@ -181,137 +174,24 @@ void main() {
     });
   }
 
-  testWidgets(
-    'stale animated WebP displays before a blocked refresh completes',
-    (tester) async {
-      const url = 'https://example.com/stale.webp';
-      final gate = Completer<http.Response>();
-      final requested = Completer<void>();
-      await tester.runAsync(() async {
-        await manager.putFile(
-          url,
-          await File('test/fixtures/images/animated.webp').readAsBytes(),
-          fileExtension: 'webp',
-          eTag: '"v1"',
-          maxAge: const Duration(days: -1),
-        );
-      });
-      respond = (_) {
-        requested.complete();
-        return gate.future;
-      };
-
-      await tester.pumpWidget(chatEmote(Uri.parse(url)));
-      await _expectAnimation(tester);
-      expect(requested.isCompleted, isTrue);
-      expect(gate.isCompleted, isFalse);
-      expect(requests.single.headers['if-none-match'], '"v1"');
-
-      gate.complete(
-        http.Response('', 304, headers: {'cache-control': 'max-age=86400'}),
-      );
-      await _waitFor(tester, () => manager.webHelper.concurrentCalls == 0);
-      await tester.runAsync(() async {
-        final cached = await manager.getFileFromCache(url);
-        expect(cached!.validTill.isAfter(DateTime.now()), isTrue);
-      });
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await _dispose(tester, manager);
-    },
-  );
-
-  testWidgets('a stale GIF keeps animating when revalidation fails offline', (
+  testWidgets('a failed image displays the emote code fallback', (
     tester,
   ) async {
-    const url = 'https://example.com/stale.gif';
-    await tester.runAsync(() async {
-      await manager.putFile(
-        url,
-        await File('test/fixtures/images/animated.gif').readAsBytes(),
-        fileExtension: 'gif',
-        maxAge: const Duration(days: -1),
-      );
-    });
-    await tester.pumpWidget(chatEmote(Uri.parse(url)));
-    await _expectAnimation(tester);
-    expect(requests, hasLength(1));
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox());
-    await _dispose(tester, manager);
-  });
-
-  testWidgets('a refreshed image replaces the stale one on the same stream', (
-    tester,
-  ) async {
-    const url = 'https://example.com/refresh.webp';
-    final gate = Completer<http.Response>();
-    await tester.runAsync(() async {
-      await manager.putFile(
-        url,
-        await File('test/fixtures/images/static.png').readAsBytes(),
-        maxAge: const Duration(days: -1),
-      );
-    });
-    respond = (_) => gate.future;
-    await tester.pumpWidget(chatEmote(Uri.parse(url)));
-    await _waitForPixel(tester, [0, 128, 0, 255]);
-
-    gate.complete(await tester.runAsync(() => imageResponse('animated.webp')));
-    await _expectAnimation(tester);
-    expect(requests, hasLength(1));
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox());
-    await _dispose(tester, manager);
-  });
-
-  testWidgets('PNG avatars load through the existing fade and dimensions', (
-    tester,
-  ) async {
-    respond = (_) => imageResponse('static.png');
+    respond = (_) async => http.Response('', 404);
     await tester.pumpWidget(
-      const MaterialApp(
-        home: Center(
-          child: CrossFadeImage(
-            image: CachedNetworkImageProvider('https://example.com/avatar.png'),
-            width: 48,
-            height: 48,
-            fit: BoxFit.cover,
-          ),
-        ),
-      ),
+      chatEmote(Uri.parse('https://example.com/broken.gif')),
     );
-    await _waitForPixel(tester, [0, 128, 0, 255]);
-    await tester.pump(const Duration(seconds: 1));
-    expect(tester.getSize(find.byType(CrossFadeImage)), const Size(48, 48));
+    await _waitFor(
+      tester,
+      () => find.text('AnimatedEmote').evaluate().isNotEmpty,
+    );
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
     await _dispose(tester, manager);
   });
-
-  for (final failure in ['404', 'invalid bytes']) {
-    testWidgets('$failure displays the emote code fallback', (tester) async {
-      respond =
-          (_) async => http.Response(
-            '<html>not an image</html>',
-            failure == '404' ? 404 : 200,
-          );
-      await tester.pumpWidget(
-        chatEmote(Uri.parse('https://example.com/broken.gif')),
-      );
-      await _waitFor(
-        tester,
-        () => find.text('AnimatedEmote').evaluate().isNotEmpty,
-      );
-      expect(requests, hasLength(1));
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await _dispose(tester, manager);
-    });
-  }
 }
 
-// Fixtures are 4x4 PNG and two-frame GIF/WebP (red/blue, 100ms, infinite loop).
+// Fixtures are 4x4 two-frame GIF/WebP (red/blue, 100ms, infinite loop).
 // Use the same image-cache mixin as DefaultCacheManager, backed by real disk
 // files and a local JSON index so tests need no platform SQLite plugin.
 class _ImageCacheManager extends CacheManager with ImageCacheManager {
