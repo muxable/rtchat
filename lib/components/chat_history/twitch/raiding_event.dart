@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
@@ -43,8 +45,10 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                     Expanded(
                       child: StyledText(
                         text: AppLocalizations.of(context)!.raidingEventRaiding(
-                          model.targetUser.displayName ??
-                              AppLocalizations.of(context)!.anonymous,
+                          htmlEscape.convert(
+                            model.targetUser.displayName ??
+                                AppLocalizations.of(context)!.anonymous,
+                          ),
                         ),
                         tags: {
                           'b': StyledTextTag(
@@ -89,8 +93,10 @@ class TwitchRaidingEventWidget extends StatelessWidget {
               Expanded(
                 child: StyledText(
                   text: AppLocalizations.of(context)!.raidingEventRaided(
-                    model.targetUser.displayName ??
-                        AppLocalizations.of(context)!.anonymous,
+                    htmlEscape.convert(
+                      model.targetUser.displayName ??
+                          AppLocalizations.of(context)!.anonymous,
+                    ),
                   ),
                   tags: {
                     'b': StyledTextTag(
@@ -122,8 +128,10 @@ class TwitchRaidingEventWidget extends StatelessWidget {
         avatar: ResilientNetworkImage(model.targetUser.profilePictureUrl),
         child: StyledText(
           text: AppLocalizations.of(context)!.raidingEventCanceled(
-            model.targetUser.displayName ??
-                AppLocalizations.of(context)!.anonymous,
+            htmlEscape.convert(
+              model.targetUser.displayName ??
+                  AppLocalizations.of(context)!.anonymous,
+            ),
           ),
           tags: {
             'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),

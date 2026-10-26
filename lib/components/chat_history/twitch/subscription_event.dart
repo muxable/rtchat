@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
@@ -38,8 +40,8 @@ class TwitchSubscriptionEventWidget extends StatelessWidget {
       icon: Icons.star,
       child: StyledText(
         text: localizations.subscriptionEvent(
-          model.subscriberUserName,
-          model.tier.replaceAll("000", ""),
+          htmlEscape.convert(model.subscriberUserName),
+          htmlEscape.convert(model.tier.replaceAll("000", "")),
         ),
         tags: {
           'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
@@ -68,9 +70,9 @@ class TwitchSubscriptionGiftEventWidget extends StatelessWidget {
       icon: Icons.redeem,
       child: StyledText(
         text: localizations.subscriptionGiftEvent(
-          model.gifterUserName,
+          htmlEscape.convert(model.gifterUserName),
           model.total,
-          model.tier.replaceAll("000", ""),
+          htmlEscape.convert(model.tier.replaceAll("000", "")),
           model.cumulativeTotal,
         ),
         tags: {
@@ -159,7 +161,7 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           StyledText(
-            text: model.localizedText(localizations),
+            text: model.localizedText(localizations, escapeMarkup: true),
             tags: {
               'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),
             },
