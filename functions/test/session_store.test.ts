@@ -63,6 +63,11 @@ test("Express finishes its response and receives the failed automatic session sa
       secret: "test-only-secret",
       resave: true,
       saveUninitialized: true,
+      proxy: true,
+      cookie: {
+        secure: true,
+        httpOnly: true,
+      },
     }),
   );
   app.get("/auth/start", (req, res) => {
