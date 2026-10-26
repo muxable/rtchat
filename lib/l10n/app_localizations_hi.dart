@@ -9,71 +9,71 @@ class AppLocalizationsHi extends AppLocalizations {
   AppLocalizationsHi([String locale = 'hi']) : super(locale);
 
   @override
-  String get sendAMessage => 'Send a message...';
+  String get sendAMessage => 'संदेश भेजें...';
 
   @override
-  String get writeSomething => 'Write something...';
+  String get writeSomething => 'कुछ लिखें...';
 
   @override
-  String get speakToTheCrowds => 'Speak to the crowds...';
+  String get speakToTheCrowds => 'भीड़ से बात करें...';
 
   @override
-  String get shareYourThoughts => 'Share your thoughts...';
+  String get shareYourThoughts => 'अपने विचार साझा करें...';
 
   @override
-  String get saySomethingYouLittleBitch => 'Say something, you little bitch...';
+  String get saySomethingYouLittleBitch => 'कुछ तो बोल, कमीने...';
 
   @override
-  String get search => 'Search';
+  String get search => 'खोजें';
 
   @override
-  String get notSignedIn => 'Not signed in';
+  String get notSignedIn => 'साइन इन नहीं है';
 
   @override
-  String get searchChannels => 'Search';
+  String get searchChannels => 'खोजें';
 
   @override
-  String get raidAChannel => 'Raid';
+  String get raidAChannel => 'रेड';
 
   @override
-  String get noMessagesEmptyState => 'It\'s quiet in here.';
+  String get noMessagesEmptyState => 'यहाँ सन्नाटा है।';
 
   @override
   String newMessageCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count new messages',
-      one: '1 new message',
-      zero: 'No new messages',
+      other: '$count नए संदेश',
+      one: '1 नया संदेश',
+      zero: 'कोई नया संदेश नहीं',
     );
     return '$_temp0';
   }
 
   @override
-  String get signInWithTwitch => 'Sign in with Twitch';
+  String get signInWithTwitch => 'Twitch से साइन इन करें';
 
   @override
   String get signInError =>
-      'An error occurred when signing in. Please try again.';
+      'साइन इन करते समय एक त्रुटि हुई। कृपया पुनः प्रयास करें।';
 
   @override
-  String get continueAsGuest => 'Continue as Guest';
+  String get continueAsGuest => 'अतिथि के रूप में जारी रखें';
 
   @override
-  String get signInToSendMessages => 'Sign in to send messages';
+  String get signInToSendMessages => 'संदेश भेजने के लिए साइन इन करें';
 
   @override
-  String get currentViewers => 'Current viewers';
+  String get currentViewers => 'वर्तमान दर्शक';
 
   @override
-  String get textToSpeech => 'Text to speech';
+  String get textToSpeech => 'टेक्स्ट टू स्पीच';
 
   @override
-  String get streamPreview => 'Stream preview';
+  String get streamPreview => 'स्ट्रीम पूर्वावलोकन';
 
   @override
-  String get activityFeed => 'Activity feed';
+  String get activityFeed => 'गतिविधि फ़ीड';
 
   @override
   String streamOnline(DateTime date, DateTime time) {
@@ -84,7 +84,7 @@ class AppLocalizationsHi extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream online at $dateString, $timeString';
+    return '$dateString, $timeString पर स्ट्रीम ऑनलाइन हुई';
   }
 
   @override
@@ -96,7 +96,7 @@ class AppLocalizationsHi extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream offline at $dateString, $timeString';
+    return '$dateString, $timeString पर स्ट्रीम ऑफ़लाइन हुई';
   }
 
   @override
@@ -108,175 +108,177 @@ class AppLocalizationsHi extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Chat cleared at $dateString, $timeString';
+    return '$dateString, $timeString पर चैट साफ़ की गई';
   }
 
   @override
-  String get configureQuickLinks => 'Configure quick links';
+  String get configureQuickLinks => 'त्वरित लिंक कॉन्फ़िगर करें';
 
   @override
-  String get disableRainMode => 'Disable rain mode';
+  String get disableRainMode => 'रेन मोड बंद करें';
 
   @override
-  String get enableRainMode => 'Enable rain mode';
+  String get enableRainMode => 'रेन मोड चालू करें';
 
   @override
-  String get disableRainModeSubtitle => 'Interaction will be enabled';
+  String get disableRainModeSubtitle => 'इंटरैक्शन चालू हो जाएगा';
 
   @override
-  String get enableRainModeSubtitle => 'Interaction will be disabled';
+  String get enableRainModeSubtitle => 'इंटरैक्शन बंद हो जाएगा';
 
   @override
-  String get refreshAudioSources => 'Refresh audio sources';
+  String get refreshAudioSources => 'ऑडियो स्रोत रीफ़्रेश करें';
 
   @override
   String refreshAudioSourcesCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count audio sources refreshed',
-      one: '1 audio source refreshed',
-      zero: 'No audio sources refreshed',
+      other: '$count ऑडियो स्रोत रीफ़्रेश किए गए',
+      one: '1 ऑडियो स्रोत रीफ़्रेश किया गया',
+      zero: 'कोई ऑडियो स्रोत रीफ़्रेश नहीं किया गया',
     );
     return '$_temp0';
   }
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'सेटिंग्स';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'साइन आउट करें';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'रद्द करें';
 
   @override
-  String get signOutConfirmation => 'Are you sure you want to sign out?';
+  String get signOutConfirmation => 'क्या आप वाकई साइन आउट करना चाहते हैं?';
 
   @override
-  String get broadcaster => 'Broadcaster';
+  String get broadcaster => 'ब्रॉडकास्टर';
 
   @override
-  String get moderators => 'Moderators';
+  String get moderators => 'मॉडरेटर';
 
   @override
-  String get viewers => 'Viewers';
+  String get viewers => 'दर्शक';
 
   @override
-  String get communityVips => 'Community VIPs';
+  String get communityVips => 'कम्युनिटी VIPs';
 
   @override
-  String get searchViewers => 'Search Viewers';
+  String get searchViewers => 'दर्शक खोजें';
 
   @override
-  String get reconnecting => 'Reconnecting...';
+  String get reconnecting => 'पुनः कनेक्ट हो रहा है...';
 
   @override
-  String get twitchBadges => 'Twitch badges';
+  String get twitchBadges => 'Twitch बैज';
 
   @override
-  String get selectAll => 'Select all';
+  String get selectAll => 'सभी चुनें';
 
   @override
-  String get quickLinks => 'Quick links';
+  String get quickLinks => 'त्वरित लिंक';
 
   @override
   String get swipeToDeleteQuickLinks =>
-      'Swipe left or right to delete quick link';
+      'त्वरित लिंक हटाने के लिए बाएँ या दाएँ स्वाइप करें';
 
   @override
-  String get quickLinksLabelHint => 'Label';
+  String get quickLinksLabelHint => 'लेबल';
 
   @override
-  String get invalidUrlErrorText => 'This doesn\'t look like a valid URL';
+  String get invalidUrlErrorText => 'यह एक मान्य URL नहीं लगता है';
 
   @override
-  String get duplicateUrlErrorText => 'This link already exists';
+  String get duplicateUrlErrorText => 'यह लिंक पहले से मौजूद है';
 
   @override
-  String get or => 'or';
+  String get or => 'या';
 
   @override
-  String get clearCookies => 'Clear cookies';
+  String get clearCookies => 'कुकीज़ साफ़ करें';
 
   @override
-  String get disabled => 'Disabled';
+  String get disabled => 'अक्षम';
 
   @override
-  String get twitchActivityFeed => 'Twitch activity feed';
+  String get twitchActivityFeed => 'Twitch गतिविधि फ़ीड';
 
   @override
-  String get signInToEnable => 'You must be signed in to enable this';
+  String get signInToEnable =>
+      'इसे सक्षम करने के लिए आपका साइन इन होना आवश्यक है';
 
   @override
-  String get customUrl => 'Custom URL';
+  String get customUrl => 'कस्टम URL';
 
   @override
-  String get preview => 'Preview';
+  String get preview => 'पूर्वावलोकन';
 
   @override
-  String get audioSources => 'Audio sources';
+  String get audioSources => 'ऑडियो स्रोत';
 
   @override
   String get enableOffStreamSwitchTitle =>
-      'Enable off-stream (uses more battery)';
+      'ऑफ़-स्ट्रीम चालू करें (अधिक बैटरी खर्च होती है)';
 
   @override
   String get enableOffStreamSwitchEnabledSubtitle =>
-      'Audio will also play when you\'re offline';
+      'जब आप ऑफ़लाइन होंगे तब भी ऑडियो चलेगा';
 
   @override
   String get enableOffStreamSwitchDisabledSubtitle =>
-      'Audio will only play when you\'re live';
+      'ऑडियो केवल तभी चलेगा जब आप लाइव होंगे';
 
   @override
-  String get iosOggWarningTitle => 'Hey! Listen!';
+  String get iosOggWarningTitle => 'अरे! सुनिए!';
 
   @override
   String get iosOggWarningSubtitle =>
-      'iOS doesn\'t support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won\'t play.';
+      'iOS *.ogg मीडिया फ़ाइलों का समर्थन नहीं करता है, जो Streamlabs पर डिफ़ॉल्ट फ़ाइलें होती हैं। सुनिश्चित करें कि आपके ऑडियो स्रोत किसी अन्य फ़ॉर्मेट का उपयोग करें, अन्यथा वे नहीं चलेंगे।';
 
   @override
   String get url => 'URL';
 
   @override
-  String get activityFeedSubtitle => 'Customize your activity feed';
+  String get activityFeedSubtitle => 'अपनी गतिविधि फ़ीड कस्टमाइज़ करें';
 
   @override
-  String get audioSourcesSubtitle => 'Add web sources for alert sounds';
+  String get audioSourcesSubtitle => 'अलर्ट ध्वनियों के लिए वेब स्रोत जोड़ें';
 
   @override
-  String get quickLinksSubtitle => 'Add shortcuts to commonly used tools';
+  String get quickLinksSubtitle =>
+      'अक्सर उपयोग किए जाने वाले टूल्स के लिए शॉर्टकट जोड़ें';
 
   @override
-  String get chatHistory => 'Chat history';
+  String get chatHistory => 'चैट इतिहास';
 
   @override
-  String get chatHistorySubtitle => 'Change the chat appearance';
+  String get chatHistorySubtitle => 'चैट का रंग-रूप बदलें';
 
   @override
-  String get textToSpeechSubtitle => 'Change text to speech settings';
+  String get textToSpeechSubtitle => 'टेक्स्ट टू स्पीच सेटिंग्स बदलें';
 
   @override
-  String get events => 'Events';
+  String get events => 'इवेंट';
 
   @override
-  String get eventsSubtitle => 'Configure Twitch events';
+  String get eventsSubtitle => 'Twitch इवेंट कॉन्फ़िगर करें';
 
   @override
-  String get thirdPartyServices => 'Third-party services';
+  String get thirdPartyServices => 'तृतीय-पक्ष सेवाएँ';
 
   @override
-  String get thirdPartyServicesSubtitle => 'Connect to a third-party service';
+  String get thirdPartyServicesSubtitle => 'किसी तृतीय-पक्ष सेवा से जुड़ें';
 
   @override
   String followingEvent(String displayName) {
-    return '<b>$displayName</b> is following you';
+    return '<b>$displayName</b> आपको फ़ॉलो कर रहे हैं';
   }
 
   @override
   String followingEvent2(String displayName, String displayNameTwo) {
-    return '<b>$displayName</b> and <b>$displayNameTwo</b> are following you';
+    return '<b>$displayName</b> और <b>$displayNameTwo</b> आपको फ़ॉलो कर रहे हैं';
   }
 
   @override
@@ -289,54 +291,54 @@ class AppLocalizationsHi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
-    return '<b>$displayName</b>, <b>$displayNameTwo</b>, and $numOthersString others are following you';
+    return '<b>$displayName</b>, <b>$displayNameTwo</b> और $numOthersString अन्य आपको फ़ॉलो कर रहे हैं';
   }
 
   @override
   String unmuteUser(String displayName) {
-    return 'Unmute $displayName';
+    return '$displayName को अनम्यूट करें';
   }
 
   @override
   String muteUser(String displayName) {
-    return 'Mute $displayName';
+    return '$displayName को म्यूट करें';
   }
 
   @override
   String timeoutUser(String displayName) {
-    return 'Timeout $displayName';
+    return '$displayName को टाइम-आउट करें';
   }
 
   @override
   String banUser(String displayName) {
-    return 'Ban $displayName';
+    return '$displayName को बैन करें';
   }
 
   @override
   String unbanUser(String displayName) {
-    return 'Unban $displayName';
+    return '$displayName को अनबैन करें';
   }
 
   @override
   String viewProfile(String displayName) {
-    return 'View $displayName\'s profile';
+    return '$displayName की प्रोफ़ाइल देखें';
   }
 
   @override
-  String get copyMessage => 'Copy Message';
+  String get copyMessage => 'संदेश कॉपी करें';
 
   @override
-  String get deleteMessage => 'Delete Message';
+  String get deleteMessage => 'संदेश हटाएँ';
 
   @override
   String get longScrollNotification =>
-      'You\'re scrolling kind of far, don\'t you think?';
+      'आप काफ़ी पीछे तक स्क्रॉल कर रहे हैं, क्या आपको नहीं लगता?';
 
   @override
-  String get stfu => 'stfu';
+  String get stfu => 'चुप रहो';
 
   @override
-  String get globalEmotes => 'Global Emotes';
+  String get globalEmotes => 'ग्लोबल इमोट्स';
 
   @override
   String followerCount(int count) {
@@ -348,9 +350,9 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString followers',
-      one: '1 follower',
-      zero: '0 followers',
+      other: '$countString फ़ॉलोअर',
+      one: '1 फ़ॉलोअर',
+      zero: '0 फ़ॉलोअर',
     );
     return '$_temp0';
   }
@@ -365,170 +367,172 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString viewers',
-      one: '1 viewer',
-      zero: '0 viewers',
+      other: '$countString दर्शक',
+      one: '1 दर्शक',
+      zero: '0 दर्शक',
     );
     return '$_temp0';
   }
 
   @override
   String get streamPreviewMessage =>
-      'Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.';
+      'नमस्ते! खुशी है कि आपको स्ट्रीम पूर्वावलोकन पसंद है, लेकिन ध्यान रहे कि इससे बहुत बैटरी खर्च होती है। इसके बिना चैट पढ़ने से आपकी बैटरी ज़्यादा चलेगी।';
 
   @override
-  String get okay => 'Okay';
+  String get okay => 'ठीक है';
 
   @override
-  String get streamPreviewLoading => 'Loading (or stream is offline)...';
+  String get streamPreviewLoading => 'लोड हो रहा है (या स्ट्रीम ऑफ़लाइन है)...';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'क्लिपबोर्ड पर कॉपी किया गया';
 
   @override
   String get audioSourcesRequirePermissions =>
-      'Audio sources require permissions';
+      'ऑडियो स्रोतों के लिए अनुमति आवश्यक है';
 
   @override
   String get audioSourcesRequirePermissionsMessage =>
-      'Approve RealtimeChat to draw over other apps to use audio sources.';
+      'ऑडियो स्रोतों का उपयोग करने के लिए RealtimeChat को अन्य ऐप्स के ऊपर दिखने की अनुमति दें।';
 
   @override
-  String get audioSourcesRemoveButton => 'Remove audio sources';
+  String get audioSourcesRemoveButton => 'ऑडियो स्रोत हटाएँ';
 
   @override
-  String get audioSourcesOpenSettingsButton => 'Open settings';
+  String get audioSourcesOpenSettingsButton => 'सेटिंग्स खोलें';
 
   @override
-  String get flashOn => 'Flash on';
+  String get flashOn => 'फ़्लैश चालू';
 
   @override
-  String get flashOff => 'Flash off';
+  String get flashOff => 'फ़्लैश बंद';
 
   @override
-  String get durationOneSecond => '1 second';
+  String get durationOneSecond => '1 सेकंड';
 
   @override
-  String get durationOneMinute => '1 minute';
+  String get durationOneMinute => '1 मिनट';
 
   @override
-  String get durationTenMinutes => '10 minutes';
+  String get durationTenMinutes => '10 मिनट';
 
   @override
-  String get durationOneHour => '1 hour';
+  String get durationOneHour => '1 घंटा';
 
   @override
-  String get durationSixHours => '6 hours';
+  String get durationSixHours => '6 घंटे';
 
   @override
-  String get durationOneDay => '1 day';
+  String get durationOneDay => '1 दिन';
 
   @override
-  String get durationTwoDays => '2 days';
+  String get durationTwoDays => '2 दिन';
 
   @override
-  String get durationOneWeek => '1 week';
+  String get durationOneWeek => '1 सप्ताह';
 
   @override
-  String get durationTwoWeeks => '2 weeks';
+  String get durationTwoWeeks => '2 सप्ताह';
 
   @override
-  String get durationOneSecondTimeoutPrompt => 'Timeout for 1 second';
+  String get durationOneSecondTimeoutPrompt => '1 सेकंड के लिए टाइम-आउट करें';
 
   @override
-  String get durationOneMinuteTimeoutPrompt => 'Timeout for 1 minute';
+  String get durationOneMinuteTimeoutPrompt => '1 मिनट के लिए टाइम-आउट करें';
 
   @override
-  String get durationTenMinutesTimeoutPrompt => 'Timeout for 10 minutes';
+  String get durationTenMinutesTimeoutPrompt => '10 मिनट के लिए टाइम-आउट करें';
 
   @override
-  String get durationOneHourTimeoutPrompt => 'Timeout for 1 hour';
+  String get durationOneHourTimeoutPrompt => '1 घंटे के लिए टाइम-आउट करें';
 
   @override
-  String get durationSixHoursTimeoutPrompt => 'Timeout for 6 hours';
+  String get durationSixHoursTimeoutPrompt => '6 घंटे के लिए टाइम-आउट करें';
 
   @override
-  String get durationOneDayTimeoutPrompt => 'Timeout for 1 day';
+  String get durationOneDayTimeoutPrompt => '1 दिन के लिए टाइम-आउट करें';
 
   @override
-  String get durationTwoDaysTimeoutPrompt => 'Timeout for 2 days';
+  String get durationTwoDaysTimeoutPrompt => '2 दिन के लिए टाइम-आउट करें';
 
   @override
-  String get durationOneWeekTimeoutPrompt => 'Timeout for 1 week';
+  String get durationOneWeekTimeoutPrompt => '1 सप्ताह के लिए टाइम-आउट करें';
 
   @override
-  String get durationTwoWeeksTimeoutPrompt => 'Timeout for 2 weeks';
+  String get durationTwoWeeksTimeoutPrompt => '2 सप्ताह के लिए टाइम-आउट करें';
 
   @override
   String get errorFetchingViewerList =>
-      'We couldn\'t fetch the viewer list for this channel';
+      'हम इस चैनल के लिए दर्शकों की सूची प्राप्त नहीं कर सके';
 
   @override
-  String get eventsTitle => 'Events';
+  String get eventsTitle => 'इवेंट';
 
   @override
-  String get followEventConfigTitle => 'Follow Event';
+  String get followEventConfigTitle => 'फ़ॉलो इवेंट';
 
   @override
-  String get customizeYourFollowEvent => 'Customize your follow event';
+  String get customizeYourFollowEvent => 'अपने फ़ॉलो इवेंट को कस्टमाइज़ करें';
 
   @override
-  String get subscribeEventConfigTitle => 'Subscribe Event';
+  String get subscribeEventConfigTitle => 'सब्सक्राइब इवेंट';
 
   @override
   String get customizeYourSubscriptionEvent =>
-      'Customize your subscription event';
+      'अपने सब्सक्रिप्शन इवेंट को कस्टमाइज़ करें';
 
   @override
-  String get cheerEventConfigTitle => 'Cheer Event';
+  String get cheerEventConfigTitle => 'चीयर इवेंट';
 
   @override
-  String get customizeYourCheerEvent => 'Customize your cheer event';
+  String get customizeYourCheerEvent => 'अपने चीयर इवेंट को कस्टमाइज़ करें';
 
   @override
-  String get raidEventConfigTitle => 'Raid Event';
+  String get raidEventConfigTitle => 'रेड इवेंट';
 
   @override
-  String get customizeYourRaidEvent => 'Customize your raid event';
+  String get customizeYourRaidEvent => 'अपने रेड इवेंट को कस्टमाइज़ करें';
 
   @override
-  String get hostEventConfigTitle => 'Host Event';
+  String get hostEventConfigTitle => 'होस्ट इवेंट';
 
   @override
-  String get customizeYourHostEvent => 'Customize your host event';
+  String get customizeYourHostEvent => 'अपने होस्ट इवेंट को कस्टमाइज़ करें';
 
   @override
-  String get hypetrainEventConfigTitle => 'Hype Train Event';
+  String get hypetrainEventConfigTitle => 'हाइप ट्रेन इवेंट';
 
   @override
-  String get customizeYourHypetrainEvent => 'Customize your hype train event';
+  String get customizeYourHypetrainEvent =>
+      'अपने हाइप ट्रेन इवेंट को कस्टमाइज़ करें';
 
   @override
-  String get pollEventConfigTitle => 'Poll Event';
+  String get pollEventConfigTitle => 'पोल इवेंट';
 
   @override
-  String get customizeYourPollEvent => 'Customize your poll event';
+  String get customizeYourPollEvent => 'अपने पोल इवेंट को कस्टमाइज़ करें';
 
   @override
-  String get predictionEventConfigTitle => 'Prediction Event';
+  String get predictionEventConfigTitle => 'प्रेडिक्शन इवेंट';
 
   @override
-  String get customizeYourPredictionEvent => 'Customize your prediction event';
+  String get customizeYourPredictionEvent =>
+      'अपने प्रेडिक्शन इवेंट को कस्टमाइज़ करें';
 
   @override
   String get channelPointRedemptionEventConfigTitle =>
-      'Channel Point Redemption Event';
+      'चैनल पॉइंट रिडेम्पशन इवेंट';
 
   @override
   String get customizeYourChannelPointRedemptionEvent =>
-      'Customize your channel point redemption event';
+      'अपने चैनल पॉइंट रिडेम्पशन इवेंट को कस्टमाइज़ करें';
 
   @override
-  String get outgoingRaidEventConfigTitle => 'Outgoing Raid Event';
+  String get outgoingRaidEventConfigTitle => 'आउटगोइंग रेड इवेंट';
 
   @override
   String get customizeYourOutgoingRaidEvent =>
-      'Customize your outgoing raid event';
+      'अपने आउटगोइंग रेड इवेंट को कस्टमाइज़ करें';
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
@@ -538,15 +542,15 @@ class AppLocalizationsHi extends AppLocalizations {
       viewerCount,
     );
 
-    return '<b>$displayName</b> is raiding with <b>$viewerCountString</b> viewers!';
+    return '<b>$displayName</b> <b>$viewerCountString</b> दर्शकों के साथ रेड कर रहे हैं!';
   }
 
   @override
-  String get shoutout => 'Shoutout';
+  String get shoutout => 'शाउटआउट';
 
   @override
   String raidingEventRaiding(String displayName) {
-    return 'Raiding <b>$displayName</b>...';
+    return '<b>$displayName</b> पर रेड की जा रही है...';
   }
 
   @override
@@ -555,25 +559,25 @@ class AppLocalizationsHi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
-    return '${secondsString}s';
+    return '$secondsString से.';
   }
 
   @override
   String raidingEventRaided(String displayName) {
-    return '<b>$displayName</b> has raided!';
+    return '<b>$displayName</b> ने रेड किया है!';
   }
 
   @override
-  String get raidingEventJoin => 'Join';
+  String get raidingEventJoin => 'शामिल हों';
 
   @override
   String raidingEventCanceled(String displayName) {
-    return '<b>$displayName</b>\'s raid was canceled.';
+    return '<b>$displayName</b> की रेड रद्द कर दी गई।';
   }
 
   @override
   String subscriptionEvent(String subscriberUserName, String tier) {
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier!';
+    return '<b>$subscriberUserName</b> ने टियर $tier पर सब्सक्राइब किया है!';
   }
 
   @override
@@ -592,7 +596,7 @@ class AppLocalizationsHi extends AppLocalizations {
       cumulativeTotal,
     );
 
-    return '<b>$gifterUserName</b> has gifted $totalString Tier $tier subs, totaling $cumulativeTotalString!';
+    return '<b>$gifterUserName</b> ने $totalString टियर $tier सब्सक्रिप्शन उपहार में दिए हैं, कुल मिलाकर $cumulativeTotalString!';
   }
 
   @override
@@ -607,7 +611,7 @@ class AppLocalizationsHi extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed for $cumulativeMonthsString months at Tier $tier!';
+    return '<b>$subscriberUserName</b> ने टियर $tier पर $cumulativeMonthsString महीनों के लिए सब्सक्राइब किया है!';
   }
 
   @override
@@ -628,27 +632,27 @@ class AppLocalizationsHi extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b> ने टियर $tier पर $durationMonthsString महीनों के लिए अग्रिम सब्सक्राइब किया है, कुल $cumulativeMonthsString महीने!';
   }
 
   @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
-    return '<b>$donor</b> tipped <b>$value $currency</b>.';
+    return '<b>$donor</b> ने <b>$value $currency</b> टिप दी।';
   }
 
   @override
   String realtimeCashTipAnonymous(String value, String currency) {
-    return 'Anonymous tipped <b>$value $currency</b>.';
+    return 'अज्ञात ने <b>$value $currency</b> टिप दी।';
   }
 
   @override
   String streamElementsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on StreamElements.';
+    return '<b>$name</b> ने StreamElements पर <b>$formattedAmount</b> टिप दी।';
   }
 
   @override
   String streamlabsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on Streamlabs.';
+    return '<b>$name</b> ने Streamlabs पर <b>$formattedAmount</b> टिप दी।';
   }
 
   @override
@@ -662,7 +666,7 @@ class AppLocalizationsHi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points. $userInput';
+    return '<b>$redeemerUsername</b> ने <b>$rewardCostString</b> पॉइंट्स में <b>$rewardName</b> रिडीम किया। $userInput';
   }
 
   @override
@@ -675,7 +679,7 @@ class AppLocalizationsHi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points.';
+    return '<b>$redeemerUsername</b> ने <b>$rewardCostString</b> पॉइंट्स में <b>$rewardName</b> रिडीम किया।';
   }
 
   @override
@@ -685,11 +689,11 @@ class AppLocalizationsHi extends AppLocalizations {
     );
     final String bitsString = bitsNumberFormat.format(bits);
 
-    return '<b>$name</b> cheered <b>$bitsString</b> bits. $cheerMessage';
+    return '<b>$name</b> ने <b>$bitsString</b> बिट्स के साथ चीयर किया। $cheerMessage';
   }
 
   @override
-  String get anonymous => 'Anonymous';
+  String get anonymous => 'अज्ञात';
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
@@ -697,12 +701,12 @@ class AppLocalizationsHi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
-    return '<b>$fromDisplayName</b> is hosting with a party of <b>$viewersString</b>.';
+    return '<b>$fromDisplayName</b> <b>$viewersString</b> दर्शकों के साथ होस्ट कर रहे हैं।';
   }
 
   @override
   String hypeTrainEventProgress(String level, String progressPercent) {
-    return 'Hype Train level <b>$level</b> in progress! <b>$progressPercent%</b> completed!';
+    return 'हाइप ट्रेन लेवल <b>$level</b> जारी है! <b>$progressPercent%</b> पूरा हुआ!';
   }
 
   @override
@@ -711,7 +715,7 @@ class AppLocalizationsHi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> succeeded.';
+    return 'हाइप ट्रेन लेवल <b>$levelString</b> सफल रहा।';
   }
 
   @override
@@ -720,7 +724,7 @@ class AppLocalizationsHi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> failed.';
+    return 'हाइप ट्रेन लेवल <b>$levelString</b> विफल रहा।';
   }
 
   @override
@@ -738,24 +742,24 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get textToSpeechEnabled => 'Text to speech enabled';
+  String get textToSpeechEnabled => 'टेक्स्ट टू स्पीच चालू किया गया';
 
   @override
-  String get textToSpeechDisabled => 'Text to speech disabled';
+  String get textToSpeechDisabled => 'टेक्स्ट टू स्पीच बंद किया गया';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'केवल अलर्ट';
 
   @override
-  String get pinDuration => 'Pin Duration';
+  String get pinDuration => 'पिन की अवधि';
 
   @override
   String durationSeconds(int seconds) {
     String _temp0 = intl.Intl.pluralLogic(
       seconds,
       locale: localeName,
-      other: '$seconds seconds',
-      one: '1 second',
+      other: '$seconds सेकंड',
+      one: '1 सेकंड',
     );
     return '$_temp0';
   }
@@ -765,245 +769,251 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: '$minutes minutes',
-      one: '1 minute',
+      other: '$minutes मिनट',
+      one: '1 मिनट',
     );
     return '$_temp0';
   }
 
   @override
-  String get enableEvent => 'Enable event';
+  String get enableEvent => 'इवेंट चालू करें';
 
   @override
-  String get showEventInChatHistory => 'Show event in chat history';
+  String get showEventInChatHistory => 'चैट इतिहास में इवेंट दिखाएँ';
 
   @override
-  String get enableShoutouts => 'Enable shoutouts';
+  String get enableShoutouts => 'शाउटआउट चालू करें';
 
   @override
   String get enableShoutoutsSubtitle =>
-      'Send a link to the raiding channel to chat';
+      'रेड करने वाले चैनल का लिंक चैट में भेजें';
 
   @override
-  String get raidConfigurationTitle => 'Raid Configuration';
+  String get raidConfigurationTitle => 'रेड कॉन्फ़िगरेशन';
 
   @override
-  String get cheerConfigurationTitle => 'Cheer Configuration';
+  String get cheerConfigurationTitle => 'चीयर कॉन्फ़िगरेशन';
 
   @override
-  String get followConfigurationTitle => 'Follow Configuration';
+  String get followConfigurationTitle => 'फ़ॉलो कॉन्फ़िगरेशन';
 
   @override
-  String get outgoingRaidConfigurationTitle => 'Outgoing Raid Configuration';
+  String get outgoingRaidConfigurationTitle => 'आउटगोइंग रेड कॉन्फ़िगरेशन';
 
   @override
-  String get hostConfigurationTitle => 'Host Configuration';
+  String get hostConfigurationTitle => 'होस्ट कॉन्फ़िगरेशन';
 
   @override
-  String get channelPointConfigurationTitle => 'Channel Point Configuration';
+  String get channelPointConfigurationTitle => 'चैनल पॉइंट कॉन्फ़िगरेशन';
 
   @override
-  String get pollConfigurationTitle => 'Poll Configuration';
+  String get pollConfigurationTitle => 'पोल कॉन्फ़िगरेशन';
 
   @override
-  String get hypetrainConfigurationTitle => 'Hypetrain Configuration';
+  String get hypetrainConfigurationTitle => 'हाइप ट्रेन कॉन्फ़िगरेशन';
 
   @override
-  String get subscriptionConfigurationTitle => 'Subscription Configuration';
+  String get subscriptionConfigurationTitle => 'सब्सक्रिप्शन कॉन्फ़िगरेशन';
 
   @override
-  String get predictionConfigurationTitle => 'Prediction Configuration';
+  String get predictionConfigurationTitle => 'प्रेडिक्शन कॉन्फ़िगरेशन';
 
   @override
   String get unfulfilledRewardsPinDuration =>
-      'Additional Pin Duration for Unfulfilled Rewards';
+      'अधूरे रिवॉर्ड्स के लिए अतिरिक्त पिन अवधि';
 
   @override
-  String get pollPinDuration => 'Pin duration after the result is finalized';
+  String get pollPinDuration => 'परिणाम घोषित होने के बाद पिन की अवधि';
 
   @override
-  String get hypetrainPinDuration => 'Pin duration after hypetrain is over';
+  String get hypetrainPinDuration =>
+      'हाइप ट्रेन समाप्त होने के बाद पिन की अवधि';
 
   @override
   String get enableGiftedSubscriptions =>
-      'Enable individual gifted subscriptions';
+      'अलग-अलग गिफ़्ट किए गए सब्सक्रिप्शन चालू करें';
 
   @override
   String get enableGiftedSubscriptionsSubtitle =>
-      'Show every subscription that is gifted';
+      'गिफ़्ट किया गया प्रत्येक सब्सक्रिप्शन दिखाएँ';
 
   @override
-  String get settingsBackupTitle => 'Settings backup and restore';
+  String get settingsBackupTitle => 'सेटिंग्स बैकअप और रीस्टोर';
 
   @override
-  String get cloudBackup => 'Cloud backup';
+  String get cloudBackup => 'क्लाउड बैकअप';
 
   @override
-  String get lastBackupNever => 'Last backup: never';
+  String get lastBackupNever => 'अंतिम बैकअप: कभी नहीं';
 
   @override
-  String get backUp => 'Back up';
+  String get backUp => 'बैकअप लें';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'रीस्टोर करें';
 
   @override
-  String get localBackup => 'Local backup';
+  String get localBackup => 'लोकल बैकअप';
 
   @override
-  String get exportSettings => 'Export';
+  String get exportSettings => 'एक्सपोर्ट करें';
 
   @override
-  String get importSettings => 'Import';
+  String get importSettings => 'इम्पोर्ट करें';
 
   @override
-  String get showViewerAndFollowerCount => 'Show viewer and follower count';
+  String get showViewerAndFollowerCount =>
+      'दर्शकों और फ़ॉलोअर की संख्या दिखाएँ';
 
   @override
-  String get screenOrientation => 'Screen orientation';
+  String get screenOrientation => 'स्क्रीन ओरिएंटेशन';
 
   @override
-  String get appTheme => 'App theme';
+  String get appTheme => 'ऐप थीम';
 
   @override
-  String get systemDefault => 'System';
+  String get systemDefault => 'सिस्टम';
 
   @override
-  String get portrait => 'Portrait';
+  String get portrait => 'पोर्ट्रेट';
 
   @override
-  String get landscape => 'Landscape';
+  String get landscape => 'लैंडस्केप';
 
   @override
-  String get lightTheme => 'Light';
+  String get lightTheme => 'लाइट';
 
   @override
-  String get darkTheme => 'Dark';
+  String get darkTheme => 'डार्क';
 
   @override
-  String get openSourceTitle => 'RealtimeChat is open source';
+  String get openSourceTitle => 'RealtimeChat ओपन सोर्स है';
 
   @override
-  String get openSourceSubtitle => 'Find us on GitHub!';
+  String get openSourceSubtitle => 'हमें GitHub पर खोजें!';
 
   @override
-  String get discordSubtitle => 'Join the Muxable Discord!';
+  String get discordSubtitle => 'Muxable Discord से जुड़ें!';
 
   @override
   String get earlyTestersThanks =>
-      'Thanks to all the early testers who sent bug reports!';
+      'बग रिपोर्ट भेजने वाले सभी शुरुआती टेस्टर्स का धन्यवाद!';
 
   @override
-  String get discoModeEnabled => '🕺 Disco mode enabled! :D';
+  String get discoModeEnabled => '🕺 डिस्को मोड चालू हो गया! :D';
 
   @override
-  String get discoModeDisabled => '🕺 Disco mode disabled D:';
+  String get discoModeDisabled => '🕺 डिस्को मोड बंद हो गया D:';
 
   @override
-  String get playSampleMessage => 'Play sample message';
+  String get playSampleMessage => 'नमूना संदेश चलाएँ';
 
   @override
-  String get textToSpeechRate => 'Text to Speech Rate';
+  String get textToSpeechRate => 'टेक्स्ट टू स्पीच की गति';
 
   @override
-  String get textToSpeechPitch => 'Text to Speech Pitch';
+  String get textToSpeechPitch => 'टेक्स्ट टू स्पीच की पिच';
 
   @override
-  String get muteBots => 'Mute text to speech for bots';
+  String get muteBots => 'बॉट्स के लिए टेक्स्ट टू स्पीच म्यूट करें';
 
   @override
-  String get muteEmotes => 'Mute all emotes in text to speech';
+  String get muteEmotes => 'टेक्स्ट टू स्पीच में सभी इमोट्स म्यूट करें';
 
   @override
-  String get muteViewerNames => 'Mute viewer names in text to speech';
+  String get muteViewerNames =>
+      'टेक्स्ट टू स्पीच में दर्शकों के नाम म्यूट करें';
 
   @override
-  String get subscribersOnly => 'Subscribers only';
+  String get subscribersOnly => 'केवल सब्सक्राइबर';
 
   @override
-  String get fontSize => 'Font size';
+  String get fontSize => 'फ़ॉन्ट आकार';
 
   @override
-  String get usernameContrastBoost => 'Username contrast boost';
+  String get usernameContrastBoost => 'यूज़रनेम कंट्रास्ट बूस्ट';
 
   @override
-  String get twitchBadgeSettings => 'Twitch badge settings';
+  String get twitchBadgeSettings => 'Twitch बैज सेटिंग्स';
 
   @override
-  String get twitchBadgeSettingsSubtitle => 'Control which badges are visible';
+  String get twitchBadgeSettingsSubtitle =>
+      'नियंत्रित करें कि कौन-से बैज दिखाई दें';
 
   @override
-  String get showDeletedMessages => 'Show deleted messages';
+  String get showDeletedMessages => 'हटाए गए संदेश दिखाएँ';
 
   @override
-  String get deletedMessagesGreyedOut => 'Deleted messages will be greyed out';
+  String get deletedMessagesGreyedOut =>
+      'हटाए गए संदेश धुंधले (ग्रे) दिखाई देंगे';
 
   @override
-  String get deletedMessagesRemoved => 'Deleted messages will be removed';
+  String get deletedMessagesRemoved => 'हटाए गए संदेश पूरी तरह हटा दिए जाएंगे';
 
   @override
-  String get showLoginNames => 'Show login names';
+  String get showLoginNames => 'लॉगिन नाम दिखाएँ';
 
   @override
   String get loginNamesShown =>
-      'Login names will be shown if they are different from the display name';
+      'यदि लॉगिन नाम डिस्प्ले नाम से अलग हैं तो वे दिखाए जाएंगे';
 
   @override
-  String get loginNamesHidden => 'Login names will be hidden';
+  String get loginNamesHidden => 'लॉगिन नाम छिपाए जाएंगे';
 
   @override
-  String get compactMessages => 'Compact messages';
+  String get compactMessages => 'संदेश संक्षिप्त करें';
 
   @override
-  String get dontCompactMessages => 'Don\'t compact messages';
+  String get dontCompactMessages => 'संदेशों को संक्षिप्त न करें';
 
   @override
-  String get dontCompactMessagesSubtitle => 'Messages are shown unchanged';
+  String get dontCompactMessagesSubtitle =>
+      'संदेश बिना किसी बदलाव के दिखाए जाते हैं';
 
   @override
-  String get compactIndividualMessages => 'Compact individual messages';
+  String get compactIndividualMessages => 'अलग-अलग संदेशों को संक्षिप्त करें';
 
   @override
   String get compactIndividualMessagesSubtitle =>
-      'Repetitive text in messages is shortened';
+      'संदेशों में बार-बार आने वाले टेक्स्ट को छोटा कर दिया जाता है';
 
   @override
-  String get announcementPinDuration => 'Announcement pin duration';
+  String get announcementPinDuration => 'घोषणा पिन की अवधि';
 
   @override
-  String get idleMessageAlertDuration => 'Idle message alert duration';
+  String get idleMessageAlertDuration => 'निष्क्रिय संदेश अलर्ट की अवधि';
 
   @override
   String get idleMessageAlertDurationSubtitle =>
-      'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
+      'यदि इस अवधि तक कोई संदेश नहीं आता है और फिर एक नया संदेश आता है, तो अलर्ट ध्वनि बजेगी।';
 
   @override
-  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+  String get realtimeCashSubtitle => 'ETH या MATIC वॉलेट कनेक्ट करें';
 
   @override
-  String get walletAddress => 'Wallet address';
+  String get walletAddress => 'वॉलेट पता';
 
   @override
-  String get streamlabsSubtitle => 'See your Streamlabs donations';
+  String get streamlabsSubtitle => 'अपने Streamlabs डोनेशन देखें';
 
   @override
-  String get streamElementsSubtitle => 'See your StreamElements donations';
+  String get streamElementsSubtitle => 'अपने StreamElements डोनेशन देखें';
 
   @override
   String get thirdPartyAuthError =>
-      'Hmm, that didn\'t work. Try again, or ask on Discord?';
+      'हम्म, यह काम नहीं किया। पुनः प्रयास करें, या Discord पर पूछें?';
 
   @override
   String get companionAuthBrowserTooOld =>
-      'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.';
+      'आपका ब्राउज़र सीधे साइन इन करने के लिए बहुत पुराना है। किसी अन्य डिवाइस पर साइन इन करने के लिए अपने फ़ोन से इस QR कोड को स्कैन करें।';
 
   @override
   String get companionAuthScanQrCode =>
-      'Scan this QR code with your phone to sign in on another device.';
+      'किसी अन्य डिवाइस पर साइन इन करने के लिए अपने फ़ोन से इस QR कोड को स्कैन करें।';
 
   @override
   String kickSubscriptionEvent(String subscriberName) {
-    return '<b>$subscriberName</b> has subscribed!';
+    return '<b>$subscriberName</b> ने सब्सक्राइब किया है!';
   }
 
   @override
@@ -1012,7 +1022,7 @@ class AppLocalizationsHi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
-    return '<b>$subscriberName</b> has resubscribed for $monthsString months!';
+    return '<b>$subscriberName</b> ने $monthsString महीनों के लिए फिर से सब्सक्राइब किया है!';
   }
 
   @override
@@ -1021,7 +1031,7 @@ class AppLocalizationsHi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '<b>$gifterName</b> has gifted $countString subs!';
+    return '<b>$gifterName</b> ने $countString सब्सक्रिप्शन गिफ़्ट किए हैं!';
   }
 
   @override
@@ -1030,60 +1040,60 @@ class AppLocalizationsHi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
-    return '<b>$senderName</b> sent $amountString Kicks!';
+    return '<b>$senderName</b> ने $amountString Kicks भेजे!';
   }
 
   @override
-  String get signInWithKick => 'Sign in with Kick';
+  String get signInWithKick => 'Kick से साइन इन करें';
 
   @override
   String get textToSpeechTooManyMessages =>
-      'There are too many messages. Text to speech disabled';
+      'यहाँ बहुत सारे संदेश हैं। टेक्स्ट टू स्पीच बंद कर दिया गया है';
 
   @override
-  String get turnOffTextToSpeech => 'Turn off';
+  String get turnOffTextToSpeech => 'बंद करें';
 
   @override
-  String get addToChat => 'Add to chat';
+  String get addToChat => 'चैट में जोड़ें';
 
   @override
-  String get inChat => 'In chat';
+  String get inChat => 'चैट में';
 
   @override
-  String get removeFromChat => 'Remove from chat';
+  String get removeFromChat => 'चैट से हटाएँ';
 
   @override
   String cantChatWithAccount(String provider) {
-    return 'Your $provider account can\'t chat here';
+    return 'आपका $provider खाता यहाँ चैट नहीं कर सकता';
   }
 
   @override
-  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+  String get cantChatWithAccounts => 'आपके खाते यहाँ चैट नहीं कर सकते';
 
   @override
   String sendAMessageTo(String channel) {
-    return 'Send a message to $channel...';
+    return '$channel को संदेश भेजें...';
   }
 
   @override
   String replaceChannel(String channel) {
-    return 'Replace $channel';
+    return '$channel को बदलें';
   }
 
   @override
-  String get voicePacks => 'Voice packs';
+  String get voicePacks => 'वॉइस पैक';
 
   @override
   String get voicePacksDescription =>
-      'Voice packs read chat with natural-sounding voices that run on your device, offline once downloaded. The voices are machine-generated by AI, not recorded by a person.';
+      'वॉइस पैक प्राकृतिक लगने वाली आवाज़ों में चैट पढ़ते हैं जो एक बार डाउनलोड होने के बाद आपके डिवाइस पर ऑफ़लाइन चलते हैं। ये आवाज़ें किसी व्यक्ति द्वारा रिकॉर्ड नहीं की गई हैं, बल्कि AI द्वारा मशीन से जनरेट की गई हैं।';
 
   @override
   String voicePackDetails(int voices, String size) {
     String _temp0 = intl.Intl.pluralLogic(
       voices,
       locale: localeName,
-      other: '$voices voices',
-      one: '1 voice',
+      other: '$voices आवाज़ें',
+      one: '1 आवाज़',
     );
     return '$_temp0 · $size';
   }
@@ -1093,99 +1103,100 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count languages',
-      one: '1 language',
+      other: '$count भाषाएँ',
+      one: '1 भाषा',
     );
     return '$_temp0: $languages';
   }
 
   @override
   String get voicePackOpenRailNotice =>
-      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+      'इस मॉडल का लाइसेंस (OpenRAIL-M) हानिकारक उपयोगों, जैसे लोगों की नकल करना या गलत जानकारी फैलाना, को प्रतिबंधित करता है, और ये प्रतिबंध आप पर भी लागू होते हैं।';
 
   @override
   String voicePackDeleteConfirm(String pack, String size) {
-    return 'Delete $pack? This frees $size.';
+    return '$pack को हटाएँ? इससे $size जगह खाली होगी।';
   }
 
   @override
-  String get voicePackDownload => 'Download';
+  String get voicePackDownload => 'डाउनलोड करें';
 
   @override
-  String get voicePackUpdate => 'Update';
+  String get voicePackUpdate => 'अपडेट करें';
 
   @override
-  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+  String get voicePackWaitingForWifi => 'Wi-Fi की प्रतीक्षा हो रही है';
 
   @override
-  String get voicePackUseMobileData => 'Use mobile data';
+  String get voicePackUseMobileData => 'मोबाइल डेटा का उपयोग करें';
 
   @override
   String voicePackDownloading(String downloaded, String total) {
-    return 'Downloading: $downloaded of $total';
+    return 'डाउनलोड हो रहा है: $total में से $downloaded';
   }
 
   @override
-  String get voicePackInstalling => 'Installing';
+  String get voicePackInstalling => 'इंस्टॉल हो रहा है';
 
   @override
   String voicePackInstallFailed(String pack) {
-    return 'Couldn\'t install $pack. Check your connection and try again.';
+    return '$pack इंस्टॉल नहीं हो सका। अपना कनेक्शन जाँचें और पुनः प्रयास करें।';
   }
 
   @override
-  String get voices => 'Voices';
+  String get voices => 'आवाज़ें';
 
   @override
-  String get perViewerVoice => 'Per-viewer voice';
+  String get perViewerVoice => 'प्रत्येक दर्शक के लिए अलग आवाज़';
 
   @override
   String get perViewerVoiceSubtitle =>
-      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+      'प्रत्येक दर्शक को अपनी अलग आवाज़ मिलती है। आपके द्वारा चुनी गई आवाज़ अलर्ट पढ़ती है, या इसके बंद होने पर सब कुछ पढ़ती है।';
 
   @override
-  String get streamLanguage => 'Stream language';
+  String get streamLanguage => 'स्ट्रीम की भाषा';
 
   @override
-  String get ttsEngineNeural => 'Neural voice (on-device)';
+  String get ttsEngineNeural => 'न्यूरल आवाज़ (डिवाइस पर)';
 
   @override
-  String get ttsEngineSystem => 'System voice';
+  String get ttsEngineSystem => 'सिस्टम आवाज़';
 
   @override
   String languageUnsupported(String language) {
-    return '$language isn\'t supported by your voice packs; the system voice will be used';
+    return 'आपके वॉइस पैक द्वारा $language समर्थित नहीं है; सिस्टम आवाज़ का उपयोग किया जाएगा';
   }
 
   @override
   String get neuralFallbackLowMemory =>
-      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+      'इस डिवाइस में न्यूरल आवाज़ों के लिए पर्याप्त मेमोरी नहीं है, इसलिए चैट सिस्टम आवाज़ से पढ़ी जाती है।';
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'न्यूरल आवाज़ लोड नहीं हो सकी, इसलिए चैट सिस्टम आवाज़ से पढ़ी जाती है।';
 
   @override
-  String get accounts => 'Accounts';
+  String get accounts => 'खाते';
 
   @override
-  String get accountsSubtitle => 'Sign in to each platform you stream on';
+  String get accountsSubtitle =>
+      'जिस भी प्लेटफ़ॉर्म पर आप स्ट्रीम करते हैं उस पर साइन इन करें';
 
   @override
   String addProviderAccount(String provider) {
-    return 'Add $provider account';
+    return '$provider खाता जोड़ें';
   }
 
   @override
   String signInWithProvider(String provider) {
-    return 'Sign in with $provider';
+    return '$provider से साइन इन करें';
   }
 
   @override
   String signOutOfAccount(String channel, String provider) {
-    return 'Sign out of $channel on $provider?';
+    return '$provider पर $channel से साइन आउट करें?';
   }
 
   @override
-  String get signOutOfAll => 'Sign out of all accounts';
+  String get signOutOfAll => 'सभी खातों से साइन आउट करें';
 }

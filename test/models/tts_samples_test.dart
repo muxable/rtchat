@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:flutter/widgets.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
-import 'package:rtchat/l10n/supported_ui_locales.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/tts/samples.dart';
@@ -12,9 +11,14 @@ import '../fakes/fake_tts_engine.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('speech-only ARB locales do not expand the app UI languages', () {
+  test('speech locales also provide complete app UI translations', () {
     expect(AppLocalizations.supportedLocales, contains(const Locale('fi')));
-    expect(supportedUiLocales, isNot(contains(const Locale('fi'))));
+    final finnish = lookupAppLocalizations(const Locale('fi'));
+    expect(finnish.settings, 'Asetukset');
+    expect(
+      finnish.textToSpeechEnabled,
+      'Tekstin puheeksi muuntaminen käytössä',
+    );
     expect(
       lookupAppLocalizations(const Locale('fi')).saidMessage('Viewer', 'hello'),
       'Viewer sanoi: hello',

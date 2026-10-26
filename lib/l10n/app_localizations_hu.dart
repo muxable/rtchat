@@ -9,71 +9,71 @@ class AppLocalizationsHu extends AppLocalizations {
   AppLocalizationsHu([String locale = 'hu']) : super(locale);
 
   @override
-  String get sendAMessage => 'Send a message...';
+  String get sendAMessage => 'Üzenet küldése...';
 
   @override
-  String get writeSomething => 'Write something...';
+  String get writeSomething => 'Írj valamit...';
 
   @override
-  String get speakToTheCrowds => 'Speak to the crowds...';
+  String get speakToTheCrowds => 'Szólj a tömeghez...';
 
   @override
-  String get shareYourThoughts => 'Share your thoughts...';
+  String get shareYourThoughts => 'Oszd meg a gondolataidat...';
 
   @override
-  String get saySomethingYouLittleBitch => 'Say something, you little bitch...';
+  String get saySomethingYouLittleBitch => 'Mondj valamit, te kis ribanc...';
 
   @override
-  String get search => 'Search';
+  String get search => 'Keresés';
 
   @override
-  String get notSignedIn => 'Not signed in';
+  String get notSignedIn => 'Nincs bejelentkezve';
 
   @override
-  String get searchChannels => 'Search';
+  String get searchChannels => 'Keresés';
 
   @override
-  String get raidAChannel => 'Raid';
+  String get raidAChannel => 'Raid indítása';
 
   @override
-  String get noMessagesEmptyState => 'It\'s quiet in here.';
+  String get noMessagesEmptyState => 'Nagy itt a csend.';
 
   @override
   String newMessageCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count new messages',
-      one: '1 new message',
-      zero: 'No new messages',
+      other: '$count új üzenet',
+      one: '1 új üzenet',
+      zero: 'Nincs új üzenet',
     );
     return '$_temp0';
   }
 
   @override
-  String get signInWithTwitch => 'Sign in with Twitch';
+  String get signInWithTwitch => 'Bejelentkezés Twitch-fiókkal';
 
   @override
   String get signInError =>
-      'An error occurred when signing in. Please try again.';
+      'Hiba történt a bejelentkezés során. Kérjük, próbáld újra.';
 
   @override
-  String get continueAsGuest => 'Continue as Guest';
+  String get continueAsGuest => 'Folytatás vendégként';
 
   @override
-  String get signInToSendMessages => 'Sign in to send messages';
+  String get signInToSendMessages => 'Jelentkezz be az üzenetküldéshez';
 
   @override
-  String get currentViewers => 'Current viewers';
+  String get currentViewers => 'Jelenlegi nézők';
 
   @override
-  String get textToSpeech => 'Text to speech';
+  String get textToSpeech => 'Szövegfelolvasás';
 
   @override
-  String get streamPreview => 'Stream preview';
+  String get streamPreview => 'Közvetítés előnézete';
 
   @override
-  String get activityFeed => 'Activity feed';
+  String get activityFeed => 'Tevékenységfolyam';
 
   @override
   String streamOnline(DateTime date, DateTime time) {
@@ -84,7 +84,7 @@ class AppLocalizationsHu extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream online at $dateString, $timeString';
+    return 'Közvetítés élőben: $dateString, $timeString';
   }
 
   @override
@@ -96,7 +96,7 @@ class AppLocalizationsHu extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream offline at $dateString, $timeString';
+    return 'Közvetítés offline: $dateString, $timeString';
   }
 
   @override
@@ -108,175 +108,179 @@ class AppLocalizationsHu extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Chat cleared at $dateString, $timeString';
+    return 'Csevegés törölve: $dateString, $timeString';
   }
 
   @override
-  String get configureQuickLinks => 'Configure quick links';
+  String get configureQuickLinks => 'Gyorshivatkozások beállítása';
 
   @override
-  String get disableRainMode => 'Disable rain mode';
+  String get disableRainMode => 'Eső mód kikapcsolása';
 
   @override
-  String get enableRainMode => 'Enable rain mode';
+  String get enableRainMode => 'Eső mód bekapcsolása';
 
   @override
-  String get disableRainModeSubtitle => 'Interaction will be enabled';
+  String get disableRainModeSubtitle => 'Az interakció engedélyezve lesz';
 
   @override
-  String get enableRainModeSubtitle => 'Interaction will be disabled';
+  String get enableRainModeSubtitle => 'Az interakció le lesz tiltva';
 
   @override
-  String get refreshAudioSources => 'Refresh audio sources';
+  String get refreshAudioSources => 'Hangforrások frissítése';
 
   @override
   String refreshAudioSourcesCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count audio sources refreshed',
-      one: '1 audio source refreshed',
-      zero: 'No audio sources refreshed',
+      other: '$count hangforrás frissítve',
+      one: '1 hangforrás frissítve',
+      zero: 'Egyetlen hangforrás sem frissült',
     );
     return '$_temp0';
   }
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Beállítások';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'Kijelentkezés';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Mégse';
 
   @override
-  String get signOutConfirmation => 'Are you sure you want to sign out?';
+  String get signOutConfirmation => 'Biztosan ki szeretnél jelentkezni?';
 
   @override
-  String get broadcaster => 'Broadcaster';
+  String get broadcaster => 'Közvetítő';
 
   @override
-  String get moderators => 'Moderators';
+  String get moderators => 'Moderátorok';
 
   @override
-  String get viewers => 'Viewers';
+  String get viewers => 'Nézők';
 
   @override
-  String get communityVips => 'Community VIPs';
+  String get communityVips => 'Közösségi VIP-tagok';
 
   @override
-  String get searchViewers => 'Search Viewers';
+  String get searchViewers => 'Nézők keresése';
 
   @override
-  String get reconnecting => 'Reconnecting...';
+  String get reconnecting => 'Újracsatlakozás...';
 
   @override
-  String get twitchBadges => 'Twitch badges';
+  String get twitchBadges => 'Twitch-jelvények';
 
   @override
-  String get selectAll => 'Select all';
+  String get selectAll => 'Összes kijelölése';
 
   @override
-  String get quickLinks => 'Quick links';
+  String get quickLinks => 'Gyorshivatkozások';
 
   @override
   String get swipeToDeleteQuickLinks =>
-      'Swipe left or right to delete quick link';
+      'Húzd balra vagy jobbra a gyorshivatkozás törléséhez';
 
   @override
-  String get quickLinksLabelHint => 'Label';
+  String get quickLinksLabelHint => 'Címke';
 
   @override
-  String get invalidUrlErrorText => 'This doesn\'t look like a valid URL';
+  String get invalidUrlErrorText => 'Ez nem tűnik érvényes URL-nek';
 
   @override
-  String get duplicateUrlErrorText => 'This link already exists';
+  String get duplicateUrlErrorText => 'Ez a hivatkozás már létezik';
 
   @override
-  String get or => 'or';
+  String get or => 'vagy';
 
   @override
-  String get clearCookies => 'Clear cookies';
+  String get clearCookies => 'Sütik törlése';
 
   @override
-  String get disabled => 'Disabled';
+  String get disabled => 'Letiltva';
 
   @override
-  String get twitchActivityFeed => 'Twitch activity feed';
+  String get twitchActivityFeed => 'Twitch tevékenységfolyam';
 
   @override
-  String get signInToEnable => 'You must be signed in to enable this';
+  String get signInToEnable =>
+      'A funkció engedélyezéséhez be kell jelentkezned';
 
   @override
-  String get customUrl => 'Custom URL';
+  String get customUrl => 'Egyéni URL';
 
   @override
-  String get preview => 'Preview';
+  String get preview => 'Előnézet';
 
   @override
-  String get audioSources => 'Audio sources';
+  String get audioSources => 'Hangforrások';
 
   @override
   String get enableOffStreamSwitchTitle =>
-      'Enable off-stream (uses more battery)';
+      'Engedélyezés közvetítésen kívül (több akkumulátort fogyaszt)';
 
   @override
   String get enableOffStreamSwitchEnabledSubtitle =>
-      'Audio will also play when you\'re offline';
+      'A hang akkor is lejátszódik, amikor offline vagy';
 
   @override
   String get enableOffStreamSwitchDisabledSubtitle =>
-      'Audio will only play when you\'re live';
+      'A hang csak akkor játszódik le, amikor élőben közvetítesz';
 
   @override
-  String get iosOggWarningTitle => 'Hey! Listen!';
+  String get iosOggWarningTitle => 'Hé! Figyelj!';
 
   @override
   String get iosOggWarningSubtitle =>
-      'iOS doesn\'t support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won\'t play.';
+      'Az iOS nem támogatja az *.ogg médiafájlokat, amelyek a Streamlabs alapértelmezett fájljai. Győződj meg róla, hogy a hangforrásaid más formátumot használnak, különben nem fognak lejátszódni.';
 
   @override
   String get url => 'URL';
 
   @override
-  String get activityFeedSubtitle => 'Customize your activity feed';
+  String get activityFeedSubtitle => 'A tevékenységfolyam testreszabása';
 
   @override
-  String get audioSourcesSubtitle => 'Add web sources for alert sounds';
+  String get audioSourcesSubtitle =>
+      'Webes források hozzáadása értesítési hangokhoz';
 
   @override
-  String get quickLinksSubtitle => 'Add shortcuts to commonly used tools';
+  String get quickLinksSubtitle =>
+      'Parancsikonok hozzáadása a gyakran használt eszközökhöz';
 
   @override
-  String get chatHistory => 'Chat history';
+  String get chatHistory => 'Csevegési előzmények';
 
   @override
-  String get chatHistorySubtitle => 'Change the chat appearance';
+  String get chatHistorySubtitle => 'A csevegés megjelenésének módosítása';
 
   @override
-  String get textToSpeechSubtitle => 'Change text to speech settings';
+  String get textToSpeechSubtitle =>
+      'A szövegfelolvasás beállításainak módosítása';
 
   @override
-  String get events => 'Events';
+  String get events => 'Események';
 
   @override
-  String get eventsSubtitle => 'Configure Twitch events';
+  String get eventsSubtitle => 'Twitch-események beállítása';
 
   @override
-  String get thirdPartyServices => 'Third-party services';
+  String get thirdPartyServices => 'Külső szolgáltatások';
 
   @override
-  String get thirdPartyServicesSubtitle => 'Connect to a third-party service';
+  String get thirdPartyServicesSubtitle => 'Csatlakozás külső szolgáltatáshoz';
 
   @override
   String followingEvent(String displayName) {
-    return '<b>$displayName</b> is following you';
+    return '<b>$displayName</b> követ téged';
   }
 
   @override
   String followingEvent2(String displayName, String displayNameTwo) {
-    return '<b>$displayName</b> and <b>$displayNameTwo</b> are following you';
+    return '<b>$displayName</b> és <b>$displayNameTwo</b> követ téged';
   }
 
   @override
@@ -289,54 +293,53 @@ class AppLocalizationsHu extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
-    return '<b>$displayName</b>, <b>$displayNameTwo</b>, and $numOthersString others are following you';
+    return '<b>$displayName</b>, <b>$displayNameTwo</b> és további $numOthersString felhasználó követ téged';
   }
 
   @override
   String unmuteUser(String displayName) {
-    return 'Unmute $displayName';
+    return '$displayName némításának feloldása';
   }
 
   @override
   String muteUser(String displayName) {
-    return 'Mute $displayName';
+    return '$displayName némítása';
   }
 
   @override
   String timeoutUser(String displayName) {
-    return 'Timeout $displayName';
+    return '$displayName ideiglenes eltiltása';
   }
 
   @override
   String banUser(String displayName) {
-    return 'Ban $displayName';
+    return '$displayName kitiltása';
   }
 
   @override
   String unbanUser(String displayName) {
-    return 'Unban $displayName';
+    return '$displayName kitiltásának feloldása';
   }
 
   @override
   String viewProfile(String displayName) {
-    return 'View $displayName\'s profile';
+    return '$displayName profiljának megtekintése';
   }
 
   @override
-  String get copyMessage => 'Copy Message';
+  String get copyMessage => 'Üzenet másolása';
 
   @override
-  String get deleteMessage => 'Delete Message';
+  String get deleteMessage => 'Üzenet törlése';
 
   @override
-  String get longScrollNotification =>
-      'You\'re scrolling kind of far, don\'t you think?';
+  String get longScrollNotification => 'Elég messzire görgettél, nem gondolod?';
 
   @override
-  String get stfu => 'stfu';
+  String get stfu => 'kuss';
 
   @override
-  String get globalEmotes => 'Global Emotes';
+  String get globalEmotes => 'Globális hangulatjelek';
 
   @override
   String followerCount(int count) {
@@ -348,9 +351,9 @@ class AppLocalizationsHu extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString followers',
-      one: '1 follower',
-      zero: '0 followers',
+      other: '$countString követő',
+      one: '1 követő',
+      zero: '0 követő',
     );
     return '$_temp0';
   }
@@ -365,170 +368,172 @@ class AppLocalizationsHu extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString viewers',
-      one: '1 viewer',
-      zero: '0 viewers',
+      other: '$countString néző',
+      one: '1 néző',
+      zero: '0 néző',
     );
     return '$_temp0';
   }
 
   @override
   String get streamPreviewMessage =>
-      'Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.';
+      'Szia! Örülünk, hogy szereted használni a közvetítés előnézetét, de vedd figyelembe, hogy sok akkumulátort fogyaszt. A csevegés olvasása előnézet nélkül meghosszabbítja az akkumulátor üzemidejét.';
 
   @override
-  String get okay => 'Okay';
+  String get okay => 'Rendben';
 
   @override
-  String get streamPreviewLoading => 'Loading (or stream is offline)...';
+  String get streamPreviewLoading => 'Betöltés (vagy a közvetítés offline)...';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'Vágólapra másolva';
 
   @override
   String get audioSourcesRequirePermissions =>
-      'Audio sources require permissions';
+      'A hangforrásokhoz engedélyek szükségesek';
 
   @override
   String get audioSourcesRequirePermissionsMessage =>
-      'Approve RealtimeChat to draw over other apps to use audio sources.';
+      'Engedélyezd a RealtimeChat számára a más alkalmazások feletti megjelenést a hangforrások használatához.';
 
   @override
-  String get audioSourcesRemoveButton => 'Remove audio sources';
+  String get audioSourcesRemoveButton => 'Hangforrások eltávolítása';
 
   @override
-  String get audioSourcesOpenSettingsButton => 'Open settings';
+  String get audioSourcesOpenSettingsButton => 'Beállítások megnyitása';
 
   @override
-  String get flashOn => 'Flash on';
+  String get flashOn => 'Vaku be';
 
   @override
-  String get flashOff => 'Flash off';
+  String get flashOff => 'Vaku ki';
 
   @override
-  String get durationOneSecond => '1 second';
+  String get durationOneSecond => '1 másodperc';
 
   @override
-  String get durationOneMinute => '1 minute';
+  String get durationOneMinute => '1 perc';
 
   @override
-  String get durationTenMinutes => '10 minutes';
+  String get durationTenMinutes => '10 perc';
 
   @override
-  String get durationOneHour => '1 hour';
+  String get durationOneHour => '1 óra';
 
   @override
-  String get durationSixHours => '6 hours';
+  String get durationSixHours => '6 óra';
 
   @override
-  String get durationOneDay => '1 day';
+  String get durationOneDay => '1 nap';
 
   @override
-  String get durationTwoDays => '2 days';
+  String get durationTwoDays => '2 nap';
 
   @override
-  String get durationOneWeek => '1 week';
+  String get durationOneWeek => '1 hét';
 
   @override
-  String get durationTwoWeeks => '2 weeks';
+  String get durationTwoWeeks => '2 hét';
 
   @override
-  String get durationOneSecondTimeoutPrompt => 'Timeout for 1 second';
+  String get durationOneSecondTimeoutPrompt =>
+      'Ideiglenes eltiltás 1 másodpercre';
 
   @override
-  String get durationOneMinuteTimeoutPrompt => 'Timeout for 1 minute';
+  String get durationOneMinuteTimeoutPrompt => 'Ideiglenes eltiltás 1 percre';
 
   @override
-  String get durationTenMinutesTimeoutPrompt => 'Timeout for 10 minutes';
+  String get durationTenMinutesTimeoutPrompt => 'Ideiglenes eltiltás 10 percre';
 
   @override
-  String get durationOneHourTimeoutPrompt => 'Timeout for 1 hour';
+  String get durationOneHourTimeoutPrompt => 'Ideiglenes eltiltás 1 órára';
 
   @override
-  String get durationSixHoursTimeoutPrompt => 'Timeout for 6 hours';
+  String get durationSixHoursTimeoutPrompt => 'Ideiglenes eltiltás 6 órára';
 
   @override
-  String get durationOneDayTimeoutPrompt => 'Timeout for 1 day';
+  String get durationOneDayTimeoutPrompt => 'Ideiglenes eltiltás 1 napra';
 
   @override
-  String get durationTwoDaysTimeoutPrompt => 'Timeout for 2 days';
+  String get durationTwoDaysTimeoutPrompt => 'Ideiglenes eltiltás 2 napra';
 
   @override
-  String get durationOneWeekTimeoutPrompt => 'Timeout for 1 week';
+  String get durationOneWeekTimeoutPrompt => 'Ideiglenes eltiltás 1 hétre';
 
   @override
-  String get durationTwoWeeksTimeoutPrompt => 'Timeout for 2 weeks';
+  String get durationTwoWeeksTimeoutPrompt => 'Ideiglenes eltiltás 2 hétre';
 
   @override
   String get errorFetchingViewerList =>
-      'We couldn\'t fetch the viewer list for this channel';
+      'Nem sikerült lekérni a csatorna nézőinek listáját';
 
   @override
-  String get eventsTitle => 'Events';
+  String get eventsTitle => 'Események';
 
   @override
-  String get followEventConfigTitle => 'Follow Event';
+  String get followEventConfigTitle => 'Követési esemény';
 
   @override
-  String get customizeYourFollowEvent => 'Customize your follow event';
+  String get customizeYourFollowEvent => 'A követési esemény testreszabása';
 
   @override
-  String get subscribeEventConfigTitle => 'Subscribe Event';
+  String get subscribeEventConfigTitle => 'Feliratkozási esemény';
 
   @override
   String get customizeYourSubscriptionEvent =>
-      'Customize your subscription event';
+      'A feliratkozási esemény testreszabása';
 
   @override
-  String get cheerEventConfigTitle => 'Cheer Event';
+  String get cheerEventConfigTitle => 'Cheer-esemény';
 
   @override
-  String get customizeYourCheerEvent => 'Customize your cheer event';
+  String get customizeYourCheerEvent => 'A Cheer-esemény testreszabása';
 
   @override
-  String get raidEventConfigTitle => 'Raid Event';
+  String get raidEventConfigTitle => 'Raid-esemény';
 
   @override
-  String get customizeYourRaidEvent => 'Customize your raid event';
+  String get customizeYourRaidEvent => 'A Raid-esemény testreszabása';
 
   @override
-  String get hostEventConfigTitle => 'Host Event';
+  String get hostEventConfigTitle => 'Hosztolási esemény';
 
   @override
-  String get customizeYourHostEvent => 'Customize your host event';
+  String get customizeYourHostEvent => 'A hosztolási esemény testreszabása';
 
   @override
-  String get hypetrainEventConfigTitle => 'Hype Train Event';
+  String get hypetrainEventConfigTitle => 'Hype Train-esemény';
 
   @override
-  String get customizeYourHypetrainEvent => 'Customize your hype train event';
+  String get customizeYourHypetrainEvent =>
+      'A Hype Train-esemény testreszabása';
 
   @override
-  String get pollEventConfigTitle => 'Poll Event';
+  String get pollEventConfigTitle => 'Szavazási esemény';
 
   @override
-  String get customizeYourPollEvent => 'Customize your poll event';
+  String get customizeYourPollEvent => 'A szavazási esemény testreszabása';
 
   @override
-  String get predictionEventConfigTitle => 'Prediction Event';
+  String get predictionEventConfigTitle => 'Jóslási esemény';
 
   @override
-  String get customizeYourPredictionEvent => 'Customize your prediction event';
+  String get customizeYourPredictionEvent => 'A jóslási esemény testreszabása';
 
   @override
   String get channelPointRedemptionEventConfigTitle =>
-      'Channel Point Redemption Event';
+      'Csatornapont-beváltási esemény';
 
   @override
   String get customizeYourChannelPointRedemptionEvent =>
-      'Customize your channel point redemption event';
+      'A csatornapont-beváltási esemény testreszabása';
 
   @override
-  String get outgoingRaidEventConfigTitle => 'Outgoing Raid Event';
+  String get outgoingRaidEventConfigTitle => 'Kimenő Raid-esemény';
 
   @override
   String get customizeYourOutgoingRaidEvent =>
-      'Customize your outgoing raid event';
+      'A kimenő Raid-esemény testreszabása';
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
@@ -538,15 +543,15 @@ class AppLocalizationsHu extends AppLocalizations {
       viewerCount,
     );
 
-    return '<b>$displayName</b> is raiding with <b>$viewerCountString</b> viewers!';
+    return '<b>$displayName</b> raidet indított <b>$viewerCountString</b> nézővel!';
   }
 
   @override
-  String get shoutout => 'Shoutout';
+  String get shoutout => 'Kiemelés';
 
   @override
   String raidingEventRaiding(String displayName) {
-    return 'Raiding <b>$displayName</b>...';
+    return 'Raid indítása <b>$displayName</b> csatornájára...';
   }
 
   @override
@@ -555,25 +560,25 @@ class AppLocalizationsHu extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
-    return '${secondsString}s';
+    return '$secondsString mp';
   }
 
   @override
   String raidingEventRaided(String displayName) {
-    return '<b>$displayName</b> has raided!';
+    return '<b>$displayName</b> végrehajtotta a raidet!';
   }
 
   @override
-  String get raidingEventJoin => 'Join';
+  String get raidingEventJoin => 'Csatlakozás';
 
   @override
   String raidingEventCanceled(String displayName) {
-    return '<b>$displayName</b>\'s raid was canceled.';
+    return '<b>$displayName</b> raidje megszakadt.';
   }
 
   @override
   String subscriptionEvent(String subscriberUserName, String tier) {
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier!';
+    return '<b>$subscriberUserName</b> feliratkozott $tier. szinten!';
   }
 
   @override
@@ -592,7 +597,7 @@ class AppLocalizationsHu extends AppLocalizations {
       cumulativeTotal,
     );
 
-    return '<b>$gifterUserName</b> has gifted $totalString Tier $tier subs, totaling $cumulativeTotalString!';
+    return '<b>$gifterUserName</b> $totalString db $tier. szintű feliratkozást ajándékozott, összesen $cumulativeTotalString alkalommal!';
   }
 
   @override
@@ -607,7 +612,7 @@ class AppLocalizationsHu extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed for $cumulativeMonthsString months at Tier $tier!';
+    return '<b>$subscriberUserName</b> $cumulativeMonthsString hónapja feliratkozó $tier. szinten!';
   }
 
   @override
@@ -628,27 +633,27 @@ class AppLocalizationsHu extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b> $durationMonthsString hónapra előre feliratkozott $tier. szinten, összesen $cumulativeMonthsString hónapja!';
   }
 
   @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
-    return '<b>$donor</b> tipped <b>$value $currency</b>.';
+    return '<b>$donor</b> <b>$value $currency</b> borravalót küldött.';
   }
 
   @override
   String realtimeCashTipAnonymous(String value, String currency) {
-    return 'Anonymous tipped <b>$value $currency</b>.';
+    return 'Névtelen felhasználó <b>$value $currency</b> borravalót küldött.';
   }
 
   @override
   String streamElementsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on StreamElements.';
+    return '<b>$name</b> <b>$formattedAmount</b> borravalót küldött a StreamElements-en.';
   }
 
   @override
   String streamlabsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on Streamlabs.';
+    return '<b>$name</b> <b>$formattedAmount</b> borravalót küldött a Streamlabs-en.';
   }
 
   @override
@@ -662,7 +667,7 @@ class AppLocalizationsHu extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points. $userInput';
+    return '<b>$redeemerUsername</b> beváltotta a következőt: <b>$rewardName</b> (<b>$rewardCostString</b> pont). $userInput';
   }
 
   @override
@@ -675,7 +680,7 @@ class AppLocalizationsHu extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points.';
+    return '<b>$redeemerUsername</b> beváltotta a következőt: <b>$rewardName</b> (<b>$rewardCostString</b> pont).';
   }
 
   @override
@@ -685,11 +690,11 @@ class AppLocalizationsHu extends AppLocalizations {
     );
     final String bitsString = bitsNumberFormat.format(bits);
 
-    return '<b>$name</b> cheered <b>$bitsString</b> bits. $cheerMessage';
+    return '<b>$name</b> <b>$bitsString</b> bitet küldött. $cheerMessage';
   }
 
   @override
-  String get anonymous => 'Anonymous';
+  String get anonymous => 'Névtelen';
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
@@ -697,12 +702,12 @@ class AppLocalizationsHu extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
-    return '<b>$fromDisplayName</b> is hosting with a party of <b>$viewersString</b>.';
+    return '<b>$fromDisplayName</b> hosztol <b>$viewersString</b> nézővel.';
   }
 
   @override
   String hypeTrainEventProgress(String level, String progressPercent) {
-    return 'Hype Train level <b>$level</b> in progress! <b>$progressPercent%</b> completed!';
+    return 'A(z) <b>$level</b>. szintű Hype Train folyamatban! <b>$progressPercent%</b> teljesítve!';
   }
 
   @override
@@ -711,7 +716,7 @@ class AppLocalizationsHu extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> succeeded.';
+    return 'A(z) <b>$levelString</b>. szintű Hype Train sikeresen véget ért.';
   }
 
   @override
@@ -720,7 +725,7 @@ class AppLocalizationsHu extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> failed.';
+    return 'A(z) <b>$levelString</b>. szintű Hype Train sikertelen volt.';
   }
 
   @override
@@ -737,24 +742,24 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
-  String get textToSpeechEnabled => 'Text to speech enabled';
+  String get textToSpeechEnabled => 'Szövegfelolvasás bekapcsolva';
 
   @override
-  String get textToSpeechDisabled => 'Text to speech disabled';
+  String get textToSpeechDisabled => 'Szövegfelolvasás kikapcsolva';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Csak értesítések';
 
   @override
-  String get pinDuration => 'Pin Duration';
+  String get pinDuration => 'Rögzítés időtartama';
 
   @override
   String durationSeconds(int seconds) {
     String _temp0 = intl.Intl.pluralLogic(
       seconds,
       locale: localeName,
-      other: '$seconds seconds',
-      one: '1 second',
+      other: '$seconds másodperc',
+      one: '1 másodperc',
     );
     return '$_temp0';
   }
@@ -764,245 +769,254 @@ class AppLocalizationsHu extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: '$minutes minutes',
-      one: '1 minute',
+      other: '$minutes perc',
+      one: '1 perc',
     );
     return '$_temp0';
   }
 
   @override
-  String get enableEvent => 'Enable event';
+  String get enableEvent => 'Esemény engedélyezése';
 
   @override
-  String get showEventInChatHistory => 'Show event in chat history';
+  String get showEventInChatHistory =>
+      'Esemény megjelenítése a csevegési előzményekben';
 
   @override
-  String get enableShoutouts => 'Enable shoutouts';
+  String get enableShoutouts => 'Kiemelések engedélyezése';
 
   @override
   String get enableShoutoutsSubtitle =>
-      'Send a link to the raiding channel to chat';
+      'A raidelő csatorna hivatkozásának beküldése a csevegésbe';
 
   @override
-  String get raidConfigurationTitle => 'Raid Configuration';
+  String get raidConfigurationTitle => 'Raid beállítása';
 
   @override
-  String get cheerConfigurationTitle => 'Cheer Configuration';
+  String get cheerConfigurationTitle => 'Cheer beállítása';
 
   @override
-  String get followConfigurationTitle => 'Follow Configuration';
+  String get followConfigurationTitle => 'Követés beállítása';
 
   @override
-  String get outgoingRaidConfigurationTitle => 'Outgoing Raid Configuration';
+  String get outgoingRaidConfigurationTitle => 'Kimenő raid beállítása';
 
   @override
-  String get hostConfigurationTitle => 'Host Configuration';
+  String get hostConfigurationTitle => 'Hosztolás beállítása';
 
   @override
-  String get channelPointConfigurationTitle => 'Channel Point Configuration';
+  String get channelPointConfigurationTitle => 'Csatornapontok beállítása';
 
   @override
-  String get pollConfigurationTitle => 'Poll Configuration';
+  String get pollConfigurationTitle => 'Szavazás beállítása';
 
   @override
-  String get hypetrainConfigurationTitle => 'Hypetrain Configuration';
+  String get hypetrainConfigurationTitle => 'Hype Train beállítása';
 
   @override
-  String get subscriptionConfigurationTitle => 'Subscription Configuration';
+  String get subscriptionConfigurationTitle => 'Feliratkozás beállítása';
 
   @override
-  String get predictionConfigurationTitle => 'Prediction Configuration';
+  String get predictionConfigurationTitle => 'Jóslás beállítása';
 
   @override
   String get unfulfilledRewardsPinDuration =>
-      'Additional Pin Duration for Unfulfilled Rewards';
+      'További rögzítési időtartam a nem teljesített jutalmakhoz';
 
   @override
-  String get pollPinDuration => 'Pin duration after the result is finalized';
+  String get pollPinDuration =>
+      'Rögzítés időtartama az eredmény véglegesítése után';
 
   @override
-  String get hypetrainPinDuration => 'Pin duration after hypetrain is over';
+  String get hypetrainPinDuration =>
+      'Rögzítés időtartama a Hype Train vége után';
 
   @override
   String get enableGiftedSubscriptions =>
-      'Enable individual gifted subscriptions';
+      'Egyéni ajándék feliratkozások engedélyezése';
 
   @override
   String get enableGiftedSubscriptionsSubtitle =>
-      'Show every subscription that is gifted';
+      'Minden ajándékozott feliratkozás megjelenítése';
 
   @override
-  String get settingsBackupTitle => 'Settings backup and restore';
+  String get settingsBackupTitle =>
+      'Beállítások biztonsági mentése és visszaállítása';
 
   @override
-  String get cloudBackup => 'Cloud backup';
+  String get cloudBackup => 'Felhőalapú biztonsági mentés';
 
   @override
-  String get lastBackupNever => 'Last backup: never';
+  String get lastBackupNever => 'Utolsó mentés: soha';
 
   @override
-  String get backUp => 'Back up';
+  String get backUp => 'Mentés';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Visszaállítás';
 
   @override
-  String get localBackup => 'Local backup';
+  String get localBackup => 'Helyi biztonsági mentés';
 
   @override
-  String get exportSettings => 'Export';
+  String get exportSettings => 'Exportálás';
 
   @override
-  String get importSettings => 'Import';
+  String get importSettings => 'Importálás';
 
   @override
-  String get showViewerAndFollowerCount => 'Show viewer and follower count';
+  String get showViewerAndFollowerCount =>
+      'Nézők és követők számának megjelenítése';
 
   @override
-  String get screenOrientation => 'Screen orientation';
+  String get screenOrientation => 'Képernyő tájolása';
 
   @override
-  String get appTheme => 'App theme';
+  String get appTheme => 'Alkalmazás témája';
 
   @override
-  String get systemDefault => 'System';
+  String get systemDefault => 'Rendszer';
 
   @override
-  String get portrait => 'Portrait';
+  String get portrait => 'Álló';
 
   @override
-  String get landscape => 'Landscape';
+  String get landscape => 'Fekvő';
 
   @override
-  String get lightTheme => 'Light';
+  String get lightTheme => 'Világos';
 
   @override
-  String get darkTheme => 'Dark';
+  String get darkTheme => 'Sötét';
 
   @override
-  String get openSourceTitle => 'RealtimeChat is open source';
+  String get openSourceTitle => 'A RealtimeChat nyílt forráskódú';
 
   @override
-  String get openSourceSubtitle => 'Find us on GitHub!';
+  String get openSourceSubtitle => 'Keress minket a GitHubon!';
 
   @override
-  String get discordSubtitle => 'Join the Muxable Discord!';
+  String get discordSubtitle => 'Csatlakozz a Muxable Discord-szerveréhez!';
 
   @override
   String get earlyTestersThanks =>
-      'Thanks to all the early testers who sent bug reports!';
+      'Köszönjük minden korai tesztelőnek, aki hibajelentést küldött!';
 
   @override
-  String get discoModeEnabled => '🕺 Disco mode enabled! :D';
+  String get discoModeEnabled => '🕺 Diszkó mód bekapcsolva! :D';
 
   @override
-  String get discoModeDisabled => '🕺 Disco mode disabled D:';
+  String get discoModeDisabled => '🕺 Diszkó mód kikapcsolva D:';
 
   @override
-  String get playSampleMessage => 'Play sample message';
+  String get playSampleMessage => 'Mintaüzenet lejátszása';
 
   @override
-  String get textToSpeechRate => 'Text to Speech Rate';
+  String get textToSpeechRate => 'Szövegfelolvasás sebessége';
 
   @override
-  String get textToSpeechPitch => 'Text to Speech Pitch';
+  String get textToSpeechPitch => 'Szövegfelolvasás hangmagassága';
 
   @override
-  String get muteBots => 'Mute text to speech for bots';
+  String get muteBots => 'Szövegfelolvasás némítása botoknál';
 
   @override
-  String get muteEmotes => 'Mute all emotes in text to speech';
+  String get muteEmotes => 'Összes hangulatjel némítása a szövegfelolvasásnál';
 
   @override
-  String get muteViewerNames => 'Mute viewer names in text to speech';
+  String get muteViewerNames => 'Nézők nevének némítása a szövegfelolvasásnál';
 
   @override
-  String get subscribersOnly => 'Subscribers only';
+  String get subscribersOnly => 'Csak feliratkozóknak';
 
   @override
-  String get fontSize => 'Font size';
+  String get fontSize => 'Betűméret';
 
   @override
-  String get usernameContrastBoost => 'Username contrast boost';
+  String get usernameContrastBoost => 'Felhasználónév kontrasztjának növelése';
 
   @override
-  String get twitchBadgeSettings => 'Twitch badge settings';
+  String get twitchBadgeSettings => 'Twitch-jelvények beállításai';
 
   @override
-  String get twitchBadgeSettingsSubtitle => 'Control which badges are visible';
+  String get twitchBadgeSettingsSubtitle =>
+      'Állítsd be, mely jelvények legyenek láthatók';
 
   @override
-  String get showDeletedMessages => 'Show deleted messages';
+  String get showDeletedMessages => 'Törölt üzenetek megjelenítése';
 
   @override
-  String get deletedMessagesGreyedOut => 'Deleted messages will be greyed out';
+  String get deletedMessagesGreyedOut =>
+      'A törölt üzenetek szürkén jelennek meg';
 
   @override
-  String get deletedMessagesRemoved => 'Deleted messages will be removed';
+  String get deletedMessagesRemoved => 'A törölt üzenetek el lesznek távolítva';
 
   @override
-  String get showLoginNames => 'Show login names';
+  String get showLoginNames => 'Bejelentkezési nevek megjelenítése';
 
   @override
   String get loginNamesShown =>
-      'Login names will be shown if they are different from the display name';
+      'A bejelentkezési nevek megjelennek, ha eltérnek a megjelenített névtől';
 
   @override
-  String get loginNamesHidden => 'Login names will be hidden';
+  String get loginNamesHidden => 'A bejelentkezési nevek rejtve maradnak';
 
   @override
-  String get compactMessages => 'Compact messages';
+  String get compactMessages => 'Üzenetek tömörítése';
 
   @override
-  String get dontCompactMessages => 'Don\'t compact messages';
+  String get dontCompactMessages => 'Ne tömörítse az üzeneteket';
 
   @override
-  String get dontCompactMessagesSubtitle => 'Messages are shown unchanged';
+  String get dontCompactMessagesSubtitle =>
+      'Az üzenetek változatlanul jelennek meg';
 
   @override
-  String get compactIndividualMessages => 'Compact individual messages';
+  String get compactIndividualMessages => 'Egyes üzenetek tömörítése';
 
   @override
   String get compactIndividualMessagesSubtitle =>
-      'Repetitive text in messages is shortened';
+      'Az üzenetekben lévő ismétlődő szöveg lerövidül';
 
   @override
-  String get announcementPinDuration => 'Announcement pin duration';
+  String get announcementPinDuration => 'Közlemény rögzítésének időtartama';
 
   @override
-  String get idleMessageAlertDuration => 'Idle message alert duration';
+  String get idleMessageAlertDuration =>
+      'Tétlenségi üzenetértesítés időtartama';
 
   @override
   String get idleMessageAlertDurationSubtitle =>
-      'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
+      'Ha ennyi ideig nincs üzenet, és új üzenet érkezik, figyelmeztető hang szólal meg.';
 
   @override
-  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+  String get realtimeCashSubtitle => 'ETH- vagy MATIC-tárca csatlakoztatása';
 
   @override
-  String get walletAddress => 'Wallet address';
+  String get walletAddress => 'Tárcacím';
 
   @override
-  String get streamlabsSubtitle => 'See your Streamlabs donations';
+  String get streamlabsSubtitle => 'Streamlabs-adományok megtekintése';
 
   @override
-  String get streamElementsSubtitle => 'See your StreamElements donations';
+  String get streamElementsSubtitle => 'StreamElements-adományok megtekintése';
 
   @override
   String get thirdPartyAuthError =>
-      'Hmm, that didn\'t work. Try again, or ask on Discord?';
+      'Hmm, ez nem sikerült. Próbáld újra, vagy kérdezz rá Discordon!';
 
   @override
   String get companionAuthBrowserTooOld =>
-      'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.';
+      'A böngésződ túl régi a közvetlen bejelentkezéshez. Olvasd be ezt a QR-kódot a telefonoddal, hogy egy másik eszközön jelentkezz be.';
 
   @override
   String get companionAuthScanQrCode =>
-      'Scan this QR code with your phone to sign in on another device.';
+      'Olvasd be ezt a QR-kódot a telefonoddal, hogy egy másik eszközön jelentkezz be.';
 
   @override
   String kickSubscriptionEvent(String subscriberName) {
-    return '<b>$subscriberName</b> has subscribed!';
+    return '<b>$subscriberName</b> feliratkozott!';
   }
 
   @override
@@ -1011,7 +1025,7 @@ class AppLocalizationsHu extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
-    return '<b>$subscriberName</b> has resubscribed for $monthsString months!';
+    return '<b>$subscriberName</b> újra feliratkozott $monthsString hónapja!';
   }
 
   @override
@@ -1020,7 +1034,7 @@ class AppLocalizationsHu extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '<b>$gifterName</b> has gifted $countString subs!';
+    return '<b>$gifterName</b> $countString feliratkozást ajándékozott!';
   }
 
   @override
@@ -1029,60 +1043,60 @@ class AppLocalizationsHu extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
-    return '<b>$senderName</b> sent $amountString Kicks!';
+    return '<b>$senderName</b> $amountString Kicks-et küldött!';
   }
 
   @override
-  String get signInWithKick => 'Sign in with Kick';
+  String get signInWithKick => 'Bejelentkezés Kick-fiókkal';
 
   @override
   String get textToSpeechTooManyMessages =>
-      'There are too many messages. Text to speech disabled';
+      'Túl sok az üzenet. A szövegfelolvasás kikapcsolva';
 
   @override
-  String get turnOffTextToSpeech => 'Turn off';
+  String get turnOffTextToSpeech => 'Kikapcsolás';
 
   @override
-  String get addToChat => 'Add to chat';
+  String get addToChat => 'Hozzáadás a csevegéshez';
 
   @override
-  String get inChat => 'In chat';
+  String get inChat => 'A csevegésben';
 
   @override
-  String get removeFromChat => 'Remove from chat';
+  String get removeFromChat => 'Eltávolítás a csevegésből';
 
   @override
   String cantChatWithAccount(String provider) {
-    return 'Your $provider account can\'t chat here';
+    return 'A(z) $provider-fiókod nem tud itt csevegni';
   }
 
   @override
-  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+  String get cantChatWithAccounts => 'A fiókjaid nem tudnak itt csevegni';
 
   @override
   String sendAMessageTo(String channel) {
-    return 'Send a message to $channel...';
+    return 'Üzenet küldése $channel csatornájára...';
   }
 
   @override
   String replaceChannel(String channel) {
-    return 'Replace $channel';
+    return '$channel lecserélése';
   }
 
   @override
-  String get voicePacks => 'Voice packs';
+  String get voicePacks => 'Hangcsomagok';
 
   @override
   String get voicePacksDescription =>
-      'Voice packs read chat with natural-sounding voices that run on your device, offline once downloaded. The voices are machine-generated by AI, not recorded by a person.';
+      'A hangcsomagok természetes hangzású hangokkal olvassák fel a csevegést, amelyek a letöltés után offline futnak az eszközödön. A hangokat mesterséges intelligencia generálja, nem valódi személy rögzítette őket.';
 
   @override
   String voicePackDetails(int voices, String size) {
     String _temp0 = intl.Intl.pluralLogic(
       voices,
       locale: localeName,
-      other: '$voices voices',
-      one: '1 voice',
+      other: '$voices hang',
+      one: '1 hang',
     );
     return '$_temp0 · $size';
   }
@@ -1092,99 +1106,100 @@ class AppLocalizationsHu extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count languages',
-      one: '1 language',
+      other: '$count nyelv',
+      one: '1 nyelv',
     );
     return '$_temp0: $languages';
   }
 
   @override
   String get voicePackOpenRailNotice =>
-      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+      'A modell licence (OpenRAIL-M) tiltja a káros felhasználást, például mások megszemélyesítését vagy a félretájékoztatás terjesztését, és ezek a korlátozások rád is vonatkoznak.';
 
   @override
   String voicePackDeleteConfirm(String pack, String size) {
-    return 'Delete $pack? This frees $size.';
+    return 'Törlöd a következőt: $pack? Ezzel $size hely szabadul fel.';
   }
 
   @override
-  String get voicePackDownload => 'Download';
+  String get voicePackDownload => 'Letöltés';
 
   @override
-  String get voicePackUpdate => 'Update';
+  String get voicePackUpdate => 'Frissítés';
 
   @override
-  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+  String get voicePackWaitingForWifi => 'Várakozás Wi-Fi-re';
 
   @override
-  String get voicePackUseMobileData => 'Use mobile data';
+  String get voicePackUseMobileData => 'Mobiladat-forgalom használata';
 
   @override
   String voicePackDownloading(String downloaded, String total) {
-    return 'Downloading: $downloaded of $total';
+    return 'Letöltés: $downloaded / $total';
   }
 
   @override
-  String get voicePackInstalling => 'Installing';
+  String get voicePackInstalling => 'Telepítés';
 
   @override
   String voicePackInstallFailed(String pack) {
-    return 'Couldn\'t install $pack. Check your connection and try again.';
+    return 'Nem sikerült telepíteni a következőt: $pack. Ellenőrizd a kapcsolatot, majd próbáld újra.';
   }
 
   @override
-  String get voices => 'Voices';
+  String get voices => 'Hangok';
 
   @override
-  String get perViewerVoice => 'Per-viewer voice';
+  String get perViewerVoice => 'Nézőnként egyedi hang';
 
   @override
   String get perViewerVoiceSubtitle =>
-      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+      'Minden néző saját hangot kap. A kiválasztott hang az értesítéseket olvassa fel, vagy mindent, ha ez ki van kapcsolva.';
 
   @override
-  String get streamLanguage => 'Stream language';
+  String get streamLanguage => 'Közvetítés nyelve';
 
   @override
-  String get ttsEngineNeural => 'Neural voice (on-device)';
+  String get ttsEngineNeural => 'Neurális hang (eszközön futó)';
 
   @override
-  String get ttsEngineSystem => 'System voice';
+  String get ttsEngineSystem => 'Rendszerhang';
 
   @override
   String languageUnsupported(String language) {
-    return '$language isn\'t supported by your voice packs; the system voice will be used';
+    return 'A hangcsomagok nem támogatják a(z) $language nyelvet; a rendszerhang lesz használva';
   }
 
   @override
   String get neuralFallbackLowMemory =>
-      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+      'Ezen az eszközön nincs elég memória a neurális hangokhoz, ezért a csevegést a rendszerhang olvassa fel.';
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'A neurális hangot nem sikerült betölteni, ezért a csevegést a rendszerhang olvassa fel.';
 
   @override
-  String get accounts => 'Accounts';
+  String get accounts => 'Fiókok';
 
   @override
-  String get accountsSubtitle => 'Sign in to each platform you stream on';
+  String get accountsSubtitle =>
+      'Jelentkezz be minden platformra, amelyen közvetítesz';
 
   @override
   String addProviderAccount(String provider) {
-    return 'Add $provider account';
+    return '$provider-fiók hozzáadása';
   }
 
   @override
   String signInWithProvider(String provider) {
-    return 'Sign in with $provider';
+    return 'Bejelentkezés $provider-fiókkal';
   }
 
   @override
   String signOutOfAccount(String channel, String provider) {
-    return 'Sign out of $channel on $provider?';
+    return 'Kijelentkezel a(z) $channel csatornából a(z) $provider platformon?';
   }
 
   @override
-  String get signOutOfAll => 'Sign out of all accounts';
+  String get signOutOfAll => 'Kijelentkezés az összes fiókból';
 }

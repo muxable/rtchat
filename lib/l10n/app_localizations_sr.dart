@@ -9,71 +9,72 @@ class AppLocalizationsSr extends AppLocalizations {
   AppLocalizationsSr([String locale = 'sr']) : super(locale);
 
   @override
-  String get sendAMessage => 'Send a message...';
+  String get sendAMessage => 'Пошаљите поруку...';
 
   @override
-  String get writeSomething => 'Write something...';
+  String get writeSomething => 'Напишите нешто...';
 
   @override
-  String get speakToTheCrowds => 'Speak to the crowds...';
+  String get speakToTheCrowds => 'Обратите се публици...';
 
   @override
-  String get shareYourThoughts => 'Share your thoughts...';
+  String get shareYourThoughts => 'Поделите своје мисли...';
 
   @override
-  String get saySomethingYouLittleBitch => 'Say something, you little bitch...';
+  String get saySomethingYouLittleBitch => 'Реци нешто, мала кучко...';
 
   @override
-  String get search => 'Search';
+  String get search => 'Претрага';
 
   @override
-  String get notSignedIn => 'Not signed in';
+  String get notSignedIn => 'Нисте пријављени';
 
   @override
-  String get searchChannels => 'Search';
+  String get searchChannels => 'Претрага';
 
   @override
-  String get raidAChannel => 'Raid';
+  String get raidAChannel => 'Рејд';
 
   @override
-  String get noMessagesEmptyState => 'It\'s quiet in here.';
+  String get noMessagesEmptyState => 'Овде је тихо.';
 
   @override
   String newMessageCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count new messages',
-      one: '1 new message',
-      zero: 'No new messages',
+      other: '$count нових порука',
+      few: '$count нове поруке',
+      one: '$count нова порука',
+      zero: 'Нема нових порука',
     );
     return '$_temp0';
   }
 
   @override
-  String get signInWithTwitch => 'Sign in with Twitch';
+  String get signInWithTwitch => 'Пријавите се преко Twitch-а';
 
   @override
   String get signInError =>
-      'An error occurred when signing in. Please try again.';
+      'Дошло је до грешке при пријављивању. Покушајте поново.';
 
   @override
-  String get continueAsGuest => 'Continue as Guest';
+  String get continueAsGuest => 'Наставите као гост';
 
   @override
-  String get signInToSendMessages => 'Sign in to send messages';
+  String get signInToSendMessages => 'Пријавите се да бисте слали поруке';
 
   @override
-  String get currentViewers => 'Current viewers';
+  String get currentViewers => 'Тренутни гледаоци';
 
   @override
-  String get textToSpeech => 'Text to speech';
+  String get textToSpeech => 'Претварање текста у говор';
 
   @override
-  String get streamPreview => 'Stream preview';
+  String get streamPreview => 'Преглед стрима';
 
   @override
-  String get activityFeed => 'Activity feed';
+  String get activityFeed => 'Ток активности';
 
   @override
   String streamOnline(DateTime date, DateTime time) {
@@ -84,7 +85,7 @@ class AppLocalizationsSr extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream online at $dateString, $timeString';
+    return 'Стрим је уживо: $dateString, $timeString';
   }
 
   @override
@@ -96,7 +97,7 @@ class AppLocalizationsSr extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream offline at $dateString, $timeString';
+    return 'Стрим је ван мреже: $dateString, $timeString';
   }
 
   @override
@@ -108,175 +109,178 @@ class AppLocalizationsSr extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Chat cleared at $dateString, $timeString';
+    return 'Чет је обрисан: $dateString, $timeString';
   }
 
   @override
-  String get configureQuickLinks => 'Configure quick links';
+  String get configureQuickLinks => 'Подеси брзе везе';
 
   @override
-  String get disableRainMode => 'Disable rain mode';
+  String get disableRainMode => 'Искључи режим кише';
 
   @override
-  String get enableRainMode => 'Enable rain mode';
+  String get enableRainMode => 'Укључи режим кише';
 
   @override
-  String get disableRainModeSubtitle => 'Interaction will be enabled';
+  String get disableRainModeSubtitle => 'Интеракција ће бити омогућена';
 
   @override
-  String get enableRainModeSubtitle => 'Interaction will be disabled';
+  String get enableRainModeSubtitle => 'Интеракција ће бити онемогућена';
 
   @override
-  String get refreshAudioSources => 'Refresh audio sources';
+  String get refreshAudioSources => 'Освежи изворе звука';
 
   @override
   String refreshAudioSourcesCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count audio sources refreshed',
-      one: '1 audio source refreshed',
-      zero: 'No audio sources refreshed',
+      other: '$count извора звука је освежено',
+      few: '$count извора звука су освежена',
+      one: '$count извор звука је освежен',
+      zero: 'Ниједан извор звука није освежен',
     );
     return '$_temp0';
   }
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Подешавања';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'Одјави се';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Откажи';
 
   @override
-  String get signOutConfirmation => 'Are you sure you want to sign out?';
+  String get signOutConfirmation => 'Желите ли заиста да се одјавите?';
 
   @override
-  String get broadcaster => 'Broadcaster';
+  String get broadcaster => 'Емитер';
 
   @override
-  String get moderators => 'Moderators';
+  String get moderators => 'Модератори';
 
   @override
-  String get viewers => 'Viewers';
+  String get viewers => 'Гледаоци';
 
   @override
-  String get communityVips => 'Community VIPs';
+  String get communityVips => 'VIP чланови заједнице';
 
   @override
-  String get searchViewers => 'Search Viewers';
+  String get searchViewers => 'Претражи гледаоце';
 
   @override
-  String get reconnecting => 'Reconnecting...';
+  String get reconnecting => 'Поновно повезивање...';
 
   @override
-  String get twitchBadges => 'Twitch badges';
+  String get twitchBadges => 'Twitch значке';
 
   @override
-  String get selectAll => 'Select all';
+  String get selectAll => 'Изабери све';
 
   @override
-  String get quickLinks => 'Quick links';
+  String get quickLinks => 'Брзе везе';
 
   @override
   String get swipeToDeleteQuickLinks =>
-      'Swipe left or right to delete quick link';
+      'Превуците улево или удесно да бисте обрисали брзу везу';
 
   @override
-  String get quickLinksLabelHint => 'Label';
+  String get quickLinksLabelHint => 'Ознака';
 
   @override
-  String get invalidUrlErrorText => 'This doesn\'t look like a valid URL';
+  String get invalidUrlErrorText => 'Ово не изгледа као важећи URL';
 
   @override
-  String get duplicateUrlErrorText => 'This link already exists';
+  String get duplicateUrlErrorText => 'Ова веза већ постоји';
 
   @override
-  String get or => 'or';
+  String get or => 'или';
 
   @override
-  String get clearCookies => 'Clear cookies';
+  String get clearCookies => 'Обриши колачиће';
 
   @override
-  String get disabled => 'Disabled';
+  String get disabled => 'Онемогућено';
 
   @override
-  String get twitchActivityFeed => 'Twitch activity feed';
+  String get twitchActivityFeed => 'Twitch ток активности';
 
   @override
-  String get signInToEnable => 'You must be signed in to enable this';
+  String get signInToEnable => 'Морате бити пријављени да бисте ово омогућили';
 
   @override
-  String get customUrl => 'Custom URL';
+  String get customUrl => 'Прилагођени URL';
 
   @override
-  String get preview => 'Preview';
+  String get preview => 'Преглед';
 
   @override
-  String get audioSources => 'Audio sources';
+  String get audioSources => 'Извори звука';
 
   @override
   String get enableOffStreamSwitchTitle =>
-      'Enable off-stream (uses more battery)';
+      'Омогући ван стрима (троши више батерије)';
 
   @override
   String get enableOffStreamSwitchEnabledSubtitle =>
-      'Audio will also play when you\'re offline';
+      'Звук ће се репродуковати и када нисте уживо';
 
   @override
   String get enableOffStreamSwitchDisabledSubtitle =>
-      'Audio will only play when you\'re live';
+      'Звук ће се репродуковати само када сте уживо';
 
   @override
-  String get iosOggWarningTitle => 'Hey! Listen!';
+  String get iosOggWarningTitle => 'Хеј! Слушај!';
 
   @override
   String get iosOggWarningSubtitle =>
-      'iOS doesn\'t support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won\'t play.';
+      'iOS не подржава медијске датотеке *.ogg, које су подразумеване датотеке на платформи Streamlabs. Уверите се да ваши извори звука користе други формат, иначе се неће репродуковати.';
 
   @override
   String get url => 'URL';
 
   @override
-  String get activityFeedSubtitle => 'Customize your activity feed';
+  String get activityFeedSubtitle => 'Прилагодите свој ток активности';
 
   @override
-  String get audioSourcesSubtitle => 'Add web sources for alert sounds';
+  String get audioSourcesSubtitle => 'Додајте веб-изворе за звукове обавештења';
 
   @override
-  String get quickLinksSubtitle => 'Add shortcuts to commonly used tools';
+  String get quickLinksSubtitle => 'Додајте пречице до често коришћених алатки';
 
   @override
-  String get chatHistory => 'Chat history';
+  String get chatHistory => 'Историја чета';
 
   @override
-  String get chatHistorySubtitle => 'Change the chat appearance';
+  String get chatHistorySubtitle => 'Промените изглед чета';
 
   @override
-  String get textToSpeechSubtitle => 'Change text to speech settings';
+  String get textToSpeechSubtitle =>
+      'Промените подешавања претварања текста у говор';
 
   @override
-  String get events => 'Events';
+  String get events => 'Догађаји';
 
   @override
-  String get eventsSubtitle => 'Configure Twitch events';
+  String get eventsSubtitle => 'Подесите Twitch догађаје';
 
   @override
-  String get thirdPartyServices => 'Third-party services';
+  String get thirdPartyServices => 'Услуге трећих страна';
 
   @override
-  String get thirdPartyServicesSubtitle => 'Connect to a third-party service';
+  String get thirdPartyServicesSubtitle =>
+      'Повежите се са услугом треће стране';
 
   @override
   String followingEvent(String displayName) {
-    return '<b>$displayName</b> is following you';
+    return '<b>$displayName</b> вас прати';
   }
 
   @override
   String followingEvent2(String displayName, String displayNameTwo) {
-    return '<b>$displayName</b> and <b>$displayNameTwo</b> are following you';
+    return '<b>$displayName</b> и <b>$displayNameTwo</b> вас прате';
   }
 
   @override
@@ -289,54 +293,54 @@ class AppLocalizationsSr extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
-    return '<b>$displayName</b>, <b>$displayNameTwo</b>, and $numOthersString others are following you';
+    return '<b>$displayName</b>, <b>$displayNameTwo</b> и још $numOthersString вас прате';
   }
 
   @override
   String unmuteUser(String displayName) {
-    return 'Unmute $displayName';
+    return 'Укључи звук за $displayName';
   }
 
   @override
   String muteUser(String displayName) {
-    return 'Mute $displayName';
+    return 'Искључи звук за $displayName';
   }
 
   @override
   String timeoutUser(String displayName) {
-    return 'Timeout $displayName';
+    return 'Привремено удаљи $displayName';
   }
 
   @override
   String banUser(String displayName) {
-    return 'Ban $displayName';
+    return 'Блокирај $displayName';
   }
 
   @override
   String unbanUser(String displayName) {
-    return 'Unban $displayName';
+    return 'Одблокирај $displayName';
   }
 
   @override
   String viewProfile(String displayName) {
-    return 'View $displayName\'s profile';
+    return 'Прикажи профил корисника $displayName';
   }
 
   @override
-  String get copyMessage => 'Copy Message';
+  String get copyMessage => 'Копирај поруку';
 
   @override
-  String get deleteMessage => 'Delete Message';
+  String get deleteMessage => 'Обриши поруку';
 
   @override
   String get longScrollNotification =>
-      'You\'re scrolling kind of far, don\'t you think?';
+      'Прилично далеко сте одскроловали, зар не?';
 
   @override
-  String get stfu => 'stfu';
+  String get stfu => 'ућути';
 
   @override
-  String get globalEmotes => 'Global Emotes';
+  String get globalEmotes => 'Глобални емотикони';
 
   @override
   String followerCount(int count) {
@@ -348,9 +352,10 @@ class AppLocalizationsSr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString followers',
-      one: '1 follower',
-      zero: '0 followers',
+      other: '$countString пратилаца',
+      few: '$countString пратиоца',
+      one: '$countString пратилац',
+      zero: '0 пратилаца',
     );
     return '$_temp0';
   }
@@ -365,170 +370,171 @@ class AppLocalizationsSr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString viewers',
-      one: '1 viewer',
-      zero: '0 viewers',
+      other: '$countString гледалаца',
+      few: '$countString гледаоца',
+      one: '$countString гледалац',
+      zero: '0 гледалаца',
     );
     return '$_temp0';
   }
 
   @override
   String get streamPreviewMessage =>
-      'Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.';
+      'Здраво! Драго нам је што волите преглед стрима, али имајте на уму да троши много батерије. Читање чета без њега продужиће трајање батерије.';
 
   @override
-  String get okay => 'Okay';
+  String get okay => 'У реду';
 
   @override
-  String get streamPreviewLoading => 'Loading (or stream is offline)...';
+  String get streamPreviewLoading => 'Учитавање (или је стрим ван мреже)...';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'Копирано у привремену меморију';
 
   @override
-  String get audioSourcesRequirePermissions =>
-      'Audio sources require permissions';
+  String get audioSourcesRequirePermissions => 'Извори звука захтевају дозволе';
 
   @override
   String get audioSourcesRequirePermissionsMessage =>
-      'Approve RealtimeChat to draw over other apps to use audio sources.';
+      'Одобрите да се RealtimeChat приказује преко других апликација како бисте користили изворе звука.';
 
   @override
-  String get audioSourcesRemoveButton => 'Remove audio sources';
+  String get audioSourcesRemoveButton => 'Уклони изворе звука';
 
   @override
-  String get audioSourcesOpenSettingsButton => 'Open settings';
+  String get audioSourcesOpenSettingsButton => 'Отвори подешавања';
 
   @override
-  String get flashOn => 'Flash on';
+  String get flashOn => 'Блиц укључен';
 
   @override
-  String get flashOff => 'Flash off';
+  String get flashOff => 'Блиц искључен';
 
   @override
-  String get durationOneSecond => '1 second';
+  String get durationOneSecond => '1 секунда';
 
   @override
-  String get durationOneMinute => '1 minute';
+  String get durationOneMinute => '1 минут';
 
   @override
-  String get durationTenMinutes => '10 minutes';
+  String get durationTenMinutes => '10 минута';
 
   @override
-  String get durationOneHour => '1 hour';
+  String get durationOneHour => '1 сат';
 
   @override
-  String get durationSixHours => '6 hours';
+  String get durationSixHours => '6 сати';
 
   @override
-  String get durationOneDay => '1 day';
+  String get durationOneDay => '1 дан';
 
   @override
-  String get durationTwoDays => '2 days';
+  String get durationTwoDays => '2 дана';
 
   @override
-  String get durationOneWeek => '1 week';
+  String get durationOneWeek => '1 недеља';
 
   @override
-  String get durationTwoWeeks => '2 weeks';
+  String get durationTwoWeeks => '2 недеље';
 
   @override
-  String get durationOneSecondTimeoutPrompt => 'Timeout for 1 second';
+  String get durationOneSecondTimeoutPrompt =>
+      'Привремена забрана на 1 секунду';
 
   @override
-  String get durationOneMinuteTimeoutPrompt => 'Timeout for 1 minute';
+  String get durationOneMinuteTimeoutPrompt => 'Привремена забрана на 1 минут';
 
   @override
-  String get durationTenMinutesTimeoutPrompt => 'Timeout for 10 minutes';
+  String get durationTenMinutesTimeoutPrompt =>
+      'Привремена забрана на 10 минута';
 
   @override
-  String get durationOneHourTimeoutPrompt => 'Timeout for 1 hour';
+  String get durationOneHourTimeoutPrompt => 'Привремена забрана на 1 сат';
 
   @override
-  String get durationSixHoursTimeoutPrompt => 'Timeout for 6 hours';
+  String get durationSixHoursTimeoutPrompt => 'Привремена забрана на 6 сати';
 
   @override
-  String get durationOneDayTimeoutPrompt => 'Timeout for 1 day';
+  String get durationOneDayTimeoutPrompt => 'Привремена забрана на 1 дан';
 
   @override
-  String get durationTwoDaysTimeoutPrompt => 'Timeout for 2 days';
+  String get durationTwoDaysTimeoutPrompt => 'Привремена забрана на 2 дана';
 
   @override
-  String get durationOneWeekTimeoutPrompt => 'Timeout for 1 week';
+  String get durationOneWeekTimeoutPrompt => 'Привремена забрана на 1 недељу';
 
   @override
-  String get durationTwoWeeksTimeoutPrompt => 'Timeout for 2 weeks';
+  String get durationTwoWeeksTimeoutPrompt => 'Привремена забрана на 2 недеље';
 
   @override
   String get errorFetchingViewerList =>
-      'We couldn\'t fetch the viewer list for this channel';
+      'Нисмо успели да преузмемо листу гледалаца за овај канал';
 
   @override
-  String get eventsTitle => 'Events';
+  String get eventsTitle => 'Догађаји';
 
   @override
-  String get followEventConfigTitle => 'Follow Event';
+  String get followEventConfigTitle => 'Догађај праћења';
 
   @override
-  String get customizeYourFollowEvent => 'Customize your follow event';
+  String get customizeYourFollowEvent => 'Прилагодите догађај праћења';
 
   @override
-  String get subscribeEventConfigTitle => 'Subscribe Event';
+  String get subscribeEventConfigTitle => 'Догађај претплате';
 
   @override
-  String get customizeYourSubscriptionEvent =>
-      'Customize your subscription event';
+  String get customizeYourSubscriptionEvent => 'Прилагодите догађај претплате';
 
   @override
-  String get cheerEventConfigTitle => 'Cheer Event';
+  String get cheerEventConfigTitle => 'Догађај бодрења';
 
   @override
-  String get customizeYourCheerEvent => 'Customize your cheer event';
+  String get customizeYourCheerEvent => 'Прилагодите догађај бодрења';
 
   @override
-  String get raidEventConfigTitle => 'Raid Event';
+  String get raidEventConfigTitle => 'Догађај рејда';
 
   @override
-  String get customizeYourRaidEvent => 'Customize your raid event';
+  String get customizeYourRaidEvent => 'Прилагодите догађај рејда';
 
   @override
-  String get hostEventConfigTitle => 'Host Event';
+  String get hostEventConfigTitle => 'Догађај угошћавања';
 
   @override
-  String get customizeYourHostEvent => 'Customize your host event';
+  String get customizeYourHostEvent => 'Прилагодите догађај угошћавања';
 
   @override
-  String get hypetrainEventConfigTitle => 'Hype Train Event';
+  String get hypetrainEventConfigTitle => 'Догађај Hype Train';
 
   @override
-  String get customizeYourHypetrainEvent => 'Customize your hype train event';
+  String get customizeYourHypetrainEvent => 'Прилагодите догађај Hype Train';
 
   @override
-  String get pollEventConfigTitle => 'Poll Event';
+  String get pollEventConfigTitle => 'Догађај анкете';
 
   @override
-  String get customizeYourPollEvent => 'Customize your poll event';
+  String get customizeYourPollEvent => 'Прилагодите догађај анкете';
 
   @override
-  String get predictionEventConfigTitle => 'Prediction Event';
+  String get predictionEventConfigTitle => 'Догађај предвиђања';
 
   @override
-  String get customizeYourPredictionEvent => 'Customize your prediction event';
+  String get customizeYourPredictionEvent => 'Прилагодите догађај предвиђања';
 
   @override
   String get channelPointRedemptionEventConfigTitle =>
-      'Channel Point Redemption Event';
+      'Догађај искоришћавања поена канала';
 
   @override
   String get customizeYourChannelPointRedemptionEvent =>
-      'Customize your channel point redemption event';
+      'Прилагодите догађај искоришћавања поена канала';
 
   @override
-  String get outgoingRaidEventConfigTitle => 'Outgoing Raid Event';
+  String get outgoingRaidEventConfigTitle => 'Догађај одлазног рејда';
 
   @override
   String get customizeYourOutgoingRaidEvent =>
-      'Customize your outgoing raid event';
+      'Прилагодите догађај одлазног рејда';
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
@@ -538,15 +544,15 @@ class AppLocalizationsSr extends AppLocalizations {
       viewerCount,
     );
 
-    return '<b>$displayName</b> is raiding with <b>$viewerCountString</b> viewers!';
+    return '<b>$displayName</b> рејдује са <b>$viewerCountString</b> гледалаца!';
   }
 
   @override
-  String get shoutout => 'Shoutout';
+  String get shoutout => 'Похвала';
 
   @override
   String raidingEventRaiding(String displayName) {
-    return 'Raiding <b>$displayName</b>...';
+    return 'Рејдовање канала <b>$displayName</b>...';
   }
 
   @override
@@ -555,25 +561,25 @@ class AppLocalizationsSr extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
-    return '${secondsString}s';
+    return '$secondsString с';
   }
 
   @override
   String raidingEventRaided(String displayName) {
-    return '<b>$displayName</b> has raided!';
+    return '<b>$displayName</b> је рејдовао!';
   }
 
   @override
-  String get raidingEventJoin => 'Join';
+  String get raidingEventJoin => 'Придружи се';
 
   @override
   String raidingEventCanceled(String displayName) {
-    return '<b>$displayName</b>\'s raid was canceled.';
+    return 'Рејд корисника <b>$displayName</b> је отказан.';
   }
 
   @override
   String subscriptionEvent(String subscriberUserName, String tier) {
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier!';
+    return '<b>$subscriberUserName</b> се претплатио на нивоу $tier!';
   }
 
   @override
@@ -592,7 +598,7 @@ class AppLocalizationsSr extends AppLocalizations {
       cumulativeTotal,
     );
 
-    return '<b>$gifterUserName</b> has gifted $totalString Tier $tier subs, totaling $cumulativeTotalString!';
+    return '<b>$gifterUserName</b> је поклонио $totalString претплата нивоа $tier, укупно $cumulativeTotalString!';
   }
 
   @override
@@ -607,7 +613,7 @@ class AppLocalizationsSr extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed for $cumulativeMonthsString months at Tier $tier!';
+    return '<b>$subscriberUserName</b> је претплаћен $cumulativeMonthsString месеци на нивоу $tier!';
   }
 
   @override
@@ -628,27 +634,27 @@ class AppLocalizationsSr extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b> се претплатио на нивоу $tier на $durationMonthsString месеци унапред, укупно $cumulativeMonthsString месеци!';
   }
 
   @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
-    return '<b>$donor</b> tipped <b>$value $currency</b>.';
+    return '<b>$donor</b> је дао напојницу од <b>$value $currency</b>.';
   }
 
   @override
   String realtimeCashTipAnonymous(String value, String currency) {
-    return 'Anonymous tipped <b>$value $currency</b>.';
+    return 'Анонимни корисник је дао напојницу од <b>$value $currency</b>.';
   }
 
   @override
   String streamElementsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on StreamElements.';
+    return '<b>$name</b> је дао напојницу од <b>$formattedAmount</b> на платформи StreamElements.';
   }
 
   @override
   String streamlabsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on Streamlabs.';
+    return '<b>$name</b> је дао напојницу од <b>$formattedAmount</b> на платформи Streamlabs.';
   }
 
   @override
@@ -662,7 +668,7 @@ class AppLocalizationsSr extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points. $userInput';
+    return '<b>$redeemerUsername</b> је искористио <b>$rewardName</b> за <b>$rewardCostString</b> поена. $userInput';
   }
 
   @override
@@ -675,7 +681,7 @@ class AppLocalizationsSr extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points.';
+    return '<b>$redeemerUsername</b> је искористио <b>$rewardName</b> за <b>$rewardCostString</b> поена.';
   }
 
   @override
@@ -685,11 +691,11 @@ class AppLocalizationsSr extends AppLocalizations {
     );
     final String bitsString = bitsNumberFormat.format(bits);
 
-    return '<b>$name</b> cheered <b>$bitsString</b> bits. $cheerMessage';
+    return '<b>$name</b> је послао <b>$bitsString</b> битова. $cheerMessage';
   }
 
   @override
-  String get anonymous => 'Anonymous';
+  String get anonymous => 'Анонимно';
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
@@ -697,12 +703,12 @@ class AppLocalizationsSr extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
-    return '<b>$fromDisplayName</b> is hosting with a party of <b>$viewersString</b>.';
+    return '<b>$fromDisplayName</b> угошћује са групом од <b>$viewersString</b> гледалаца.';
   }
 
   @override
   String hypeTrainEventProgress(String level, String progressPercent) {
-    return 'Hype Train level <b>$level</b> in progress! <b>$progressPercent%</b> completed!';
+    return 'Hype Train ниво <b>$level</b> је у току! Завршено је <b>$progressPercent%</b>!';
   }
 
   @override
@@ -711,7 +717,7 @@ class AppLocalizationsSr extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> succeeded.';
+    return 'Hype Train ниво <b>$levelString</b> је успео.';
   }
 
   @override
@@ -720,7 +726,7 @@ class AppLocalizationsSr extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> failed.';
+    return 'Hype Train ниво <b>$levelString</b> није успео.';
   }
 
   @override
@@ -738,24 +744,25 @@ class AppLocalizationsSr extends AppLocalizations {
   }
 
   @override
-  String get textToSpeechEnabled => 'Text to speech enabled';
+  String get textToSpeechEnabled => 'Претварање текста у говор је омогућено';
 
   @override
-  String get textToSpeechDisabled => 'Text to speech disabled';
+  String get textToSpeechDisabled => 'Претварање текста у говор је онемогућено';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Само обавештења';
 
   @override
-  String get pinDuration => 'Pin Duration';
+  String get pinDuration => 'Трајање качења';
 
   @override
   String durationSeconds(int seconds) {
     String _temp0 = intl.Intl.pluralLogic(
       seconds,
       locale: localeName,
-      other: '$seconds seconds',
-      one: '1 second',
+      other: '$seconds секунди',
+      few: '$seconds секунде',
+      one: '$seconds секунда',
     );
     return '$_temp0';
   }
@@ -765,245 +772,250 @@ class AppLocalizationsSr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: '$minutes minutes',
-      one: '1 minute',
+      other: '$minutes минута',
+      few: '$minutes минута',
+      one: '$minutes минут',
     );
     return '$_temp0';
   }
 
   @override
-  String get enableEvent => 'Enable event';
+  String get enableEvent => 'Омогући догађај';
 
   @override
-  String get showEventInChatHistory => 'Show event in chat history';
+  String get showEventInChatHistory => 'Прикажи догађај у историји чета';
 
   @override
-  String get enableShoutouts => 'Enable shoutouts';
+  String get enableShoutouts => 'Омогући похвале';
 
   @override
   String get enableShoutoutsSubtitle =>
-      'Send a link to the raiding channel to chat';
+      'Пошаљи везу до канала који рејдује у чет';
 
   @override
-  String get raidConfigurationTitle => 'Raid Configuration';
+  String get raidConfigurationTitle => 'Подешавање рејда';
 
   @override
-  String get cheerConfigurationTitle => 'Cheer Configuration';
+  String get cheerConfigurationTitle => 'Подешавање бодрења';
 
   @override
-  String get followConfigurationTitle => 'Follow Configuration';
+  String get followConfigurationTitle => 'Подешавање праћења';
 
   @override
-  String get outgoingRaidConfigurationTitle => 'Outgoing Raid Configuration';
+  String get outgoingRaidConfigurationTitle => 'Подешавање одлазног рејда';
 
   @override
-  String get hostConfigurationTitle => 'Host Configuration';
+  String get hostConfigurationTitle => 'Подешавање угошћавања';
 
   @override
-  String get channelPointConfigurationTitle => 'Channel Point Configuration';
+  String get channelPointConfigurationTitle => 'Подешавање поена канала';
 
   @override
-  String get pollConfigurationTitle => 'Poll Configuration';
+  String get pollConfigurationTitle => 'Подешавање анкете';
 
   @override
-  String get hypetrainConfigurationTitle => 'Hypetrain Configuration';
+  String get hypetrainConfigurationTitle => 'Подешавање за Hype Train';
 
   @override
-  String get subscriptionConfigurationTitle => 'Subscription Configuration';
+  String get subscriptionConfigurationTitle => 'Подешавање претплате';
 
   @override
-  String get predictionConfigurationTitle => 'Prediction Configuration';
+  String get predictionConfigurationTitle => 'Подешавање предвиђања';
 
   @override
   String get unfulfilledRewardsPinDuration =>
-      'Additional Pin Duration for Unfulfilled Rewards';
+      'Додатно трајање качења за неиспуњене награде';
 
   @override
-  String get pollPinDuration => 'Pin duration after the result is finalized';
+  String get pollPinDuration => 'Трајање качења након коначног резултата';
 
   @override
-  String get hypetrainPinDuration => 'Pin duration after hypetrain is over';
+  String get hypetrainPinDuration =>
+      'Трајање качења након завршетка догађаја Hype Train';
 
   @override
   String get enableGiftedSubscriptions =>
-      'Enable individual gifted subscriptions';
+      'Омогући појединачне поклоњене претплате';
 
   @override
   String get enableGiftedSubscriptionsSubtitle =>
-      'Show every subscription that is gifted';
+      'Прикажи сваку поклоњену претплату';
 
   @override
-  String get settingsBackupTitle => 'Settings backup and restore';
+  String get settingsBackupTitle => 'Резервна копија и враћање подешавања';
 
   @override
-  String get cloudBackup => 'Cloud backup';
+  String get cloudBackup => 'Резервна копија у облаку';
 
   @override
-  String get lastBackupNever => 'Last backup: never';
+  String get lastBackupNever => 'Последња резервна копија: никада';
 
   @override
-  String get backUp => 'Back up';
+  String get backUp => 'Направи резервну копију';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Врати';
 
   @override
-  String get localBackup => 'Local backup';
+  String get localBackup => 'Локална резервна копија';
 
   @override
-  String get exportSettings => 'Export';
+  String get exportSettings => 'Извези';
 
   @override
-  String get importSettings => 'Import';
+  String get importSettings => 'Увези';
 
   @override
-  String get showViewerAndFollowerCount => 'Show viewer and follower count';
+  String get showViewerAndFollowerCount => 'Прикажи број гледалаца и пратилаца';
 
   @override
-  String get screenOrientation => 'Screen orientation';
+  String get screenOrientation => 'Оријентација екрана';
 
   @override
-  String get appTheme => 'App theme';
+  String get appTheme => 'Тема апликације';
 
   @override
-  String get systemDefault => 'System';
+  String get systemDefault => 'Системска';
 
   @override
-  String get portrait => 'Portrait';
+  String get portrait => 'Усправно';
 
   @override
-  String get landscape => 'Landscape';
+  String get landscape => 'Водоравно';
 
   @override
-  String get lightTheme => 'Light';
+  String get lightTheme => 'Светла';
 
   @override
-  String get darkTheme => 'Dark';
+  String get darkTheme => 'Тамна';
 
   @override
-  String get openSourceTitle => 'RealtimeChat is open source';
+  String get openSourceTitle => 'RealtimeChat је отвореног кода';
 
   @override
-  String get openSourceSubtitle => 'Find us on GitHub!';
+  String get openSourceSubtitle => 'Пронађите нас на GitHub-у!';
 
   @override
-  String get discordSubtitle => 'Join the Muxable Discord!';
+  String get discordSubtitle => 'Придружите се Muxable Discord серверу!';
 
   @override
   String get earlyTestersThanks =>
-      'Thanks to all the early testers who sent bug reports!';
+      'Хвала свим раним тестерима који су слали извештаје о грешкама!';
 
   @override
-  String get discoModeEnabled => '🕺 Disco mode enabled! :D';
+  String get discoModeEnabled => '🕺 Диско режим је укључен! :D';
 
   @override
-  String get discoModeDisabled => '🕺 Disco mode disabled D:';
+  String get discoModeDisabled => '🕺 Диско режим је искључен D:';
 
   @override
-  String get playSampleMessage => 'Play sample message';
+  String get playSampleMessage => 'Пусти пример поруке';
 
   @override
-  String get textToSpeechRate => 'Text to Speech Rate';
+  String get textToSpeechRate => 'Брзина претварања текста у говор';
 
   @override
-  String get textToSpeechPitch => 'Text to Speech Pitch';
+  String get textToSpeechPitch => 'Висина гласа за претварање текста у говор';
 
   @override
-  String get muteBots => 'Mute text to speech for bots';
+  String get muteBots => 'Искључи читање порука ботова';
 
   @override
-  String get muteEmotes => 'Mute all emotes in text to speech';
+  String get muteEmotes => 'Искључи читање емотикона';
 
   @override
-  String get muteViewerNames => 'Mute viewer names in text to speech';
+  String get muteViewerNames => 'Искључи читање имена гледалаца';
 
   @override
-  String get subscribersOnly => 'Subscribers only';
+  String get subscribersOnly => 'Само претплатници';
 
   @override
-  String get fontSize => 'Font size';
+  String get fontSize => 'Величина фонта';
 
   @override
-  String get usernameContrastBoost => 'Username contrast boost';
+  String get usernameContrastBoost => 'Појачање контраста корисничког имена';
 
   @override
-  String get twitchBadgeSettings => 'Twitch badge settings';
+  String get twitchBadgeSettings => 'Подешавања Twitch значки';
 
   @override
-  String get twitchBadgeSettingsSubtitle => 'Control which badges are visible';
+  String get twitchBadgeSettingsSubtitle =>
+      'Управљајте тиме које су значке видљиве';
 
   @override
-  String get showDeletedMessages => 'Show deleted messages';
+  String get showDeletedMessages => 'Прикажи обрисане поруке';
 
   @override
-  String get deletedMessagesGreyedOut => 'Deleted messages will be greyed out';
+  String get deletedMessagesGreyedOut => 'Обрисане поруке биће засивљене';
 
   @override
-  String get deletedMessagesRemoved => 'Deleted messages will be removed';
+  String get deletedMessagesRemoved => 'Обрисане поруке биће уклоњене';
 
   @override
-  String get showLoginNames => 'Show login names';
+  String get showLoginNames => 'Прикажи корисничка имена за пријаву';
 
   @override
   String get loginNamesShown =>
-      'Login names will be shown if they are different from the display name';
+      'Корисничка имена за пријаву биће приказана ако се разликују од приказаног имена';
 
   @override
-  String get loginNamesHidden => 'Login names will be hidden';
+  String get loginNamesHidden => 'Корисничка имена за пријаву биће сакривена';
 
   @override
-  String get compactMessages => 'Compact messages';
+  String get compactMessages => 'Сажимање порука';
 
   @override
-  String get dontCompactMessages => 'Don\'t compact messages';
+  String get dontCompactMessages => 'Не сажимај поруке';
 
   @override
-  String get dontCompactMessagesSubtitle => 'Messages are shown unchanged';
+  String get dontCompactMessagesSubtitle => 'Поруке се приказују неизмењене';
 
   @override
-  String get compactIndividualMessages => 'Compact individual messages';
+  String get compactIndividualMessages => 'Сажми појединачне поруке';
 
   @override
   String get compactIndividualMessagesSubtitle =>
-      'Repetitive text in messages is shortened';
+      'Понављајући текст у порукама се скраћује';
 
   @override
-  String get announcementPinDuration => 'Announcement pin duration';
+  String get announcementPinDuration => 'Трајање качења обавештења';
 
   @override
-  String get idleMessageAlertDuration => 'Idle message alert duration';
+  String get idleMessageAlertDuration =>
+      'Трајање неактивности за звучно обавештење';
 
   @override
   String get idleMessageAlertDurationSubtitle =>
-      'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
+      'Ако нема порука током овог времена и стигне нова, огласиће се звук обавештења.';
 
   @override
-  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+  String get realtimeCashSubtitle => 'Повежите ETH или MATIC новчаник';
 
   @override
-  String get walletAddress => 'Wallet address';
+  String get walletAddress => 'Адреса новчаника';
 
   @override
-  String get streamlabsSubtitle => 'See your Streamlabs donations';
+  String get streamlabsSubtitle => 'Погледајте своје Streamlabs донације';
 
   @override
-  String get streamElementsSubtitle => 'See your StreamElements donations';
+  String get streamElementsSubtitle =>
+      'Погледајте своје StreamElements донације';
 
   @override
   String get thirdPartyAuthError =>
-      'Hmm, that didn\'t work. Try again, or ask on Discord?';
+      'Хм, то није успело. Покушајте поново или питајте на Discord-у?';
 
   @override
   String get companionAuthBrowserTooOld =>
-      'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.';
+      'Ваш прегледач је престар да би подржао директно пријављивање. Скенирајте овај QR код телефоном да бисте се пријавили на другом уређају.';
 
   @override
   String get companionAuthScanQrCode =>
-      'Scan this QR code with your phone to sign in on another device.';
+      'Скенирајте овај QR код телефоном да бисте се пријавили на другом уређају.';
 
   @override
   String kickSubscriptionEvent(String subscriberName) {
-    return '<b>$subscriberName</b> has subscribed!';
+    return '<b>$subscriberName</b> се претплатио!';
   }
 
   @override
@@ -1012,7 +1024,7 @@ class AppLocalizationsSr extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
-    return '<b>$subscriberName</b> has resubscribed for $monthsString months!';
+    return '<b>$subscriberName</b> је обновио претплату на $monthsString месеци!';
   }
 
   @override
@@ -1021,7 +1033,7 @@ class AppLocalizationsSr extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '<b>$gifterName</b> has gifted $countString subs!';
+    return '<b>$gifterName</b> је поклонио $countString претплата!';
   }
 
   @override
@@ -1030,60 +1042,61 @@ class AppLocalizationsSr extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
-    return '<b>$senderName</b> sent $amountString Kicks!';
+    return '<b>$senderName</b> је послао $amountString Kicks-а!';
   }
 
   @override
-  String get signInWithKick => 'Sign in with Kick';
+  String get signInWithKick => 'Пријавите се преко Kick-а';
 
   @override
   String get textToSpeechTooManyMessages =>
-      'There are too many messages. Text to speech disabled';
+      'Има превише порука. Претварање текста у говор је онемогућено';
 
   @override
-  String get turnOffTextToSpeech => 'Turn off';
+  String get turnOffTextToSpeech => 'Искључи';
 
   @override
-  String get addToChat => 'Add to chat';
+  String get addToChat => 'Додај у чет';
 
   @override
-  String get inChat => 'In chat';
+  String get inChat => 'У чету';
 
   @override
-  String get removeFromChat => 'Remove from chat';
+  String get removeFromChat => 'Уклони из чета';
 
   @override
   String cantChatWithAccount(String provider) {
-    return 'Your $provider account can\'t chat here';
+    return 'Ваш $provider налог не може да четује овде';
   }
 
   @override
-  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+  String get cantChatWithAccounts => 'Ваши налози не могу да четују овде';
 
   @override
   String sendAMessageTo(String channel) {
-    return 'Send a message to $channel...';
+    return 'Пошаљите поруку за $channel...';
   }
 
   @override
   String replaceChannel(String channel) {
-    return 'Replace $channel';
+    return 'Замени $channel';
   }
 
   @override
-  String get voicePacks => 'Voice packs';
+  String get voicePacks => 'Гласовни пакети';
 
   @override
   String get voicePacksDescription =>
-      'Voice packs read chat with natural-sounding voices that run on your device, offline once downloaded. The voices are machine-generated by AI, not recorded by a person.';
+      'Гласовни пакети читају чет природним гласовима који раде на вашем уређају, ван мреже након преузимања. Гласове машински генерише вештачка интелигенција, није их снимио човек.';
 
   @override
   String voicePackDetails(int voices, String size) {
     String _temp0 = intl.Intl.pluralLogic(
       voices,
       locale: localeName,
-      other: '$voices voices',
-      one: '1 voice',
+      other: '$voices гласова',
+      few: '$voices гласа',
+      one: '$voices глас',
     );
     return '$_temp0 · $size';
   }
@@ -1093,99 +1106,101 @@ class AppLocalizationsSr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count languages',
-      one: '1 language',
+      other: '$count језика',
+      few: '$count језика',
+      one: '$count језик',
     );
     return '$_temp0: $languages';
   }
 
   @override
   String get voicePackOpenRailNotice =>
-      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+      'Лиценца овог модела (OpenRAIL-M) забрањује штетну употребу, као што је лажно представљање или ширење дезинформација, а ова ограничења важе и за вас.';
 
   @override
   String voicePackDeleteConfirm(String pack, String size) {
-    return 'Delete $pack? This frees $size.';
+    return 'Обрисати пакет $pack? Овим се ослобађа $size.';
   }
 
   @override
-  String get voicePackDownload => 'Download';
+  String get voicePackDownload => 'Преузми';
 
   @override
-  String get voicePackUpdate => 'Update';
+  String get voicePackUpdate => 'Ажурирај';
 
   @override
-  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+  String get voicePackWaitingForWifi => 'Чекање на Wi-Fi';
 
   @override
-  String get voicePackUseMobileData => 'Use mobile data';
+  String get voicePackUseMobileData => 'Користи мобилне податке';
 
   @override
   String voicePackDownloading(String downloaded, String total) {
-    return 'Downloading: $downloaded of $total';
+    return 'Преузимање: $downloaded од $total';
   }
 
   @override
-  String get voicePackInstalling => 'Installing';
+  String get voicePackInstalling => 'Инсталирање';
 
   @override
   String voicePackInstallFailed(String pack) {
-    return 'Couldn\'t install $pack. Check your connection and try again.';
+    return 'Инсталирање пакета $pack није успело. Проверите везу и покушајте поново.';
   }
 
   @override
-  String get voices => 'Voices';
+  String get voices => 'Гласови';
 
   @override
-  String get perViewerVoice => 'Per-viewer voice';
+  String get perViewerVoice => 'Глас по гледаоцу';
 
   @override
   String get perViewerVoiceSubtitle =>
-      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+      'Сваки гледалац добија сопствени глас. Глас који изаберете чита обавештења или све када је ово искључено.';
 
   @override
-  String get streamLanguage => 'Stream language';
+  String get streamLanguage => 'Језик стрима';
 
   @override
-  String get ttsEngineNeural => 'Neural voice (on-device)';
+  String get ttsEngineNeural => 'Неуронски глас (на уређају)';
 
   @override
-  String get ttsEngineSystem => 'System voice';
+  String get ttsEngineSystem => 'Системски глас';
 
   @override
   String languageUnsupported(String language) {
-    return '$language isn\'t supported by your voice packs; the system voice will be used';
+    return 'Ваши гласовни пакети не подржавају језик ($language); користиће се системски глас';
   }
 
   @override
   String get neuralFallbackLowMemory =>
-      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+      'Овај уређај нема довољно меморије за неуронске гласове, па се чет чита системским гласом.';
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'Неуронски глас није могао да се учита, па се чет чита системским гласом.';
 
   @override
-  String get accounts => 'Accounts';
+  String get accounts => 'Налози';
 
   @override
-  String get accountsSubtitle => 'Sign in to each platform you stream on';
+  String get accountsSubtitle =>
+      'Пријавите се на сваку платформу на којој стримујете';
 
   @override
   String addProviderAccount(String provider) {
-    return 'Add $provider account';
+    return 'Додај $provider налог';
   }
 
   @override
   String signInWithProvider(String provider) {
-    return 'Sign in with $provider';
+    return 'Пријавите се преко платформе $provider';
   }
 
   @override
   String signOutOfAccount(String channel, String provider) {
-    return 'Sign out of $channel on $provider?';
+    return 'Одјавити се са канала $channel на платформи $provider?';
   }
 
   @override
-  String get signOutOfAll => 'Sign out of all accounts';
+  String get signOutOfAll => 'Одјави се са свих налога';
 }

@@ -9,71 +9,70 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
-  String get sendAMessage => 'Send a message...';
+  String get sendAMessage => 'Gửi tin nhắn...';
 
   @override
-  String get writeSomething => 'Write something...';
+  String get writeSomething => 'Viết gì đó...';
 
   @override
-  String get speakToTheCrowds => 'Speak to the crowds...';
+  String get speakToTheCrowds => 'Trò chuyện với đám đông...';
 
   @override
-  String get shareYourThoughts => 'Share your thoughts...';
+  String get shareYourThoughts => 'Chia sẻ suy nghĩ của bạn...';
 
   @override
-  String get saySomethingYouLittleBitch => 'Say something, you little bitch...';
+  String get saySomethingYouLittleBitch => 'Nói gì đi chứ, đồ nhãi ranh...';
 
   @override
-  String get search => 'Search';
+  String get search => 'Tìm kiếm';
 
   @override
-  String get notSignedIn => 'Not signed in';
+  String get notSignedIn => 'Chưa đăng nhập';
 
   @override
-  String get searchChannels => 'Search';
+  String get searchChannels => 'Tìm kiếm';
 
   @override
-  String get raidAChannel => 'Raid';
+  String get raidAChannel => 'Raid kênh';
 
   @override
-  String get noMessagesEmptyState => 'It\'s quiet in here.';
+  String get noMessagesEmptyState => 'Ở đây yên ắng quá.';
 
   @override
   String newMessageCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count new messages',
-      one: '1 new message',
-      zero: 'No new messages',
+      other: '$count tin nhắn mới',
+      one: '1 tin nhắn mới',
+      zero: 'Không có tin nhắn mới',
     );
     return '$_temp0';
   }
 
   @override
-  String get signInWithTwitch => 'Sign in with Twitch';
+  String get signInWithTwitch => 'Đăng nhập bằng Twitch';
 
   @override
-  String get signInError =>
-      'An error occurred when signing in. Please try again.';
+  String get signInError => 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại.';
 
   @override
-  String get continueAsGuest => 'Continue as Guest';
+  String get continueAsGuest => 'Tiếp tục với tư cách Khách';
 
   @override
-  String get signInToSendMessages => 'Sign in to send messages';
+  String get signInToSendMessages => 'Đăng nhập để gửi tin nhắn';
 
   @override
-  String get currentViewers => 'Current viewers';
+  String get currentViewers => 'Người xem hiện tại';
 
   @override
-  String get textToSpeech => 'Text to speech';
+  String get textToSpeech => 'Chuyển văn bản thành giọng nói';
 
   @override
-  String get streamPreview => 'Stream preview';
+  String get streamPreview => 'Xem trước luồng phát';
 
   @override
-  String get activityFeed => 'Activity feed';
+  String get activityFeed => 'Bảng hoạt động';
 
   @override
   String streamOnline(DateTime date, DateTime time) {
@@ -84,7 +83,7 @@ class AppLocalizationsVi extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream online at $dateString, $timeString';
+    return 'Luồng phát trực tuyến lúc $dateString, $timeString';
   }
 
   @override
@@ -96,7 +95,7 @@ class AppLocalizationsVi extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream offline at $dateString, $timeString';
+    return 'Luồng phát ngoại tuyến lúc $dateString, $timeString';
   }
 
   @override
@@ -108,175 +107,176 @@ class AppLocalizationsVi extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Chat cleared at $dateString, $timeString';
+    return 'Đã xóa trò chuyện lúc $dateString, $timeString';
   }
 
   @override
-  String get configureQuickLinks => 'Configure quick links';
+  String get configureQuickLinks => 'Cấu hình liên kết nhanh';
 
   @override
-  String get disableRainMode => 'Disable rain mode';
+  String get disableRainMode => 'Tắt chế độ đi mưa';
 
   @override
-  String get enableRainMode => 'Enable rain mode';
+  String get enableRainMode => 'Bật chế độ đi mưa';
 
   @override
-  String get disableRainModeSubtitle => 'Interaction will be enabled';
+  String get disableRainModeSubtitle => 'Sẽ bật tương tác';
 
   @override
-  String get enableRainModeSubtitle => 'Interaction will be disabled';
+  String get enableRainModeSubtitle => 'Sẽ tắt tương tác';
 
   @override
-  String get refreshAudioSources => 'Refresh audio sources';
+  String get refreshAudioSources => 'Làm mới nguồn âm thanh';
 
   @override
   String refreshAudioSourcesCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count audio sources refreshed',
-      one: '1 audio source refreshed',
-      zero: 'No audio sources refreshed',
+      other: 'Đã làm mới $count nguồn âm thanh',
+      one: 'Đã làm mới 1 nguồn âm thanh',
+      zero: 'Không có nguồn âm thanh nào được làm mới',
     );
     return '$_temp0';
   }
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Cài đặt';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'Đăng xuất';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Hủy';
 
   @override
-  String get signOutConfirmation => 'Are you sure you want to sign out?';
+  String get signOutConfirmation => 'Bạn có chắc chắn muốn đăng xuất không?';
 
   @override
-  String get broadcaster => 'Broadcaster';
+  String get broadcaster => 'Người phát sóng';
 
   @override
-  String get moderators => 'Moderators';
+  String get moderators => 'Người điều hành';
 
   @override
-  String get viewers => 'Viewers';
+  String get viewers => 'Người xem';
 
   @override
-  String get communityVips => 'Community VIPs';
+  String get communityVips => 'VIP của cộng đồng';
 
   @override
-  String get searchViewers => 'Search Viewers';
+  String get searchViewers => 'Tìm kiếm người xem';
 
   @override
-  String get reconnecting => 'Reconnecting...';
+  String get reconnecting => 'Đang kết nối lại...';
 
   @override
-  String get twitchBadges => 'Twitch badges';
+  String get twitchBadges => 'Huy hiệu Twitch';
 
   @override
-  String get selectAll => 'Select all';
+  String get selectAll => 'Chọn tất cả';
 
   @override
-  String get quickLinks => 'Quick links';
+  String get quickLinks => 'Liên kết nhanh';
 
   @override
   String get swipeToDeleteQuickLinks =>
-      'Swipe left or right to delete quick link';
+      'Vuốt sang trái hoặc phải để xóa liên kết nhanh';
 
   @override
-  String get quickLinksLabelHint => 'Label';
+  String get quickLinksLabelHint => 'Nhãn';
 
   @override
-  String get invalidUrlErrorText => 'This doesn\'t look like a valid URL';
+  String get invalidUrlErrorText => 'Đây có vẻ không phải là một URL hợp lệ';
 
   @override
-  String get duplicateUrlErrorText => 'This link already exists';
+  String get duplicateUrlErrorText => 'Liên kết này đã tồn tại';
 
   @override
-  String get or => 'or';
+  String get or => 'hoặc';
 
   @override
-  String get clearCookies => 'Clear cookies';
+  String get clearCookies => 'Xóa cookie';
 
   @override
-  String get disabled => 'Disabled';
+  String get disabled => 'Đã tắt';
 
   @override
-  String get twitchActivityFeed => 'Twitch activity feed';
+  String get twitchActivityFeed => 'Bảng hoạt động Twitch';
 
   @override
-  String get signInToEnable => 'You must be signed in to enable this';
+  String get signInToEnable => 'Bạn phải đăng nhập để bật tính năng này';
 
   @override
-  String get customUrl => 'Custom URL';
+  String get customUrl => 'URL tùy chỉnh';
 
   @override
-  String get preview => 'Preview';
+  String get preview => 'Xem trước';
 
   @override
-  String get audioSources => 'Audio sources';
+  String get audioSources => 'Nguồn âm thanh';
 
   @override
   String get enableOffStreamSwitchTitle =>
-      'Enable off-stream (uses more battery)';
+      'Bật khi không phát sóng (tốn pin hơn)';
 
   @override
   String get enableOffStreamSwitchEnabledSubtitle =>
-      'Audio will also play when you\'re offline';
+      'Âm thanh vẫn sẽ phát ngay cả khi bạn ngoại tuyến';
 
   @override
   String get enableOffStreamSwitchDisabledSubtitle =>
-      'Audio will only play when you\'re live';
+      'Âm thanh chỉ phát khi bạn đang phát trực tiếp';
 
   @override
-  String get iosOggWarningTitle => 'Hey! Listen!';
+  String get iosOggWarningTitle => 'Này! Chú ý nhé!';
 
   @override
   String get iosOggWarningSubtitle =>
-      'iOS doesn\'t support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won\'t play.';
+      'iOS không hỗ trợ tệp phương tiện *.ogg, vốn là định dạng mặc định trên Streamlabs. Hãy đảm bảo nguồn âm thanh của bạn sử dụng định dạng khác, nếu không chúng sẽ không phát được.';
 
   @override
   String get url => 'URL';
 
   @override
-  String get activityFeedSubtitle => 'Customize your activity feed';
+  String get activityFeedSubtitle => 'Tùy chỉnh bảng hoạt động của bạn';
 
   @override
-  String get audioSourcesSubtitle => 'Add web sources for alert sounds';
+  String get audioSourcesSubtitle => 'Thêm nguồn web cho âm thanh thông báo';
 
   @override
-  String get quickLinksSubtitle => 'Add shortcuts to commonly used tools';
+  String get quickLinksSubtitle => 'Thêm lối tắt đến các công cụ thường dùng';
 
   @override
-  String get chatHistory => 'Chat history';
+  String get chatHistory => 'Lịch sử trò chuyện';
 
   @override
-  String get chatHistorySubtitle => 'Change the chat appearance';
+  String get chatHistorySubtitle => 'Thay đổi giao diện trò chuyện';
 
   @override
-  String get textToSpeechSubtitle => 'Change text to speech settings';
+  String get textToSpeechSubtitle =>
+      'Thay đổi cài đặt chuyển văn bản thành giọng nói';
 
   @override
-  String get events => 'Events';
+  String get events => 'Sự kiện';
 
   @override
-  String get eventsSubtitle => 'Configure Twitch events';
+  String get eventsSubtitle => 'Cấu hình sự kiện Twitch';
 
   @override
-  String get thirdPartyServices => 'Third-party services';
+  String get thirdPartyServices => 'Dịch vụ bên thứ ba';
 
   @override
-  String get thirdPartyServicesSubtitle => 'Connect to a third-party service';
+  String get thirdPartyServicesSubtitle => 'Kết nối với dịch vụ bên thứ ba';
 
   @override
   String followingEvent(String displayName) {
-    return '<b>$displayName</b> is following you';
+    return '<b>$displayName</b> đang theo dõi bạn';
   }
 
   @override
   String followingEvent2(String displayName, String displayNameTwo) {
-    return '<b>$displayName</b> and <b>$displayNameTwo</b> are following you';
+    return '<b>$displayName</b> và <b>$displayNameTwo</b> đang theo dõi bạn';
   }
 
   @override
@@ -289,54 +289,54 @@ class AppLocalizationsVi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
-    return '<b>$displayName</b>, <b>$displayNameTwo</b>, and $numOthersString others are following you';
+    return '<b>$displayName</b>, <b>$displayNameTwo</b> và $numOthersString người khác đang theo dõi bạn';
   }
 
   @override
   String unmuteUser(String displayName) {
-    return 'Unmute $displayName';
+    return 'Bỏ tắt tiếng $displayName';
   }
 
   @override
   String muteUser(String displayName) {
-    return 'Mute $displayName';
+    return 'Tắt tiếng $displayName';
   }
 
   @override
   String timeoutUser(String displayName) {
-    return 'Timeout $displayName';
+    return 'Tạm cấm $displayName';
   }
 
   @override
   String banUser(String displayName) {
-    return 'Ban $displayName';
+    return 'Cấm $displayName';
   }
 
   @override
   String unbanUser(String displayName) {
-    return 'Unban $displayName';
+    return 'Bỏ cấm $displayName';
   }
 
   @override
   String viewProfile(String displayName) {
-    return 'View $displayName\'s profile';
+    return 'Xem hồ sơ của $displayName';
   }
 
   @override
-  String get copyMessage => 'Copy Message';
+  String get copyMessage => 'Sao chép tin nhắn';
 
   @override
-  String get deleteMessage => 'Delete Message';
+  String get deleteMessage => 'Xóa tin nhắn';
 
   @override
   String get longScrollNotification =>
-      'You\'re scrolling kind of far, don\'t you think?';
+      'Bạn cuộn hơi bị xa rồi đấy, có thấy vậy không?';
 
   @override
-  String get stfu => 'stfu';
+  String get stfu => 'câm mồm';
 
   @override
-  String get globalEmotes => 'Global Emotes';
+  String get globalEmotes => 'Biểu cảm chung';
 
   @override
   String followerCount(int count) {
@@ -348,9 +348,9 @@ class AppLocalizationsVi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString followers',
-      one: '1 follower',
-      zero: '0 followers',
+      other: '$countString người theo dõi',
+      one: '1 người theo dõi',
+      zero: '0 người theo dõi',
     );
     return '$_temp0';
   }
@@ -365,170 +365,171 @@ class AppLocalizationsVi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString viewers',
-      one: '1 viewer',
-      zero: '0 viewers',
+      other: '$countString người xem',
+      one: '1 người xem',
+      zero: '0 người xem',
     );
     return '$_temp0';
   }
 
   @override
   String get streamPreviewMessage =>
-      'Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.';
+      'Chào bạn! Rất vui vì bạn thích dùng tính năng xem trước luồng phát, nhưng lưu ý là nó khá tốn pin đấy. Đọc trò chuyện mà không bật xem trước sẽ giúp kéo dài thời lượng pin của bạn.';
 
   @override
-  String get okay => 'Okay';
+  String get okay => 'OK';
 
   @override
-  String get streamPreviewLoading => 'Loading (or stream is offline)...';
+  String get streamPreviewLoading =>
+      'Đang tải (hoặc luồng phát đang ngoại tuyến)...';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'Đã sao chép vào bộ nhớ tạm';
 
   @override
-  String get audioSourcesRequirePermissions =>
-      'Audio sources require permissions';
+  String get audioSourcesRequirePermissions => 'Nguồn âm thanh cần cấp quyền';
 
   @override
   String get audioSourcesRequirePermissionsMessage =>
-      'Approve RealtimeChat to draw over other apps to use audio sources.';
+      'Cấp quyền cho RealtimeChat hiển thị trên các ứng dụng khác để sử dụng nguồn âm thanh.';
 
   @override
-  String get audioSourcesRemoveButton => 'Remove audio sources';
+  String get audioSourcesRemoveButton => 'Xóa nguồn âm thanh';
 
   @override
-  String get audioSourcesOpenSettingsButton => 'Open settings';
+  String get audioSourcesOpenSettingsButton => 'Mở cài đặt';
 
   @override
-  String get flashOn => 'Flash on';
+  String get flashOn => 'Bật đèn flash';
 
   @override
-  String get flashOff => 'Flash off';
+  String get flashOff => 'Tắt đèn flash';
 
   @override
-  String get durationOneSecond => '1 second';
+  String get durationOneSecond => '1 giây';
 
   @override
-  String get durationOneMinute => '1 minute';
+  String get durationOneMinute => '1 phút';
 
   @override
-  String get durationTenMinutes => '10 minutes';
+  String get durationTenMinutes => '10 phút';
 
   @override
-  String get durationOneHour => '1 hour';
+  String get durationOneHour => '1 giờ';
 
   @override
-  String get durationSixHours => '6 hours';
+  String get durationSixHours => '6 giờ';
 
   @override
-  String get durationOneDay => '1 day';
+  String get durationOneDay => '1 ngày';
 
   @override
-  String get durationTwoDays => '2 days';
+  String get durationTwoDays => '2 ngày';
 
   @override
-  String get durationOneWeek => '1 week';
+  String get durationOneWeek => '1 tuần';
 
   @override
-  String get durationTwoWeeks => '2 weeks';
+  String get durationTwoWeeks => '2 tuần';
 
   @override
-  String get durationOneSecondTimeoutPrompt => 'Timeout for 1 second';
+  String get durationOneSecondTimeoutPrompt => 'Tạm cấm trong 1 giây';
 
   @override
-  String get durationOneMinuteTimeoutPrompt => 'Timeout for 1 minute';
+  String get durationOneMinuteTimeoutPrompt => 'Tạm cấm trong 1 phút';
 
   @override
-  String get durationTenMinutesTimeoutPrompt => 'Timeout for 10 minutes';
+  String get durationTenMinutesTimeoutPrompt => 'Tạm cấm trong 10 phút';
 
   @override
-  String get durationOneHourTimeoutPrompt => 'Timeout for 1 hour';
+  String get durationOneHourTimeoutPrompt => 'Tạm cấm trong 1 giờ';
 
   @override
-  String get durationSixHoursTimeoutPrompt => 'Timeout for 6 hours';
+  String get durationSixHoursTimeoutPrompt => 'Tạm cấm trong 6 giờ';
 
   @override
-  String get durationOneDayTimeoutPrompt => 'Timeout for 1 day';
+  String get durationOneDayTimeoutPrompt => 'Tạm cấm trong 1 ngày';
 
   @override
-  String get durationTwoDaysTimeoutPrompt => 'Timeout for 2 days';
+  String get durationTwoDaysTimeoutPrompt => 'Tạm cấm trong 2 ngày';
 
   @override
-  String get durationOneWeekTimeoutPrompt => 'Timeout for 1 week';
+  String get durationOneWeekTimeoutPrompt => 'Tạm cấm trong 1 tuần';
 
   @override
-  String get durationTwoWeeksTimeoutPrompt => 'Timeout for 2 weeks';
+  String get durationTwoWeeksTimeoutPrompt => 'Tạm cấm trong 2 tuần';
 
   @override
   String get errorFetchingViewerList =>
-      'We couldn\'t fetch the viewer list for this channel';
+      'Chúng tôi không thể tải danh sách người xem cho kênh này';
 
   @override
-  String get eventsTitle => 'Events';
+  String get eventsTitle => 'Sự kiện';
 
   @override
-  String get followEventConfigTitle => 'Follow Event';
+  String get followEventConfigTitle => 'Sự kiện theo dõi';
 
   @override
-  String get customizeYourFollowEvent => 'Customize your follow event';
+  String get customizeYourFollowEvent => 'Tùy chỉnh sự kiện theo dõi của bạn';
 
   @override
-  String get subscribeEventConfigTitle => 'Subscribe Event';
+  String get subscribeEventConfigTitle => 'Sự kiện đăng ký theo dõi';
 
   @override
   String get customizeYourSubscriptionEvent =>
-      'Customize your subscription event';
+      'Tùy chỉnh sự kiện đăng ký theo dõi của bạn';
 
   @override
-  String get cheerEventConfigTitle => 'Cheer Event';
+  String get cheerEventConfigTitle => 'Sự kiện cổ vũ';
 
   @override
-  String get customizeYourCheerEvent => 'Customize your cheer event';
+  String get customizeYourCheerEvent => 'Tùy chỉnh sự kiện cổ vũ của bạn';
 
   @override
-  String get raidEventConfigTitle => 'Raid Event';
+  String get raidEventConfigTitle => 'Sự kiện Raid';
 
   @override
-  String get customizeYourRaidEvent => 'Customize your raid event';
+  String get customizeYourRaidEvent => 'Tùy chỉnh sự kiện Raid của bạn';
 
   @override
-  String get hostEventConfigTitle => 'Host Event';
+  String get hostEventConfigTitle => 'Sự kiện Host';
 
   @override
-  String get customizeYourHostEvent => 'Customize your host event';
+  String get customizeYourHostEvent => 'Tùy chỉnh sự kiện Host của bạn';
 
   @override
-  String get hypetrainEventConfigTitle => 'Hype Train Event';
+  String get hypetrainEventConfigTitle => 'Sự kiện Hype Train';
 
   @override
-  String get customizeYourHypetrainEvent => 'Customize your hype train event';
+  String get customizeYourHypetrainEvent =>
+      'Tùy chỉnh sự kiện Hype Train của bạn';
 
   @override
-  String get pollEventConfigTitle => 'Poll Event';
+  String get pollEventConfigTitle => 'Sự kiện bình chọn';
 
   @override
-  String get customizeYourPollEvent => 'Customize your poll event';
+  String get customizeYourPollEvent => 'Tùy chỉnh sự kiện bình chọn của bạn';
 
   @override
-  String get predictionEventConfigTitle => 'Prediction Event';
+  String get predictionEventConfigTitle => 'Sự kiện dự đoán';
 
   @override
-  String get customizeYourPredictionEvent => 'Customize your prediction event';
+  String get customizeYourPredictionEvent =>
+      'Tùy chỉnh sự kiện dự đoán của bạn';
 
   @override
-  String get channelPointRedemptionEventConfigTitle =>
-      'Channel Point Redemption Event';
+  String get channelPointRedemptionEventConfigTitle => 'Sự kiện đổi điểm kênh';
 
   @override
   String get customizeYourChannelPointRedemptionEvent =>
-      'Customize your channel point redemption event';
+      'Tùy chỉnh sự kiện đổi điểm kênh của bạn';
 
   @override
-  String get outgoingRaidEventConfigTitle => 'Outgoing Raid Event';
+  String get outgoingRaidEventConfigTitle => 'Sự kiện Raid đi';
 
   @override
   String get customizeYourOutgoingRaidEvent =>
-      'Customize your outgoing raid event';
+      'Tùy chỉnh sự kiện Raid đi của bạn';
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
@@ -538,15 +539,15 @@ class AppLocalizationsVi extends AppLocalizations {
       viewerCount,
     );
 
-    return '<b>$displayName</b> is raiding with <b>$viewerCountString</b> viewers!';
+    return '<b>$displayName</b> đang raid cùng với <b>$viewerCountString</b> người xem!';
   }
 
   @override
-  String get shoutout => 'Shoutout';
+  String get shoutout => 'Giới thiệu kênh';
 
   @override
   String raidingEventRaiding(String displayName) {
-    return 'Raiding <b>$displayName</b>...';
+    return 'Đang raid <b>$displayName</b>...';
   }
 
   @override
@@ -555,25 +556,25 @@ class AppLocalizationsVi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
-    return '${secondsString}s';
+    return '$secondsString giây';
   }
 
   @override
   String raidingEventRaided(String displayName) {
-    return '<b>$displayName</b> has raided!';
+    return '<b>$displayName</b> đã raid!';
   }
 
   @override
-  String get raidingEventJoin => 'Join';
+  String get raidingEventJoin => 'Tham gia';
 
   @override
   String raidingEventCanceled(String displayName) {
-    return '<b>$displayName</b>\'s raid was canceled.';
+    return 'Đã hủy lượt raid <b>$displayName</b>.';
   }
 
   @override
   String subscriptionEvent(String subscriberUserName, String tier) {
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier!';
+    return '<b>$subscriberUserName</b> đã đăng ký gói Cấp $tier!';
   }
 
   @override
@@ -592,7 +593,7 @@ class AppLocalizationsVi extends AppLocalizations {
       cumulativeTotal,
     );
 
-    return '<b>$gifterUserName</b> has gifted $totalString Tier $tier subs, totaling $cumulativeTotalString!';
+    return '<b>$gifterUserName</b> đã tặng $totalString gói đăng ký Cấp $tier, tổng cộng $cumulativeTotalString gói!';
   }
 
   @override
@@ -607,7 +608,7 @@ class AppLocalizationsVi extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed for $cumulativeMonthsString months at Tier $tier!';
+    return '<b>$subscriberUserName</b> đã đăng ký gói Cấp $tier trong $cumulativeMonthsString tháng!';
   }
 
   @override
@@ -628,27 +629,27 @@ class AppLocalizationsVi extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b> đã đăng ký trước gói Cấp $tier trong $durationMonthsString tháng, tổng cộng $cumulativeMonthsString tháng!';
   }
 
   @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
-    return '<b>$donor</b> tipped <b>$value $currency</b>.';
+    return '<b>$donor</b> đã ủng hộ <b>$value $currency</b>.';
   }
 
   @override
   String realtimeCashTipAnonymous(String value, String currency) {
-    return 'Anonymous tipped <b>$value $currency</b>.';
+    return 'Người ẩn danh đã ủng hộ <b>$value $currency</b>.';
   }
 
   @override
   String streamElementsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on StreamElements.';
+    return '<b>$name</b> đã ủng hộ <b>$formattedAmount</b> trên StreamElements.';
   }
 
   @override
   String streamlabsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on Streamlabs.';
+    return '<b>$name</b> đã ủng hộ <b>$formattedAmount</b> trên Streamlabs.';
   }
 
   @override
@@ -662,7 +663,7 @@ class AppLocalizationsVi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points. $userInput';
+    return '<b>$redeemerUsername</b> đã đổi <b>$rewardName</b> với giá <b>$rewardCostString</b> điểm. $userInput';
   }
 
   @override
@@ -675,7 +676,7 @@ class AppLocalizationsVi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points.';
+    return '<b>$redeemerUsername</b> đã đổi <b>$rewardName</b> với giá <b>$rewardCostString</b> điểm.';
   }
 
   @override
@@ -685,11 +686,11 @@ class AppLocalizationsVi extends AppLocalizations {
     );
     final String bitsString = bitsNumberFormat.format(bits);
 
-    return '<b>$name</b> cheered <b>$bitsString</b> bits. $cheerMessage';
+    return '<b>$name</b> đã cổ vũ <b>$bitsString</b> bit. $cheerMessage';
   }
 
   @override
-  String get anonymous => 'Anonymous';
+  String get anonymous => 'Ẩn danh';
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
@@ -697,12 +698,12 @@ class AppLocalizationsVi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
-    return '<b>$fromDisplayName</b> is hosting with a party of <b>$viewersString</b>.';
+    return '<b>$fromDisplayName</b> đang host cùng nhóm <b>$viewersString</b> người xem.';
   }
 
   @override
   String hypeTrainEventProgress(String level, String progressPercent) {
-    return 'Hype Train level <b>$level</b> in progress! <b>$progressPercent%</b> completed!';
+    return 'Hype Train cấp <b>$level</b> đang diễn ra! Đã hoàn thành <b>$progressPercent%</b>!';
   }
 
   @override
@@ -711,7 +712,7 @@ class AppLocalizationsVi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> succeeded.';
+    return 'Hype Train cấp <b>$levelString</b> đã thành công.';
   }
 
   @override
@@ -720,7 +721,7 @@ class AppLocalizationsVi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> failed.';
+    return 'Hype Train cấp <b>$levelString</b> đã thất bại.';
   }
 
   @override
@@ -738,24 +739,24 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get textToSpeechEnabled => 'Text to speech enabled';
+  String get textToSpeechEnabled => 'Đã bật chuyển văn bản thành giọng nói';
 
   @override
-  String get textToSpeechDisabled => 'Text to speech disabled';
+  String get textToSpeechDisabled => 'Đã tắt chuyển văn bản thành giọng nói';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Chỉ thông báo';
 
   @override
-  String get pinDuration => 'Pin Duration';
+  String get pinDuration => 'Thời lượng ghim';
 
   @override
   String durationSeconds(int seconds) {
     String _temp0 = intl.Intl.pluralLogic(
       seconds,
       locale: localeName,
-      other: '$seconds seconds',
-      one: '1 second',
+      other: '$seconds giây',
+      one: '1 giây',
     );
     return '$_temp0';
   }
@@ -765,245 +766,251 @@ class AppLocalizationsVi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: '$minutes minutes',
-      one: '1 minute',
+      other: '$minutes phút',
+      one: '1 phút',
     );
     return '$_temp0';
   }
 
   @override
-  String get enableEvent => 'Enable event';
+  String get enableEvent => 'Bật sự kiện';
 
   @override
-  String get showEventInChatHistory => 'Show event in chat history';
+  String get showEventInChatHistory =>
+      'Hiển thị sự kiện trong lịch sử trò chuyện';
 
   @override
-  String get enableShoutouts => 'Enable shoutouts';
+  String get enableShoutouts => 'Bật giới thiệu kênh';
 
   @override
   String get enableShoutoutsSubtitle =>
-      'Send a link to the raiding channel to chat';
+      'Gửi liên kết của kênh đang raid vào cuộc trò chuyện';
 
   @override
-  String get raidConfigurationTitle => 'Raid Configuration';
+  String get raidConfigurationTitle => 'Cấu hình Raid';
 
   @override
-  String get cheerConfigurationTitle => 'Cheer Configuration';
+  String get cheerConfigurationTitle => 'Cấu hình cổ vũ';
 
   @override
-  String get followConfigurationTitle => 'Follow Configuration';
+  String get followConfigurationTitle => 'Cấu hình theo dõi';
 
   @override
-  String get outgoingRaidConfigurationTitle => 'Outgoing Raid Configuration';
+  String get outgoingRaidConfigurationTitle => 'Cấu hình Raid đi';
 
   @override
-  String get hostConfigurationTitle => 'Host Configuration';
+  String get hostConfigurationTitle => 'Cấu hình Host';
 
   @override
-  String get channelPointConfigurationTitle => 'Channel Point Configuration';
+  String get channelPointConfigurationTitle => 'Cấu hình điểm kênh';
 
   @override
-  String get pollConfigurationTitle => 'Poll Configuration';
+  String get pollConfigurationTitle => 'Cấu hình bình chọn';
 
   @override
-  String get hypetrainConfigurationTitle => 'Hypetrain Configuration';
+  String get hypetrainConfigurationTitle => 'Cấu hình Hype Train';
 
   @override
-  String get subscriptionConfigurationTitle => 'Subscription Configuration';
+  String get subscriptionConfigurationTitle => 'Cấu hình đăng ký theo dõi';
 
   @override
-  String get predictionConfigurationTitle => 'Prediction Configuration';
+  String get predictionConfigurationTitle => 'Cấu hình dự đoán';
 
   @override
   String get unfulfilledRewardsPinDuration =>
-      'Additional Pin Duration for Unfulfilled Rewards';
+      'Thời lượng ghim bổ sung cho phần thưởng chưa hoàn thành';
 
   @override
-  String get pollPinDuration => 'Pin duration after the result is finalized';
+  String get pollPinDuration => 'Thời lượng ghim sau khi có kết quả cuối cùng';
 
   @override
-  String get hypetrainPinDuration => 'Pin duration after hypetrain is over';
+  String get hypetrainPinDuration =>
+      'Thời lượng ghim sau khi Hype Train kết thúc';
 
   @override
   String get enableGiftedSubscriptions =>
-      'Enable individual gifted subscriptions';
+      'Bật hiển thị từng gói đăng ký được tặng';
 
   @override
   String get enableGiftedSubscriptionsSubtitle =>
-      'Show every subscription that is gifted';
+      'Hiển thị mọi gói đăng ký được tặng';
 
   @override
-  String get settingsBackupTitle => 'Settings backup and restore';
+  String get settingsBackupTitle => 'Sao lưu và khôi phục cài đặt';
 
   @override
-  String get cloudBackup => 'Cloud backup';
+  String get cloudBackup => 'Sao lưu đám mây';
 
   @override
-  String get lastBackupNever => 'Last backup: never';
+  String get lastBackupNever => 'Lần sao lưu cuối: chưa từng';
 
   @override
-  String get backUp => 'Back up';
+  String get backUp => 'Sao lưu';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Khôi phục';
 
   @override
-  String get localBackup => 'Local backup';
+  String get localBackup => 'Sao lưu cục bộ';
 
   @override
-  String get exportSettings => 'Export';
+  String get exportSettings => 'Xuất';
 
   @override
-  String get importSettings => 'Import';
+  String get importSettings => 'Nhập';
 
   @override
-  String get showViewerAndFollowerCount => 'Show viewer and follower count';
+  String get showViewerAndFollowerCount =>
+      'Hiển thị số người xem và người theo dõi';
 
   @override
-  String get screenOrientation => 'Screen orientation';
+  String get screenOrientation => 'Hướng màn hình';
 
   @override
-  String get appTheme => 'App theme';
+  String get appTheme => 'Giao diện ứng dụng';
 
   @override
-  String get systemDefault => 'System';
+  String get systemDefault => 'Hệ thống';
 
   @override
-  String get portrait => 'Portrait';
+  String get portrait => 'Dọc';
 
   @override
-  String get landscape => 'Landscape';
+  String get landscape => 'Ngang';
 
   @override
-  String get lightTheme => 'Light';
+  String get lightTheme => 'Sáng';
 
   @override
-  String get darkTheme => 'Dark';
+  String get darkTheme => 'Tối';
 
   @override
-  String get openSourceTitle => 'RealtimeChat is open source';
+  String get openSourceTitle => 'RealtimeChat là mã nguồn mở';
 
   @override
-  String get openSourceSubtitle => 'Find us on GitHub!';
+  String get openSourceSubtitle => 'Tìm chúng tôi trên GitHub!';
 
   @override
-  String get discordSubtitle => 'Join the Muxable Discord!';
+  String get discordSubtitle => 'Tham gia Discord của Muxable!';
 
   @override
   String get earlyTestersThanks =>
-      'Thanks to all the early testers who sent bug reports!';
+      'Cảm ơn tất cả những người thử nghiệm đầu tiên đã gửi báo cáo lỗi!';
 
   @override
-  String get discoModeEnabled => '🕺 Disco mode enabled! :D';
+  String get discoModeEnabled => '🕺 Đã bật chế độ vũ trường! :D';
 
   @override
-  String get discoModeDisabled => '🕺 Disco mode disabled D:';
+  String get discoModeDisabled => '🕺 Đã tắt chế độ vũ trường D:';
 
   @override
-  String get playSampleMessage => 'Play sample message';
+  String get playSampleMessage => 'Phát tin nhắn mẫu';
 
   @override
-  String get textToSpeechRate => 'Text to Speech Rate';
+  String get textToSpeechRate => 'Tốc độ đọc văn bản';
 
   @override
-  String get textToSpeechPitch => 'Text to Speech Pitch';
+  String get textToSpeechPitch => 'Cao độ giọng đọc';
 
   @override
-  String get muteBots => 'Mute text to speech for bots';
+  String get muteBots => 'Tắt đọc văn bản đối với bot';
 
   @override
-  String get muteEmotes => 'Mute all emotes in text to speech';
+  String get muteEmotes => 'Tắt đọc tất cả biểu cảm';
 
   @override
-  String get muteViewerNames => 'Mute viewer names in text to speech';
+  String get muteViewerNames => 'Tắt đọc tên người xem';
 
   @override
-  String get subscribersOnly => 'Subscribers only';
+  String get subscribersOnly => 'Chỉ người đăng ký theo dõi';
 
   @override
-  String get fontSize => 'Font size';
+  String get fontSize => 'Cỡ chữ';
 
   @override
-  String get usernameContrastBoost => 'Username contrast boost';
+  String get usernameContrastBoost => 'Tăng độ tương phản tên người dùng';
 
   @override
-  String get twitchBadgeSettings => 'Twitch badge settings';
+  String get twitchBadgeSettings => 'Cài đặt huy hiệu Twitch';
 
   @override
-  String get twitchBadgeSettingsSubtitle => 'Control which badges are visible';
+  String get twitchBadgeSettingsSubtitle =>
+      'Kiểm soát những huy hiệu nào được hiển thị';
 
   @override
-  String get showDeletedMessages => 'Show deleted messages';
+  String get showDeletedMessages => 'Hiển thị tin nhắn đã xóa';
 
   @override
-  String get deletedMessagesGreyedOut => 'Deleted messages will be greyed out';
+  String get deletedMessagesGreyedOut =>
+      'Tin nhắn đã xóa sẽ bị làm mờ thành màu xám';
 
   @override
-  String get deletedMessagesRemoved => 'Deleted messages will be removed';
+  String get deletedMessagesRemoved => 'Tin nhắn đã xóa sẽ bị gỡ bỏ';
 
   @override
-  String get showLoginNames => 'Show login names';
+  String get showLoginNames => 'Hiển thị tên đăng nhập';
 
   @override
   String get loginNamesShown =>
-      'Login names will be shown if they are different from the display name';
+      'Tên đăng nhập sẽ hiển thị nếu khác với tên hiển thị';
 
   @override
-  String get loginNamesHidden => 'Login names will be hidden';
+  String get loginNamesHidden => 'Tên đăng nhập sẽ bị ẩn';
 
   @override
-  String get compactMessages => 'Compact messages';
+  String get compactMessages => 'Thu gọn tin nhắn';
 
   @override
-  String get dontCompactMessages => 'Don\'t compact messages';
+  String get dontCompactMessages => 'Không thu gọn tin nhắn';
 
   @override
-  String get dontCompactMessagesSubtitle => 'Messages are shown unchanged';
+  String get dontCompactMessagesSubtitle => 'Tin nhắn được hiển thị nguyên vẹn';
 
   @override
-  String get compactIndividualMessages => 'Compact individual messages';
+  String get compactIndividualMessages => 'Thu gọn từng tin nhắn';
 
   @override
   String get compactIndividualMessagesSubtitle =>
-      'Repetitive text in messages is shortened';
+      'Văn bản lặp lại trong tin nhắn sẽ được rút gọn';
 
   @override
-  String get announcementPinDuration => 'Announcement pin duration';
+  String get announcementPinDuration => 'Thời lượng ghim thông báo';
 
   @override
-  String get idleMessageAlertDuration => 'Idle message alert duration';
+  String get idleMessageAlertDuration => 'Thời gian chờ cảnh báo tin nhắn mới';
 
   @override
   String get idleMessageAlertDurationSubtitle =>
-      'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
+      'Nếu không có tin nhắn nào trong khoảng thời gian này và có tin nhắn mới đến, âm thanh thông báo sẽ phát lên.';
 
   @override
-  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+  String get realtimeCashSubtitle => 'Kết nối ví ETH hoặc MATIC';
 
   @override
-  String get walletAddress => 'Wallet address';
+  String get walletAddress => 'Địa chỉ ví';
 
   @override
-  String get streamlabsSubtitle => 'See your Streamlabs donations';
+  String get streamlabsSubtitle => 'Xem khoản ủng hộ Streamlabs của bạn';
 
   @override
-  String get streamElementsSubtitle => 'See your StreamElements donations';
+  String get streamElementsSubtitle =>
+      'Xem khoản ủng hộ StreamElements của bạn';
 
   @override
   String get thirdPartyAuthError =>
-      'Hmm, that didn\'t work. Try again, or ask on Discord?';
+      'Hmm, không được rồi. Hãy thử lại hoặc hỏi trên Discord nhé?';
 
   @override
   String get companionAuthBrowserTooOld =>
-      'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.';
+      'Trình duyệt của bạn quá cũ nên không hỗ trợ đăng nhập trực tiếp. Hãy quét mã QR này bằng điện thoại để đăng nhập trên thiết bị khác.';
 
   @override
   String get companionAuthScanQrCode =>
-      'Scan this QR code with your phone to sign in on another device.';
+      'Quét mã QR này bằng điện thoại để đăng nhập trên thiết bị khác.';
 
   @override
   String kickSubscriptionEvent(String subscriberName) {
-    return '<b>$subscriberName</b> has subscribed!';
+    return '<b>$subscriberName</b> đã đăng ký theo dõi!';
   }
 
   @override
@@ -1012,7 +1019,7 @@ class AppLocalizationsVi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
-    return '<b>$subscriberName</b> has resubscribed for $monthsString months!';
+    return '<b>$subscriberName</b> đã đăng ký lại trong $monthsString tháng!';
   }
 
   @override
@@ -1021,7 +1028,7 @@ class AppLocalizationsVi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '<b>$gifterName</b> has gifted $countString subs!';
+    return '<b>$gifterName</b> đã tặng $countString gói đăng ký!';
   }
 
   @override
@@ -1030,60 +1037,61 @@ class AppLocalizationsVi extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
-    return '<b>$senderName</b> sent $amountString Kicks!';
+    return '<b>$senderName</b> đã gửi $amountString Kicks!';
   }
 
   @override
-  String get signInWithKick => 'Sign in with Kick';
+  String get signInWithKick => 'Đăng nhập bằng Kick';
 
   @override
   String get textToSpeechTooManyMessages =>
-      'There are too many messages. Text to speech disabled';
+      'Có quá nhiều tin nhắn. Đã tắt chuyển văn bản thành giọng nói';
 
   @override
-  String get turnOffTextToSpeech => 'Turn off';
+  String get turnOffTextToSpeech => 'Tắt';
 
   @override
-  String get addToChat => 'Add to chat';
+  String get addToChat => 'Thêm vào trò chuyện';
 
   @override
-  String get inChat => 'In chat';
+  String get inChat => 'Trong trò chuyện';
 
   @override
-  String get removeFromChat => 'Remove from chat';
+  String get removeFromChat => 'Xóa khỏi trò chuyện';
 
   @override
   String cantChatWithAccount(String provider) {
-    return 'Your $provider account can\'t chat here';
+    return 'Tài khoản $provider của bạn không thể trò chuyện tại đây';
   }
 
   @override
-  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+  String get cantChatWithAccounts =>
+      'Các tài khoản của bạn không thể trò chuyện tại đây';
 
   @override
   String sendAMessageTo(String channel) {
-    return 'Send a message to $channel...';
+    return 'Gửi tin nhắn tới $channel...';
   }
 
   @override
   String replaceChannel(String channel) {
-    return 'Replace $channel';
+    return 'Thay thế $channel';
   }
 
   @override
-  String get voicePacks => 'Voice packs';
+  String get voicePacks => 'Gói giọng nói';
 
   @override
   String get voicePacksDescription =>
-      'Voice packs read chat with natural-sounding voices that run on your device, offline once downloaded. The voices are machine-generated by AI, not recorded by a person.';
+      'Gói giọng nói đọc nội dung trò chuyện bằng giọng đọc tự nhiên chạy ngay trên thiết bị của bạn, hoạt động ngoại tuyến sau khi tải xuống. Các giọng nói này do AI tạo tự động, không phải do người thật thu âm.';
 
   @override
   String voicePackDetails(int voices, String size) {
     String _temp0 = intl.Intl.pluralLogic(
       voices,
       locale: localeName,
-      other: '$voices voices',
-      one: '1 voice',
+      other: '$voices giọng đọc',
+      one: '1 giọng đọc',
     );
     return '$_temp0 · $size';
   }
@@ -1093,99 +1101,99 @@ class AppLocalizationsVi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count languages',
-      one: '1 language',
+      other: '$count ngôn ngữ',
+      one: '1 ngôn ngữ',
     );
     return '$_temp0: $languages';
   }
 
   @override
   String get voicePackOpenRailNotice =>
-      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+      'Giấy phép của mô hình này (OpenRAIL-M) nghiêm cấm các mục đích sử dụng gây hại, chẳng hạn như mạo danh người khác hoặc phát tán thông tin sai lệch, và những hạn chế này cũng áp dụng cho bạn.';
 
   @override
   String voicePackDeleteConfirm(String pack, String size) {
-    return 'Delete $pack? This frees $size.';
+    return 'Xóa $pack? Thao tác này sẽ giải phóng $size.';
   }
 
   @override
-  String get voicePackDownload => 'Download';
+  String get voicePackDownload => 'Tải xuống';
 
   @override
-  String get voicePackUpdate => 'Update';
+  String get voicePackUpdate => 'Cập nhật';
 
   @override
-  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+  String get voicePackWaitingForWifi => 'Đang chờ Wi-Fi';
 
   @override
-  String get voicePackUseMobileData => 'Use mobile data';
+  String get voicePackUseMobileData => 'Dùng dữ liệu di động';
 
   @override
   String voicePackDownloading(String downloaded, String total) {
-    return 'Downloading: $downloaded of $total';
+    return 'Đang tải xuống: $downloaded / $total';
   }
 
   @override
-  String get voicePackInstalling => 'Installing';
+  String get voicePackInstalling => 'Đang cài đặt';
 
   @override
   String voicePackInstallFailed(String pack) {
-    return 'Couldn\'t install $pack. Check your connection and try again.';
+    return 'Không thể cài đặt $pack. Hãy kiểm tra kết nối của bạn và thử lại.';
   }
 
   @override
-  String get voices => 'Voices';
+  String get voices => 'Giọng đọc';
 
   @override
-  String get perViewerVoice => 'Per-viewer voice';
+  String get perViewerVoice => 'Giọng đọc riêng cho từng người xem';
 
   @override
   String get perViewerVoiceSubtitle =>
-      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+      'Mỗi người xem sẽ có giọng đọc riêng. Giọng đọc bạn chọn sẽ dùng để đọc thông báo, hoặc đọc tất cả khi tắt tùy chọn này.';
 
   @override
-  String get streamLanguage => 'Stream language';
+  String get streamLanguage => 'Ngôn ngữ luồng phát';
 
   @override
-  String get ttsEngineNeural => 'Neural voice (on-device)';
+  String get ttsEngineNeural => 'Giọng đọc AI (trên thiết bị)';
 
   @override
-  String get ttsEngineSystem => 'System voice';
+  String get ttsEngineSystem => 'Giọng đọc hệ thống';
 
   @override
   String languageUnsupported(String language) {
-    return '$language isn\'t supported by your voice packs; the system voice will be used';
+    return 'Gói giọng nói của bạn không hỗ trợ $language; giọng đọc hệ thống sẽ được sử dụng';
   }
 
   @override
   String get neuralFallbackLowMemory =>
-      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+      'Thiết bị này không đủ bộ nhớ cho giọng đọc AI nên nội dung trò chuyện sẽ được đọc bằng giọng đọc hệ thống.';
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'Không thể tải giọng đọc AI nên nội dung trò chuyện sẽ được đọc bằng giọng đọc hệ thống.';
 
   @override
-  String get accounts => 'Accounts';
+  String get accounts => 'Tài khoản';
 
   @override
-  String get accountsSubtitle => 'Sign in to each platform you stream on';
+  String get accountsSubtitle => 'Đăng nhập vào từng nền tảng mà bạn phát sóng';
 
   @override
   String addProviderAccount(String provider) {
-    return 'Add $provider account';
+    return 'Thêm tài khoản $provider';
   }
 
   @override
   String signInWithProvider(String provider) {
-    return 'Sign in with $provider';
+    return 'Đăng nhập bằng $provider';
   }
 
   @override
   String signOutOfAccount(String channel, String provider) {
-    return 'Sign out of $channel on $provider?';
+    return 'Đăng xuất khỏi $channel trên $provider?';
   }
 
   @override
-  String get signOutOfAll => 'Sign out of all accounts';
+  String get signOutOfAll => 'Đăng xuất khỏi tất cả tài khoản';
 }

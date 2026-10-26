@@ -16,7 +16,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/firebase_options.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
-import 'package:rtchat/l10n/supported_ui_locales.dart';
 import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/activity_feed.dart';
 import 'package:rtchat/models/audio.dart';
@@ -434,7 +433,7 @@ class _AppState extends State<App> {
               ...AppLocalizations.localizationsDelegates,
               LocaleNamesLocalizationsDelegate(),
             ],
-            supportedLocales: supportedUiLocales,
+            supportedLocales: AppLocalizations.supportedLocales,
             navigatorObservers: [App.observer],
             initialRoute: '/',
             routes: {

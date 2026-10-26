@@ -9,71 +9,70 @@ class AppLocalizationsIs extends AppLocalizations {
   AppLocalizationsIs([String locale = 'is']) : super(locale);
 
   @override
-  String get sendAMessage => 'Send a message...';
+  String get sendAMessage => 'Senda skilaboð...';
 
   @override
-  String get writeSomething => 'Write something...';
+  String get writeSomething => 'Skrifaðu eitthvað...';
 
   @override
-  String get speakToTheCrowds => 'Speak to the crowds...';
+  String get speakToTheCrowds => 'Talaðu til fjöldans...';
 
   @override
-  String get shareYourThoughts => 'Share your thoughts...';
+  String get shareYourThoughts => 'Deildu hugsunum þínum...';
 
   @override
-  String get saySomethingYouLittleBitch => 'Say something, you little bitch...';
+  String get saySomethingYouLittleBitch => 'Segðu eitthvað, litla tíkin þín...';
 
   @override
-  String get search => 'Search';
+  String get search => 'Leita';
 
   @override
-  String get notSignedIn => 'Not signed in';
+  String get notSignedIn => 'Ekki skráð(ur) inn';
 
   @override
-  String get searchChannels => 'Search';
+  String get searchChannels => 'Leita';
 
   @override
-  String get raidAChannel => 'Raid';
+  String get raidAChannel => 'Áhlaup';
 
   @override
-  String get noMessagesEmptyState => 'It\'s quiet in here.';
+  String get noMessagesEmptyState => 'Það er hljótt hérna inni.';
 
   @override
   String newMessageCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count new messages',
-      one: '1 new message',
-      zero: 'No new messages',
+      other: '$count ný skilaboð',
+      one: '$count ný skilaboð',
+      zero: 'Engin ný skilaboð',
     );
     return '$_temp0';
   }
 
   @override
-  String get signInWithTwitch => 'Sign in with Twitch';
+  String get signInWithTwitch => 'Skrá inn með Twitch';
 
   @override
-  String get signInError =>
-      'An error occurred when signing in. Please try again.';
+  String get signInError => 'Villa kom upp við innskráningu. Reyndu aftur.';
 
   @override
-  String get continueAsGuest => 'Continue as Guest';
+  String get continueAsGuest => 'Halda áfram sem gestur';
 
   @override
-  String get signInToSendMessages => 'Sign in to send messages';
+  String get signInToSendMessages => 'Skráðu þig inn til að senda skilaboð';
 
   @override
-  String get currentViewers => 'Current viewers';
+  String get currentViewers => 'Núverandi áhorfendur';
 
   @override
-  String get textToSpeech => 'Text to speech';
+  String get textToSpeech => 'Talgervill';
 
   @override
-  String get streamPreview => 'Stream preview';
+  String get streamPreview => 'Forskoðun streymis';
 
   @override
-  String get activityFeed => 'Activity feed';
+  String get activityFeed => 'Virkniveita';
 
   @override
   String streamOnline(DateTime date, DateTime time) {
@@ -84,7 +83,7 @@ class AppLocalizationsIs extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream online at $dateString, $timeString';
+    return 'Streymi í loftinu $dateString, kl. $timeString';
   }
 
   @override
@@ -96,7 +95,7 @@ class AppLocalizationsIs extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream offline at $dateString, $timeString';
+    return 'Streymi óvirkt $dateString, kl. $timeString';
   }
 
   @override
@@ -108,175 +107,179 @@ class AppLocalizationsIs extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Chat cleared at $dateString, $timeString';
+    return 'Spjall hreinsað $dateString, kl. $timeString';
   }
 
   @override
-  String get configureQuickLinks => 'Configure quick links';
+  String get configureQuickLinks => 'Stilla flýtitengla';
 
   @override
-  String get disableRainMode => 'Disable rain mode';
+  String get disableRainMode => 'Slökkva á regnham';
 
   @override
-  String get enableRainMode => 'Enable rain mode';
+  String get enableRainMode => 'Kveikja á regnham';
 
   @override
-  String get disableRainModeSubtitle => 'Interaction will be enabled';
+  String get disableRainModeSubtitle => 'Gagnvirkni verður virkjuð';
 
   @override
-  String get enableRainModeSubtitle => 'Interaction will be disabled';
+  String get enableRainModeSubtitle => 'Gagnvirkni verður óvirkjuð';
 
   @override
-  String get refreshAudioSources => 'Refresh audio sources';
+  String get refreshAudioSources => 'Endurhlaða hljóðgjafa';
 
   @override
   String refreshAudioSourcesCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count audio sources refreshed',
-      one: '1 audio source refreshed',
-      zero: 'No audio sources refreshed',
+      other: '$count hljóðgjafar endurhlaðnir',
+      one: '$count hljóðgjafi endurhlaðinn',
+      zero: 'Engir hljóðgjafar endurhlaðnir',
     );
     return '$_temp0';
   }
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Stillingar';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'Skrá út';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Hætta við';
 
   @override
-  String get signOutConfirmation => 'Are you sure you want to sign out?';
+  String get signOutConfirmation => 'Ertu viss um að þú viljir skrá þig út?';
 
   @override
-  String get broadcaster => 'Broadcaster';
+  String get broadcaster => 'Streymandi';
 
   @override
-  String get moderators => 'Moderators';
+  String get moderators => 'Stjórnendur';
 
   @override
-  String get viewers => 'Viewers';
+  String get viewers => 'Áhorfendur';
 
   @override
-  String get communityVips => 'Community VIPs';
+  String get communityVips => 'VIP-meðlimir samfélagsins';
 
   @override
-  String get searchViewers => 'Search Viewers';
+  String get searchViewers => 'Leita að áhorfendum';
 
   @override
-  String get reconnecting => 'Reconnecting...';
+  String get reconnecting => 'Endurtengist...';
 
   @override
-  String get twitchBadges => 'Twitch badges';
+  String get twitchBadges => 'Twitch-merki';
 
   @override
-  String get selectAll => 'Select all';
+  String get selectAll => 'Velja allt';
 
   @override
-  String get quickLinks => 'Quick links';
+  String get quickLinks => 'Flýtitenglar';
 
   @override
   String get swipeToDeleteQuickLinks =>
-      'Swipe left or right to delete quick link';
+      'Strjúktu til vinstri eða hægri til að eyða flýtitengli';
 
   @override
-  String get quickLinksLabelHint => 'Label';
+  String get quickLinksLabelHint => 'Merki';
 
   @override
-  String get invalidUrlErrorText => 'This doesn\'t look like a valid URL';
+  String get invalidUrlErrorText =>
+      'Þetta lítur ekki út fyrir að vera gilt URL';
 
   @override
-  String get duplicateUrlErrorText => 'This link already exists';
+  String get duplicateUrlErrorText => 'Þessi tengill er þegar til';
 
   @override
-  String get or => 'or';
+  String get or => 'eða';
 
   @override
-  String get clearCookies => 'Clear cookies';
+  String get clearCookies => 'Hreinsa vafrakökur';
 
   @override
-  String get disabled => 'Disabled';
+  String get disabled => 'Óvirkt';
 
   @override
-  String get twitchActivityFeed => 'Twitch activity feed';
+  String get twitchActivityFeed => 'Virkniveita Twitch';
 
   @override
-  String get signInToEnable => 'You must be signed in to enable this';
+  String get signInToEnable =>
+      'Þú verður að vera skráð(ur) inn til að virkja þetta';
 
   @override
-  String get customUrl => 'Custom URL';
+  String get customUrl => 'Sérsniðið URL';
 
   @override
-  String get preview => 'Preview';
+  String get preview => 'Forskoðun';
 
   @override
-  String get audioSources => 'Audio sources';
+  String get audioSources => 'Hljóðgjafar';
 
   @override
   String get enableOffStreamSwitchTitle =>
-      'Enable off-stream (uses more battery)';
+      'Virkja utan streymis (notar meiri rafhlöðu)';
 
   @override
   String get enableOffStreamSwitchEnabledSubtitle =>
-      'Audio will also play when you\'re offline';
+      'Hljóð spilast líka þegar þú ert ekki í beinni';
 
   @override
   String get enableOffStreamSwitchDisabledSubtitle =>
-      'Audio will only play when you\'re live';
+      'Hljóð spilast aðeins þegar þú ert í beinni';
 
   @override
-  String get iosOggWarningTitle => 'Hey! Listen!';
+  String get iosOggWarningTitle => 'Heyrðu! Hlustaðu!';
 
   @override
   String get iosOggWarningSubtitle =>
-      'iOS doesn\'t support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won\'t play.';
+      'iOS styður ekki *.ogg margmiðlunarskrár, sem eru sjálfgefnar skrár á Streamlabs. Gakktu úr skugga um að hljóðgjafarnir þínir noti annað snið, annars spilast þeir ekki.';
 
   @override
   String get url => 'URL';
 
   @override
-  String get activityFeedSubtitle => 'Customize your activity feed';
+  String get activityFeedSubtitle => 'Sérsníddu virkniveituna þína';
 
   @override
-  String get audioSourcesSubtitle => 'Add web sources for alert sounds';
+  String get audioSourcesSubtitle =>
+      'Bættu við vefgjöfum fyrir tilkynningarhljóð';
 
   @override
-  String get quickLinksSubtitle => 'Add shortcuts to commonly used tools';
+  String get quickLinksSubtitle =>
+      'Bættu við flýtileiðum að algengum verkfærum';
 
   @override
-  String get chatHistory => 'Chat history';
+  String get chatHistory => 'Spjallferill';
 
   @override
-  String get chatHistorySubtitle => 'Change the chat appearance';
+  String get chatHistorySubtitle => 'Breyta útliti spjallsins';
 
   @override
-  String get textToSpeechSubtitle => 'Change text to speech settings';
+  String get textToSpeechSubtitle => 'Breyta stillingum talgervils';
 
   @override
-  String get events => 'Events';
+  String get events => 'Viðburðir';
 
   @override
-  String get eventsSubtitle => 'Configure Twitch events';
+  String get eventsSubtitle => 'Stilla Twitch-viðburði';
 
   @override
-  String get thirdPartyServices => 'Third-party services';
+  String get thirdPartyServices => 'Þjónustur þriðja aðila';
 
   @override
-  String get thirdPartyServicesSubtitle => 'Connect to a third-party service';
+  String get thirdPartyServicesSubtitle => 'Tengjast þjónustu þriðja aðila';
 
   @override
   String followingEvent(String displayName) {
-    return '<b>$displayName</b> is following you';
+    return '<b>$displayName</b> fylgir þér';
   }
 
   @override
   String followingEvent2(String displayName, String displayNameTwo) {
-    return '<b>$displayName</b> and <b>$displayNameTwo</b> are following you';
+    return '<b>$displayName</b> og <b>$displayNameTwo</b> fylgja þér';
   }
 
   @override
@@ -289,54 +292,54 @@ class AppLocalizationsIs extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
-    return '<b>$displayName</b>, <b>$displayNameTwo</b>, and $numOthersString others are following you';
+    return '<b>$displayName</b>, <b>$displayNameTwo</b> og $numOthersString aðrir fylgja þér';
   }
 
   @override
   String unmuteUser(String displayName) {
-    return 'Unmute $displayName';
+    return 'Afþagga $displayName';
   }
 
   @override
   String muteUser(String displayName) {
-    return 'Mute $displayName';
+    return 'Þagga $displayName';
   }
 
   @override
   String timeoutUser(String displayName) {
-    return 'Timeout $displayName';
+    return 'Setja $displayName í tímabundið bann';
   }
 
   @override
   String banUser(String displayName) {
-    return 'Ban $displayName';
+    return 'Banna $displayName';
   }
 
   @override
   String unbanUser(String displayName) {
-    return 'Unban $displayName';
+    return 'Aflétta banni á $displayName';
   }
 
   @override
   String viewProfile(String displayName) {
-    return 'View $displayName\'s profile';
+    return 'Skoða prófíl $displayName';
   }
 
   @override
-  String get copyMessage => 'Copy Message';
+  String get copyMessage => 'Afrita skilaboð';
 
   @override
-  String get deleteMessage => 'Delete Message';
+  String get deleteMessage => 'Eyða skilaboðum';
 
   @override
   String get longScrollNotification =>
-      'You\'re scrolling kind of far, don\'t you think?';
+      'Þú ert búin(n) að skrolla svolítið langt, finnst þér ekki?';
 
   @override
-  String get stfu => 'stfu';
+  String get stfu => 'þegiðu';
 
   @override
-  String get globalEmotes => 'Global Emotes';
+  String get globalEmotes => 'Alþjóðleg tjáningartákn';
 
   @override
   String followerCount(int count) {
@@ -348,9 +351,9 @@ class AppLocalizationsIs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString followers',
-      one: '1 follower',
-      zero: '0 followers',
+      other: '$countString fylgjendur',
+      one: '$countString fylgjandi',
+      zero: '0 fylgjendur',
     );
     return '$_temp0';
   }
@@ -365,170 +368,171 @@ class AppLocalizationsIs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString viewers',
-      one: '1 viewer',
-      zero: '0 viewers',
+      other: '$countString áhorfendur',
+      one: '$countString áhorfandi',
+      zero: '0 áhorfendur',
     );
     return '$_temp0';
   }
 
   @override
   String get streamPreviewMessage =>
-      'Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.';
+      'Hæ! Gott að þú kannt vel við forskoðun streymis, en hafðu í huga að hún notar mikla rafhlöðu. Að lesa spjallið án hennar lengir endingu rafhlöðunnar.';
 
   @override
-  String get okay => 'Okay';
+  String get okay => 'Í lagi';
 
   @override
-  String get streamPreviewLoading => 'Loading (or stream is offline)...';
+  String get streamPreviewLoading => 'Hleður (eða streymi er óvirkt)...';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'Afritað á klemmuspjald';
 
   @override
-  String get audioSourcesRequirePermissions =>
-      'Audio sources require permissions';
+  String get audioSourcesRequirePermissions => 'Hljóðgjafar krefjast heimilda';
 
   @override
   String get audioSourcesRequirePermissionsMessage =>
-      'Approve RealtimeChat to draw over other apps to use audio sources.';
+      'Samþykktu að RealtimeChat megi birtast yfir öðrum forritum til að nota hljóðgjafa.';
 
   @override
-  String get audioSourcesRemoveButton => 'Remove audio sources';
+  String get audioSourcesRemoveButton => 'Fjarlægja hljóðgjafa';
 
   @override
-  String get audioSourcesOpenSettingsButton => 'Open settings';
+  String get audioSourcesOpenSettingsButton => 'Opna stillingar';
 
   @override
-  String get flashOn => 'Flash on';
+  String get flashOn => 'Flass á';
 
   @override
-  String get flashOff => 'Flash off';
+  String get flashOff => 'Flass af';
 
   @override
-  String get durationOneSecond => '1 second';
+  String get durationOneSecond => '1 sekúnda';
 
   @override
-  String get durationOneMinute => '1 minute';
+  String get durationOneMinute => '1 mínúta';
 
   @override
-  String get durationTenMinutes => '10 minutes';
+  String get durationTenMinutes => '10 mínútur';
 
   @override
-  String get durationOneHour => '1 hour';
+  String get durationOneHour => '1 klukkustund';
 
   @override
-  String get durationSixHours => '6 hours';
+  String get durationSixHours => '6 klukkustundir';
 
   @override
-  String get durationOneDay => '1 day';
+  String get durationOneDay => '1 dagur';
 
   @override
-  String get durationTwoDays => '2 days';
+  String get durationTwoDays => '2 dagar';
 
   @override
-  String get durationOneWeek => '1 week';
+  String get durationOneWeek => '1 vika';
 
   @override
-  String get durationTwoWeeks => '2 weeks';
+  String get durationTwoWeeks => '2 vikur';
 
   @override
-  String get durationOneSecondTimeoutPrompt => 'Timeout for 1 second';
+  String get durationOneSecondTimeoutPrompt => 'Tímabundið bann í 1 sekúndu';
 
   @override
-  String get durationOneMinuteTimeoutPrompt => 'Timeout for 1 minute';
+  String get durationOneMinuteTimeoutPrompt => 'Tímabundið bann í 1 mínútu';
 
   @override
-  String get durationTenMinutesTimeoutPrompt => 'Timeout for 10 minutes';
+  String get durationTenMinutesTimeoutPrompt => 'Tímabundið bann í 10 mínútur';
 
   @override
-  String get durationOneHourTimeoutPrompt => 'Timeout for 1 hour';
+  String get durationOneHourTimeoutPrompt => 'Tímabundið bann í 1 klukkustund';
 
   @override
-  String get durationSixHoursTimeoutPrompt => 'Timeout for 6 hours';
+  String get durationSixHoursTimeoutPrompt =>
+      'Tímabundið bann í 6 klukkustundir';
 
   @override
-  String get durationOneDayTimeoutPrompt => 'Timeout for 1 day';
+  String get durationOneDayTimeoutPrompt => 'Tímabundið bann í 1 dag';
 
   @override
-  String get durationTwoDaysTimeoutPrompt => 'Timeout for 2 days';
+  String get durationTwoDaysTimeoutPrompt => 'Tímabundið bann í 2 daga';
 
   @override
-  String get durationOneWeekTimeoutPrompt => 'Timeout for 1 week';
+  String get durationOneWeekTimeoutPrompt => 'Tímabundið bann í 1 viku';
 
   @override
-  String get durationTwoWeeksTimeoutPrompt => 'Timeout for 2 weeks';
+  String get durationTwoWeeksTimeoutPrompt => 'Tímabundið bann í 2 vikur';
 
   @override
   String get errorFetchingViewerList =>
-      'We couldn\'t fetch the viewer list for this channel';
+      'Ekki tókst að sækja áhorfendalista fyrir þessa rás';
 
   @override
-  String get eventsTitle => 'Events';
+  String get eventsTitle => 'Viðburðir';
 
   @override
-  String get followEventConfigTitle => 'Follow Event';
+  String get followEventConfigTitle => 'Fylgiviðburður';
 
   @override
-  String get customizeYourFollowEvent => 'Customize your follow event';
+  String get customizeYourFollowEvent => 'Sérsníddu fylgiviðburðinn þinn';
 
   @override
-  String get subscribeEventConfigTitle => 'Subscribe Event';
+  String get subscribeEventConfigTitle => 'Áskriftarviðburður';
 
   @override
   String get customizeYourSubscriptionEvent =>
-      'Customize your subscription event';
+      'Sérsníddu áskriftarviðburðinn þinn';
 
   @override
-  String get cheerEventConfigTitle => 'Cheer Event';
+  String get cheerEventConfigTitle => 'Cheer-viðburður';
 
   @override
-  String get customizeYourCheerEvent => 'Customize your cheer event';
+  String get customizeYourCheerEvent => 'Sérsníddu Cheer-viðburðinn þinn';
 
   @override
-  String get raidEventConfigTitle => 'Raid Event';
+  String get raidEventConfigTitle => 'Áhlaupsviðburður';
 
   @override
-  String get customizeYourRaidEvent => 'Customize your raid event';
+  String get customizeYourRaidEvent => 'Sérsníddu áhlaupsviðburðinn þinn';
 
   @override
-  String get hostEventConfigTitle => 'Host Event';
+  String get hostEventConfigTitle => 'Hýsingarviðburður';
 
   @override
-  String get customizeYourHostEvent => 'Customize your host event';
+  String get customizeYourHostEvent => 'Sérsníddu hýsingarviðburðinn þinn';
 
   @override
-  String get hypetrainEventConfigTitle => 'Hype Train Event';
+  String get hypetrainEventConfigTitle => 'Hype Train-viðburður';
 
   @override
-  String get customizeYourHypetrainEvent => 'Customize your hype train event';
+  String get customizeYourHypetrainEvent =>
+      'Sérsníddu Hype Train-viðburðinn þinn';
 
   @override
-  String get pollEventConfigTitle => 'Poll Event';
+  String get pollEventConfigTitle => 'Könnunarviðburður';
 
   @override
-  String get customizeYourPollEvent => 'Customize your poll event';
+  String get customizeYourPollEvent => 'Sérsníddu könnunarviðburðinn þinn';
 
   @override
-  String get predictionEventConfigTitle => 'Prediction Event';
+  String get predictionEventConfigTitle => 'Spáviðburður';
 
   @override
-  String get customizeYourPredictionEvent => 'Customize your prediction event';
+  String get customizeYourPredictionEvent => 'Sérsníddu spáviðburðinn þinn';
 
   @override
   String get channelPointRedemptionEventConfigTitle =>
-      'Channel Point Redemption Event';
+      'Viðburður innlausnar rásarstiga';
 
   @override
   String get customizeYourChannelPointRedemptionEvent =>
-      'Customize your channel point redemption event';
+      'Sérsníddu viðburð innlausnar rásarstiga';
 
   @override
-  String get outgoingRaidEventConfigTitle => 'Outgoing Raid Event';
+  String get outgoingRaidEventConfigTitle => 'Viðburður útleiðar áhlaups';
 
   @override
   String get customizeYourOutgoingRaidEvent =>
-      'Customize your outgoing raid event';
+      'Sérsníddu viðburð útleiðar áhlaups';
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
@@ -538,15 +542,15 @@ class AppLocalizationsIs extends AppLocalizations {
       viewerCount,
     );
 
-    return '<b>$displayName</b> is raiding with <b>$viewerCountString</b> viewers!';
+    return '<b>$displayName</b> gerir áhlaup með <b>$viewerCountString</b> áhorfendur!';
   }
 
   @override
-  String get shoutout => 'Shoutout';
+  String get shoutout => 'Kveðja';
 
   @override
   String raidingEventRaiding(String displayName) {
-    return 'Raiding <b>$displayName</b>...';
+    return 'Gerir áhlaup á <b>$displayName</b>...';
   }
 
   @override
@@ -555,25 +559,25 @@ class AppLocalizationsIs extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
-    return '${secondsString}s';
+    return '$secondsString sek.';
   }
 
   @override
   String raidingEventRaided(String displayName) {
-    return '<b>$displayName</b> has raided!';
+    return '<b>$displayName</b> hefur gert áhlaup!';
   }
 
   @override
-  String get raidingEventJoin => 'Join';
+  String get raidingEventJoin => 'Taka þátt';
 
   @override
   String raidingEventCanceled(String displayName) {
-    return '<b>$displayName</b>\'s raid was canceled.';
+    return 'Hætt var við áhlaup <b>$displayName</b>.';
   }
 
   @override
   String subscriptionEvent(String subscriberUserName, String tier) {
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier!';
+    return '<b>$subscriberUserName</b> er komin(n) í áskrift á þrepi $tier!';
   }
 
   @override
@@ -592,7 +596,7 @@ class AppLocalizationsIs extends AppLocalizations {
       cumulativeTotal,
     );
 
-    return '<b>$gifterUserName</b> has gifted $totalString Tier $tier subs, totaling $cumulativeTotalString!';
+    return '<b>$gifterUserName</b> gaf $totalString áskriftir á þrepi $tier, samtals $cumulativeTotalString!';
   }
 
   @override
@@ -607,7 +611,7 @@ class AppLocalizationsIs extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed for $cumulativeMonthsString months at Tier $tier!';
+    return '<b>$subscriberUserName</b> hefur verið í áskrift í $cumulativeMonthsString mánuði á þrepi $tier!';
   }
 
   @override
@@ -628,27 +632,27 @@ class AppLocalizationsIs extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b> hefur keypt áskrift á þrepi $tier í $durationMonthsString mánuði fyrir fram, samtals $cumulativeMonthsString mánuði!';
   }
 
   @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
-    return '<b>$donor</b> tipped <b>$value $currency</b>.';
+    return '<b>$donor</b> gaf <b>$value $currency</b> í þjórfé.';
   }
 
   @override
   String realtimeCashTipAnonymous(String value, String currency) {
-    return 'Anonymous tipped <b>$value $currency</b>.';
+    return 'Nafnlaus gaf <b>$value $currency</b> í þjórfé.';
   }
 
   @override
   String streamElementsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on StreamElements.';
+    return '<b>$name</b> gaf <b>$formattedAmount</b> í þjórfé á StreamElements.';
   }
 
   @override
   String streamlabsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on Streamlabs.';
+    return '<b>$name</b> gaf <b>$formattedAmount</b> í þjórfé á Streamlabs.';
   }
 
   @override
@@ -662,7 +666,7 @@ class AppLocalizationsIs extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points. $userInput';
+    return '<b>$redeemerUsername</b> leysti út <b>$rewardName</b> fyrir <b>$rewardCostString</b> stig. $userInput';
   }
 
   @override
@@ -675,7 +679,7 @@ class AppLocalizationsIs extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points.';
+    return '<b>$redeemerUsername</b> leysti út <b>$rewardName</b> fyrir <b>$rewardCostString</b> stig.';
   }
 
   @override
@@ -685,11 +689,11 @@ class AppLocalizationsIs extends AppLocalizations {
     );
     final String bitsString = bitsNumberFormat.format(bits);
 
-    return '<b>$name</b> cheered <b>$bitsString</b> bits. $cheerMessage';
+    return '<b>$name</b> sendi Cheer með <b>$bitsString</b> bitum. $cheerMessage';
   }
 
   @override
-  String get anonymous => 'Anonymous';
+  String get anonymous => 'Nafnlaus';
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
@@ -697,12 +701,12 @@ class AppLocalizationsIs extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
-    return '<b>$fromDisplayName</b> is hosting with a party of <b>$viewersString</b>.';
+    return '<b>$fromDisplayName</b> hýsir með <b>$viewersString</b> áhorfendum.';
   }
 
   @override
   String hypeTrainEventProgress(String level, String progressPercent) {
-    return 'Hype Train level <b>$level</b> in progress! <b>$progressPercent%</b> completed!';
+    return 'Hype Train á stigi <b>$level</b> í gangi! <b>$progressPercent%</b> lokið!';
   }
 
   @override
@@ -711,7 +715,7 @@ class AppLocalizationsIs extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> succeeded.';
+    return 'Hype Train á stigi <b>$levelString</b> tókst.';
   }
 
   @override
@@ -720,7 +724,7 @@ class AppLocalizationsIs extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> failed.';
+    return 'Hype Train á stigi <b>$levelString</b> mistókst.';
   }
 
   @override
@@ -737,24 +741,24 @@ class AppLocalizationsIs extends AppLocalizations {
   }
 
   @override
-  String get textToSpeechEnabled => 'Text to speech enabled';
+  String get textToSpeechEnabled => 'Talgervill virkur';
 
   @override
-  String get textToSpeechDisabled => 'Text to speech disabled';
+  String get textToSpeechDisabled => 'Talgervill óvirkur';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Aðeins tilkynningar';
 
   @override
-  String get pinDuration => 'Pin Duration';
+  String get pinDuration => 'Lengd festingar';
 
   @override
   String durationSeconds(int seconds) {
     String _temp0 = intl.Intl.pluralLogic(
       seconds,
       locale: localeName,
-      other: '$seconds seconds',
-      one: '1 second',
+      other: '$seconds sekúndur',
+      one: '$seconds sekúnda',
     );
     return '$_temp0';
   }
@@ -764,245 +768,247 @@ class AppLocalizationsIs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: '$minutes minutes',
-      one: '1 minute',
+      other: '$minutes mínútur',
+      one: '$minutes mínúta',
     );
     return '$_temp0';
   }
 
   @override
-  String get enableEvent => 'Enable event';
+  String get enableEvent => 'Virkja viðburð';
 
   @override
-  String get showEventInChatHistory => 'Show event in chat history';
+  String get showEventInChatHistory => 'Sýna viðburð í spjallferli';
 
   @override
-  String get enableShoutouts => 'Enable shoutouts';
+  String get enableShoutouts => 'Virkja kveðjur';
 
   @override
   String get enableShoutoutsSubtitle =>
-      'Send a link to the raiding channel to chat';
+      'Senda tengil á rásina sem gerir áhlaup í spjallið';
 
   @override
-  String get raidConfigurationTitle => 'Raid Configuration';
+  String get raidConfigurationTitle => 'Stillingar áhlaups';
 
   @override
-  String get cheerConfigurationTitle => 'Cheer Configuration';
+  String get cheerConfigurationTitle => 'Stillingar Cheer';
 
   @override
-  String get followConfigurationTitle => 'Follow Configuration';
+  String get followConfigurationTitle => 'Stillingar fylgis';
 
   @override
-  String get outgoingRaidConfigurationTitle => 'Outgoing Raid Configuration';
+  String get outgoingRaidConfigurationTitle => 'Stillingar útleiðar áhlaups';
 
   @override
-  String get hostConfigurationTitle => 'Host Configuration';
+  String get hostConfigurationTitle => 'Stillingar hýsingar';
 
   @override
-  String get channelPointConfigurationTitle => 'Channel Point Configuration';
+  String get channelPointConfigurationTitle => 'Stillingar rásarstiga';
 
   @override
-  String get pollConfigurationTitle => 'Poll Configuration';
+  String get pollConfigurationTitle => 'Stillingar könnunar';
 
   @override
-  String get hypetrainConfigurationTitle => 'Hypetrain Configuration';
+  String get hypetrainConfigurationTitle => 'Stillingar Hype Train';
 
   @override
-  String get subscriptionConfigurationTitle => 'Subscription Configuration';
+  String get subscriptionConfigurationTitle => 'Stillingar áskriftar';
 
   @override
-  String get predictionConfigurationTitle => 'Prediction Configuration';
+  String get predictionConfigurationTitle => 'Stillingar spár';
 
   @override
   String get unfulfilledRewardsPinDuration =>
-      'Additional Pin Duration for Unfulfilled Rewards';
+      'Viðbótartími festingar fyrir óuppfyllt verðlaun';
 
   @override
-  String get pollPinDuration => 'Pin duration after the result is finalized';
+  String get pollPinDuration =>
+      'Lengd festingar eftir að niðurstaða liggur fyrir';
 
   @override
-  String get hypetrainPinDuration => 'Pin duration after hypetrain is over';
+  String get hypetrainPinDuration =>
+      'Lengd festingar eftir að Hype Train lýkur';
 
   @override
-  String get enableGiftedSubscriptions =>
-      'Enable individual gifted subscriptions';
+  String get enableGiftedSubscriptions => 'Virkja stakar gjafaáskriftir';
 
   @override
   String get enableGiftedSubscriptionsSubtitle =>
-      'Show every subscription that is gifted';
+      'Sýna hverja áskrift sem er gefin';
 
   @override
-  String get settingsBackupTitle => 'Settings backup and restore';
+  String get settingsBackupTitle => 'Öryggisafrit og endurheimt stillinga';
 
   @override
-  String get cloudBackup => 'Cloud backup';
+  String get cloudBackup => 'Skýjaafrit';
 
   @override
-  String get lastBackupNever => 'Last backup: never';
+  String get lastBackupNever => 'Síðasta afrit: aldrei';
 
   @override
-  String get backUp => 'Back up';
+  String get backUp => 'Afrita';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Endurheimta';
 
   @override
-  String get localBackup => 'Local backup';
+  String get localBackup => 'Staðbundið afrit';
 
   @override
-  String get exportSettings => 'Export';
+  String get exportSettings => 'Flytja út';
 
   @override
-  String get importSettings => 'Import';
+  String get importSettings => 'Flytja inn';
 
   @override
-  String get showViewerAndFollowerCount => 'Show viewer and follower count';
+  String get showViewerAndFollowerCount => 'Sýna fjölda áhorfenda og fylgjenda';
 
   @override
-  String get screenOrientation => 'Screen orientation';
+  String get screenOrientation => 'Skjástefna';
 
   @override
-  String get appTheme => 'App theme';
+  String get appTheme => 'Þema forrits';
 
   @override
-  String get systemDefault => 'System';
+  String get systemDefault => 'Kerfi';
 
   @override
-  String get portrait => 'Portrait';
+  String get portrait => 'Lóðrétt';
 
   @override
-  String get landscape => 'Landscape';
+  String get landscape => 'Lárétt';
 
   @override
-  String get lightTheme => 'Light';
+  String get lightTheme => 'Ljóst';
 
   @override
-  String get darkTheme => 'Dark';
+  String get darkTheme => 'Dökkt';
 
   @override
-  String get openSourceTitle => 'RealtimeChat is open source';
+  String get openSourceTitle => 'RealtimeChat er opinn hugbúnaður';
 
   @override
-  String get openSourceSubtitle => 'Find us on GitHub!';
+  String get openSourceSubtitle => 'Finndu okkur á GitHub!';
 
   @override
-  String get discordSubtitle => 'Join the Muxable Discord!';
+  String get discordSubtitle => 'Gakktu í Muxable Discord-þjóninn!';
 
   @override
   String get earlyTestersThanks =>
-      'Thanks to all the early testers who sent bug reports!';
+      'Þakkir til allra fyrstu prófaranna sem sendu villuskýrslur!';
 
   @override
-  String get discoModeEnabled => '🕺 Disco mode enabled! :D';
+  String get discoModeEnabled => '🕺 Diskóhamur virkjaður! :D';
 
   @override
-  String get discoModeDisabled => '🕺 Disco mode disabled D:';
+  String get discoModeDisabled => '🕺 Diskóhamur óvirkjaður D:';
 
   @override
-  String get playSampleMessage => 'Play sample message';
+  String get playSampleMessage => 'Spila prufuskilaboð';
 
   @override
-  String get textToSpeechRate => 'Text to Speech Rate';
+  String get textToSpeechRate => 'Hraði talgervils';
 
   @override
-  String get textToSpeechPitch => 'Text to Speech Pitch';
+  String get textToSpeechPitch => 'Tónhæð talgervils';
 
   @override
-  String get muteBots => 'Mute text to speech for bots';
+  String get muteBots => 'Þagga talgervil fyrir vélmenni';
 
   @override
-  String get muteEmotes => 'Mute all emotes in text to speech';
+  String get muteEmotes => 'Þagga öll tjáningartákn í talgervli';
 
   @override
-  String get muteViewerNames => 'Mute viewer names in text to speech';
+  String get muteViewerNames => 'Þagga nöfn áhorfenda í talgervli';
 
   @override
-  String get subscribersOnly => 'Subscribers only';
+  String get subscribersOnly => 'Aðeins áskrifendur';
 
   @override
-  String get fontSize => 'Font size';
+  String get fontSize => 'Leturstærð';
 
   @override
-  String get usernameContrastBoost => 'Username contrast boost';
+  String get usernameContrastBoost => 'Auka birtuskil notendanafna';
 
   @override
-  String get twitchBadgeSettings => 'Twitch badge settings';
+  String get twitchBadgeSettings => 'Stillingar Twitch-merkja';
 
   @override
-  String get twitchBadgeSettingsSubtitle => 'Control which badges are visible';
+  String get twitchBadgeSettingsSubtitle => 'Stjórnaðu hvaða merki eru sýnileg';
 
   @override
-  String get showDeletedMessages => 'Show deleted messages';
+  String get showDeletedMessages => 'Sýna eydd skilaboð';
 
   @override
-  String get deletedMessagesGreyedOut => 'Deleted messages will be greyed out';
+  String get deletedMessagesGreyedOut => 'Eydd skilaboð verða grá';
 
   @override
-  String get deletedMessagesRemoved => 'Deleted messages will be removed';
+  String get deletedMessagesRemoved => 'Eydd skilaboð verða fjarlægð';
 
   @override
-  String get showLoginNames => 'Show login names';
+  String get showLoginNames => 'Sýna innskráningarnöfn';
 
   @override
   String get loginNamesShown =>
-      'Login names will be shown if they are different from the display name';
+      'Innskráningarnöfn verða sýnd ef þau eru frábrugðin birtingarnafni';
 
   @override
-  String get loginNamesHidden => 'Login names will be hidden';
+  String get loginNamesHidden => 'Innskráningarnöfn verða falin';
 
   @override
-  String get compactMessages => 'Compact messages';
+  String get compactMessages => 'Þjappa skilaboðum';
 
   @override
-  String get dontCompactMessages => 'Don\'t compact messages';
+  String get dontCompactMessages => 'Ekki þjappa skilaboðum';
 
   @override
-  String get dontCompactMessagesSubtitle => 'Messages are shown unchanged';
+  String get dontCompactMessagesSubtitle => 'Skilaboð birtast óbreytt';
 
   @override
-  String get compactIndividualMessages => 'Compact individual messages';
+  String get compactIndividualMessages => 'Þjappa stökum skilaboðum';
 
   @override
   String get compactIndividualMessagesSubtitle =>
-      'Repetitive text in messages is shortened';
+      'Endurtekinn texti í skilaboðum er styttur';
 
   @override
-  String get announcementPinDuration => 'Announcement pin duration';
+  String get announcementPinDuration => 'Lengd festingar tilkynninga';
 
   @override
-  String get idleMessageAlertDuration => 'Idle message alert duration';
+  String get idleMessageAlertDuration =>
+      'Biðtími tilkynningar við aðgerðaleysi í spjalli';
 
   @override
   String get idleMessageAlertDurationSubtitle =>
-      'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
+      'Ef engin skilaboð berast í þennan tíma og ný skilaboð koma inn mun tilkynningarhljóð spilast.';
 
   @override
-  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+  String get realtimeCashSubtitle => 'Tengdu ETH- eða MATIC-veski';
 
   @override
-  String get walletAddress => 'Wallet address';
+  String get walletAddress => 'Veskisfang';
 
   @override
-  String get streamlabsSubtitle => 'See your Streamlabs donations';
+  String get streamlabsSubtitle => 'Sjáðu Streamlabs-framlögin þín';
 
   @override
-  String get streamElementsSubtitle => 'See your StreamElements donations';
+  String get streamElementsSubtitle => 'Sjáðu StreamElements-framlögin þín';
 
   @override
   String get thirdPartyAuthError =>
-      'Hmm, that didn\'t work. Try again, or ask on Discord?';
+      'Hmm, þetta virkaði ekki. Reyndu aftur eða spurðu á Discord?';
 
   @override
   String get companionAuthBrowserTooOld =>
-      'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.';
+      'Vafrinn þinn er of gamall til að styðja beina innskráningu. Skannaðu þennan QR-kóða með símanum þínum til að skrá þig inn á öðru tæki.';
 
   @override
   String get companionAuthScanQrCode =>
-      'Scan this QR code with your phone to sign in on another device.';
+      'Skannaðu þennan QR-kóða með símanum þínum til að skrá þig inn á öðru tæki.';
 
   @override
   String kickSubscriptionEvent(String subscriberName) {
-    return '<b>$subscriberName</b> has subscribed!';
+    return '<b>$subscriberName</b> er komin(n) í áskrift!';
   }
 
   @override
@@ -1011,7 +1017,7 @@ class AppLocalizationsIs extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
-    return '<b>$subscriberName</b> has resubscribed for $monthsString months!';
+    return '<b>$subscriberName</b> hefur endurnýjað áskrift í $monthsString mánuði!';
   }
 
   @override
@@ -1020,7 +1026,7 @@ class AppLocalizationsIs extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '<b>$gifterName</b> has gifted $countString subs!';
+    return '<b>$gifterName</b> gaf $countString áskriftir!';
   }
 
   @override
@@ -1029,60 +1035,61 @@ class AppLocalizationsIs extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
-    return '<b>$senderName</b> sent $amountString Kicks!';
+    return '<b>$senderName</b> sendi $amountString Kicks!';
   }
 
   @override
-  String get signInWithKick => 'Sign in with Kick';
+  String get signInWithKick => 'Skrá inn með Kick';
 
   @override
   String get textToSpeechTooManyMessages =>
-      'There are too many messages. Text to speech disabled';
+      'Það eru of mörg skilaboð. Talgervill óvirkjaður';
 
   @override
-  String get turnOffTextToSpeech => 'Turn off';
+  String get turnOffTextToSpeech => 'Slökkva';
 
   @override
-  String get addToChat => 'Add to chat';
+  String get addToChat => 'Bæta við spjall';
 
   @override
-  String get inChat => 'In chat';
+  String get inChat => 'Í spjalli';
 
   @override
-  String get removeFromChat => 'Remove from chat';
+  String get removeFromChat => 'Fjarlægja úr spjalli';
 
   @override
   String cantChatWithAccount(String provider) {
-    return 'Your $provider account can\'t chat here';
+    return '$provider-reikningurinn þinn getur ekki spjallað hér';
   }
 
   @override
-  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+  String get cantChatWithAccounts =>
+      'Reikningarnir þínir geta ekki spjallað hér';
 
   @override
   String sendAMessageTo(String channel) {
-    return 'Send a message to $channel...';
+    return 'Senda skilaboð á $channel...';
   }
 
   @override
   String replaceChannel(String channel) {
-    return 'Replace $channel';
+    return 'Skipta út $channel';
   }
 
   @override
-  String get voicePacks => 'Voice packs';
+  String get voicePacks => 'Raddpakkar';
 
   @override
   String get voicePacksDescription =>
-      'Voice packs read chat with natural-sounding voices that run on your device, offline once downloaded. The voices are machine-generated by AI, not recorded by a person.';
+      'Raddpakkar lesa spjallið með eðlilegum röddum sem keyra á tækinu þínu, án nettengingar eftir niðurhal. Raddirnar eru búnar til með gervigreind, ekki teknar upp af manneskju.';
 
   @override
   String voicePackDetails(int voices, String size) {
     String _temp0 = intl.Intl.pluralLogic(
       voices,
       locale: localeName,
-      other: '$voices voices',
-      one: '1 voice',
+      other: '$voices raddir',
+      one: '$voices rödd',
     );
     return '$_temp0 · $size';
   }
@@ -1092,99 +1099,100 @@ class AppLocalizationsIs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count languages',
-      one: '1 language',
+      other: '$count tungumál',
+      one: '$count tungumál',
     );
     return '$_temp0: $languages';
   }
 
   @override
   String get voicePackOpenRailNotice =>
-      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+      'Leyfi þessa líkans (OpenRAIL-M) bannar skaðlega notkun, svo sem að villa á sér heimildir eða dreifa falsupplýsingum, og þessar takmarkanir gilda einnig um þig.';
 
   @override
   String voicePackDeleteConfirm(String pack, String size) {
-    return 'Delete $pack? This frees $size.';
+    return 'Eyða $pack? Þetta losar $size.';
   }
 
   @override
-  String get voicePackDownload => 'Download';
+  String get voicePackDownload => 'Sækja';
 
   @override
-  String get voicePackUpdate => 'Update';
+  String get voicePackUpdate => 'Uppfæra';
 
   @override
-  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+  String get voicePackWaitingForWifi => 'Bíður eftir Wi-Fi';
 
   @override
-  String get voicePackUseMobileData => 'Use mobile data';
+  String get voicePackUseMobileData => 'Nota farsímagögn';
 
   @override
   String voicePackDownloading(String downloaded, String total) {
-    return 'Downloading: $downloaded of $total';
+    return 'Sækir: $downloaded af $total';
   }
 
   @override
-  String get voicePackInstalling => 'Installing';
+  String get voicePackInstalling => 'Setur upp';
 
   @override
   String voicePackInstallFailed(String pack) {
-    return 'Couldn\'t install $pack. Check your connection and try again.';
+    return 'Ekki tókst að setja upp $pack. Athugaðu tenginguna þína og reyndu aftur.';
   }
 
   @override
-  String get voices => 'Voices';
+  String get voices => 'Raddir';
 
   @override
-  String get perViewerVoice => 'Per-viewer voice';
+  String get perViewerVoice => 'Rödd á hvern áhorfanda';
 
   @override
   String get perViewerVoiceSubtitle =>
-      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+      'Hver áhorfandi fær sína eigin rödd. Röddin sem þú velur les tilkynningar, eða allt þegar slökkt er á þessu.';
 
   @override
-  String get streamLanguage => 'Stream language';
+  String get streamLanguage => 'Tungumál streymis';
 
   @override
-  String get ttsEngineNeural => 'Neural voice (on-device)';
+  String get ttsEngineNeural => 'Taugarödd (á tæki)';
 
   @override
-  String get ttsEngineSystem => 'System voice';
+  String get ttsEngineSystem => 'Kerfisrödd';
 
   @override
   String languageUnsupported(String language) {
-    return '$language isn\'t supported by your voice packs; the system voice will be used';
+    return '$language er ekki stutt af raddpökkunum þínum; kerfisröddin verður notuð';
   }
 
   @override
   String get neuralFallbackLowMemory =>
-      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+      'Þetta tæki hefur ekki nægt minni fyrir taugaraddir, svo spjallið er lesið með kerfisröddinni.';
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'Ekki tókst að hlaða taugaröddinni, svo spjallið er lesið með kerfisröddinni.';
 
   @override
-  String get accounts => 'Accounts';
+  String get accounts => 'Reikningar';
 
   @override
-  String get accountsSubtitle => 'Sign in to each platform you stream on';
+  String get accountsSubtitle =>
+      'Skráðu þig inn á hvern vettvang sem þú streymir á';
 
   @override
   String addProviderAccount(String provider) {
-    return 'Add $provider account';
+    return 'Bæta við $provider-reikningi';
   }
 
   @override
   String signInWithProvider(String provider) {
-    return 'Sign in with $provider';
+    return 'Skrá inn með $provider';
   }
 
   @override
   String signOutOfAccount(String channel, String provider) {
-    return 'Sign out of $channel on $provider?';
+    return 'Skrá út af $channel á $provider?';
   }
 
   @override
-  String get signOutOfAll => 'Sign out of all accounts';
+  String get signOutOfAll => 'Skrá út af öllum reikningum';
 }

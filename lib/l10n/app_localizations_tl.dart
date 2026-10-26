@@ -9,71 +9,72 @@ class AppLocalizationsTl extends AppLocalizations {
   AppLocalizationsTl([String locale = 'tl']) : super(locale);
 
   @override
-  String get sendAMessage => 'Send a message...';
+  String get sendAMessage => 'Magpadala ng mensahe...';
 
   @override
-  String get writeSomething => 'Write something...';
+  String get writeSomething => 'Magsulat ng kung ano...';
 
   @override
-  String get speakToTheCrowds => 'Speak to the crowds...';
+  String get speakToTheCrowds => 'Magsalita sa madla...';
 
   @override
-  String get shareYourThoughts => 'Share your thoughts...';
+  String get shareYourThoughts => 'Ibahagi ang iyong naiisip...';
 
   @override
-  String get saySomethingYouLittleBitch => 'Say something, you little bitch...';
+  String get saySomethingYouLittleBitch => 'Magsalita ka naman, duwag...';
 
   @override
-  String get search => 'Search';
+  String get search => 'Maghanap';
 
   @override
-  String get notSignedIn => 'Not signed in';
+  String get notSignedIn => 'Hindi naka-sign in';
 
   @override
-  String get searchChannels => 'Search';
+  String get searchChannels => 'Maghanap';
 
   @override
-  String get raidAChannel => 'Raid';
+  String get raidAChannel => 'Mag-raid';
 
   @override
-  String get noMessagesEmptyState => 'It\'s quiet in here.';
+  String get noMessagesEmptyState => 'Tahimik dito.';
 
   @override
   String newMessageCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count new messages',
-      one: '1 new message',
-      zero: 'No new messages',
+      other: '$count na bagong mensahe',
+      one: '1 bagong mensahe',
+      zero: 'Walang bagong mensahe',
     );
     return '$_temp0';
   }
 
   @override
-  String get signInWithTwitch => 'Sign in with Twitch';
+  String get signInWithTwitch => 'Mag-sign in gamit ang Twitch';
 
   @override
   String get signInError =>
-      'An error occurred when signing in. Please try again.';
+      'Nagkaroon ng error sa pag-sign in. Pakisubukang muli.';
 
   @override
-  String get continueAsGuest => 'Continue as Guest';
+  String get continueAsGuest => 'Magpatuloy bilang Bisita';
 
   @override
-  String get signInToSendMessages => 'Sign in to send messages';
+  String get signInToSendMessages =>
+      'Mag-sign in para makapagpadala ng mga mensahe';
 
   @override
-  String get currentViewers => 'Current viewers';
+  String get currentViewers => 'Kasalukuyang mga manonood';
 
   @override
-  String get textToSpeech => 'Text to speech';
+  String get textToSpeech => 'Pagbigkas ng teksto';
 
   @override
-  String get streamPreview => 'Stream preview';
+  String get streamPreview => 'Preview ng stream';
 
   @override
-  String get activityFeed => 'Activity feed';
+  String get activityFeed => 'Feed ng aktibidad';
 
   @override
   String streamOnline(DateTime date, DateTime time) {
@@ -84,7 +85,7 @@ class AppLocalizationsTl extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream online at $dateString, $timeString';
+    return 'Online ang stream noong $dateString, $timeString';
   }
 
   @override
@@ -96,7 +97,7 @@ class AppLocalizationsTl extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream offline at $dateString, $timeString';
+    return 'Offline ang stream noong $dateString, $timeString';
   }
 
   @override
@@ -108,175 +109,179 @@ class AppLocalizationsTl extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Chat cleared at $dateString, $timeString';
+    return 'Na-clear ang chat noong $dateString, $timeString';
   }
 
   @override
-  String get configureQuickLinks => 'Configure quick links';
+  String get configureQuickLinks => 'I-configure ang mga quick link';
 
   @override
-  String get disableRainMode => 'Disable rain mode';
+  String get disableRainMode => 'I-disable ang rain mode';
 
   @override
-  String get enableRainMode => 'Enable rain mode';
+  String get enableRainMode => 'I-enable ang rain mode';
 
   @override
-  String get disableRainModeSubtitle => 'Interaction will be enabled';
+  String get disableRainModeSubtitle => 'Mae-enable ang interaksyon';
 
   @override
-  String get enableRainModeSubtitle => 'Interaction will be disabled';
+  String get enableRainModeSubtitle => 'Madi-disable ang interaksyon';
 
   @override
-  String get refreshAudioSources => 'Refresh audio sources';
+  String get refreshAudioSources => 'I-refresh ang mga source ng audio';
 
   @override
   String refreshAudioSourcesCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count audio sources refreshed',
-      one: '1 audio source refreshed',
-      zero: 'No audio sources refreshed',
+      other: '$count na source ng audio ang na-refresh',
+      one: '1 source ng audio ang na-refresh',
+      zero: 'Walang na-refresh na source ng audio',
     );
     return '$_temp0';
   }
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Mga Setting';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'Mag-sign out';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Kanselahin';
 
   @override
-  String get signOutConfirmation => 'Are you sure you want to sign out?';
+  String get signOutConfirmation => 'Sigurado ka bang gusto mong mag-sign out?';
 
   @override
-  String get broadcaster => 'Broadcaster';
+  String get broadcaster => 'Tagapag-broadcast';
 
   @override
-  String get moderators => 'Moderators';
+  String get moderators => 'Mga Moderator';
 
   @override
-  String get viewers => 'Viewers';
+  String get viewers => 'Mga Manonood';
 
   @override
-  String get communityVips => 'Community VIPs';
+  String get communityVips => 'Mga VIP ng Komunidad';
 
   @override
-  String get searchViewers => 'Search Viewers';
+  String get searchViewers => 'Maghanap ng mga Manonood';
 
   @override
-  String get reconnecting => 'Reconnecting...';
+  String get reconnecting => 'Kumokonekta muli...';
 
   @override
-  String get twitchBadges => 'Twitch badges';
+  String get twitchBadges => 'Mga badge ng Twitch';
 
   @override
-  String get selectAll => 'Select all';
+  String get selectAll => 'Piliin lahat';
 
   @override
-  String get quickLinks => 'Quick links';
+  String get quickLinks => 'Mga quick link';
 
   @override
   String get swipeToDeleteQuickLinks =>
-      'Swipe left or right to delete quick link';
+      'Mag-swipe pakaliwa o pakanan para burahin ang quick link';
 
   @override
-  String get quickLinksLabelHint => 'Label';
+  String get quickLinksLabelHint => 'Pangalan ng label';
 
   @override
-  String get invalidUrlErrorText => 'This doesn\'t look like a valid URL';
+  String get invalidUrlErrorText => 'Mukhang hindi ito valid na URL';
 
   @override
-  String get duplicateUrlErrorText => 'This link already exists';
+  String get duplicateUrlErrorText => 'Umiiral na ang link na ito';
 
   @override
-  String get or => 'or';
+  String get or => 'o';
 
   @override
-  String get clearCookies => 'Clear cookies';
+  String get clearCookies => 'I-clear ang mga cookie';
 
   @override
-  String get disabled => 'Disabled';
+  String get disabled => 'Naka-disable';
 
   @override
-  String get twitchActivityFeed => 'Twitch activity feed';
+  String get twitchActivityFeed => 'Feed ng aktibidad sa Twitch';
 
   @override
-  String get signInToEnable => 'You must be signed in to enable this';
+  String get signInToEnable => 'Kailangan mong mag-sign in para ma-enable ito';
 
   @override
-  String get customUrl => 'Custom URL';
+  String get customUrl => 'Custom na URL';
 
   @override
-  String get preview => 'Preview';
+  String get preview => 'Paunang tingin';
 
   @override
-  String get audioSources => 'Audio sources';
+  String get audioSources => 'Mga source ng audio';
 
   @override
   String get enableOffStreamSwitchTitle =>
-      'Enable off-stream (uses more battery)';
+      'I-enable kahit offline ang stream (mas malakas sa baterya)';
 
   @override
   String get enableOffStreamSwitchEnabledSubtitle =>
-      'Audio will also play when you\'re offline';
+      'Magpe-play din ang audio kahit offline ka';
 
   @override
   String get enableOffStreamSwitchDisabledSubtitle =>
-      'Audio will only play when you\'re live';
+      'Magpe-play lang ang audio kapag live ka';
 
   @override
-  String get iosOggWarningTitle => 'Hey! Listen!';
+  String get iosOggWarningTitle => 'Hoy! Pakinggan mo!';
 
   @override
   String get iosOggWarningSubtitle =>
-      'iOS doesn\'t support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won\'t play.';
+      'Hindi sinusuportahan ng iOS ang mga *.ogg media file, na siyang default na file sa Streamlabs. Siguraduhing gumagamit ng ibang format ang iyong mga source ng audio, kung hindi ay hindi ito magpe-play.';
 
   @override
   String get url => 'URL';
 
   @override
-  String get activityFeedSubtitle => 'Customize your activity feed';
+  String get activityFeedSubtitle => 'I-customize ang iyong feed ng aktibidad';
 
   @override
-  String get audioSourcesSubtitle => 'Add web sources for alert sounds';
+  String get audioSourcesSubtitle =>
+      'Magdagdag ng mga web source para sa mga tunog ng alerto';
 
   @override
-  String get quickLinksSubtitle => 'Add shortcuts to commonly used tools';
+  String get quickLinksSubtitle =>
+      'Magdagdag ng mga shortcut sa mga madalas gamiting tool';
 
   @override
-  String get chatHistory => 'Chat history';
+  String get chatHistory => 'History ng chat';
 
   @override
-  String get chatHistorySubtitle => 'Change the chat appearance';
+  String get chatHistorySubtitle => 'Baguhin ang hitsura ng chat';
 
   @override
-  String get textToSpeechSubtitle => 'Change text to speech settings';
+  String get textToSpeechSubtitle =>
+      'Baguhin ang mga setting ng pagbigkas ng teksto';
 
   @override
-  String get events => 'Events';
+  String get events => 'Mga Kaganapan';
 
   @override
-  String get eventsSubtitle => 'Configure Twitch events';
+  String get eventsSubtitle => 'I-configure ang mga kaganapan sa Twitch';
 
   @override
-  String get thirdPartyServices => 'Third-party services';
+  String get thirdPartyServices => 'Mga third-party na serbisyo';
 
   @override
-  String get thirdPartyServicesSubtitle => 'Connect to a third-party service';
+  String get thirdPartyServicesSubtitle =>
+      'Kumonekta sa isang third-party na serbisyo';
 
   @override
   String followingEvent(String displayName) {
-    return '<b>$displayName</b> is following you';
+    return 'Sinusundan ka na ni <b>$displayName</b>';
   }
 
   @override
   String followingEvent2(String displayName, String displayNameTwo) {
-    return '<b>$displayName</b> and <b>$displayNameTwo</b> are following you';
+    return 'Sinusundan ka na nina <b>$displayName</b> at <b>$displayNameTwo</b>';
   }
 
   @override
@@ -289,54 +294,54 @@ class AppLocalizationsTl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
-    return '<b>$displayName</b>, <b>$displayNameTwo</b>, and $numOthersString others are following you';
+    return 'Sinusundan ka na nina <b>$displayName</b>, <b>$displayNameTwo</b>, at ng $numOthersString pang iba';
   }
 
   @override
   String unmuteUser(String displayName) {
-    return 'Unmute $displayName';
+    return 'I-unmute si $displayName';
   }
 
   @override
   String muteUser(String displayName) {
-    return 'Mute $displayName';
+    return 'I-mute si $displayName';
   }
 
   @override
   String timeoutUser(String displayName) {
-    return 'Timeout $displayName';
+    return 'Suspendihin si $displayName';
   }
 
   @override
   String banUser(String displayName) {
-    return 'Ban $displayName';
+    return 'I-ban si $displayName';
   }
 
   @override
   String unbanUser(String displayName) {
-    return 'Unban $displayName';
+    return 'I-unban si $displayName';
   }
 
   @override
   String viewProfile(String displayName) {
-    return 'View $displayName\'s profile';
+    return 'Tingnan ang profile ni $displayName';
   }
 
   @override
-  String get copyMessage => 'Copy Message';
+  String get copyMessage => 'Kopyahin ang Mensahe';
 
   @override
-  String get deleteMessage => 'Delete Message';
+  String get deleteMessage => 'Burahin ang Mensahe';
 
   @override
   String get longScrollNotification =>
-      'You\'re scrolling kind of far, don\'t you think?';
+      'Medyo malayo na ang na-scroll mo, hindi ba?';
 
   @override
-  String get stfu => 'stfu';
+  String get stfu => 'tumahimik';
 
   @override
-  String get globalEmotes => 'Global Emotes';
+  String get globalEmotes => 'Mga Global na Emote';
 
   @override
   String followerCount(int count) {
@@ -348,9 +353,9 @@ class AppLocalizationsTl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString followers',
-      one: '1 follower',
-      zero: '0 followers',
+      other: '$countString na tagasunod',
+      one: '1 tagasunod',
+      zero: '0 tagasunod',
     );
     return '$_temp0';
   }
@@ -365,170 +370,172 @@ class AppLocalizationsTl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString viewers',
-      one: '1 viewer',
-      zero: '0 viewers',
+      other: '$countString na manonood',
+      one: '1 manonood',
+      zero: '0 manonood',
     );
     return '$_temp0';
   }
 
   @override
   String get streamPreviewMessage =>
-      'Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.';
+      'Kumusta! Masaya kaming nagugustuhan mo ang preview ng stream, pero paalala lang na malakas ito sa baterya. Ang pagbabasa ng chat nang wala nito ay magpapahaba sa buhay ng iyong baterya.';
 
   @override
-  String get okay => 'Okay';
+  String get okay => 'Sige';
 
   @override
-  String get streamPreviewLoading => 'Loading (or stream is offline)...';
+  String get streamPreviewLoading => 'Naglo-load (o offline ang stream)...';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'Nakopya sa clipboard';
 
   @override
   String get audioSourcesRequirePermissions =>
-      'Audio sources require permissions';
+      'Kailangan ng pahintulot ng mga source ng audio';
 
   @override
   String get audioSourcesRequirePermissionsMessage =>
-      'Approve RealtimeChat to draw over other apps to use audio sources.';
+      'Payagan ang RealtimeChat na lumitaw sa ibabaw ng ibang app para magamit ang mga source ng audio.';
 
   @override
-  String get audioSourcesRemoveButton => 'Remove audio sources';
+  String get audioSourcesRemoveButton => 'Alisin ang mga source ng audio';
 
   @override
-  String get audioSourcesOpenSettingsButton => 'Open settings';
+  String get audioSourcesOpenSettingsButton => 'Buksan ang mga setting';
 
   @override
-  String get flashOn => 'Flash on';
+  String get flashOn => 'Naka-on ang flash';
 
   @override
-  String get flashOff => 'Flash off';
+  String get flashOff => 'Naka-off ang flash';
 
   @override
-  String get durationOneSecond => '1 second';
+  String get durationOneSecond => '1 segundo';
 
   @override
-  String get durationOneMinute => '1 minute';
+  String get durationOneMinute => '1 minuto';
 
   @override
-  String get durationTenMinutes => '10 minutes';
+  String get durationTenMinutes => '10 minuto';
 
   @override
-  String get durationOneHour => '1 hour';
+  String get durationOneHour => '1 oras';
 
   @override
-  String get durationSixHours => '6 hours';
+  String get durationSixHours => '6 na oras';
 
   @override
-  String get durationOneDay => '1 day';
+  String get durationOneDay => '1 araw';
 
   @override
-  String get durationTwoDays => '2 days';
+  String get durationTwoDays => '2 araw';
 
   @override
-  String get durationOneWeek => '1 week';
+  String get durationOneWeek => '1 linggo';
 
   @override
-  String get durationTwoWeeks => '2 weeks';
+  String get durationTwoWeeks => '2 linggo';
 
   @override
-  String get durationOneSecondTimeoutPrompt => 'Timeout for 1 second';
+  String get durationOneSecondTimeoutPrompt => 'Suspendihin nang 1 segundo';
 
   @override
-  String get durationOneMinuteTimeoutPrompt => 'Timeout for 1 minute';
+  String get durationOneMinuteTimeoutPrompt => 'Suspendihin nang 1 minuto';
 
   @override
-  String get durationTenMinutesTimeoutPrompt => 'Timeout for 10 minutes';
+  String get durationTenMinutesTimeoutPrompt => 'Suspendihin nang 10 minuto';
 
   @override
-  String get durationOneHourTimeoutPrompt => 'Timeout for 1 hour';
+  String get durationOneHourTimeoutPrompt => 'Suspendihin nang 1 oras';
 
   @override
-  String get durationSixHoursTimeoutPrompt => 'Timeout for 6 hours';
+  String get durationSixHoursTimeoutPrompt => 'Suspendihin nang 6 na oras';
 
   @override
-  String get durationOneDayTimeoutPrompt => 'Timeout for 1 day';
+  String get durationOneDayTimeoutPrompt => 'Suspendihin nang 1 araw';
 
   @override
-  String get durationTwoDaysTimeoutPrompt => 'Timeout for 2 days';
+  String get durationTwoDaysTimeoutPrompt => 'Suspendihin nang 2 araw';
 
   @override
-  String get durationOneWeekTimeoutPrompt => 'Timeout for 1 week';
+  String get durationOneWeekTimeoutPrompt => 'Suspendihin nang 1 linggo';
 
   @override
-  String get durationTwoWeeksTimeoutPrompt => 'Timeout for 2 weeks';
+  String get durationTwoWeeksTimeoutPrompt => 'Suspendihin nang 2 linggo';
 
   @override
   String get errorFetchingViewerList =>
-      'We couldn\'t fetch the viewer list for this channel';
+      'Hindi namin makuha ang listahan ng mga manonood para sa channel na ito';
 
   @override
-  String get eventsTitle => 'Events';
+  String get eventsTitle => 'Mga Kaganapan';
 
   @override
-  String get followEventConfigTitle => 'Follow Event';
+  String get followEventConfigTitle => 'Kaganapan sa Follow';
 
   @override
-  String get customizeYourFollowEvent => 'Customize your follow event';
+  String get customizeYourFollowEvent => 'I-customize ang iyong follow event';
 
   @override
-  String get subscribeEventConfigTitle => 'Subscribe Event';
+  String get subscribeEventConfigTitle => 'Kaganapan sa Pag-subscribe';
 
   @override
   String get customizeYourSubscriptionEvent =>
-      'Customize your subscription event';
+      'I-customize ang iyong subscription event';
 
   @override
-  String get cheerEventConfigTitle => 'Cheer Event';
+  String get cheerEventConfigTitle => 'Kaganapan sa Cheer';
 
   @override
-  String get customizeYourCheerEvent => 'Customize your cheer event';
+  String get customizeYourCheerEvent => 'I-customize ang iyong cheer event';
 
   @override
-  String get raidEventConfigTitle => 'Raid Event';
+  String get raidEventConfigTitle => 'Kaganapan sa Raid';
 
   @override
-  String get customizeYourRaidEvent => 'Customize your raid event';
+  String get customizeYourRaidEvent => 'I-customize ang iyong raid event';
 
   @override
-  String get hostEventConfigTitle => 'Host Event';
+  String get hostEventConfigTitle => 'Kaganapan sa Host';
 
   @override
-  String get customizeYourHostEvent => 'Customize your host event';
+  String get customizeYourHostEvent => 'I-customize ang iyong host event';
 
   @override
-  String get hypetrainEventConfigTitle => 'Hype Train Event';
+  String get hypetrainEventConfigTitle => 'Kaganapan sa Hype Train';
 
   @override
-  String get customizeYourHypetrainEvent => 'Customize your hype train event';
+  String get customizeYourHypetrainEvent =>
+      'I-customize ang iyong Hype Train event';
 
   @override
-  String get pollEventConfigTitle => 'Poll Event';
+  String get pollEventConfigTitle => 'Kaganapan sa Poll';
 
   @override
-  String get customizeYourPollEvent => 'Customize your poll event';
+  String get customizeYourPollEvent => 'I-customize ang iyong poll event';
 
   @override
-  String get predictionEventConfigTitle => 'Prediction Event';
+  String get predictionEventConfigTitle => 'Kaganapan sa Prediction';
 
   @override
-  String get customizeYourPredictionEvent => 'Customize your prediction event';
+  String get customizeYourPredictionEvent =>
+      'I-customize ang iyong prediction event';
 
   @override
   String get channelPointRedemptionEventConfigTitle =>
-      'Channel Point Redemption Event';
+      'Kaganapan sa Pag-redeem ng Channel Point';
 
   @override
   String get customizeYourChannelPointRedemptionEvent =>
-      'Customize your channel point redemption event';
+      'I-customize ang iyong channel point redemption event';
 
   @override
-  String get outgoingRaidEventConfigTitle => 'Outgoing Raid Event';
+  String get outgoingRaidEventConfigTitle => 'Kaganapan sa Papalabas na Raid';
 
   @override
   String get customizeYourOutgoingRaidEvent =>
-      'Customize your outgoing raid event';
+      'I-customize ang iyong outgoing raid event';
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
@@ -538,15 +545,15 @@ class AppLocalizationsTl extends AppLocalizations {
       viewerCount,
     );
 
-    return '<b>$displayName</b> is raiding with <b>$viewerCountString</b> viewers!';
+    return 'Nag-raid si <b>$displayName</b> kasama ang <b>$viewerCountString</b> na manonood!';
   }
 
   @override
-  String get shoutout => 'Shoutout';
+  String get shoutout => 'Bigyan ng Shoutout';
 
   @override
   String raidingEventRaiding(String displayName) {
-    return 'Raiding <b>$displayName</b>...';
+    return 'Nire-raid si <b>$displayName</b>...';
   }
 
   @override
@@ -555,25 +562,25 @@ class AppLocalizationsTl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
-    return '${secondsString}s';
+    return '$secondsString seg';
   }
 
   @override
   String raidingEventRaided(String displayName) {
-    return '<b>$displayName</b> has raided!';
+    return 'Nakapag-raid na si <b>$displayName</b>!';
   }
 
   @override
-  String get raidingEventJoin => 'Join';
+  String get raidingEventJoin => 'Sumali';
 
   @override
   String raidingEventCanceled(String displayName) {
-    return '<b>$displayName</b>\'s raid was canceled.';
+    return 'Kinansela ang raid ni <b>$displayName</b>.';
   }
 
   @override
   String subscriptionEvent(String subscriberUserName, String tier) {
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier!';
+    return 'Nag-subscribe si <b>$subscriberUserName</b> sa Tier $tier!';
   }
 
   @override
@@ -592,7 +599,7 @@ class AppLocalizationsTl extends AppLocalizations {
       cumulativeTotal,
     );
 
-    return '<b>$gifterUserName</b> has gifted $totalString Tier $tier subs, totaling $cumulativeTotalString!';
+    return 'Nagregalo si <b>$gifterUserName</b> ng $totalString na Tier $tier sub, na may kabuuang $cumulativeTotalString!';
   }
 
   @override
@@ -607,7 +614,7 @@ class AppLocalizationsTl extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed for $cumulativeMonthsString months at Tier $tier!';
+    return 'Nag-subscribe si <b>$subscriberUserName</b> nang $cumulativeMonthsString buwan sa Tier $tier!';
   }
 
   @override
@@ -628,27 +635,27 @@ class AppLocalizationsTl extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return 'Nag-subscribe nang maaga si <b>$subscriberUserName</b> sa Tier $tier para sa $durationMonthsString buwan, $cumulativeMonthsString buwan sa kabuuan!';
   }
 
   @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
-    return '<b>$donor</b> tipped <b>$value $currency</b>.';
+    return 'Nag-tip si <b>$donor</b> ng <b>$value $currency</b>.';
   }
 
   @override
   String realtimeCashTipAnonymous(String value, String currency) {
-    return 'Anonymous tipped <b>$value $currency</b>.';
+    return 'Nag-tip ang isang hindi nagpakilala ng <b>$value $currency</b>.';
   }
 
   @override
   String streamElementsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on StreamElements.';
+    return 'Nag-tip si <b>$name</b> ng <b>$formattedAmount</b> sa StreamElements.';
   }
 
   @override
   String streamlabsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on Streamlabs.';
+    return 'Nag-tip si <b>$name</b> ng <b>$formattedAmount</b> sa Streamlabs.';
   }
 
   @override
@@ -662,7 +669,7 @@ class AppLocalizationsTl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points. $userInput';
+    return 'I-niredeem ni <b>$redeemerUsername</b> ang <b>$rewardName</b> sa halagang <b>$rewardCostString</b> puntos. $userInput';
   }
 
   @override
@@ -675,7 +682,7 @@ class AppLocalizationsTl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points.';
+    return 'I-niredeem ni <b>$redeemerUsername</b> ang <b>$rewardName</b> sa halagang <b>$rewardCostString</b> puntos.';
   }
 
   @override
@@ -685,11 +692,11 @@ class AppLocalizationsTl extends AppLocalizations {
     );
     final String bitsString = bitsNumberFormat.format(bits);
 
-    return '<b>$name</b> cheered <b>$bitsString</b> bits. $cheerMessage';
+    return 'Nag-cheer si <b>$name</b> ng <b>$bitsString</b> bits. $cheerMessage';
   }
 
   @override
-  String get anonymous => 'Anonymous';
+  String get anonymous => 'Hindi Nagpakilala';
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
@@ -697,12 +704,12 @@ class AppLocalizationsTl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
-    return '<b>$fromDisplayName</b> is hosting with a party of <b>$viewersString</b>.';
+    return 'Nagho-host si <b>$fromDisplayName</b> kasama ang grupo ng <b>$viewersString</b>.';
   }
 
   @override
   String hypeTrainEventProgress(String level, String progressPercent) {
-    return 'Hype Train level <b>$level</b> in progress! <b>$progressPercent%</b> completed!';
+    return 'Kasalukuyang nagaganap ang Hype Train level <b>$level</b>! <b>$progressPercent%</b> na ang tapos!';
   }
 
   @override
@@ -711,7 +718,7 @@ class AppLocalizationsTl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> succeeded.';
+    return 'Nagtagumpay ang Hype Train level <b>$levelString</b>.';
   }
 
   @override
@@ -720,7 +727,7 @@ class AppLocalizationsTl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> failed.';
+    return 'Nabigo ang Hype Train level <b>$levelString</b>.';
   }
 
   @override
@@ -738,24 +745,24 @@ class AppLocalizationsTl extends AppLocalizations {
   }
 
   @override
-  String get textToSpeechEnabled => 'Text to speech enabled';
+  String get textToSpeechEnabled => 'Na-enable ang pagbigkas ng teksto';
 
   @override
-  String get textToSpeechDisabled => 'Text to speech disabled';
+  String get textToSpeechDisabled => 'Na-disable ang pagbigkas ng teksto';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Mga alerto lang';
 
   @override
-  String get pinDuration => 'Pin Duration';
+  String get pinDuration => 'Tagal ng Pag-pin';
 
   @override
   String durationSeconds(int seconds) {
     String _temp0 = intl.Intl.pluralLogic(
       seconds,
       locale: localeName,
-      other: '$seconds seconds',
-      one: '1 second',
+      other: '$seconds segundo',
+      one: '1 segundo',
     );
     return '$_temp0';
   }
@@ -765,245 +772,256 @@ class AppLocalizationsTl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: '$minutes minutes',
-      one: '1 minute',
+      other: '$minutes minuto',
+      one: '1 minuto',
     );
     return '$_temp0';
   }
 
   @override
-  String get enableEvent => 'Enable event';
+  String get enableEvent => 'I-enable ang kaganapan';
 
   @override
-  String get showEventInChatHistory => 'Show event in chat history';
+  String get showEventInChatHistory =>
+      'Ipakita ang kaganapan sa history ng chat';
 
   @override
-  String get enableShoutouts => 'Enable shoutouts';
+  String get enableShoutouts => 'I-enable ang mga shoutout';
 
   @override
   String get enableShoutoutsSubtitle =>
-      'Send a link to the raiding channel to chat';
+      'Magpadala ng link ng nag-raid na channel sa chat';
 
   @override
-  String get raidConfigurationTitle => 'Raid Configuration';
+  String get raidConfigurationTitle => 'Konpigurasyon ng Raid';
 
   @override
-  String get cheerConfigurationTitle => 'Cheer Configuration';
+  String get cheerConfigurationTitle => 'Konpigurasyon ng Cheer';
 
   @override
-  String get followConfigurationTitle => 'Follow Configuration';
+  String get followConfigurationTitle => 'Konpigurasyon ng Follow';
 
   @override
-  String get outgoingRaidConfigurationTitle => 'Outgoing Raid Configuration';
+  String get outgoingRaidConfigurationTitle =>
+      'Konpigurasyon ng Papalabas na Raid';
 
   @override
-  String get hostConfigurationTitle => 'Host Configuration';
+  String get hostConfigurationTitle => 'Konpigurasyon ng Host';
 
   @override
-  String get channelPointConfigurationTitle => 'Channel Point Configuration';
+  String get channelPointConfigurationTitle => 'Konpigurasyon ng Channel Point';
 
   @override
-  String get pollConfigurationTitle => 'Poll Configuration';
+  String get pollConfigurationTitle => 'Konpigurasyon ng Poll';
 
   @override
-  String get hypetrainConfigurationTitle => 'Hypetrain Configuration';
+  String get hypetrainConfigurationTitle => 'Konpigurasyon ng Hype Train';
 
   @override
-  String get subscriptionConfigurationTitle => 'Subscription Configuration';
+  String get subscriptionConfigurationTitle => 'Konpigurasyon ng Subscription';
 
   @override
-  String get predictionConfigurationTitle => 'Prediction Configuration';
+  String get predictionConfigurationTitle => 'Konpigurasyon ng Prediction';
 
   @override
   String get unfulfilledRewardsPinDuration =>
-      'Additional Pin Duration for Unfulfilled Rewards';
+      'Karagdagang Tagal ng Pag-pin para sa Hindi Pa Natutupad na mga Reward';
 
   @override
-  String get pollPinDuration => 'Pin duration after the result is finalized';
+  String get pollPinDuration =>
+      'Tagal ng pag-pin pagkatapos ma-finalize ang resulta';
 
   @override
-  String get hypetrainPinDuration => 'Pin duration after hypetrain is over';
+  String get hypetrainPinDuration =>
+      'Tagal ng pag-pin pagkatapos ng Hype Train';
 
   @override
   String get enableGiftedSubscriptions =>
-      'Enable individual gifted subscriptions';
+      'I-enable ang indibidwal na mga regalong subscription';
 
   @override
   String get enableGiftedSubscriptionsSubtitle =>
-      'Show every subscription that is gifted';
+      'Ipakita ang bawat subscription na iniregalo';
 
   @override
-  String get settingsBackupTitle => 'Settings backup and restore';
+  String get settingsBackupTitle => 'Pag-backup at pag-restore ng mga setting';
 
   @override
-  String get cloudBackup => 'Cloud backup';
+  String get cloudBackup => 'Cloud na backup';
 
   @override
-  String get lastBackupNever => 'Last backup: never';
+  String get lastBackupNever => 'Huling backup: hindi kailanman';
 
   @override
-  String get backUp => 'Back up';
+  String get backUp => 'I-back up';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'I-restore';
 
   @override
-  String get localBackup => 'Local backup';
+  String get localBackup => 'Lokal na backup';
 
   @override
-  String get exportSettings => 'Export';
+  String get exportSettings => 'I-export';
 
   @override
-  String get importSettings => 'Import';
+  String get importSettings => 'I-import';
 
   @override
-  String get showViewerAndFollowerCount => 'Show viewer and follower count';
+  String get showViewerAndFollowerCount =>
+      'Ipakita ang bilang ng manonood at tagasunod';
 
   @override
-  String get screenOrientation => 'Screen orientation';
+  String get screenOrientation => 'Oryentasyon ng screen';
 
   @override
-  String get appTheme => 'App theme';
+  String get appTheme => 'Tema ng app';
 
   @override
-  String get systemDefault => 'System';
+  String get systemDefault => 'Sistema';
 
   @override
-  String get portrait => 'Portrait';
+  String get portrait => 'Patayo';
 
   @override
-  String get landscape => 'Landscape';
+  String get landscape => 'Pahiga';
 
   @override
-  String get lightTheme => 'Light';
+  String get lightTheme => 'Maliwanag';
 
   @override
-  String get darkTheme => 'Dark';
+  String get darkTheme => 'Madilim';
 
   @override
-  String get openSourceTitle => 'RealtimeChat is open source';
+  String get openSourceTitle => 'Open source ang RealtimeChat';
 
   @override
-  String get openSourceSubtitle => 'Find us on GitHub!';
+  String get openSourceSubtitle => 'Hanapin kami sa GitHub!';
 
   @override
-  String get discordSubtitle => 'Join the Muxable Discord!';
+  String get discordSubtitle => 'Sumali sa Muxable Discord!';
 
   @override
   String get earlyTestersThanks =>
-      'Thanks to all the early testers who sent bug reports!';
+      'Salamat sa lahat ng unang sumubok na nagpadala ng mga ulat ng bug!';
 
   @override
-  String get discoModeEnabled => '🕺 Disco mode enabled! :D';
+  String get discoModeEnabled => '🕺 Na-enable ang disco mode! :D';
 
   @override
-  String get discoModeDisabled => '🕺 Disco mode disabled D:';
+  String get discoModeDisabled => '🕺 Na-disable ang disco mode D:';
 
   @override
-  String get playSampleMessage => 'Play sample message';
+  String get playSampleMessage => 'I-play ang halimbawang mensahe';
 
   @override
-  String get textToSpeechRate => 'Text to Speech Rate';
+  String get textToSpeechRate => 'Bilis ng Pagbigkas ng Teksto';
 
   @override
-  String get textToSpeechPitch => 'Text to Speech Pitch';
+  String get textToSpeechPitch => 'Tono ng Pagbigkas ng Teksto';
 
   @override
-  String get muteBots => 'Mute text to speech for bots';
+  String get muteBots => 'I-mute ang pagbigkas ng teksto para sa mga bot';
 
   @override
-  String get muteEmotes => 'Mute all emotes in text to speech';
+  String get muteEmotes => 'I-mute ang lahat ng emote sa pagbigkas ng teksto';
 
   @override
-  String get muteViewerNames => 'Mute viewer names in text to speech';
+  String get muteViewerNames =>
+      'I-mute ang mga pangalan ng manonood sa pagbigkas ng teksto';
 
   @override
-  String get subscribersOnly => 'Subscribers only';
+  String get subscribersOnly => 'Para sa mga subscriber lang';
 
   @override
-  String get fontSize => 'Font size';
+  String get fontSize => 'Laki ng font';
 
   @override
-  String get usernameContrastBoost => 'Username contrast boost';
+  String get usernameContrastBoost => 'Pagpapataas ng contrast ng username';
 
   @override
-  String get twitchBadgeSettings => 'Twitch badge settings';
+  String get twitchBadgeSettings => 'Mga setting ng badge sa Twitch';
 
   @override
-  String get twitchBadgeSettingsSubtitle => 'Control which badges are visible';
+  String get twitchBadgeSettingsSubtitle =>
+      'Kontrolin kung aling mga badge ang makikita';
 
   @override
-  String get showDeletedMessages => 'Show deleted messages';
+  String get showDeletedMessages => 'Ipakita ang mga binurang mensahe';
 
   @override
-  String get deletedMessagesGreyedOut => 'Deleted messages will be greyed out';
+  String get deletedMessagesGreyedOut =>
+      'Magiging kulay abo ang mga binurang mensahe';
 
   @override
-  String get deletedMessagesRemoved => 'Deleted messages will be removed';
+  String get deletedMessagesRemoved => 'Aalisin ang mga binurang mensahe';
 
   @override
-  String get showLoginNames => 'Show login names';
+  String get showLoginNames => 'Ipakita ang mga pangalan sa pag-login';
 
   @override
   String get loginNamesShown =>
-      'Login names will be shown if they are different from the display name';
+      'Ipapakita ang mga pangalan sa pag-login kung iba ang mga ito sa display name';
 
   @override
-  String get loginNamesHidden => 'Login names will be hidden';
+  String get loginNamesHidden => 'Itatago ang mga pangalan sa pag-login';
 
   @override
-  String get compactMessages => 'Compact messages';
+  String get compactMessages => 'Paikliin ang mga mensahe';
 
   @override
-  String get dontCompactMessages => 'Don\'t compact messages';
+  String get dontCompactMessages => 'Huwag paikliin ang mga mensahe';
 
   @override
-  String get dontCompactMessagesSubtitle => 'Messages are shown unchanged';
+  String get dontCompactMessagesSubtitle =>
+      'Ipapakita ang mga mensahe nang walang pagbabago';
 
   @override
-  String get compactIndividualMessages => 'Compact individual messages';
+  String get compactIndividualMessages => 'Paikliin ang bawat mensahe';
 
   @override
   String get compactIndividualMessagesSubtitle =>
-      'Repetitive text in messages is shortened';
+      'Paiikliin ang paulit-ulit na teksto sa mga mensahe';
 
   @override
-  String get announcementPinDuration => 'Announcement pin duration';
+  String get announcementPinDuration => 'Tagal ng pag-pin sa anunsyo';
 
   @override
-  String get idleMessageAlertDuration => 'Idle message alert duration';
+  String get idleMessageAlertDuration => 'Tagal ng alerto sa idle na mensahe';
 
   @override
   String get idleMessageAlertDurationSubtitle =>
-      'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
+      'Kapag walang mensahe sa loob ng panahong ito at may dumating na bago, may tutunog na alerto.';
 
   @override
-  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+  String get realtimeCashSubtitle => 'Magkonekta ng ETH o MATIC wallet';
 
   @override
-  String get walletAddress => 'Wallet address';
+  String get walletAddress => 'Address ng wallet';
 
   @override
-  String get streamlabsSubtitle => 'See your Streamlabs donations';
+  String get streamlabsSubtitle =>
+      'Tingnan ang iyong mga donasyon sa Streamlabs';
 
   @override
-  String get streamElementsSubtitle => 'See your StreamElements donations';
+  String get streamElementsSubtitle =>
+      'Tingnan ang iyong mga donasyon sa StreamElements';
 
   @override
   String get thirdPartyAuthError =>
-      'Hmm, that didn\'t work. Try again, or ask on Discord?';
+      'Hmm, hindi iyon gumana. Subukan muli, o magtanong sa Discord?';
 
   @override
   String get companionAuthBrowserTooOld =>
-      'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.';
+      'Masyadong luma na ang iyong browser para suportahan ang direktang pag-sign in. I-scan ang QR code na ito gamit ang iyong telepono para mag-sign in sa ibang device.';
 
   @override
   String get companionAuthScanQrCode =>
-      'Scan this QR code with your phone to sign in on another device.';
+      'I-scan ang QR code na ito gamit ang iyong telepono para mag-sign in sa ibang device.';
 
   @override
   String kickSubscriptionEvent(String subscriberName) {
-    return '<b>$subscriberName</b> has subscribed!';
+    return 'Nag-subscribe si <b>$subscriberName</b>!';
   }
 
   @override
@@ -1012,7 +1030,7 @@ class AppLocalizationsTl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
-    return '<b>$subscriberName</b> has resubscribed for $monthsString months!';
+    return 'Nag-subscribe muli si <b>$subscriberName</b> nang $monthsString buwan!';
   }
 
   @override
@@ -1021,7 +1039,7 @@ class AppLocalizationsTl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '<b>$gifterName</b> has gifted $countString subs!';
+    return 'Nagregalo si <b>$gifterName</b> ng $countString na sub!';
   }
 
   @override
@@ -1030,60 +1048,61 @@ class AppLocalizationsTl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
-    return '<b>$senderName</b> sent $amountString Kicks!';
+    return 'Nagpadala si <b>$senderName</b> ng $amountString na Kicks!';
   }
 
   @override
-  String get signInWithKick => 'Sign in with Kick';
+  String get signInWithKick => 'Mag-sign in gamit ang Kick';
 
   @override
   String get textToSpeechTooManyMessages =>
-      'There are too many messages. Text to speech disabled';
+      'Masyadong maraming mensahe. Na-disable ang pagbigkas ng teksto';
 
   @override
-  String get turnOffTextToSpeech => 'Turn off';
+  String get turnOffTextToSpeech => 'I-off';
 
   @override
-  String get addToChat => 'Add to chat';
+  String get addToChat => 'Idagdag sa chat';
 
   @override
-  String get inChat => 'In chat';
+  String get inChat => 'Nasa chat';
 
   @override
-  String get removeFromChat => 'Remove from chat';
+  String get removeFromChat => 'Alisin sa chat';
 
   @override
   String cantChatWithAccount(String provider) {
-    return 'Your $provider account can\'t chat here';
+    return 'Hindi makakapag-chat dito ang iyong $provider account';
   }
 
   @override
-  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+  String get cantChatWithAccounts =>
+      'Hindi makakapag-chat dito ang iyong mga account';
 
   @override
   String sendAMessageTo(String channel) {
-    return 'Send a message to $channel...';
+    return 'Magpadala ng mensahe sa $channel...';
   }
 
   @override
   String replaceChannel(String channel) {
-    return 'Replace $channel';
+    return 'Palitan ang $channel';
   }
 
   @override
-  String get voicePacks => 'Voice packs';
+  String get voicePacks => 'Mga voice pack';
 
   @override
   String get voicePacksDescription =>
-      'Voice packs read chat with natural-sounding voices that run on your device, offline once downloaded. The voices are machine-generated by AI, not recorded by a person.';
+      'Binabasa ng mga voice pack ang chat gamit ang natural na boses na gumagana sa iyong device, kahit offline kapag na-download na. Ang mga boses ay likha ng AI at hindi inirekord ng tao.';
 
   @override
   String voicePackDetails(int voices, String size) {
     String _temp0 = intl.Intl.pluralLogic(
       voices,
       locale: localeName,
-      other: '$voices voices',
-      one: '1 voice',
+      other: '$voices na boses',
+      one: '1 boses',
     );
     return '$_temp0 · $size';
   }
@@ -1093,99 +1112,100 @@ class AppLocalizationsTl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count languages',
-      one: '1 language',
+      other: '$count na wika',
+      one: '1 wika',
     );
     return '$_temp0: $languages';
   }
 
   @override
   String get voicePackOpenRailNotice =>
-      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+      'Ipinagbabawal ng lisensya ng modelong ito (OpenRAIL-M) ang mapaminsalang paggamit, tulad ng pagpapanggap bilang ibang tao o pagpapakalat ng maling impormasyon, at saklaw ka rin ng mga paghihigpit na ito.';
 
   @override
   String voicePackDeleteConfirm(String pack, String size) {
-    return 'Delete $pack? This frees $size.';
+    return 'Burahin ang $pack? Magpapalaya ito ng $size.';
   }
 
   @override
-  String get voicePackDownload => 'Download';
+  String get voicePackDownload => 'I-download';
 
   @override
-  String get voicePackUpdate => 'Update';
+  String get voicePackUpdate => 'I-update';
 
   @override
-  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+  String get voicePackWaitingForWifi => 'Naghihintay ng Wi-Fi';
 
   @override
-  String get voicePackUseMobileData => 'Use mobile data';
+  String get voicePackUseMobileData => 'Gamitin ang mobile data';
 
   @override
   String voicePackDownloading(String downloaded, String total) {
-    return 'Downloading: $downloaded of $total';
+    return 'Nagda-download: $downloaded sa $total';
   }
 
   @override
-  String get voicePackInstalling => 'Installing';
+  String get voicePackInstalling => 'Ini-install';
 
   @override
   String voicePackInstallFailed(String pack) {
-    return 'Couldn\'t install $pack. Check your connection and try again.';
+    return 'Hindi ma-install ang $pack. Suriin ang iyong koneksyon at subukang muli.';
   }
 
   @override
-  String get voices => 'Voices';
+  String get voices => 'Mga Boses';
 
   @override
-  String get perViewerVoice => 'Per-viewer voice';
+  String get perViewerVoice => 'Boses kada manonood';
 
   @override
   String get perViewerVoiceSubtitle =>
-      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+      'Magkakaroon ng sariling boses ang bawat manonood. Ang boses na pipiliin mo ang magbabasa ng mga alerto, o ng lahat kapag naka-off ito.';
 
   @override
-  String get streamLanguage => 'Stream language';
+  String get streamLanguage => 'Wika ng stream';
 
   @override
-  String get ttsEngineNeural => 'Neural voice (on-device)';
+  String get ttsEngineNeural => 'Neural na boses (sa device)';
 
   @override
-  String get ttsEngineSystem => 'System voice';
+  String get ttsEngineSystem => 'Boses ng sistema';
 
   @override
   String languageUnsupported(String language) {
-    return '$language isn\'t supported by your voice packs; the system voice will be used';
+    return 'Hindi sinusuportahan ng iyong mga voice pack ang $language; gagamitin ang boses ng sistema';
   }
 
   @override
   String get neuralFallbackLowMemory =>
-      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+      'Walang sapat na memory ang device na ito para sa mga neural na boses, kaya binabasa ang chat gamit ang boses ng sistema.';
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'Hindi ma-load ang neural na boses, kaya binabasa ang chat gamit ang boses ng sistema.';
 
   @override
-  String get accounts => 'Accounts';
+  String get accounts => 'Mga Account';
 
   @override
-  String get accountsSubtitle => 'Sign in to each platform you stream on';
+  String get accountsSubtitle =>
+      'Mag-sign in sa bawat platform kung saan ka nag-i-stream';
 
   @override
   String addProviderAccount(String provider) {
-    return 'Add $provider account';
+    return 'Magdagdag ng $provider account';
   }
 
   @override
   String signInWithProvider(String provider) {
-    return 'Sign in with $provider';
+    return 'Mag-sign in gamit ang $provider';
   }
 
   @override
   String signOutOfAccount(String channel, String provider) {
-    return 'Sign out of $channel on $provider?';
+    return 'Mag-sign out sa $channel sa $provider?';
   }
 
   @override
-  String get signOutOfAll => 'Sign out of all accounts';
+  String get signOutOfAll => 'Mag-sign out sa lahat ng account';
 }

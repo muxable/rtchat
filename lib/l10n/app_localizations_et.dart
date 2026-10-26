@@ -9,71 +9,70 @@ class AppLocalizationsEt extends AppLocalizations {
   AppLocalizationsEt([String locale = 'et']) : super(locale);
 
   @override
-  String get sendAMessage => 'Send a message...';
+  String get sendAMessage => 'Saada sõnum...';
 
   @override
-  String get writeSomething => 'Write something...';
+  String get writeSomething => 'Kirjuta midagi...';
 
   @override
-  String get speakToTheCrowds => 'Speak to the crowds...';
+  String get speakToTheCrowds => 'Kõnele rahvahulkadele...';
 
   @override
-  String get shareYourThoughts => 'Share your thoughts...';
+  String get shareYourThoughts => 'Jaga oma mõtteid...';
 
   @override
-  String get saySomethingYouLittleBitch => 'Say something, you little bitch...';
+  String get saySomethingYouLittleBitch => 'Ütle midagi, sa väike lits...';
 
   @override
-  String get search => 'Search';
+  String get search => 'Otsi';
 
   @override
-  String get notSignedIn => 'Not signed in';
+  String get notSignedIn => 'Pole sisse logitud';
 
   @override
-  String get searchChannels => 'Search';
+  String get searchChannels => 'Otsi';
 
   @override
-  String get raidAChannel => 'Raid';
+  String get raidAChannel => 'Reidi';
 
   @override
-  String get noMessagesEmptyState => 'It\'s quiet in here.';
+  String get noMessagesEmptyState => 'Siin on vaikne.';
 
   @override
   String newMessageCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count new messages',
-      one: '1 new message',
-      zero: 'No new messages',
+      other: '$count uut sõnumit',
+      one: '$count uus sõnum',
+      zero: 'Uusi sõnumeid pole',
     );
     return '$_temp0';
   }
 
   @override
-  String get signInWithTwitch => 'Sign in with Twitch';
+  String get signInWithTwitch => 'Logi sisse Twitchiga';
 
   @override
-  String get signInError =>
-      'An error occurred when signing in. Please try again.';
+  String get signInError => 'Sisselogimisel ilmnes viga. Palun proovi uuesti.';
 
   @override
-  String get continueAsGuest => 'Continue as Guest';
+  String get continueAsGuest => 'Jätka külalisena';
 
   @override
-  String get signInToSendMessages => 'Sign in to send messages';
+  String get signInToSendMessages => 'Sõnumite saatmiseks logi sisse';
 
   @override
-  String get currentViewers => 'Current viewers';
+  String get currentViewers => 'Praegused vaatajad';
 
   @override
-  String get textToSpeech => 'Text to speech';
+  String get textToSpeech => 'Kõnesüntees';
 
   @override
-  String get streamPreview => 'Stream preview';
+  String get streamPreview => 'Ülekande eelvaade';
 
   @override
-  String get activityFeed => 'Activity feed';
+  String get activityFeed => 'Tegevuste voog';
 
   @override
   String streamOnline(DateTime date, DateTime time) {
@@ -84,7 +83,7 @@ class AppLocalizationsEt extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream online at $dateString, $timeString';
+    return 'Ülekanne algas $dateString, $timeString';
   }
 
   @override
@@ -96,7 +95,7 @@ class AppLocalizationsEt extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream offline at $dateString, $timeString';
+    return 'Ülekanne lõppes $dateString, $timeString';
   }
 
   @override
@@ -108,175 +107,176 @@ class AppLocalizationsEt extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Chat cleared at $dateString, $timeString';
+    return 'Vestlus tühjendati $dateString, $timeString';
   }
 
   @override
-  String get configureQuickLinks => 'Configure quick links';
+  String get configureQuickLinks => 'Seadista kiirlingid';
 
   @override
-  String get disableRainMode => 'Disable rain mode';
+  String get disableRainMode => 'Keela vihmarežiim';
 
   @override
-  String get enableRainMode => 'Enable rain mode';
+  String get enableRainMode => 'Luba vihmarežiim';
 
   @override
-  String get disableRainModeSubtitle => 'Interaction will be enabled';
+  String get disableRainModeSubtitle => 'Puutetoimingud lubatakse';
 
   @override
-  String get enableRainModeSubtitle => 'Interaction will be disabled';
+  String get enableRainModeSubtitle => 'Puutetoimingud keelatakse';
 
   @override
-  String get refreshAudioSources => 'Refresh audio sources';
+  String get refreshAudioSources => 'Värskenda heliallikaid';
 
   @override
   String refreshAudioSourcesCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count audio sources refreshed',
-      one: '1 audio source refreshed',
-      zero: 'No audio sources refreshed',
+      other: '$count heliallikat värskendati',
+      one: '$count heliallikas värskendati',
+      zero: 'Ühtegi heliallikat ei värskendatud',
     );
     return '$_temp0';
   }
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Seaded';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'Logi välja';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Tühista';
 
   @override
-  String get signOutConfirmation => 'Are you sure you want to sign out?';
+  String get signOutConfirmation => 'Kas oled kindel, et soovid välja logida?';
 
   @override
-  String get broadcaster => 'Broadcaster';
+  String get broadcaster => 'Striimer';
 
   @override
-  String get moderators => 'Moderators';
+  String get moderators => 'Moderaatorid';
 
   @override
-  String get viewers => 'Viewers';
+  String get viewers => 'Vaatajad';
 
   @override
-  String get communityVips => 'Community VIPs';
+  String get communityVips => 'Kogukonna VIP-id';
 
   @override
-  String get searchViewers => 'Search Viewers';
+  String get searchViewers => 'Otsi vaatajaid';
 
   @override
-  String get reconnecting => 'Reconnecting...';
+  String get reconnecting => 'Taasühendamine...';
 
   @override
-  String get twitchBadges => 'Twitch badges';
+  String get twitchBadges => 'Twitchi märgid';
 
   @override
-  String get selectAll => 'Select all';
+  String get selectAll => 'Vali kõik';
 
   @override
-  String get quickLinks => 'Quick links';
+  String get quickLinks => 'Kiirlingid';
 
   @override
   String get swipeToDeleteQuickLinks =>
-      'Swipe left or right to delete quick link';
+      'Kiirlingi kustutamiseks libista vasakule või paremale';
 
   @override
-  String get quickLinksLabelHint => 'Label';
+  String get quickLinksLabelHint => 'Silt';
 
   @override
-  String get invalidUrlErrorText => 'This doesn\'t look like a valid URL';
+  String get invalidUrlErrorText => 'See ei tundu olevat kehtiv URL';
 
   @override
-  String get duplicateUrlErrorText => 'This link already exists';
+  String get duplicateUrlErrorText => 'See link on juba olemas';
 
   @override
-  String get or => 'or';
+  String get or => 'või';
 
   @override
-  String get clearCookies => 'Clear cookies';
+  String get clearCookies => 'Kustuta küpsised';
 
   @override
-  String get disabled => 'Disabled';
+  String get disabled => 'Keelatud';
 
   @override
-  String get twitchActivityFeed => 'Twitch activity feed';
+  String get twitchActivityFeed => 'Twitchi tegevuste voog';
 
   @override
-  String get signInToEnable => 'You must be signed in to enable this';
+  String get signInToEnable => 'Selle lubamiseks pead olema sisse logitud';
 
   @override
-  String get customUrl => 'Custom URL';
+  String get customUrl => 'Kohandatud URL';
 
   @override
-  String get preview => 'Preview';
+  String get preview => 'Eelvaade';
 
   @override
-  String get audioSources => 'Audio sources';
+  String get audioSources => 'Heliallikad';
 
   @override
   String get enableOffStreamSwitchTitle =>
-      'Enable off-stream (uses more battery)';
+      'Luba väljaspool ülekannet (kulutab rohkem akut)';
 
   @override
   String get enableOffStreamSwitchEnabledSubtitle =>
-      'Audio will also play when you\'re offline';
+      'Heli esitatakse ka siis, kui sa pole otse-eetris';
 
   @override
   String get enableOffStreamSwitchDisabledSubtitle =>
-      'Audio will only play when you\'re live';
+      'Heli esitatakse ainult siis, kui oled otse-eetris';
 
   @override
-  String get iosOggWarningTitle => 'Hey! Listen!';
+  String get iosOggWarningTitle => 'Hei! Kuula!';
 
   @override
   String get iosOggWarningSubtitle =>
-      'iOS doesn\'t support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won\'t play.';
+      'iOS ei toeta *.ogg meediafaile, mis on Streamlabsis vaikimisi kasutusel. Veendu, et sinu heliallikad kasutaksid mõnda muud vormingut, muidu neid ei esitata.';
 
   @override
   String get url => 'URL';
 
   @override
-  String get activityFeedSubtitle => 'Customize your activity feed';
+  String get activityFeedSubtitle => 'Kohanda oma tegevuste voogu';
 
   @override
-  String get audioSourcesSubtitle => 'Add web sources for alert sounds';
+  String get audioSourcesSubtitle => 'Lisa veebiallikaid märguandehelide jaoks';
 
   @override
-  String get quickLinksSubtitle => 'Add shortcuts to commonly used tools';
+  String get quickLinksSubtitle =>
+      'Lisa otseteid sageli kasutatavatele tööriistadele';
 
   @override
-  String get chatHistory => 'Chat history';
+  String get chatHistory => 'Vestluse ajalugu';
 
   @override
-  String get chatHistorySubtitle => 'Change the chat appearance';
+  String get chatHistorySubtitle => 'Muuda vestluse välimust';
 
   @override
-  String get textToSpeechSubtitle => 'Change text to speech settings';
+  String get textToSpeechSubtitle => 'Muuda kõnesünteesi seadeid';
 
   @override
-  String get events => 'Events';
+  String get events => 'Sündmused';
 
   @override
-  String get eventsSubtitle => 'Configure Twitch events';
+  String get eventsSubtitle => 'Seadista Twitchi sündmusi';
 
   @override
-  String get thirdPartyServices => 'Third-party services';
+  String get thirdPartyServices => 'Kolmanda osapoole teenused';
 
   @override
-  String get thirdPartyServicesSubtitle => 'Connect to a third-party service';
+  String get thirdPartyServicesSubtitle => 'Ühenda kolmanda osapoole teenusega';
 
   @override
   String followingEvent(String displayName) {
-    return '<b>$displayName</b> is following you';
+    return '<b>$displayName</b> jälgib sind';
   }
 
   @override
   String followingEvent2(String displayName, String displayNameTwo) {
-    return '<b>$displayName</b> and <b>$displayNameTwo</b> are following you';
+    return '<b>$displayName</b> ja <b>$displayNameTwo</b> jälgivad sind';
   }
 
   @override
@@ -289,54 +289,53 @@ class AppLocalizationsEt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
-    return '<b>$displayName</b>, <b>$displayNameTwo</b>, and $numOthersString others are following you';
+    return '<b>$displayName</b>, <b>$displayNameTwo</b> ja veel $numOthersString jälgivad sind';
   }
 
   @override
   String unmuteUser(String displayName) {
-    return 'Unmute $displayName';
+    return 'Tühista kasutaja $displayName vaigistus';
   }
 
   @override
   String muteUser(String displayName) {
-    return 'Mute $displayName';
+    return 'Vaigista $displayName';
   }
 
   @override
   String timeoutUser(String displayName) {
-    return 'Timeout $displayName';
+    return 'Keela ajutiselt $displayName';
   }
 
   @override
   String banUser(String displayName) {
-    return 'Ban $displayName';
+    return 'Blokeeri $displayName';
   }
 
   @override
   String unbanUser(String displayName) {
-    return 'Unban $displayName';
+    return 'Eemalda kasutaja $displayName blokeering';
   }
 
   @override
   String viewProfile(String displayName) {
-    return 'View $displayName\'s profile';
+    return 'Vaata kasutaja $displayName profiili';
   }
 
   @override
-  String get copyMessage => 'Copy Message';
+  String get copyMessage => 'Kopeeri sõnum';
 
   @override
-  String get deleteMessage => 'Delete Message';
+  String get deleteMessage => 'Kustuta sõnum';
 
   @override
-  String get longScrollNotification =>
-      'You\'re scrolling kind of far, don\'t you think?';
+  String get longScrollNotification => 'Sa kerid juba päris kaugele, kas pole?';
 
   @override
-  String get stfu => 'stfu';
+  String get stfu => 'ole vait';
 
   @override
-  String get globalEmotes => 'Global Emotes';
+  String get globalEmotes => 'Üldised emotikonid';
 
   @override
   String followerCount(int count) {
@@ -348,9 +347,9 @@ class AppLocalizationsEt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString followers',
-      one: '1 follower',
-      zero: '0 followers',
+      other: '$countString jälgijat',
+      one: '$countString jälgija',
+      zero: '0 jälgijat',
     );
     return '$_temp0';
   }
@@ -365,170 +364,168 @@ class AppLocalizationsEt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString viewers',
-      one: '1 viewer',
-      zero: '0 viewers',
+      other: '$countString vaatajat',
+      one: '$countString vaataja',
+      zero: '0 vaatajat',
     );
     return '$_temp0';
   }
 
   @override
   String get streamPreviewMessage =>
-      'Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.';
+      'Hei! Tore, et sulle meeldib ülekande eelvaadet kasutada, kuid pea meeles, et see kulutab palju akut. Vestluse lugemine ilma selleta pikendab aku kestvust.';
 
   @override
-  String get okay => 'Okay';
+  String get okay => 'Olgu';
 
   @override
-  String get streamPreviewLoading => 'Loading (or stream is offline)...';
+  String get streamPreviewLoading => 'Laadimine (või ülekanne pole eetris)...';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'Lõikelauale kopeeritud';
 
   @override
-  String get audioSourcesRequirePermissions =>
-      'Audio sources require permissions';
+  String get audioSourcesRequirePermissions => 'Heliallikad vajavad luba';
 
   @override
   String get audioSourcesRequirePermissionsMessage =>
-      'Approve RealtimeChat to draw over other apps to use audio sources.';
+      'Luba rakendusel RealtimeChat kuvada teiste rakenduste peal, et kasutada heliallikaid.';
 
   @override
-  String get audioSourcesRemoveButton => 'Remove audio sources';
+  String get audioSourcesRemoveButton => 'Eemalda heliallikad';
 
   @override
-  String get audioSourcesOpenSettingsButton => 'Open settings';
+  String get audioSourcesOpenSettingsButton => 'Ava seaded';
 
   @override
-  String get flashOn => 'Flash on';
+  String get flashOn => 'Välk sees';
 
   @override
-  String get flashOff => 'Flash off';
+  String get flashOff => 'Välk väljas';
 
   @override
-  String get durationOneSecond => '1 second';
+  String get durationOneSecond => '1 sekund';
 
   @override
-  String get durationOneMinute => '1 minute';
+  String get durationOneMinute => '1 minut';
 
   @override
-  String get durationTenMinutes => '10 minutes';
+  String get durationTenMinutes => '10 minutit';
 
   @override
-  String get durationOneHour => '1 hour';
+  String get durationOneHour => '1 tund';
 
   @override
-  String get durationSixHours => '6 hours';
+  String get durationSixHours => '6 tundi';
 
   @override
-  String get durationOneDay => '1 day';
+  String get durationOneDay => '1 päev';
 
   @override
-  String get durationTwoDays => '2 days';
+  String get durationTwoDays => '2 päeva';
 
   @override
-  String get durationOneWeek => '1 week';
+  String get durationOneWeek => '1 nädal';
 
   @override
-  String get durationTwoWeeks => '2 weeks';
+  String get durationTwoWeeks => '2 nädalat';
 
   @override
-  String get durationOneSecondTimeoutPrompt => 'Timeout for 1 second';
+  String get durationOneSecondTimeoutPrompt => 'Keela 1 sekundiks';
 
   @override
-  String get durationOneMinuteTimeoutPrompt => 'Timeout for 1 minute';
+  String get durationOneMinuteTimeoutPrompt => 'Keela 1 minutiks';
 
   @override
-  String get durationTenMinutesTimeoutPrompt => 'Timeout for 10 minutes';
+  String get durationTenMinutesTimeoutPrompt => 'Keela 10 minutiks';
 
   @override
-  String get durationOneHourTimeoutPrompt => 'Timeout for 1 hour';
+  String get durationOneHourTimeoutPrompt => 'Keela 1 tunniks';
 
   @override
-  String get durationSixHoursTimeoutPrompt => 'Timeout for 6 hours';
+  String get durationSixHoursTimeoutPrompt => 'Keela 6 tunniks';
 
   @override
-  String get durationOneDayTimeoutPrompt => 'Timeout for 1 day';
+  String get durationOneDayTimeoutPrompt => 'Keela 1 päevaks';
 
   @override
-  String get durationTwoDaysTimeoutPrompt => 'Timeout for 2 days';
+  String get durationTwoDaysTimeoutPrompt => 'Keela 2 päevaks';
 
   @override
-  String get durationOneWeekTimeoutPrompt => 'Timeout for 1 week';
+  String get durationOneWeekTimeoutPrompt => 'Keela 1 nädalaks';
 
   @override
-  String get durationTwoWeeksTimeoutPrompt => 'Timeout for 2 weeks';
+  String get durationTwoWeeksTimeoutPrompt => 'Keela 2 nädalaks';
 
   @override
   String get errorFetchingViewerList =>
-      'We couldn\'t fetch the viewer list for this channel';
+      'Selle kanali vaatajate nimekirja ei õnnestunud laadida';
 
   @override
-  String get eventsTitle => 'Events';
+  String get eventsTitle => 'Sündmused';
 
   @override
-  String get followEventConfigTitle => 'Follow Event';
+  String get followEventConfigTitle => 'Jälgimissündmus';
 
   @override
-  String get customizeYourFollowEvent => 'Customize your follow event';
+  String get customizeYourFollowEvent => 'Kohanda oma jälgimissündmust';
 
   @override
-  String get subscribeEventConfigTitle => 'Subscribe Event';
+  String get subscribeEventConfigTitle => 'Tellimissündmus';
 
   @override
-  String get customizeYourSubscriptionEvent =>
-      'Customize your subscription event';
+  String get customizeYourSubscriptionEvent => 'Kohanda oma tellimissündmust';
 
   @override
-  String get cheerEventConfigTitle => 'Cheer Event';
+  String get cheerEventConfigTitle => 'Cheer-sündmus';
 
   @override
-  String get customizeYourCheerEvent => 'Customize your cheer event';
+  String get customizeYourCheerEvent => 'Kohanda oma Cheer-sündmust';
 
   @override
-  String get raidEventConfigTitle => 'Raid Event';
+  String get raidEventConfigTitle => 'Reidisündmus';
 
   @override
-  String get customizeYourRaidEvent => 'Customize your raid event';
+  String get customizeYourRaidEvent => 'Kohanda oma reidisündmust';
 
   @override
-  String get hostEventConfigTitle => 'Host Event';
+  String get hostEventConfigTitle => 'Hostimissündmus';
 
   @override
-  String get customizeYourHostEvent => 'Customize your host event';
+  String get customizeYourHostEvent => 'Kohanda oma hostimissündmust';
 
   @override
-  String get hypetrainEventConfigTitle => 'Hype Train Event';
+  String get hypetrainEventConfigTitle => 'Hype Traini sündmus';
 
   @override
-  String get customizeYourHypetrainEvent => 'Customize your hype train event';
+  String get customizeYourHypetrainEvent => 'Kohanda oma Hype Traini sündmust';
 
   @override
-  String get pollEventConfigTitle => 'Poll Event';
+  String get pollEventConfigTitle => 'Küsitlussündmus';
 
   @override
-  String get customizeYourPollEvent => 'Customize your poll event';
+  String get customizeYourPollEvent => 'Kohanda oma küsitlussündmust';
 
   @override
-  String get predictionEventConfigTitle => 'Prediction Event';
+  String get predictionEventConfigTitle => 'Ennustussündmus';
 
   @override
-  String get customizeYourPredictionEvent => 'Customize your prediction event';
+  String get customizeYourPredictionEvent => 'Kohanda oma ennustussündmust';
 
   @override
   String get channelPointRedemptionEventConfigTitle =>
-      'Channel Point Redemption Event';
+      'Kanalipunktide lunastamise sündmus';
 
   @override
   String get customizeYourChannelPointRedemptionEvent =>
-      'Customize your channel point redemption event';
+      'Kohanda oma kanalipunktide lunastamise sündmust';
 
   @override
-  String get outgoingRaidEventConfigTitle => 'Outgoing Raid Event';
+  String get outgoingRaidEventConfigTitle => 'Väljamineva reidi sündmus';
 
   @override
   String get customizeYourOutgoingRaidEvent =>
-      'Customize your outgoing raid event';
+      'Kohanda oma väljamineva reidi sündmust';
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
@@ -538,15 +535,15 @@ class AppLocalizationsEt extends AppLocalizations {
       viewerCount,
     );
 
-    return '<b>$displayName</b> is raiding with <b>$viewerCountString</b> viewers!';
+    return '<b>$displayName</b> reidib <b>$viewerCountString</b> vaatajaga!';
   }
 
   @override
-  String get shoutout => 'Shoutout';
+  String get shoutout => 'Tervitus';
 
   @override
   String raidingEventRaiding(String displayName) {
-    return 'Raiding <b>$displayName</b>...';
+    return 'Kasutaja <b>$displayName</b> reidimine...';
   }
 
   @override
@@ -555,25 +552,25 @@ class AppLocalizationsEt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
-    return '${secondsString}s';
+    return '$secondsString s';
   }
 
   @override
   String raidingEventRaided(String displayName) {
-    return '<b>$displayName</b> has raided!';
+    return '<b>$displayName</b> reiditi!';
   }
 
   @override
-  String get raidingEventJoin => 'Join';
+  String get raidingEventJoin => 'Liitu';
 
   @override
   String raidingEventCanceled(String displayName) {
-    return '<b>$displayName</b>\'s raid was canceled.';
+    return 'Kasutaja <b>$displayName</b> reid tühistati.';
   }
 
   @override
   String subscriptionEvent(String subscriberUserName, String tier) {
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier!';
+    return '<b>$subscriberUserName</b> tellis $tier. tasemel!';
   }
 
   @override
@@ -592,7 +589,7 @@ class AppLocalizationsEt extends AppLocalizations {
       cumulativeTotal,
     );
 
-    return '<b>$gifterUserName</b> has gifted $totalString Tier $tier subs, totaling $cumulativeTotalString!';
+    return '<b>$gifterUserName</b> kinkis $totalString $tier. taseme tellimust, kokku $cumulativeTotalString!';
   }
 
   @override
@@ -607,7 +604,7 @@ class AppLocalizationsEt extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed for $cumulativeMonthsString months at Tier $tier!';
+    return '<b>$subscriberUserName</b> on tellinud $cumulativeMonthsString kuud $tier. tasemel!';
   }
 
   @override
@@ -628,27 +625,27 @@ class AppLocalizationsEt extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b> tellis $tier. tasemel $durationMonthsString kuuks ette, kokku $cumulativeMonthsString kuud!';
   }
 
   @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
-    return '<b>$donor</b> tipped <b>$value $currency</b>.';
+    return '<b>$donor</b> andis jootraha <b>$value $currency</b>.';
   }
 
   @override
   String realtimeCashTipAnonymous(String value, String currency) {
-    return 'Anonymous tipped <b>$value $currency</b>.';
+    return 'Anonüümne kasutaja andis jootraha <b>$value $currency</b>.';
   }
 
   @override
   String streamElementsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on StreamElements.';
+    return '<b>$name</b> andis StreamElementsis jootraha <b>$formattedAmount</b>.';
   }
 
   @override
   String streamlabsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on Streamlabs.';
+    return '<b>$name</b> andis Streamlabsis jootraha <b>$formattedAmount</b>.';
   }
 
   @override
@@ -662,7 +659,7 @@ class AppLocalizationsEt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points. $userInput';
+    return '<b>$redeemerUsername</b> lunastas preemia <b>$rewardName</b> <b>$rewardCostString</b> punkti eest. $userInput';
   }
 
   @override
@@ -675,7 +672,7 @@ class AppLocalizationsEt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points.';
+    return '<b>$redeemerUsername</b> lunastas preemia <b>$rewardName</b> <b>$rewardCostString</b> punkti eest.';
   }
 
   @override
@@ -685,11 +682,11 @@ class AppLocalizationsEt extends AppLocalizations {
     );
     final String bitsString = bitsNumberFormat.format(bits);
 
-    return '<b>$name</b> cheered <b>$bitsString</b> bits. $cheerMessage';
+    return '<b>$name</b> saatis <b>$bitsString</b> bitti. $cheerMessage';
   }
 
   @override
-  String get anonymous => 'Anonymous';
+  String get anonymous => 'Anonüümne';
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
@@ -697,12 +694,12 @@ class AppLocalizationsEt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
-    return '<b>$fromDisplayName</b> is hosting with a party of <b>$viewersString</b>.';
+    return '<b>$fromDisplayName</b> hostib <b>$viewersString</b> vaatajaga.';
   }
 
   @override
   String hypeTrainEventProgress(String level, String progressPercent) {
-    return 'Hype Train level <b>$level</b> in progress! <b>$progressPercent%</b> completed!';
+    return 'Hype Traini <b>$level</b>. tase on käimas! <b>$progressPercent%</b> täidetud!';
   }
 
   @override
@@ -711,7 +708,7 @@ class AppLocalizationsEt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> succeeded.';
+    return 'Hype Traini <b>$levelString</b>. tase õnnestus.';
   }
 
   @override
@@ -720,7 +717,7 @@ class AppLocalizationsEt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> failed.';
+    return 'Hype Traini <b>$levelString</b>. tase ebaõnnestus.';
   }
 
   @override
@@ -737,24 +734,24 @@ class AppLocalizationsEt extends AppLocalizations {
   }
 
   @override
-  String get textToSpeechEnabled => 'Text to speech enabled';
+  String get textToSpeechEnabled => 'Kõnesüntees lubatud';
 
   @override
-  String get textToSpeechDisabled => 'Text to speech disabled';
+  String get textToSpeechDisabled => 'Kõnesüntees keelatud';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Ainult märguanded';
 
   @override
-  String get pinDuration => 'Pin Duration';
+  String get pinDuration => 'Kinnitamise kestus';
 
   @override
   String durationSeconds(int seconds) {
     String _temp0 = intl.Intl.pluralLogic(
       seconds,
       locale: localeName,
-      other: '$seconds seconds',
-      one: '1 second',
+      other: '$seconds sekundit',
+      one: '$seconds sekund',
     );
     return '$_temp0';
   }
@@ -764,245 +761,245 @@ class AppLocalizationsEt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: '$minutes minutes',
-      one: '1 minute',
+      other: '$minutes minutit',
+      one: '$minutes minut',
     );
     return '$_temp0';
   }
 
   @override
-  String get enableEvent => 'Enable event';
+  String get enableEvent => 'Luba sündmus';
 
   @override
-  String get showEventInChatHistory => 'Show event in chat history';
+  String get showEventInChatHistory => 'Kuva sündmust vestluse ajaloos';
 
   @override
-  String get enableShoutouts => 'Enable shoutouts';
+  String get enableShoutouts => 'Luba tervitused';
 
   @override
-  String get enableShoutoutsSubtitle =>
-      'Send a link to the raiding channel to chat';
+  String get enableShoutoutsSubtitle => 'Saada reidiva kanali link vestlusesse';
 
   @override
-  String get raidConfigurationTitle => 'Raid Configuration';
+  String get raidConfigurationTitle => 'Reidi seadistus';
 
   @override
-  String get cheerConfigurationTitle => 'Cheer Configuration';
+  String get cheerConfigurationTitle => 'Cheeri seadistus';
 
   @override
-  String get followConfigurationTitle => 'Follow Configuration';
+  String get followConfigurationTitle => 'Jälgimise seadistus';
 
   @override
-  String get outgoingRaidConfigurationTitle => 'Outgoing Raid Configuration';
+  String get outgoingRaidConfigurationTitle => 'Väljamineva reidi seadistus';
 
   @override
-  String get hostConfigurationTitle => 'Host Configuration';
+  String get hostConfigurationTitle => 'Hostimise seadistus';
 
   @override
-  String get channelPointConfigurationTitle => 'Channel Point Configuration';
+  String get channelPointConfigurationTitle => 'Kanalipunktide seadistus';
 
   @override
-  String get pollConfigurationTitle => 'Poll Configuration';
+  String get pollConfigurationTitle => 'Küsitluse seadistus';
 
   @override
-  String get hypetrainConfigurationTitle => 'Hypetrain Configuration';
+  String get hypetrainConfigurationTitle => 'Hype Traini seadistus';
 
   @override
-  String get subscriptionConfigurationTitle => 'Subscription Configuration';
+  String get subscriptionConfigurationTitle => 'Tellimuse seadistus';
 
   @override
-  String get predictionConfigurationTitle => 'Prediction Configuration';
+  String get predictionConfigurationTitle => 'Ennustuse seadistus';
 
   @override
   String get unfulfilledRewardsPinDuration =>
-      'Additional Pin Duration for Unfulfilled Rewards';
+      'Täitmata preemiate lisakinnitusaeg';
 
   @override
-  String get pollPinDuration => 'Pin duration after the result is finalized';
+  String get pollPinDuration => 'Kinnitamise kestus pärast tulemuse selgumist';
 
   @override
-  String get hypetrainPinDuration => 'Pin duration after hypetrain is over';
+  String get hypetrainPinDuration =>
+      'Kinnitamise kestus pärast Hype Traini lõppu';
 
   @override
-  String get enableGiftedSubscriptions =>
-      'Enable individual gifted subscriptions';
+  String get enableGiftedSubscriptions => 'Luba üksikud kingitud tellimused';
 
   @override
   String get enableGiftedSubscriptionsSubtitle =>
-      'Show every subscription that is gifted';
+      'Kuva iga kingitud tellimus eraldi';
 
   @override
-  String get settingsBackupTitle => 'Settings backup and restore';
+  String get settingsBackupTitle => 'Seadete varundamine ja taastamine';
 
   @override
-  String get cloudBackup => 'Cloud backup';
+  String get cloudBackup => 'Pilvevarundus';
 
   @override
-  String get lastBackupNever => 'Last backup: never';
+  String get lastBackupNever => 'Viimane varundus: mitte kunagi';
 
   @override
-  String get backUp => 'Back up';
+  String get backUp => 'Varunda';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Taasta';
 
   @override
-  String get localBackup => 'Local backup';
+  String get localBackup => 'Kohalik varundus';
 
   @override
-  String get exportSettings => 'Export';
+  String get exportSettings => 'Ekspordi';
 
   @override
-  String get importSettings => 'Import';
+  String get importSettings => 'Impordi';
 
   @override
-  String get showViewerAndFollowerCount => 'Show viewer and follower count';
+  String get showViewerAndFollowerCount => 'Kuva vaatajate ja jälgijate arvu';
 
   @override
-  String get screenOrientation => 'Screen orientation';
+  String get screenOrientation => 'Ekraani paigutus';
 
   @override
-  String get appTheme => 'App theme';
+  String get appTheme => 'Rakenduse teema';
 
   @override
-  String get systemDefault => 'System';
+  String get systemDefault => 'Süsteemne';
 
   @override
-  String get portrait => 'Portrait';
+  String get portrait => 'Vertikaalne';
 
   @override
-  String get landscape => 'Landscape';
+  String get landscape => 'Horisontaalne';
 
   @override
-  String get lightTheme => 'Light';
+  String get lightTheme => 'Hele';
 
   @override
-  String get darkTheme => 'Dark';
+  String get darkTheme => 'Tume';
 
   @override
-  String get openSourceTitle => 'RealtimeChat is open source';
+  String get openSourceTitle => 'RealtimeChat on avatud lähtekoodiga';
 
   @override
-  String get openSourceSubtitle => 'Find us on GitHub!';
+  String get openSourceSubtitle => 'Leia meid GitHubist!';
 
   @override
-  String get discordSubtitle => 'Join the Muxable Discord!';
+  String get discordSubtitle => 'Liitu Muxable\'i Discordiga!';
 
   @override
   String get earlyTestersThanks =>
-      'Thanks to all the early testers who sent bug reports!';
+      'Aitäh kõigile varajastele testijatele, kes saatsid veateateid!';
 
   @override
-  String get discoModeEnabled => '🕺 Disco mode enabled! :D';
+  String get discoModeEnabled => '🕺 Diskorežiim lubatud! :D';
 
   @override
-  String get discoModeDisabled => '🕺 Disco mode disabled D:';
+  String get discoModeDisabled => '🕺 Diskorežiim keelatud D:';
 
   @override
-  String get playSampleMessage => 'Play sample message';
+  String get playSampleMessage => 'Esita näidissõnum';
 
   @override
-  String get textToSpeechRate => 'Text to Speech Rate';
+  String get textToSpeechRate => 'Kõnesünteesi kiirus';
 
   @override
-  String get textToSpeechPitch => 'Text to Speech Pitch';
+  String get textToSpeechPitch => 'Kõnesünteesi helikõrgus';
 
   @override
-  String get muteBots => 'Mute text to speech for bots';
+  String get muteBots => 'Vaigista kõnesüntees robotite puhul';
 
   @override
-  String get muteEmotes => 'Mute all emotes in text to speech';
+  String get muteEmotes => 'Vaigista kõnesünteesis kõik emotikonid';
 
   @override
-  String get muteViewerNames => 'Mute viewer names in text to speech';
+  String get muteViewerNames => 'Vaigista kõnesünteesis vaatajate nimed';
 
   @override
-  String get subscribersOnly => 'Subscribers only';
+  String get subscribersOnly => 'Ainult tellijad';
 
   @override
-  String get fontSize => 'Font size';
+  String get fontSize => 'Fondi suurus';
 
   @override
-  String get usernameContrastBoost => 'Username contrast boost';
+  String get usernameContrastBoost => 'Kasutajanime kontrastsuse võimendus';
 
   @override
-  String get twitchBadgeSettings => 'Twitch badge settings';
+  String get twitchBadgeSettings => 'Twitchi märkide seaded';
 
   @override
-  String get twitchBadgeSettingsSubtitle => 'Control which badges are visible';
+  String get twitchBadgeSettingsSubtitle =>
+      'Määra, millised märgid on nähtavad';
 
   @override
-  String get showDeletedMessages => 'Show deleted messages';
+  String get showDeletedMessages => 'Kuva kustutatud sõnumeid';
 
   @override
-  String get deletedMessagesGreyedOut => 'Deleted messages will be greyed out';
+  String get deletedMessagesGreyedOut => 'Kustutatud sõnumid kuvatakse hallina';
 
   @override
-  String get deletedMessagesRemoved => 'Deleted messages will be removed';
+  String get deletedMessagesRemoved => 'Kustutatud sõnumid eemaldatakse';
 
   @override
-  String get showLoginNames => 'Show login names';
+  String get showLoginNames => 'Kuva kasutajatunnuseid';
 
   @override
   String get loginNamesShown =>
-      'Login names will be shown if they are different from the display name';
+      'Kasutajatunnuseid kuvatakse, kui need erinevad kuvatavast nimest';
 
   @override
-  String get loginNamesHidden => 'Login names will be hidden';
+  String get loginNamesHidden => 'Kasutajatunnused on peidetud';
 
   @override
-  String get compactMessages => 'Compact messages';
+  String get compactMessages => 'Tihenda sõnumeid';
 
   @override
-  String get dontCompactMessages => 'Don\'t compact messages';
+  String get dontCompactMessages => 'Ära tihenda sõnumeid';
 
   @override
-  String get dontCompactMessagesSubtitle => 'Messages are shown unchanged';
+  String get dontCompactMessagesSubtitle => 'Sõnumeid kuvatakse muutmata kujul';
 
   @override
-  String get compactIndividualMessages => 'Compact individual messages';
+  String get compactIndividualMessages => 'Tihenda üksikuid sõnumeid';
 
   @override
   String get compactIndividualMessagesSubtitle =>
-      'Repetitive text in messages is shortened';
+      'Korduv tekst sõnumites lühendatakse';
 
   @override
-  String get announcementPinDuration => 'Announcement pin duration';
+  String get announcementPinDuration => 'Teadaande kinnitamise kestus';
 
   @override
-  String get idleMessageAlertDuration => 'Idle message alert duration';
+  String get idleMessageAlertDuration => 'Vaikuse märguande kestus';
 
   @override
   String get idleMessageAlertDurationSubtitle =>
-      'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
+      'Kui selle aja jooksul pole ühtegi sõnumit tulnud ja saabub uus sõnum, esitatakse märguandeheli.';
 
   @override
-  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+  String get realtimeCashSubtitle => 'Ühenda ETH- või MATIC-rahakott';
 
   @override
-  String get walletAddress => 'Wallet address';
+  String get walletAddress => 'Rahakoti aadress';
 
   @override
-  String get streamlabsSubtitle => 'See your Streamlabs donations';
+  String get streamlabsSubtitle => 'Vaata oma Streamlabsi annetusi';
 
   @override
-  String get streamElementsSubtitle => 'See your StreamElements donations';
+  String get streamElementsSubtitle => 'Vaata oma StreamElementsi annetusi';
 
   @override
   String get thirdPartyAuthError =>
-      'Hmm, that didn\'t work. Try again, or ask on Discord?';
+      'Hmm, see ei õnnestunud. Proovi uuesti või küsi abi Discordist?';
 
   @override
   String get companionAuthBrowserTooOld =>
-      'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.';
+      'Sinu brauser on otse sisselogimiseks liiga vana. Skanni see QR-kood oma telefoniga, et logida sisse teises seadmes.';
 
   @override
   String get companionAuthScanQrCode =>
-      'Scan this QR code with your phone to sign in on another device.';
+      'Skanni see QR-kood oma telefoniga, et logida sisse teises seadmes.';
 
   @override
   String kickSubscriptionEvent(String subscriberName) {
-    return '<b>$subscriberName</b> has subscribed!';
+    return '<b>$subscriberName</b> tellis kanali!';
   }
 
   @override
@@ -1011,7 +1008,7 @@ class AppLocalizationsEt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
-    return '<b>$subscriberName</b> has resubscribed for $monthsString months!';
+    return '<b>$subscriberName</b> pikendas tellimust ($monthsString kuud)!';
   }
 
   @override
@@ -1020,7 +1017,7 @@ class AppLocalizationsEt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '<b>$gifterName</b> has gifted $countString subs!';
+    return '<b>$gifterName</b> kinkis $countString tellimust!';
   }
 
   @override
@@ -1029,60 +1026,60 @@ class AppLocalizationsEt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
-    return '<b>$senderName</b> sent $amountString Kicks!';
+    return '<b>$senderName</b> saatis $amountString Kicki!';
   }
 
   @override
-  String get signInWithKick => 'Sign in with Kick';
+  String get signInWithKick => 'Logi sisse Kickiga';
 
   @override
   String get textToSpeechTooManyMessages =>
-      'There are too many messages. Text to speech disabled';
+      'Sõnumeid on liiga palju. Kõnesüntees keelati';
 
   @override
-  String get turnOffTextToSpeech => 'Turn off';
+  String get turnOffTextToSpeech => 'Lülita välja';
 
   @override
-  String get addToChat => 'Add to chat';
+  String get addToChat => 'Lisa vestlusesse';
 
   @override
-  String get inChat => 'In chat';
+  String get inChat => 'Vestluses';
 
   @override
-  String get removeFromChat => 'Remove from chat';
+  String get removeFromChat => 'Eemalda vestlusest';
 
   @override
   String cantChatWithAccount(String provider) {
-    return 'Your $provider account can\'t chat here';
+    return 'Sinu $provider-konto ei saa siin vestelda';
   }
 
   @override
-  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+  String get cantChatWithAccounts => 'Sinu kontod ei saa siin vestelda';
 
   @override
   String sendAMessageTo(String channel) {
-    return 'Send a message to $channel...';
+    return 'Saada sõnum kanalile $channel...';
   }
 
   @override
   String replaceChannel(String channel) {
-    return 'Replace $channel';
+    return 'Asenda $channel';
   }
 
   @override
-  String get voicePacks => 'Voice packs';
+  String get voicePacks => 'Häälepaketid';
 
   @override
   String get voicePacksDescription =>
-      'Voice packs read chat with natural-sounding voices that run on your device, offline once downloaded. The voices are machine-generated by AI, not recorded by a person.';
+      'Häälepaketid loevad vestlust loomuliku kõlaga häältega, mis töötavad sinu seadmes ja pärast allalaadimist ka võrguühenduseta. Hääled on tehisintellekti loodud, mitte inimese salvestatud.';
 
   @override
   String voicePackDetails(int voices, String size) {
     String _temp0 = intl.Intl.pluralLogic(
       voices,
       locale: localeName,
-      other: '$voices voices',
-      one: '1 voice',
+      other: '$voices häält',
+      one: '$voices hääl',
     );
     return '$_temp0 · $size';
   }
@@ -1092,99 +1089,100 @@ class AppLocalizationsEt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count languages',
-      one: '1 language',
+      other: '$count keelt',
+      one: '$count keel',
     );
     return '$_temp0: $languages';
   }
 
   @override
   String get voicePackOpenRailNotice =>
-      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+      'Selle mudeli litsents (OpenRAIL-M) keelab kahjuliku kasutamise, nagu teiste inimestena esinemise või väärinfo levitamise, ning need piirangud kehtivad ka sulle.';
 
   @override
   String voicePackDeleteConfirm(String pack, String size) {
-    return 'Delete $pack? This frees $size.';
+    return 'Kas kustutada $pack? See vabastab $size.';
   }
 
   @override
-  String get voicePackDownload => 'Download';
+  String get voicePackDownload => 'Laadi alla';
 
   @override
-  String get voicePackUpdate => 'Update';
+  String get voicePackUpdate => 'Uuenda';
 
   @override
-  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+  String get voicePackWaitingForWifi => 'Wi-Fi-ühenduse ootamine';
 
   @override
-  String get voicePackUseMobileData => 'Use mobile data';
+  String get voicePackUseMobileData => 'Kasuta mobiilset andmesidet';
 
   @override
   String voicePackDownloading(String downloaded, String total) {
-    return 'Downloading: $downloaded of $total';
+    return 'Allalaadimine: $downloaded / $total';
   }
 
   @override
-  String get voicePackInstalling => 'Installing';
+  String get voicePackInstalling => 'Paigaldamine';
 
   @override
   String voicePackInstallFailed(String pack) {
-    return 'Couldn\'t install $pack. Check your connection and try again.';
+    return 'Paketi $pack paigaldamine ebaõnnestus. Kontrolli ühendust ja proovi uuesti.';
   }
 
   @override
-  String get voices => 'Voices';
+  String get voices => 'Hääled';
 
   @override
-  String get perViewerVoice => 'Per-viewer voice';
+  String get perViewerVoice => 'Igale vaatajale oma hääl';
 
   @override
   String get perViewerVoiceSubtitle =>
-      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+      'Iga vaataja saab oma hääle. Sinu valitud hääl loeb märguandeid või kõike, kui see valik on välja lülitatud.';
 
   @override
-  String get streamLanguage => 'Stream language';
+  String get streamLanguage => 'Ülekande keel';
 
   @override
-  String get ttsEngineNeural => 'Neural voice (on-device)';
+  String get ttsEngineNeural => 'Neurohääl (seadmesisene)';
 
   @override
-  String get ttsEngineSystem => 'System voice';
+  String get ttsEngineSystem => 'Süsteemi hääl';
 
   @override
   String languageUnsupported(String language) {
-    return '$language isn\'t supported by your voice packs; the system voice will be used';
+    return 'Sinu häälepaketid ei toeta keelt $language; kasutatakse süsteemi häält';
   }
 
   @override
   String get neuralFallbackLowMemory =>
-      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+      'Sellel seadmel pole neurohäälte jaoks piisavalt mälu, seega loetakse vestlust süsteemi häälega.';
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'Neurohääle laadimine ebaõnnestus, seega loetakse vestlust süsteemi häälega.';
 
   @override
-  String get accounts => 'Accounts';
+  String get accounts => 'Kontod';
 
   @override
-  String get accountsSubtitle => 'Sign in to each platform you stream on';
+  String get accountsSubtitle =>
+      'Logi sisse igale platvormile, kus teed ülekandeid';
 
   @override
   String addProviderAccount(String provider) {
-    return 'Add $provider account';
+    return 'Lisa $provider-konto';
   }
 
   @override
   String signInWithProvider(String provider) {
-    return 'Sign in with $provider';
+    return 'Logi sisse teenusega $provider';
   }
 
   @override
   String signOutOfAccount(String channel, String provider) {
-    return 'Sign out of $channel on $provider?';
+    return 'Kas logida välja kontolt $channel platvormil $provider?';
   }
 
   @override
-  String get signOutOfAll => 'Sign out of all accounts';
+  String get signOutOfAll => 'Logi välja kõigilt kontodelt';
 }

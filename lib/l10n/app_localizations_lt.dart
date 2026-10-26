@@ -9,71 +9,74 @@ class AppLocalizationsLt extends AppLocalizations {
   AppLocalizationsLt([String locale = 'lt']) : super(locale);
 
   @override
-  String get sendAMessage => 'Send a message...';
+  String get sendAMessage => 'Siųsti žinutę...';
 
   @override
-  String get writeSomething => 'Write something...';
+  String get writeSomething => 'Parašykite ką nors...';
 
   @override
-  String get speakToTheCrowds => 'Speak to the crowds...';
+  String get speakToTheCrowds => 'Prabilkite į minią...';
 
   @override
-  String get shareYourThoughts => 'Share your thoughts...';
+  String get shareYourThoughts => 'Pasidalykite savo mintimis...';
 
   @override
-  String get saySomethingYouLittleBitch => 'Say something, you little bitch...';
+  String get saySomethingYouLittleBitch =>
+      'Pasakyk ką nors, mažas kalės vaike...';
 
   @override
-  String get search => 'Search';
+  String get search => 'Ieškoti';
 
   @override
-  String get notSignedIn => 'Not signed in';
+  String get notSignedIn => 'Neprisijungta';
 
   @override
-  String get searchChannels => 'Search';
+  String get searchChannels => 'Paieška';
 
   @override
-  String get raidAChannel => 'Raid';
+  String get raidAChannel => 'Reidas';
 
   @override
-  String get noMessagesEmptyState => 'It\'s quiet in here.';
+  String get noMessagesEmptyState => 'Čia tylu.';
 
   @override
   String newMessageCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count new messages',
-      one: '1 new message',
-      zero: 'No new messages',
+      other: '$count naujų žinučių',
+      many: '$count naujos žinutės',
+      few: '$count naujos žinutės',
+      one: '$count nauja žinutė',
+      zero: 'Naujų žinučių nėra',
     );
     return '$_temp0';
   }
 
   @override
-  String get signInWithTwitch => 'Sign in with Twitch';
+  String get signInWithTwitch => 'Prisijungti per „Twitch“';
 
   @override
-  String get signInError =>
-      'An error occurred when signing in. Please try again.';
+  String get signInError => 'Prisijungiant įvyko klaida. Bandykite dar kartą.';
 
   @override
-  String get continueAsGuest => 'Continue as Guest';
+  String get continueAsGuest => 'Tęsti kaip svečiui';
 
   @override
-  String get signInToSendMessages => 'Sign in to send messages';
+  String get signInToSendMessages =>
+      'Prisijunkite, kad galėtumėte siųsti žinutes';
 
   @override
-  String get currentViewers => 'Current viewers';
+  String get currentViewers => 'Dabartiniai žiūrovai';
 
   @override
-  String get textToSpeech => 'Text to speech';
+  String get textToSpeech => 'Tekstas į kalbą';
 
   @override
-  String get streamPreview => 'Stream preview';
+  String get streamPreview => 'Transliacijos peržiūra';
 
   @override
-  String get activityFeed => 'Activity feed';
+  String get activityFeed => 'Veiklos srautas';
 
   @override
   String streamOnline(DateTime date, DateTime time) {
@@ -84,7 +87,7 @@ class AppLocalizationsLt extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream online at $dateString, $timeString';
+    return 'Transliacija pradėta $dateString, $timeString';
   }
 
   @override
@@ -96,7 +99,7 @@ class AppLocalizationsLt extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream offline at $dateString, $timeString';
+    return 'Transliacija baigta $dateString, $timeString';
   }
 
   @override
@@ -108,175 +111,180 @@ class AppLocalizationsLt extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Chat cleared at $dateString, $timeString';
+    return 'Pokalbis išvalytas $dateString, $timeString';
   }
 
   @override
-  String get configureQuickLinks => 'Configure quick links';
+  String get configureQuickLinks => 'Konfigūruoti greitąsias nuorodas';
 
   @override
-  String get disableRainMode => 'Disable rain mode';
+  String get disableRainMode => 'Išjungti lietaus režimą';
 
   @override
-  String get enableRainMode => 'Enable rain mode';
+  String get enableRainMode => 'Įjungti lietaus režimą';
 
   @override
-  String get disableRainModeSubtitle => 'Interaction will be enabled';
+  String get disableRainModeSubtitle => 'Sąveika bus įjungta';
 
   @override
-  String get enableRainModeSubtitle => 'Interaction will be disabled';
+  String get enableRainModeSubtitle => 'Sąveika bus išjungta';
 
   @override
-  String get refreshAudioSources => 'Refresh audio sources';
+  String get refreshAudioSources => 'Atnaujinti garso šaltinius';
 
   @override
   String refreshAudioSourcesCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count audio sources refreshed',
-      one: '1 audio source refreshed',
-      zero: 'No audio sources refreshed',
+      other: 'Atnaujinta $count garso šaltinių',
+      many: 'Atnaujinta $count garso šaltinio',
+      few: 'Atnaujinti $count garso šaltiniai',
+      one: 'Atnaujintas $count garso šaltinis',
+      zero: 'Neatnaujintas joks garso šaltinis',
     );
     return '$_temp0';
   }
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Nustatymai';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'Atsijungti';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Atšaukti';
 
   @override
-  String get signOutConfirmation => 'Are you sure you want to sign out?';
+  String get signOutConfirmation => 'Ar tikrai norite atsijungti?';
 
   @override
-  String get broadcaster => 'Broadcaster';
+  String get broadcaster => 'Transliuotojas';
 
   @override
-  String get moderators => 'Moderators';
+  String get moderators => 'Moderatoriai';
 
   @override
-  String get viewers => 'Viewers';
+  String get viewers => 'Žiūrovai';
 
   @override
-  String get communityVips => 'Community VIPs';
+  String get communityVips => 'Bendruomenės VIP nariai';
 
   @override
-  String get searchViewers => 'Search Viewers';
+  String get searchViewers => 'Ieškoti žiūrovų';
 
   @override
-  String get reconnecting => 'Reconnecting...';
+  String get reconnecting => 'Jungiamasi iš naujo...';
 
   @override
-  String get twitchBadges => 'Twitch badges';
+  String get twitchBadges => '„Twitch“ ženkleliai';
 
   @override
-  String get selectAll => 'Select all';
+  String get selectAll => 'Pažymėti viską';
 
   @override
-  String get quickLinks => 'Quick links';
+  String get quickLinks => 'Greitosios nuorodos';
 
   @override
   String get swipeToDeleteQuickLinks =>
-      'Swipe left or right to delete quick link';
+      'Perbraukite kairėn arba dešinėn, kad ištrintumėte greitąją nuorodą';
 
   @override
-  String get quickLinksLabelHint => 'Label';
+  String get quickLinksLabelHint => 'Etiketė';
 
   @override
-  String get invalidUrlErrorText => 'This doesn\'t look like a valid URL';
+  String get invalidUrlErrorText => 'Tai nepanašu į tinkamą URL';
 
   @override
-  String get duplicateUrlErrorText => 'This link already exists';
+  String get duplicateUrlErrorText => 'Ši nuoroda jau yra';
 
   @override
-  String get or => 'or';
+  String get or => 'arba';
 
   @override
-  String get clearCookies => 'Clear cookies';
+  String get clearCookies => 'Išvalyti slapukus';
 
   @override
-  String get disabled => 'Disabled';
+  String get disabled => 'Išjungta';
 
   @override
-  String get twitchActivityFeed => 'Twitch activity feed';
+  String get twitchActivityFeed => '„Twitch“ veiklos srautas';
 
   @override
-  String get signInToEnable => 'You must be signed in to enable this';
+  String get signInToEnable => 'Norėdami tai įjungti, turite būti prisijungę';
 
   @override
-  String get customUrl => 'Custom URL';
+  String get customUrl => 'Pasirinktinis URL';
 
   @override
-  String get preview => 'Preview';
+  String get preview => 'Peržiūra';
 
   @override
-  String get audioSources => 'Audio sources';
+  String get audioSources => 'Garso šaltiniai';
 
   @override
   String get enableOffStreamSwitchTitle =>
-      'Enable off-stream (uses more battery)';
+      'Įjungti ne transliacijos metu (naudoja daugiau akumuliatoriaus energijos)';
 
   @override
   String get enableOffStreamSwitchEnabledSubtitle =>
-      'Audio will also play when you\'re offline';
+      'Garsas bus leidžiamas ir tada, kai netransliuojate';
 
   @override
   String get enableOffStreamSwitchDisabledSubtitle =>
-      'Audio will only play when you\'re live';
+      'Garsas bus leidžiamas tik tada, kai transliuojate tiesiogiai';
 
   @override
-  String get iosOggWarningTitle => 'Hey! Listen!';
+  String get iosOggWarningTitle => 'Ei! Klausykite!';
 
   @override
   String get iosOggWarningSubtitle =>
-      'iOS doesn\'t support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won\'t play.';
+      '„iOS“ nepalaiko *.ogg medijos failų, kurie yra numatytieji „Streamlabs“ failai. Įsitikinkite, kad jūsų garso šaltiniai naudoja kitą formatą, kitaip jie nebus atkuriami.';
 
   @override
   String get url => 'URL';
 
   @override
-  String get activityFeedSubtitle => 'Customize your activity feed';
+  String get activityFeedSubtitle => 'Tinkinkite savo veiklos srautą';
 
   @override
-  String get audioSourcesSubtitle => 'Add web sources for alert sounds';
+  String get audioSourcesSubtitle =>
+      'Pridėkite žiniatinklio šaltinius įspėjimų garsams';
 
   @override
-  String get quickLinksSubtitle => 'Add shortcuts to commonly used tools';
+  String get quickLinksSubtitle =>
+      'Pridėkite dažnai naudojamų įrankių sparčiąsias nuorodas';
 
   @override
-  String get chatHistory => 'Chat history';
+  String get chatHistory => 'Pokalbių istorija';
 
   @override
-  String get chatHistorySubtitle => 'Change the chat appearance';
+  String get chatHistorySubtitle => 'Keiskite pokalbio išvaizdą';
 
   @override
-  String get textToSpeechSubtitle => 'Change text to speech settings';
+  String get textToSpeechSubtitle => 'Keiskite teksto į kalbą nustatymus';
 
   @override
-  String get events => 'Events';
+  String get events => 'Įvykiai';
 
   @override
-  String get eventsSubtitle => 'Configure Twitch events';
+  String get eventsSubtitle => 'Konfigūruokite „Twitch“ įvykius';
 
   @override
-  String get thirdPartyServices => 'Third-party services';
+  String get thirdPartyServices => 'Trečiųjų šalių paslaugos';
 
   @override
-  String get thirdPartyServicesSubtitle => 'Connect to a third-party service';
+  String get thirdPartyServicesSubtitle =>
+      'Prisijunkite prie trečiosios šalies paslaugos';
 
   @override
   String followingEvent(String displayName) {
-    return '<b>$displayName</b> is following you';
+    return '<b>$displayName</b> jus seka';
   }
 
   @override
   String followingEvent2(String displayName, String displayNameTwo) {
-    return '<b>$displayName</b> and <b>$displayNameTwo</b> are following you';
+    return '<b>$displayName</b> ir <b>$displayNameTwo</b> jus seka';
   }
 
   @override
@@ -289,54 +297,53 @@ class AppLocalizationsLt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
-    return '<b>$displayName</b>, <b>$displayNameTwo</b>, and $numOthersString others are following you';
+    return '<b>$displayName</b>, <b>$displayNameTwo</b> ir dar $numOthersString jus seka';
   }
 
   @override
   String unmuteUser(String displayName) {
-    return 'Unmute $displayName';
+    return 'Įjungti garsą $displayName';
   }
 
   @override
   String muteUser(String displayName) {
-    return 'Mute $displayName';
+    return 'Nutildyti $displayName';
   }
 
   @override
   String timeoutUser(String displayName) {
-    return 'Timeout $displayName';
+    return 'Laikinai apriboti $displayName';
   }
 
   @override
   String banUser(String displayName) {
-    return 'Ban $displayName';
+    return 'Užblokuoti $displayName';
   }
 
   @override
   String unbanUser(String displayName) {
-    return 'Unban $displayName';
+    return 'Atblokuoti $displayName';
   }
 
   @override
   String viewProfile(String displayName) {
-    return 'View $displayName\'s profile';
+    return 'Peržiūrėti $displayName profilį';
   }
 
   @override
-  String get copyMessage => 'Copy Message';
+  String get copyMessage => 'Kopijuoti žinutę';
 
   @override
-  String get deleteMessage => 'Delete Message';
+  String get deleteMessage => 'Ištrinti žinutę';
 
   @override
-  String get longScrollNotification =>
-      'You\'re scrolling kind of far, don\'t you think?';
+  String get longScrollNotification => 'Slenkate gana toli, ar nemanote?';
 
   @override
-  String get stfu => 'stfu';
+  String get stfu => 'užsičiaupk';
 
   @override
-  String get globalEmotes => 'Global Emotes';
+  String get globalEmotes => 'Visuotiniai jaustukai';
 
   @override
   String followerCount(int count) {
@@ -348,9 +355,11 @@ class AppLocalizationsLt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString followers',
-      one: '1 follower',
-      zero: '0 followers',
+      other: '$countString sekėjų',
+      many: '$countString sekėjo',
+      few: '$countString sekėjai',
+      one: '$countString sekėjas',
+      zero: '0 sekėjų',
     );
     return '$_temp0';
   }
@@ -365,170 +374,171 @@ class AppLocalizationsLt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString viewers',
-      one: '1 viewer',
-      zero: '0 viewers',
+      other: '$countString žiūrovų',
+      many: '$countString žiūrovo',
+      few: '$countString žiūrovai',
+      one: '$countString žiūrovas',
+      zero: '0 žiūrovų',
     );
     return '$_temp0';
   }
 
   @override
   String get streamPreviewMessage =>
-      'Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.';
+      'Sveiki! Džiaugiamės, kad mėgstate naudoti transliacijos peržiūrą, tačiau atminkite, kad ji eikvoja daug akumuliatoriaus energijos. Skaitant pokalbį be jos, akumuliatorius veiks ilgiau.';
 
   @override
-  String get okay => 'Okay';
+  String get okay => 'Gerai';
 
   @override
-  String get streamPreviewLoading => 'Loading (or stream is offline)...';
+  String get streamPreviewLoading => 'Įkeliama (arba transliacija nevyksta)...';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'Nukopijuota į iškarpinę';
 
   @override
   String get audioSourcesRequirePermissions =>
-      'Audio sources require permissions';
+      'Garso šaltiniams reikia leidimų';
 
   @override
   String get audioSourcesRequirePermissionsMessage =>
-      'Approve RealtimeChat to draw over other apps to use audio sources.';
+      'Suteikite „RealtimeChat“ leidimą rodyti ant kitų programų, kad galėtumėte naudoti garso šaltinius.';
 
   @override
-  String get audioSourcesRemoveButton => 'Remove audio sources';
+  String get audioSourcesRemoveButton => 'Pašalinti garso šaltinius';
 
   @override
-  String get audioSourcesOpenSettingsButton => 'Open settings';
+  String get audioSourcesOpenSettingsButton => 'Atidaryti nustatymus';
 
   @override
-  String get flashOn => 'Flash on';
+  String get flashOn => 'Blykstė įjungta';
 
   @override
-  String get flashOff => 'Flash off';
+  String get flashOff => 'Blykstė išjungta';
 
   @override
-  String get durationOneSecond => '1 second';
+  String get durationOneSecond => '1 sekundė';
 
   @override
-  String get durationOneMinute => '1 minute';
+  String get durationOneMinute => '1 minutė';
 
   @override
-  String get durationTenMinutes => '10 minutes';
+  String get durationTenMinutes => '10 minučių';
 
   @override
-  String get durationOneHour => '1 hour';
+  String get durationOneHour => '1 valanda';
 
   @override
-  String get durationSixHours => '6 hours';
+  String get durationSixHours => '6 valandos';
 
   @override
-  String get durationOneDay => '1 day';
+  String get durationOneDay => '1 diena';
 
   @override
-  String get durationTwoDays => '2 days';
+  String get durationTwoDays => '2 dienos';
 
   @override
-  String get durationOneWeek => '1 week';
+  String get durationOneWeek => '1 savaitė';
 
   @override
-  String get durationTwoWeeks => '2 weeks';
+  String get durationTwoWeeks => '2 savaitės';
 
   @override
-  String get durationOneSecondTimeoutPrompt => 'Timeout for 1 second';
+  String get durationOneSecondTimeoutPrompt => 'Laikinai apriboti 1 sekundei';
 
   @override
-  String get durationOneMinuteTimeoutPrompt => 'Timeout for 1 minute';
+  String get durationOneMinuteTimeoutPrompt => 'Laikinai apriboti 1 minutei';
 
   @override
-  String get durationTenMinutesTimeoutPrompt => 'Timeout for 10 minutes';
+  String get durationTenMinutesTimeoutPrompt => 'Laikinai apriboti 10 minučių';
 
   @override
-  String get durationOneHourTimeoutPrompt => 'Timeout for 1 hour';
+  String get durationOneHourTimeoutPrompt => 'Laikinai apriboti 1 valandai';
 
   @override
-  String get durationSixHoursTimeoutPrompt => 'Timeout for 6 hours';
+  String get durationSixHoursTimeoutPrompt => 'Laikinai apriboti 6 valandoms';
 
   @override
-  String get durationOneDayTimeoutPrompt => 'Timeout for 1 day';
+  String get durationOneDayTimeoutPrompt => 'Laikinai apriboti 1 dienai';
 
   @override
-  String get durationTwoDaysTimeoutPrompt => 'Timeout for 2 days';
+  String get durationTwoDaysTimeoutPrompt => 'Laikinai apriboti 2 dienoms';
 
   @override
-  String get durationOneWeekTimeoutPrompt => 'Timeout for 1 week';
+  String get durationOneWeekTimeoutPrompt => 'Laikinai apriboti 1 savaitei';
 
   @override
-  String get durationTwoWeeksTimeoutPrompt => 'Timeout for 2 weeks';
+  String get durationTwoWeeksTimeoutPrompt => 'Laikinai apriboti 2 savaitėms';
 
   @override
   String get errorFetchingViewerList =>
-      'We couldn\'t fetch the viewer list for this channel';
+      'Nepavyko gauti šio kanalo žiūrovų sąrašo';
 
   @override
-  String get eventsTitle => 'Events';
+  String get eventsTitle => 'Įvykiai';
 
   @override
-  String get followEventConfigTitle => 'Follow Event';
+  String get followEventConfigTitle => 'Sekimo įvykis';
 
   @override
-  String get customizeYourFollowEvent => 'Customize your follow event';
+  String get customizeYourFollowEvent => 'Tinkinkite sekimo įvykį';
 
   @override
-  String get subscribeEventConfigTitle => 'Subscribe Event';
+  String get subscribeEventConfigTitle => 'Prenumeratos įvykis';
 
   @override
-  String get customizeYourSubscriptionEvent =>
-      'Customize your subscription event';
+  String get customizeYourSubscriptionEvent => 'Tinkinkite prenumeratos įvykį';
 
   @override
-  String get cheerEventConfigTitle => 'Cheer Event';
+  String get cheerEventConfigTitle => '„Cheer“ įvykis';
 
   @override
-  String get customizeYourCheerEvent => 'Customize your cheer event';
+  String get customizeYourCheerEvent => 'Tinkinkite „Cheer“ įvykį';
 
   @override
-  String get raidEventConfigTitle => 'Raid Event';
+  String get raidEventConfigTitle => 'Reido įvykis';
 
   @override
-  String get customizeYourRaidEvent => 'Customize your raid event';
+  String get customizeYourRaidEvent => 'Tinkinkite reido įvykį';
 
   @override
-  String get hostEventConfigTitle => 'Host Event';
+  String get hostEventConfigTitle => 'Vedimo („Host“) įvykis';
 
   @override
-  String get customizeYourHostEvent => 'Customize your host event';
+  String get customizeYourHostEvent => 'Tinkinkite vedimo („Host“) įvykį';
 
   @override
-  String get hypetrainEventConfigTitle => 'Hype Train Event';
+  String get hypetrainEventConfigTitle => '„Hype Train“ įvykis';
 
   @override
-  String get customizeYourHypetrainEvent => 'Customize your hype train event';
+  String get customizeYourHypetrainEvent => 'Tinkinkite „Hype Train“ įvykį';
 
   @override
-  String get pollEventConfigTitle => 'Poll Event';
+  String get pollEventConfigTitle => 'Apklausos įvykis';
 
   @override
-  String get customizeYourPollEvent => 'Customize your poll event';
+  String get customizeYourPollEvent => 'Tinkinkite apklausos įvykį';
 
   @override
-  String get predictionEventConfigTitle => 'Prediction Event';
+  String get predictionEventConfigTitle => 'Spėjimo įvykis';
 
   @override
-  String get customizeYourPredictionEvent => 'Customize your prediction event';
+  String get customizeYourPredictionEvent => 'Tinkinkite spėjimo įvykį';
 
   @override
   String get channelPointRedemptionEventConfigTitle =>
-      'Channel Point Redemption Event';
+      'Kanalo taškų išpirkimo įvykis';
 
   @override
   String get customizeYourChannelPointRedemptionEvent =>
-      'Customize your channel point redemption event';
+      'Tinkinkite kanalo taškų išpirkimo įvykį';
 
   @override
-  String get outgoingRaidEventConfigTitle => 'Outgoing Raid Event';
+  String get outgoingRaidEventConfigTitle => 'Siunčiamo reido įvykis';
 
   @override
   String get customizeYourOutgoingRaidEvent =>
-      'Customize your outgoing raid event';
+      'Tinkinkite siunčiamo reido įvykį';
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
@@ -538,15 +548,15 @@ class AppLocalizationsLt extends AppLocalizations {
       viewerCount,
     );
 
-    return '<b>$displayName</b> is raiding with <b>$viewerCountString</b> viewers!';
+    return '<b>$displayName</b> vykdo reidą su <b>$viewerCountString</b> žiūrovų!';
   }
 
   @override
-  String get shoutout => 'Shoutout';
+  String get shoutout => 'Paminėjimas';
 
   @override
   String raidingEventRaiding(String displayName) {
-    return 'Raiding <b>$displayName</b>...';
+    return 'Reidama pas <b>$displayName</b>...';
   }
 
   @override
@@ -555,25 +565,25 @@ class AppLocalizationsLt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
-    return '${secondsString}s';
+    return '$secondsString s';
   }
 
   @override
   String raidingEventRaided(String displayName) {
-    return '<b>$displayName</b> has raided!';
+    return '<b>$displayName</b> įvykdė reidą!';
   }
 
   @override
-  String get raidingEventJoin => 'Join';
+  String get raidingEventJoin => 'Prisijungti';
 
   @override
   String raidingEventCanceled(String displayName) {
-    return '<b>$displayName</b>\'s raid was canceled.';
+    return '<b>$displayName</b> reidas atšauktas.';
   }
 
   @override
   String subscriptionEvent(String subscriberUserName, String tier) {
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier!';
+    return '<b>$subscriberUserName</b> užsiprenumeravo $tier pakopą!';
   }
 
   @override
@@ -592,7 +602,7 @@ class AppLocalizationsLt extends AppLocalizations {
       cumulativeTotal,
     );
 
-    return '<b>$gifterUserName</b> has gifted $totalString Tier $tier subs, totaling $cumulativeTotalString!';
+    return '<b>$gifterUserName</b> padovanojo $totalString $tier pakopos prenumeratų (iš viso $cumulativeTotalString)!';
   }
 
   @override
@@ -607,7 +617,7 @@ class AppLocalizationsLt extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed for $cumulativeMonthsString months at Tier $tier!';
+    return '<b>$subscriberUserName</b> prenumeruoja $tier pakopą jau $cumulativeMonthsString mėn.!';
   }
 
   @override
@@ -628,27 +638,27 @@ class AppLocalizationsLt extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b> užsiprenumeravo $tier pakopą $durationMonthsString mėn. į priekį (iš viso $cumulativeMonthsString mėn.)!';
   }
 
   @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
-    return '<b>$donor</b> tipped <b>$value $currency</b>.';
+    return '<b>$donor</b> paaukojo <b>$value $currency</b>.';
   }
 
   @override
   String realtimeCashTipAnonymous(String value, String currency) {
-    return 'Anonymous tipped <b>$value $currency</b>.';
+    return 'Anonimas paaukojo <b>$value $currency</b>.';
   }
 
   @override
   String streamElementsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on StreamElements.';
+    return '<b>$name</b> paaukojo <b>$formattedAmount</b> per „StreamElements“.';
   }
 
   @override
   String streamlabsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on Streamlabs.';
+    return '<b>$name</b> paaukojo <b>$formattedAmount</b> per „Streamlabs“.';
   }
 
   @override
@@ -662,7 +672,7 @@ class AppLocalizationsLt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points. $userInput';
+    return '<b>$redeemerUsername</b> išpirko <b>$rewardName</b> už <b>$rewardCostString</b> tšk. $userInput';
   }
 
   @override
@@ -675,7 +685,7 @@ class AppLocalizationsLt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points.';
+    return '<b>$redeemerUsername</b> išpirko <b>$rewardName</b> už <b>$rewardCostString</b> tšk.';
   }
 
   @override
@@ -685,11 +695,11 @@ class AppLocalizationsLt extends AppLocalizations {
     );
     final String bitsString = bitsNumberFormat.format(bits);
 
-    return '<b>$name</b> cheered <b>$bitsString</b> bits. $cheerMessage';
+    return '<b>$name</b> palaikė <b>$bitsString</b> bitais. $cheerMessage';
   }
 
   @override
-  String get anonymous => 'Anonymous';
+  String get anonymous => 'Anonimas';
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
@@ -697,12 +707,12 @@ class AppLocalizationsLt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
-    return '<b>$fromDisplayName</b> is hosting with a party of <b>$viewersString</b>.';
+    return '<b>$fromDisplayName</b> rodo kanalą su <b>$viewersString</b> žiūrovų grupe.';
   }
 
   @override
   String hypeTrainEventProgress(String level, String progressPercent) {
-    return 'Hype Train level <b>$level</b> in progress! <b>$progressPercent%</b> completed!';
+    return 'Vyksta <b>$level</b> lygio „Hype Train“! Įvykdyta <b>$progressPercent%</b>!';
   }
 
   @override
@@ -711,7 +721,7 @@ class AppLocalizationsLt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> succeeded.';
+    return '<b>$levelString</b> lygio „Hype Train“ pavyko.';
   }
 
   @override
@@ -720,7 +730,7 @@ class AppLocalizationsLt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> failed.';
+    return '<b>$levelString</b> lygio „Hype Train“ nepavyko.';
   }
 
   @override
@@ -738,24 +748,26 @@ class AppLocalizationsLt extends AppLocalizations {
   }
 
   @override
-  String get textToSpeechEnabled => 'Text to speech enabled';
+  String get textToSpeechEnabled => 'Tekstas į kalbą įjungtas';
 
   @override
-  String get textToSpeechDisabled => 'Text to speech disabled';
+  String get textToSpeechDisabled => 'Tekstas į kalbą išjungtas';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Tik įspėjimai';
 
   @override
-  String get pinDuration => 'Pin Duration';
+  String get pinDuration => 'Prisegimo trukmė';
 
   @override
   String durationSeconds(int seconds) {
     String _temp0 = intl.Intl.pluralLogic(
       seconds,
       locale: localeName,
-      other: '$seconds seconds',
-      one: '1 second',
+      other: '$seconds sekundžių',
+      many: '$seconds sekundės',
+      few: '$seconds sekundės',
+      one: '$seconds sekundė',
     );
     return '$_temp0';
   }
@@ -765,245 +777,249 @@ class AppLocalizationsLt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: '$minutes minutes',
-      one: '1 minute',
+      other: '$minutes minučių',
+      many: '$minutes minutės',
+      few: '$minutes minutės',
+      one: '$minutes minutė',
     );
     return '$_temp0';
   }
 
   @override
-  String get enableEvent => 'Enable event';
+  String get enableEvent => 'Įjungti įvykį';
 
   @override
-  String get showEventInChatHistory => 'Show event in chat history';
+  String get showEventInChatHistory => 'Rodyti įvykį pokalbių istorijoje';
 
   @override
-  String get enableShoutouts => 'Enable shoutouts';
+  String get enableShoutouts => 'Įjungti paminėjimus';
 
   @override
   String get enableShoutoutsSubtitle =>
-      'Send a link to the raiding channel to chat';
+      'Siųsti reidą vykdančio kanalo nuorodą į pokalbį';
 
   @override
-  String get raidConfigurationTitle => 'Raid Configuration';
+  String get raidConfigurationTitle => 'Reido konfigūracija';
 
   @override
-  String get cheerConfigurationTitle => 'Cheer Configuration';
+  String get cheerConfigurationTitle => '„Cheer“ konfigūracija';
 
   @override
-  String get followConfigurationTitle => 'Follow Configuration';
+  String get followConfigurationTitle => 'Sekimo konfigūracija';
 
   @override
-  String get outgoingRaidConfigurationTitle => 'Outgoing Raid Configuration';
+  String get outgoingRaidConfigurationTitle => 'Siunčiamo reido konfigūracija';
 
   @override
-  String get hostConfigurationTitle => 'Host Configuration';
+  String get hostConfigurationTitle => 'Vedimo („Host“) konfigūracija';
 
   @override
-  String get channelPointConfigurationTitle => 'Channel Point Configuration';
+  String get channelPointConfigurationTitle => 'Kanalo taškų konfigūracija';
 
   @override
-  String get pollConfigurationTitle => 'Poll Configuration';
+  String get pollConfigurationTitle => 'Apklausos konfigūracija';
 
   @override
-  String get hypetrainConfigurationTitle => 'Hypetrain Configuration';
+  String get hypetrainConfigurationTitle => '„Hype Train“ konfigūracija';
 
   @override
-  String get subscriptionConfigurationTitle => 'Subscription Configuration';
+  String get subscriptionConfigurationTitle => 'Prenumeratos konfigūracija';
 
   @override
-  String get predictionConfigurationTitle => 'Prediction Configuration';
+  String get predictionConfigurationTitle => 'Spėjimo konfigūracija';
 
   @override
   String get unfulfilledRewardsPinDuration =>
-      'Additional Pin Duration for Unfulfilled Rewards';
+      'Papildoma neįvykdytų apdovanojimų prisegimo trukmė';
 
   @override
-  String get pollPinDuration => 'Pin duration after the result is finalized';
+  String get pollPinDuration => 'Prisegimo trukmė patvirtinus rezultatą';
 
   @override
-  String get hypetrainPinDuration => 'Pin duration after hypetrain is over';
+  String get hypetrainPinDuration => 'Prisegimo trukmė pasibaigus „Hype Train“';
 
   @override
   String get enableGiftedSubscriptions =>
-      'Enable individual gifted subscriptions';
+      'Įjungti pavienes dovanotas prenumeratas';
 
   @override
   String get enableGiftedSubscriptionsSubtitle =>
-      'Show every subscription that is gifted';
+      'Rodyti kiekvieną padovanotą prenumeratą';
 
   @override
-  String get settingsBackupTitle => 'Settings backup and restore';
+  String get settingsBackupTitle => 'Nustatymų atsarginė kopija ir atkūrimas';
 
   @override
-  String get cloudBackup => 'Cloud backup';
+  String get cloudBackup => 'Atsarginė kopija debesyje';
 
   @override
-  String get lastBackupNever => 'Last backup: never';
+  String get lastBackupNever => 'Paskutinė atsarginė kopija: niekada';
 
   @override
-  String get backUp => 'Back up';
+  String get backUp => 'Kurti atsarginę kopiją';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Atkurti';
 
   @override
-  String get localBackup => 'Local backup';
+  String get localBackup => 'Vietinė atsarginė kopija';
 
   @override
-  String get exportSettings => 'Export';
+  String get exportSettings => 'Eksportuoti';
 
   @override
-  String get importSettings => 'Import';
+  String get importSettings => 'Importuoti';
 
   @override
-  String get showViewerAndFollowerCount => 'Show viewer and follower count';
+  String get showViewerAndFollowerCount => 'Rodyti žiūrovų ir sekėjų skaičių';
 
   @override
-  String get screenOrientation => 'Screen orientation';
+  String get screenOrientation => 'Ekrano orientacija';
 
   @override
-  String get appTheme => 'App theme';
+  String get appTheme => 'Programos tema';
 
   @override
-  String get systemDefault => 'System';
+  String get systemDefault => 'Sistemos';
 
   @override
-  String get portrait => 'Portrait';
+  String get portrait => 'Stačias';
 
   @override
-  String get landscape => 'Landscape';
+  String get landscape => 'Gulsčias';
 
   @override
-  String get lightTheme => 'Light';
+  String get lightTheme => 'Šviesi';
 
   @override
-  String get darkTheme => 'Dark';
+  String get darkTheme => 'Tamsi';
 
   @override
-  String get openSourceTitle => 'RealtimeChat is open source';
+  String get openSourceTitle => '„RealtimeChat“ yra atvirojo kodo';
 
   @override
-  String get openSourceSubtitle => 'Find us on GitHub!';
+  String get openSourceSubtitle => 'Raskite mus „GitHub“!';
 
   @override
-  String get discordSubtitle => 'Join the Muxable Discord!';
+  String get discordSubtitle => 'Prisijunkite prie „Muxable“ „Discord“!';
 
   @override
   String get earlyTestersThanks =>
-      'Thanks to all the early testers who sent bug reports!';
+      'Ačiū visiems ankstyviesiems testuotojams, atsiuntusiems pranešimus apie klaidas!';
 
   @override
-  String get discoModeEnabled => '🕺 Disco mode enabled! :D';
+  String get discoModeEnabled => '🕺 Disko režimas įjungtas! :D';
 
   @override
-  String get discoModeDisabled => '🕺 Disco mode disabled D:';
+  String get discoModeDisabled => '🕺 Disko režimas išjungtas D:';
 
   @override
-  String get playSampleMessage => 'Play sample message';
+  String get playSampleMessage => 'Leisti pavyzdinį pranešimą';
 
   @override
-  String get textToSpeechRate => 'Text to Speech Rate';
+  String get textToSpeechRate => 'Teksto į kalbą greitis';
 
   @override
-  String get textToSpeechPitch => 'Text to Speech Pitch';
+  String get textToSpeechPitch => 'Teksto į kalbą aukštis';
 
   @override
-  String get muteBots => 'Mute text to speech for bots';
+  String get muteBots => 'Nutildyti tekstą į kalbą robotams';
 
   @override
-  String get muteEmotes => 'Mute all emotes in text to speech';
+  String get muteEmotes => 'Nutildyti visus jaustukus skaitant tekstą balsu';
 
   @override
-  String get muteViewerNames => 'Mute viewer names in text to speech';
+  String get muteViewerNames =>
+      'Nutildyti žiūrovų vardus skaitant tekstą balsu';
 
   @override
-  String get subscribersOnly => 'Subscribers only';
+  String get subscribersOnly => 'Tik prenumeratoriams';
 
   @override
-  String get fontSize => 'Font size';
+  String get fontSize => 'Šrifto dydis';
 
   @override
-  String get usernameContrastBoost => 'Username contrast boost';
+  String get usernameContrastBoost => 'Naudotojo vardo kontrasto padidinimas';
 
   @override
-  String get twitchBadgeSettings => 'Twitch badge settings';
+  String get twitchBadgeSettings => '„Twitch“ ženklelių nustatymai';
 
   @override
-  String get twitchBadgeSettingsSubtitle => 'Control which badges are visible';
+  String get twitchBadgeSettingsSubtitle =>
+      'Valdykite, kurie ženkleliai yra matomi';
 
   @override
-  String get showDeletedMessages => 'Show deleted messages';
+  String get showDeletedMessages => 'Rodyti ištrintas žinutes';
 
   @override
-  String get deletedMessagesGreyedOut => 'Deleted messages will be greyed out';
+  String get deletedMessagesGreyedOut => 'Ištrintos žinutės bus rodomos pilkai';
 
   @override
-  String get deletedMessagesRemoved => 'Deleted messages will be removed';
+  String get deletedMessagesRemoved => 'Ištrintos žinutės bus pašalintos';
 
   @override
-  String get showLoginNames => 'Show login names';
+  String get showLoginNames => 'Rodyti prisijungimo vardus';
 
   @override
   String get loginNamesShown =>
-      'Login names will be shown if they are different from the display name';
+      'Prisijungimo vardai bus rodomi, jei jie skiriasi nuo rodomo vardo';
 
   @override
-  String get loginNamesHidden => 'Login names will be hidden';
+  String get loginNamesHidden => 'Prisijungimo vardai bus paslėpti';
 
   @override
-  String get compactMessages => 'Compact messages';
+  String get compactMessages => 'Glaudinti žinutes';
 
   @override
-  String get dontCompactMessages => 'Don\'t compact messages';
+  String get dontCompactMessages => 'Neglaudinti žinučių';
 
   @override
-  String get dontCompactMessagesSubtitle => 'Messages are shown unchanged';
+  String get dontCompactMessagesSubtitle => 'Žinutės rodomos nepakeistos';
 
   @override
-  String get compactIndividualMessages => 'Compact individual messages';
+  String get compactIndividualMessages => 'Glaudinti atskiras žinutes';
 
   @override
   String get compactIndividualMessagesSubtitle =>
-      'Repetitive text in messages is shortened';
+      'Pasikartojantis tekstas žinutėse sutrumpinamas';
 
   @override
-  String get announcementPinDuration => 'Announcement pin duration';
+  String get announcementPinDuration => 'Skelbimo prisegimo trukmė';
 
   @override
-  String get idleMessageAlertDuration => 'Idle message alert duration';
+  String get idleMessageAlertDuration => 'Neaktyvaus pokalbio įspėjimo trukmė';
 
   @override
   String get idleMessageAlertDurationSubtitle =>
-      'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
+      'Jei šį laiką nebus jokių žinučių ir bus gauta nauja, pasigirs įspėjimo garsas.';
 
   @override
-  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+  String get realtimeCashSubtitle => 'Prijunkite ETH arba MATIC piniginę';
 
   @override
-  String get walletAddress => 'Wallet address';
+  String get walletAddress => 'Piniginės adresas';
 
   @override
-  String get streamlabsSubtitle => 'See your Streamlabs donations';
+  String get streamlabsSubtitle => 'Matykite savo „Streamlabs“ aukas';
 
   @override
-  String get streamElementsSubtitle => 'See your StreamElements donations';
+  String get streamElementsSubtitle => 'Matykite savo „StreamElements“ aukas';
 
   @override
   String get thirdPartyAuthError =>
-      'Hmm, that didn\'t work. Try again, or ask on Discord?';
+      'Hmm, nepavyko. Bandykite dar kartą arba paklauskite „Discord“?';
 
   @override
   String get companionAuthBrowserTooOld =>
-      'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.';
+      'Jūsų naršyklė per sena, kad palaikytų tiesioginį prisijungimą. Nuskaitykite šį QR kodą telefonu, kad prisijungtumėte kitame įrenginyje.';
 
   @override
   String get companionAuthScanQrCode =>
-      'Scan this QR code with your phone to sign in on another device.';
+      'Nuskaitykite šį QR kodą telefonu, kad prisijungtumėte kitame įrenginyje.';
 
   @override
   String kickSubscriptionEvent(String subscriberName) {
-    return '<b>$subscriberName</b> has subscribed!';
+    return '<b>$subscriberName</b> užsiprenumeravo!';
   }
 
   @override
@@ -1012,7 +1028,7 @@ class AppLocalizationsLt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
-    return '<b>$subscriberName</b> has resubscribed for $monthsString months!';
+    return '<b>$subscriberName</b> pratęsė prenumeratą ($monthsString mėn.)!';
   }
 
   @override
@@ -1021,7 +1037,7 @@ class AppLocalizationsLt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '<b>$gifterName</b> has gifted $countString subs!';
+    return '<b>$gifterName</b> padovanojo $countString prenumeratų!';
   }
 
   @override
@@ -1030,60 +1046,62 @@ class AppLocalizationsLt extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
-    return '<b>$senderName</b> sent $amountString Kicks!';
+    return '<b>$senderName</b> atsiuntė $amountString „Kicks“!';
   }
 
   @override
-  String get signInWithKick => 'Sign in with Kick';
+  String get signInWithKick => 'Prisijungti per „Kick“';
 
   @override
   String get textToSpeechTooManyMessages =>
-      'There are too many messages. Text to speech disabled';
+      'Per daug žinučių. Tekstas į kalbą išjungtas';
 
   @override
-  String get turnOffTextToSpeech => 'Turn off';
+  String get turnOffTextToSpeech => 'Išjungti';
 
   @override
-  String get addToChat => 'Add to chat';
+  String get addToChat => 'Pridėti į pokalbį';
 
   @override
-  String get inChat => 'In chat';
+  String get inChat => 'Pokalbyje';
 
   @override
-  String get removeFromChat => 'Remove from chat';
+  String get removeFromChat => 'Pašalinti iš pokalbio';
 
   @override
   String cantChatWithAccount(String provider) {
-    return 'Your $provider account can\'t chat here';
+    return 'Jūsų „$provider“ paskyra negali čia rašyti';
   }
 
   @override
-  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+  String get cantChatWithAccounts => 'Jūsų paskyros negali čia rašyti';
 
   @override
   String sendAMessageTo(String channel) {
-    return 'Send a message to $channel...';
+    return 'Siųsti žinutę į $channel...';
   }
 
   @override
   String replaceChannel(String channel) {
-    return 'Replace $channel';
+    return 'Pakeisti $channel';
   }
 
   @override
-  String get voicePacks => 'Voice packs';
+  String get voicePacks => 'Balso paketai';
 
   @override
   String get voicePacksDescription =>
-      'Voice packs read chat with natural-sounding voices that run on your device, offline once downloaded. The voices are machine-generated by AI, not recorded by a person.';
+      'Balso paketai skaito pokalbį natūraliai skambančiais balsais, kurie veikia jūsų įrenginyje, o atsisiuntus – ir be interneto ryšio. Balsai yra sugeneruoti dirbtinio intelekto, o ne įrašyti žmogaus.';
 
   @override
   String voicePackDetails(int voices, String size) {
     String _temp0 = intl.Intl.pluralLogic(
       voices,
       locale: localeName,
-      other: '$voices voices',
-      one: '1 voice',
+      other: '$voices balsų',
+      many: '$voices balso',
+      few: '$voices balsai',
+      one: '$voices balsas',
     );
     return '$_temp0 · $size';
   }
@@ -1093,99 +1111,102 @@ class AppLocalizationsLt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count languages',
-      one: '1 language',
+      other: '$count kalbų',
+      many: '$count kalbos',
+      few: '$count kalbos',
+      one: '$count kalba',
     );
     return '$_temp0: $languages';
   }
 
   @override
   String get voicePackOpenRailNotice =>
-      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+      'Šio modelio licencija (OpenRAIL-M) draudžia žalingą naudojimą, pavyzdžiui, apsimetinėjimą kitais žmonėmis ar dezinformacijos skleidimą, ir šie apribojimai taikomi ir jums.';
 
   @override
   String voicePackDeleteConfirm(String pack, String size) {
-    return 'Delete $pack? This frees $size.';
+    return 'Ištrinti „$pack“? Bus atlaisvinta $size.';
   }
 
   @override
-  String get voicePackDownload => 'Download';
+  String get voicePackDownload => 'Atsisiųsti';
 
   @override
-  String get voicePackUpdate => 'Update';
+  String get voicePackUpdate => 'Atnaujinti';
 
   @override
-  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+  String get voicePackWaitingForWifi => 'Laukiama „Wi-Fi“ ryšio';
 
   @override
-  String get voicePackUseMobileData => 'Use mobile data';
+  String get voicePackUseMobileData => 'Naudoti mobiliuosius duomenis';
 
   @override
   String voicePackDownloading(String downloaded, String total) {
-    return 'Downloading: $downloaded of $total';
+    return 'Atsisiunčiama: $downloaded iš $total';
   }
 
   @override
-  String get voicePackInstalling => 'Installing';
+  String get voicePackInstalling => 'Diegiama';
 
   @override
   String voicePackInstallFailed(String pack) {
-    return 'Couldn\'t install $pack. Check your connection and try again.';
+    return 'Nepavyko įdiegti „$pack“. Patikrinkite ryšį ir bandykite dar kartą.';
   }
 
   @override
-  String get voices => 'Voices';
+  String get voices => 'Balsai';
 
   @override
-  String get perViewerVoice => 'Per-viewer voice';
+  String get perViewerVoice => 'Atskiras balsas kiekvienam žiūrovui';
 
   @override
   String get perViewerVoiceSubtitle =>
-      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+      'Kiekvienas žiūrovas gauna savo balsą. Jūsų pasirinktas balsas skaito įspėjimus arba viską, kai ši parinktis išjungta.';
 
   @override
-  String get streamLanguage => 'Stream language';
+  String get streamLanguage => 'Transliacijos kalba';
 
   @override
-  String get ttsEngineNeural => 'Neural voice (on-device)';
+  String get ttsEngineNeural => 'Neuroninis balsas (įrenginyje)';
 
   @override
-  String get ttsEngineSystem => 'System voice';
+  String get ttsEngineSystem => 'Sistemos balsas';
 
   @override
   String languageUnsupported(String language) {
-    return '$language isn\'t supported by your voice packs; the system voice will be used';
+    return 'Jūsų balso paketai nepalaiko kalbos ($language); bus naudojamas sistemos balsas';
   }
 
   @override
   String get neuralFallbackLowMemory =>
-      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+      'Šiame įrenginyje nepakanka atminties neuroniniams balsams, todėl pokalbis skaitomas sistemos balsu.';
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'Nepavyko įkelti neuroninio balso, todėl pokalbis skaitomas sistemos balsu.';
 
   @override
-  String get accounts => 'Accounts';
+  String get accounts => 'Paskyros';
 
   @override
-  String get accountsSubtitle => 'Sign in to each platform you stream on';
+  String get accountsSubtitle =>
+      'Prisijunkite prie kiekvienos platformos, kurioje transliuojate';
 
   @override
   String addProviderAccount(String provider) {
-    return 'Add $provider account';
+    return 'Pridėti „$provider“ paskyrą';
   }
 
   @override
   String signInWithProvider(String provider) {
-    return 'Sign in with $provider';
+    return 'Prisijungti per „$provider“';
   }
 
   @override
   String signOutOfAccount(String channel, String provider) {
-    return 'Sign out of $channel on $provider?';
+    return 'Atsijungti nuo $channel platformoje „$provider“?';
   }
 
   @override
-  String get signOutOfAll => 'Sign out of all accounts';
+  String get signOutOfAll => 'Atsijungti nuo visų paskyrų';
 }

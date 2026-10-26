@@ -9,71 +9,71 @@ class AppLocalizationsEl extends AppLocalizations {
   AppLocalizationsEl([String locale = 'el']) : super(locale);
 
   @override
-  String get sendAMessage => 'Send a message...';
+  String get sendAMessage => 'Στείλτε ένα μήνυμα...';
 
   @override
-  String get writeSomething => 'Write something...';
+  String get writeSomething => 'Γράψτε κάτι...';
 
   @override
-  String get speakToTheCrowds => 'Speak to the crowds...';
+  String get speakToTheCrowds => 'Μιλήστε στο πλήθος...';
 
   @override
-  String get shareYourThoughts => 'Share your thoughts...';
+  String get shareYourThoughts => 'Μοιραστείτε τις σκέψεις σας...';
 
   @override
-  String get saySomethingYouLittleBitch => 'Say something, you little bitch...';
+  String get saySomethingYouLittleBitch => 'Πες κάτι, ρε σκυλίτσα...';
 
   @override
-  String get search => 'Search';
+  String get search => 'Αναζήτηση';
 
   @override
-  String get notSignedIn => 'Not signed in';
+  String get notSignedIn => 'Χωρίς σύνδεση';
 
   @override
-  String get searchChannels => 'Search';
+  String get searchChannels => 'Αναζήτηση';
 
   @override
-  String get raidAChannel => 'Raid';
+  String get raidAChannel => 'Επιδρομή';
 
   @override
-  String get noMessagesEmptyState => 'It\'s quiet in here.';
+  String get noMessagesEmptyState => 'Επικρατεί ησυχία εδώ.';
 
   @override
   String newMessageCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count new messages',
-      one: '1 new message',
-      zero: 'No new messages',
+      other: '$count νέα μηνύματα',
+      one: '1 νέο μήνυμα',
+      zero: 'Δεν υπάρχουν νέα μηνύματα',
     );
     return '$_temp0';
   }
 
   @override
-  String get signInWithTwitch => 'Sign in with Twitch';
+  String get signInWithTwitch => 'Σύνδεση με Twitch';
 
   @override
   String get signInError =>
-      'An error occurred when signing in. Please try again.';
+      'Παρουσιάστηκε σφάλμα κατά τη σύνδεση. Δοκιμάστε ξανά.';
 
   @override
-  String get continueAsGuest => 'Continue as Guest';
+  String get continueAsGuest => 'Συνέχεια ως επισκέπτης';
 
   @override
-  String get signInToSendMessages => 'Sign in to send messages';
+  String get signInToSendMessages => 'Συνδεθείτε για να στείλετε μηνύματα';
 
   @override
-  String get currentViewers => 'Current viewers';
+  String get currentViewers => 'Τρέχοντες θεατές';
 
   @override
-  String get textToSpeech => 'Text to speech';
+  String get textToSpeech => 'Μετατροπή κειμένου σε ομιλία';
 
   @override
-  String get streamPreview => 'Stream preview';
+  String get streamPreview => 'Προεπισκόπηση ροής';
 
   @override
-  String get activityFeed => 'Activity feed';
+  String get activityFeed => 'Ροή δραστηριότητας';
 
   @override
   String streamOnline(DateTime date, DateTime time) {
@@ -84,7 +84,7 @@ class AppLocalizationsEl extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream online at $dateString, $timeString';
+    return 'Η ροή είναι ζωντανά στις $dateString, $timeString';
   }
 
   @override
@@ -96,7 +96,7 @@ class AppLocalizationsEl extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream offline at $dateString, $timeString';
+    return 'Η ροή είναι εκτός σύνδεσης στις $dateString, $timeString';
   }
 
   @override
@@ -108,175 +108,179 @@ class AppLocalizationsEl extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Chat cleared at $dateString, $timeString';
+    return 'Η συνομιλία εκκαθαρίστηκε στις $dateString, $timeString';
   }
 
   @override
-  String get configureQuickLinks => 'Configure quick links';
+  String get configureQuickLinks => 'Διαμόρφωση γρήγορων συνδέσμων';
 
   @override
-  String get disableRainMode => 'Disable rain mode';
+  String get disableRainMode => 'Απενεργοποίηση λειτουργίας βροχής';
 
   @override
-  String get enableRainMode => 'Enable rain mode';
+  String get enableRainMode => 'Ενεργοποίηση λειτουργίας βροχής';
 
   @override
-  String get disableRainModeSubtitle => 'Interaction will be enabled';
+  String get disableRainModeSubtitle => 'Η αλληλεπίδραση θα ενεργοποιηθεί';
 
   @override
-  String get enableRainModeSubtitle => 'Interaction will be disabled';
+  String get enableRainModeSubtitle => 'Η αλληλεπίδραση θα απενεργοποιηθεί';
 
   @override
-  String get refreshAudioSources => 'Refresh audio sources';
+  String get refreshAudioSources => 'Ανανέωση πηγών ήχου';
 
   @override
   String refreshAudioSourcesCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count audio sources refreshed',
-      one: '1 audio source refreshed',
-      zero: 'No audio sources refreshed',
+      other: 'Ανανεώθηκαν $count πηγές ήχου',
+      one: 'Ανανεώθηκε 1 πηγή ήχου',
+      zero: 'Δεν ανανεώθηκαν πηγές ήχου',
     );
     return '$_temp0';
   }
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Ρυθμίσεις';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'Αποσύνδεση';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Ακύρωση';
 
   @override
-  String get signOutConfirmation => 'Are you sure you want to sign out?';
+  String get signOutConfirmation =>
+      'Είστε βέβαιοι ότι θέλετε να αποσυνδεθείτε;';
 
   @override
-  String get broadcaster => 'Broadcaster';
+  String get broadcaster => 'Δημιουργός μετάδοσης';
 
   @override
-  String get moderators => 'Moderators';
+  String get moderators => 'Συντονιστές';
 
   @override
-  String get viewers => 'Viewers';
+  String get viewers => 'Θεατές';
 
   @override
-  String get communityVips => 'Community VIPs';
+  String get communityVips => 'VIP κοινότητας';
 
   @override
-  String get searchViewers => 'Search Viewers';
+  String get searchViewers => 'Αναζήτηση θεατών';
 
   @override
-  String get reconnecting => 'Reconnecting...';
+  String get reconnecting => 'Επανασύνδεση...';
 
   @override
-  String get twitchBadges => 'Twitch badges';
+  String get twitchBadges => 'Σήματα Twitch';
 
   @override
-  String get selectAll => 'Select all';
+  String get selectAll => 'Επιλογή όλων';
 
   @override
-  String get quickLinks => 'Quick links';
+  String get quickLinks => 'Γρήγοροι σύνδεσμοι';
 
   @override
   String get swipeToDeleteQuickLinks =>
-      'Swipe left or right to delete quick link';
+      'Σύρετε αριστερά ή δεξιά για διαγραφή γρήγορου συνδέσμου';
 
   @override
-  String get quickLinksLabelHint => 'Label';
+  String get quickLinksLabelHint => 'Ετικέτα';
 
   @override
-  String get invalidUrlErrorText => 'This doesn\'t look like a valid URL';
+  String get invalidUrlErrorText => 'Αυτό δεν μοιάζει με έγκυρο URL';
 
   @override
-  String get duplicateUrlErrorText => 'This link already exists';
+  String get duplicateUrlErrorText => 'Αυτός ο σύνδεσμος υπάρχει ήδη';
 
   @override
-  String get or => 'or';
+  String get or => 'ή';
 
   @override
-  String get clearCookies => 'Clear cookies';
+  String get clearCookies => 'Εκκαθάριση cookies';
 
   @override
-  String get disabled => 'Disabled';
+  String get disabled => 'Απενεργοποιημένο';
 
   @override
-  String get twitchActivityFeed => 'Twitch activity feed';
+  String get twitchActivityFeed => 'Ροή δραστηριότητας Twitch';
 
   @override
-  String get signInToEnable => 'You must be signed in to enable this';
+  String get signInToEnable => 'Πρέπει να συνδεθείτε για να το ενεργοποιήσετε';
 
   @override
-  String get customUrl => 'Custom URL';
+  String get customUrl => 'Προσαρμοσμένο URL';
 
   @override
-  String get preview => 'Preview';
+  String get preview => 'Προεπισκόπηση';
 
   @override
-  String get audioSources => 'Audio sources';
+  String get audioSources => 'Πηγές ήχου';
 
   @override
   String get enableOffStreamSwitchTitle =>
-      'Enable off-stream (uses more battery)';
+      'Ενεργοποίηση εκτός ροής (καταναλώνει περισσότερη μπαταρία)';
 
   @override
   String get enableOffStreamSwitchEnabledSubtitle =>
-      'Audio will also play when you\'re offline';
+      'Ο ήχος θα αναπαράγεται επίσης όταν είστε εκτός σύνδεσης';
 
   @override
   String get enableOffStreamSwitchDisabledSubtitle =>
-      'Audio will only play when you\'re live';
+      'Ο ήχος θα αναπαράγεται μόνο όταν είστε ζωντανά';
 
   @override
-  String get iosOggWarningTitle => 'Hey! Listen!';
+  String get iosOggWarningTitle => 'Ε, ακούστε!';
 
   @override
   String get iosOggWarningSubtitle =>
-      'iOS doesn\'t support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won\'t play.';
+      'Το iOS δεν υποστηρίζει αρχεία πολυμέσων *.ogg, τα οποία είναι τα προεπιλεγμένα αρχεία στο Streamlabs. Βεβαιωθείτε ότι οι πηγές ήχου σας χρησιμοποιούν άλλη μορφή, διαφορετικά δεν θα αναπαράγονται.';
 
   @override
   String get url => 'URL';
 
   @override
-  String get activityFeedSubtitle => 'Customize your activity feed';
+  String get activityFeedSubtitle => 'Προσαρμόστε τη ροή δραστηριότητάς σας';
 
   @override
-  String get audioSourcesSubtitle => 'Add web sources for alert sounds';
+  String get audioSourcesSubtitle =>
+      'Προσθέστε πηγές ιστού για ήχους ειδοποιήσεων';
 
   @override
-  String get quickLinksSubtitle => 'Add shortcuts to commonly used tools';
+  String get quickLinksSubtitle =>
+      'Προσθέστε συντομεύσεις σε εργαλεία που χρησιμοποιούνται συχνά';
 
   @override
-  String get chatHistory => 'Chat history';
+  String get chatHistory => 'Ιστορικό συνομιλίας';
 
   @override
-  String get chatHistorySubtitle => 'Change the chat appearance';
+  String get chatHistorySubtitle => 'Αλλαγή της εμφάνισης της συνομιλίας';
 
   @override
-  String get textToSpeechSubtitle => 'Change text to speech settings';
+  String get textToSpeechSubtitle =>
+      'Αλλαγή ρυθμίσεων μετατροπής κειμένου σε ομιλία';
 
   @override
-  String get events => 'Events';
+  String get events => 'Συμβάντα';
 
   @override
-  String get eventsSubtitle => 'Configure Twitch events';
+  String get eventsSubtitle => 'Διαμόρφωση συμβάντων Twitch';
 
   @override
-  String get thirdPartyServices => 'Third-party services';
+  String get thirdPartyServices => 'Υπηρεσίες τρίτων';
 
   @override
-  String get thirdPartyServicesSubtitle => 'Connect to a third-party service';
+  String get thirdPartyServicesSubtitle => 'Σύνδεση με υπηρεσία τρίτου μέρους';
 
   @override
   String followingEvent(String displayName) {
-    return '<b>$displayName</b> is following you';
+    return 'Ο/Η <b>$displayName</b> σας ακολουθεί';
   }
 
   @override
   String followingEvent2(String displayName, String displayNameTwo) {
-    return '<b>$displayName</b> and <b>$displayNameTwo</b> are following you';
+    return 'Οι <b>$displayName</b> και <b>$displayNameTwo</b> σας ακολουθούν';
   }
 
   @override
@@ -289,54 +293,54 @@ class AppLocalizationsEl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
-    return '<b>$displayName</b>, <b>$displayNameTwo</b>, and $numOthersString others are following you';
+    return 'Οι <b>$displayName</b>, <b>$displayNameTwo</b> και $numOthersString ακόμη σας ακολουθούν';
   }
 
   @override
   String unmuteUser(String displayName) {
-    return 'Unmute $displayName';
+    return 'Κατάργηση σίγασης $displayName';
   }
 
   @override
   String muteUser(String displayName) {
-    return 'Mute $displayName';
+    return 'Σίγαση $displayName';
   }
 
   @override
   String timeoutUser(String displayName) {
-    return 'Timeout $displayName';
+    return 'Προσωρινός αποκλεισμός $displayName';
   }
 
   @override
   String banUser(String displayName) {
-    return 'Ban $displayName';
+    return 'Αποκλεισμός $displayName';
   }
 
   @override
   String unbanUser(String displayName) {
-    return 'Unban $displayName';
+    return 'Άρση αποκλεισμού $displayName';
   }
 
   @override
   String viewProfile(String displayName) {
-    return 'View $displayName\'s profile';
+    return 'Προβολή προφίλ του/της $displayName';
   }
 
   @override
-  String get copyMessage => 'Copy Message';
+  String get copyMessage => 'Αντιγραφή μηνύματος';
 
   @override
-  String get deleteMessage => 'Delete Message';
+  String get deleteMessage => 'Διαγραφή μηνύματος';
 
   @override
   String get longScrollNotification =>
-      'You\'re scrolling kind of far, don\'t you think?';
+      'Κάνετε κύλιση αρκετά πίσω, δεν νομίζετε;';
 
   @override
-  String get stfu => 'stfu';
+  String get stfu => 'σκάσε';
 
   @override
-  String get globalEmotes => 'Global Emotes';
+  String get globalEmotes => 'Καθολικά Emotes';
 
   @override
   String followerCount(int count) {
@@ -348,9 +352,9 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString followers',
-      one: '1 follower',
-      zero: '0 followers',
+      other: '$countString ακόλουθοι',
+      one: '1 ακόλουθος',
+      zero: '0 ακόλουθοι',
     );
     return '$_temp0';
   }
@@ -365,170 +369,178 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString viewers',
-      one: '1 viewer',
-      zero: '0 viewers',
+      other: '$countString θεατές',
+      one: '1 θεατής',
+      zero: '0 θεατές',
     );
     return '$_temp0';
   }
 
   @override
   String get streamPreviewMessage =>
-      'Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.';
+      'Γεια σας! Χαιρόμαστε που σας αρέσει η προεπισκόπηση ροής, αλλά έχετε υπόψη ότι καταναλώνει πολλή μπαταρία. Η ανάγνωση της συνομιλίας χωρίς αυτήν θα παρατείνει τη διάρκεια της μπαταρίας σας.';
 
   @override
-  String get okay => 'Okay';
+  String get okay => 'Εντάξει';
 
   @override
-  String get streamPreviewLoading => 'Loading (or stream is offline)...';
+  String get streamPreviewLoading =>
+      'Φόρτωση (ή η ροή είναι εκτός σύνδεσης)...';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'Αντιγράφηκε στο πρόχειρο';
 
   @override
   String get audioSourcesRequirePermissions =>
-      'Audio sources require permissions';
+      'Οι πηγές ήχου απαιτούν δικαιώματα';
 
   @override
   String get audioSourcesRequirePermissionsMessage =>
-      'Approve RealtimeChat to draw over other apps to use audio sources.';
+      'Εγκρίνετε το RealtimeChat να εμφανίζεται πάνω από άλλες εφαρμογές για να χρησιμοποιήσετε πηγές ήχου.';
 
   @override
-  String get audioSourcesRemoveButton => 'Remove audio sources';
+  String get audioSourcesRemoveButton => 'Αφαίρεση πηγών ήχου';
 
   @override
-  String get audioSourcesOpenSettingsButton => 'Open settings';
+  String get audioSourcesOpenSettingsButton => 'Άνοιγμα ρυθμίσεων';
 
   @override
-  String get flashOn => 'Flash on';
+  String get flashOn => 'Φλας ενεργό';
 
   @override
-  String get flashOff => 'Flash off';
+  String get flashOff => 'Φλας ανενεργό';
 
   @override
-  String get durationOneSecond => '1 second';
+  String get durationOneSecond => '1 δευτερόλεπτο';
 
   @override
-  String get durationOneMinute => '1 minute';
+  String get durationOneMinute => '1 λεπτό';
 
   @override
-  String get durationTenMinutes => '10 minutes';
+  String get durationTenMinutes => '10 λεπτά';
 
   @override
-  String get durationOneHour => '1 hour';
+  String get durationOneHour => '1 ώρα';
 
   @override
-  String get durationSixHours => '6 hours';
+  String get durationSixHours => '6 ώρες';
 
   @override
-  String get durationOneDay => '1 day';
+  String get durationOneDay => '1 ημέρα';
 
   @override
-  String get durationTwoDays => '2 days';
+  String get durationTwoDays => '2 ημέρες';
 
   @override
-  String get durationOneWeek => '1 week';
+  String get durationOneWeek => '1 εβδομάδα';
 
   @override
-  String get durationTwoWeeks => '2 weeks';
+  String get durationTwoWeeks => '2 εβδομάδες';
 
   @override
-  String get durationOneSecondTimeoutPrompt => 'Timeout for 1 second';
+  String get durationOneSecondTimeoutPrompt =>
+      'Προσωρινός αποκλεισμός για 1 δευτερόλεπτο';
 
   @override
-  String get durationOneMinuteTimeoutPrompt => 'Timeout for 1 minute';
+  String get durationOneMinuteTimeoutPrompt =>
+      'Προσωρινός αποκλεισμός για 1 λεπτό';
 
   @override
-  String get durationTenMinutesTimeoutPrompt => 'Timeout for 10 minutes';
+  String get durationTenMinutesTimeoutPrompt =>
+      'Προσωρινός αποκλεισμός για 10 λεπτά';
 
   @override
-  String get durationOneHourTimeoutPrompt => 'Timeout for 1 hour';
+  String get durationOneHourTimeoutPrompt => 'Προσωρινός αποκλεισμός για 1 ώρα';
 
   @override
-  String get durationSixHoursTimeoutPrompt => 'Timeout for 6 hours';
+  String get durationSixHoursTimeoutPrompt =>
+      'Προσωρινός αποκλεισμός για 6 ώρες';
 
   @override
-  String get durationOneDayTimeoutPrompt => 'Timeout for 1 day';
+  String get durationOneDayTimeoutPrompt =>
+      'Προσωρινός αποκλεισμός για 1 ημέρα';
 
   @override
-  String get durationTwoDaysTimeoutPrompt => 'Timeout for 2 days';
+  String get durationTwoDaysTimeoutPrompt =>
+      'Προσωρινός αποκλεισμός για 2 ημέρες';
 
   @override
-  String get durationOneWeekTimeoutPrompt => 'Timeout for 1 week';
+  String get durationOneWeekTimeoutPrompt =>
+      'Προσωρινός αποκλεισμός για 1 εβδομάδα';
 
   @override
-  String get durationTwoWeeksTimeoutPrompt => 'Timeout for 2 weeks';
+  String get durationTwoWeeksTimeoutPrompt =>
+      'Προσωρινός αποκλεισμός για 2 εβδομάδες';
 
   @override
   String get errorFetchingViewerList =>
-      'We couldn\'t fetch the viewer list for this channel';
+      'Δεν ήταν δυνατή η ανάκτηση της λίστας θεατών για αυτό το κανάλι';
 
   @override
-  String get eventsTitle => 'Events';
+  String get eventsTitle => 'Συμβάντα';
 
   @override
-  String get followEventConfigTitle => 'Follow Event';
+  String get followEventConfigTitle => 'Συμβάν παρακολούθησης';
 
   @override
-  String get customizeYourFollowEvent => 'Customize your follow event';
+  String get customizeYourFollowEvent => 'Προσαρμόστε το συμβάν παρακολούθησης';
 
   @override
-  String get subscribeEventConfigTitle => 'Subscribe Event';
+  String get subscribeEventConfigTitle => 'Συμβάν εγγραφής';
 
   @override
-  String get customizeYourSubscriptionEvent =>
-      'Customize your subscription event';
+  String get customizeYourSubscriptionEvent => 'Προσαρμόστε το συμβάν εγγραφής';
 
   @override
-  String get cheerEventConfigTitle => 'Cheer Event';
+  String get cheerEventConfigTitle => 'Συμβάν Cheer';
 
   @override
-  String get customizeYourCheerEvent => 'Customize your cheer event';
+  String get customizeYourCheerEvent => 'Προσαρμόστε το συμβάν Cheer';
 
   @override
-  String get raidEventConfigTitle => 'Raid Event';
+  String get raidEventConfigTitle => 'Συμβάν επιδρομής';
 
   @override
-  String get customizeYourRaidEvent => 'Customize your raid event';
+  String get customizeYourRaidEvent => 'Προσαρμόστε το συμβάν επιδρομής';
 
   @override
-  String get hostEventConfigTitle => 'Host Event';
+  String get hostEventConfigTitle => 'Συμβάν φιλοξενίας';
 
   @override
-  String get customizeYourHostEvent => 'Customize your host event';
+  String get customizeYourHostEvent => 'Προσαρμόστε το συμβάν φιλοξενίας';
 
   @override
-  String get hypetrainEventConfigTitle => 'Hype Train Event';
+  String get hypetrainEventConfigTitle => 'Συμβάν Hype Train';
 
   @override
-  String get customizeYourHypetrainEvent => 'Customize your hype train event';
+  String get customizeYourHypetrainEvent => 'Προσαρμόστε το συμβάν Hype Train';
 
   @override
-  String get pollEventConfigTitle => 'Poll Event';
+  String get pollEventConfigTitle => 'Συμβάν ψηφοφορίας';
 
   @override
-  String get customizeYourPollEvent => 'Customize your poll event';
+  String get customizeYourPollEvent => 'Προσαρμόστε το συμβάν ψηφοφορίας';
 
   @override
-  String get predictionEventConfigTitle => 'Prediction Event';
+  String get predictionEventConfigTitle => 'Συμβάν πρόβλεψης';
 
   @override
-  String get customizeYourPredictionEvent => 'Customize your prediction event';
+  String get customizeYourPredictionEvent => 'Προσαρμόστε το συμβάν πρόβλεψης';
 
   @override
   String get channelPointRedemptionEventConfigTitle =>
-      'Channel Point Redemption Event';
+      'Συμβάν εξαργύρωσης πόντων καναλιού';
 
   @override
   String get customizeYourChannelPointRedemptionEvent =>
-      'Customize your channel point redemption event';
+      'Προσαρμόστε το συμβάν εξαργύρωσης πόντων καναλιού';
 
   @override
-  String get outgoingRaidEventConfigTitle => 'Outgoing Raid Event';
+  String get outgoingRaidEventConfigTitle => 'Συμβάν εξερχόμενης επιδρομής';
 
   @override
   String get customizeYourOutgoingRaidEvent =>
-      'Customize your outgoing raid event';
+      'Προσαρμόστε το συμβάν εξερχόμενης επιδρομής';
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
@@ -538,15 +550,15 @@ class AppLocalizationsEl extends AppLocalizations {
       viewerCount,
     );
 
-    return '<b>$displayName</b> is raiding with <b>$viewerCountString</b> viewers!';
+    return 'Ο/Η <b>$displayName</b> κάνει επιδρομή με <b>$viewerCountString</b> θεατές!';
   }
 
   @override
-  String get shoutout => 'Shoutout';
+  String get shoutout => 'Μνεία';
 
   @override
   String raidingEventRaiding(String displayName) {
-    return 'Raiding <b>$displayName</b>...';
+    return 'Επιδρομή στο κανάλι <b>$displayName</b>...';
   }
 
   @override
@@ -555,25 +567,25 @@ class AppLocalizationsEl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
-    return '${secondsString}s';
+    return '$secondsString δευτ.';
   }
 
   @override
   String raidingEventRaided(String displayName) {
-    return '<b>$displayName</b> has raided!';
+    return 'Ο/Η <b>$displayName</b> ολοκλήρωσε την επιδρομή!';
   }
 
   @override
-  String get raidingEventJoin => 'Join';
+  String get raidingEventJoin => 'Συμμετοχή';
 
   @override
   String raidingEventCanceled(String displayName) {
-    return '<b>$displayName</b>\'s raid was canceled.';
+    return 'Η επιδρομή του/της <b>$displayName</b> ακυρώθηκε.';
   }
 
   @override
   String subscriptionEvent(String subscriberUserName, String tier) {
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier!';
+    return 'Ο/Η <b>$subscriberUserName</b> έκανε εγγραφή στη βαθμίδα $tier!';
   }
 
   @override
@@ -592,7 +604,7 @@ class AppLocalizationsEl extends AppLocalizations {
       cumulativeTotal,
     );
 
-    return '<b>$gifterUserName</b> has gifted $totalString Tier $tier subs, totaling $cumulativeTotalString!';
+    return 'Ο/Η <b>$gifterUserName</b> έκανε δώρο $totalString εγγραφές βαθμίδας $tier, συνολικά $cumulativeTotalString!';
   }
 
   @override
@@ -607,7 +619,7 @@ class AppLocalizationsEl extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed for $cumulativeMonthsString months at Tier $tier!';
+    return 'Ο/Η <b>$subscriberUserName</b> έχει εγγραφεί για $cumulativeMonthsString μήνες στη βαθμίδα $tier!';
   }
 
   @override
@@ -628,27 +640,27 @@ class AppLocalizationsEl extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return 'Ο/Η <b>$subscriberUserName</b> έκανε εγγραφή στη βαθμίδα $tier για $durationMonthsString μήνες προκαταβολικά, $cumulativeMonthsString μήνες συνολικά!';
   }
 
   @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
-    return '<b>$donor</b> tipped <b>$value $currency</b>.';
+    return 'Ο/Η <b>$donor</b> έδωσε φιλοδώρημα <b>$value $currency</b>.';
   }
 
   @override
   String realtimeCashTipAnonymous(String value, String currency) {
-    return 'Anonymous tipped <b>$value $currency</b>.';
+    return 'Ανώνυμος χρήστης έδωσε φιλοδώρημα <b>$value $currency</b>.';
   }
 
   @override
   String streamElementsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on StreamElements.';
+    return 'Ο/Η <b>$name</b> έδωσε φιλοδώρημα <b>$formattedAmount</b> στο StreamElements.';
   }
 
   @override
   String streamlabsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on Streamlabs.';
+    return 'Ο/Η <b>$name</b> έδωσε φιλοδώρημα <b>$formattedAmount</b> στο Streamlabs.';
   }
 
   @override
@@ -662,7 +674,7 @@ class AppLocalizationsEl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points. $userInput';
+    return 'Ο/Η <b>$redeemerUsername</b> εξαργύρωσε το <b>$rewardName</b> για <b>$rewardCostString</b> πόντους. $userInput';
   }
 
   @override
@@ -675,7 +687,7 @@ class AppLocalizationsEl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points.';
+    return 'Ο/Η <b>$redeemerUsername</b> εξαργύρωσε το <b>$rewardName</b> για <b>$rewardCostString</b> πόντους.';
   }
 
   @override
@@ -685,11 +697,11 @@ class AppLocalizationsEl extends AppLocalizations {
     );
     final String bitsString = bitsNumberFormat.format(bits);
 
-    return '<b>$name</b> cheered <b>$bitsString</b> bits. $cheerMessage';
+    return 'Ο/Η <b>$name</b> έστειλε Cheer με <b>$bitsString</b> bits. $cheerMessage';
   }
 
   @override
-  String get anonymous => 'Anonymous';
+  String get anonymous => 'Ανώνυμος';
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
@@ -697,12 +709,12 @@ class AppLocalizationsEl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
-    return '<b>$fromDisplayName</b> is hosting with a party of <b>$viewersString</b>.';
+    return 'Ο/Η <b>$fromDisplayName</b> φιλοξενεί με μια ομάδα <b>$viewersString</b> θεατών.';
   }
 
   @override
   String hypeTrainEventProgress(String level, String progressPercent) {
-    return 'Hype Train level <b>$level</b> in progress! <b>$progressPercent%</b> completed!';
+    return 'Το Hype Train επιπέδου <b>$level</b> βρίσκεται σε εξέλιξη! Ολοκληρώθηκε κατά <b>$progressPercent%</b>!';
   }
 
   @override
@@ -711,7 +723,7 @@ class AppLocalizationsEl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> succeeded.';
+    return 'Το Hype Train επιπέδου <b>$levelString</b> ολοκληρώθηκε με επιτυχία.';
   }
 
   @override
@@ -720,7 +732,7 @@ class AppLocalizationsEl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> failed.';
+    return 'Το Hype Train επιπέδου <b>$levelString</b> απέτυχε.';
   }
 
   @override
@@ -738,24 +750,26 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
-  String get textToSpeechEnabled => 'Text to speech enabled';
+  String get textToSpeechEnabled =>
+      'Η μετατροπή κειμένου σε ομιλία ενεργοποιήθηκε';
 
   @override
-  String get textToSpeechDisabled => 'Text to speech disabled';
+  String get textToSpeechDisabled =>
+      'Η μετατροπή κειμένου σε ομιλία απενεργοποιήθηκε';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Μόνο ειδοποιήσεις';
 
   @override
-  String get pinDuration => 'Pin Duration';
+  String get pinDuration => 'Διάρκεια καρφιτσώματος';
 
   @override
   String durationSeconds(int seconds) {
     String _temp0 = intl.Intl.pluralLogic(
       seconds,
       locale: localeName,
-      other: '$seconds seconds',
-      one: '1 second',
+      other: '$seconds δευτερόλεπτα',
+      one: '1 δευτερόλεπτο',
     );
     return '$_temp0';
   }
@@ -765,245 +779,257 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: '$minutes minutes',
-      one: '1 minute',
+      other: '$minutes λεπτά',
+      one: '1 λεπτό',
     );
     return '$_temp0';
   }
 
   @override
-  String get enableEvent => 'Enable event';
+  String get enableEvent => 'Ενεργοποίηση συμβάντος';
 
   @override
-  String get showEventInChatHistory => 'Show event in chat history';
+  String get showEventInChatHistory =>
+      'Εμφάνιση συμβάντος στο ιστορικό συνομιλίας';
 
   @override
-  String get enableShoutouts => 'Enable shoutouts';
+  String get enableShoutouts => 'Ενεργοποίηση μνειών';
 
   @override
   String get enableShoutoutsSubtitle =>
-      'Send a link to the raiding channel to chat';
+      'Αποστολή συνδέσμου του καναλιού που κάνει επιδρομή στη συνομιλία';
 
   @override
-  String get raidConfigurationTitle => 'Raid Configuration';
+  String get raidConfigurationTitle => 'Διαμόρφωση επιδρομής';
 
   @override
-  String get cheerConfigurationTitle => 'Cheer Configuration';
+  String get cheerConfigurationTitle => 'Διαμόρφωση Cheer';
 
   @override
-  String get followConfigurationTitle => 'Follow Configuration';
+  String get followConfigurationTitle => 'Διαμόρφωση παρακολούθησης';
 
   @override
-  String get outgoingRaidConfigurationTitle => 'Outgoing Raid Configuration';
+  String get outgoingRaidConfigurationTitle =>
+      'Διαμόρφωση εξερχόμενης επιδρομής';
 
   @override
-  String get hostConfigurationTitle => 'Host Configuration';
+  String get hostConfigurationTitle => 'Διαμόρφωση φιλοξενίας';
 
   @override
-  String get channelPointConfigurationTitle => 'Channel Point Configuration';
+  String get channelPointConfigurationTitle => 'Διαμόρφωση πόντων καναλιού';
 
   @override
-  String get pollConfigurationTitle => 'Poll Configuration';
+  String get pollConfigurationTitle => 'Διαμόρφωση ψηφοφορίας';
 
   @override
-  String get hypetrainConfigurationTitle => 'Hypetrain Configuration';
+  String get hypetrainConfigurationTitle => 'Διαμόρφωση Hype Train';
 
   @override
-  String get subscriptionConfigurationTitle => 'Subscription Configuration';
+  String get subscriptionConfigurationTitle => 'Διαμόρφωση εγγραφής';
 
   @override
-  String get predictionConfigurationTitle => 'Prediction Configuration';
+  String get predictionConfigurationTitle => 'Διαμόρφωση πρόβλεψης';
 
   @override
   String get unfulfilledRewardsPinDuration =>
-      'Additional Pin Duration for Unfulfilled Rewards';
+      'Πρόσθετη διάρκεια καρφιτσώματος για ανεκπλήρωτες ανταμοιβές';
 
   @override
-  String get pollPinDuration => 'Pin duration after the result is finalized';
+  String get pollPinDuration =>
+      'Διάρκεια καρφιτσώματος μετά την οριστικοποίηση του αποτελέσματος';
 
   @override
-  String get hypetrainPinDuration => 'Pin duration after hypetrain is over';
+  String get hypetrainPinDuration =>
+      'Διάρκεια καρφιτσώματος μετά τη λήξη του Hype Train';
 
   @override
   String get enableGiftedSubscriptions =>
-      'Enable individual gifted subscriptions';
+      'Ενεργοποίηση μεμονωμένων εγγραφών δώρου';
 
   @override
   String get enableGiftedSubscriptionsSubtitle =>
-      'Show every subscription that is gifted';
+      'Εμφάνιση κάθε εγγραφής που προσφέρεται ως δώρο';
 
   @override
-  String get settingsBackupTitle => 'Settings backup and restore';
+  String get settingsBackupTitle =>
+      'Δημιουργία αντιγράφων ασφαλείας και επαναφορά ρυθμίσεων';
 
   @override
-  String get cloudBackup => 'Cloud backup';
+  String get cloudBackup => 'Αντίγραφο ασφαλείας στο cloud';
 
   @override
-  String get lastBackupNever => 'Last backup: never';
+  String get lastBackupNever => 'Τελευταίο αντίγραφο ασφαλείας: ποτέ';
 
   @override
-  String get backUp => 'Back up';
+  String get backUp => 'Δημιουργία αντιγράφου';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Επαναφορά';
 
   @override
-  String get localBackup => 'Local backup';
+  String get localBackup => 'Τοπικό αντίγραφο ασφαλείας';
 
   @override
-  String get exportSettings => 'Export';
+  String get exportSettings => 'Εξαγωγή';
 
   @override
-  String get importSettings => 'Import';
+  String get importSettings => 'Εισαγωγή';
 
   @override
-  String get showViewerAndFollowerCount => 'Show viewer and follower count';
+  String get showViewerAndFollowerCount =>
+      'Εμφάνιση αριθμού θεατών και ακολούθων';
 
   @override
-  String get screenOrientation => 'Screen orientation';
+  String get screenOrientation => 'Προσανατολισμός οθόνης';
 
   @override
-  String get appTheme => 'App theme';
+  String get appTheme => 'Θέμα εφαρμογής';
 
   @override
-  String get systemDefault => 'System';
+  String get systemDefault => 'Σύστημα';
 
   @override
-  String get portrait => 'Portrait';
+  String get portrait => 'Κατακόρυφα';
 
   @override
-  String get landscape => 'Landscape';
+  String get landscape => 'Οριζόντια';
 
   @override
-  String get lightTheme => 'Light';
+  String get lightTheme => 'Φωτεινό';
 
   @override
-  String get darkTheme => 'Dark';
+  String get darkTheme => 'Σκοτεινό';
 
   @override
-  String get openSourceTitle => 'RealtimeChat is open source';
+  String get openSourceTitle => 'Το RealtimeChat είναι ανοιχτού κώδικα';
 
   @override
-  String get openSourceSubtitle => 'Find us on GitHub!';
+  String get openSourceSubtitle => 'Βρείτε μας στο GitHub!';
 
   @override
-  String get discordSubtitle => 'Join the Muxable Discord!';
+  String get discordSubtitle => 'Γίνετε μέλος στο Discord της Muxable!';
 
   @override
   String get earlyTestersThanks =>
-      'Thanks to all the early testers who sent bug reports!';
+      'Ευχαριστούμε όλους τους πρώτους δοκιμαστές που έστειλαν αναφορές σφαλμάτων!';
 
   @override
-  String get discoModeEnabled => '🕺 Disco mode enabled! :D';
+  String get discoModeEnabled => '🕺 Η λειτουργία ντίσκο ενεργοποιήθηκε! :D';
 
   @override
-  String get discoModeDisabled => '🕺 Disco mode disabled D:';
+  String get discoModeDisabled => '🕺 Η λειτουργία ντίσκο απενεργοποιήθηκε D:';
 
   @override
-  String get playSampleMessage => 'Play sample message';
+  String get playSampleMessage => 'Αναπαραγωγή δείγματος μηνύματος';
 
   @override
-  String get textToSpeechRate => 'Text to Speech Rate';
+  String get textToSpeechRate => 'Ταχύτητα μετατροπής κειμένου σε ομιλία';
 
   @override
-  String get textToSpeechPitch => 'Text to Speech Pitch';
+  String get textToSpeechPitch => 'Τόνος μετατροπής κειμένου σε ομιλία';
 
   @override
-  String get muteBots => 'Mute text to speech for bots';
+  String get muteBots => 'Σίγαση μετατροπής κειμένου σε ομιλία για bots';
 
   @override
-  String get muteEmotes => 'Mute all emotes in text to speech';
+  String get muteEmotes =>
+      'Σίγαση όλων των emotes στη μετατροπή κειμένου σε ομιλία';
 
   @override
-  String get muteViewerNames => 'Mute viewer names in text to speech';
+  String get muteViewerNames =>
+      'Σίγαση ονομάτων θεατών στη μετατροπή κειμένου σε ομιλία';
 
   @override
-  String get subscribersOnly => 'Subscribers only';
+  String get subscribersOnly => 'Μόνο συνδρομητές';
 
   @override
-  String get fontSize => 'Font size';
+  String get fontSize => 'Μέγεθος γραμματοσειράς';
 
   @override
-  String get usernameContrastBoost => 'Username contrast boost';
+  String get usernameContrastBoost => 'Ενίσχυση αντίθεσης ονόματος χρήστη';
 
   @override
-  String get twitchBadgeSettings => 'Twitch badge settings';
+  String get twitchBadgeSettings => 'Ρυθμίσεις σημάτων Twitch';
 
   @override
-  String get twitchBadgeSettingsSubtitle => 'Control which badges are visible';
+  String get twitchBadgeSettingsSubtitle => 'Ελέγξτε ποια σήματα είναι ορατά';
 
   @override
-  String get showDeletedMessages => 'Show deleted messages';
+  String get showDeletedMessages => 'Εμφάνιση διαγραμμένων μηνυμάτων';
 
   @override
-  String get deletedMessagesGreyedOut => 'Deleted messages will be greyed out';
+  String get deletedMessagesGreyedOut =>
+      'Τα διαγραμμένα μηνύματα θα εμφανίζονται με γκρι χρώμα';
 
   @override
-  String get deletedMessagesRemoved => 'Deleted messages will be removed';
+  String get deletedMessagesRemoved => 'Τα διαγραμμένα μηνύματα θα αφαιρούνται';
 
   @override
-  String get showLoginNames => 'Show login names';
+  String get showLoginNames => 'Εμφάνιση ονομάτων σύνδεσης';
 
   @override
   String get loginNamesShown =>
-      'Login names will be shown if they are different from the display name';
+      'Τα ονόματα σύνδεσης θα εμφανίζονται εάν διαφέρουν από το εμφανιζόμενο όνομα';
 
   @override
-  String get loginNamesHidden => 'Login names will be hidden';
+  String get loginNamesHidden => 'Τα ονόματα σύνδεσης θα αποκρύπτονται';
 
   @override
-  String get compactMessages => 'Compact messages';
+  String get compactMessages => 'Σύμπτυξη μηνυμάτων';
 
   @override
-  String get dontCompactMessages => 'Don\'t compact messages';
+  String get dontCompactMessages => 'Χωρίς σύμπτυξη μηνυμάτων';
 
   @override
-  String get dontCompactMessagesSubtitle => 'Messages are shown unchanged';
+  String get dontCompactMessagesSubtitle =>
+      'Τα μηνύματα εμφανίζονται χωρίς αλλαγές';
 
   @override
-  String get compactIndividualMessages => 'Compact individual messages';
+  String get compactIndividualMessages => 'Σύμπτυξη μεμονωμένων μηνυμάτων';
 
   @override
   String get compactIndividualMessagesSubtitle =>
-      'Repetitive text in messages is shortened';
+      'Το επαναλαμβανόμενο κείμενο στα μηνύματα συντομεύεται';
 
   @override
-  String get announcementPinDuration => 'Announcement pin duration';
+  String get announcementPinDuration => 'Διάρκεια καρφιτσώματος ανακοίνωσης';
 
   @override
-  String get idleMessageAlertDuration => 'Idle message alert duration';
+  String get idleMessageAlertDuration =>
+      'Διάρκεια ειδοποίησης αδράνειας μηνυμάτων';
 
   @override
   String get idleMessageAlertDurationSubtitle =>
-      'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
+      'Εάν δεν υπάρχουν μηνύματα για αυτό το χρονικό διάστημα και έρθει ένα νέο, θα αναπαραχθεί ένας ήχος ειδοποίησης.';
 
   @override
-  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+  String get realtimeCashSubtitle => 'Συνδέστε ένα πορτοφόλι ETH ή MATIC';
 
   @override
-  String get walletAddress => 'Wallet address';
+  String get walletAddress => 'Διεύθυνση πορτοφολιού';
 
   @override
-  String get streamlabsSubtitle => 'See your Streamlabs donations';
+  String get streamlabsSubtitle => 'Δείτε τις δωρεές σας στο Streamlabs';
 
   @override
-  String get streamElementsSubtitle => 'See your StreamElements donations';
+  String get streamElementsSubtitle =>
+      'Δείτε τις δωρεές σας στο StreamElements';
 
   @override
   String get thirdPartyAuthError =>
-      'Hmm, that didn\'t work. Try again, or ask on Discord?';
+      'Χμμ, αυτό δεν λειτούργησε. Δοκιμάστε ξανά ή ρωτήστε στο Discord;';
 
   @override
   String get companionAuthBrowserTooOld =>
-      'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.';
+      'Το πρόγραμμα περιήγησής σας είναι πολύ παλιό για να υποστηρίξει την απευθείας σύνδεση. Σαρώστε αυτόν τον κωδικό QR με το τηλέφωνό σας για να συνδεθείτε σε άλλη συσκευή.';
 
   @override
   String get companionAuthScanQrCode =>
-      'Scan this QR code with your phone to sign in on another device.';
+      'Σαρώστε αυτόν τον κωδικό QR με το τηλέφωνό σας για να συνδεθείτε σε άλλη συσκευή.';
 
   @override
   String kickSubscriptionEvent(String subscriberName) {
-    return '<b>$subscriberName</b> has subscribed!';
+    return 'Ο/Η <b>$subscriberName</b> έκανε εγγραφή!';
   }
 
   @override
@@ -1012,7 +1038,7 @@ class AppLocalizationsEl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
-    return '<b>$subscriberName</b> has resubscribed for $monthsString months!';
+    return 'Ο/Η <b>$subscriberName</b> ανανέωσε την εγγραφή για $monthsString μήνες!';
   }
 
   @override
@@ -1021,7 +1047,7 @@ class AppLocalizationsEl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '<b>$gifterName</b> has gifted $countString subs!';
+    return 'Ο/Η <b>$gifterName</b> έκανε δώρο $countString εγγραφές!';
   }
 
   @override
@@ -1030,60 +1056,61 @@ class AppLocalizationsEl extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
-    return '<b>$senderName</b> sent $amountString Kicks!';
+    return 'Ο/Η <b>$senderName</b> έστειλε $amountString Kicks!';
   }
 
   @override
-  String get signInWithKick => 'Sign in with Kick';
+  String get signInWithKick => 'Σύνδεση με Kick';
 
   @override
   String get textToSpeechTooManyMessages =>
-      'There are too many messages. Text to speech disabled';
+      'Υπάρχουν πάρα πολλά μηνύματα. Η μετατροπή κειμένου σε ομιλία απενεργοποιήθηκε';
 
   @override
-  String get turnOffTextToSpeech => 'Turn off';
+  String get turnOffTextToSpeech => 'Απενεργοποίηση';
 
   @override
-  String get addToChat => 'Add to chat';
+  String get addToChat => 'Προσθήκη στη συνομιλία';
 
   @override
-  String get inChat => 'In chat';
+  String get inChat => 'Στη συνομιλία';
 
   @override
-  String get removeFromChat => 'Remove from chat';
+  String get removeFromChat => 'Αφαίρεση από τη συνομιλία';
 
   @override
   String cantChatWithAccount(String provider) {
-    return 'Your $provider account can\'t chat here';
+    return 'Ο λογαριασμός σας στο $provider δεν μπορεί να συνομιλήσει εδώ';
   }
 
   @override
-  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+  String get cantChatWithAccounts =>
+      'Οι λογαριασμοί σας δεν μπορούν να συνομιλήσουν εδώ';
 
   @override
   String sendAMessageTo(String channel) {
-    return 'Send a message to $channel...';
+    return 'Στείλτε ένα μήνυμα στο κανάλι $channel...';
   }
 
   @override
   String replaceChannel(String channel) {
-    return 'Replace $channel';
+    return 'Αντικατάσταση του $channel';
   }
 
   @override
-  String get voicePacks => 'Voice packs';
+  String get voicePacks => 'Πακέτα φωνής';
 
   @override
   String get voicePacksDescription =>
-      'Voice packs read chat with natural-sounding voices that run on your device, offline once downloaded. The voices are machine-generated by AI, not recorded by a person.';
+      'Τα πακέτα φωνής διαβάζουν τη συνομιλία με φυσικές φωνές που εκτελούνται στη συσκευή σας, εκτός σύνδεσης μετά τη λήψη. Οι φωνές δημιουργούνται μηχανικά από τεχνητή νοημοσύνη και δεν έχουν ηχογραφηθεί από άνθρωπο.';
 
   @override
   String voicePackDetails(int voices, String size) {
     String _temp0 = intl.Intl.pluralLogic(
       voices,
       locale: localeName,
-      other: '$voices voices',
-      one: '1 voice',
+      other: '$voices φωνές',
+      one: '1 φωνή',
     );
     return '$_temp0 · $size';
   }
@@ -1093,99 +1120,100 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count languages',
-      one: '1 language',
+      other: '$count γλώσσες',
+      one: '1 γλώσσα',
     );
     return '$_temp0: $languages';
   }
 
   @override
   String get voicePackOpenRailNotice =>
-      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+      'Η άδεια χρήσης αυτού του μοντέλου (OpenRAIL-M) απαγορεύει επιβλαβείς χρήσεις, όπως την πλαστοπροσωπία ατόμων ή τη διάδοση παραπληροφόρησης, και αυτοί οι περιορισμοί ισχύουν και για εσάς.';
 
   @override
   String voicePackDeleteConfirm(String pack, String size) {
-    return 'Delete $pack? This frees $size.';
+    return 'Διαγραφή του $pack; Αυτό ελευθερώνει $size.';
   }
 
   @override
-  String get voicePackDownload => 'Download';
+  String get voicePackDownload => 'Λήψη';
 
   @override
-  String get voicePackUpdate => 'Update';
+  String get voicePackUpdate => 'Ενημέρωση';
 
   @override
-  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+  String get voicePackWaitingForWifi => 'Αναμονή για Wi-Fi';
 
   @override
-  String get voicePackUseMobileData => 'Use mobile data';
+  String get voicePackUseMobileData => 'Χρήση δεδομένων κινητής τηλεφωνίας';
 
   @override
   String voicePackDownloading(String downloaded, String total) {
-    return 'Downloading: $downloaded of $total';
+    return 'Λήψη: $downloaded από $total';
   }
 
   @override
-  String get voicePackInstalling => 'Installing';
+  String get voicePackInstalling => 'Εγκατάσταση';
 
   @override
   String voicePackInstallFailed(String pack) {
-    return 'Couldn\'t install $pack. Check your connection and try again.';
+    return 'Δεν ήταν δυνατή η εγκατάσταση του $pack. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.';
   }
 
   @override
-  String get voices => 'Voices';
+  String get voices => 'Φωνές';
 
   @override
-  String get perViewerVoice => 'Per-viewer voice';
+  String get perViewerVoice => 'Φωνή ανά θεατή';
 
   @override
   String get perViewerVoiceSubtitle =>
-      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+      'Κάθε θεατής αποκτά τη δική του φωνή. Η φωνή που επιλέγετε διαβάζει τις ειδοποιήσεις ή τα πάντα όταν αυτό είναι ανενεργό.';
 
   @override
-  String get streamLanguage => 'Stream language';
+  String get streamLanguage => 'Γλώσσα ροής';
 
   @override
-  String get ttsEngineNeural => 'Neural voice (on-device)';
+  String get ttsEngineNeural => 'Νευρωνική φωνή (στη συσκευή)';
 
   @override
-  String get ttsEngineSystem => 'System voice';
+  String get ttsEngineSystem => 'Φωνή συστήματος';
 
   @override
   String languageUnsupported(String language) {
-    return '$language isn\'t supported by your voice packs; the system voice will be used';
+    return 'Η γλώσσα $language δεν υποστηρίζεται από τα πακέτα φωνής σας· θα χρησιμοποιηθεί η φωνή συστήματος';
   }
 
   @override
   String get neuralFallbackLowMemory =>
-      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+      'Αυτή η συσκευή δεν διαθέτει αρκετή μνήμη για νευρωνικές φωνές, επομένως η συνομιλία διαβάζεται με τη φωνή συστήματος.';
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'Δεν ήταν δυνατή η φόρτωση της νευρωνικής φωνής, επομένως η συνομιλία διαβάζεται με τη φωνή συστήματος.';
 
   @override
-  String get accounts => 'Accounts';
+  String get accounts => 'Λογαριασμοί';
 
   @override
-  String get accountsSubtitle => 'Sign in to each platform you stream on';
+  String get accountsSubtitle =>
+      'Συνδεθείτε σε κάθε πλατφόρμα στην οποία μεταδίδετε';
 
   @override
   String addProviderAccount(String provider) {
-    return 'Add $provider account';
+    return 'Προσθήκη λογαριασμού $provider';
   }
 
   @override
   String signInWithProvider(String provider) {
-    return 'Sign in with $provider';
+    return 'Σύνδεση με $provider';
   }
 
   @override
   String signOutOfAccount(String channel, String provider) {
-    return 'Sign out of $channel on $provider?';
+    return 'Αποσύνδεση από το $channel στο $provider;';
   }
 
   @override
-  String get signOutOfAll => 'Sign out of all accounts';
+  String get signOutOfAll => 'Αποσύνδεση από όλους τους λογαριασμούς';
 }

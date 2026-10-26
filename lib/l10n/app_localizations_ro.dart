@@ -9,71 +9,72 @@ class AppLocalizationsRo extends AppLocalizations {
   AppLocalizationsRo([String locale = 'ro']) : super(locale);
 
   @override
-  String get sendAMessage => 'Send a message...';
+  String get sendAMessage => 'Trimite un mesaj...';
 
   @override
-  String get writeSomething => 'Write something...';
+  String get writeSomething => 'Scrie ceva...';
 
   @override
-  String get speakToTheCrowds => 'Speak to the crowds...';
+  String get speakToTheCrowds => 'Vorbește mulțimii...';
 
   @override
-  String get shareYourThoughts => 'Share your thoughts...';
+  String get shareYourThoughts => 'Împărtășește-ți gândurile...';
 
   @override
-  String get saySomethingYouLittleBitch => 'Say something, you little bitch...';
+  String get saySomethingYouLittleBitch => 'Zi ceva, fricosule...';
 
   @override
-  String get search => 'Search';
+  String get search => 'Caută';
 
   @override
-  String get notSignedIn => 'Not signed in';
+  String get notSignedIn => 'Neconectat';
 
   @override
-  String get searchChannels => 'Search';
+  String get searchChannels => 'Caută';
 
   @override
-  String get raidAChannel => 'Raid';
+  String get raidAChannel => 'Fă un raid';
 
   @override
-  String get noMessagesEmptyState => 'It\'s quiet in here.';
+  String get noMessagesEmptyState => 'E liniște pe aici.';
 
   @override
   String newMessageCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count new messages',
-      one: '1 new message',
-      zero: 'No new messages',
+      other: '$count de mesaje noi',
+      few: '$count mesaje noi',
+      one: '1 mesaj nou',
+      zero: 'Niciun mesaj nou',
     );
     return '$_temp0';
   }
 
   @override
-  String get signInWithTwitch => 'Sign in with Twitch';
+  String get signInWithTwitch => 'Conectează-te cu Twitch';
 
   @override
   String get signInError =>
-      'An error occurred when signing in. Please try again.';
+      'A apărut o eroare la conectare. Te rugăm să încerci din nou.';
 
   @override
-  String get continueAsGuest => 'Continue as Guest';
+  String get continueAsGuest => 'Continuă ca oaspete';
 
   @override
-  String get signInToSendMessages => 'Sign in to send messages';
+  String get signInToSendMessages => 'Conectează-te pentru a trimite mesaje';
 
   @override
-  String get currentViewers => 'Current viewers';
+  String get currentViewers => 'Spectatori actuali';
 
   @override
-  String get textToSpeech => 'Text to speech';
+  String get textToSpeech => 'Text în vorbire';
 
   @override
-  String get streamPreview => 'Stream preview';
+  String get streamPreview => 'Previzualizare stream';
 
   @override
-  String get activityFeed => 'Activity feed';
+  String get activityFeed => 'Flux de activitate';
 
   @override
   String streamOnline(DateTime date, DateTime time) {
@@ -84,7 +85,7 @@ class AppLocalizationsRo extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream online at $dateString, $timeString';
+    return 'Stream online pe $dateString, $timeString';
   }
 
   @override
@@ -96,7 +97,7 @@ class AppLocalizationsRo extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream offline at $dateString, $timeString';
+    return 'Stream offline pe $dateString, $timeString';
   }
 
   @override
@@ -108,175 +109,180 @@ class AppLocalizationsRo extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Chat cleared at $dateString, $timeString';
+    return 'Chat șters pe $dateString, $timeString';
   }
 
   @override
-  String get configureQuickLinks => 'Configure quick links';
+  String get configureQuickLinks => 'Configurează linkurile rapide';
 
   @override
-  String get disableRainMode => 'Disable rain mode';
+  String get disableRainMode => 'Dezactivează modul ploaie';
 
   @override
-  String get enableRainMode => 'Enable rain mode';
+  String get enableRainMode => 'Activează modul ploaie';
 
   @override
-  String get disableRainModeSubtitle => 'Interaction will be enabled';
+  String get disableRainModeSubtitle => 'Interacțiunea va fi activată';
 
   @override
-  String get enableRainModeSubtitle => 'Interaction will be disabled';
+  String get enableRainModeSubtitle => 'Interacțiunea va fi dezactivată';
 
   @override
-  String get refreshAudioSources => 'Refresh audio sources';
+  String get refreshAudioSources => 'Reîmprospătează sursele audio';
 
   @override
   String refreshAudioSourcesCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count audio sources refreshed',
-      one: '1 audio source refreshed',
-      zero: 'No audio sources refreshed',
+      other: '$count de surse audio reîmprospătate',
+      few: '$count surse audio reîmprospătate',
+      one: '1 sursă audio reîmprospătată',
+      zero: 'Nicio sursă audio reîmprospătată',
     );
     return '$_temp0';
   }
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Setări';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'Deconectează-te';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Anulează';
 
   @override
-  String get signOutConfirmation => 'Are you sure you want to sign out?';
+  String get signOutConfirmation => 'Sigur dorești să te deconectezi?';
 
   @override
-  String get broadcaster => 'Broadcaster';
+  String get broadcaster => 'Streamer';
 
   @override
-  String get moderators => 'Moderators';
+  String get moderators => 'Moderatori';
 
   @override
-  String get viewers => 'Viewers';
+  String get viewers => 'Spectatori';
 
   @override
-  String get communityVips => 'Community VIPs';
+  String get communityVips => 'VIP-uri ale comunității';
 
   @override
-  String get searchViewers => 'Search Viewers';
+  String get searchViewers => 'Caută spectatori';
 
   @override
-  String get reconnecting => 'Reconnecting...';
+  String get reconnecting => 'Se reconectează...';
 
   @override
-  String get twitchBadges => 'Twitch badges';
+  String get twitchBadges => 'Insigne Twitch';
 
   @override
-  String get selectAll => 'Select all';
+  String get selectAll => 'Selectează tot';
 
   @override
-  String get quickLinks => 'Quick links';
+  String get quickLinks => 'Linkuri rapide';
 
   @override
   String get swipeToDeleteQuickLinks =>
-      'Swipe left or right to delete quick link';
+      'Glisează la stânga sau la dreapta pentru a șterge linkul rapid';
 
   @override
-  String get quickLinksLabelHint => 'Label';
+  String get quickLinksLabelHint => 'Etichetă';
 
   @override
-  String get invalidUrlErrorText => 'This doesn\'t look like a valid URL';
+  String get invalidUrlErrorText => 'Acesta nu pare a fi un URL valid';
 
   @override
-  String get duplicateUrlErrorText => 'This link already exists';
+  String get duplicateUrlErrorText => 'Acest link există deja';
 
   @override
-  String get or => 'or';
+  String get or => 'sau';
 
   @override
-  String get clearCookies => 'Clear cookies';
+  String get clearCookies => 'Șterge modulele cookie';
 
   @override
-  String get disabled => 'Disabled';
+  String get disabled => 'Dezactivat';
 
   @override
-  String get twitchActivityFeed => 'Twitch activity feed';
+  String get twitchActivityFeed => 'Flux de activitate Twitch';
 
   @override
-  String get signInToEnable => 'You must be signed in to enable this';
+  String get signInToEnable =>
+      'Trebuie să fii conectat pentru a activa această opțiune';
 
   @override
-  String get customUrl => 'Custom URL';
+  String get customUrl => 'URL personalizat';
 
   @override
-  String get preview => 'Preview';
+  String get preview => 'Previzualizare';
 
   @override
-  String get audioSources => 'Audio sources';
+  String get audioSources => 'Surse audio';
 
   @override
   String get enableOffStreamSwitchTitle =>
-      'Enable off-stream (uses more battery)';
+      'Activează în afara streamului (consumă mai multă baterie)';
 
   @override
   String get enableOffStreamSwitchEnabledSubtitle =>
-      'Audio will also play when you\'re offline';
+      'Sunetul va fi redat și când ești offline';
 
   @override
   String get enableOffStreamSwitchDisabledSubtitle =>
-      'Audio will only play when you\'re live';
+      'Sunetul va fi redat doar când ești în direct';
 
   @override
-  String get iosOggWarningTitle => 'Hey! Listen!';
+  String get iosOggWarningTitle => 'Hei! Ascultă!';
 
   @override
   String get iosOggWarningSubtitle =>
-      'iOS doesn\'t support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won\'t play.';
+      'iOS nu acceptă fișiere media *.ogg, care sunt fișierele implicite pe Streamlabs. Asigură-te că sursele tale audio folosesc alt format, altfel nu vor fi redate.';
 
   @override
   String get url => 'URL';
 
   @override
-  String get activityFeedSubtitle => 'Customize your activity feed';
+  String get activityFeedSubtitle => 'Personalizează-ți fluxul de activitate';
 
   @override
-  String get audioSourcesSubtitle => 'Add web sources for alert sounds';
+  String get audioSourcesSubtitle =>
+      'Adaugă surse web pentru sunetele de alertă';
 
   @override
-  String get quickLinksSubtitle => 'Add shortcuts to commonly used tools';
+  String get quickLinksSubtitle =>
+      'Adaugă scurtături către instrumentele folosite frecvent';
 
   @override
-  String get chatHistory => 'Chat history';
+  String get chatHistory => 'Istoric chat';
 
   @override
-  String get chatHistorySubtitle => 'Change the chat appearance';
+  String get chatHistorySubtitle => 'Schimbă aspectul chatului';
 
   @override
-  String get textToSpeechSubtitle => 'Change text to speech settings';
+  String get textToSpeechSubtitle =>
+      'Schimbă setările pentru conversia textului în vorbire';
 
   @override
-  String get events => 'Events';
+  String get events => 'Evenimente';
 
   @override
-  String get eventsSubtitle => 'Configure Twitch events';
+  String get eventsSubtitle => 'Configurează evenimentele Twitch';
 
   @override
-  String get thirdPartyServices => 'Third-party services';
+  String get thirdPartyServices => 'Servicii terțe';
 
   @override
-  String get thirdPartyServicesSubtitle => 'Connect to a third-party service';
+  String get thirdPartyServicesSubtitle => 'Conectează-te la un serviciu terț';
 
   @override
   String followingEvent(String displayName) {
-    return '<b>$displayName</b> is following you';
+    return '<b>$displayName</b> te urmărește';
   }
 
   @override
   String followingEvent2(String displayName, String displayNameTwo) {
-    return '<b>$displayName</b> and <b>$displayNameTwo</b> are following you';
+    return '<b>$displayName</b> și <b>$displayNameTwo</b> te urmăresc';
   }
 
   @override
@@ -289,54 +295,53 @@ class AppLocalizationsRo extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
-    return '<b>$displayName</b>, <b>$displayNameTwo</b>, and $numOthersString others are following you';
+    return '<b>$displayName</b>, <b>$displayNameTwo</b> și alți $numOthersString te urmăresc';
   }
 
   @override
   String unmuteUser(String displayName) {
-    return 'Unmute $displayName';
+    return 'Reactivează sunetul pentru $displayName';
   }
 
   @override
   String muteUser(String displayName) {
-    return 'Mute $displayName';
+    return 'Dezactivează sunetul pentru $displayName';
   }
 
   @override
   String timeoutUser(String displayName) {
-    return 'Timeout $displayName';
+    return 'Suspendă temporar pe $displayName';
   }
 
   @override
   String banUser(String displayName) {
-    return 'Ban $displayName';
+    return 'Blochează pe $displayName';
   }
 
   @override
   String unbanUser(String displayName) {
-    return 'Unban $displayName';
+    return 'Deblochează pe $displayName';
   }
 
   @override
   String viewProfile(String displayName) {
-    return 'View $displayName\'s profile';
+    return 'Vezi profilul lui $displayName';
   }
 
   @override
-  String get copyMessage => 'Copy Message';
+  String get copyMessage => 'Copiază mesajul';
 
   @override
-  String get deleteMessage => 'Delete Message';
+  String get deleteMessage => 'Șterge mesajul';
 
   @override
-  String get longScrollNotification =>
-      'You\'re scrolling kind of far, don\'t you think?';
+  String get longScrollNotification => 'Derulezi cam departe, nu crezi?';
 
   @override
-  String get stfu => 'stfu';
+  String get stfu => 'taci';
 
   @override
-  String get globalEmotes => 'Global Emotes';
+  String get globalEmotes => 'Emoticoane globale';
 
   @override
   String followerCount(int count) {
@@ -348,9 +353,10 @@ class AppLocalizationsRo extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString followers',
-      one: '1 follower',
-      zero: '0 followers',
+      other: '$countString de urmăritori',
+      few: '$countString urmăritori',
+      one: '1 urmăritor',
+      zero: '0 urmăritori',
     );
     return '$_temp0';
   }
@@ -365,170 +371,180 @@ class AppLocalizationsRo extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString viewers',
-      one: '1 viewer',
-      zero: '0 viewers',
+      other: '$countString de spectatori',
+      few: '$countString spectatori',
+      one: '1 spectator',
+      zero: '0 spectatori',
     );
     return '$_temp0';
   }
 
   @override
   String get streamPreviewMessage =>
-      'Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.';
+      'Salut! Ne bucurăm că îți place previzualizarea streamului, dar ține cont că folosește multă baterie. Citirea chatului fără ea îți va prelungi autonomia bateriei.';
 
   @override
-  String get okay => 'Okay';
+  String get okay => 'În regulă';
 
   @override
-  String get streamPreviewLoading => 'Loading (or stream is offline)...';
+  String get streamPreviewLoading =>
+      'Se încarcă (sau streamul este offline)...';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'Copiat în clipboard';
 
   @override
   String get audioSourcesRequirePermissions =>
-      'Audio sources require permissions';
+      'Sursele audio necesită permisiuni';
 
   @override
   String get audioSourcesRequirePermissionsMessage =>
-      'Approve RealtimeChat to draw over other apps to use audio sources.';
+      'Aprobă ca RealtimeChat să se afișeze peste alte aplicații pentru a folosi sursele audio.';
 
   @override
-  String get audioSourcesRemoveButton => 'Remove audio sources';
+  String get audioSourcesRemoveButton => 'Elimină sursele audio';
 
   @override
-  String get audioSourcesOpenSettingsButton => 'Open settings';
+  String get audioSourcesOpenSettingsButton => 'Deschide setările';
 
   @override
-  String get flashOn => 'Flash on';
+  String get flashOn => 'Bliț activat';
 
   @override
-  String get flashOff => 'Flash off';
+  String get flashOff => 'Bliț dezactivat';
 
   @override
-  String get durationOneSecond => '1 second';
+  String get durationOneSecond => '1 secundă';
 
   @override
-  String get durationOneMinute => '1 minute';
+  String get durationOneMinute => '1 minut';
 
   @override
-  String get durationTenMinutes => '10 minutes';
+  String get durationTenMinutes => '10 minute';
 
   @override
-  String get durationOneHour => '1 hour';
+  String get durationOneHour => '1 oră';
 
   @override
-  String get durationSixHours => '6 hours';
+  String get durationSixHours => '6 ore';
 
   @override
-  String get durationOneDay => '1 day';
+  String get durationOneDay => '1 zi';
 
   @override
-  String get durationTwoDays => '2 days';
+  String get durationTwoDays => '2 zile';
 
   @override
-  String get durationOneWeek => '1 week';
+  String get durationOneWeek => '1 săptămână';
 
   @override
-  String get durationTwoWeeks => '2 weeks';
+  String get durationTwoWeeks => '2 săptămâni';
 
   @override
-  String get durationOneSecondTimeoutPrompt => 'Timeout for 1 second';
+  String get durationOneSecondTimeoutPrompt =>
+      'Suspendă temporar timp de 1 secundă';
 
   @override
-  String get durationOneMinuteTimeoutPrompt => 'Timeout for 1 minute';
+  String get durationOneMinuteTimeoutPrompt =>
+      'Suspendă temporar timp de 1 minut';
 
   @override
-  String get durationTenMinutesTimeoutPrompt => 'Timeout for 10 minutes';
+  String get durationTenMinutesTimeoutPrompt =>
+      'Suspendă temporar timp de 10 minute';
 
   @override
-  String get durationOneHourTimeoutPrompt => 'Timeout for 1 hour';
+  String get durationOneHourTimeoutPrompt => 'Suspendă temporar timp de 1 oră';
 
   @override
-  String get durationSixHoursTimeoutPrompt => 'Timeout for 6 hours';
+  String get durationSixHoursTimeoutPrompt => 'Suspendă temporar timp de 6 ore';
 
   @override
-  String get durationOneDayTimeoutPrompt => 'Timeout for 1 day';
+  String get durationOneDayTimeoutPrompt => 'Suspendă temporar timp de 1 zi';
 
   @override
-  String get durationTwoDaysTimeoutPrompt => 'Timeout for 2 days';
+  String get durationTwoDaysTimeoutPrompt => 'Suspendă temporar timp de 2 zile';
 
   @override
-  String get durationOneWeekTimeoutPrompt => 'Timeout for 1 week';
+  String get durationOneWeekTimeoutPrompt =>
+      'Suspendă temporar timp de 1 săptămână';
 
   @override
-  String get durationTwoWeeksTimeoutPrompt => 'Timeout for 2 weeks';
+  String get durationTwoWeeksTimeoutPrompt =>
+      'Suspendă temporar timp de 2 săptămâni';
 
   @override
   String get errorFetchingViewerList =>
-      'We couldn\'t fetch the viewer list for this channel';
+      'Nu am putut prelua lista de spectatori pentru acest canal';
 
   @override
-  String get eventsTitle => 'Events';
+  String get eventsTitle => 'Evenimente';
 
   @override
-  String get followEventConfigTitle => 'Follow Event';
+  String get followEventConfigTitle => 'Eveniment de urmărire';
 
   @override
-  String get customizeYourFollowEvent => 'Customize your follow event';
+  String get customizeYourFollowEvent =>
+      'Personalizează evenimentul de urmărire';
 
   @override
-  String get subscribeEventConfigTitle => 'Subscribe Event';
+  String get subscribeEventConfigTitle => 'Eveniment de abonare';
 
   @override
   String get customizeYourSubscriptionEvent =>
-      'Customize your subscription event';
+      'Personalizează evenimentul de abonare';
 
   @override
-  String get cheerEventConfigTitle => 'Cheer Event';
+  String get cheerEventConfigTitle => 'Eveniment de Cheer';
 
   @override
-  String get customizeYourCheerEvent => 'Customize your cheer event';
+  String get customizeYourCheerEvent => 'Personalizează evenimentul de Cheer';
 
   @override
-  String get raidEventConfigTitle => 'Raid Event';
+  String get raidEventConfigTitle => 'Eveniment de raid';
 
   @override
-  String get customizeYourRaidEvent => 'Customize your raid event';
+  String get customizeYourRaidEvent => 'Personalizează evenimentul de raid';
 
   @override
-  String get hostEventConfigTitle => 'Host Event';
+  String get hostEventConfigTitle => 'Eveniment de găzduire';
 
   @override
-  String get customizeYourHostEvent => 'Customize your host event';
+  String get customizeYourHostEvent => 'Personalizează evenimentul de găzduire';
 
   @override
-  String get hypetrainEventConfigTitle => 'Hype Train Event';
+  String get hypetrainEventConfigTitle => 'Eveniment Trenul Hype';
 
   @override
-  String get customizeYourHypetrainEvent => 'Customize your hype train event';
+  String get customizeYourHypetrainEvent =>
+      'Personalizează evenimentul Trenul Hype';
 
   @override
-  String get pollEventConfigTitle => 'Poll Event';
+  String get pollEventConfigTitle => 'Eveniment de sondaj';
 
   @override
-  String get customizeYourPollEvent => 'Customize your poll event';
+  String get customizeYourPollEvent => 'Personalizează evenimentul de sondaj';
 
   @override
-  String get predictionEventConfigTitle => 'Prediction Event';
+  String get predictionEventConfigTitle => 'Eveniment de predicție';
 
   @override
-  String get customizeYourPredictionEvent => 'Customize your prediction event';
+  String get customizeYourPredictionEvent =>
+      'Personalizează evenimentul de predicție';
 
   @override
   String get channelPointRedemptionEventConfigTitle =>
-      'Channel Point Redemption Event';
+      'Eveniment de revendicare a punctelor de canal';
 
   @override
   String get customizeYourChannelPointRedemptionEvent =>
-      'Customize your channel point redemption event';
+      'Personalizează evenimentul de revendicare a punctelor de canal';
 
   @override
-  String get outgoingRaidEventConfigTitle => 'Outgoing Raid Event';
+  String get outgoingRaidEventConfigTitle => 'Eveniment de raid inițiat';
 
   @override
   String get customizeYourOutgoingRaidEvent =>
-      'Customize your outgoing raid event';
+      'Personalizează evenimentul de raid inițiat';
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
@@ -538,15 +554,15 @@ class AppLocalizationsRo extends AppLocalizations {
       viewerCount,
     );
 
-    return '<b>$displayName</b> is raiding with <b>$viewerCountString</b> viewers!';
+    return '<b>$displayName</b> face un raid cu <b>$viewerCountString</b> spectatori!';
   }
 
   @override
-  String get shoutout => 'Shoutout';
+  String get shoutout => 'Mențiune';
 
   @override
   String raidingEventRaiding(String displayName) {
-    return 'Raiding <b>$displayName</b>...';
+    return 'Se face raid către <b>$displayName</b>...';
   }
 
   @override
@@ -555,25 +571,25 @@ class AppLocalizationsRo extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
-    return '${secondsString}s';
+    return '$secondsString s';
   }
 
   @override
   String raidingEventRaided(String displayName) {
-    return '<b>$displayName</b> has raided!';
+    return '<b>$displayName</b> a făcut raid!';
   }
 
   @override
-  String get raidingEventJoin => 'Join';
+  String get raidingEventJoin => 'Alătură-te';
 
   @override
   String raidingEventCanceled(String displayName) {
-    return '<b>$displayName</b>\'s raid was canceled.';
+    return 'Raidul lui <b>$displayName</b> a fost anulat.';
   }
 
   @override
   String subscriptionEvent(String subscriberUserName, String tier) {
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier!';
+    return '<b>$subscriberUserName</b> s-a abonat la nivelul $tier!';
   }
 
   @override
@@ -592,7 +608,7 @@ class AppLocalizationsRo extends AppLocalizations {
       cumulativeTotal,
     );
 
-    return '<b>$gifterUserName</b> has gifted $totalString Tier $tier subs, totaling $cumulativeTotalString!';
+    return '<b>$gifterUserName</b> a oferit cadou $totalString abonamente de nivelul $tier, în total $cumulativeTotalString!';
   }
 
   @override
@@ -607,7 +623,7 @@ class AppLocalizationsRo extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed for $cumulativeMonthsString months at Tier $tier!';
+    return '<b>$subscriberUserName</b> s-a abonat timp de $cumulativeMonthsString luni la nivelul $tier!';
   }
 
   @override
@@ -628,27 +644,27 @@ class AppLocalizationsRo extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b> s-a abonat la nivelul $tier pentru $durationMonthsString luni în avans, $cumulativeMonthsString luni în total!';
   }
 
   @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
-    return '<b>$donor</b> tipped <b>$value $currency</b>.';
+    return '<b>$donor</b> a oferit un bacșiș de <b>$value $currency</b>.';
   }
 
   @override
   String realtimeCashTipAnonymous(String value, String currency) {
-    return 'Anonymous tipped <b>$value $currency</b>.';
+    return 'Anonim a oferit un bacșiș de <b>$value $currency</b>.';
   }
 
   @override
   String streamElementsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on StreamElements.';
+    return '<b>$name</b> a oferit un bacșiș de <b>$formattedAmount</b> pe StreamElements.';
   }
 
   @override
   String streamlabsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on Streamlabs.';
+    return '<b>$name</b> a oferit un bacșiș de <b>$formattedAmount</b> pe Streamlabs.';
   }
 
   @override
@@ -662,7 +678,7 @@ class AppLocalizationsRo extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points. $userInput';
+    return '<b>$redeemerUsername</b> a revendicat <b>$rewardName</b> pentru <b>$rewardCostString</b> puncte. $userInput';
   }
 
   @override
@@ -675,7 +691,7 @@ class AppLocalizationsRo extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points.';
+    return '<b>$redeemerUsername</b> a revendicat <b>$rewardName</b> pentru <b>$rewardCostString</b> puncte.';
   }
 
   @override
@@ -685,11 +701,11 @@ class AppLocalizationsRo extends AppLocalizations {
     );
     final String bitsString = bitsNumberFormat.format(bits);
 
-    return '<b>$name</b> cheered <b>$bitsString</b> bits. $cheerMessage';
+    return '<b>$name</b> a trimis <b>$bitsString</b> bits. $cheerMessage';
   }
 
   @override
-  String get anonymous => 'Anonymous';
+  String get anonymous => 'Anonim';
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
@@ -697,12 +713,12 @@ class AppLocalizationsRo extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
-    return '<b>$fromDisplayName</b> is hosting with a party of <b>$viewersString</b>.';
+    return '<b>$fromDisplayName</b> găzduiește canalul cu un grup de <b>$viewersString</b>.';
   }
 
   @override
   String hypeTrainEventProgress(String level, String progressPercent) {
-    return 'Hype Train level <b>$level</b> in progress! <b>$progressPercent%</b> completed!';
+    return 'Trenul Hype de nivelul <b>$level</b> este în desfășurare! Finalizat în proporție de <b>$progressPercent%</b>!';
   }
 
   @override
@@ -711,7 +727,7 @@ class AppLocalizationsRo extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> succeeded.';
+    return 'Trenul Hype de nivelul <b>$levelString</b> s-a încheiat cu succes.';
   }
 
   @override
@@ -720,7 +736,7 @@ class AppLocalizationsRo extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> failed.';
+    return 'Trenul Hype de nivelul <b>$levelString</b> a eșuat.';
   }
 
   @override
@@ -738,24 +754,27 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get textToSpeechEnabled => 'Text to speech enabled';
+  String get textToSpeechEnabled =>
+      'Conversia textului în vorbire a fost activată';
 
   @override
-  String get textToSpeechDisabled => 'Text to speech disabled';
+  String get textToSpeechDisabled =>
+      'Conversia textului în vorbire a fost dezactivată';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Doar alerte';
 
   @override
-  String get pinDuration => 'Pin Duration';
+  String get pinDuration => 'Durata fixării';
 
   @override
   String durationSeconds(int seconds) {
     String _temp0 = intl.Intl.pluralLogic(
       seconds,
       locale: localeName,
-      other: '$seconds seconds',
-      one: '1 second',
+      other: '$seconds de secunde',
+      few: '$seconds secunde',
+      one: '1 secundă',
     );
     return '$_temp0';
   }
@@ -765,245 +784,256 @@ class AppLocalizationsRo extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: '$minutes minutes',
-      one: '1 minute',
+      other: '$minutes de minute',
+      few: '$minutes minute',
+      one: '1 minut',
     );
     return '$_temp0';
   }
 
   @override
-  String get enableEvent => 'Enable event';
+  String get enableEvent => 'Activează evenimentul';
 
   @override
-  String get showEventInChatHistory => 'Show event in chat history';
+  String get showEventInChatHistory =>
+      'Afișează evenimentul în istoricul chatului';
 
   @override
-  String get enableShoutouts => 'Enable shoutouts';
+  String get enableShoutouts => 'Activează mențiunile';
 
   @override
   String get enableShoutoutsSubtitle =>
-      'Send a link to the raiding channel to chat';
+      'Trimite în chat un link către canalul care face raid';
 
   @override
-  String get raidConfigurationTitle => 'Raid Configuration';
+  String get raidConfigurationTitle => 'Configurare raid';
 
   @override
-  String get cheerConfigurationTitle => 'Cheer Configuration';
+  String get cheerConfigurationTitle => 'Configurare Cheer';
 
   @override
-  String get followConfigurationTitle => 'Follow Configuration';
+  String get followConfigurationTitle => 'Configurare urmărire';
 
   @override
-  String get outgoingRaidConfigurationTitle => 'Outgoing Raid Configuration';
+  String get outgoingRaidConfigurationTitle => 'Configurare raid inițiat';
 
   @override
-  String get hostConfigurationTitle => 'Host Configuration';
+  String get hostConfigurationTitle => 'Configurare găzduire';
 
   @override
-  String get channelPointConfigurationTitle => 'Channel Point Configuration';
+  String get channelPointConfigurationTitle => 'Configurare puncte de canal';
 
   @override
-  String get pollConfigurationTitle => 'Poll Configuration';
+  String get pollConfigurationTitle => 'Configurare sondaj';
 
   @override
-  String get hypetrainConfigurationTitle => 'Hypetrain Configuration';
+  String get hypetrainConfigurationTitle => 'Configurare Trenul Hype';
 
   @override
-  String get subscriptionConfigurationTitle => 'Subscription Configuration';
+  String get subscriptionConfigurationTitle => 'Configurare abonamente';
 
   @override
-  String get predictionConfigurationTitle => 'Prediction Configuration';
+  String get predictionConfigurationTitle => 'Configurare predicții';
 
   @override
   String get unfulfilledRewardsPinDuration =>
-      'Additional Pin Duration for Unfulfilled Rewards';
+      'Durată suplimentară de fixare pentru recompensele neonorate';
 
   @override
-  String get pollPinDuration => 'Pin duration after the result is finalized';
+  String get pollPinDuration => 'Durata fixării după finalizarea rezultatului';
 
   @override
-  String get hypetrainPinDuration => 'Pin duration after hypetrain is over';
+  String get hypetrainPinDuration =>
+      'Durata fixării după încheierea Trenului Hype';
 
   @override
   String get enableGiftedSubscriptions =>
-      'Enable individual gifted subscriptions';
+      'Activează abonamentele cadou individuale';
 
   @override
   String get enableGiftedSubscriptionsSubtitle =>
-      'Show every subscription that is gifted';
+      'Afișează fiecare abonament oferit cadou';
 
   @override
-  String get settingsBackupTitle => 'Settings backup and restore';
+  String get settingsBackupTitle =>
+      'Copie de rezervă și restaurare a setărilor';
 
   @override
-  String get cloudBackup => 'Cloud backup';
+  String get cloudBackup => 'Copie de rezervă în cloud';
 
   @override
-  String get lastBackupNever => 'Last backup: never';
+  String get lastBackupNever => 'Ultima copie de rezervă: niciodată';
 
   @override
-  String get backUp => 'Back up';
+  String get backUp => 'Creează copie de rezervă';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Restaurează';
 
   @override
-  String get localBackup => 'Local backup';
+  String get localBackup => 'Copie de rezervă locală';
 
   @override
-  String get exportSettings => 'Export';
+  String get exportSettings => 'Exportă';
 
   @override
-  String get importSettings => 'Import';
+  String get importSettings => 'Importă';
 
   @override
-  String get showViewerAndFollowerCount => 'Show viewer and follower count';
+  String get showViewerAndFollowerCount =>
+      'Afișează numărul de spectatori și de urmăritori';
 
   @override
-  String get screenOrientation => 'Screen orientation';
+  String get screenOrientation => 'Orientarea ecranului';
 
   @override
-  String get appTheme => 'App theme';
+  String get appTheme => 'Tema aplicației';
 
   @override
-  String get systemDefault => 'System';
+  String get systemDefault => 'Sistem';
 
   @override
-  String get portrait => 'Portrait';
+  String get portrait => 'Portret';
 
   @override
-  String get landscape => 'Landscape';
+  String get landscape => 'Peisaj';
 
   @override
-  String get lightTheme => 'Light';
+  String get lightTheme => 'Luminos';
 
   @override
-  String get darkTheme => 'Dark';
+  String get darkTheme => 'Întunecat';
 
   @override
-  String get openSourceTitle => 'RealtimeChat is open source';
+  String get openSourceTitle => 'RealtimeChat este open source';
 
   @override
-  String get openSourceSubtitle => 'Find us on GitHub!';
+  String get openSourceSubtitle => 'Găsește-ne pe GitHub!';
 
   @override
-  String get discordSubtitle => 'Join the Muxable Discord!';
+  String get discordSubtitle => 'Alătură-te serverului Discord Muxable!';
 
   @override
   String get earlyTestersThanks =>
-      'Thanks to all the early testers who sent bug reports!';
+      'Mulțumim tuturor primilor testeri care au trimis rapoarte de erori!';
 
   @override
-  String get discoModeEnabled => '🕺 Disco mode enabled! :D';
+  String get discoModeEnabled => '🕺 Modul disco a fost activat! :D';
 
   @override
-  String get discoModeDisabled => '🕺 Disco mode disabled D:';
+  String get discoModeDisabled => '🕺 Modul disco a fost dezactivat D:';
 
   @override
-  String get playSampleMessage => 'Play sample message';
+  String get playSampleMessage => 'Redă mesajul de probă';
 
   @override
-  String get textToSpeechRate => 'Text to Speech Rate';
+  String get textToSpeechRate => 'Viteză text în vorbire';
 
   @override
-  String get textToSpeechPitch => 'Text to Speech Pitch';
+  String get textToSpeechPitch => 'Tonalitate text în vorbire';
 
   @override
-  String get muteBots => 'Mute text to speech for bots';
+  String get muteBots => 'Dezactivează citirea vocală pentru boți';
 
   @override
-  String get muteEmotes => 'Mute all emotes in text to speech';
+  String get muteEmotes => 'Dezactivează citirea vocală a emoticoanelor';
 
   @override
-  String get muteViewerNames => 'Mute viewer names in text to speech';
+  String get muteViewerNames =>
+      'Dezactivează citirea vocală a numelor spectatorilor';
 
   @override
-  String get subscribersOnly => 'Subscribers only';
+  String get subscribersOnly => 'Doar abonați';
 
   @override
-  String get fontSize => 'Font size';
+  String get fontSize => 'Dimensiunea fontului';
 
   @override
-  String get usernameContrastBoost => 'Username contrast boost';
+  String get usernameContrastBoost =>
+      'Amplificarea contrastului pentru numele de utilizator';
 
   @override
-  String get twitchBadgeSettings => 'Twitch badge settings';
+  String get twitchBadgeSettings => 'Setări insigne Twitch';
 
   @override
-  String get twitchBadgeSettingsSubtitle => 'Control which badges are visible';
+  String get twitchBadgeSettingsSubtitle =>
+      'Controlează care insigne sunt vizibile';
 
   @override
-  String get showDeletedMessages => 'Show deleted messages';
+  String get showDeletedMessages => 'Afișează mesajele șterse';
 
   @override
-  String get deletedMessagesGreyedOut => 'Deleted messages will be greyed out';
+  String get deletedMessagesGreyedOut =>
+      'Mesajele șterse vor fi afișate cu gri';
 
   @override
-  String get deletedMessagesRemoved => 'Deleted messages will be removed';
+  String get deletedMessagesRemoved => 'Mesajele șterse vor fi eliminate';
 
   @override
-  String get showLoginNames => 'Show login names';
+  String get showLoginNames => 'Afișează numele de conectare';
 
   @override
   String get loginNamesShown =>
-      'Login names will be shown if they are different from the display name';
+      'Numele de conectare vor fi afișate dacă diferă de numele afișat';
 
   @override
-  String get loginNamesHidden => 'Login names will be hidden';
+  String get loginNamesHidden => 'Numele de conectare vor fi ascunse';
 
   @override
-  String get compactMessages => 'Compact messages';
+  String get compactMessages => 'Compactează mesajele';
 
   @override
-  String get dontCompactMessages => 'Don\'t compact messages';
+  String get dontCompactMessages => 'Nu compacta mesajele';
 
   @override
-  String get dontCompactMessagesSubtitle => 'Messages are shown unchanged';
+  String get dontCompactMessagesSubtitle => 'Mesajele sunt afișate neschimbate';
 
   @override
-  String get compactIndividualMessages => 'Compact individual messages';
+  String get compactIndividualMessages => 'Compactează mesajele individuale';
 
   @override
   String get compactIndividualMessagesSubtitle =>
-      'Repetitive text in messages is shortened';
+      'Textul repetitiv din mesaje este scurtat';
 
   @override
-  String get announcementPinDuration => 'Announcement pin duration';
+  String get announcementPinDuration => 'Durata fixării anunțurilor';
 
   @override
-  String get idleMessageAlertDuration => 'Idle message alert duration';
+  String get idleMessageAlertDuration =>
+      'Durata alertei de inactivitate pentru mesaje';
 
   @override
   String get idleMessageAlertDurationSubtitle =>
-      'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
+      'Dacă nu există mesaje pentru această perioadă de timp și sosește unul nou, va fi redat un sunet de alertă.';
 
   @override
-  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+  String get realtimeCashSubtitle => 'Conectează un portofel ETH sau MATIC';
 
   @override
-  String get walletAddress => 'Wallet address';
+  String get walletAddress => 'Adresa portofelului';
 
   @override
-  String get streamlabsSubtitle => 'See your Streamlabs donations';
+  String get streamlabsSubtitle => 'Vezi donațiile tale de pe Streamlabs';
 
   @override
-  String get streamElementsSubtitle => 'See your StreamElements donations';
+  String get streamElementsSubtitle =>
+      'Vezi donațiile tale de pe StreamElements';
 
   @override
   String get thirdPartyAuthError =>
-      'Hmm, that didn\'t work. Try again, or ask on Discord?';
+      'Hmm, nu a funcționat. Încearcă din nou sau întreabă pe Discord?';
 
   @override
   String get companionAuthBrowserTooOld =>
-      'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.';
+      'Browserul tău este prea vechi pentru a permite conectarea directă. Scanează acest cod QR cu telefonul pentru a te conecta pe alt dispozitiv.';
 
   @override
   String get companionAuthScanQrCode =>
-      'Scan this QR code with your phone to sign in on another device.';
+      'Scanează acest cod QR cu telefonul pentru a te conecta pe alt dispozitiv.';
 
   @override
   String kickSubscriptionEvent(String subscriberName) {
-    return '<b>$subscriberName</b> has subscribed!';
+    return '<b>$subscriberName</b> s-a abonat!';
   }
 
   @override
@@ -1012,7 +1042,7 @@ class AppLocalizationsRo extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
-    return '<b>$subscriberName</b> has resubscribed for $monthsString months!';
+    return '<b>$subscriberName</b> s-a reabonat pentru $monthsString luni!';
   }
 
   @override
@@ -1021,7 +1051,7 @@ class AppLocalizationsRo extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '<b>$gifterName</b> has gifted $countString subs!';
+    return '<b>$gifterName</b> a oferit cadou $countString abonamente!';
   }
 
   @override
@@ -1030,60 +1060,61 @@ class AppLocalizationsRo extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
-    return '<b>$senderName</b> sent $amountString Kicks!';
+    return '<b>$senderName</b> a trimis $amountString Kicks!';
   }
 
   @override
-  String get signInWithKick => 'Sign in with Kick';
+  String get signInWithKick => 'Conectează-te cu Kick';
 
   @override
   String get textToSpeechTooManyMessages =>
-      'There are too many messages. Text to speech disabled';
+      'Sunt prea multe mesaje. Conversia textului în vorbire a fost dezactivată';
 
   @override
-  String get turnOffTextToSpeech => 'Turn off';
+  String get turnOffTextToSpeech => 'Dezactivează';
 
   @override
-  String get addToChat => 'Add to chat';
+  String get addToChat => 'Adaugă în chat';
 
   @override
-  String get inChat => 'In chat';
+  String get inChat => 'În chat';
 
   @override
-  String get removeFromChat => 'Remove from chat';
+  String get removeFromChat => 'Elimină din chat';
 
   @override
   String cantChatWithAccount(String provider) {
-    return 'Your $provider account can\'t chat here';
+    return 'Contul tău $provider nu poate scrie în chat aici';
   }
 
   @override
-  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+  String get cantChatWithAccounts => 'Conturile tale nu pot scrie în chat aici';
 
   @override
   String sendAMessageTo(String channel) {
-    return 'Send a message to $channel...';
+    return 'Trimite un mesaj către $channel...';
   }
 
   @override
   String replaceChannel(String channel) {
-    return 'Replace $channel';
+    return 'Înlocuiește $channel';
   }
 
   @override
-  String get voicePacks => 'Voice packs';
+  String get voicePacks => 'Pachete de voci';
 
   @override
   String get voicePacksDescription =>
-      'Voice packs read chat with natural-sounding voices that run on your device, offline once downloaded. The voices are machine-generated by AI, not recorded by a person.';
+      'Pachetele de voci citesc chatul cu voci naturale care rulează pe dispozitivul tău, offline după descărcare. Vocile sunt generate automat de IA, nu înregistrate de o persoană.';
 
   @override
   String voicePackDetails(int voices, String size) {
     String _temp0 = intl.Intl.pluralLogic(
       voices,
       locale: localeName,
-      other: '$voices voices',
-      one: '1 voice',
+      other: '$voices de voci',
+      few: '$voices voci',
+      one: '1 voce',
     );
     return '$_temp0 · $size';
   }
@@ -1093,99 +1124,101 @@ class AppLocalizationsRo extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count languages',
-      one: '1 language',
+      other: '$count de limbi',
+      few: '$count limbi',
+      one: '1 limbă',
     );
     return '$_temp0: $languages';
   }
 
   @override
   String get voicePackOpenRailNotice =>
-      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+      'Licența acestui model (OpenRAIL-M) interzice utilizările dăunătoare, cum ar fi uzurparea identității unor persoane sau răspândirea dezinformării, iar aceste restricții ți se aplică și ție.';
 
   @override
   String voicePackDeleteConfirm(String pack, String size) {
-    return 'Delete $pack? This frees $size.';
+    return 'Ștergi $pack? Aceasta eliberează $size.';
   }
 
   @override
-  String get voicePackDownload => 'Download';
+  String get voicePackDownload => 'Descarcă';
 
   @override
-  String get voicePackUpdate => 'Update';
+  String get voicePackUpdate => 'Actualizează';
 
   @override
-  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+  String get voicePackWaitingForWifi => 'Se așteaptă conexiunea Wi-Fi';
 
   @override
-  String get voicePackUseMobileData => 'Use mobile data';
+  String get voicePackUseMobileData => 'Folosește datele mobile';
 
   @override
   String voicePackDownloading(String downloaded, String total) {
-    return 'Downloading: $downloaded of $total';
+    return 'Se descarcă: $downloaded din $total';
   }
 
   @override
-  String get voicePackInstalling => 'Installing';
+  String get voicePackInstalling => 'Se instalează';
 
   @override
   String voicePackInstallFailed(String pack) {
-    return 'Couldn\'t install $pack. Check your connection and try again.';
+    return 'Nu s-a putut instala $pack. Verifică conexiunea și încearcă din nou.';
   }
 
   @override
-  String get voices => 'Voices';
+  String get voices => 'Voci';
 
   @override
-  String get perViewerVoice => 'Per-viewer voice';
+  String get perViewerVoice => 'Voce per spectator';
 
   @override
   String get perViewerVoiceSubtitle =>
-      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+      'Fiecare spectator primește propria voce. Vocea pe care o alegi citește alertele sau totul atunci când această opțiune este dezactivată.';
 
   @override
-  String get streamLanguage => 'Stream language';
+  String get streamLanguage => 'Limba streamului';
 
   @override
-  String get ttsEngineNeural => 'Neural voice (on-device)';
+  String get ttsEngineNeural => 'Voce neurală (pe dispozitiv)';
 
   @override
-  String get ttsEngineSystem => 'System voice';
+  String get ttsEngineSystem => 'Vocea sistemului';
 
   @override
   String languageUnsupported(String language) {
-    return '$language isn\'t supported by your voice packs; the system voice will be used';
+    return 'Limba $language nu este acceptată de pachetele tale de voci; va fi folosită vocea sistemului';
   }
 
   @override
   String get neuralFallbackLowMemory =>
-      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+      'Acest dispozitiv nu are suficientă memorie pentru vocile neurale, astfel încât chatul este citit cu vocea sistemului.';
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'Vocea neurală nu a putut fi încărcată, astfel încât chatul este citit cu vocea sistemului.';
 
   @override
-  String get accounts => 'Accounts';
+  String get accounts => 'Conturi';
 
   @override
-  String get accountsSubtitle => 'Sign in to each platform you stream on';
+  String get accountsSubtitle =>
+      'Conectează-te pe fiecare platformă pe care faci stream';
 
   @override
   String addProviderAccount(String provider) {
-    return 'Add $provider account';
+    return 'Adaugă cont $provider';
   }
 
   @override
   String signInWithProvider(String provider) {
-    return 'Sign in with $provider';
+    return 'Conectează-te cu $provider';
   }
 
   @override
   String signOutOfAccount(String channel, String provider) {
-    return 'Sign out of $channel on $provider?';
+    return 'Te deconectezi de la $channel pe $provider?';
   }
 
   @override
-  String get signOutOfAll => 'Sign out of all accounts';
+  String get signOutOfAll => 'Deconectează-te de la toate conturile';
 }

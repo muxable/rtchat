@@ -9,71 +9,71 @@ class AppLocalizationsCa extends AppLocalizations {
   AppLocalizationsCa([String locale = 'ca']) : super(locale);
 
   @override
-  String get sendAMessage => 'Send a message...';
+  String get sendAMessage => 'Envia un missatge...';
 
   @override
-  String get writeSomething => 'Write something...';
+  String get writeSomething => 'Escriu alguna cosa...';
 
   @override
-  String get speakToTheCrowds => 'Speak to the crowds...';
+  String get speakToTheCrowds => 'Parla a la multitud...';
 
   @override
-  String get shareYourThoughts => 'Share your thoughts...';
+  String get shareYourThoughts => 'Comparteix el que penses...';
 
   @override
-  String get saySomethingYouLittleBitch => 'Say something, you little bitch...';
+  String get saySomethingYouLittleBitch => 'Digues alguna cosa, covard...';
 
   @override
-  String get search => 'Search';
+  String get search => 'Cerca';
 
   @override
-  String get notSignedIn => 'Not signed in';
+  String get notSignedIn => 'Sessió no iniciada';
 
   @override
-  String get searchChannels => 'Search';
+  String get searchChannels => 'Cerca';
 
   @override
-  String get raidAChannel => 'Raid';
+  String get raidAChannel => 'Fes un raid';
 
   @override
-  String get noMessagesEmptyState => 'It\'s quiet in here.';
+  String get noMessagesEmptyState => 'Aquí hi ha molta calma.';
 
   @override
   String newMessageCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count new messages',
-      one: '1 new message',
-      zero: 'No new messages',
+      other: '$count missatges nous',
+      one: '1 missatge nou',
+      zero: 'Cap missatge nou',
     );
     return '$_temp0';
   }
 
   @override
-  String get signInWithTwitch => 'Sign in with Twitch';
+  String get signInWithTwitch => 'Inicia la sessió amb Twitch';
 
   @override
   String get signInError =>
-      'An error occurred when signing in. Please try again.';
+      'S\'ha produït un error en iniciar la sessió. Torna-ho a provar.';
 
   @override
-  String get continueAsGuest => 'Continue as Guest';
+  String get continueAsGuest => 'Continua com a convidat';
 
   @override
-  String get signInToSendMessages => 'Sign in to send messages';
+  String get signInToSendMessages => 'Inicia la sessió per enviar missatges';
 
   @override
-  String get currentViewers => 'Current viewers';
+  String get currentViewers => 'Espectadors actuals';
 
   @override
-  String get textToSpeech => 'Text to speech';
+  String get textToSpeech => 'Text a veu';
 
   @override
-  String get streamPreview => 'Stream preview';
+  String get streamPreview => 'Previsualització del directe';
 
   @override
-  String get activityFeed => 'Activity feed';
+  String get activityFeed => 'Canal d\'activitat';
 
   @override
   String streamOnline(DateTime date, DateTime time) {
@@ -84,7 +84,7 @@ class AppLocalizationsCa extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream online at $dateString, $timeString';
+    return 'Directe en línia el $dateString, $timeString';
   }
 
   @override
@@ -96,7 +96,7 @@ class AppLocalizationsCa extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Stream offline at $dateString, $timeString';
+    return 'Directe fora de línia el $dateString, $timeString';
   }
 
   @override
@@ -108,175 +108,177 @@ class AppLocalizationsCa extends AppLocalizations {
     final intl.DateFormat timeDateFormat = intl.DateFormat.jms(localeName);
     final String timeString = timeDateFormat.format(time);
 
-    return 'Chat cleared at $dateString, $timeString';
+    return 'Xat esborrat el $dateString, $timeString';
   }
 
   @override
-  String get configureQuickLinks => 'Configure quick links';
+  String get configureQuickLinks => 'Configura els enllaços ràpids';
 
   @override
-  String get disableRainMode => 'Disable rain mode';
+  String get disableRainMode => 'Desactiva el mode pluja';
 
   @override
-  String get enableRainMode => 'Enable rain mode';
+  String get enableRainMode => 'Activa el mode pluja';
 
   @override
-  String get disableRainModeSubtitle => 'Interaction will be enabled';
+  String get disableRainModeSubtitle => 'S\'activarà la interacció';
 
   @override
-  String get enableRainModeSubtitle => 'Interaction will be disabled';
+  String get enableRainModeSubtitle => 'Es desactivarà la interacció';
 
   @override
-  String get refreshAudioSources => 'Refresh audio sources';
+  String get refreshAudioSources => 'Actualitza les fonts d\'àudio';
 
   @override
   String refreshAudioSourcesCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count audio sources refreshed',
-      one: '1 audio source refreshed',
-      zero: 'No audio sources refreshed',
+      other: 'S\'han actualitzat $count fonts d\'àudio',
+      one: 'S\'ha actualitzat 1 font d\'àudio',
+      zero: 'No s\'ha actualitzat cap font d\'àudio',
     );
     return '$_temp0';
   }
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Configuració';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'Tanca la sessió';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Cancel·la';
 
   @override
-  String get signOutConfirmation => 'Are you sure you want to sign out?';
+  String get signOutConfirmation => 'Segur que vols tancar la sessió?';
 
   @override
-  String get broadcaster => 'Broadcaster';
+  String get broadcaster => 'Emissor';
 
   @override
-  String get moderators => 'Moderators';
+  String get moderators => 'Moderadors';
 
   @override
-  String get viewers => 'Viewers';
+  String get viewers => 'Espectadors';
 
   @override
-  String get communityVips => 'Community VIPs';
+  String get communityVips => 'VIP de la comunitat';
 
   @override
-  String get searchViewers => 'Search Viewers';
+  String get searchViewers => 'Cerca espectadors';
 
   @override
-  String get reconnecting => 'Reconnecting...';
+  String get reconnecting => 'S\'està tornant a connectar...';
 
   @override
-  String get twitchBadges => 'Twitch badges';
+  String get twitchBadges => 'Insígnies de Twitch';
 
   @override
-  String get selectAll => 'Select all';
+  String get selectAll => 'Selecciona-ho tot';
 
   @override
-  String get quickLinks => 'Quick links';
+  String get quickLinks => 'Enllaços ràpids';
 
   @override
   String get swipeToDeleteQuickLinks =>
-      'Swipe left or right to delete quick link';
+      'Llisca cap a l\'esquerra o cap a la dreta per suprimir l\'enllaç ràpid';
 
   @override
-  String get quickLinksLabelHint => 'Label';
+  String get quickLinksLabelHint => 'Etiqueta';
 
   @override
-  String get invalidUrlErrorText => 'This doesn\'t look like a valid URL';
+  String get invalidUrlErrorText => 'No sembla un URL vàlid';
 
   @override
-  String get duplicateUrlErrorText => 'This link already exists';
+  String get duplicateUrlErrorText => 'Aquest enllaç ja existeix';
 
   @override
-  String get or => 'or';
+  String get or => 'o';
 
   @override
-  String get clearCookies => 'Clear cookies';
+  String get clearCookies => 'Esborra les galetes';
 
   @override
-  String get disabled => 'Disabled';
+  String get disabled => 'Desactivat';
 
   @override
-  String get twitchActivityFeed => 'Twitch activity feed';
+  String get twitchActivityFeed => 'Canal d\'activitat de Twitch';
 
   @override
-  String get signInToEnable => 'You must be signed in to enable this';
+  String get signInToEnable =>
+      'Has d\'iniciar la sessió per activar aquesta opció';
 
   @override
-  String get customUrl => 'Custom URL';
+  String get customUrl => 'URL personalitzat';
 
   @override
-  String get preview => 'Preview';
+  String get preview => 'Previsualització';
 
   @override
-  String get audioSources => 'Audio sources';
+  String get audioSources => 'Fonts d\'àudio';
 
   @override
   String get enableOffStreamSwitchTitle =>
-      'Enable off-stream (uses more battery)';
+      'Activa fora de directe (consumeix més bateria)';
 
   @override
   String get enableOffStreamSwitchEnabledSubtitle =>
-      'Audio will also play when you\'re offline';
+      'L\'àudio també es reproduirà quan no estiguis en directe';
 
   @override
   String get enableOffStreamSwitchDisabledSubtitle =>
-      'Audio will only play when you\'re live';
+      'L\'àudio només es reproduirà quan estiguis en directe';
 
   @override
-  String get iosOggWarningTitle => 'Hey! Listen!';
+  String get iosOggWarningTitle => 'Ei! Escolta!';
 
   @override
   String get iosOggWarningSubtitle =>
-      'iOS doesn\'t support *.ogg media files, which are the default files on Streamlabs. Ensure your audio sources use another format, otherwise they won\'t play.';
+      'iOS no admet fitxers multimèdia *.ogg, que són els fitxers predeterminats a Streamlabs. Assegura\'t que les teves fonts d\'àudio utilitzin un altre format; altrament, no es reproduiran.';
 
   @override
   String get url => 'URL';
 
   @override
-  String get activityFeedSubtitle => 'Customize your activity feed';
+  String get activityFeedSubtitle => 'Personalitza el teu canal d\'activitat';
 
   @override
-  String get audioSourcesSubtitle => 'Add web sources for alert sounds';
+  String get audioSourcesSubtitle => 'Afegeix fonts web per als sons d\'alerta';
 
   @override
-  String get quickLinksSubtitle => 'Add shortcuts to commonly used tools';
+  String get quickLinksSubtitle =>
+      'Afegeix dreceres a les eines més utilitzades';
 
   @override
-  String get chatHistory => 'Chat history';
+  String get chatHistory => 'Historial del xat';
 
   @override
-  String get chatHistorySubtitle => 'Change the chat appearance';
+  String get chatHistorySubtitle => 'Canvia l\'aparença del xat';
 
   @override
-  String get textToSpeechSubtitle => 'Change text to speech settings';
+  String get textToSpeechSubtitle => 'Canvia la configuració de text a veu';
 
   @override
-  String get events => 'Events';
+  String get events => 'Esdeveniments';
 
   @override
-  String get eventsSubtitle => 'Configure Twitch events';
+  String get eventsSubtitle => 'Configura els esdeveniments de Twitch';
 
   @override
-  String get thirdPartyServices => 'Third-party services';
+  String get thirdPartyServices => 'Serveis de tercers';
 
   @override
-  String get thirdPartyServicesSubtitle => 'Connect to a third-party service';
+  String get thirdPartyServicesSubtitle => 'Connecta\'t a un servei de tercers';
 
   @override
   String followingEvent(String displayName) {
-    return '<b>$displayName</b> is following you';
+    return '<b>$displayName</b> et segueix';
   }
 
   @override
   String followingEvent2(String displayName, String displayNameTwo) {
-    return '<b>$displayName</b> and <b>$displayNameTwo</b> are following you';
+    return '<b>$displayName</b> i <b>$displayNameTwo</b> et segueixen';
   }
 
   @override
@@ -289,54 +291,54 @@ class AppLocalizationsCa extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
-    return '<b>$displayName</b>, <b>$displayNameTwo</b>, and $numOthersString others are following you';
+    return '<b>$displayName</b>, <b>$displayNameTwo</b> i $numOthersString més et segueixen';
   }
 
   @override
   String unmuteUser(String displayName) {
-    return 'Unmute $displayName';
+    return 'Activa el so de $displayName';
   }
 
   @override
   String muteUser(String displayName) {
-    return 'Mute $displayName';
+    return 'Silencia $displayName';
   }
 
   @override
   String timeoutUser(String displayName) {
-    return 'Timeout $displayName';
+    return 'Expulsa temporalment $displayName';
   }
 
   @override
   String banUser(String displayName) {
-    return 'Ban $displayName';
+    return 'Prohibeix l\'accés a $displayName';
   }
 
   @override
   String unbanUser(String displayName) {
-    return 'Unban $displayName';
+    return 'Aixeca la prohibició a $displayName';
   }
 
   @override
   String viewProfile(String displayName) {
-    return 'View $displayName\'s profile';
+    return 'Mostra el perfil de $displayName';
   }
 
   @override
-  String get copyMessage => 'Copy Message';
+  String get copyMessage => 'Copia el missatge';
 
   @override
-  String get deleteMessage => 'Delete Message';
+  String get deleteMessage => 'Suprimeix el missatge';
 
   @override
   String get longScrollNotification =>
-      'You\'re scrolling kind of far, don\'t you think?';
+      'Estàs desplaçant-te molt amunt, no trobes?';
 
   @override
-  String get stfu => 'stfu';
+  String get stfu => 'calla';
 
   @override
-  String get globalEmotes => 'Global Emotes';
+  String get globalEmotes => 'Emoticones globals';
 
   @override
   String followerCount(int count) {
@@ -348,9 +350,9 @@ class AppLocalizationsCa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString followers',
-      one: '1 follower',
-      zero: '0 followers',
+      other: '$countString seguidors',
+      one: '1 seguidor',
+      zero: '0 seguidors',
     );
     return '$_temp0';
   }
@@ -365,170 +367,184 @@ class AppLocalizationsCa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$countString viewers',
-      one: '1 viewer',
-      zero: '0 viewers',
+      other: '$countString espectadors',
+      one: '1 espectador',
+      zero: '0 espectadors',
     );
     return '$_temp0';
   }
 
   @override
   String get streamPreviewMessage =>
-      'Hey there! Glad you like using stream preview but heads up it uses a lot of battery. Reading chat without it will extend your battery life.';
+      'Hola! Ens alegra que t\'agradi fer servir la previsualització del directe, però tingues en compte que consumeix molta bateria. Llegir el xat sense activar-la allargarà la durada de la bateria.';
 
   @override
-  String get okay => 'Okay';
+  String get okay => 'D\'acord';
 
   @override
-  String get streamPreviewLoading => 'Loading (or stream is offline)...';
+  String get streamPreviewLoading =>
+      'S\'està carregant (o el directe està fora de línia)...';
 
   @override
-  String get copiedToClipboard => 'Copied to clipboard';
+  String get copiedToClipboard => 'S\'ha copiat al porta-retalls';
 
   @override
   String get audioSourcesRequirePermissions =>
-      'Audio sources require permissions';
+      'Les fonts d\'àudio requereixen permisos';
 
   @override
   String get audioSourcesRequirePermissionsMessage =>
-      'Approve RealtimeChat to draw over other apps to use audio sources.';
+      'Autoritza RealtimeChat a mostrar-se per sobre d\'altres aplicacions per utilitzar les fonts d\'àudio.';
 
   @override
-  String get audioSourcesRemoveButton => 'Remove audio sources';
+  String get audioSourcesRemoveButton => 'Elimina les fonts d\'àudio';
 
   @override
-  String get audioSourcesOpenSettingsButton => 'Open settings';
+  String get audioSourcesOpenSettingsButton => 'Obre la configuració';
 
   @override
-  String get flashOn => 'Flash on';
+  String get flashOn => 'Flaix activat';
 
   @override
-  String get flashOff => 'Flash off';
+  String get flashOff => 'Flaix desactivat';
 
   @override
-  String get durationOneSecond => '1 second';
+  String get durationOneSecond => '1 segon';
 
   @override
-  String get durationOneMinute => '1 minute';
+  String get durationOneMinute => '1 minut';
 
   @override
-  String get durationTenMinutes => '10 minutes';
+  String get durationTenMinutes => '10 minuts';
 
   @override
-  String get durationOneHour => '1 hour';
+  String get durationOneHour => '1 hora';
 
   @override
-  String get durationSixHours => '6 hours';
+  String get durationSixHours => '6 hores';
 
   @override
-  String get durationOneDay => '1 day';
+  String get durationOneDay => '1 dia';
 
   @override
-  String get durationTwoDays => '2 days';
+  String get durationTwoDays => '2 dies';
 
   @override
-  String get durationOneWeek => '1 week';
+  String get durationOneWeek => '1 setmana';
 
   @override
-  String get durationTwoWeeks => '2 weeks';
+  String get durationTwoWeeks => '2 setmanes';
 
   @override
-  String get durationOneSecondTimeoutPrompt => 'Timeout for 1 second';
+  String get durationOneSecondTimeoutPrompt =>
+      'Expulsa temporalment durant 1 segon';
 
   @override
-  String get durationOneMinuteTimeoutPrompt => 'Timeout for 1 minute';
+  String get durationOneMinuteTimeoutPrompt =>
+      'Expulsa temporalment durant 1 minut';
 
   @override
-  String get durationTenMinutesTimeoutPrompt => 'Timeout for 10 minutes';
+  String get durationTenMinutesTimeoutPrompt =>
+      'Expulsa temporalment durant 10 minuts';
 
   @override
-  String get durationOneHourTimeoutPrompt => 'Timeout for 1 hour';
+  String get durationOneHourTimeoutPrompt =>
+      'Expulsa temporalment durant 1 hora';
 
   @override
-  String get durationSixHoursTimeoutPrompt => 'Timeout for 6 hours';
+  String get durationSixHoursTimeoutPrompt =>
+      'Expulsa temporalment durant 6 hores';
 
   @override
-  String get durationOneDayTimeoutPrompt => 'Timeout for 1 day';
+  String get durationOneDayTimeoutPrompt => 'Expulsa temporalment durant 1 dia';
 
   @override
-  String get durationTwoDaysTimeoutPrompt => 'Timeout for 2 days';
+  String get durationTwoDaysTimeoutPrompt =>
+      'Expulsa temporalment durant 2 dies';
 
   @override
-  String get durationOneWeekTimeoutPrompt => 'Timeout for 1 week';
+  String get durationOneWeekTimeoutPrompt =>
+      'Expulsa temporalment durant 1 setmana';
 
   @override
-  String get durationTwoWeeksTimeoutPrompt => 'Timeout for 2 weeks';
+  String get durationTwoWeeksTimeoutPrompt =>
+      'Expulsa temporalment durant 2 setmanes';
 
   @override
   String get errorFetchingViewerList =>
-      'We couldn\'t fetch the viewer list for this channel';
+      'No hem pogut obtenir la llista d\'espectadors d\'aquest canal';
 
   @override
-  String get eventsTitle => 'Events';
+  String get eventsTitle => 'Esdeveniments';
 
   @override
-  String get followEventConfigTitle => 'Follow Event';
+  String get followEventConfigTitle => 'Esdeveniment de seguiment';
 
   @override
-  String get customizeYourFollowEvent => 'Customize your follow event';
+  String get customizeYourFollowEvent =>
+      'Personalitza l\'esdeveniment de seguiment';
 
   @override
-  String get subscribeEventConfigTitle => 'Subscribe Event';
+  String get subscribeEventConfigTitle => 'Esdeveniment de subscripció';
 
   @override
   String get customizeYourSubscriptionEvent =>
-      'Customize your subscription event';
+      'Personalitza l\'esdeveniment de subscripció';
 
   @override
-  String get cheerEventConfigTitle => 'Cheer Event';
+  String get cheerEventConfigTitle => 'Esdeveniment de Cheer';
 
   @override
-  String get customizeYourCheerEvent => 'Customize your cheer event';
+  String get customizeYourCheerEvent => 'Personalitza l\'esdeveniment de Cheer';
 
   @override
-  String get raidEventConfigTitle => 'Raid Event';
+  String get raidEventConfigTitle => 'Esdeveniment de raid';
 
   @override
-  String get customizeYourRaidEvent => 'Customize your raid event';
+  String get customizeYourRaidEvent => 'Personalitza l\'esdeveniment de raid';
 
   @override
-  String get hostEventConfigTitle => 'Host Event';
+  String get hostEventConfigTitle => 'Esdeveniment d\'allotjament';
 
   @override
-  String get customizeYourHostEvent => 'Customize your host event';
+  String get customizeYourHostEvent =>
+      'Personalitza l\'esdeveniment d\'allotjament';
 
   @override
-  String get hypetrainEventConfigTitle => 'Hype Train Event';
+  String get hypetrainEventConfigTitle => 'Esdeveniment de Tren de l\'Hype';
 
   @override
-  String get customizeYourHypetrainEvent => 'Customize your hype train event';
+  String get customizeYourHypetrainEvent =>
+      'Personalitza l\'esdeveniment de Tren de l\'Hype';
 
   @override
-  String get pollEventConfigTitle => 'Poll Event';
+  String get pollEventConfigTitle => 'Esdeveniment d\'enquesta';
 
   @override
-  String get customizeYourPollEvent => 'Customize your poll event';
+  String get customizeYourPollEvent =>
+      'Personalitza l\'esdeveniment d\'enquesta';
 
   @override
-  String get predictionEventConfigTitle => 'Prediction Event';
+  String get predictionEventConfigTitle => 'Esdeveniment de predicció';
 
   @override
-  String get customizeYourPredictionEvent => 'Customize your prediction event';
+  String get customizeYourPredictionEvent =>
+      'Personalitza l\'esdeveniment de predicció';
 
   @override
   String get channelPointRedemptionEventConfigTitle =>
-      'Channel Point Redemption Event';
+      'Esdeveniment de bescanvi de punts del canal';
 
   @override
   String get customizeYourChannelPointRedemptionEvent =>
-      'Customize your channel point redemption event';
+      'Personalitza l\'esdeveniment de bescanvi de punts del canal';
 
   @override
-  String get outgoingRaidEventConfigTitle => 'Outgoing Raid Event';
+  String get outgoingRaidEventConfigTitle => 'Esdeveniment de raid sortint';
 
   @override
   String get customizeYourOutgoingRaidEvent =>
-      'Customize your outgoing raid event';
+      'Personalitza l\'esdeveniment de raid sortint';
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
@@ -538,15 +554,15 @@ class AppLocalizationsCa extends AppLocalizations {
       viewerCount,
     );
 
-    return '<b>$displayName</b> is raiding with <b>$viewerCountString</b> viewers!';
+    return '<b>$displayName</b> està fent un raid amb <b>$viewerCountString</b> espectadors!';
   }
 
   @override
-  String get shoutout => 'Shoutout';
+  String get shoutout => 'Menció';
 
   @override
   String raidingEventRaiding(String displayName) {
-    return 'Raiding <b>$displayName</b>...';
+    return 'Fent un raid a <b>$displayName</b>...';
   }
 
   @override
@@ -555,25 +571,25 @@ class AppLocalizationsCa extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
-    return '${secondsString}s';
+    return '$secondsString s';
   }
 
   @override
   String raidingEventRaided(String displayName) {
-    return '<b>$displayName</b> has raided!';
+    return '<b>$displayName</b> ha fet un raid!';
   }
 
   @override
-  String get raidingEventJoin => 'Join';
+  String get raidingEventJoin => 'Uneix-t\'hi';
 
   @override
   String raidingEventCanceled(String displayName) {
-    return '<b>$displayName</b>\'s raid was canceled.';
+    return 'S\'ha cancel·lat el raid de <b>$displayName</b>.';
   }
 
   @override
   String subscriptionEvent(String subscriberUserName, String tier) {
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier!';
+    return '<b>$subscriberUserName</b> s\'ha subscrit al nivell $tier!';
   }
 
   @override
@@ -592,7 +608,7 @@ class AppLocalizationsCa extends AppLocalizations {
       cumulativeTotal,
     );
 
-    return '<b>$gifterUserName</b> has gifted $totalString Tier $tier subs, totaling $cumulativeTotalString!';
+    return '<b>$gifterUserName</b> ha regalat $totalString subscripcions de nivell $tier, amb un total de $cumulativeTotalString!';
   }
 
   @override
@@ -607,7 +623,7 @@ class AppLocalizationsCa extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed for $cumulativeMonthsString months at Tier $tier!';
+    return '<b>$subscriberUserName</b> s\'ha subscrit durant $cumulativeMonthsString mesos al nivell $tier!';
   }
 
   @override
@@ -628,27 +644,27 @@ class AppLocalizationsCa extends AppLocalizations {
       cumulativeMonths,
     );
 
-    return '<b>$subscriberUserName</b> has subscribed at Tier $tier for $durationMonthsString months in advance, $cumulativeMonthsString months in total!';
+    return '<b>$subscriberUserName</b> s\'ha subscrit al nivell $tier durant $durationMonthsString mesos per avançat, $cumulativeMonthsString mesos en total!';
   }
 
   @override
   String realtimeCashTipWithDonor(String donor, String value, String currency) {
-    return '<b>$donor</b> tipped <b>$value $currency</b>.';
+    return '<b>$donor</b> ha donat una propina de <b>$value $currency</b>.';
   }
 
   @override
   String realtimeCashTipAnonymous(String value, String currency) {
-    return 'Anonymous tipped <b>$value $currency</b>.';
+    return 'Anònim ha donat una propina de <b>$value $currency</b>.';
   }
 
   @override
   String streamElementsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on StreamElements.';
+    return '<b>$name</b> ha donat una propina de <b>$formattedAmount</b> a StreamElements.';
   }
 
   @override
   String streamlabsTipEventMessage(String name, String formattedAmount) {
-    return '<b>$name</b> tipped <b>$formattedAmount</b> on Streamlabs.';
+    return '<b>$name</b> ha donat una propina de <b>$formattedAmount</b> a Streamlabs.';
   }
 
   @override
@@ -662,7 +678,7 @@ class AppLocalizationsCa extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points. $userInput';
+    return '<b>$redeemerUsername</b> ha bescanviat <b>$rewardName</b> per <b>$rewardCostString</b> punts. $userInput';
   }
 
   @override
@@ -675,7 +691,7 @@ class AppLocalizationsCa extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
-    return '<b>$redeemerUsername</b> redeemed <b>$rewardName</b> for <b>$rewardCostString</b> points.';
+    return '<b>$redeemerUsername</b> ha bescanviat <b>$rewardName</b> per <b>$rewardCostString</b> punts.';
   }
 
   @override
@@ -685,11 +701,11 @@ class AppLocalizationsCa extends AppLocalizations {
     );
     final String bitsString = bitsNumberFormat.format(bits);
 
-    return '<b>$name</b> cheered <b>$bitsString</b> bits. $cheerMessage';
+    return '<b>$name</b> ha enviat <b>$bitsString</b> bits. $cheerMessage';
   }
 
   @override
-  String get anonymous => 'Anonymous';
+  String get anonymous => 'Anònim';
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
@@ -697,12 +713,12 @@ class AppLocalizationsCa extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
-    return '<b>$fromDisplayName</b> is hosting with a party of <b>$viewersString</b>.';
+    return '<b>$fromDisplayName</b> està allotjant el canal amb un grup de <b>$viewersString</b>.';
   }
 
   @override
   String hypeTrainEventProgress(String level, String progressPercent) {
-    return 'Hype Train level <b>$level</b> in progress! <b>$progressPercent%</b> completed!';
+    return 'Tren de l\'Hype de nivell <b>$level</b> en curs! <b>$progressPercent%</b> completat!';
   }
 
   @override
@@ -711,7 +727,7 @@ class AppLocalizationsCa extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> succeeded.';
+    return 'El Tren de l\'Hype de nivell <b>$levelString</b> s\'ha completat amb èxit.';
   }
 
   @override
@@ -720,7 +736,7 @@ class AppLocalizationsCa extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
-    return 'Hype Train level <b>$levelString</b> failed.';
+    return 'El Tren de l\'Hype de nivell <b>$levelString</b> ha fallat.';
   }
 
   @override
@@ -738,24 +754,24 @@ class AppLocalizationsCa extends AppLocalizations {
   }
 
   @override
-  String get textToSpeechEnabled => 'Text to speech enabled';
+  String get textToSpeechEnabled => 'Text a veu activat';
 
   @override
-  String get textToSpeechDisabled => 'Text to speech disabled';
+  String get textToSpeechDisabled => 'Text a veu desactivat';
 
   @override
-  String get alertsEnabled => 'Alerts only';
+  String get alertsEnabled => 'Només alertes';
 
   @override
-  String get pinDuration => 'Pin Duration';
+  String get pinDuration => 'Durada de la fixació';
 
   @override
   String durationSeconds(int seconds) {
     String _temp0 = intl.Intl.pluralLogic(
       seconds,
       locale: localeName,
-      other: '$seconds seconds',
-      one: '1 second',
+      other: '$seconds segons',
+      one: '1 segon',
     );
     return '$_temp0';
   }
@@ -765,245 +781,257 @@ class AppLocalizationsCa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: '$minutes minutes',
-      one: '1 minute',
+      other: '$minutes minuts',
+      one: '1 minut',
     );
     return '$_temp0';
   }
 
   @override
-  String get enableEvent => 'Enable event';
+  String get enableEvent => 'Activa l\'esdeveniment';
 
   @override
-  String get showEventInChatHistory => 'Show event in chat history';
+  String get showEventInChatHistory =>
+      'Mostra l\'esdeveniment a l\'historial del xat';
 
   @override
-  String get enableShoutouts => 'Enable shoutouts';
+  String get enableShoutouts => 'Activa les mencions';
 
   @override
   String get enableShoutoutsSubtitle =>
-      'Send a link to the raiding channel to chat';
+      'Envia un enllaç del canal que fa el raid al xat';
 
   @override
-  String get raidConfigurationTitle => 'Raid Configuration';
+  String get raidConfigurationTitle => 'Configuració de raid';
 
   @override
-  String get cheerConfigurationTitle => 'Cheer Configuration';
+  String get cheerConfigurationTitle => 'Configuració de Cheer';
 
   @override
-  String get followConfigurationTitle => 'Follow Configuration';
+  String get followConfigurationTitle => 'Configuració de seguiment';
 
   @override
-  String get outgoingRaidConfigurationTitle => 'Outgoing Raid Configuration';
+  String get outgoingRaidConfigurationTitle => 'Configuració de raid sortint';
 
   @override
-  String get hostConfigurationTitle => 'Host Configuration';
+  String get hostConfigurationTitle => 'Configuració d\'allotjament';
 
   @override
-  String get channelPointConfigurationTitle => 'Channel Point Configuration';
+  String get channelPointConfigurationTitle =>
+      'Configuració de punts del canal';
 
   @override
-  String get pollConfigurationTitle => 'Poll Configuration';
+  String get pollConfigurationTitle => 'Configuració d\'enquestes';
 
   @override
-  String get hypetrainConfigurationTitle => 'Hypetrain Configuration';
+  String get hypetrainConfigurationTitle => 'Configuració del Tren de l\'Hype';
 
   @override
-  String get subscriptionConfigurationTitle => 'Subscription Configuration';
+  String get subscriptionConfigurationTitle => 'Configuració de subscripcions';
 
   @override
-  String get predictionConfigurationTitle => 'Prediction Configuration';
+  String get predictionConfigurationTitle => 'Configuració de prediccions';
 
   @override
   String get unfulfilledRewardsPinDuration =>
-      'Additional Pin Duration for Unfulfilled Rewards';
+      'Durada de fixació addicional per a recompenses pendents';
 
   @override
-  String get pollPinDuration => 'Pin duration after the result is finalized';
+  String get pollPinDuration =>
+      'Durada de la fixació un cop finalitzat el resultat';
 
   @override
-  String get hypetrainPinDuration => 'Pin duration after hypetrain is over';
+  String get hypetrainPinDuration =>
+      'Durada de la fixació un cop acabat el Tren de l\'Hype';
 
   @override
   String get enableGiftedSubscriptions =>
-      'Enable individual gifted subscriptions';
+      'Activa les subscripcions regalades individuals';
 
   @override
   String get enableGiftedSubscriptionsSubtitle =>
-      'Show every subscription that is gifted';
+      'Mostra cada subscripció que es regali';
 
   @override
-  String get settingsBackupTitle => 'Settings backup and restore';
+  String get settingsBackupTitle =>
+      'Còpia de seguretat i restauració de la configuració';
 
   @override
-  String get cloudBackup => 'Cloud backup';
+  String get cloudBackup => 'Còpia de seguretat al núvol';
 
   @override
-  String get lastBackupNever => 'Last backup: never';
+  String get lastBackupNever => 'Última còpia de seguretat: mai';
 
   @override
-  String get backUp => 'Back up';
+  String get backUp => 'Fes una còpia de seguretat';
 
   @override
-  String get restore => 'Restore';
+  String get restore => 'Restaura';
 
   @override
-  String get localBackup => 'Local backup';
+  String get localBackup => 'Còpia de seguretat local';
 
   @override
-  String get exportSettings => 'Export';
+  String get exportSettings => 'Exporta';
 
   @override
-  String get importSettings => 'Import';
+  String get importSettings => 'Importa';
 
   @override
-  String get showViewerAndFollowerCount => 'Show viewer and follower count';
+  String get showViewerAndFollowerCount =>
+      'Mostra el nombre d\'espectadors i seguidors';
 
   @override
-  String get screenOrientation => 'Screen orientation';
+  String get screenOrientation => 'Orientació de la pantalla';
 
   @override
-  String get appTheme => 'App theme';
+  String get appTheme => 'Tema de l\'aplicació';
 
   @override
-  String get systemDefault => 'System';
+  String get systemDefault => 'Sistema';
 
   @override
-  String get portrait => 'Portrait';
+  String get portrait => 'Vertical';
 
   @override
-  String get landscape => 'Landscape';
+  String get landscape => 'Horitzontal';
 
   @override
-  String get lightTheme => 'Light';
+  String get lightTheme => 'Clar';
 
   @override
-  String get darkTheme => 'Dark';
+  String get darkTheme => 'Fosc';
 
   @override
-  String get openSourceTitle => 'RealtimeChat is open source';
+  String get openSourceTitle => 'RealtimeChat és de codi obert';
 
   @override
-  String get openSourceSubtitle => 'Find us on GitHub!';
+  String get openSourceSubtitle => 'Troba\'ns a GitHub!';
 
   @override
-  String get discordSubtitle => 'Join the Muxable Discord!';
+  String get discordSubtitle => 'Uneix-te al Discord de Muxable!';
 
   @override
   String get earlyTestersThanks =>
-      'Thanks to all the early testers who sent bug reports!';
+      'Gràcies a tots els primers provadors que van enviar informes d\'errors!';
 
   @override
-  String get discoModeEnabled => '🕺 Disco mode enabled! :D';
+  String get discoModeEnabled => '🕺 Mode discoteca activat! :D';
 
   @override
-  String get discoModeDisabled => '🕺 Disco mode disabled D:';
+  String get discoModeDisabled => '🕺 Mode discoteca desactivat D:';
 
   @override
-  String get playSampleMessage => 'Play sample message';
+  String get playSampleMessage => 'Reprodueix el missatge de mostra';
 
   @override
-  String get textToSpeechRate => 'Text to Speech Rate';
+  String get textToSpeechRate => 'Velocitat de text a veu';
 
   @override
-  String get textToSpeechPitch => 'Text to Speech Pitch';
+  String get textToSpeechPitch => 'To de text a veu';
 
   @override
-  String get muteBots => 'Mute text to speech for bots';
+  String get muteBots => 'Silencia el text a veu per als bots';
 
   @override
-  String get muteEmotes => 'Mute all emotes in text to speech';
+  String get muteEmotes => 'Silencia totes les emoticones en el text a veu';
 
   @override
-  String get muteViewerNames => 'Mute viewer names in text to speech';
+  String get muteViewerNames =>
+      'Silencia els noms dels espectadors en el text a veu';
 
   @override
-  String get subscribersOnly => 'Subscribers only';
+  String get subscribersOnly => 'Només subscriptors';
 
   @override
-  String get fontSize => 'Font size';
+  String get fontSize => 'Mida de la lletra';
 
   @override
-  String get usernameContrastBoost => 'Username contrast boost';
+  String get usernameContrastBoost => 'Augment del contrast del nom d\'usuari';
 
   @override
-  String get twitchBadgeSettings => 'Twitch badge settings';
+  String get twitchBadgeSettings => 'Configuració de les insígnies de Twitch';
 
   @override
-  String get twitchBadgeSettingsSubtitle => 'Control which badges are visible';
+  String get twitchBadgeSettingsSubtitle =>
+      'Controla quines insígnies són visibles';
 
   @override
-  String get showDeletedMessages => 'Show deleted messages';
+  String get showDeletedMessages => 'Mostra els missatges suprimits';
 
   @override
-  String get deletedMessagesGreyedOut => 'Deleted messages will be greyed out';
+  String get deletedMessagesGreyedOut =>
+      'Els missatges suprimits es mostraran en gris';
 
   @override
-  String get deletedMessagesRemoved => 'Deleted messages will be removed';
+  String get deletedMessagesRemoved => 'Els missatges suprimits s\'eliminaran';
 
   @override
-  String get showLoginNames => 'Show login names';
+  String get showLoginNames => 'Mostra els noms d\'inici de sessió';
 
   @override
   String get loginNamesShown =>
-      'Login names will be shown if they are different from the display name';
+      'Els noms d\'inici de sessió es mostraran si són diferents del nom visible';
 
   @override
-  String get loginNamesHidden => 'Login names will be hidden';
+  String get loginNamesHidden => 'Els noms d\'inici de sessió s\'ocultaran';
 
   @override
-  String get compactMessages => 'Compact messages';
+  String get compactMessages => 'Compacta els missatges';
 
   @override
-  String get dontCompactMessages => 'Don\'t compact messages';
+  String get dontCompactMessages => 'No compactis els missatges';
 
   @override
-  String get dontCompactMessagesSubtitle => 'Messages are shown unchanged';
+  String get dontCompactMessagesSubtitle =>
+      'Els missatges es mostren sense canvis';
 
   @override
-  String get compactIndividualMessages => 'Compact individual messages';
+  String get compactIndividualMessages => 'Compacta els missatges individuals';
 
   @override
   String get compactIndividualMessagesSubtitle =>
-      'Repetitive text in messages is shortened';
+      'El text repetitiu dels missatges s\'escurça';
 
   @override
-  String get announcementPinDuration => 'Announcement pin duration';
+  String get announcementPinDuration => 'Durada de la fixació dels anuncis';
 
   @override
-  String get idleMessageAlertDuration => 'Idle message alert duration';
+  String get idleMessageAlertDuration =>
+      'Durada de l\'alerta d\'inactivitat de missatges';
 
   @override
   String get idleMessageAlertDurationSubtitle =>
-      'If there aren\'t any messages for this amount of time and a new one comes in, an alert sound will play.';
+      'Si no hi ha cap missatge durant aquest període de temps i n\'arriba un de nou, es reproduirà un so d\'alerta.';
 
   @override
-  String get realtimeCashSubtitle => 'Connect an ETH or MATIC wallet';
+  String get realtimeCashSubtitle => 'Connecta una cartera ETH o MATIC';
 
   @override
-  String get walletAddress => 'Wallet address';
+  String get walletAddress => 'Adreça de la cartera';
 
   @override
-  String get streamlabsSubtitle => 'See your Streamlabs donations';
+  String get streamlabsSubtitle => 'Consulta les teves donacions de Streamlabs';
 
   @override
-  String get streamElementsSubtitle => 'See your StreamElements donations';
+  String get streamElementsSubtitle =>
+      'Consulta les teves donacions de StreamElements';
 
   @override
   String get thirdPartyAuthError =>
-      'Hmm, that didn\'t work. Try again, or ask on Discord?';
+      'Mmm, això no ha funcionat. Torna-ho a provar o pregunta-ho a Discord.';
 
   @override
   String get companionAuthBrowserTooOld =>
-      'Your browser is too old to support signing in directly. Scan this QR code with your phone to sign in on another device.';
+      'El teu navegador és massa antic per admetre l\'inici de sessió directe. Escaneja aquest codi QR amb el telèfon per iniciar la sessió en un altre dispositiu.';
 
   @override
   String get companionAuthScanQrCode =>
-      'Scan this QR code with your phone to sign in on another device.';
+      'Escaneja aquest codi QR amb el telèfon per iniciar la sessió en un altre dispositiu.';
 
   @override
   String kickSubscriptionEvent(String subscriberName) {
-    return '<b>$subscriberName</b> has subscribed!';
+    return '<b>$subscriberName</b> s\'ha subscrit!';
   }
 
   @override
@@ -1012,7 +1040,7 @@ class AppLocalizationsCa extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
-    return '<b>$subscriberName</b> has resubscribed for $monthsString months!';
+    return '<b>$subscriberName</b> ha renovat la subscripció durant $monthsString mesos!';
   }
 
   @override
@@ -1021,7 +1049,7 @@ class AppLocalizationsCa extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
-    return '<b>$gifterName</b> has gifted $countString subs!';
+    return '<b>$gifterName</b> ha regalat $countString subscripcions!';
   }
 
   @override
@@ -1030,60 +1058,60 @@ class AppLocalizationsCa extends AppLocalizations {
         .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
-    return '<b>$senderName</b> sent $amountString Kicks!';
+    return '<b>$senderName</b> ha enviat $amountString Kicks!';
   }
 
   @override
-  String get signInWithKick => 'Sign in with Kick';
+  String get signInWithKick => 'Inicia la sessió amb Kick';
 
   @override
   String get textToSpeechTooManyMessages =>
-      'There are too many messages. Text to speech disabled';
+      'Hi ha massa missatges. S\'ha desactivat el text a veu';
 
   @override
-  String get turnOffTextToSpeech => 'Turn off';
+  String get turnOffTextToSpeech => 'Desactiva';
 
   @override
-  String get addToChat => 'Add to chat';
+  String get addToChat => 'Afegeix al xat';
 
   @override
-  String get inChat => 'In chat';
+  String get inChat => 'Al xat';
 
   @override
-  String get removeFromChat => 'Remove from chat';
+  String get removeFromChat => 'Elimina del xat';
 
   @override
   String cantChatWithAccount(String provider) {
-    return 'Your $provider account can\'t chat here';
+    return 'El teu compte de $provider no pot xatejar aquí';
   }
 
   @override
-  String get cantChatWithAccounts => 'Your accounts can\'t chat here';
+  String get cantChatWithAccounts => 'Els teus comptes no poden xatejar aquí';
 
   @override
   String sendAMessageTo(String channel) {
-    return 'Send a message to $channel...';
+    return 'Envia un missatge a $channel...';
   }
 
   @override
   String replaceChannel(String channel) {
-    return 'Replace $channel';
+    return 'Substitueix $channel';
   }
 
   @override
-  String get voicePacks => 'Voice packs';
+  String get voicePacks => 'Paquets de veu';
 
   @override
   String get voicePacksDescription =>
-      'Voice packs read chat with natural-sounding voices that run on your device, offline once downloaded. The voices are machine-generated by AI, not recorded by a person.';
+      'Els paquets de veu llegeixen el xat amb veus naturals que s\'executen al dispositiu, fora de línia un cop baixats. Les veus són generades automàticament per IA, no pas enregistrades per cap persona.';
 
   @override
   String voicePackDetails(int voices, String size) {
     String _temp0 = intl.Intl.pluralLogic(
       voices,
       locale: localeName,
-      other: '$voices voices',
-      one: '1 voice',
+      other: '$voices veus',
+      one: '1 veu',
     );
     return '$_temp0 · $size';
   }
@@ -1093,99 +1121,100 @@ class AppLocalizationsCa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count languages',
-      one: '1 language',
+      other: '$count idiomes',
+      one: '1 idioma',
     );
     return '$_temp0: $languages';
   }
 
   @override
   String get voicePackOpenRailNotice =>
-      'This model\'s license (OpenRAIL-M) forbids harmful uses, such as impersonating people or spreading disinformation, and these restrictions apply to you too.';
+      'La llicència d\'aquest model (OpenRAIL-M) prohibeix usos perjudicials, com ara suplantar la identitat de persones o difondre desinformació, i aquestes restriccions també s\'apliquen a tu.';
 
   @override
   String voicePackDeleteConfirm(String pack, String size) {
-    return 'Delete $pack? This frees $size.';
+    return 'Vols suprimir $pack? S\'alliberaran $size.';
   }
 
   @override
-  String get voicePackDownload => 'Download';
+  String get voicePackDownload => 'Baixa';
 
   @override
-  String get voicePackUpdate => 'Update';
+  String get voicePackUpdate => 'Actualitza';
 
   @override
-  String get voicePackWaitingForWifi => 'Waiting for Wi-Fi';
+  String get voicePackWaitingForWifi => 'S\'està esperant connexió Wi-Fi';
 
   @override
-  String get voicePackUseMobileData => 'Use mobile data';
+  String get voicePackUseMobileData => 'Utilitza les dades mòbils';
 
   @override
   String voicePackDownloading(String downloaded, String total) {
-    return 'Downloading: $downloaded of $total';
+    return 'S\'està baixant: $downloaded de $total';
   }
 
   @override
-  String get voicePackInstalling => 'Installing';
+  String get voicePackInstalling => 'S\'està instal·lant';
 
   @override
   String voicePackInstallFailed(String pack) {
-    return 'Couldn\'t install $pack. Check your connection and try again.';
+    return 'No s\'ha pogut instal·lar $pack. Comprova la connexió i torna-ho a provar.';
   }
 
   @override
-  String get voices => 'Voices';
+  String get voices => 'Veus';
 
   @override
-  String get perViewerVoice => 'Per-viewer voice';
+  String get perViewerVoice => 'Veu per espectador';
 
   @override
   String get perViewerVoiceSubtitle =>
-      'Each viewer gets their own voice. The voice you pick reads alerts, or everything when this is off.';
+      'Cada espectador té la seva pròpia veu. La veu que triïs llegeix les alertes, o bé tot quan aquesta opció està desactivada.';
 
   @override
-  String get streamLanguage => 'Stream language';
+  String get streamLanguage => 'Idioma del directe';
 
   @override
-  String get ttsEngineNeural => 'Neural voice (on-device)';
+  String get ttsEngineNeural => 'Veu neuronal (al dispositiu)';
 
   @override
-  String get ttsEngineSystem => 'System voice';
+  String get ttsEngineSystem => 'Veu del sistema';
 
   @override
   String languageUnsupported(String language) {
-    return '$language isn\'t supported by your voice packs; the system voice will be used';
+    return 'Els teus paquets de veu no admeten l\'idioma $language; s\'utilitzarà la veu del sistema';
   }
 
   @override
   String get neuralFallbackLowMemory =>
-      'This device doesn\'t have enough memory for neural voices, so chat is read with the system voice.';
+      'Aquest dispositiu no té prou memòria per a les veus neuronals, de manera que el xat es llegeix amb la veu del sistema.';
 
   @override
   String get neuralFallbackLoadFailed =>
-      'The neural voice couldn\'t load, so chat is read with the system voice.';
+      'No s\'ha pogut carregar la veu neuronal, de manera que el xat es llegeix amb la veu del sistema.';
 
   @override
-  String get accounts => 'Accounts';
+  String get accounts => 'Comptes';
 
   @override
-  String get accountsSubtitle => 'Sign in to each platform you stream on';
+  String get accountsSubtitle =>
+      'Inicia la sessió a cada plataforma on facis directes';
 
   @override
   String addProviderAccount(String provider) {
-    return 'Add $provider account';
+    return 'Afegeix un compte de $provider';
   }
 
   @override
   String signInWithProvider(String provider) {
-    return 'Sign in with $provider';
+    return 'Inicia la sessió amb $provider';
   }
 
   @override
   String signOutOfAccount(String channel, String provider) {
-    return 'Sign out of $channel on $provider?';
+    return 'Vols tancar la sessió de $channel a $provider?';
   }
 
   @override
-  String get signOutOfAll => 'Sign out of all accounts';
+  String get signOutOfAll => 'Tanca la sessió de tots els comptes';
 }
