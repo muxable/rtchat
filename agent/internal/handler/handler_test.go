@@ -2,6 +2,9 @@ package handler
 
 import (
 	"errors"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
+	"google.golang.org/api/iterator"
 	"io"
 	"reflect"
 	"testing"
@@ -52,5 +55,25 @@ func TestNewClientFallbacks(t *testing.T) {
 				t.Fatalf("client=%v err=%v", got, err)
 			}
 		})
+	}
+}
+
+func TestProfileLookupFailureSeverity(t *testing.T) {
+	for _, lookupErr := range []error{iterator.Done, errors.New("Firestore unavailable")} {
+		core, logs := observer.New(zap.InfoLevel)
+		undo := zap.ReplaceGlobals(zap.New(core))
+		_, err := newClientWithFallbacks(testRequest(), func(string) (string, error) { return "", lookupErr }, func(*agent.Request, string) (io.Closer, error) { return &fakeCloser{}, nil }, nil)
+		undo()
+		if err != nil {
+			t.Fatal(err)
+		}
+		entries := logs.All()
+		want := zap.WarnLevel
+		if errors.Is(lookupErr, iterator.Done) {
+			want = zap.InfoLevel
+		}
+		if len(entries) != 1 || entries[0].Level != want {
+			t.Fatal(entries)
+		}
 	}
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"go.uber.org/zap"
+	"google.golang.org/api/iterator"
 )
 
 func (h *TwitchAgent) NewClient(r *agent.Request) (io.Closer, error) {
@@ -23,7 +24,11 @@ func (h *TwitchAgent) NewClient(r *agent.Request) (io.Closer, error) {
 func newClientWithFallbacks(r *agent.Request, lookup func(string) (string, error), joinUser func(*agent.Request, string) (io.Closer, error), joinAnonymous func(*agent.Request) (io.Closer, error)) (io.Closer, error) {
 	// handle twitch request
 	if userID, err := lookup(r.Channel()); err != nil {
-		zap.L().Info("failed to get twitch user id, probably never used realtimechat", zap.Error(err))
+		if errors.Is(err, iterator.Done) {
+			zap.L().Info("no Twitch profile for channel")
+		} else {
+			zap.L().Warn("failed to look up Twitch profile", zap.Error(err))
+		}
 	} else if client, err := joinUser(r, userID); err != nil {
 		zap.L().Warn("failed to join channel as authed user", zap.Error(err))
 	} else {
