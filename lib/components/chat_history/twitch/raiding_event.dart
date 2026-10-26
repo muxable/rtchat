@@ -1,13 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:styled_text/styled_text.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/views.dart';
-import 'package:styled_text/styled_text.dart';
 
 class TwitchRaidingEventWidget extends StatefulWidget {
   final TwitchRaidingEventModel model;
@@ -61,16 +62,18 @@ class _TwitchRaidingEventWidgetState extends State<TwitchRaidingEventWidget> {
               ),
               DecoratedEventWidget.avatar(
                 decoration: const BoxDecoration(color: Colors.transparent),
-                avatar: ResilientNetworkImage(
-                  model.targetUser.profilePictureUrl,
+                avatar: CachedNetworkImageProvider(
+                  model.targetUser.profilePictureUrl.toString(),
                 ),
                 child: Row(
                   children: [
                     Expanded(
                       child: StyledText(
                         text: AppLocalizations.of(context)!.raidingEventRaiding(
-                          model.targetUser.displayName ??
-                              AppLocalizations.of(context)!.anonymous,
+                          htmlEscape.convert(
+                            model.targetUser.displayName ??
+                                AppLocalizations.of(context)!.anonymous,
+                          ),
                         ),
                         tags: {
                           'b': StyledTextTag(
@@ -110,14 +113,18 @@ class _TwitchRaidingEventWidgetState extends State<TwitchRaidingEventWidget> {
     } else if (model.isSuccessful) {
       return GestureDetector(
         child: DecoratedEventWidget.avatar(
-          avatar: ResilientNetworkImage(model.targetUser.profilePictureUrl),
+          avatar: CachedNetworkImageProvider(
+            model.targetUser.profilePictureUrl.toString(),
+          ),
           child: Row(
             children: [
               Expanded(
                 child: StyledText(
                   text: AppLocalizations.of(context)!.raidingEventRaided(
-                    model.targetUser.displayName ??
-                        AppLocalizations.of(context)!.anonymous,
+                    htmlEscape.convert(
+                      model.targetUser.displayName ??
+                          AppLocalizations.of(context)!.anonymous,
+                    ),
                   ),
                   tags: {
                     'b': StyledTextTag(
@@ -146,11 +153,15 @@ class _TwitchRaidingEventWidgetState extends State<TwitchRaidingEventWidget> {
       );
     } else {
       return DecoratedEventWidget.avatar(
-        avatar: ResilientNetworkImage(model.targetUser.profilePictureUrl),
+        avatar: CachedNetworkImageProvider(
+          model.targetUser.profilePictureUrl.toString(),
+        ),
         child: StyledText(
           text: AppLocalizations.of(context)!.raidingEventCanceled(
-            model.targetUser.displayName ??
-                AppLocalizations.of(context)!.anonymous,
+            htmlEscape.convert(
+              model.targetUser.displayName ??
+                  AppLocalizations.of(context)!.anonymous,
+            ),
           ),
           tags: {
             'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),

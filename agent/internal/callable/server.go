@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/muxable/rtchat/agent/internal/observability"
 	"go.uber.org/zap"
 )
 
@@ -91,7 +92,7 @@ func (s *Server) wrap(name string, requireAuth bool, handler Handler) http.Handl
 			zap.Float64("latency_ms", float64(time.Since(start))/float64(time.Millisecond)),
 		}
 		if status >= 500 {
-			zap.L().Warn("http request", append(fields, zap.Error(err))...)
+			zap.L().Error("http request", append(fields, zap.Error(err))...)
 			return
 		}
 		zap.L().Info("http request", fields...)
@@ -226,14 +227,14 @@ func readData(dec *json.Decoder) (json.RawMessage, error) {
 	if dec.Decode(new(any)) != io.EOF {
 		return nil, errors.New("trailing JSON")
 	}
-	return data, nil
+	return decodeData(data)
 }
 
 func invoke(ctx context.Context, data json.RawMessage, handler Handler) (result any, err error) {
 	defer func() {
-		if recover() != nil {
+		if value := recover(); value != nil {
 			result = nil
-			err = errors.New("handler panic")
+			err = observability.CapturePanic(value)
 		}
 	}()
 	return handler(ctx, data)

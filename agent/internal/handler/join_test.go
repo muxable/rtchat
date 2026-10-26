@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -156,5 +157,40 @@ func TestTwitchProfileMalformed(t *testing.T) {
 				t.Fatal("invalid nested profile accepted")
 			}
 		})
+	}
+}
+
+func TestAuthenticatedJoinWaitsBeforeOpeningConnection(t *testing.T) {
+	h := testAgent()
+	waited := false
+	h.WaitForAuth = func(ctx context.Context, login string) error {
+		if login != "user" {
+			t.Fatal(login)
+		}
+		waited = true
+		return nil
+	}
+	c, _ := activeChat()
+	defer c.Disconnect()
+	h.newChat = func(string, string) chatConnection {
+		if !waited {
+			t.Fatal("opened IRC connection before shared authentication slot")
+		}
+		return c
+	}
+	h.bindChat = func(chatConnection) {}
+	client, err := h.JoinAsUser(testRequest(), "uid")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+}
+
+func TestAuthenticatedJoinDoesNotConnectWhenGateFails(t *testing.T) {
+	h := testAgent()
+	h.WaitForAuth = func(context.Context, string) error { return context.Canceled }
+	h.newChat = func(string, string) chatConnection { t.Fatal("opened connection despite canceled wait"); return nil }
+	if _, err := h.JoinAsUser(testRequest(), "uid"); !errors.Is(err, context.Canceled) {
+		t.Fatal(err)
 	}
 }

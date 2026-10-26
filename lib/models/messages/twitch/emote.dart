@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rtchat/api.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/channels.dart';
 
 /// How long to wait before fetching the emotes again after a failure.
@@ -149,7 +149,8 @@ class Emote {
   Uri get uri =>
       Uri.parse(imageUrl.startsWith("//") ? "https:$imageUrl" : imageUrl);
 
-  ResilientNetworkImage get image => ResilientNetworkImage(uri);
+  CachedNetworkImageProvider get image =>
+      CachedNetworkImageProvider(uri.toString());
 
   static Emote fromJson(dynamic json) {
     return Emote(

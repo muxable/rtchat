@@ -1,0 +1,19 @@
+{
+  "displayName": "Agent issues",
+  "enabled": true,
+  "combiner": "OR",
+  "conditions": [{
+    "displayName": "Agent reported an issue or crash",
+    "conditionMatchedLog": {
+      "filter": "resource.type=\"gce_instance\" AND logName=\"projects/rtchat-47692/logs/cos_containers\" AND jsonPayload.serviceContext.service=\"rtchat-agent\" AND jsonPayload.\"@type\"=\"type.googleapis.com/google.devtools.clouderrorreporting.v1beta1.ReportedErrorEvent\""
+    }
+  }],
+  "alertStrategy": {
+    "notificationRateLimit": {"period": "3600s"},
+    "autoClose": "86400s"
+  },
+  "documentation": {
+    "mimeType": "text/markdown",
+    "content": "The agent reported an operational warning, error, or crash. Inspect Error Reporting for service rtchat-agent and the matching Cloud Logging entries. Notifications are limited to one per hour; every issue is still recorded."
+  }
+}
