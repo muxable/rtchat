@@ -544,3 +544,26 @@ func TestTwitchCancelRaidRejectedAndRateLimited(t *testing.T) {
 		})
 	}
 }
+
+func TestTimeoutAcceptsFirebaseInt64Duration(t *testing.T) {
+	requests := 0
+	s, _ := newMock(func(r *http.Request) (*http.Response, error) {
+		requests++
+		if r.Method != http.MethodPost || r.URL.Path != "/helix/moderation/bans" {
+			t.Fatalf("unexpected request: %s %s", r.Method, r.URL)
+		}
+		data := object(requestBody(t, r)["data"])
+		if data["duration"] != float64(300) || data["user_id"] != "target-id" {
+			t.Fatalf("wrong timeout: %v", data)
+		}
+		return respond(200, `{"data":[]}`), nil
+	})
+	code, body := call(t, s, "timeout", map[string]any{
+		"provider": "twitch", "channelId": "broadcaster", "userId": "target-id",
+		"reason": "timed out by streamer",
+		"length": map[string]any{"@type": "type.googleapis.com/google.protobuf.Int64Value", "value": "300"},
+	}, true)
+	if code != http.StatusOK || requests != 1 {
+		t.Fatalf("timeout rejected: status=%d body=%v provider requests=%d", code, body, requests)
+	}
+}
