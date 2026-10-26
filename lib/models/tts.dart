@@ -76,9 +76,9 @@ enum NeuralTtsFallback {
 /// 3. and by the platform's voices too when the neural engine fails, for
 ///    that message only (unless it was unsaid in the meantime).
 ///
-/// Chat is in its channel's language ([languageFor]). Alerts and system
-/// messages are made of the app's strings, so they are in its language, and
-/// always read with the chosen voice.
+/// Chat is in its channel's language ([languageFor]). Generated mode/backlog
+/// announcements use the current reading language when translated; other alerts
+/// use the app's language. Announcements and alerts use the chosen voice.
 ///
 /// A loaded neural model takes a few hundred megabytes, so it's released
 /// ([releaseNeuralModels]) when text to speech is turned off, after
@@ -347,11 +347,26 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
+  /// Generated announcements follow the current reading language. When the app
+  /// has no translation for it, keep the UI translation and its matching voice.
+  AppLocalizations _announcementLocalizations(AppLocalizations fallback) {
+    final locales = AppLocalizations.supportedLocales;
+    final match = LanguageTag.bestMatch(
+      readingLanguage.languageCode,
+      locales.map((locale) => locale.toLanguageTag()),
+    );
+    if (match == null) return fallback;
+    return lookupAppLocalizations(
+      locales.firstWhere((locale) => locale.toLanguageTag() == match),
+    );
+  }
+
   void setMode(AppLocalizations localizations, TtsMode mode) {
     if (_mode == mode) {
       return;
     }
     _mode = mode;
+    localizations = _announcementLocalizations(localizations);
     switch (mode) {
       case TtsMode.alertsOnly:
         say(
@@ -721,12 +736,14 @@ class TtsModel extends ChangeNotifier {
       // the system voices read chat in its channel's language, when known;
       // otherwise, and for alerts, they keep their default.
       final systemLanguage =
-          model is ChatMessage ? _knownLanguageFor(model) : null;
+          model is ChatMessage
+              ? _knownLanguageFor(model)?.languageCode
+              : localizations.localeName.replaceAll('_', '-');
       await _systemEngine.speak(
         vocalization,
         rate: _speed,
         pitch: _pitch,
-        language: systemLanguage?.languageCode,
+        language: systemLanguage,
       );
     } catch (e, st) {
       _reportError(e, st);
@@ -840,6 +857,7 @@ class TtsModel extends ChangeNotifier {
   });
 
   void _turnOffForBacklog(AppLocalizations localizations) {
+    localizations = _announcementLocalizations(localizations);
     _pending.clear();
     _mode = TtsMode.disabled;
     say(
