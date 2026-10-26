@@ -13,7 +13,6 @@ import {
   KICK_SCOPES,
 } from "./kick";
 import {
-  isValidState,
   oauthConfig,
   STREAMELEMENTS_OAUTH_CONFIG,
   STREAMLABS_OAUTH_CONFIG,
@@ -21,6 +20,7 @@ import {
   TWITCH_OAUTH_CONFIG,
 } from "./oauth";
 import { Store, SessionData } from "express-session";
+import { oauthCallback, signInError } from "./oauth_callback";
 import { getYouTubeProfile, YOUTUBE_SCOPES } from "./youtube_actions";
 
 admin.initializeApp();
@@ -189,35 +189,32 @@ app.get("/auth/twitch/redirect", (req, res) => {
   res.redirect(`${redirectUri}&force_verify=true`);
 });
 
-app.get("/auth/twitch/callback", async (req, res) => {
-  if (!isValidState(req.session?.state, req.query.state)) {
-    res.redirect("/auth/twitch/redirect");
-    return;
-  }
-  const results = await new AuthorizationCode(TWITCH_OAUTH_CONFIG).getToken({
-    code: String(req.query.code),
-    redirect_uri: `${HOST}/auth/twitch/callback`,
-  });
+app.get(
+  "/auth/twitch/callback",
+  oauthCallback("twitch", async (req, res) => {
+    const results = await new AuthorizationCode(TWITCH_OAUTH_CONFIG).getToken({
+      code: String(req.query.code),
+      redirect_uri: `${HOST}/auth/twitch/callback`,
+    });
 
-  const users = await fetch("https://api.twitch.tv/helix/users", {
-    headers: {
-      Authorization: `Bearer ${results.token.access_token}`,
-      "Client-Id": TWITCH_CLIENT_ID,
-    },
-  }).then((response) => response.json() as any);
+    const users = await fetch("https://api.twitch.tv/helix/users", {
+      headers: {
+        Authorization: `Bearer ${results.token.access_token}`,
+        "Client-Id": TWITCH_CLIENT_ID,
+      },
+    }).then((response) => response.json() as any);
 
-  req.session.state = undefined;
+    const twitchProfile = {
+      id: users["data"][0]["id"],
+      displayName: users["data"][0]["display_name"],
+      login: users["data"][0]["login"],
+      profilePictureUrl: users["data"][0]["profile_image_url"],
+      email: users["data"][0]["email"] || null,
+    };
 
-  const twitchProfile = {
-    id: users["data"][0]["id"],
-    displayName: users["data"][0]["display_name"],
-    login: users["data"][0]["login"],
-    profilePictureUrl: users["data"][0]["profile_image_url"],
-    email: users["data"][0]["email"] || null,
-  };
-
-  await completeSignIn(req, res, "twitch", twitchProfile, results.token);
-});
+    await completeSignIn(req, res, "twitch", twitchProfile, results.token);
+  }),
+);
 
 // Maps a provider account to a Firebase user (creating one if needed), stores
 // the provider's token and profile, and hands a custom token back to the app.
@@ -288,24 +285,26 @@ app.get("/auth/kick/redirect", (req, res) => {
   res.redirect(redirectUri);
 });
 
-app.get("/auth/kick/callback", async (req, res) => {
-  const verifier = req.session?.codeVerifier;
-  if (!isValidState(req.session?.state, req.query.state) || !verifier) {
-    res.redirect("/auth/kick/redirect");
-    return;
-  }
-  req.session.state = undefined;
-  req.session.codeVerifier = undefined;
+app.get(
+  "/auth/kick/callback",
+  oauthCallback("kick", async (req, res) => {
+    const verifier = req.session?.codeVerifier;
+    if (!verifier) {
+      res.redirect("/auth/kick/redirect");
+      return;
+    }
+    req.session.codeVerifier = undefined;
 
-  const results = await new AuthorizationCode(oauthConfig("kick")).getToken({
-    code: String(req.query.code),
-    redirect_uri: `${HOST}/auth/kick/callback`,
-    code_verifier: verifier,
-  } as any);
+    const results = await new AuthorizationCode(oauthConfig("kick")).getToken({
+      code: String(req.query.code),
+      redirect_uri: `${HOST}/auth/kick/callback`,
+      code_verifier: verifier,
+    } as any);
 
-  const profile = await getKickProfile(String(results.token.access_token));
-  await completeSignIn(req, res, "kick", profile, results.token);
-});
+    const profile = await getKickProfile(String(results.token.access_token));
+    await completeSignIn(req, res, "kick", profile, results.token);
+  }),
+);
 
 app.get("/auth/youtube/redirect", (req, res) => {
   const state = crypto.randomBytes(20).toString("hex");
@@ -326,53 +325,24 @@ app.get("/auth/youtube/redirect", (req, res) => {
   res.redirect(redirectUri);
 });
 
-type SignInError = "access_denied" | "sign_in_failed" | "no_youtube_channel";
+app.get(
+  "/auth/youtube/callback",
+  oauthCallback("youtube", async (req, res) => {
+    const results = await new AuthorizationCode(
+      oauthConfig("youtube"),
+    ).getToken({
+      code: String(req.query.code),
+      redirect_uri: `${HOST}/auth/youtube/callback`,
+    });
 
-// only fixed codes are echoed back: the error query parameter is attacker
-// controlled, so it's never reflected.
-function signInError(
-  req: express.Request,
-  res: express.Response,
-  message: SignInError,
-) {
-  if (req.session.companion) {
-    res.status(400).type("text/plain").send(message);
-  } else {
-    res.redirect(
-      "com.rtirl.chat://error?message=" + encodeURIComponent(message),
-    );
-  }
-}
-
-app.get("/auth/youtube/callback", async (req, res) => {
-  if (!isValidState(req.session?.state, req.query.state)) {
-    res.redirect("/auth/youtube/redirect");
-    return;
-  }
-  req.session.state = undefined;
-  if (req.query.error || !req.query.code) {
-    signInError(
-      req,
-      res,
-      !req.query.error || req.query.error === "access_denied"
-        ? "access_denied"
-        : "sign_in_failed",
-    );
-    return;
-  }
-
-  const results = await new AuthorizationCode(oauthConfig("youtube")).getToken({
-    code: String(req.query.code),
-    redirect_uri: `${HOST}/auth/youtube/callback`,
-  });
-
-  const profile = await getYouTubeProfile(String(results.token.access_token));
-  if (!profile) {
-    signInError(req, res, "no_youtube_channel");
-    return;
-  }
-  await completeSignIn(req, res, "youtube", profile, results.token);
-});
+    const profile = await getYouTubeProfile(String(results.token.access_token));
+    if (!profile) {
+      signInError(req, res, "no_youtube_channel");
+      return;
+    }
+    await completeSignIn(req, res, "youtube", profile, results.token);
+  }),
+);
 
 app.get("/auth/streamlabs/redirect", (req, res) => {
   req.session.token = req.query.token?.toString();
