@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -51,6 +52,48 @@ void main() {
       await tester.pump();
       expect(cancelled, 1);
       // stop the countdown's periodic stream.
+      await tester.pumpWidget(Container());
+    },
+  );
+
+  testWidgets(
+    'prevents duplicate cancellation while cancellation is in progress',
+    experimentalLeakTesting: leakTesting,
+    (tester) async {
+      var cancelled = 0;
+      final completer = Completer<void>();
+
+      await tester.pumpWidget(
+        buildWidget(
+          TwitchRaidingEventWidget(
+            raiding(),
+            onCancel: () {
+              cancelled++;
+              return completer.future;
+            },
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pump();
+
+      expect(cancelled, 1);
+      expect(
+        tester
+            .widget<TextButton>(
+              find.ancestor(
+                of: find.text('Cancel'),
+                matching: find.byType(TextButton),
+              ),
+            )
+            .onPressed,
+        isNull,
+      );
+
+      completer.complete();
+      await tester.pump();
+
       await tester.pumpWidget(Container());
     },
   );

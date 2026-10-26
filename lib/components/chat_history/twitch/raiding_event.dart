@@ -9,14 +9,35 @@ import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/views.dart';
 import 'package:styled_text/styled_text.dart';
 
-class TwitchRaidingEventWidget extends StatelessWidget {
+class TwitchRaidingEventWidget extends StatefulWidget {
   final TwitchRaidingEventModel model;
   final Future<void> Function()? onCancel;
 
   const TwitchRaidingEventWidget(this.model, {super.key, this.onCancel});
 
   @override
+  State<TwitchRaidingEventWidget> createState() =>
+      _TwitchRaidingEventWidgetState();
+}
+
+class _TwitchRaidingEventWidgetState extends State<TwitchRaidingEventWidget> {
+  bool _inFlight = false;
+
+  Future<void> _cancel() async {
+    if (_inFlight || widget.onCancel == null) return;
+    setState(() => _inFlight = true);
+    try {
+      await widget.onCancel!();
+    } finally {
+      if (mounted) {
+        setState(() => _inFlight = false);
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final model = widget.model;
     if (!model.isComplete) {
       return StreamBuilder<int>(
         stream: Stream.periodic(const Duration(milliseconds: 500), (x) => x),
@@ -73,9 +94,12 @@ class TwitchRaidingEventWidget extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                     ),
-                    if (onCancel != null &&
+                    if (widget.onCancel != null &&
                         remaining > const Duration(seconds: 1))
-                      _RaidCancelButton(onCancel: onCancel!),
+                      TextButton(
+                        onPressed: _inFlight ? null : _cancel,
+                        child: Text(AppLocalizations.of(context)!.cancel),
+                      ),
                   ],
                 ),
               ),
@@ -134,38 +158,5 @@ class TwitchRaidingEventWidget extends StatelessWidget {
         ),
       );
     }
-  }
-}
-
-class _RaidCancelButton extends StatefulWidget {
-  final Future<void> Function() onCancel;
-
-  const _RaidCancelButton({required this.onCancel});
-
-  @override
-  State<_RaidCancelButton> createState() => _RaidCancelButtonState();
-}
-
-class _RaidCancelButtonState extends State<_RaidCancelButton> {
-  bool _inFlight = false;
-
-  Future<void> _cancel() async {
-    if (_inFlight) return;
-    setState(() => _inFlight = true);
-    try {
-      await widget.onCancel();
-    } finally {
-      if (mounted) {
-        setState(() => _inFlight = false);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: _inFlight ? null : _cancel,
-      child: Text(AppLocalizations.of(context)!.cancel),
-    );
   }
 }
