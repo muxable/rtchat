@@ -1,11 +1,11 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/api.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/components/provider_icon.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
@@ -262,7 +262,8 @@ class SearchResult {
     required this.language,
   });
 
-  ResilientNetworkImage get image => ResilientNetworkImage(imageUrl);
+  CachedNetworkImageProvider get image =>
+      CachedNetworkImageProvider(imageUrl.toString());
 
   Channel get channel => Channel(provider, channelId, displayName);
 }
@@ -463,7 +464,7 @@ class _ChannelSearchResultsWidgetState
             ClipRRect(
               borderRadius: BorderRadius.circular(24),
               child: CrossFadeImage(
-                placeholder: result.image.placeholderImage,
+                placeholder: MemoryImage(kTransparentImage),
                 image: result.image,
                 height: 48,
                 width: 48,

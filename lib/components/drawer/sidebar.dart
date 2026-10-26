@@ -82,10 +82,7 @@ class _DrawerHeader extends StatelessWidget {
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(24),
                                 child: CrossFadeImage(
-                                  placeholder:
-                                      userChannel
-                                          .profilePicture
-                                          .placeholderImage,
+                                  placeholder: MemoryImage(kTransparentImage),
                                   image: userChannel.profilePicture,
                                   height: 36,
                                   width: 36,
