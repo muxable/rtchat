@@ -69,7 +69,12 @@ void main() {
 
     expect(neural.utterances.map((u) => u.language), ['ja', 'pt', 'en']);
     expect(system.utterances.map((u) => (u.text, u.language)), [
-      ('user1 said: ni hao', 'zh'),
+      (
+        lookupAppLocalizations(
+          const Locale('zh'),
+        ).saidMessage('user1', 'ni hao'),
+        'zh',
+      ),
     ]);
   });
 

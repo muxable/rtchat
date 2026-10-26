@@ -5,6 +5,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/l10n/supported_ui_locales.dart';
 import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
@@ -226,6 +227,7 @@ class TtsModel extends ChangeNotifier {
     bool includeAuthorPrelude = false,
   }) {
     if (model is ChatMessage) {
+      l10n = _localizationsForLanguage(l10n, languageFor(model).languageCode);
       final text = model.tokenized
           .where(
             (token) =>
@@ -347,19 +349,30 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  /// Generated announcements follow the current reading language. When the app
-  /// has no translation for it, keep the UI translation and its matching voice.
-  AppLocalizations _announcementLocalizations(AppLocalizations fallback) {
-    final locales = AppLocalizations.supportedLocales;
+  AppLocalizations _localizationsForLanguage(
+    AppLocalizations fallback,
+    String language, {
+    Iterable<Locale>? locales,
+  }) {
+    final available = locales ?? AppLocalizations.supportedLocales;
     final match = LanguageTag.bestMatch(
-      readingLanguage.languageCode,
-      locales.map((locale) => locale.toLanguageTag()),
+      language,
+      available.map((locale) => locale.toLanguageTag()),
     );
     if (match == null) return fallback;
     return lookupAppLocalizations(
-      locales.firstWhere((locale) => locale.toLanguageTag() == match),
+      available.firstWhere((locale) => locale.toLanguageTag() == match),
     );
   }
+
+  /// Full UI translations provide mode/backlog announcements. Extra speech-only
+  /// ARB locales provide samples/preludes without changing this fallback policy.
+  AppLocalizations _announcementLocalizations(AppLocalizations fallback) =>
+      _localizationsForLanguage(
+        fallback,
+        readingLanguage.languageCode,
+        locales: supportedUiLocales,
+      );
 
   void setMode(AppLocalizations localizations, TtsMode mode) {
     if (_mode == mode) {

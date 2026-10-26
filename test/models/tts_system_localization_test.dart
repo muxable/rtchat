@@ -2,8 +2,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/channels.dart';
+import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/messages/twitch/user.dart';
 import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/tts/language.dart';
 import 'package:rtchat/models/views.dart';
 
 import '../fakes/fake_tts_engine.dart';
@@ -114,4 +116,35 @@ void main() {
     expect(engine.spoken.last, german.textToSpeechTooManyMessages);
     expect(engine.utterances.last.language, 'de');
   });
+  test(
+    'said follows each message channel while names and chat text stay intact',
+    () async {
+      final model = TtsModel.fromJson({
+        'language': 'en',
+      }, engine: FakeTtsEngine());
+      addTearDown(model.dispose);
+      for (final language in ['de', 'fr', 'es', 'ja']) {
+        final channel = Channel(Providers.twitch, language, 'stream');
+        model.setChannelLanguage(channel, Language(language));
+        final message = createMessage(
+          'Keep THIS text unchanged!',
+          messageId: 'prelude-$language',
+          author: const TwitchUserModel(
+            userId: '1',
+            login: 'user',
+            displayName: 'Viewer_Name',
+          ),
+        )..channel = channel;
+        final translated = lookupAppLocalizations(Locale(language));
+        expect(
+          model.getVocalization(english, message, includeAuthorPrelude: true),
+          translated.saidMessage('Viewer_Name', 'Keep THIS text unchanged!'),
+        );
+        expect(
+          model.getVocalization(english, message, includeAuthorPrelude: false),
+          'Keep THIS text unchanged!',
+        );
+      }
+    },
+  );
 }

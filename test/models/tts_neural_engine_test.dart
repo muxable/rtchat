@@ -68,8 +68,10 @@ void main() {
 
     expect(neural.spoken, [
       spanish.textToSpeechEnabled,
-      'user1 said: konnichiwa',
-      'user2 said: hola',
+      lookupAppLocalizations(
+        const Locale('ja'),
+      ).saidMessage('user1', 'konnichiwa'),
+      spanish.saidMessage('user2', 'hola'),
     ]);
     expect(neural.utterances.map((u) => u.language), [
       'es',
@@ -89,8 +91,8 @@ void main() {
       model.say(l10n, chat('second', 2));
       await pumpEventQueue();
 
-      expect(system.spoken, ['user1 said: first']);
-      expect(neural.spoken.last, 'user2 said: second');
+      expect(system.spoken, [spanish.saidMessage('user1', 'first')]);
+      expect(neural.spoken.last, spanish.saidMessage('user2', 'second'));
       expect(errors.single, isA<PlatformException>());
 
       // but not a message unsaid in the meantime.
@@ -127,7 +129,7 @@ void main() {
     expect(log.events, [
       'neural: ${spanish.textToSpeechEnabled}',
       'neural dispose',
-      'next: user1 said: first',
+      'next: ${spanish.saidMessage('user1', 'first')}',
     ]);
     expect(log.maxSpeaking, 1);
 
