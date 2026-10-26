@@ -5,7 +5,6 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:on_device_tts/on_device_tts.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
-import 'package:rtchat/l10n/supported_ui_locales.dart';
 import 'package:rtchat/models/adapters/channels.dart';
 import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/auxiliary/realtimecash.dart';
@@ -351,10 +350,9 @@ class TtsModel extends ChangeNotifier {
 
   AppLocalizations _localizationsForLanguage(
     AppLocalizations fallback,
-    String language, {
-    Iterable<Locale>? locales,
-  }) {
-    final available = locales ?? AppLocalizations.supportedLocales;
+    String language,
+  ) {
+    final available = AppLocalizations.supportedLocales;
     final match = LanguageTag.bestMatch(
       language,
       available.map((locale) => locale.toLanguageTag()),
@@ -365,14 +363,8 @@ class TtsModel extends ChangeNotifier {
     );
   }
 
-  /// Full UI translations provide mode/backlog announcements. Extra speech-only
-  /// ARB locales provide samples/preludes without changing this fallback policy.
   AppLocalizations _announcementLocalizations(AppLocalizations fallback) =>
-      _localizationsForLanguage(
-        fallback,
-        readingLanguage.languageCode,
-        locales: supportedUiLocales,
-      );
+      _localizationsForLanguage(fallback, readingLanguage.languageCode);
 
   void setMode(AppLocalizations localizations, TtsMode mode) {
     if (_mode == mode) {

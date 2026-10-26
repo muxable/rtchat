@@ -83,7 +83,7 @@ void main() {
     'untranslated languages keep the UI text and its matching voice',
     () async {
       final engine = FakeTtsEngine();
-      final model = TtsModel.fromJson({'language': 'fi'}, engine: engine);
+      final model = TtsModel.fromJson({'language': 'eo'}, engine: engine);
       addTearDown(model.dispose);
       model.setMode(german, TtsMode.enabled);
       await pumpEventQueue();
