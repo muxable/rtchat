@@ -1,9 +1,9 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/raiding_event.dart';
 import 'package:rtchat/models/views.dart';
@@ -37,8 +37,8 @@ class TwitchRaidingEventWidget extends StatelessWidget {
               ),
               DecoratedEventWidget.avatar(
                 decoration: const BoxDecoration(color: Colors.transparent),
-                avatar: ResilientNetworkImage(
-                  model.targetUser.profilePictureUrl,
+                avatar: CachedNetworkImageProvider(
+                  model.targetUser.profilePictureUrl.toString(),
                 ),
                 child: Row(
                   children: [
@@ -87,7 +87,9 @@ class TwitchRaidingEventWidget extends StatelessWidget {
     } else if (model.isSuccessful) {
       return GestureDetector(
         child: DecoratedEventWidget.avatar(
-          avatar: ResilientNetworkImage(model.targetUser.profilePictureUrl),
+          avatar: CachedNetworkImageProvider(
+            model.targetUser.profilePictureUrl.toString(),
+          ),
           child: Row(
             children: [
               Expanded(
@@ -125,7 +127,9 @@ class TwitchRaidingEventWidget extends StatelessWidget {
       );
     } else {
       return DecoratedEventWidget.avatar(
-        avatar: ResilientNetworkImage(model.targetUser.profilePictureUrl),
+        avatar: CachedNetworkImageProvider(
+          model.targetUser.profilePictureUrl.toString(),
+        ),
         child: StyledText(
           text: AppLocalizations.of(context)!.raidingEventCanceled(
             htmlEscape.convert(

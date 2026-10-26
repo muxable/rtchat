@@ -1,9 +1,9 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/kick/event.dart';
 import 'package:rtchat/models/messages/kick/user.dart';
@@ -34,7 +34,7 @@ Widget _decorated(KickUserModel? user, IconData icon, Widget child) {
   final picture = user?.profilePictureUrl;
   if (picture != null) {
     return DecoratedEventWidget.avatar(
-      avatar: ResilientNetworkImage(Uri.parse(picture)),
+      avatar: CachedNetworkImageProvider(picture),
       child: child,
     );
   }

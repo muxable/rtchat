@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:rtchat/models/style.dart';
@@ -58,8 +58,8 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
                       : followers
                           .take(min(3, followers.length))
                           .map(
-                            (follower) => ResilientNetworkImage(
-                              follower.profilePictureUrl,
+                            (follower) => CachedNetworkImageProvider(
+                              follower.profilePictureUrl.toString(),
                             ),
                           ),
               child:
@@ -76,8 +76,8 @@ class _TwitchFollowEventWidgetState extends State<TwitchFollowEventWidget> {
                                       width: 32,
                                       height: 32,
                                       child: Image(
-                                        image: ResilientNetworkImage(
-                                          follower.profilePictureUrl,
+                                        image: CachedNetworkImageProvider(
+                                          follower.profilePictureUrl.toString(),
                                         ),
                                         fit: BoxFit.cover,
                                       ),

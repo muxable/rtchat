@@ -1,9 +1,9 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/messages/twitch/subscription_event.dart';
@@ -122,7 +122,7 @@ class TwitchSubscriptionMessageEventWidget extends StatelessWidget {
           preferBelow: false,
           child: Image(
             height: styleModel.fontSize,
-            image: ResilientNetworkImage(token.url),
+            image: CachedNetworkImageProvider(token.url.toString()),
             errorBuilder: (context, error, stackTrace) => Text(token.code),
           ),
         ),

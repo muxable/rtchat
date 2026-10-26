@@ -1,8 +1,8 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/messages/twitch/event.dart';
 import 'package:styled_text/styled_text.dart';
@@ -32,7 +32,9 @@ class TwitchCheerEventWidget extends StatelessWidget {
             ? AppLocalizations.of(context)!.anonymous
             : model.giverName ?? AppLocalizations.of(context)!.anonymous;
     return DecoratedEventWidget.avatar(
-      avatar: ResilientNetworkImage(getCorrespondingImageUrl(model.bits)),
+      avatar: CachedNetworkImageProvider(
+        getCorrespondingImageUrl(model.bits).toString(),
+      ),
       child: StyledText(
         text: AppLocalizations.of(context)!.cheerEventMessage(
           htmlEscape.convert(name),
