@@ -47,6 +47,7 @@ class _TwitchRaidingEventWidgetState extends State<TwitchRaidingEventWidget> {
           final remaining = expiration.difference(DateTime.now());
           final countdownActive = remaining > Duration.zero;
           final flash = snapshot.data == null || snapshot.data! % 2 == 0;
+
           return Stack(
             children: [
               Positioned.fill(
@@ -82,21 +83,27 @@ class _TwitchRaidingEventWidgetState extends State<TwitchRaidingEventWidget> {
                         },
                       ),
                     ),
-                    Text.rich(
-                      TextSpan(
-                        text:
-                            remaining.isNegative
-                                ? AppLocalizations.of(
-                                  context,
-                                )!.raidingEventTimeRemaining(0)
-                                : AppLocalizations.of(
-                                  context,
-                                )!.raidingEventTimeRemaining(
-                                  remaining.inSeconds + 1,
-                                ),
-                        style: Theme.of(context).textTheme.titleSmall,
+                    if (countdownActive)
+                      Text.rich(
+                        TextSpan(
+                          text: AppLocalizations.of(
+                            context,
+                          )!.raidingEventTimeRemaining(remaining.inSeconds + 1),
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                      )
+                    else
+                      TextButton(
+                        onPressed: () {
+                          Provider.of<ViewsModel>(
+                            context,
+                            listen: false,
+                          ).openChannel(model.targetUser.asChannel);
+                        },
+                        child: Text(
+                          AppLocalizations.of(context)!.raidingEventJoin,
+                        ),
                       ),
-                    ),
                     if (widget.onCancel != null &&
                         remaining > const Duration(seconds: 1))
                       TextButton(
