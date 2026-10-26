@@ -56,7 +56,10 @@ void main() {
       );
       expect(
         engine.utterances.single.language,
-        translated.localeName.replaceAll('_', '-'),
+        // The speech router canonicalizes Norwegian to Bokmål.
+        locale.languageCode == 'no'
+            ? 'nb'
+            : translated.localeName.replaceAll('_', '-'),
         reason: locale.toLanguageTag(),
       );
     }
