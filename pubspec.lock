@@ -109,8 +109,8 @@ packages:
     dependency: "direct main"
     description:
       path: cached_network_image
-      ref: "2c3a592dc37f9383771a013a85dd0bb4e4b9e51d"
-      resolved-ref: "2c3a592dc37f9383771a013a85dd0bb4e4b9e51d"
+      ref: "4c24ee00b4fe69144a37e2cd4067eb74eabf1348"
+      resolved-ref: "4c24ee00b4fe69144a37e2cd4067eb74eabf1348"
       url: "https://github.com/kevmo314/flutter_cached_network_image.git"
     source: git
     version: "4.0.6"

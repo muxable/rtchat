@@ -49,7 +49,7 @@ dependencies:
     git:
       url: https://github.com/kevmo314/flutter_cached_network_image.git
       # Queued-frame disposal fix: Baseflow/flutter_cached_network_image#1065.
-      ref: 2c3a592dc37f9383771a013a85dd0bb4e4b9e51d
+      ref: 4c24ee00b4fe69144a37e2cd4067eb74eabf1348
       path: cached_network_image
 
 dev_dependencies:
