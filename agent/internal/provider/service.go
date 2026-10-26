@@ -300,7 +300,8 @@ func (s *Service) requestToken(ctx context.Context, p, refresh string) (map[stri
 		if errors.As(err, &response) {
 			var body map[string]any
 			_ = json.Unmarshal(response.Body, &body)
-			revoked := body["error"] == "invalid_grant" || body["message"] == "Invalid refresh token"
+			status := response.Response.StatusCode
+			revoked := (status == http.StatusBadRequest || status == http.StatusUnauthorized) && (body["error"] == "invalid_grant" || body["message"] == "Invalid refresh token")
 			return nil, revoked, fmt.Errorf("provider token request returned HTTP %d", response.Response.StatusCode)
 		}
 		return nil, false, errors.New("provider token request failed")

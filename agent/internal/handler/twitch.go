@@ -13,6 +13,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"github.com/muxable/rtchat/agent/internal/chatmetrics"
+	"github.com/muxable/rtchat/agent/internal/provider"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc/codes"
@@ -23,8 +24,10 @@ type TwitchAgent struct {
 	Firestore              *firestore.Client
 	ClientID, ClientSecret string
 	// WaitForAuth gates initial IRC logins across replicas, outside the handshake timeout.
-	WaitForAuth func(context.Context, string) error
-	Context     context.Context
+	WaitForAuth      func(context.Context, string) error
+	Context          context.Context
+	tokenServiceOnce sync.Once
+	tokenService     *provider.Service
 	// Optional dependencies allow lifecycle tests without external services.
 	loadProfile func(string) (map[string]interface{}, error)
 	tokenSource func(string) (oauth2.TokenSource, error)
@@ -245,7 +248,8 @@ func (h *TwitchAgent) tokens(userID string) (oauth2.TokenSource, error) {
 	if h.tokenSource != nil {
 		return h.tokenSource(userID)
 	}
-	return auth.NewFirestoreTwitchTokenSource(h.Firestore, h.ClientID, h.ClientSecret, userID)
+	h.tokenServiceOnce.Do(func() { h.tokenService = provider.NewService(h.Firestore, nil) })
+	return auth.NewTwitchTokenSource(h.tokenService, userID), nil
 }
 
 func (h *TwitchAgent) chat(login, token string) chatConnection {

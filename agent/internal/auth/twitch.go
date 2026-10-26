@@ -43,10 +43,15 @@ func TwitchClientSecret() (string, error) {
 	return secretPayload(result, err)
 }
 
+// ProviderTokens owns token refresh and conditional revocation cleanup.
+type ProviderTokens interface {
+	AccessToken(context.Context, string, string) (string, error)
+}
+
 type TwitchAuthProvider struct {
-	firestore        *firestore.Client
-	tokenSource      oauth2.TokenSource
-	userID, username string
+	tokens ProviderTokens
+	userID string
+	client *http.Client
 }
 
 func TwitchUserIDFromUsername(firestore *firestore.Client, clientID, clientSecret, username string) (string, error) {
@@ -102,90 +107,24 @@ func TwitchUserIDFromUsername(firestore *firestore.Client, clientID, clientSecre
 	return data.Data[0].ID, nil
 }
 
-func NewFirestoreTwitchTokenSource(firestore *firestore.Client, clientID, clientSecret, userID string) (*TwitchAuthProvider, error) {
-	// get the user's token
-	tokenDoc, err := firestore.Collection("tokens").Doc(userID).Get(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	iToken, err := tokenDoc.DataAt("twitch")
-	if err != nil {
-		return nil, err
-	}
-	strToken, ok := iToken.(string)
-	if !ok {
-		return nil, errors.New("invalid token")
-	}
-	var token struct {
-		AccessToken  string `json:"access_token"`
-		RefreshToken string `json:"refresh_token"`
-		ExpiresAt    string `json:"expires_at"`
-	}
-	if err := json.Unmarshal([]byte(strToken), &token); err != nil {
-		return nil, err
-	}
-	// get the user's username
-	usernameDoc, err := firestore.Collection("profiles").Doc(userID).Get(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	iUsername, err := usernameDoc.DataAt("twitch.login")
-	if err != nil {
-		return nil, err
-	}
-	username, ok := iUsername.(string)
-	if !ok {
-		return nil, errors.New("invalid username")
-	}
-
-	cfg := &oauth2.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		Endpoint:     twitch.Endpoint,
-	}
-	expiry, err := time.Parse(time.RFC3339Nano, token.ExpiresAt)
-	if err != nil {
-		return nil, err
-	}
-	source := newRefreshSource(cfg, &oauth2.Token{AccessToken: token.AccessToken, RefreshToken: token.RefreshToken, Expiry: expiry})
-	return &TwitchAuthProvider{
-		firestore:   firestore,
-		tokenSource: source,
-		userID:      userID,
-		username:    username,
-	}, nil
+// NewTwitchTokenSource adapts the shared refresh service for IRC. In particular,
+// revoked refresh grants clear the matching provider token and profile there.
+func NewTwitchTokenSource(tokens ProviderTokens, userID string) *TwitchAuthProvider {
+	return &TwitchAuthProvider{tokens: tokens, userID: userID, client: &http.Client{Timeout: 10 * time.Second}}
 }
 
 func (p *TwitchAuthProvider) Token() (*oauth2.Token, error) {
-	token, err := p.tokenSource.Token()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	access, err := p.tokens.AccessToken(ctx, p.userID, "twitch")
 	if err != nil {
 		return nil, err
 	}
-	if err := validateToken(p.httpClient(), token); err != nil {
+	token := &oauth2.Token{AccessToken: access}
+	if err := validateToken(p.client, token); err != nil {
 		return nil, err
 	}
-	// graft it into firestore
-	return token, p.firestore.RunTransaction(context.Background(), func(ctx context.Context, tx *firestore.Transaction) error {
-		tokenDoc, err := tx.Get(p.firestore.Collection("tokens").Doc(p.userID))
-		if err != nil {
-			return err
-		}
-		iToken, err := tokenDoc.DataAt("twitch")
-		if err != nil {
-			return err
-		}
-		strToken, ok := iToken.(string)
-		if !ok {
-			return errors.New("invalid token")
-		}
-		bToken, err := mergeToken(strToken, token)
-		if err != nil {
-			return err
-		}
-		return tx.Set(p.firestore.Collection("tokens").Doc(p.userID), map[string]interface{}{
-			"twitch": string(bToken),
-		}, firestore.MergeAll)
-	})
+	return token, nil
 }
 
 func profileString(data map[string]interface{}, field string) (string, error) {
@@ -198,14 +137,6 @@ func profileString(data map[string]interface{}, field string) (string, error) {
 		return "", fmt.Errorf("invalid twitch %s", field)
 	}
 	return value, nil
-}
-
-func newRefreshSource(cfg *oauth2.Config, token *oauth2.Token) oauth2.TokenSource {
-	// The source lives as long as the IRC client. Bound each HTTP request,
-	// rather than expiring the context retained by oauth2 after five seconds.
-	client := &http.Client{Transport: http.DefaultClient.Transport, Timeout: 5 * time.Second}
-	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, client)
-	return cfg.TokenSource(ctx, token)
 }
 
 func validateToken(client *http.Client, token *oauth2.Token) error {
@@ -233,10 +164,6 @@ func validateToken(client *http.Client, token *oauth2.Token) error {
 	return nil
 }
 
-func (p *TwitchAuthProvider) httpClient() *http.Client {
-	return &http.Client{Timeout: 10 * time.Second}
-}
-
 func secretPayload(result *secretmanagerpb.AccessSecretVersionResponse, err error) (string, error) {
 	if err != nil {
 		return "", err
@@ -245,18 +172,4 @@ func secretPayload(result *secretmanagerpb.AccessSecretVersionResponse, err erro
 		return "", errors.New("missing secret payload")
 	}
 	return string(result.Payload.Data), nil
-}
-
-func mergeToken(strToken string, token *oauth2.Token) ([]byte, error) {
-	var mapToken map[string]interface{}
-	if err := json.Unmarshal([]byte(strToken), &mapToken); err != nil {
-		return nil, err
-	}
-	if mapToken == nil {
-		return nil, errors.New("invalid token")
-	}
-	mapToken["access_token"] = token.AccessToken
-	mapToken["refresh_token"] = token.RefreshToken
-	mapToken["expires_at"] = token.Expiry.Format(time.RFC3339Nano)
-	return json.Marshal(mapToken)
 }
