@@ -102,6 +102,7 @@ class EmotesList extends StatelessWidget {
                               8,
                           height: 36,
                           child: IconButton(
+                            padding: const EdgeInsets.all(2.0),
                             onPressed: () => onEmoteSelected(emote),
                             splashRadius: 24,
                             icon: CrossFadeImage(
