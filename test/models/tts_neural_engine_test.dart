@@ -23,6 +23,7 @@ void main() {
   setUpAll(() => initializeDateFormatting('en'));
 
   final l10n = lookupAppLocalizations(const Locale('en'));
+  final spanish = lookupAppLocalizations(const Locale('es'));
   late SpeechLog log;
   late FakeTtsEngine system;
   late FakeTtsEngine neural;
@@ -66,15 +67,15 @@ void main() {
     await pumpEventQueue();
 
     expect(neural.spoken, [
-      'Text to speech enabled',
+      spanish.textToSpeechEnabled,
       'user1 said: konnichiwa',
       'user2 said: hola',
     ]);
     expect(neural.utterances.map((u) => u.language), [
-      'en',
+      'es',
       'ja',
       'es',
-    ], reason: 'alerts are in the app language');
+    ], reason: 'announcements follow the reading language');
     expect(neural.utterances.last.rate, 0.8);
     expect(system.spoken, isEmpty);
   });
@@ -124,7 +125,7 @@ void main() {
 
     await drain();
     expect(log.events, [
-      'neural: Text to speech enabled',
+      'neural: ${spanish.textToSpeechEnabled}',
       'neural dispose',
       'next: user1 said: first',
     ]);
@@ -146,7 +147,7 @@ void main() {
 
     expect(model.mode, TtsMode.disabled);
     expect(neural.stopCount, greaterThan(0));
-    expect(neural.spoken.last, l10n.textToSpeechTooManyMessages);
+    expect(neural.spoken.last, spanish.textToSpeechTooManyMessages);
     expect(log.maxSpeaking, 1);
   });
 
