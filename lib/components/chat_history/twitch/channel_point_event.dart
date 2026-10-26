@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
@@ -19,16 +21,16 @@ class TwitchChannelPointRedemptionEventWidget extends StatelessWidget {
                 ? AppLocalizations.of(
                   context,
                 )!.channelPointRedemptionWithUserInput(
-                  model.redeemerUsername,
-                  model.rewardName,
+                  htmlEscape.convert(model.redeemerUsername),
+                  htmlEscape.convert(model.rewardName),
                   model.rewardCost,
-                  model.userInput!,
+                  htmlEscape.convert(model.userInput!),
                 )
                 : AppLocalizations.of(
                   context,
                 )!.channelPointRedemptionWithoutUserInput(
-                  model.redeemerUsername,
-                  model.rewardName,
+                  htmlEscape.convert(model.redeemerUsername),
+                  htmlEscape.convert(model.rewardName),
                   model.rewardCost,
                 ),
         tags: {

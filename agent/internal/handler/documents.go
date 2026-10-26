@@ -6,6 +6,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/gempir/go-twitch-irc/v4"
+	"github.com/muxable/rtchat/agent/internal/chatmessage"
 )
 
 type chatDocument struct {
@@ -47,7 +48,7 @@ func userNoticeDocument(message twitch.UserNoticeMessage, now time.Time) *chatDo
 				"badges-raw": message.Tags["badges"],
 			},
 			"type":      "message",
-			"expiresAt": now.Add(time.Hour * 24 * 7 * 2),
+			"expiresAt": now.Add(chatmessage.TTL),
 		}
 		return &chatDocument{channelID, fmt.Sprintf("twitch:%s", message.ID), data}
 	}
@@ -64,7 +65,7 @@ func clearChatDocument(message twitch.ClearChatMessage, now time.Time) *chatDocu
 			"targetUserId": message.TargetUserID,
 			"timestamp":    message.Time,
 			"type":         "userclear",
-			"expiresAt":    now.Add(time.Hour * 24 * 7 * 2),
+			"expiresAt":    now.Add(chatmessage.TTL),
 		}
 		return &chatDocument{channelID, fmt.Sprintf("twitch:userclear-%s-%s", message.Time.UTC().Format(time.RFC3339Nano), message.TargetUserID+"-"+message.TargetUsername), data}
 	} else {
@@ -72,7 +73,7 @@ func clearChatDocument(message twitch.ClearChatMessage, now time.Time) *chatDocu
 			"channelId": channelID,
 			"timestamp": message.Time,
 			"type":      "clear",
-			"expiresAt": now.Add(time.Hour * 24 * 7 * 2),
+			"expiresAt": now.Add(chatmessage.TTL),
 		}
 		return &chatDocument{channelID, fmt.Sprintf("twitch:clear-%s", message.Time.UTC().Format(time.RFC3339Nano)), data}
 	}
@@ -85,7 +86,7 @@ func clearMessageDocument(message twitch.ClearMessage, userID string, now time.T
 		"timestamp": firestore.ServerTimestamp,
 		"type":      "messagedeleted",
 		"messageId": fmt.Sprintf("twitch:%s", message.TargetMsgID),
-		"expiresAt": now.Add(time.Hour * 24 * 7 * 2),
+		"expiresAt": now.Add(chatmessage.TTL),
 	}
 	return &chatDocument{channelID, fmt.Sprintf("twitch:x-%s", message.TargetMsgID), data}
 }
@@ -131,7 +132,7 @@ func privateMessageDocument(message twitch.PrivateMessage, now time.Time) *chatD
 			"badges-raw": message.Tags["badges"],
 		},
 		"type":      "message",
-		"expiresAt": now.Add(time.Hour * 24 * 7 * 2),
+		"expiresAt": now.Add(chatmessage.TTL),
 	}
 	return &chatDocument{channelID, fmt.Sprintf("twitch:%s", message.ID), data}
 

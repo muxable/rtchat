@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/muxable/rtchat/agent/internal/observability"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest/observer"
 )
@@ -150,7 +151,31 @@ func TestRequestLog(t *testing.T) {
 	if ok["callable"] != "ok" || ok["status"] != int64(200) || ok["code"] != "ok" || ok["provider"] != "kick" || ok["authenticated"] != true || ok["via"] != "getBadges" {
 		t.Fatalf("unexpected success log %v", ok)
 	}
-	if entries[1].Level != zap.WarnLevel || fail["callable"] != "fail" || fail["status"] != int64(500) || fail["code"] != "internal" || fail["error"] != "boom" || fail["via"] != "" {
+	if entries[1].Level != zap.ErrorLevel || fail["callable"] != "fail" || fail["status"] != int64(500) || fail["code"] != "internal" || fail["error"] != "boom" || fail["via"] != "" {
 		t.Fatalf("unexpected failure log %v", fail)
+	}
+}
+
+func TestPanicIsReportedWithoutLeakingToClient(t *testing.T) {
+	core, logs := observer.New(zap.InfoLevel)
+	undo := zap.ReplaceGlobals(zap.New(observability.Wrap(core), zap.AddCaller(), zap.AddStacktrace(zap.WarnLevel)))
+	defer undo()
+	server := NewServer(nil)
+	server.Register("panic", false, func(context.Context, json.RawMessage) (any, error) { panic("private panic detail") })
+	request := httptest.NewRequest("POST", "/panic", strings.NewReader(`{"data":null}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+	server.ServeHTTP(response, request)
+	if response.Code != 500 || strings.Contains(response.Body.String(), "private panic detail") {
+		t.Fatal(response.Code, response.Body.String())
+	}
+	entries := logs.FilterLevelExact(zap.ErrorLevel).All()
+	if len(entries) != 1 {
+		t.Fatal(entries)
+	}
+	fields := entries[0].ContextMap()
+	stack, _ := fields["stack_trace"].(string)
+	if fields["@type"] == nil || fields["path"] != "/panic" || !strings.Contains(stack, "private panic detail") || !strings.Contains(stack, "TestPanicIsReportedWithoutLeakingToClient.func") {
+		t.Fatal(fields)
 	}
 }

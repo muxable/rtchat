@@ -1,6 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/chat_mode.dart';
 import 'package:rtchat/models/commands.dart';
 import 'package:rtchat/models/messages.dart';
@@ -117,7 +117,9 @@ class _AutocompleteWidgetState extends State<AutocompleteWidget> {
                                 width: 24,
                                 height: 24,
                                 filterQuality: FilterQuality.medium,
-                                image: ResilientNetworkImage(emote.uri),
+                                image: CachedNetworkImageProvider(
+                                  emote.uri.toString(),
+                                ),
                               ),
                             );
                           })
