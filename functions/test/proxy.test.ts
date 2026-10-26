@@ -33,7 +33,15 @@ let agent: Server;
 let functionsHost: Server;
 let functionsUrl = "";
 let seen: Seen = {};
-let reply: { status: number; headers?: Record<string, string>; body: string };
+let attempts = 0;
+let reply: {
+  status: number;
+  headers?: Record<string, string>;
+  body: string;
+  interrupt?: boolean;
+  stall?: "headers" | "body";
+  reset?: boolean;
+};
 
 function listen(server: Server) {
   return new Promise<string>((resolve) =>
@@ -60,8 +68,23 @@ beforeAll(async () => {
     req.on("data", (chunk) => (body += chunk));
     req.on("end", () => {
       seen = { method: req.method, url: req.url, headers: req.headers, body };
+      attempts++;
+      if (reply.reset) {
+        req.socket.destroy();
+        return;
+      }
+      if (reply.stall === "headers") {
+        return;
+      }
       res.writeHead(reply.status, reply.headers ?? {});
-      res.end(reply.body);
+      if (reply.stall === "body") {
+        res.write(reply.body);
+      } else if (reply.interrupt) {
+        res.write(reply.body);
+        setTimeout(() => res.destroy(), 10);
+      } else {
+        res.end(reply.body);
+      }
     });
   });
   process.env.RTCHAT_API_ORIGIN = await listen(agent);
@@ -76,6 +99,11 @@ beforeAll(async () => {
     }),
   );
   app.all("/getBadges", proxyCallable("getBadges") as any);
+  app.all("/boundedGetBadges", proxyCallable("getBadges", 100) as any);
+  app.all(
+    "/boundedEventsub",
+    proxy("eventsub", "/twitch/eventsub", 100) as any,
+  );
   app.all("/eventsub", proxy("eventsub", "/twitch/eventsub") as any);
   app.all("/embedRedirect", proxy("embedRedirect", "/embedRedirect") as any);
   functionsHost = createServer(app);
@@ -89,6 +117,7 @@ afterAll(() => {
 
 beforeEach(() => {
   seen = {};
+  attempts = 0;
   reply = { status: 200, body: "" };
 });
 
@@ -147,15 +176,69 @@ describe("proxyCallable", () => {
     expect(seen.headers?.authorization).toBeUndefined();
   });
 
-  test("returns INTERNAL when the agent answers with something else", async () => {
-    reply = { status: 502, body: "<html>bad gateway</html>" };
+  test.each([
+    [502, 503, "UNAVAILABLE"],
+    [503, 503, "UNAVAILABLE"],
+    [504, 504, "DEADLINE_EXCEEDED"],
+    [200, 500, "INTERNAL"],
+  ])(
+    "maps a non-JSON upstream %i to HTTP %i / %s",
+    async (upstreamStatus, status, code) => {
+      reply = {
+        status: upstreamStatus as number,
+        body: "<html>bad gateway</html>",
+      };
+      const res = await fetch(`${functionsUrl}/getBadges`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ data: {} }),
+      });
+      expect(res.status).toBe(status);
+      expect((await res.json()).error.status).toBe(code);
+    },
+  );
+
+  test.each(["headers", "body"] as const)(
+    "bounds an upstream that stalls during %s without replaying the call",
+    async (stall) => {
+      reply = { status: 200, body: '{"result":', stall };
+      const res = await fetch(`${functionsUrl}/boundedGetBadges`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ data: {} }),
+      });
+      expect(res.status).toBe(504);
+      expect((await res.json()).error.status).toBe("DEADLINE_EXCEEDED");
+      expect(attempts).toBe(1);
+    },
+  );
+
+  test("reports an upstream socket reset as unavailable without replaying the call", async () => {
+    reply = { status: 200, body: "", reset: true };
     const res = await fetch(`${functionsUrl}/getBadges`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ data: {} }),
     });
-    expect(res.status).toBe(500);
-    expect((await res.json()).error.status).toBe("INTERNAL");
+    expect(res.status).toBe(503);
+    expect((await res.json()).error.status).toBe("UNAVAILABLE");
+    expect(attempts).toBe(1);
+  });
+
+  test("returns a bounded deadline when the upstream body is interrupted", async () => {
+    reply = {
+      status: 200,
+      headers: { "content-type": "application/json", "content-length": "200" },
+      body: '{"result":',
+      interrupt: true,
+    };
+    const res = await fetch(`${functionsUrl}/boundedGetBadges`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ data: {} }),
+    });
+    expect(res.status).toBe(504);
+    expect((await res.json()).error.status).toBe("DEADLINE_EXCEEDED");
   });
 });
 
@@ -197,6 +280,23 @@ describe("proxy", () => {
     );
     expect(seen.headers?.["twitch-eventsub-message-id"]).toBe("id-1");
     expect(seen.headers?.["x-rtchat-proxy"]).toBe("eventsub");
+  });
+
+  test("returns a gateway error when the upstream body is interrupted", async () => {
+    reply = {
+      status: 200,
+      headers: { "content-type": "application/json", "content-length": "200" },
+      body: '{"accepted":',
+      interrupt: true,
+    };
+    const res = await fetch(`${functionsUrl}/boundedEventsub`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "{}",
+    });
+    expect(res.status).toBe(504);
+    expect(await res.text()).toBe("agent timeout");
+    expect(res.headers.get("content-type")).toContain("text/html");
   });
 
   test("relays redirects without following them", async () => {
