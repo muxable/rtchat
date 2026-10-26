@@ -14,15 +14,25 @@ import '../../fakes/fake_voice_pack_repository.dart';
 
 void main() {
   late FakeVoicePackRepository repository;
+  late TtsModel tts;
 
   Future<void> open(
     WidgetTester tester, {
     Widget home = const VoicePacksScreen(),
     bool isSupported = true,
+    List<VoicePack>? catalog,
   }) async {
-    repository = FakeVoicePackRepository();
+    repository =
+        FakeVoicePackRepository()
+          ..catalog =
+              catalog ??
+              [
+                bundledVoicePacks.singleWhere(
+                  (pack) => pack.id == 'supertonic-3',
+                ),
+              ];
     final packs = VoicePacksModel(repository, isSupported: isSupported);
-    final tts = TtsModel.fromJson(
+    tts = TtsModel.fromJson(
       const {},
       engine: FakeTtsEngine(),
       reportError: (e, st) => throw e,
@@ -80,7 +90,10 @@ void main() {
 
     // the size on disk once installed.
     repository.add(
-      installedPackOf(bundledVoicePacks.single, sizeOnDisk: 402000000),
+      installedPackOf(
+        bundledVoicePacks.singleWhere((pack) => pack.id == 'supertonic-3'),
+        sizeOnDisk: 402000000,
+      ),
     );
     await tester.pumpAndSettle();
     expect(find.text('10 voices · 402 MB'), findsOneWidget);
@@ -200,7 +213,9 @@ void main() {
 
   testWidgets('offers an update for an outdated pack', (tester) async {
     await open(tester);
-    final pack = bundledVoicePacks.single;
+    final pack = bundledVoicePacks.singleWhere(
+      (pack) => pack.id == 'supertonic-3',
+    );
     repository.add(installedPackOf(pack));
     repository.catalog = [
       VoicePack.fromJson({...pack.toJson(), 'version': 2}),
@@ -209,5 +224,39 @@ void main() {
 
     await tap(tester, find.text('Update'));
     expect(repository.tasks, contains('supertonic-3'));
+  });
+  testWidgets('lists both packs and selects the installed pack explicitly', (
+    tester,
+  ) async {
+    await open(tester, catalog: bundledVoicePacks);
+    final current = bundledVoicePacks.singleWhere(
+      (pack) => pack.id == 'supertonic-3',
+    );
+    final smaller = bundledVoicePacks.singleWhere(
+      (pack) => pack.id == 'supertonic-2',
+    );
+    repository.add(installedPackOf(current));
+    repository.add(installedPackOf(smaller));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<RadioGroup<String>>(find.byType(RadioGroup<String>))
+          .groupValue,
+      current.id,
+    );
+    await tester.scrollUntilVisible(
+      find.text('Supertonic 2'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tap(tester, find.text('Supertonic 2'));
+    await tester.pumpAndSettle();
+    expect(tts.preferredVoicePackId, smaller.id);
+    expect(
+      tester
+          .widget<RadioGroup<String>>(find.byType(RadioGroup<String>))
+          .groupValue,
+      smaller.id,
+    );
   });
 }
