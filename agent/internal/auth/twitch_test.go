@@ -2,13 +2,11 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
-	"time"
 
 	"golang.org/x/oauth2"
 )
@@ -48,28 +46,6 @@ func TestValidateClosesResponseAndRejectsServerError(t *testing.T) {
 	}
 }
 
-func TestRefreshSourceSurvivesConstructionDeadline(t *testing.T) {
-	// No network: replace the OAuth transport with a context-checking fake.
-	previous := http.DefaultClient
-	defer func() { http.DefaultClient = previous }()
-	http.DefaultClient = &http.Client{Transport: transport(func(r *http.Request) (*http.Response, error) {
-		if err := r.Context().Err(); err != nil {
-			return nil, err
-		}
-		return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(`{"access_token":"fresh","refresh_token":"next","token_type":"bearer","expires_in":3600}`))}, nil
-	})}
-	cfg := &oauth2.Config{Endpoint: oauth2.Endpoint{TokenURL: "https://fake.invalid/token", AuthStyle: oauth2.AuthStyleInParams}}
-	source := newRefreshSource(cfg, &oauth2.Token{RefreshToken: "old", Expiry: time.Now().Add(-time.Hour)})
-	time.Sleep(5100 * time.Millisecond)
-	token, err := source.Token()
-	if errors.Is(err, context.DeadlineExceeded) || err != nil {
-		t.Fatalf("refresh failed: %v", err)
-	}
-	if token.AccessToken != "fresh" {
-		t.Fatal(token)
-	}
-}
-
 func TestSecretPayloadReturnsAPIError(t *testing.T) {
 	want := errors.New("permission denied")
 	_, err := secretPayload(nil, want)
@@ -78,27 +54,51 @@ func TestSecretPayloadReturnsAPIError(t *testing.T) {
 	}
 }
 
-func TestMergeTokenRejectsNull(t *testing.T) {
-	if _, err := mergeToken("null", &oauth2.Token{}); err == nil {
-		t.Fatal("accepted null stored token")
+type tokenProviderFunc func(context.Context, string, string) (string, error)
+
+func (f tokenProviderFunc) AccessToken(ctx context.Context, uid, provider string) (string, error) {
+	return f(ctx, uid, provider)
+}
+
+func TestIRCTokenSourceUsesSharedProviderOnEveryCall(t *testing.T) {
+	calls := 0
+	source := NewTwitchTokenSource(tokenProviderFunc(func(ctx context.Context, uid, p string) (string, error) {
+		calls++
+		if uid != "user" || p != "twitch" || ctx.Err() != nil {
+			t.Fatal("wrong account or expired request context")
+		}
+		if _, ok := ctx.Deadline(); !ok {
+			t.Fatal("missing operation deadline")
+		}
+		return "access", nil
+	}), "user")
+	validates := 0
+	source.client = &http.Client{Transport: transport(func(request *http.Request) (*http.Response, error) {
+		validates++
+		if request.Header.Get("Authorization") != "OAuth access" {
+			t.Fatal("wrong validation token")
+		}
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader("{}"))}, nil
+	})}
+	for i := 0; i < 2; i++ {
+		token, err := source.Token()
+		if err != nil || token.AccessToken != "access" {
+			t.Fatal(token, err)
+		}
+	}
+	if calls != 2 || validates != 2 {
+		t.Fatal("reconnect reused stale token", calls, validates)
 	}
 }
-func TestMergeTokenPreservesFields(t *testing.T) {
-	expiry := time.Date(2026, 1, 2, 3, 4, 5, 6000000, time.UTC)
-	data, err := mergeToken(`{"access_token":"old","refresh_token":"old-refresh","scope":["chat:read"],"other":true}`, &oauth2.Token{AccessToken: "fresh", RefreshToken: "rotated", Expiry: expiry})
-	if err != nil {
+
+func TestIRCTokenSourcePropagatesRevocationWithoutValidatingStaleToken(t *testing.T) {
+	want := errors.New("provider token unavailable")
+	source := NewTwitchTokenSource(tokenProviderFunc(func(context.Context, string, string) (string, error) { return "", want }), "user")
+	source.client = &http.Client{Transport: transport(func(*http.Request) (*http.Response, error) {
+		t.Fatal("validated an unavailable token")
+		return nil, nil
+	})}
+	if _, err := source.Token(); !errors.Is(err, want) {
 		t.Fatal(err)
-	}
-	var got map[string]interface{}
-	if err := json.Unmarshal(data, &got); err != nil {
-		t.Fatal(err)
-	}
-	if got["access_token"] != "fresh" || got["refresh_token"] != "rotated" || got["expires_at"] != "2026-01-02T03:04:05.006Z" || got["other"] != true || got["scope"].([]interface{})[0] != "chat:read" {
-		t.Fatal(got)
-	}
-	for _, text := range []string{"broken", "[]", "null"} {
-		if _, err := mergeToken(text, &oauth2.Token{}); err == nil {
-			t.Errorf("accepted %s", text)
-		}
 	}
 }
