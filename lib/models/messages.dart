@@ -112,7 +112,7 @@ class MessagesModel extends ChangeNotifier {
     _messages = applyDeltaEvent(
       _messages,
       event,
-      channel: _channels.length > 1 ? channel : null,
+      channel: channel,
       onAppend: (model) {
         // only messages that arrive live are read out or pinged, not history.
         // in a merged view a live message can land before a newer one that
