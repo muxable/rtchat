@@ -272,6 +272,7 @@ func main() {
 		}
 	}()
 
+	heartbeats := newHeartbeatFilter()
 	first := true
 	for {
 		loop.listening()
@@ -298,6 +299,9 @@ func main() {
 		}
 		for _, change := range snapshot.Changes {
 			req := (*agent.Request)(change.Doc.Ref)
+			if heartbeats.heartbeatOnly(req.String(), change.Kind, change.Doc.Data()) {
+				continue
+			}
 			zap.L().Info("got request", zap.String("id", req.String()))
 			if first {
 				initial.add(req.String())

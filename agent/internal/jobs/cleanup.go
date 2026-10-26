@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -15,12 +16,46 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// defaultIdleTimeout is how long a channel keeps its assignment (and a Kick
+// channel its webhooks) after its last subscribe. Clients since the heartbeat
+// release re-subscribe hourly while they show or read out a channel, so this
+// can drop to idleTimeoutWithHeartbeat once older clients, which subscribe
+// only when a channel is opened, have aged out.
+const defaultIdleTimeout = 7 * 24 * time.Hour
+
+// idleTimeoutWithHeartbeat is the timeout to set IDLE_CHANNEL_TIMEOUT to once
+// heartbeating clients are the norm: a day plus slack over the hourly
+// heartbeat for clients that are briefly offline.
+const idleTimeoutWithHeartbeat = 26 * time.Hour
+
+// idleTimeout reads IDLE_CHANNEL_TIMEOUT (a Go duration, e.g. "26h"), falling
+// back to defaultIdleTimeout when it's unset or invalid.
+func idleTimeout() time.Duration {
+	value := os.Getenv("IDLE_CHANNEL_TIMEOUT")
+	if value == "" {
+		return defaultIdleTimeout
+	}
+	timeout, err := time.ParseDuration(value)
+	if err != nil || timeout < time.Hour {
+		zap.L().Error("invalid IDLE_CHANNEL_TIMEOUT, using default", zap.String("value", value), zap.Duration("default", defaultIdleTimeout))
+		return defaultIdleTimeout
+	}
+	return timeout
+}
+
+// idleAssignment reports whether an assignment's last subscribe and heartbeat
+// (subscriptions.HeartbeatField) are both before cutoff. One with neither is
+// kept.
 func idleAssignment(id string, data map[string]interface{}, cutoff time.Time) bool {
-	at, ok := data["subscribedAt"].(time.Time)
-	return id != "twitch:muxfd" && ok && at.Before(cutoff)
+	subscribed, hasSubscribed := data["subscribedAt"].(time.Time)
+	beat, hasBeat := data["heartbeatAt"].(time.Time)
+	if id == "twitch:muxfd" || (!hasSubscribed && !hasBeat) {
+		return false
+	}
+	return (!hasSubscribed || subscribed.Before(cutoff)) && (!hasBeat || beat.Before(cutoff))
 }
 func (s *Service) Cleanup(ctx context.Context) error {
-	cutoff := time.Now().Add(-7 * 24 * time.Hour)
+	cutoff := time.Now().Add(-idleTimeout())
 	assignments, err := s.Client.Collection("assignments").Documents(ctx).GetAll()
 	if err != nil {
 		return err

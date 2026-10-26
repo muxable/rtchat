@@ -48,17 +48,27 @@ func (s *Service) twitchUser(ctx context.Context, token string, q url.Values) (t
 	}
 	return result.Data[0], nil
 }
-func (s *Service) subscribeTwitch(ctx context.Context, uid, channel string) (interface{}, error) {
+
+// twitchChannel looks up the broadcaster with the numeric ID channel.
+func (s *Service) twitchChannel(ctx context.Context, channel string) (twitchUser, error) {
 	token, err := s.API.Tokens.AppAccessToken(ctx, "twitch")
 	if err != nil {
-		return nil, err
+		return twitchUser{}, err
 	}
 	user, err := s.twitchUser(ctx, token, url.Values{"id": {channel}})
 	if err != nil {
-		return nil, err
+		return twitchUser{}, err
 	}
 	if user.ID != channel || user.Login == "" {
-		return nil, invalid("invalid Twitch channel")
+		return twitchUser{}, invalid("invalid Twitch channel")
+	}
+	return user, nil
+}
+
+func (s *Service) subscribeTwitch(ctx context.Context, uid, channel string) (interface{}, error) {
+	user, err := s.twitchChannel(ctx, channel)
+	if err != nil {
+		return nil, err
 	}
 	_, err = s.DB.Collection("assignments").Doc("twitch:"+user.Login).Set(ctx, map[string]interface{}{"subscribedAt": firestore.ServerTimestamp})
 	if err != nil {

@@ -59,6 +59,9 @@ func (s *Service) Subscribe(ctx context.Context, data json.RawMessage) (interfac
 	var input struct {
 		Provider  string          `json:"provider"`
 		ChannelID json.RawMessage `json:"channelId"`
+		// Heartbeat marks a repeat subscribe from a client that is still
+		// showing the channel; see heartbeat.
+		Heartbeat bool `json:"heartbeat"`
 	}
 	if err := json.Unmarshal(data, &input); err != nil {
 		return nil, invalid("missing provider, channelId")
@@ -89,6 +92,9 @@ func (s *Service) Subscribe(ctx context.Context, data json.RawMessage) (interfac
 	default:
 		return nil, invalid("invalid provider")
 	}
+	if input.Heartbeat {
+		return s.heartbeat(ctx, input.Provider, channel)
+	}
 	uid := callable.UID(ctx)
 	switch input.Provider {
 	case "youtube":
@@ -97,7 +103,7 @@ func (s *Service) Subscribe(ctx context.Context, data json.RawMessage) (interfac
 	case "twitch":
 		return s.subscribeTwitch(ctx, uid, channel)
 	case "kick":
-		err := subscriptionlock.With(ctx, s.DB, "kick:"+channel, func(ctx context.Context) error { return s.ensureKick(ctx, channel) })
+		err := subscriptionlock.With(ctx, s.DB, "kick:"+channel, func(ctx context.Context) error { return s.ensureKick(ctx, channel, time.Hour) })
 		if err != nil {
 			return nil, err
 		}
@@ -167,6 +173,11 @@ func isStatus(err error, code int) bool {
 
 // activeCheck permits one-hour caching only for a complete persisted event set.
 func activeCheck(data map[string]interface{}, now time.Time) bool {
+	return checkedWithin(data, now, time.Hour)
+}
+
+// checkedWithin is activeCheck with a cache of ttl.
+func checkedWithin(data map[string]interface{}, now time.Time, ttl time.Duration) bool {
 	checked, _ := data["checkedAt"].(time.Time)
 	count := 0
 	switch ids := data["subscriptionIds"].(type) {
@@ -175,5 +186,5 @@ func activeCheck(data map[string]interface{}, now time.Time) bool {
 	case []string:
 		count = len(ids)
 	}
-	return count >= len(KickEvents) && !checked.IsZero() && !checked.After(now) && now.Sub(checked) < time.Hour
+	return count >= len(KickEvents) && !checked.IsZero() && !checked.After(now) && now.Sub(checked) < ttl
 }

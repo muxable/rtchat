@@ -214,3 +214,44 @@ func TestKickSubscribeAndCleanupShareLifecycleLease(t *testing.T) {
 		t.Fatal("active subscription lost after cleanup", posts, err)
 	}
 }
+func TestKickHeartbeatTrustsCheckAcrossHeartbeats(t *testing.T) {
+	db := database(t)
+	ctx := context.Background()
+	fixture := &kickFixture{state: map[string][]kickSubscription{}}
+	var ids []string
+	for _, event := range KickEvents {
+		id := "123-" + event.Name
+		ids = append(ids, id)
+		fixture.state["123"] = append(fixture.state["123"], kickSubscription{ID: id, Event: event.Name, Version: event.Version})
+	}
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		fixture.handler(w, r)
+	}))
+	defer server.Close()
+	service := &Service{DB: db, API: &API{Tokens: fakeTokens{}, Client: server.Client(), KickURL: server.URL}}
+	ref := db.Collection("webhooks").Doc("kick:123")
+	beat := func(checked time.Time) {
+		t.Helper()
+		if _, err := ref.Set(ctx, map[string]interface{}{"subscriptionIds": ids, "checkedAt": checked, "lastActiveAt": time.Unix(0, 0)}); err != nil {
+			t.Fatal(err)
+		}
+		if response := call(service, "subscribe", "", `{"provider":"kick","channelId":"123","heartbeat":true}`); response.Code != 200 {
+			t.Fatal(response.Code, response.Body.String())
+		}
+		doc, err := ref.Get(ctx)
+		if err != nil || !doc.Data()["lastActiveAt"].(time.Time).After(time.Unix(0, 0)) {
+			t.Fatal("heartbeat didn't refresh activity", err)
+		}
+	}
+	// checked by the previous heartbeat, more than the open path's hour ago.
+	beat(time.Now().Add(-90 * time.Minute))
+	if requests != 0 {
+		t.Fatal("heartbeat reconciled a recently checked channel", requests)
+	}
+	beat(time.Now().Add(-3 * time.Hour))
+	if requests == 0 || fixture.posts != 0 {
+		t.Fatal("stale check not reconciled", requests, fixture.posts)
+	}
+}

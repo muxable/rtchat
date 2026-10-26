@@ -313,3 +313,67 @@ func TestDonationOwnershipAndNormalization(t *testing.T) {
 		t.Fatal(docs, err)
 	}
 }
+func TestHeartbeatOnlyRefreshesAssignment(t *testing.T) {
+	db := database(t)
+	ctx := context.Background()
+	profileRef := db.Collection("profiles").Doc("owner")
+	if _, err := profileRef.Set(ctx, map[string]interface{}{"twitch": map[string]interface{}{"id": "123", "login": "owner"}}); err != nil {
+		t.Fatal(err)
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/users" || r.URL.Query().Get("id") != "123" {
+			t.Error(r.URL)
+		}
+		fmt.Fprint(w, `{"data":[{"id":"123","login":"owner"}]}`)
+	}))
+	defer server.Close()
+	service := &Service{DB: db, TwitchSecret: "dedicated-signing-secret", API: &API{Tokens: fakeTokens{}, Client: server.Client(), TwitchURL: server.URL}}
+	service.Queue = NewTwitchQueue(service)
+	response := call(service, "subscribe", "owner", `{"provider":"twitch","channelId":"123","heartbeat":true}`)
+	if response.Code != 200 {
+		t.Fatal(response.Code, response.Body.String())
+	}
+	if _, err := db.Collection("assignments").Doc("twitch:owner").Get(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if depth(service.Queue) != 0 {
+		t.Fatal("heartbeat reconciled EventSub")
+	}
+	doc, err := profileRef.Get(ctx)
+	if err != nil || doc.Data()["lastActiveAt"] != nil {
+		t.Fatal(doc.Data(), err)
+	}
+	if _, err := db.Collection("channels").Doc("twitch:123").Get(ctx); err == nil {
+		t.Fatal("heartbeat touched the channel")
+	}
+}
+func TestHeartbeatRecreatesCleanedUpAssignmentAndKeepsSubscribedAt(t *testing.T) {
+	db := database(t)
+	ctx := context.Background()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `{"data":[{"id":"123","login":"owner"}]}`)
+	}))
+	defer server.Close()
+	service := &Service{DB: db, API: &API{Tokens: fakeTokens{}, Client: server.Client(), TwitchURL: server.URL}}
+	ref := db.Collection("assignments").Doc("twitch:owner")
+	subscribed := time.Unix(1000, 0).UTC()
+	if _, err := ref.Set(ctx, map[string]interface{}{"subscribedAt": subscribed}); err != nil {
+		t.Fatal(err)
+	}
+	if response := call(service, "subscribe", "", `{"provider":"twitch","channelId":"123","heartbeat":true}`); response.Code != 200 {
+		t.Fatal(response.Body.String())
+	}
+	doc, err := ref.Get(ctx)
+	if err != nil || !doc.Data()["subscribedAt"].(time.Time).Equal(subscribed) || doc.Data()[HeartbeatField] == nil {
+		t.Fatal(doc.Data(), err)
+	}
+	if _, err := ref.Delete(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if response := call(service, "subscribe", "", `{"provider":"twitch","channelId":"123","heartbeat":true}`); response.Code != 200 {
+		t.Fatal(response.Body.String())
+	}
+	if doc, err := ref.Get(ctx); err != nil || doc.Data()[HeartbeatField] == nil {
+		t.Fatal("heartbeat didn't recreate the assignment", err)
+	}
+}

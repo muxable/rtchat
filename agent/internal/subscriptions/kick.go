@@ -58,13 +58,16 @@ func (s *Service) listKick(ctx context.Context, id, token string) ([]kickSubscri
 	}
 	return result.Data, nil
 }
-func (s *Service) ensureKick(ctx context.Context, id string) error {
+
+// ensureKick reconciles a Kick channel's event subscriptions, unless they were
+// checked within ttl.
+func (s *Service) ensureKick(ctx context.Context, id string, ttl time.Duration) error {
 	ref := s.DB.Collection("webhooks").Doc("kick:" + id)
 	doc, err := ref.Get(ctx)
 	if err != nil && status.Code(err) != codes.NotFound {
 		return err
 	}
-	if err == nil && activeCheck(doc.Data(), time.Now()) {
+	if err == nil && checkedWithin(doc.Data(), time.Now(), ttl) {
 		// A failed partial creation never writes checkedAt, so it always reconciles.
 		_, err = ref.Set(ctx, map[string]interface{}{"lastActiveAt": firestore.ServerTimestamp}, firestore.MergeAll)
 		return err
