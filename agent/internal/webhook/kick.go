@@ -330,7 +330,7 @@ func (h *KickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, refresh := range []bool{false, true} {
 		key, err := h.getPublicKey(r.Context(), refresh)
 		if err != nil {
-			h.fail(w, err)
+			h.fail(w, r, delivery, "fetch public key", err)
 			return
 		}
 		if VerifyKickSignature(key, delivery.MessageID, delivery.Timestamp, body, signature) {
@@ -349,7 +349,7 @@ func (h *KickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	docs, err := KickToDocuments(delivery, h.now())
 	if err != nil {
-		h.fail(w, err)
+		h.fail(w, r, delivery, "map event", err)
 		return
 	}
 	if docs == nil {
@@ -372,13 +372,13 @@ func (h *KickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		err := h.store.CreateMessage(ctx, docs.ChannelID, message.ID, message.Data)
 		chatmetrics.Record("kick", kickKind(message.Data["type"].(string)), chatmetrics.OutcomeOf(err))
 		if err != nil && status.Code(err) != codes.AlreadyExists {
-			h.fail(w, err)
+			h.fail(w, r, delivery, "create message", err)
 			return
 		}
 	}
 	if len(docs.Channel) > 0 {
 		if err := h.store.MergeChannel(ctx, docs.ChannelID, docs.Channel); err != nil {
-			h.fail(w, err)
+			h.fail(w, r, delivery, "merge channel", err)
 			return
 		}
 	}
@@ -394,7 +394,16 @@ func kickKind(documentType string) string {
 	return strings.TrimPrefix(documentType, "kick.")
 }
 
-func (h *KickHandler) fail(w http.ResponseWriter, err error) {
-	zap.L().Error("kick webhook failed", zap.Error(err))
+func (h *KickHandler) fail(w http.ResponseWriter, r *http.Request, delivery KickDelivery, operation string, err error) {
+	zap.L().Error("kick webhook "+operation+" failed",
+		zap.Error(err),
+		zap.String("method", r.Method),
+		zap.String("path", r.URL.Path),
+		zap.Int("status", http.StatusInternalServerError),
+		zap.String("messageId", delivery.MessageID),
+		zap.String("type", delivery.Type),
+		zap.String("operation", operation),
+		zap.Bool("request_canceled", r.Context().Err() != nil),
+	)
 	w.WriteHeader(http.StatusInternalServerError)
 }
