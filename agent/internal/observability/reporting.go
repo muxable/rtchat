@@ -45,6 +45,21 @@ func (c *reportingCore) Write(entry zapcore.Entry, fields []zapcore.Field) error
 	stack := entry.Stack
 	message := entry.Message
 	all := append(append([]zapcore.Field(nil), c.fields...), fields...)
+	var method, path string
+	var status int64
+	for _, field := range all {
+		switch field.Key {
+		case "method":
+			method = field.String
+		case "path":
+			path = field.String
+		case "status":
+			status = field.Integer
+		}
+	}
+	if message == "http request" && method != "" && path != "" && status != 0 {
+		message = fmt.Sprintf("HTTP %s %s returned %d", method, path, status)
+	}
 	for _, field := range all {
 		if field.Type == zapcore.ErrorType {
 			if err, ok := field.Interface.(error); ok {
@@ -65,11 +80,19 @@ func (c *reportingCore) Write(entry zapcore.Entry, fields []zapcore.Field) error
 			output = append(output, field)
 		}
 	}
+	errorContext := map[string]any{
+		"reportLocation": map[string]any{
+			"filePath": entry.Caller.File, "lineNumber": entry.Caller.Line, "functionName": entry.Caller.Function,
+		},
+	}
+	if method != "" && path != "" {
+		errorContext["httpRequest"] = map[string]any{"method": method, "url": path, "responseStatusCode": status}
+	}
 	fields = append(output,
 		zap.String("@type", "type.googleapis.com/google.devtools.clouderrorreporting.v1beta1.ReportedErrorEvent"),
 		zap.Any("serviceContext", map[string]string{"service": "rtchat-agent", "version": Version}),
 		zap.String("stack_trace", strings.TrimSpace(message+"\n"+stack)),
-		zap.Any("context", map[string]any{"reportLocation": map[string]any{"filePath": entry.Caller.File, "lineNumber": entry.Caller.Line, "functionName": entry.Caller.Function}}),
+		zap.Any("context", errorContext),
 	)
 	return c.Core.Write(entry, fields)
 }
