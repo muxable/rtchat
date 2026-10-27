@@ -56,6 +56,31 @@ func TestReportingPreservesMetricMessageAndScopedErrors(t *testing.T) {
 		}
 	}
 }
+
+func TestHTTPRequestReportIncludesRouteStatusAndCause(t *testing.T) {
+	for _, withCause := range []bool{false, true} {
+		var buffer bytes.Buffer
+		logger := testLogger(&buffer).With(zap.String("method", "POST"), zap.String("path", "/kick/webhook"))
+		fields := []zap.Field{zap.Int("status", 500)}
+		if withCause {
+			fields = append(fields, zap.Error(errors.New("context canceled")))
+		}
+		logger.Error("http request", fields...)
+		event := readEvent(t, &buffer)
+		stack := event["stack_trace"].(string)
+		want := "HTTP POST /kick/webhook returned 500"
+		if withCause {
+			want += ": context canceled"
+		}
+		if !strings.HasPrefix(stack, want+"\n") || event["message"] != "http request" {
+			t.Fatal(event)
+		}
+		request := event["context"].(map[string]any)["httpRequest"].(map[string]any)
+		if request["method"] != "POST" || request["url"] != "/kick/webhook" || request["responseStatusCode"] != float64(500) {
+			t.Fatal(request)
+		}
+	}
+}
 func panicOrigin() (err error) {
 	defer func() {
 		if value := recover(); value != nil {
