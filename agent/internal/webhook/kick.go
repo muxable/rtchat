@@ -264,6 +264,8 @@ const kickKeyRefreshInterval = time.Minute
 // kickMaxBodyBytes bounds a delivery's body; real events are a few KB.
 const kickMaxBodyBytes = 1 << 20
 
+const kickPersistenceTimeout = 10 * time.Second
+
 // The public-key endpoint does not require the optional Kick client credentials.
 func NewKickHandler(store KickStore) *KickHandler {
 	return &KickHandler{store: store, client: &http.Client{Timeout: 10 * time.Second}, publicKeyURL: kickPublicKeyURL, now: time.Now}
@@ -362,8 +364,12 @@ func (h *KickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		zap.L().Info("unhandled kick event", zap.String("type", delivery.Type))
 	}
+	// Once a delivery is verified, finish its idempotent writes even if the
+	// sender disconnects. Keep the work synchronous and bounded for shutdown.
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), kickPersistenceTimeout)
+	defer cancel()
 	for _, message := range docs.Messages {
-		err := h.store.CreateMessage(r.Context(), docs.ChannelID, message.ID, message.Data)
+		err := h.store.CreateMessage(ctx, docs.ChannelID, message.ID, message.Data)
 		chatmetrics.Record("kick", kickKind(message.Data["type"].(string)), chatmetrics.OutcomeOf(err))
 		if err != nil && status.Code(err) != codes.AlreadyExists {
 			h.fail(w, err)
@@ -371,7 +377,7 @@ func (h *KickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if len(docs.Channel) > 0 {
-		if err := h.store.MergeChannel(r.Context(), docs.ChannelID, docs.Channel); err != nil {
+		if err := h.store.MergeChannel(ctx, docs.ChannelID, docs.Channel); err != nil {
 			h.fail(w, err)
 			return
 		}

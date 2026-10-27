@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -255,6 +256,70 @@ func (s *kickMemoryStore) MergeChannel(_ context.Context, channel string, data m
 		s.channels[channel][k] = v
 	}
 	return nil
+}
+
+type kickContextStore struct {
+	kickMemoryStore
+	check func(context.Context)
+}
+
+func (s *kickContextStore) CreateMessage(ctx context.Context, channel, id string, data map[string]interface{}) error {
+	s.check(ctx)
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	return s.kickMemoryStore.CreateMessage(ctx, channel, id, data)
+}
+
+func (s *kickContextStore) MergeChannel(ctx context.Context, channel string, data map[string]interface{}) error {
+	s.check(ctx)
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	return s.kickMemoryStore.MergeChannel(ctx, channel, data)
+}
+
+func TestKickVerifiedDeliverySurvivesRequestCancellation(t *testing.T) {
+	private, key := kickTestKey(t)
+	for _, cancelBefore := range []bool{false, true} {
+		t.Run(fmt.Sprintf("cancel before persistence=%t", cancelBefore), func(t *testing.T) {
+			type contextKey struct{}
+			parent, cancel := context.WithCancel(context.WithValue(context.Background(), contextKey{}, "request value"))
+			defer cancel()
+			if cancelBefore {
+				cancel()
+			}
+			var persistence context.Context
+			store := &kickContextStore{check: func(ctx context.Context) {
+				cancel() // Also exercise cancellation between the message and channel writes.
+				persistence = ctx
+				if ctx.Err() != nil || ctx.Value(contextKey{}) != "request value" {
+					t.Fatalf("persistence inherited cancellation or lost request values: %v", ctx.Err())
+				}
+				deadline, ok := ctx.Deadline()
+				if !ok || time.Until(deadline) <= 0 || time.Until(deadline) > 10*time.Second {
+					t.Fatalf("unbounded persistence context: %v, %v", deadline, ok)
+				}
+			}}
+			handler := NewKickHandler(store)
+			handler.publicKey = key
+			now := time.Now().UTC().Format(time.RFC3339)
+			body := `{"broadcaster":{"user_id":123,"channel_slug":"muxfd"},"message_id":"m1"}`
+			req := httptest.NewRequest(http.MethodPost, "/kick/webhook", strings.NewReader(body)).WithContext(parent)
+			req.Header.Set("Kick-Event-Message-Id", "delivery-1")
+			req.Header.Set("Kick-Event-Message-Timestamp", now)
+			req.Header.Set("Kick-Event-Type", "chat.message.sent")
+			req.Header.Set("Kick-Event-Signature", kickTestSign(t, private, "delivery-1", now, body))
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, req)
+			if response.Code != http.StatusOK || len(store.messages) != 1 || len(store.channels) != 1 {
+				t.Fatalf("delivery was not persisted: status=%d writes=%v", response.Code, store.calls)
+			}
+			if persistence == nil || persistence.Err() != context.Canceled {
+				t.Fatal("persistence context not released after handler returned")
+			}
+		})
+	}
 }
 
 func TestKickHandler(t *testing.T) {
