@@ -1,7 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
-import 'app_localizations.dart';
+import 'package:rtchat/l10n/app_localizations.dart';
 
 // ignore_for_file: type=lint
 
@@ -291,8 +290,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String displayNameTwo,
     int numOthers,
   ) {
-    final intl.NumberFormat numOthersNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat numOthersNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String numOthersString = numOthersNumberFormat.format(numOthers);
 
     return '<b>$displayName</b>, <b>$displayNameTwo</b>, మరియు మరో $numOthersString మంది మిమ్మల్ని ఫాలో అవుతున్నారు';
@@ -542,8 +541,8 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String raidEventMessage(String displayName, int viewerCount) {
-    final intl.NumberFormat viewerCountNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat viewerCountNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String viewerCountString = viewerCountNumberFormat.format(
       viewerCount,
     );
@@ -561,8 +560,8 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String raidingEventTimeRemaining(int seconds) {
-    final intl.NumberFormat secondsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat secondsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String secondsString = secondsNumberFormat.format(seconds);
 
     return '$secondsStringసె';
@@ -593,11 +592,11 @@ class AppLocalizationsTe extends AppLocalizations {
     String tier,
     int cumulativeTotal,
   ) {
-    final intl.NumberFormat totalNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat totalNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String totalString = totalNumberFormat.format(total);
-    final intl.NumberFormat cumulativeTotalNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat cumulativeTotalNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String cumulativeTotalString = cumulativeTotalNumberFormat.format(
       cumulativeTotal,
     );
@@ -611,8 +610,8 @@ class AppLocalizationsTe extends AppLocalizations {
     int cumulativeMonths,
     String tier,
   ) {
-    final intl.NumberFormat cumulativeMonthsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat cumulativeMonthsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String cumulativeMonthsString = cumulativeMonthsNumberFormat.format(
       cumulativeMonths,
     );
@@ -627,13 +626,13 @@ class AppLocalizationsTe extends AppLocalizations {
     int durationMonths,
     int cumulativeMonths,
   ) {
-    final intl.NumberFormat durationMonthsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat durationMonthsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String durationMonthsString = durationMonthsNumberFormat.format(
       durationMonths,
     );
-    final intl.NumberFormat cumulativeMonthsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat cumulativeMonthsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String cumulativeMonthsString = cumulativeMonthsNumberFormat.format(
       cumulativeMonths,
     );
@@ -668,8 +667,8 @@ class AppLocalizationsTe extends AppLocalizations {
     int rewardCost,
     String userInput,
   ) {
-    final intl.NumberFormat rewardCostNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat rewardCostNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
     return '<b>$redeemerUsername</b> <b>$rewardCostString</b> పాయింట్లతో <b>$rewardName</b>ను రిడీమ్ చేసుకున్నారు. $userInput';
@@ -681,8 +680,8 @@ class AppLocalizationsTe extends AppLocalizations {
     String rewardName,
     int rewardCost,
   ) {
-    final intl.NumberFormat rewardCostNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat rewardCostNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String rewardCostString = rewardCostNumberFormat.format(rewardCost);
 
     return '<b>$redeemerUsername</b> <b>$rewardCostString</b> పాయింట్లతో <b>$rewardName</b>ను రిడీమ్ చేసుకున్నారు.';
@@ -703,8 +702,8 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String hostEventMessage(String fromDisplayName, int viewers) {
-    final intl.NumberFormat viewersNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat viewersNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String viewersString = viewersNumberFormat.format(viewers);
 
     return '<b>$fromDisplayName</b> <b>$viewersString</b> మంది బృందంతో హోస్ట్ చేస్తున్నారు.';
@@ -717,8 +716,8 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String hypeTrainEventEndedSuccessful(int level) {
-    final intl.NumberFormat levelNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat levelNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
     return 'హైప్ ట్రైన్ లెవల్ <b>$levelString</b> విజయవంతమైంది.';
@@ -726,8 +725,8 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String hypeTrainEventEndedUnsuccessful(int level) {
-    final intl.NumberFormat levelNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat levelNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String levelString = levelNumberFormat.format(level);
 
     return 'హైప్ ట్రైన్ లెవల్ <b>$levelString</b> విఫలమైంది.';
@@ -1022,8 +1021,8 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String kickResubscriptionEvent(String subscriberName, int months) {
-    final intl.NumberFormat monthsNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat monthsNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String monthsString = monthsNumberFormat.format(months);
 
     return '<b>$subscriberName</b> $monthsString నెలల పాటు మళ్లీ సబ్‌స్క్రైబ్ చేసుకున్నారు!';
@@ -1031,8 +1030,8 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String kickGiftedSubscriptionsEvent(String gifterName, int count) {
-    final intl.NumberFormat countNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat countNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
 
     return '<b>$gifterName</b> $countString సబ్‌లను బహుమతిగా ఇచ్చారు!';
@@ -1040,8 +1039,8 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String kicksGiftedEvent(String senderName, int amount) {
-    final intl.NumberFormat amountNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat amountNumberFormat = intl
+        .NumberFormat.decimalPattern(localeName);
     final String amountString = amountNumberFormat.format(amount);
 
     return '<b>$senderName</b> $amountString Kicks పంపారు!';

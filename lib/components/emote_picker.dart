@@ -16,7 +16,7 @@ class EmotesList extends StatelessWidget {
   });
 
   final List<Emote> emotes;
-  final Function(Emote) onEmoteSelected;
+  final void Function(Emote) onEmoteSelected;
   final Channel channel;
 
   @override
@@ -62,7 +62,7 @@ class EmotesList extends StatelessWidget {
           header: Container(
             width: MediaQuery.of(context).size.width,
             color: Theme.of(context).scaffoldBackgroundColor,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             alignment: Alignment.centerLeft,
             child: Padding(
               padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
@@ -77,10 +77,7 @@ class EmotesList extends StatelessWidget {
             ),
           ),
           content: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
             child: Center(
               child: Wrap(
                 alignment: WrapAlignment.start,
@@ -97,7 +94,7 @@ class EmotesList extends StatelessWidget {
                                   (MediaQuery.of(context).orientation ==
                                           Orientation.portrait
                                       ? 7
-                                      : 10) -
+                                      : 13) -
                               8,
                           height: 36,
                           child: Padding(
@@ -134,55 +131,57 @@ class _TabbedEmotePickerWidget extends StatelessWidget {
   });
 
   final List<Emote> emotes;
-  final Function(Emote) onEmoteSelected;
+  final void Function(Emote) onEmoteSelected;
   final Channel channel;
 
   @override
   Widget build(BuildContext context) {
     final byProvider = emotes.fold<Map<String, List<Emote>>>({}, (map, emote) {
-      final provider = emote.provider;
-      if (!map.containsKey(provider)) {
-        map[provider] = [];
-      }
-      map[provider]!.add(emote);
+      map.putIfAbsent(emote.provider, () => []).add(emote);
       return map;
     });
+
     final tabs = [
-      if (byProvider.containsKey("twitch")) const Tab(text: "Twitch"),
-      if (byProvider.containsKey("bttv")) const Tab(text: "BTTV"),
-      if (byProvider.containsKey("ffz")) const Tab(text: "FFZ"),
-      if (byProvider.containsKey("7tv")) const Tab(text: "7TV"),
+      if (byProvider.containsKey('twitch')) const Tab(text: 'Twitch'),
+      if (byProvider.containsKey('bttv')) const Tab(text: 'BTTV'),
+      if (byProvider.containsKey('ffz')) const Tab(text: 'FFZ'),
+      if (byProvider.containsKey('7tv')) const Tab(text: '7TV'),
     ];
+
+    if (tabs.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return DefaultTabController(
       length: tabs.length,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
         children: [
           TabBar(tabs: tabs),
           Expanded(
             child: TabBarView(
               children: [
-                if (byProvider.containsKey("twitch"))
+                if (byProvider.containsKey('twitch'))
                   EmotesList(
-                    emotes: byProvider["twitch"]!,
+                    emotes: byProvider['twitch']!,
                     onEmoteSelected: onEmoteSelected,
                     channel: channel,
                   ),
-                if (byProvider.containsKey("bttv"))
+                if (byProvider.containsKey('bttv'))
                   EmotesList(
-                    emotes: byProvider["bttv"]!,
+                    emotes: byProvider['bttv']!,
                     onEmoteSelected: onEmoteSelected,
                     channel: channel,
                   ),
-                if (byProvider.containsKey("ffz"))
+                if (byProvider.containsKey('ffz'))
                   EmotesList(
-                    emotes: byProvider["ffz"]!,
+                    emotes: byProvider['ffz']!,
                     onEmoteSelected: onEmoteSelected,
                     channel: channel,
                   ),
-                if (byProvider.containsKey("7tv"))
+                if (byProvider.containsKey('7tv'))
                   EmotesList(
-                    emotes: byProvider["7tv"]!,
+                    emotes: byProvider['7tv']!,
                     onEmoteSelected: onEmoteSelected,
                     channel: channel,
                   ),
@@ -211,20 +210,37 @@ class EmotePickerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final rowNumber =
         MediaQuery.of(context).orientation == Orientation.portrait ? 6 : 4;
-    final maxHeight = MediaQuery.of(context).size.height * 0.5;
+    final screenMaxHeight = MediaQuery.sizeOf(context).height * 0.5;
 
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        onEmoteSelected(null);
+        if (!didPop) {
+          onEmoteSelected(null);
+        }
       },
-      child: SizedBox(
-        height: min(48 * rowNumber.toDouble(), maxHeight),
-        child: _TabbedEmotePickerWidget(
-          emotes: emotes,
-          onEmoteSelected: onEmoteSelected,
-          channel: channel,
-        ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final desiredHeight = 48.0 * rowNumber;
+          final availableHeight =
+              constraints.hasBoundedHeight
+                  ? constraints.maxHeight
+                  : screenMaxHeight;
+
+          final pickerHeight = min(
+            desiredHeight,
+            min(screenMaxHeight, availableHeight),
+          );
+
+          return SizedBox(
+            height: pickerHeight,
+            child: _TabbedEmotePickerWidget(
+              emotes: emotes,
+              onEmoteSelected: (emote) => onEmoteSelected(emote),
+              channel: channel,
+            ),
+          );
+        },
       ),
     );
   }
