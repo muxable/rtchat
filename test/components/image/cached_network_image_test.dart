@@ -165,8 +165,8 @@ void main() {
       );
       await tester.pump();
       await _expectAnimation(tester);
-      // The 36px button's vertical padding constrains its icon to 20px.
-      expect(tester.getSize(find.byType(CrossFadeImage)), const Size(36, 20));
+      // The 36px button's 2px inset on each side leaves a 32px icon.
+      expect(tester.getSize(find.byType(CrossFadeImage)), const Size(36, 32));
       expect(requests, hasLength(1));
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
