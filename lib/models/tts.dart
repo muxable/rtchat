@@ -25,6 +25,7 @@ import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/tts/language.dart';
+import 'package:rtchat/models/tts/samples.dart';
 import 'package:rtchat/models/tts/muted_user.dart';
 import 'package:rtchat/models/views.dart';
 
@@ -554,23 +555,45 @@ class TtsModel extends ChangeNotifier {
   /// `en`, `pt`); none without a voice pack.
   Future<List<String>> neuralLanguages() => _router.languages();
 
+  /// Previews the stream's language, or an explicitly selected voice language.
+  Future<void> previewSample({String? language, String? voiceId}) {
+    final spokenLanguage = language ?? readingLanguage.languageCode;
+    return previewVoice(
+      spokenLanguage,
+      voiceId,
+      ttsSampleMessage(spokenLanguage),
+    );
+  }
+
   /// Reads [text] in [language] with the neural voice [voiceId], after what
-  /// is being read now. Does nothing if no neural voice can read it.
-  Future<void> previewVoice(String language, String voiceId, String text) {
+  /// is being read now. Uses the system engine when no neural voice can read it.
+  Future<void> previewVoice(String language, String? voiceId, String text) {
     final completer = Completer<void>();
     _idleTimer?.cancel();
     _afterQueue(() async {
       try {
         await _releasing;
+        if (_isDisposed) return;
         final route =
             _neuralFallback == null ? await _router.route(language) : null;
-        await route?.engine.speak(
-          text,
-          voice: route.voiceWithId(voiceId),
-          rate: _speed,
-          pitch: _pitch,
-          language: route.language,
-        );
+        if (route != null) {
+          await route.engine.speak(
+            text,
+            voice: route.voiceWithId(
+              voiceId ?? _chosenVoiceId(language, route.language),
+            ),
+            rate: _speed,
+            pitch: _pitch,
+            language: route.language,
+          );
+        } else {
+          await _systemEngine.speak(
+            text,
+            rate: _speed,
+            pitch: _pitch,
+            language: language,
+          );
+        }
       } catch (e, st) {
         _reportError(e, st);
       } finally {

@@ -13,6 +13,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -215,8 +216,31 @@ func (s *kickFirestoreStore) CreateMessage(ctx context.Context, channelID, messa
 }
 
 func (s *kickFirestoreStore) MergeChannel(ctx context.Context, channelID string, data map[string]interface{}) error {
-	_, err := s.client.Collection("channels").Doc(channelID).Set(ctx, kickFirestoreData(data), firestore.MergeAll)
-	return err
+	ref := s.client.Collection("channels").Doc(channelID)
+	update := kickFirestoreData(data)
+	return s.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		doc, err := tx.Get(ref)
+		if err != nil && status.Code(err) != codes.NotFound {
+			return err
+		}
+		if err == nil {
+			// Chat deliveries repeat the broadcaster's name on every message.
+			// Avoid contending with metadata polls for an unchanged channel doc.
+			current := doc.Data()
+			unchanged := true
+			for field, value := range update {
+				existing, ok := current[field]
+				if !ok || !reflect.DeepEqual(existing, value) {
+					unchanged = false
+					break
+				}
+			}
+			if unchanged {
+				return nil
+			}
+		}
+		return tx.Set(ref, update, firestore.MergeAll)
+	})
 }
 
 // The Node Firestore SDK encodes safe integer Numbers as integerValue. Go's
@@ -263,6 +287,8 @@ const kickKeyRefreshInterval = time.Minute
 
 // kickMaxBodyBytes bounds a delivery's body; real events are a few KB.
 const kickMaxBodyBytes = 1 << 20
+
+const kickPersistenceTimeout = 10 * time.Second
 
 // The public-key endpoint does not require the optional Kick client credentials.
 func NewKickHandler(store KickStore) *KickHandler {
@@ -328,7 +354,7 @@ func (h *KickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, refresh := range []bool{false, true} {
 		key, err := h.getPublicKey(r.Context(), refresh)
 		if err != nil {
-			h.fail(w, err)
+			h.fail(w, r, delivery, "fetch public key", err)
 			return
 		}
 		if VerifyKickSignature(key, delivery.MessageID, delivery.Timestamp, body, signature) {
@@ -347,7 +373,7 @@ func (h *KickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	docs, err := KickToDocuments(delivery, h.now())
 	if err != nil {
-		h.fail(w, err)
+		h.fail(w, r, delivery, "map event", err)
 		return
 	}
 	if docs == nil {
@@ -362,17 +388,21 @@ func (h *KickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		zap.L().Info("unhandled kick event", zap.String("type", delivery.Type))
 	}
+	// Once a delivery is verified, finish its idempotent writes even if the
+	// sender disconnects. Keep the work synchronous and bounded for shutdown.
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), kickPersistenceTimeout)
+	defer cancel()
 	for _, message := range docs.Messages {
-		err := h.store.CreateMessage(r.Context(), docs.ChannelID, message.ID, message.Data)
+		err := h.store.CreateMessage(ctx, docs.ChannelID, message.ID, message.Data)
 		chatmetrics.Record("kick", kickKind(message.Data["type"].(string)), chatmetrics.OutcomeOf(err))
 		if err != nil && status.Code(err) != codes.AlreadyExists {
-			h.fail(w, err)
+			h.fail(w, r, delivery, "create message", err)
 			return
 		}
 	}
 	if len(docs.Channel) > 0 {
-		if err := h.store.MergeChannel(r.Context(), docs.ChannelID, docs.Channel); err != nil {
-			h.fail(w, err)
+		if err := h.store.MergeChannel(ctx, docs.ChannelID, docs.Channel); err != nil {
+			h.fail(w, r, delivery, "merge channel", err)
 			return
 		}
 	}
@@ -388,7 +418,16 @@ func kickKind(documentType string) string {
 	return strings.TrimPrefix(documentType, "kick.")
 }
 
-func (h *KickHandler) fail(w http.ResponseWriter, err error) {
-	zap.L().Error("kick webhook failed", zap.Error(err))
+func (h *KickHandler) fail(w http.ResponseWriter, r *http.Request, delivery KickDelivery, operation string, err error) {
+	zap.L().Error("kick webhook "+operation+" failed",
+		zap.Error(err),
+		zap.String("method", r.Method),
+		zap.String("path", r.URL.Path),
+		zap.Int("status", http.StatusInternalServerError),
+		zap.String("messageId", delivery.MessageID),
+		zap.String("type", delivery.Type),
+		zap.String("operation", operation),
+		zap.Bool("request_canceled", r.Context().Err() != nil),
+	)
 	w.WriteHeader(http.StatusInternalServerError)
 }

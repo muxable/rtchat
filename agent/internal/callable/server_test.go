@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -12,6 +13,8 @@ import (
 	"github.com/muxable/rtchat/agent/internal/observability"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest/observer"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func TestTransport(t *testing.T) {
@@ -177,5 +180,48 @@ func TestPanicIsReportedWithoutLeakingToClient(t *testing.T) {
 	stack, _ := fields["stack_trace"].(string)
 	if fields["@type"] == nil || fields["path"] != "/panic" || !strings.Contains(stack, "private panic detail") || !strings.Contains(stack, "TestPanicIsReportedWithoutLeakingToClient.func") {
 		t.Fatal(fields)
+	}
+}
+
+func TestContextErrorsUseCanonicalStatus(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		err    error
+		status int
+		code   string
+	}{
+		{"canceled", context.Canceled, 499, "cancelled"},
+		{"wrapped cancellation", fmt.Errorf("read token: %w", context.Canceled), 499, "cancelled"},
+		{"grpc cancellation", status.Error(codes.Canceled, "private detail"), 499, "cancelled"},
+		{"wrapped grpc cancellation", fmt.Errorf("read token: %w", status.Error(codes.Canceled, "private detail")), 499, "cancelled"},
+		{"deadline", context.DeadlineExceeded, 504, "deadline-exceeded"},
+		{"grpc deadline", status.Error(codes.DeadlineExceeded, "private detail"), 504, "deadline-exceeded"},
+		{"explicit error", &Error{Code: "unavailable", Message: "retry"}, 503, "unavailable"},
+		{"unrelated failure", errors.New("private detail"), 500, "internal"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			core, logs := observer.New(zap.InfoLevel)
+			defer zap.ReplaceGlobals(zap.New(observability.Wrap(core)))()
+			server := NewServer(nil)
+			server.Register("subscribe", false, func(context.Context, json.RawMessage) (any, error) { return nil, tc.err })
+			request := httptest.NewRequest("POST", "/subscribe", strings.NewReader(`{"data":{}}`))
+			request.Header.Set("Content-Type", "application/json")
+			response := httptest.NewRecorder()
+			server.ServeHTTP(response, request)
+			if response.Code != tc.status || !strings.Contains(response.Body.String(), strings.ToUpper(strings.ReplaceAll(tc.code, "-", "_"))) || strings.Contains(response.Body.String(), "private detail") {
+				t.Fatalf("response: %d %s", response.Code, response.Body.String())
+			}
+			entries := logs.FilterMessage("http request").All()
+			if len(entries) != 1 || entries[0].ContextMap()["code"] != tc.code || entries[0].ContextMap()["status"] != int64(tc.status) {
+				t.Fatalf("logs: %v", entries)
+			}
+			fields := entries[0].ContextMap()
+			if tc.status == 499 && (entries[0].Level != zap.InfoLevel || fields["@type"] != nil) {
+				t.Fatalf("client cancellation reported as an agent issue: %v", entries)
+			}
+			if tc.status >= 500 && fields["@type"] == nil {
+				t.Fatalf("server failure no longer reported: %v", entries)
+			}
+		})
 	}
 }
