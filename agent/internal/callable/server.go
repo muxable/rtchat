@@ -11,8 +11,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/muxable/rtchat/agent/internal/cancel"
 	"github.com/muxable/rtchat/agent/internal/observability"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Handler func(context.Context, json.RawMessage) (any, error)
@@ -193,6 +196,10 @@ func canonical(err error) (*Error, int) {
 		if _, ok := statusCodes[explicit.Code]; ok {
 			e = explicit
 		}
+	} else if cancel.IsCanceled(err) {
+		e = &Error{Code: "cancelled", Message: "CANCELLED"}
+	} else if errors.Is(err, context.DeadlineExceeded) || status.Code(err) == codes.DeadlineExceeded {
+		e = &Error{Code: "deadline-exceeded", Message: "DEADLINE_EXCEEDED"}
 	}
 	return e, statusCodes[e.Code]
 }
