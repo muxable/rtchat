@@ -13,6 +13,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -215,8 +216,31 @@ func (s *kickFirestoreStore) CreateMessage(ctx context.Context, channelID, messa
 }
 
 func (s *kickFirestoreStore) MergeChannel(ctx context.Context, channelID string, data map[string]interface{}) error {
-	_, err := s.client.Collection("channels").Doc(channelID).Set(ctx, kickFirestoreData(data), firestore.MergeAll)
-	return err
+	ref := s.client.Collection("channels").Doc(channelID)
+	update := kickFirestoreData(data)
+	return s.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+		doc, err := tx.Get(ref)
+		if err != nil && status.Code(err) != codes.NotFound {
+			return err
+		}
+		if err == nil {
+			// Chat deliveries repeat the broadcaster's name on every message.
+			// Avoid contending with metadata polls for an unchanged channel doc.
+			current := doc.Data()
+			unchanged := true
+			for field, value := range update {
+				existing, ok := current[field]
+				if !ok || !reflect.DeepEqual(existing, value) {
+					unchanged = false
+					break
+				}
+			}
+			if unchanged {
+				return nil
+			}
+		}
+		return tx.Set(ref, update, firestore.MergeAll)
+	})
 }
 
 // The Node Firestore SDK encodes safe integer Numbers as integerValue. Go's
