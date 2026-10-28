@@ -68,6 +68,28 @@ void main() {
     });
   });
 
+  test('Supertonic 2 offers a smaller five-language alternative', () {
+    final smaller = bundledVoicePacks.singleWhere(
+      (pack) => pack.id == 'supertonic-2',
+    );
+    final current = bundledVoicePacks.singleWhere(
+      (pack) => pack.id == 'supertonic-3',
+    );
+    expect(smaller.languages, ['en', 'ko', 'es', 'pt', 'fr']);
+    expect(smaller.speakers, hasLength(10));
+    expect(smaller.downloadSize, 267300126);
+    expect(smaller.downloadSize, lessThan(current.downloadSize));
+    expect(smaller.files, hasLength(16));
+    expect(
+      smaller.files.every(
+        (file) => file.url.path.contains(
+          '/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/',
+        ),
+      ),
+      isTrue,
+    );
+  });
+
   test('round-trips through JSON', () {
     for (final pack in bundledVoicePacks) {
       final again = VoicePack.fromJson(pack.toJson());

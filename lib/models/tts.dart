@@ -778,8 +778,18 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
-  /// The engine that speaks with a neural voice pack, or null to speak with
-  /// the platform's voices.
+  String? _preferredVoicePackId;
+
+  /// The installed pack selected by the user; null uses the default catalog order.
+  String? get preferredVoicePackId => _preferredVoicePackId;
+
+  set preferredVoicePackId(String? id) {
+    if (_preferredVoicePackId == id) return;
+    _preferredVoicePackId = id;
+    notifyListeners();
+  }
+
+  /// The engine that speaks with a neural voice pack, or null for system voices.
   TtsEngine? get neuralEngine => _neuralEngine;
 
   /// Replaces the neural engine; the model owns [engine] from now on. The
@@ -921,6 +931,8 @@ class TtsModel extends ChangeNotifier {
   }
 
   void _updateFromJsonInternal(Map<String, dynamic> json) {
+    _preferredVoicePackId =
+        json['voicePack'] is String ? json['voicePack'] as String : null;
     if (json['isBotMuted'] != null) {
       _isBotMuted = json['isBotMuted'];
     }
@@ -1012,6 +1024,7 @@ class TtsModel extends ChangeNotifier {
     "pitch": pitch,
     "speed": speed,
     "neuralVoices": Map.of(_neuralVoices),
+    if (_preferredVoicePackId != null) "voicePack": _preferredVoicePackId,
     'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
   };
 }

@@ -3,6 +3,8 @@ import 'package:on_device_tts/on_device_tts.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/tts/voice_packs.dart';
+import 'package:rtchat/models/tts.dart';
+import 'package:rtchat/models/tts/neural_engine_selector.dart';
 import 'package:rtchat/screens/settings/tts/labels.dart';
 import 'package:rtchat/urls.dart';
 
@@ -28,16 +30,26 @@ class _VoicePacksScreenState extends State<VoicePacksScreen> {
     final model = context.watch<VoicePacksModel>();
     return Scaffold(
       appBar: AppBar(title: Text(l10n.voicePacks)),
-      body: ListView(
-        padding: const EdgeInsets.only(bottom: 16),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(l10n.voicePacksDescription),
-          ),
-          for (final pack in model.packs)
-            VoicePackCard(key: ValueKey(pack.id), pack: pack),
-        ],
+      body: RadioGroup<String>(
+        groupValue:
+            NeuralEngineSelector.choose(
+              model.installed.values,
+              preferredId: context.watch<TtsModel>().preferredVoicePackId,
+            )?.id,
+        onChanged: (id) {
+          if (id != null) context.read<TtsModel>().preferredVoicePackId = id;
+        },
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: 16),
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(l10n.voicePacksDescription),
+            ),
+            for (final pack in model.packs)
+              VoicePackCard(key: ValueKey(pack.id), pack: pack),
+          ],
+        ),
       ),
     );
   }
@@ -75,7 +87,14 @@ class VoicePackCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: 8,
           children: [
-            Text(pack.name, style: theme.textTheme.titleMedium),
+            if (installed != null)
+              RadioListTile<String>(
+                value: pack.id,
+                title: Text(pack.name, style: theme.textTheme.titleMedium),
+                contentPadding: EdgeInsets.zero,
+              )
+            else
+              Text(pack.name, style: theme.textTheme.titleMedium),
             Text(
               l10n.voicePackDetails(pack.speakers.length, formatBytes(size)),
             ),
