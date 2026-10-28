@@ -118,6 +118,11 @@ func (m *requestManager) applyLocked(req *agent.Request, kind firestore.Document
 	default:
 		return
 	}
+	if _, ok := existing.(*handler.AnonymousTwitchClient); ok {
+		// Anonymous reading is the preferred mode; refreshing an assignment
+		// should keep its reader instead of opening another IRC connection.
+		return
+	}
 	if _, ok := existing.(*handler.AuthenticatedTwitchClient); ok && m.skipUpgrade() {
 		zap.L().Info("already authenticated", zap.String("id", req.String()))
 		return

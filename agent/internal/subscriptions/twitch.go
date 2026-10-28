@@ -80,7 +80,9 @@ func (s *Service) subscribeTwitch(ctx context.Context, uid, channel string) (int
 		_, err = ref.Set(ctx, map[string]interface{}{"lastActiveAt": firestore.ServerTimestamp}, firestore.MergeAll)
 		return user.Login, err
 	}
-	err = subscriptionlock.With(ctx, s.DB, "twitch:"+channel, func(ctx context.Context) error {
+	// Foreground opens must not wait for a worker's full 90-second lease.
+	// Keep lifecycle work serialized, but let callers retry busy channels.
+	err = subscriptionlock.WithWaitLimit(ctx, s.DB, "twitch:"+channel, foregroundLeaseWait, func(ctx context.Context) error {
 		// A server profile and its stored OAuth grant must identify the same
 		// broadcaster before authenticated-only subscriptions are reconciled.
 		userToken, err := s.API.Tokens.AccessToken(ctx, uid, "twitch")
@@ -130,6 +132,9 @@ func (s *Service) subscribeTwitch(ctx context.Context, uid, channel string) (int
 		}
 		return nil
 	})
+	if errors.Is(err, subscriptionlock.ErrBusy) {
+		return nil, unavailable("Twitch subscriptions are busy; try again shortly")
+	}
 	return user.Login, err
 }
 

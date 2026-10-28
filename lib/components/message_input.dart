@@ -407,21 +407,35 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                           onPressed:
                               channel == null
                                   ? null
-                                  : () {
+                                  : () async {
                                     if (_isEmotePickerVisible) {
                                       setState(
                                         () => _isEmotePickerVisible = false,
                                       );
                                       _chatInputFocusNode.requestFocus();
-                                    } else {
-                                      _chatInputFocusNode.unfocus();
-                                      setState(() {
-                                        _isEmotePickerVisible = true;
-                                        _emoteIndex = Random().nextInt(
-                                          _emotes.length,
-                                        );
-                                      });
+                                      return;
                                     }
+
+                                    _chatInputFocusNode.unfocus();
+
+                                    // Wait for the keyboard visibility change.
+                                    if (_isKeyboardVisible) {
+                                      await keyboardSubscription
+                                          .asFuture<void>()
+                                          .timeout(
+                                            const Duration(milliseconds: 300),
+                                            onTimeout: () {},
+                                          );
+                                    }
+
+                                    if (!mounted) return;
+
+                                    setState(() {
+                                      _isEmotePickerVisible = true;
+                                      _emoteIndex = Random().nextInt(
+                                        _emotes.length,
+                                      );
+                                    });
                                   },
                           splashRadius: 24,
                           icon:
