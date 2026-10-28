@@ -61,15 +61,15 @@ func TestAuthenticatedClientUpgradesAreThrottled(t *testing.T) {
 	}
 }
 
-func TestAnonymousClientsAreAlwaysUpgraded(t *testing.T) {
+func TestAnonymousClientsAreKeptAcrossAssignmentUpdates(t *testing.T) {
 	calls := 0
 	m := newRequestManager(func(*agent.Request) (io.Closer, error) { calls++; return &closer{}, nil })
-	old := &closer{}
+	old := &handler.AnonymousTwitchClient{}
 	m.clients["twitch:room"] = old
 	m.skipUpgrade = func() bool { return true }
 	m.apply(request("twitch:room"), firestore.DocumentModified)
-	if calls != 1 || old.calls != 1 {
-		t.Fatalf("calls = %d, closed = %d; want the client replaced", calls, old.calls)
+	if calls != 0 || m.clients["twitch:room"] != old {
+		t.Fatal("assignment refresh replaced the anonymous reader")
 	}
 }
 
