@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand/v2"
+	"strconv"
 	"sync"
 	"time"
 
@@ -13,6 +15,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
 	"github.com/muxable/rtchat/agent/internal/chatmetrics"
+	"github.com/muxable/rtchat/agent/internal/clients"
 	"github.com/muxable/rtchat/agent/internal/provider"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
@@ -37,6 +40,7 @@ type TwitchAgent struct {
 
 type chatConnection interface {
 	OnConnect(func())
+	OnRoomStateMessage(func(twitch.RoomStateMessage))
 	Join(...string)
 	Connect() error
 	Disconnect() error
@@ -45,6 +49,10 @@ type chatConnection interface {
 }
 
 func joinWithTimeout(client chatConnection, channel string, timeout time.Duration) error {
+	return joinWithContext(context.Background(), client, channel, timeout)
+}
+
+func joinWithContext(ctx context.Context, client chatConnection, channel string, timeout time.Duration) error {
 	// connect to the chat
 	success := make(chan struct{})
 	abandoned := make(chan struct{})
@@ -56,7 +64,18 @@ func joinWithTimeout(client chatConnection, channel string, timeout time.Duratio
 			return
 		default:
 		}
-		// apparently this can be called multiple times
+	})
+	client.OnRoomStateMessage(func(message twitch.RoomStateMessage) {
+		if message.Channel != channel {
+			return
+		}
+		select {
+		case <-abandoned:
+			_ = client.Disconnect()
+			return
+		default:
+		}
+		// ROOMSTATE confirms entry, including rooms without visible JOIN messages.
 		once.Do(func() {
 			close(success)
 		})
@@ -66,15 +85,18 @@ func joinWithTimeout(client chatConnection, channel string, timeout time.Duratio
 	finished := make(chan error, 1)
 	go func() {
 		err := client.Connect()
-		finished <- err
-		if err != nil {
-			if !errors.Is(err, twitch.ErrClientDisconnected) {
-				zap.L().Error("failed to connect to chat", zap.Error(err))
+		if err != nil && !errors.Is(err, twitch.ErrClientDisconnected) {
+			select {
+			case <-success:
+				zap.L().Error("chat connection ended", zap.Error(err), zap.String("channel", channel))
+			default: // Initial join errors are handled by the caller's fallback.
 			}
 		}
+		finished <- err
 	}()
 
-	// wait for success signal or timeout
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 	select {
 	case <-success:
 		return nil
@@ -83,14 +105,12 @@ func joinWithTimeout(client chatConnection, channel string, timeout time.Duratio
 			return errors.New("connection ended before joining")
 		}
 		return err
-	case <-time.After(timeout):
+	case <-ctx.Done():
 		close(abandoned)
-		if err := client.Disconnect(); err != nil {
-			if !errors.Is(err, twitch.ErrConnectionIsNotOpen) {
-				zap.L().Error("failed to disconnect from chat", zap.Error(err))
-			}
+		if err := disconnectChat(client); err != nil {
+			zap.L().Error("failed to disconnect from chat", zap.Error(err))
 		}
-		return errors.New("timeout")
+		return ctx.Err()
 	}
 }
 
@@ -140,10 +160,7 @@ type AuthenticatedTwitchClient struct {
 }
 
 func (c *AuthenticatedTwitchClient) Close() error {
-	if c.client == nil {
-		return nil
-	}
-	return c.client.Disconnect()
+	return disconnectChat(c.client)
 }
 
 type AnonymousTwitchClient struct {
@@ -151,7 +168,7 @@ type AnonymousTwitchClient struct {
 }
 
 func (c *AnonymousTwitchClient) Close() error {
-	return c.client.Disconnect()
+	return disconnectChat(c.client)
 }
 
 func (h *TwitchAgent) JoinAsUser(r *agent.Request, asUserID string) (io.Closer, error) {
@@ -204,7 +221,7 @@ func (h *TwitchAgent) JoinAsUser(r *agent.Request, asUserID string) (io.Closer, 
 
 	h.bind(client)
 	installReconnect(client, authProvider)
-	if err := joinWithTimeout(client, r.Channel(), 5*time.Second); err != nil {
+	if err := joinWithContext(h.context(), client, r.Channel(), 10*time.Second); err != nil {
 		return nil, err
 	}
 
@@ -214,13 +231,44 @@ func (h *TwitchAgent) JoinAsUser(r *agent.Request, asUserID string) (io.Closer, 
 	return &AnonymousTwitchClient{client: client}, nil
 }
 
-func (h *TwitchAgent) JoinAnonymously(r *agent.Request) (*AnonymousTwitchClient, error) {
-	// create a new chat client and attempt to connect
-	client := h.chat("", "")
+func disconnectChat(client chatConnection) error {
+	if client == nil {
+		return nil
+	}
+	err := client.Disconnect()
+	if errors.Is(err, twitch.ErrConnectionIsNotOpen) || errors.Is(err, twitch.ErrClientDisconnected) {
+		return nil
+	}
+	return err
+}
 
-	// join the channel
-	h.bind(client)
-	return &AnonymousTwitchClient{client: client}, joinWithTimeout(client, r.Channel(), 5*time.Second)
+func (h *TwitchAgent) context() context.Context {
+	if h.Context != nil {
+		return h.Context
+	}
+	return context.Background()
+}
+
+func (h *TwitchAgent) JoinAnonymously(r *agent.Request) (*AnonymousTwitchClient, error) {
+	ctx := h.context()
+	var err error
+	for attempt := 0; attempt < 3; attempt++ {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		client := h.chat("", "")
+		h.bind(client)
+		err = joinWithContext(ctx, client, r.Channel(), 10*time.Second)
+		if err == nil {
+			return &AnonymousTwitchClient{client: client}, nil
+		}
+		if attempt < 2 {
+			if err := clients.Wait(ctx, time.Duration(attempt+1)*time.Second); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return nil, err
 }
 
 // writeDocument counts every received event by kind; events without a
@@ -257,7 +305,7 @@ func (h *TwitchAgent) chat(login, token string) chatConnection {
 		return h.newChat(login, token)
 	}
 	if login == "" {
-		return twitch.NewAnonymousClient()
+		return twitch.NewClient("justinfan"+strconv.FormatUint(rand.Uint64N(1_000_000_000_000_000), 10), "oauth:59301")
 	}
 	return twitch.NewClient(login, token)
 }

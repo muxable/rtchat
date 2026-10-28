@@ -6,6 +6,8 @@ import (
 	"io"
 
 	"github.com/muxable/rtchat/agent/internal/agent"
+	"github.com/muxable/rtchat/agent/internal/cancel"
+	"github.com/muxable/rtchat/agent/internal/provider"
 	"go.uber.org/zap"
 	"google.golang.org/api/iterator"
 )
@@ -22,6 +24,16 @@ func (h *TwitchAgent) NewClient(r *agent.Request) (io.Closer, error) {
 }
 
 func newClientWithFallbacks(r *agent.Request, lookup func(string) (string, error), joinUser func(*agent.Request, string) (io.Closer, error), joinAnonymous func(*agent.Request) (io.Closer, error)) (io.Closer, error) {
+	// Reading public chat should not depend on a broadcaster's grant or the
+	// shared bot account's authentication queue and channel limits.
+	if client, err := joinAnonymous(r); err == nil {
+		return client, nil
+	} else if cancel.IsCanceled(err) {
+		return nil, err
+	} else {
+		zap.L().Warn("failed to join channel as anonymous", zap.Error(err), zap.String("channel", r.Channel()))
+	}
+
 	// handle twitch request
 	if userID, err := lookup(r.Channel()); err != nil {
 		if errors.Is(err, iterator.Done) {
@@ -30,7 +42,11 @@ func newClientWithFallbacks(r *agent.Request, lookup func(string) (string, error
 			zap.L().Warn("failed to look up Twitch profile", zap.Error(err))
 		}
 	} else if client, err := joinUser(r, userID); err != nil {
-		zap.L().Warn("failed to join channel as authed user", zap.Error(err))
+		level := zap.WarnLevel
+		if errors.Is(err, provider.ErrNoToken) {
+			level = zap.InfoLevel
+		}
+		zap.L().Log(level, "failed to join channel as authed user", zap.Error(err))
 	} else {
 		return client, nil
 	}
@@ -38,13 +54,6 @@ func newClientWithFallbacks(r *agent.Request, lookup func(string) (string, error
 	// try again as realtimechat
 	if client, err := joinUser(r, "JSdHKOEgwcZijVsuXXdftmizt6E3"); err != nil {
 		zap.L().Warn("failed to join channel as realtimechat", zap.Error(err))
-	} else {
-		return client, nil
-	}
-
-	// maybe we got banned, try again as anonymous
-	if client, err := joinAnonymous(r); err != nil {
-		zap.L().Warn("failed to join channel as anonymous", zap.Error(err))
 	} else {
 		return client, nil
 	}
