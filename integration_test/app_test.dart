@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:provider/provider.dart';
@@ -99,6 +101,19 @@ void main() {
 
   setUpAll(() async {
     await initializeFirebaseEmulators();
+    // These fake users have no production avatars. Seed the image cache so
+    // account sign-out never races an external request or a delayed 404.
+    final avatar = await rootBundle.load('assets/providers/twitch.png');
+    for (final channel in [
+      Channel(Providers.twitch, channelId, 'e2estreamer'),
+      Channel(Providers.kick, kickChannelId, 'E2EKick'),
+    ]) {
+      await CachedNetworkImageProvider.defaultCacheManager.putFile(
+        channel.profilePictureUrl.toString(),
+        avatar.buffer.asUint8List(avatar.offsetInBytes, avatar.lengthInBytes),
+        fileExtension: 'png',
+      );
+    }
     callables = await CallableStub.start(callableHost, callablePort);
   });
 
@@ -500,17 +515,6 @@ void main() {
       final kickTile = find.widgetWithText(ListTile, 'E2EKick');
       await pumpUntil(tester, kickTile);
       expect(find.widgetWithText(ListTile, 'e2estreamer'), findsOneWidget);
-      // let the kick avatar finish loading (the emulated channel has none),
-      // or its error is reported once the tile is gone.
-      final avatar =
-          Channel(Providers.kick, kickChannelId, 'E2EKick').profilePicture;
-      final end = DateTime.now().add(const Duration(seconds: 30));
-      do {
-        await tester.pump(const Duration(milliseconds: 250));
-      } while (PaintingBinding.instance.imageCache
-              .statusForKey(avatar)
-              .pending &&
-          DateTime.now().isBefore(end));
       await tester.tap(
         find.descendant(of: kickTile, matching: find.byTooltip('Sign out')),
       );
