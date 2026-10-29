@@ -3,6 +3,7 @@ package twitch
 import (
 	"context"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -66,11 +67,42 @@ func (c *Client) Ban(ctx context.Context, channel, moderator, user string, durat
 	if duration != 0 {
 		data["duration"], data["reason"] = duration, reason
 	}
-	return c.write(ctx, "POST", moderationPath("/moderation/bans", channel, moderator, nil), map[string]any{"data": data})
+	return c.writeBan(ctx, "POST", moderationPath("/moderation/bans", channel, moderator, nil), map[string]any{"data": data})
 }
 
 func (c *Client) Unban(ctx context.Context, channel, moderator, user string) error {
-	return c.write(ctx, "DELETE", moderationPath("/moderation/bans", channel, moderator, url.Values{"user_id": {user}}), nil)
+	return c.writeBan(ctx, "DELETE", moderationPath("/moderation/bans", channel, moderator, url.Values{"user_id": {user}}), nil)
+}
+
+// ModerationRejected is an expected refusal based on the target's ban state.
+// Other provider failures retain their redacted HTTP error for reporting.
+type ModerationRejected struct{ Message string }
+
+func (e *ModerationRejected) Error() string { return e.Message }
+
+func (c *Client) writeBan(ctx context.Context, method, path string, body any) error {
+	response, err := c.Do(ctx, method, path, body)
+	if err != nil {
+		return err
+	}
+	if response.StatusCode == 400 {
+		var result struct{ Message string }
+		if response.Decode(&result) == nil {
+			// Recognize only ban-state rejections; preserve other errors so
+			// malformed provider requests still trigger diagnostics.
+			switch strings.TrimSuffix(strings.ToLower(strings.TrimSpace(result.Message)), ".") {
+			case "user is already banned", "the user specified in the user_id field is already banned":
+				return &ModerationRejected{Message: "This user is already banned."}
+			case "user is not banned", "the user specified in the user_id query parameter is not banned":
+				return &ModerationRejected{Message: "This user is not banned."}
+			case "user may not be banned", "the user specified in the user_id field may not be banned":
+				return &ModerationRejected{Message: "Twitch does not allow banning this user."}
+			case "user may not be put in a timeout", "the user specified in the user_id field may not be put in a timeout":
+				return &ModerationRejected{Message: "Twitch does not allow timing out this user."}
+			}
+		}
+	}
+	return response.Err()
 }
 
 func (c *Client) DeleteMessages(ctx context.Context, channel, moderator, message string) error {
