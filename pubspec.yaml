@@ -45,12 +45,7 @@ dependencies:
   webview_flutter_wkwebview: ^3.27.2
   uuid: ^4.6.0
   flutter_markdown_plus: ^1.0.12
-  cached_network_image:
-    git:
-      url: https://github.com/kevmo314/flutter_cached_network_image.git
-      # Queued-frame disposal fix: Baseflow/flutter_cached_network_image#1065.
-      ref: 4c24ee00b4fe69144a37e2cd4067eb74eabf1348
-      path: cached_network_image
+  cached_network_image: ^4.0.6
 
 dev_dependencies:
   webview_flutter_platform_interface: ^2.15.1
