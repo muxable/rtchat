@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -59,8 +62,9 @@ Future<void> pumpMessage(
   WidgetTester tester,
   UserModel userModel,
   MessageModel message,
-  Channel channel,
-) async {
+  Channel channel, {
+  ValueNotifier<bool>? visible,
+}) async {
   await tester.pumpWidget(
     MultiProvider(
       providers: [
@@ -79,8 +83,20 @@ Future<void> pumpMessage(
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Material(
-          child: ChatHistoryMessage(message: message, channel: channel),
+        home: Scaffold(
+          body:
+              visible == null
+                  ? ChatHistoryMessage(message: message, channel: channel)
+                  : ValueListenableBuilder<bool>(
+                    valueListenable: visible,
+                    child: ChatHistoryMessage(
+                      message: message,
+                      channel: channel,
+                    ),
+                    builder:
+                        (context, show, child) =>
+                            show ? child! : const SizedBox(),
+                  ),
         ),
       ),
     ),
@@ -91,6 +107,33 @@ Future<void> pumpMessage(
 Future<void> openModeration(WidgetTester tester) async {
   await tester.longPress(find.byType(InkWell));
   await tester.pumpAndSettle();
+}
+
+class _FailingFunctions extends Fake implements FirebaseFunctions {
+  final Future<void> Function() fail;
+  final calls = <String>[];
+
+  _FailingFunctions(this.fail);
+
+  @override
+  HttpsCallable httpsCallableFromUrl(
+    String url, {
+    HttpsCallableOptions? options,
+  }) => _FailingCallable(this, Uri.parse(url).pathSegments.last);
+}
+
+class _FailingCallable extends Fake implements HttpsCallable {
+  final _FailingFunctions functions;
+  final String name;
+
+  _FailingCallable(this.functions, this.name);
+
+  @override
+  Future<HttpsCallableResult<T>> call<T>([dynamic parameters]) async {
+    functions.calls.add(name);
+    await functions.fail();
+    throw StateError('Expected the fake to fail');
+  }
 }
 
 void main() {
@@ -132,6 +175,105 @@ void main() {
     },
   );
 
+  group('moderation failures', () {
+    tearDown(Api.debugReset);
+
+    for (final channel in [twitchChannel, kickChannel]) {
+      for (final action
+          in {
+            'Ban viewer': 'ban',
+            'Unban viewer': 'unban',
+            'Timeout viewer': 'timeout',
+            'Delete Message': 'deleteMessage',
+          }.entries) {
+        testWidgets(
+          '${channel.provider} ${action.value} shows server rejection',
+          (tester) async {
+            final account = fakeAccount(channel);
+            final functions = _FailingFunctions(() async {
+              throw FirebaseFunctionsException(
+                code: 'failed-precondition',
+                message: 'Twitch does not allow banning this user.',
+              );
+            });
+            Api.debugOverride(account.app, Api(functions));
+            await pumpMessage(
+              tester,
+              FakeUserModel(accounts: [account]),
+              channel == twitchChannel ? twitchMessage() : kickMessage(),
+              channel,
+            );
+            await openModeration(tester);
+            await tester.tap(find.text(action.key));
+            await tester.pumpAndSettle();
+            if (action.value == 'timeout') {
+              expect(functions.calls, isEmpty);
+              await tester.tap(find.byType(TextButton).last);
+              await tester.pumpAndSettle();
+            }
+            expect(functions.calls, [action.value]);
+            expect(find.byType(Dialog), findsNothing);
+            expect(
+              find.descendant(
+                of: find.byType(SnackBar),
+                matching: find.text('Twitch does not allow banning this user.'),
+              ),
+              findsOneWidget,
+            );
+            expect(tester.takeException(), isNull);
+          },
+        );
+      }
+    }
+
+    for (final disposed in [false, true]) {
+      testWidgets('delayed failure after message removal, disposed=$disposed', (
+        tester,
+      ) async {
+        final pending = Completer<void>();
+        final visible = ValueNotifier(true);
+        addTearDown(visible.dispose);
+        final account = fakeAccount(kickChannel);
+        Api.debugOverride(
+          account.app,
+          Api(
+            _FailingFunctions(() async {
+              await pending.future;
+              throw FirebaseFunctionsException(
+                code: 'failed-precondition',
+                message: 'This user is already banned.',
+              );
+            }),
+          ),
+        );
+        await pumpMessage(
+          tester,
+          FakeUserModel(accounts: [account]),
+          kickMessage(),
+          kickChannel,
+          visible: visible,
+        );
+        await openModeration(tester);
+        await tester.tap(find.text('Ban viewer'));
+        await tester.pumpAndSettle();
+        if (disposed) {
+          await tester.pumpWidget(const SizedBox());
+        } else {
+          // Keep the page's messenger, but remove the originating chat message.
+          visible.value = false;
+        }
+        await tester.pumpAndSettle();
+        pending.complete();
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(
+          find.text('This user is already banned.'),
+          disposed ? findsNothing : findsOneWidget,
+        );
+      });
+    }
+  });
+
   group('signed in to twitch and kick', () {
     late Account twitch, kick;
     late FakeFunctions twitchApi, kickApi;
@@ -163,6 +305,24 @@ void main() {
       expect(kickApi.calls.single.data['provider'], Providers.kick);
     });
 
+    for (final timeout in [false, true]) {
+      testWidgets('cancelling moderation, timeout=$timeout, makes no request', (
+        tester,
+      ) async {
+        await pumpMessage(tester, userModel, kickMessage(), kickChannel);
+        await openModeration(tester);
+        if (timeout) {
+          await tester.tap(find.text('Timeout viewer'));
+          await tester.pumpAndSettle();
+        }
+        await tester.tapAt(const Offset(1, 1));
+        await tester.pumpAndSettle();
+        expect(kickApi.calls, isEmpty);
+        expect(twitchApi.calls, isEmpty);
+        expect(find.byType(SnackBar), findsNothing);
+      });
+    }
+
     testWidgets('a kick ban calls as the kick account', (tester) async {
       await pumpMessage(tester, userModel, kickMessage(), kickChannel);
       await openModeration(tester);
@@ -170,6 +330,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(twitchApi.calls, isEmpty);
+      expect(find.byType(SnackBar), findsNothing);
       expect(kickApi.calls.single.name, 'ban');
       expect(kickApi.calls.single.data, {
         'provider': Providers.kick,
