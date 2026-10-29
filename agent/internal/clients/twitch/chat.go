@@ -74,7 +74,7 @@ func (c *Client) Unban(ctx context.Context, channel, moderator, user string) err
 	return c.writeBan(ctx, "DELETE", moderationPath("/moderation/bans", channel, moderator, url.Values{"user_id": {user}}), nil)
 }
 
-// ModerationRejected is an expected refusal based on the target's ban state.
+// ModerationRejected is a refusal of a moderation action by Twitch.
 // Other provider failures retain their redacted HTTP error for reporting.
 type ModerationRejected struct{ Message string }
 
@@ -88,8 +88,7 @@ func (c *Client) writeBan(ctx context.Context, method, path string, body any) er
 	if response.StatusCode == 400 {
 		var result struct{ Message string }
 		if response.Decode(&result) == nil {
-			// Recognize only ban-state rejections; preserve other errors so
-			// malformed provider requests still trigger diagnostics.
+			// Prefer stable, specific messages for recognized ban-state rejections.
 			switch strings.TrimSuffix(strings.ToLower(strings.TrimSpace(result.Message)), ".") {
 			case "user is already banned", "the user specified in the user_id field is already banned":
 				return &ModerationRejected{Message: "This user is already banned."}
@@ -99,6 +98,11 @@ func (c *Client) writeBan(ctx context.Context, method, path string, body any) er
 				return &ModerationRejected{Message: "Twitch does not allow banning this user."}
 			case "user may not be put in a timeout", "the user specified in the user_id field may not be put in a timeout":
 				return &ModerationRejected{Message: "Twitch does not allow timing out this user."}
+			}
+			// Unban has no configurable body. A valid rejection should reach the
+			// caller even when Twitch changes its wording. Never expose raw text.
+			if method == "DELETE" && strings.TrimSpace(result.Message) != "" {
+				return &ModerationRejected{Message: "Twitch rejected this unban request."}
 			}
 		}
 	}

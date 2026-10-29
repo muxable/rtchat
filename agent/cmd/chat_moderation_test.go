@@ -22,6 +22,11 @@ func TestTwitchModerationRejectionReporting(t *testing.T) {
 		{"protected user", "ban", "user may not be banned", 400, 400, "FAILED_PRECONDITION", "Twitch does not allow banning this user."},
 		{"protected timeout", "timeout", "user may not be put in a timeout", 400, 400, "FAILED_PRECONDITION", "Twitch does not allow timing out this user."},
 		{"already unbanned", "unban", "user is not banned", 400, 400, "FAILED_PRECONDITION", "This user is not banned."},
+		{"unrecognized unban rejection", "unban", "private-provider-detail", 400, 400, "FAILED_PRECONDITION", "Twitch rejected this unban request."},
+		{"empty unban rejection", "unban", "", 400, 500, "INTERNAL", "INTERNAL"},
+		{"blank unban rejection", "unban", "  ", 400, 500, "INTERNAL", "INTERNAL"},
+		{"unban server failure", "unban", "user is not banned", 503, 500, "INTERNAL", "INTERNAL"},
+		{"unban forbidden", "unban", "private-provider-detail", 403, 500, "INTERNAL", "INTERNAL"},
 		{"documented wording", "ban", "The user specified in the user_id field is already banned.", 400, 400, "FAILED_PRECONDITION", "This user is already banned."},
 		{"missing provider parameter", "ban", "user_id is required", 400, 500, "INTERNAL", "INTERNAL"},
 		{"unexpected response", "ban", "private-provider-detail", 400, 500, "INTERNAL", "INTERNAL"},
@@ -93,6 +98,20 @@ func TestTwitchModerationMissingUserDoesNotSendInvalidBan(t *testing.T) {
 			code, body := call(t, s, action, map[string]any{"provider": "twitch", "channelId": "broadcaster", "username": "missing", "length": 60, "reason": "moderation"}, true)
 			if code != 404 || object(body["error"])["status"] != "NOT_FOUND" || requests != 1 {
 				t.Fatal(code, body, requests)
+			}
+		})
+	}
+}
+
+func TestTwitchUnbanMalformedRejection(t *testing.T) {
+	for _, payload := range []string{`not JSON`, `{"message":42}`, `{"message":"private-provider-detail"`, `{}`, `null`} {
+		t.Run(payload, func(t *testing.T) {
+			s, _ := newMock(func(r *http.Request) (*http.Response, error) {
+				return respond(400, payload), nil
+			})
+			code, body := call(t, s, "unban", map[string]any{"provider": "twitch", "channelId": "broadcaster", "userId": "target"}, true)
+			if code != 500 || object(body["error"])["status"] != "INTERNAL" {
+				t.Fatal(code, body)
 			}
 		})
 	}
