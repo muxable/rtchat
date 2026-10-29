@@ -223,12 +223,16 @@ func TestAnonymousJoinDoesNotUseProfilesOrTokens(t *testing.T) {
 func TestJoinWaitsForRequestedRoomState(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	releaseConnection := make(chan struct{})
+	defer close(releaseConnection)
 	c := &fakeChat{}
 	c.connect = func() error {
 		c.onConnect()
 		c.onRoomState(twitch.RoomStateMessage{Channel: "another-room"})
 		cancel()
-		<-ctx.Done()
+		// Keep the connection open so cancellation, rather than its exit,
+		// ends the join. Otherwise both select cases can become ready at once.
+		<-releaseConnection
 		return twitch.ErrClientDisconnected
 	}
 	if err := joinWithContext(ctx, c, "room", time.Second); !errors.Is(err, context.Canceled) {
