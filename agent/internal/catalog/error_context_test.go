@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"testing/synctest"
 
 	"github.com/muxable/rtchat/agent/internal/callable"
 	"github.com/muxable/rtchat/agent/internal/clients"
@@ -92,4 +93,31 @@ func TestUserTokenFailurePreservesCause(t *testing.T) {
 	if !errors.Is(err, cause) || !errors.As(err, &apiError) || apiError.Code != "unavailable" || !strings.Contains(err.Error(), "twitch access token") {
 		t.Fatalf("token failure context lost: %v", err)
 	}
+}
+
+func TestEmotesRecoverFromTransientProviderError(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		s, _, tokens := fixture()
+		tokens.user["uid:twitch"] = "token"
+		calls := 0
+		s.HTTP = &http.Client{Transport: transport(func(r *http.Request) (*http.Response, error) {
+			if r.URL.Host != "api.twitch.tv" {
+				return response(404, `{}`), nil
+			}
+			if r.URL.Path == "/helix/users" {
+				calls++
+				if calls == 1 {
+					return response(503, `{}`), nil
+				}
+				return response(200, `{"data":[{"id":"7","login":"viewer"}]}`), nil
+			}
+			return response(200, `{"data":[]}`), nil
+		})}
+		core, logs := observer.New(zap.ErrorLevel)
+		defer zap.ReplaceGlobals(zap.New(core))()
+		status, result := invoke(t, s, "getEmotes", `{"provider":"twitch","channelId":"123"}`, "uid")
+		if status != 200 || result["result"] == nil || calls != 2 || logs.Len() != 0 {
+			t.Fatalf("status=%d response=%v calls=%d error logs=%d", status, result, calls, logs.Len())
+		}
+	})
 }
