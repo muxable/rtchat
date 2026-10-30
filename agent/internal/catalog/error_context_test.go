@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
@@ -13,6 +14,8 @@ import (
 	"github.com/muxable/rtchat/agent/internal/clients"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest/observer"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func TestEmoteProviderFailureKeepsLogContextAndGenericResponse(t *testing.T) {
@@ -120,4 +123,38 @@ func TestEmotesRecoverFromTransientProviderError(t *testing.T) {
 			t.Fatalf("status=%d response=%v calls=%d error logs=%d", status, result, calls, logs.Len())
 		}
 	})
+}
+
+// A caller that disconnects cancels the token read; Firestore reports that as a
+// gRPC Canceled status, which must not surface as a provider outage alert.
+type disconnectTokens struct {
+	Tokens
+	disconnect context.CancelFunc
+}
+
+func (f disconnectTokens) AccessToken(ctx context.Context, _, _ string) (string, error) {
+	f.disconnect()
+	<-ctx.Done()
+	return "", status.Error(codes.Canceled, "context canceled")
+}
+
+func TestClientDisconnectIsNotProviderOutage(t *testing.T) {
+	s, _, _ := fixture()
+	api := callable.NewServer(func(context.Context, string) (string, error) { return "uid", nil })
+	ctx, disconnect := context.WithCancel(context.Background())
+	s.Tokens = disconnectTokens{Tokens: s.Tokens, disconnect: disconnect}
+	s.Register(api)
+	core, logs := observer.New(zap.InfoLevel)
+	defer zap.ReplaceGlobals(zap.New(core))()
+	r := httptest.NewRequestWithContext(ctx, "POST", "/getEmotes", strings.NewReader(`{"data":{"provider":"twitch","channelId":"123"}}`))
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("Authorization", "Bearer firebase-id-token")
+	api.ServeHTTP(httptest.NewRecorder(), r)
+	entries := logs.FilterMessage("http request").All()
+	if len(entries) != 1 {
+		t.Fatalf("got %d request logs", len(entries))
+	}
+	if fields := entries[0].ContextMap(); entries[0].Level != zap.InfoLevel || fields["status"] != int64(499) || fields["code"] != "cancelled" {
+		t.Fatalf("client disconnect reported as agent failure: level=%v %v", entries[0].Level, fields)
+	}
 }

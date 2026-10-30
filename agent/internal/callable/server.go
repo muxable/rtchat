@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"mime"
 	"net/http"
@@ -114,6 +115,8 @@ func Via(r *http.Request) string {
 	return via
 }
 
+var errCallerGone = &Error{Code: "cancelled", Message: "CANCELLED"}
+
 // callInfo is what the request log records about a call.
 type callInfo struct {
 	provider      string
@@ -123,6 +126,12 @@ type callInfo struct {
 // serve writes the response and returns the error it sent, if any.
 func (s *Server) serve(w http.ResponseWriter, r *http.Request, requireAuth bool, handler Handler) (call callInfo, err error) {
 	fail := func(e error) (callInfo, error) {
+		// A disconnecting caller cancels every downstream call, and handlers may
+		// wrap the resulting failure as a provider outage. The request context is
+		// the ground truth: if the caller left, report the call as cancelled.
+		if errors.Is(r.Context().Err(), context.Canceled) {
+			e = fmt.Errorf("%w: %w", errCallerGone, e)
+		}
 		writeError(w, e)
 		return call, e
 	}

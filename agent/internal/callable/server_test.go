@@ -225,3 +225,24 @@ func TestContextErrorsUseCanonicalStatus(t *testing.T) {
 		})
 	}
 }
+
+// Handlers may wrap a caller's disconnect as an explicit provider error; the
+// request context, not the returned error, decides whether the caller left.
+func TestCallerDisconnectOverridesExplicitError(t *testing.T) {
+	core, logs := observer.New(zap.InfoLevel)
+	defer zap.ReplaceGlobals(zap.New(observability.Wrap(core)))()
+	ctx, disconnect := context.WithCancel(context.Background())
+	server := NewServer(nil)
+	server.Register("getEmotes", false, func(ctx context.Context, _ json.RawMessage) (any, error) {
+		disconnect()
+		<-ctx.Done()
+		return nil, fmt.Errorf("twitch access token: %w: %w", &Error{Code: "unavailable", Message: "retry"}, status.Error(codes.Canceled, "context canceled"))
+	})
+	request := httptest.NewRequestWithContext(ctx, "POST", "/getEmotes", strings.NewReader(`{"data":{}}`))
+	request.Header.Set("Content-Type", "application/json")
+	server.ServeHTTP(httptest.NewRecorder(), request)
+	entries := logs.FilterMessage("http request").All()
+	if len(entries) != 1 || entries[0].Level != zap.InfoLevel || entries[0].ContextMap()["status"] != int64(499) || entries[0].ContextMap()["@type"] != nil {
+		t.Fatalf("caller disconnect reported as agent failure: %v", entries)
+	}
+}
