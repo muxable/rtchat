@@ -49,6 +49,11 @@ func unavailable() error {
 	return &callable.Error{Code: "unavailable", Message: "provider temporarily unavailable"}
 }
 
+// Keep redacted provider context in logs while returning the public callable error.
+func upstreamError(operation string, cause error) error {
+	return fmt.Errorf("%s: %w: %w", operation, unavailable(), cause)
+}
+
 var numericID = regexp.MustCompile(`^[0-9]{1,30}$`)
 
 func parseChannel(data json.RawMessage, requireChannel bool) (string, string, error) {
@@ -120,7 +125,7 @@ func (s *Server) twitch(ctx context.Context, path, token string, q url.Values) (
 		if errors.As(err, &response) && (response.Status == 401 || response.Status == 403) {
 			return nil, &callable.Error{Code: "permission-denied", Message: "provider did not authorize this request"}
 		}
-		return nil, unavailable()
+		return nil, upstreamError("twitch "+path, err)
 	}
 	return result, nil
 }
@@ -133,7 +138,7 @@ func (s *Server) userToken(ctx context.Context, uid string) (string, error) {
 		return "", provider.ErrNoToken
 	}
 	if err != nil {
-		return "", unavailable()
+		return "", upstreamError("twitch access token", err)
 	}
 	return token, nil
 }
