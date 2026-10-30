@@ -92,15 +92,25 @@ func (c Client) Do(ctx context.Context, method, path string, body any) (*Respons
 	return &Response{StatusCode: response.StatusCode, Header: response.Header, Body: data}, nil
 }
 
+// Get retries provider 5xx responses up to three times, honoring server backoff
+// and the caller's context. Do remains single-attempt for callers with their own policy.
 func (c Client) Get(ctx context.Context, path string, out any) error {
-	response, err := c.Do(ctx, http.MethodGet, path, nil)
-	if err != nil {
-		return err
+	for attempt := 0; ; attempt++ {
+		response, err := c.Do(ctx, http.MethodGet, path, nil)
+		if err != nil {
+			return err
+		}
+		if response.StatusCode >= 500 && response.StatusCode < 600 && attempt < 3 {
+			if err := Wait(ctx, RetryDelay(response.Header, attempt)); err != nil {
+				return err
+			}
+			continue
+		}
+		if err := response.Err(); err != nil {
+			return err
+		}
+		return response.Decode(out)
 	}
-	if err := response.Err(); err != nil {
-		return err
-	}
-	return response.Decode(out)
 }
 
 func (c Client) DoJSON(ctx context.Context, method, path string, body any) (int, map[string]any, error) {
