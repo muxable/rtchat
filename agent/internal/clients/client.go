@@ -26,15 +26,30 @@ type Response struct {
 }
 
 // HTTPError deliberately excludes response bodies, which may contain credentials.
-type HTTPError struct{ Status int }
+// Explained records only whether the provider gave a reason for the rejection.
+type HTTPError struct {
+	Status    int
+	Explained bool
+}
 
 func (e *HTTPError) Error() string { return fmt.Sprintf("provider returned HTTP %d", e.Status) }
 
 func (r *Response) Err() error {
 	if r.StatusCode < 200 || r.StatusCode >= 300 {
-		return &HTTPError{Status: r.StatusCode}
+		return &HTTPError{Status: r.StatusCode, Explained: explained(r.Body)}
 	}
 	return nil
+}
+
+// explained reports whether a JSON error body carries a non-blank "message",
+// the field Twitch and Kick use to say why they rejected a request.
+func explained(body []byte) bool {
+	var result struct{ Message any }
+	if json.Unmarshal(body, &result) != nil {
+		return false
+	}
+	message, _ := result.Message.(string)
+	return strings.TrimSpace(message) != ""
 }
 
 func (r *Response) Decode(out any) error {
