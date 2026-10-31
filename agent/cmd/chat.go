@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"math"
 	"net/http"
 	"regexp"
 	"strings"
@@ -122,6 +123,11 @@ func (r chatRequest) validate(action string) error {
 		}
 		if action == "timeout" && (r.Length == 0 || r.Reason == "") {
 			return invalid("missing provider, channelId, username, length, reason")
+		}
+		// Twitch's documented timeout bounds; checked here so that a 400 from
+		// Twitch can only be a refusal of the moderation action.
+		if action == "timeout" && r.Provider == "twitch" && (r.Length < 1 || r.Length > 1209600 || r.Length != math.Trunc(r.Length) || utf8.RuneCountInString(r.Reason) > 500) {
+			return invalid("invalid length, reason")
 		}
 	case "deleteMessage":
 		if r.ChannelID == "" || r.MessageID == "" {
