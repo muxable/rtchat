@@ -3,6 +3,7 @@ package twitch
 import (
 	"context"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -67,11 +68,15 @@ func (c *Client) Ban(ctx context.Context, channel, moderator, user string, durat
 	if duration != 0 {
 		data["duration"], data["reason"] = duration, reason
 	}
-	return c.writeBan(ctx, "POST", moderationPath("/moderation/bans", channel, moderator, nil), map[string]any{"data": data})
+	action := "ban"
+	if duration != 0 {
+		action = "timeout"
+	}
+	return c.writeBan(ctx, action, "POST", moderationPath("/moderation/bans", channel, moderator, nil), map[string]any{"data": data})
 }
 
 func (c *Client) Unban(ctx context.Context, channel, moderator, user string) error {
-	return c.writeBan(ctx, "DELETE", moderationPath("/moderation/bans", channel, moderator, url.Values{"user_id": {user}}), nil)
+	return c.writeBan(ctx, "unban", "DELETE", moderationPath("/moderation/bans", channel, moderator, url.Values{"user_id": {user}}), nil)
 }
 
 // ModerationRejected is a refusal of a moderation action by Twitch.
@@ -80,7 +85,11 @@ type ModerationRejected struct{ Message string }
 
 func (e *ModerationRejected) Error() string { return e.Message }
 
-func (c *Client) writeBan(ctx context.Context, method, path string, body any) error {
+// Helix describes a malformed request in terms of its parameters, while a
+// refusal describes the target user. Malformed requests are agent bugs.
+var malformedRequest = regexp.MustCompile(`parameter|required|malformed|valid`)
+
+func (c *Client) writeBan(ctx context.Context, action, method, path string, body any) error {
 	response, err := c.Do(ctx, method, path, body)
 	if err != nil {
 		return err
@@ -99,10 +108,12 @@ func (c *Client) writeBan(ctx context.Context, method, path string, body any) er
 			case "user may not be put in a timeout", "the user specified in the user_id field may not be put in a timeout":
 				return &ModerationRejected{Message: "Twitch does not allow timing out this user."}
 			}
-			// Unban has no configurable body. A valid rejection should reach the
-			// caller even when Twitch changes its wording. Never expose raw text.
-			if method == "DELETE" && strings.TrimSpace(result.Message) != "" {
-				return &ModerationRejected{Message: "Twitch rejected this unban request."}
+			// The request carries only resolved IDs and locally validated timeout
+			// fields, so any other rejection is Twitch refusing the action, even
+			// when it changes its wording. Never expose raw text.
+			message := strings.ToLower(strings.TrimSpace(result.Message))
+			if message != "" && !malformedRequest.MatchString(message) {
+				return &ModerationRejected{Message: "Twitch rejected this " + action + " request."}
 			}
 		}
 	}

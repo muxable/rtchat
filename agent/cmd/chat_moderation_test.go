@@ -29,8 +29,13 @@ func TestTwitchModerationRejectionReporting(t *testing.T) {
 		{"unban forbidden", "unban", "private-provider-detail", 403, 500, "INTERNAL", "INTERNAL"},
 		{"documented wording", "ban", "The user specified in the user_id field is already banned.", 400, 400, "FAILED_PRECONDITION", "This user is already banned."},
 		{"missing provider parameter", "ban", "user_id is required", 400, 500, "INTERNAL", "INTERNAL"},
-		{"unexpected response", "ban", "private-provider-detail", 400, 500, "INTERNAL", "INTERNAL"},
-		{"not a matching reason", "ban", "user is already banned private-provider-detail", 400, 500, "INTERNAL", "INTERNAL"},
+		{"unrecognized ban rejection", "ban", "private-provider-detail", 400, 400, "FAILED_PRECONDITION", "Twitch rejected this ban request."},
+		{"unrecognized timeout rejection", "timeout", "private-provider-detail", 400, 400, "FAILED_PRECONDITION", "Twitch rejected this timeout request."},
+		{"not a matching reason", "ban", "user is already banned private-provider-detail", 400, 400, "FAILED_PRECONDITION", "Twitch rejected this ban request."},
+		{"empty ban rejection", "ban", "", 400, 500, "INTERNAL", "INTERNAL"},
+		{"missing query parameter", "ban", `Missing required parameter "moderator_id"`, 400, 500, "INTERNAL", "INTERNAL"},
+		{"malformed parameter", "timeout", "The value in the duration field is not valid.", 400, 500, "INTERNAL", "INTERNAL"},
+		{"malformed unban", "unban", "The user_id query parameter is required.", 400, 500, "INTERNAL", "INTERNAL"},
 		{"forbidden", "ban", "private-provider-detail", 403, 500, "INTERNAL", "INTERNAL"},
 		{"server failure with known text", "ban", "user is already banned", 503, 500, "INTERNAL", "INTERNAL"},
 		{"rate limited", "ban", "private-provider-detail", 429, 429, "RESOURCE_EXHAUSTED", "too many requests, try again shortly"},
@@ -111,6 +116,30 @@ func TestTwitchUnbanMalformedRejection(t *testing.T) {
 			})
 			code, body := call(t, s, "unban", map[string]any{"provider": "twitch", "channelId": "broadcaster", "userId": "target"}, true)
 			if code != 500 || object(body["error"])["status"] != "INTERNAL" {
+				t.Fatal(code, body)
+			}
+		})
+	}
+}
+
+func TestTwitchTimeoutBoundsCheckedLocally(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		length float64
+		reason string
+	}{
+		{"too long", 1209601, "moderation"},
+		{"fractional", 1.5, "moderation"},
+		{"negative", -60, "moderation"},
+		{"long reason", 60, strings.Repeat("é", 501)},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s, _ := newMock(func(r *http.Request) (*http.Response, error) {
+				t.Fatalf("invalid timeout sent to Twitch: %s", r.URL.Path)
+				return nil, nil
+			})
+			code, body := call(t, s, "timeout", map[string]any{"provider": "twitch", "channelId": "broadcaster", "userId": "target", "length": tc.length, "reason": tc.reason}, true)
+			if code != 400 || object(body["error"])["status"] != "INVALID_ARGUMENT" {
 				t.Fatal(code, body)
 			}
 		})
