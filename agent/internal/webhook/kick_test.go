@@ -18,7 +18,9 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/muxable/rtchat/agent/internal/observability"
@@ -594,4 +596,41 @@ func TestKickKind(t *testing.T) {
 			t.Errorf("kickKind(%q) = %q, want %q", in, got, want)
 		}
 	}
+}
+
+// A stalled Firestore RPC must not consume the whole persistence budget: the
+// production failure was one hung Create answering Kick with a 500.
+type kickStallingStore struct {
+	kickMemoryStore
+	attempts atomic.Int32
+}
+
+func (s *kickStallingStore) CreateMessage(ctx context.Context, channel, id string, data map[string]interface{}) error {
+	if s.attempts.Add(1) == 1 {
+		<-ctx.Done()
+		return status.Error(codes.DeadlineExceeded, "context deadline exceeded")
+	}
+	return s.kickMemoryStore.CreateMessage(ctx, channel, id, data)
+}
+
+func TestKickStalledMessageWriteIsHedged(t *testing.T) {
+	private, key := kickTestKey(t)
+	synctest.Test(t, func(t *testing.T) {
+		store := &kickStallingStore{}
+		handler := NewKickHandler(store)
+		handler.publicKey = key
+		now := time.Now().UTC().Format(time.RFC3339)
+		body := `{"broadcaster":{"user_id":123,"channel_slug":"muxfd"},"message_id":"m1"}`
+		req := httptest.NewRequest(http.MethodPost, "/kick/webhook", strings.NewReader(body))
+		req.Header.Set("Kick-Event-Message-Id", "delivery-1")
+		req.Header.Set("Kick-Event-Message-Timestamp", now)
+		req.Header.Set("Kick-Event-Type", "chat.message.sent")
+		req.Header.Set("Kick-Event-Signature", kickTestSign(t, private, "delivery-1", now, body))
+		response := httptest.NewRecorder()
+		start := time.Now()
+		handler.ServeHTTP(response, req)
+		if response.Code != http.StatusOK || len(store.messages) != 1 || time.Since(start) > 5*time.Second {
+			t.Fatalf("status=%d attempts=%d after %v; chat dropped", response.Code, store.attempts.Load(), time.Since(start))
+		}
+	})
 }

@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/muxable/rtchat/agent/internal/chatmessage"
 	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -393,9 +394,15 @@ func (h *KickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), kickPersistenceTimeout)
 	defer cancel()
 	for _, message := range docs.Messages {
-		err := h.store.CreateMessage(ctx, docs.ChannelID, message.ID, message.Data)
-		chatmetrics.Record("kick", kickKind(message.Data["type"].(string)), chatmetrics.OutcomeOf(err))
-		if err != nil && status.Code(err) != codes.AlreadyExists {
+		duplicate, err := chatmessage.Create(ctx, func(ctx context.Context) error {
+			return h.store.CreateMessage(ctx, docs.ChannelID, message.ID, message.Data)
+		})
+		outcome := chatmetrics.OutcomeOf(err)
+		if duplicate {
+			outcome = chatmetrics.Duplicate
+		}
+		chatmetrics.Record("kick", kickKind(message.Data["type"].(string)), outcome)
+		if err != nil {
 			h.fail(w, r, delivery, "create message", err)
 			return
 		}
