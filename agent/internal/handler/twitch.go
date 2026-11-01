@@ -14,13 +14,12 @@ import (
 	"github.com/gempir/go-twitch-irc/v4"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/auth"
+	"github.com/muxable/rtchat/agent/internal/chatmessage"
 	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"github.com/muxable/rtchat/agent/internal/clients"
 	"github.com/muxable/rtchat/agent/internal/provider"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type TwitchAgent struct {
@@ -115,12 +114,11 @@ func joinWithContext(ctx context.Context, client chatConnection, channel string,
 }
 
 func (h *TwitchAgent) write(channelID, messageID string, data interface{}) chatmetrics.Outcome {
-	duplicate := false
-	if err := createMessage(context.Background(), func(ctx context.Context) error {
+	duplicate, err := createMessage(context.Background(), func(ctx context.Context) error {
 		_, err := h.Firestore.Collection("channels").Doc(channelID).Collection("messages").Doc(messageID).Create(ctx, data)
-		duplicate = status.Code(err) == codes.AlreadyExists
 		return err
-	}); err != nil {
+	})
+	if err != nil {
 		zap.L().Error("failed to write message to firestore", zap.Error(err), zap.String("channelId", channelID), zap.String("messageId", messageID))
 		return chatmetrics.Failed
 	}
@@ -330,30 +328,12 @@ func installReconnect(client chatConnection, source oauth2.TokenSource) {
 	})
 }
 
-func createMessage(ctx context.Context, create func(context.Context) error) error {
+// createMessage writes one message document within a bounded budget, hedging
+// stalled attempts so a single hung RPC cannot drop the message.
+func createMessage(ctx context.Context, create func(context.Context) error) (duplicate bool, err error) {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
-	for attempt := 0; ; attempt++ {
-		err := create(ctx)
-		if err == nil || status.Code(err) == codes.AlreadyExists {
-			return nil
-		}
-		switch status.Code(err) {
-		case codes.Unavailable, codes.DeadlineExceeded, codes.Aborted, codes.ResourceExhausted:
-		default:
-			return err
-		}
-		if attempt == 2 {
-			return err
-		}
-		timer := time.NewTimer(time.Duration(attempt+1) * 100 * time.Millisecond)
-		select {
-		case <-ctx.Done():
-			timer.Stop()
-			return ctx.Err()
-		case <-timer.C:
-		}
-	}
+	return chatmessage.Create(ctx, create)
 }
 
 func twitchProfile(data map[string]interface{}) (map[string]interface{}, error) {
