@@ -17,6 +17,7 @@ import (
 	"github.com/muxable/rtchat/agent/internal/chatmessage"
 	"github.com/muxable/rtchat/agent/internal/chatmetrics"
 	"github.com/muxable/rtchat/agent/internal/clients"
+	twitchapi "github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"github.com/muxable/rtchat/agent/internal/provider"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
@@ -31,11 +32,17 @@ type TwitchAgent struct {
 	tokenServiceOnce sync.Once
 	tokenService     *provider.Service
 	// Optional dependencies allow lifecycle tests without external services.
-	loadProfile func(string) (map[string]interface{}, error)
-	tokenSource func(string) (oauth2.TokenSource, error)
-	newChat     func(string, string) chatConnection
-	bindChat    func(chatConnection)
+	loadProfile   func(string) (map[string]interface{}, error)
+	tokenSource   func(string) (oauth2.TokenSource, error)
+	newChat       func(string, string) chatConnection
+	bindChat      func(chatConnection)
+	channelExists func(context.Context, string) (bool, error)
 }
+
+// ErrChannelUnavailable means Helix has no user for the channel's login, e.g.
+// it was renamed, deleted or suspended. Twitch IRC never answers a JOIN for
+// such a channel, so no identity or retry can read it.
+var ErrChannelUnavailable = errors.New("twitch channel does not exist")
 
 type chatConnection interface {
 	OnConnect(func())
@@ -260,6 +267,15 @@ func (h *TwitchAgent) JoinAnonymously(r *agent.Request) (*AnonymousTwitchClient,
 		if err == nil {
 			return &AnonymousTwitchClient{client: client}, nil
 		}
+		// A silent JOIN is also how Twitch treats a channel that doesn't exist.
+		// Ask Helix once; if it can't say, keep retrying as before.
+		if attempt == 0 && errors.Is(err, context.DeadlineExceeded) {
+			if exists, lookupErr := h.exists(ctx, r.Channel()); lookupErr == nil && !exists {
+				return nil, ErrChannelUnavailable
+			} else if lookupErr != nil {
+				zap.L().Warn("failed to look up Twitch channel", zap.Error(lookupErr), zap.String("channel", r.Channel()))
+			}
+		}
 		if attempt < 2 {
 			if err := clients.Wait(ctx, time.Duration(attempt+1)*time.Second); err != nil {
 				return nil, err
@@ -294,8 +310,30 @@ func (h *TwitchAgent) tokens(userID string) (oauth2.TokenSource, error) {
 	if h.tokenSource != nil {
 		return h.tokenSource(userID)
 	}
+	return auth.NewTwitchTokenSource(h.providers(), userID), nil
+}
+
+func (h *TwitchAgent) providers() *provider.Service {
 	h.tokenServiceOnce.Do(func() { h.tokenService = provider.NewService(h.Firestore, nil) })
-	return auth.NewTwitchTokenSource(h.tokenService, userID), nil
+	return h.tokenService
+}
+
+// exists reports whether Helix has a user with the channel's login.
+func (h *TwitchAgent) exists(ctx context.Context, login string) (bool, error) {
+	if h.channelExists != nil {
+		return h.channelExists(ctx, login)
+	}
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	token, err := h.providers().AppAccessToken(ctx, "twitch")
+	if err != nil {
+		return false, err
+	}
+	user, err := twitchapi.New(nil, h.ClientID, token).User(ctx, "login", login)
+	if err != nil {
+		return false, err
+	}
+	return user.ID != "", nil
 }
 
 func (h *TwitchAgent) chat(login, token string) chatConnection {

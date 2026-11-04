@@ -9,6 +9,8 @@ import (
 	"cloud.google.com/go/firestore"
 	"github.com/muxable/rtchat/agent/internal/agent"
 	"github.com/muxable/rtchat/agent/internal/handler"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
 )
 
 type closer struct {
@@ -183,5 +185,15 @@ func TestYouTubeReaderIsKeptAcrossAssignmentUpdates(t *testing.T) {
 	m.apply(request("youtube:UCchannel"), firestore.DocumentRemoved)
 	if m.count() != 0 {
 		t.Fatal("removed youtube assignment kept its reader")
+	}
+}
+
+func TestMissingChannelIsNotAnAgentError(t *testing.T) {
+	core, logs := observer.New(zap.InfoLevel)
+	defer zap.ReplaceGlobals(zap.New(core))()
+	m := newRequestManager(func(*agent.Request) (io.Closer, error) { return nil, handler.ErrChannelUnavailable })
+	m.apply(request("twitch:wwh1k"), firestore.DocumentAdded)
+	if m.count() != 0 || logs.FilterLevelExact(zap.ErrorLevel).Len() != 0 || logs.FilterMessage("twitch channel unavailable").Len() != 1 {
+		t.Fatalf("count=%d logs=%v", m.count(), logs.All())
 	}
 }

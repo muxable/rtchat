@@ -28,7 +28,7 @@ func newClientWithFallbacks(r *agent.Request, lookup func(string) (string, error
 	// shared bot account's authentication queue and channel limits.
 	if client, err := joinAnonymous(r); err == nil {
 		return client, nil
-	} else if cancel.IsCanceled(err) {
+	} else if cancel.IsCanceled(err) || errors.Is(err, ErrChannelUnavailable) {
 		return nil, err
 	} else {
 		zap.L().Warn("failed to join channel as anonymous", zap.Error(err), zap.String("channel", r.Channel()))
