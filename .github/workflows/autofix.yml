@@ -10,6 +10,7 @@ on:
     paths:
       - "autofix/**"
       - ".github/workflows/autofix.yml"
+      - ".github/workflows/autofix-run.yml"
   workflow_dispatch:
 
 permissions:
@@ -37,6 +38,3 @@ jobs:
       - run: go vet ./...
 
       - run: go test -race ./...
-
-      - name: Build image
-        run: docker build .

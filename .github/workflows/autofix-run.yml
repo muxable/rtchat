@@ -1,0 +1,60 @@
+name: Autofix run
+
+# Starts Claude Managed Agents sessions for new agent errors and turns their
+# patches into draft PRs from the bot's fork. Claude runs in Anthropic's
+# sandbox; this job only runs our code, which treats session output as data.
+# See autofix/README.md.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+# the job uses the bot's token, never GITHUB_TOKEN.
+permissions: {}
+
+concurrency:
+  group: autofix-run
+  cancel-in-progress: false
+
+jobs:
+  run:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      id-token: write
+    # holds the secrets; its deployment branch rule only allows main, so a
+    # workflow edited on another branch can't read them.
+    environment: autofix
+    defaults:
+      run:
+        working-directory: autofix
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: autofix/go.mod
+          # the job applies untrusted patches, so it never writes a cache
+          # that other builds restore.
+          cache: false
+
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: "projects/832669896677/locations/global/workloadIdentityPools/github-actions/providers/github-actions"
+          service_account: "autofix@rtchat-47692.iam.gserviceaccount.com"
+
+      - name: Run
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.AUTOFIX_GITHUB_TOKEN }}
+          AUTOFIX_FORK: ${{ vars.AUTOFIX_FORK }}
+        run: |
+          AUTOFIX_AGENT_ID=$(jq -er '.resources["./agents/rtchat-autofix.md"].id' claude-lock.json)
+          AUTOFIX_ENVIRONMENT_ID=$(jq -er '.resources["./environments/rtchat-autofix.yaml"].id' claude-lock.json)
+          export AUTOFIX_AGENT_ID AUTOFIX_ENVIRONMENT_ID
+          go run .

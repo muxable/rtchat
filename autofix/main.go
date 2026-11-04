@@ -1,5 +1,6 @@
 // Command autofix turns production errors from the rtchat agent into draft
-// pull requests. It runs as a Cloud Run job on a schedule. Each run:
+// pull requests. It runs on a schedule from .github/workflows/autofix-run.yml.
+// Each run:
 //
 //  1. collects the output of finished Claude Managed Agents sessions, validates
 //     each patch and opens a draft pull request from the bot's fork, and
@@ -233,11 +234,14 @@ func (j *Job) Finish(ctx context.Context) error {
 			continue
 		}
 		if err := j.finish(ctx, a); err != nil {
-			slog.Error("finish session", "session", a.SessionID, "err", err)
 			if errors.Is(err, errRetry) {
 				errs = append(errs, err)
 				continue
 			}
+			// failures can quote the patch or git's output about it, which
+			// shouldn't reach the public Actions log, so the reason only goes
+			// to Firestore.
+			slog.Error("session failed", "key", a.Key, "session", a.SessionID)
 			errs = append(errs, j.store.Update(ctx, a.Key, map[string]any{"state": stateFailed, "reason": truncate(err.Error(), 1000)}))
 		}
 	}
@@ -288,7 +292,7 @@ func (j *Job) finish(ctx context.Context, a keyedAttempt) error {
 	}
 	stats, err := ValidatePatch(patch)
 	if err != nil {
-		slog.Warn("rejected patch", "session", a.SessionID, "err", err)
+		slog.Warn("rejected patch", "key", a.Key, "session", a.SessionID)
 		return j.store.Update(ctx, a.Key, map[string]any{"state": stateRejected, "reason": err.Error()})
 	}
 	report := &Report{GroupID: a.GroupID, Count: a.Count, Location: a.Location}

@@ -12,7 +12,7 @@ what a hijacked session can do:
 
 | Stage | Runs | Holds | Trusts session output? |
 | --- | --- | --- | --- |
-| This job (Cloud Run job) | our code | Anthropic API key, bot GitHub token, GCP service account | no |
+| `autofix-run.yml` (GitHub Actions, `main` only) | our code | Anthropic API key, bot GitHub token, GCP access through Workload Identity | no |
 | Session (Anthropic sandbox) | Claude, plus whatever it runs | nothing | n/a |
 
 - **The report is normalized before the agent sees it.** Only validated stack
@@ -35,6 +35,10 @@ what a hijacked session can do:
   secrets (`firebase-hosting-pull-request.yml` skips them) and a read-only
   token. The title is built from validated fields. The agent's summary is
   shown in a fenced block so its links, images and mentions don't render.
+- **The workflow is isolated.** It sets `permissions: {}` (no `GITHUB_TOKEN`
+  access), its secrets live in an `autofix` environment that only `main` can
+  use, it writes no Actions cache, and it logs only IDs and outcomes because
+  Actions logs are public. Failure reasons go to Firestore.
 - **A person reviews every change.** The bot has no write access to
   `muxable/rtchat`.
 
@@ -56,42 +60,39 @@ as if a stranger wrote them.
    ```sh
    ant apply --dry-run -v agents/rtchat-autofix.md environments/rtchat-autofix.yaml
    ant apply agents/rtchat-autofix.md environments/rtchat-autofix.yaml
-   git add claude-lock.json   # commit it, so later applies update in place
+   git add claude-lock.json   # commit it: the workflow reads the IDs from it
    ```
 
    Re-run `ant apply` after editing either file.
 
-3. **Secrets.** Store the Anthropic API key and the bot token in Secret
-   Manager as `autofix-anthropic-api-key` and `autofix-github-token`.
-
-4. **Service account.** Create `autofix@rtchat-47692.iam.gserviceaccount.com`
-   with `roles/errorreporting.viewer`, `roles/datastore.user`, and
-   `roles/secretmanager.secretAccessor` on the two secrets.
-
-5. **Job and schedule.**
+3. **GCP service account.** Only this workflow, running in the `autofix`
+   environment, can use it:
 
    ```sh
-   gcloud run jobs deploy autofix --project=rtchat-47692 --region=us-west1 \
-     --source=. --service-account=autofix@rtchat-47692.iam.gserviceaccount.com \
-     --task-timeout=20m --max-retries=0 \
-     --set-secrets=ANTHROPIC_API_KEY=autofix-anthropic-api-key:latest,GITHUB_TOKEN=autofix-github-token:latest \
-     --set-env-vars=AUTOFIX_AGENT_ID=$(jq -r '.resources["./agents/rtchat-autofix.md"].id' claude-lock.json),AUTOFIX_ENVIRONMENT_ID=$(jq -r '.resources["./environments/rtchat-autofix.yaml"].id' claude-lock.json),AUTOFIX_FORK=rtchat-autofix/rtchat
-
-   gcloud scheduler jobs create http autofix --project=rtchat-47692 --location=us-west1 \
-     --schedule="*/15 * * * *" --http-method=POST \
-     --uri=https://run.googleapis.com/v2/projects/rtchat-47692/locations/us-west1/jobs/autofix:run \
-     --oauth-service-account-email=autofix@rtchat-47692.iam.gserviceaccount.com
+   gcloud iam service-accounts create autofix --project=rtchat-47692
+   SA=autofix@rtchat-47692.iam.gserviceaccount.com
+   gcloud projects add-iam-policy-binding rtchat-47692 --member=serviceAccount:$SA --role=roles/errorreporting.viewer
+   gcloud projects add-iam-policy-binding rtchat-47692 --member=serviceAccount:$SA --role=roles/datastore.user
+   gcloud iam service-accounts add-iam-policy-binding $SA --project=rtchat-47692 \
+     --role=roles/iam.workloadIdentityUser \
+     --member=principal://iam.googleapis.com/projects/832669896677/locations/global/workloadIdentityPools/github-actions/subject/repo:muxable/rtchat:environment:autofix
    ```
 
-   The scheduler's service account also needs `roles/run.invoker` on the job.
+4. **GitHub environment.** In the repo settings, create an environment named
+   `autofix`, and set its deployment branches to `main` only. Add:
+   - secret `ANTHROPIC_API_KEY`: the key from step 2's workspace
+   - secret `AUTOFIX_GITHUB_TOKEN`: the bot token from step 1
+   - variable `AUTOFIX_FORK`: the fork, e.g. `rtchat-autofix/rtchat`
+
+5. **Try it.** Run the "Autofix run" workflow from the Actions tab. After
+   that it runs every 15 minutes.
 
 ## Configuration
 
+Limits can be overridden with environment variables in `autofix-run.yml`:
+
 | Variable | Default | |
 | --- | --- | --- |
-| `AUTOFIX_AGENT_ID`, `AUTOFIX_ENVIRONMENT_ID` | required | from `claude-lock.json` |
-| `AUTOFIX_FORK` | required | `owner/repo` of the bot's fork |
-| `ANTHROPIC_API_KEY`, `GITHUB_TOKEN` | required | |
 | `AUTOFIX_BUDGET_CENTS` | `1000` | hard cap per session |
 | `AUTOFIX_MAX_ACTIVE` | `2` | sessions in flight at once |
 | `AUTOFIX_MAX_NEW` | `1` | sessions started per run |
