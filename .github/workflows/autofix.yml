@@ -1,0 +1,42 @@
+name: Autofix
+
+on:
+  push:
+    paths:
+      - "autofix/**"
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "autofix/**"
+      - ".github/workflows/autofix.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: autofix
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          # the latest toolchain, so gofmt matches the latest release.
+          go-version: stable
+          cache-dependency-path: autofix/go.sum
+
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+
+      - run: go vet ./...
+
+      - run: go test -race ./...
+
+      - name: Build image
+        run: docker build .

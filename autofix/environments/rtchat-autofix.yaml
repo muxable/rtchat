@@ -1,0 +1,11 @@
+# The sandbox the autofix agent runs in. It holds no credentials, and its only
+# network access is the Go module proxy and checksum database, so a prompt
+# injection has nothing to steal and nowhere to send it.
+name: rtchat-autofix
+config:
+  type: cloud
+  networking:
+    type: limited
+    allowed_hosts:
+      - proxy.golang.org
+      - sum.golang.org
