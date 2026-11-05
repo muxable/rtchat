@@ -1,5 +1,6 @@
 package com.rtirl.chat
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -7,13 +8,73 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.annotation.NonNull
 import androidx.core.content.ContextCompat
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.InstallStateUpdatedListener
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.InstallStatus
+import com.google.android.play.core.install.model.UpdateAvailability
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
 
   private var sharedData: String = ""
+
+  // In-App Update channels
+  private val updateMethodChannel = "com.rtirl.chat/in_app_updates"
+  private val updateEventChannel = "com.rtirl.chat/in_app_updates/events"
+
+  private lateinit var updateManager: AppUpdateManager
+
+  private var updateEventSink: EventChannel.EventSink? = null
+  private val pendingUpdateEvents = mutableListOf<Map<String, Any>>()
+
+  private var updateManagerInitialized = false
+
+  companion object {
+    private const val UPDATE_REQUEST_CODE = 9001
+    private const val MIN_STALENESS_DAYS = 21
+  }
+
+  // Listen for Google Play download status changes.
+  private val installStateListener = InstallStateUpdatedListener { state ->
+    when (state.installStatus()) {
+      InstallStatus.DOWNLOADING -> {
+        emitUpdateEvent(
+            mapOf(
+                "event" to "downloadProgress",
+                "bytesDownloaded" to state.bytesDownloaded(),
+                "totalBytesToDownload" to state.totalBytesToDownload(),
+            )
+        )
+      }
+
+      InstallStatus.DOWNLOADED -> {
+        emitUpdateEvent(mapOf("event" to "updateDownloaded"))
+      }
+      InstallStatus.INSTALLED -> {
+        emitUpdateEvent(mapOf("event" to "updateInstalled"))
+      }
+      InstallStatus.FAILED -> {
+        emitUpdateEvent(
+            mapOf(
+                "event" to "updateFailed",
+                "errorCode" to state.installErrorCode(),
+            )
+        )
+      }
+
+      InstallStatus.CANCELED -> {
+        emitUpdateEvent(mapOf("event" to "updateCancelled"))
+      }
+
+      else -> {}
+    }
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -21,6 +82,7 @@ class MainActivity : FlutterActivity() {
   }
 
   override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+    super.configureFlutterEngine(flutterEngine)
     val ttsServiceChannel =
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -115,10 +177,223 @@ class MainActivity : FlutterActivity() {
           if (call.method == "getSharedData") {
             result.success(sharedData)
             sharedData = ""
+          } else {
+            result.notImplemented()
           }
         }
 
-    super.configureFlutterEngine(flutterEngine)
+    updateManager = AppUpdateManagerFactory.create(this)
+    updateManagerInitialized = true
+    updateManager.registerListener(installStateListener)
+    // Event channel: Android -> Flutter
+    EventChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            updateEventChannel,
+        )
+        .setStreamHandler(
+            object : EventChannel.StreamHandler {
+              override fun onListen(
+                  arguments: Any?,
+                  events: EventChannel.EventSink?,
+              ) {
+                updateEventSink = events
+                // Deliver events that occurred before Flutter subscribed.
+                val eventsToSend = pendingUpdateEvents.toList()
+                pendingUpdateEvents.clear()
+                eventsToSend.forEach { event ->
+                  updateEventSink?.success(event)
+                }
+                // Recover an already downloaded update.
+                checkDownloadedUpdate()
+              }
+
+              override fun onCancel(arguments: Any?) {
+                updateEventSink = null
+              }
+            }
+        )
+
+    // Method channel: Flutter -> Android
+    MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            updateMethodChannel,
+        )
+        .setMethodCallHandler { call, result ->
+          when (call.method) {
+            "checkForUpdate" -> {
+              checkForUpdate(result)
+            }
+            "startFlexibleUpdate" -> {
+              startFlexibleUpdate(result)
+            }
+            "completeUpdate" -> {
+              completeUpdate(result)
+            }
+            "checkDownloadedUpdate" -> {
+              checkDownloadedUpdate()
+              result.success(true)
+            }
+            else -> result.notImplemented()
+          }
+        }
+  }
+
+  private fun checkForUpdate(result: MethodChannel.Result) {
+
+    updateManager.appUpdateInfo
+        .addOnSuccessListener { info ->
+          val stalenessDays = info.clientVersionStalenessDays() ?: -1
+
+          val eligible =
+              info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
+                  stalenessDays >= MIN_STALENESS_DAYS &&
+                  info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+
+          result.success(
+              mapOf(
+                  "available" to eligible,
+                  "stalenessDays" to stalenessDays,
+                  "availableVersionCode" to info.availableVersionCode(),
+                  "updatePriority" to info.updatePriority(),
+              )
+          )
+        }
+        .addOnFailureListener { error ->
+          result.error(
+              "UPDATE_CHECK_FAILED",
+              error.message,
+              null,
+          )
+        }
+  }
+
+  private fun startFlexibleUpdate(result: MethodChannel.Result) {
+    // Fetch fresh AppUpdateInfo each time.
+    updateManager.appUpdateInfo
+        .addOnSuccessListener { info ->
+          val eligible =
+              info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
+                  info.clientVersionStalenessDays()?.let { it >= MIN_STALENESS_DAYS } == true &&
+                  info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+          if (!eligible) {
+            result.success(false)
+            return@addOnSuccessListener
+          }
+          try {
+            val started =
+                updateManager.startUpdateFlowForResult(
+                    info,
+                    this,
+                    AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build(),
+                    UPDATE_REQUEST_CODE,
+                )
+
+            result.success(started)
+          } catch (error: Exception) {
+            result.error(
+                "UPDATE_START_FAILED",
+                error.message,
+                null,
+            )
+          } catch (error: Exception) {
+
+            result.error(
+                "UPDATE_START_FAILED",
+                error.message,
+                null,
+            )
+          }
+        }
+        .addOnFailureListener { error ->
+          result.error(
+              "UPDATE_START_FAILED",
+              error.message,
+              null,
+          )
+        }
+  }
+
+  private fun completeUpdate(result: MethodChannel.Result) {
+    updateManager
+        .completeUpdate()
+        .addOnSuccessListener {
+          result.success(true)
+        }
+        .addOnFailureListener { error ->
+          result.error(
+              "UPDATE_INSTALL_FAILED",
+              error.message,
+              null,
+          )
+        }
+  }
+
+  private fun checkDownloadedUpdate() {
+    if (!updateManagerInitialized) return
+    updateManager.appUpdateInfo.addOnSuccessListener { info ->
+      if (info.installStatus() == InstallStatus.DOWNLOADED) {
+        emitUpdateEvent(mapOf("event" to "updateDownloaded"))
+      }
+    }
+  }
+
+  private fun emitUpdateEvent(event: Map<String, Any>) {
+    runOnUiThread {
+      val sink = updateEventSink
+      if (sink != null) {
+        sink.success(event)
+      } else {
+        // Keep the most recent events until Flutter subscribes.
+        pendingUpdateEvents.add(event)
+      }
+    }
+  }
+
+  override fun onResume() {
+    super.onResume()
+
+    if (updateManagerInitialized) {
+      checkDownloadedUpdate()
+    }
+  }
+
+  @Suppress("DEPRECATION")
+  override fun onActivityResult(
+      requestCode: Int,
+      resultCode: Int,
+      data: Intent?,
+  ) {
+    super.onActivityResult(requestCode, resultCode, data)
+
+    if (requestCode == UPDATE_REQUEST_CODE) {
+
+      when (resultCode) {
+        Activity.RESULT_OK -> {
+          emitUpdateEvent(mapOf("event" to "updateAccepted"))
+        }
+        Activity.RESULT_CANCELED -> {
+          emitUpdateEvent(mapOf("event" to "updateCancelled"))
+        }
+
+        else -> {
+          emitUpdateEvent(
+              mapOf(
+                  "event" to "updateFailed",
+                  "resultCode" to resultCode,
+              )
+          )
+        }
+      }
+    }
+  }
+
+  override fun onDestroy() {
+
+    if (updateManagerInitialized) {
+      updateManager.unregisterListener(installStateListener)
+    }
+
+    super.onDestroy()
   }
 
   private fun handleIntent() {
