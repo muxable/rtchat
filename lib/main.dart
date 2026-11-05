@@ -452,12 +452,12 @@ class _AppState extends State<App> {
                       );
                     }
                     return AppUpdateHandler(
-  child: HomeScreen(
-    isDiscoModeEnabled: _isDiscoModeRunning,
-    channel: channel,
-    onChannelSelect: views.openChannel,
-  ),
-);
+                      child: HomeScreen(
+                        isDiscoModeEnabled: _isDiscoModeRunning,
+                        channel: channel,
+                        onChannelSelect: views.openChannel,
+                      ),
+                    );
                   },
                 );
               },
