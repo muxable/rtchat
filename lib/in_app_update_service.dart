@@ -8,11 +8,13 @@ class InAppUpdateService {
 
   static final InAppUpdateService instance = InAppUpdateService._();
 
-  static const MethodChannel _methods =
-      MethodChannel('com.rtirl.chat/in_app_updates');
+  static const MethodChannel _methods = MethodChannel(
+    'com.rtirl.chat/in_app_updates',
+  );
 
-  static const EventChannel _events =
-      EventChannel('com.rtirl.chat/in_app_updates/events');
+  static const EventChannel _events = EventChannel(
+    'com.rtirl.chat/in_app_updates/events',
+  );
 
   static const String _dismissedVersionKey = 'in_app_update_dismissed_version';
 
@@ -141,10 +143,7 @@ class InAppUpdateService {
     final prefs = await StreamingSharedPreferences.instance;
 
     await prefs.setInt(_dismissedVersionKey, versionCode);
-    await prefs.setInt(
-      _dismissedAtKey,
-      DateTime.now().millisecondsSinceEpoch,
-    );
+    await prefs.setInt(_dismissedAtKey, DateTime.now().millisecondsSinceEpoch);
   }
 
   /// Start Google's flexible update flow.
@@ -152,9 +151,7 @@ class InAppUpdateService {
     _downloadedEventSent = false;
 
     try {
-      final result = await _methods.invokeMethod<bool>(
-        'startFlexibleUpdate',
-      );
+      final result = await _methods.invokeMethod<bool>('startFlexibleUpdate');
 
       return result ?? false;
     } on PlatformException catch (e) {

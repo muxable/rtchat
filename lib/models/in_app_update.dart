@@ -6,10 +6,7 @@ import 'package:rtchat/in_app_update_service.dart';
 class AppUpdateHandler extends StatefulWidget {
   final Widget child;
 
-  const AppUpdateHandler({
-    super.key,
-    required this.child,
-  });
+  const AppUpdateHandler({super.key, required this.child});
 
   @override
   State<AppUpdateHandler> createState() => _AppUpdateHandlerState();
@@ -48,14 +45,10 @@ class _AppUpdateHandlerState extends State<AppUpdateHandler>
 
     if (!mounted || update == null) return;
 
-    await _showUpdatePrompt(
-      update['stalenessDays'] as int? ?? 21,
-    );
+    await _showUpdatePrompt(update['stalenessDays'] as int? ?? 21);
   }
 
-  Future<void> _handleUpdateEvent(
-    Map<String, dynamic> event,
-  ) async {
+  Future<void> _handleUpdateEvent(Map<String, dynamic> event) async {
     if (!mounted) return;
 
     switch (event['event']) {
@@ -116,8 +109,9 @@ class _AppUpdateHandlerState extends State<AppUpdateHandler>
       if (!started && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content:
-                Text('Unable to start the update. Please try again later.'),
+            content: Text(
+              'Unable to start the update. Please try again later.',
+            ),
           ),
         );
       }
