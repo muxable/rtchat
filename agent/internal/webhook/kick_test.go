@@ -11,15 +11,21 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"time"
 
+	"github.com/muxable/rtchat/agent/internal/observability"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -93,7 +99,7 @@ func TestKickEventFixtures(t *testing.T) {
 			messages := []KickMessageDoc{}
 			if tc.id != "" {
 				messages = append(messages, KickMessageDoc{ID: tc.id, Data: map[string]interface{}{
-					"channelId": tc.channelID, "type": tc.messageType, "timestamp": testKickTime(t, tc.at), "expiresAt": now.Add(14 * 24 * time.Hour), "event": event,
+					"channelId": tc.channelID, "type": tc.messageType, "timestamp": testKickTime(t, tc.at), "expiresAt": now.Add(wantMessageTTL(tc.messageType)), "event": event,
 				}})
 			}
 			if !reflect.DeepEqual(docs.Messages, messages) {
@@ -162,7 +168,7 @@ func TestKickToDocuments(t *testing.T) {
 			}
 			want := []KickMessageDoc{}
 			if tc.id != "" {
-				want = append(want, KickMessageDoc{ID: tc.id, Data: map[string]interface{}{"channelId": "kick:123", "type": tc.messageType, "timestamp": testKickTime(t, tc.at), "expiresAt": now.Add(14 * 24 * time.Hour), "event": event}})
+				want = append(want, KickMessageDoc{ID: tc.id, Data: map[string]interface{}{"channelId": "kick:123", "type": tc.messageType, "timestamp": testKickTime(t, tc.at), "expiresAt": now.Add(wantMessageTTL(tc.messageType)), "event": event}})
 			}
 			if !reflect.DeepEqual(docs.Messages, want) {
 				t.Fatalf("messages: %#v, want %#v", docs.Messages, want)
@@ -257,6 +263,70 @@ func (s *kickMemoryStore) MergeChannel(_ context.Context, channel string, data m
 	return nil
 }
 
+type kickContextStore struct {
+	kickMemoryStore
+	check func(context.Context)
+}
+
+func (s *kickContextStore) CreateMessage(ctx context.Context, channel, id string, data map[string]interface{}) error {
+	s.check(ctx)
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	return s.kickMemoryStore.CreateMessage(ctx, channel, id, data)
+}
+
+func (s *kickContextStore) MergeChannel(ctx context.Context, channel string, data map[string]interface{}) error {
+	s.check(ctx)
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	return s.kickMemoryStore.MergeChannel(ctx, channel, data)
+}
+
+func TestKickVerifiedDeliverySurvivesRequestCancellation(t *testing.T) {
+	private, key := kickTestKey(t)
+	for _, cancelBefore := range []bool{false, true} {
+		t.Run(fmt.Sprintf("cancel before persistence=%t", cancelBefore), func(t *testing.T) {
+			type contextKey struct{}
+			parent, cancel := context.WithCancel(context.WithValue(context.Background(), contextKey{}, "request value"))
+			defer cancel()
+			if cancelBefore {
+				cancel()
+			}
+			var persistence context.Context
+			store := &kickContextStore{check: func(ctx context.Context) {
+				cancel() // Also exercise cancellation between the message and channel writes.
+				persistence = ctx
+				if ctx.Err() != nil || ctx.Value(contextKey{}) != "request value" {
+					t.Fatalf("persistence inherited cancellation or lost request values: %v", ctx.Err())
+				}
+				deadline, ok := ctx.Deadline()
+				if !ok || time.Until(deadline) <= 0 || time.Until(deadline) > 10*time.Second {
+					t.Fatalf("unbounded persistence context: %v, %v", deadline, ok)
+				}
+			}}
+			handler := NewKickHandler(store)
+			handler.publicKey = key
+			now := time.Now().UTC().Format(time.RFC3339)
+			body := `{"broadcaster":{"user_id":123,"channel_slug":"muxfd"},"message_id":"m1"}`
+			req := httptest.NewRequest(http.MethodPost, "/kick/webhook", strings.NewReader(body)).WithContext(parent)
+			req.Header.Set("Kick-Event-Message-Id", "delivery-1")
+			req.Header.Set("Kick-Event-Message-Timestamp", now)
+			req.Header.Set("Kick-Event-Type", "chat.message.sent")
+			req.Header.Set("Kick-Event-Signature", kickTestSign(t, private, "delivery-1", now, body))
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, req)
+			if response.Code != http.StatusOK || len(store.messages) != 1 || len(store.channels) != 1 {
+				t.Fatalf("delivery was not persisted: status=%d writes=%v", response.Code, store.calls)
+			}
+			if persistence == nil || persistence.Err() != context.Canceled {
+				t.Fatal("persistence context not released after handler returned")
+			}
+		})
+	}
+}
+
 func TestKickHandler(t *testing.T) {
 	private, key := kickTestKey(t)
 	_, oldKey := kickTestKey(t)
@@ -279,6 +349,7 @@ func TestKickHandler(t *testing.T) {
 		{name: "no broadcaster", body: `{}`, status: 200},
 		{name: "null event", body: `null`, status: 200},
 		{name: "invalid JSON", body: `{`, status: 400},
+		{name: "mapping failure", body: `{"broadcaster":{"user_id":123},"created_at":"invalid"}`, status: 500},
 		{name: "create failure", createErr: errors.New("unavailable"), status: 500},
 		{name: "already exists", createErr: status.Error(codes.AlreadyExists, "exists"), status: 200},
 		{name: "merge failure", mergeErr: errors.New("unavailable"), status: 500},
@@ -286,6 +357,9 @@ func TestKickHandler(t *testing.T) {
 		{name: "empty channel", body: `{"broadcaster":{"user_id":123},"message_id":"m1"}`, status: 200},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			core, logs := observer.New(zap.InfoLevel)
+			undo := zap.ReplaceGlobals(zap.New(observability.Wrap(core), zap.AddCaller(), zap.AddStacktrace(zap.WarnLevel)))
+			defer undo()
 			fetched := 0
 			endpoint := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				fetched++
@@ -338,6 +412,24 @@ func TestKickHandler(t *testing.T) {
 			}
 			if got := send().Code; got != tc.status {
 				t.Fatalf("status = %d, want %d", got, tc.status)
+			}
+			if tc.status == http.StatusInternalServerError {
+				operation := map[string]string{
+					"key fetch failure": "fetch public key", "mapping failure": "map event",
+					"create failure": "create message", "merge failure": "merge channel",
+				}[tc.name]
+				entries := logs.FilterMessage("kick webhook " + operation + " failed").All()
+				if len(entries) != 1 {
+					t.Fatalf("expected one operation error, got %v", entries)
+				}
+				fields := entries[0].ContextMap()
+				if fields["operation"] != operation || fields["messageId"] != "delivery-1" || fields["type"] != eventType || fields["path"] != "/kick/" || fields["error"] == nil {
+					t.Fatal(fields)
+				}
+				stack, _ := fields["stack_trace"].(string)
+				if !strings.HasPrefix(stack, "kick webhook "+operation+" failed: ") {
+					t.Fatal(stack)
+				}
 			}
 			expectedFetches := 1
 			switch tc.name {
@@ -504,4 +596,41 @@ func TestKickKind(t *testing.T) {
 			t.Errorf("kickKind(%q) = %q, want %q", in, got, want)
 		}
 	}
+}
+
+// A stalled Firestore RPC must not consume the whole persistence budget: the
+// production failure was one hung Create answering Kick with a 500.
+type kickStallingStore struct {
+	kickMemoryStore
+	attempts atomic.Int32
+}
+
+func (s *kickStallingStore) CreateMessage(ctx context.Context, channel, id string, data map[string]interface{}) error {
+	if s.attempts.Add(1) == 1 {
+		<-ctx.Done()
+		return status.Error(codes.DeadlineExceeded, "context deadline exceeded")
+	}
+	return s.kickMemoryStore.CreateMessage(ctx, channel, id, data)
+}
+
+func TestKickStalledMessageWriteIsHedged(t *testing.T) {
+	private, key := kickTestKey(t)
+	synctest.Test(t, func(t *testing.T) {
+		store := &kickStallingStore{}
+		handler := NewKickHandler(store)
+		handler.publicKey = key
+		now := time.Now().UTC().Format(time.RFC3339)
+		body := `{"broadcaster":{"user_id":123,"channel_slug":"muxfd"},"message_id":"m1"}`
+		req := httptest.NewRequest(http.MethodPost, "/kick/webhook", strings.NewReader(body))
+		req.Header.Set("Kick-Event-Message-Id", "delivery-1")
+		req.Header.Set("Kick-Event-Message-Timestamp", now)
+		req.Header.Set("Kick-Event-Type", "chat.message.sent")
+		req.Header.Set("Kick-Event-Signature", kickTestSign(t, private, "delivery-1", now, body))
+		response := httptest.NewRecorder()
+		start := time.Now()
+		handler.ServeHTTP(response, req)
+		if response.Code != http.StatusOK || len(store.messages) != 1 || time.Since(start) > 5*time.Second {
+			t.Fatalf("status=%d attempts=%d after %v; chat dropped", response.Code, store.attempts.Load(), time.Since(start))
+		}
+	})
 }

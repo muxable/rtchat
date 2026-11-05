@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
+import 'package:rtchat/models/channels.dart';
 import 'package:rtchat/models/messages/message.dart';
 
 class ChatClearedEventWidget extends StatelessWidget {
@@ -9,6 +10,10 @@ class ChatClearedEventWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = model.channel?.provider;
+    final providerPrefix =
+        provider != null ? '[${providerName(provider)}] ' : '';
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Container(
@@ -17,9 +22,7 @@ class ChatClearedEventWidget extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Text(
-            AppLocalizations.of(
-              context,
-            )!.chatCleared(model.timestamp, model.timestamp),
+            '$providerPrefix${AppLocalizations.of(context)!.chatCleared(model.timestamp, model.timestamp)}',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall,
           ),

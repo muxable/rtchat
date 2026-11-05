@@ -55,7 +55,7 @@ func TestPrivateMessageDocument(t *testing.T) {
 		t.Fatal("first message flag")
 	}
 	expiry := d.data["expiresAt"].(time.Time)
-	if !expiry.Equal(now.Add(14 * 24 * time.Hour)) {
+	if !expiry.Equal(now.Add(7 * 24 * time.Hour)) {
 		t.Fatal(expiry)
 	}
 	m.Reply = nil

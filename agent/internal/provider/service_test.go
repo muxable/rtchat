@@ -127,7 +127,7 @@ func TestRefreshFailurePolicy(t *testing.T) {
 		code    int
 		body    string
 		revoked bool
-	}{{"revoked", 400, `{"error":"invalid_grant"}`, true}, {"revoked twitch", 401, `{"message":"Invalid refresh token","secret":"do-not-leak"}`, true}, {"temporary", 503, `{"error":"unavailable","secret":"do-not-leak"}`, false}, {"bad JSON", 200, "invalid", false}, {"missing access token", 200, `{"secret":"do-not-leak"}`, false}, {"short expiry", 200, `{"access_token":"new","expires_in":60}`, false}} {
+	}{{"revoked", 400, `{"error":"invalid_grant"}`, true}, {"revoked twitch", 401, `{"message":"Invalid refresh token","secret":"do-not-leak"}`, true}, {"invalid client", 401, `{"error":"invalid_client"}`, false}, {"server-side grant error", 503, `{"error":"invalid_grant"}`, false}, {"temporary", 503, `{"error":"unavailable","secret":"do-not-leak"}`, false}, {"bad JSON", 200, "invalid", false}, {"missing access token", 200, `{"secret":"do-not-leak"}`, false}, {"short expiry", 200, `{"access_token":"new","expires_in":60}`, false}} {
 		t.Run(tc.name, func(t *testing.T) {
 			store := &memoryStore{encoded: expired}
 			calls := 0

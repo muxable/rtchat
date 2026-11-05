@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
-import 'package:rtchat/models/messages/message.dart';
 import 'package:rtchat/models/tts.dart';
 import 'package:rtchat/models/tts/voice_packs.dart';
 import 'package:rtchat/screens/settings/tts/voice_settings.dart';
@@ -20,15 +19,7 @@ class TextToSpeechScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    model.say(
-                      AppLocalizations.of(context)!,
-                      SystemMessageModel(
-                        text: AppLocalizations.of(context)!.sampleMessage,
-                      ),
-                      force: true,
-                    );
-                  },
+                  onPressed: () => model.previewSample(),
                   child: Text(AppLocalizations.of(context)!.playSampleMessage),
                 ),
               ),

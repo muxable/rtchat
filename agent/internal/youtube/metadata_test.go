@@ -195,7 +195,9 @@ func runUntilOffline(t *testing.T, server *testServer) *memoryStore {
 func TestLiveMetadataLifecycle(t *testing.T) {
 	server, counts := metadataServer(t, []string{string(fixture(t, "watch_live.html")), `<html>offline</html>`}, []string{string(fixture(t, "innertube_player.json")), endedPlayer})
 	defer server.Close()
+	before := time.Now().UTC().Truncate(time.Millisecond)
 	store := runUntilOffline(t, server)
+	after := time.Now().UTC()
 	if players, updates := counts(); players != 2 || updates < 2 {
 		t.Fatalf("players=%d updates=%d", players, updates)
 	}
@@ -228,6 +230,10 @@ func TestLiveMetadataLifecycle(t *testing.T) {
 		}
 		if !reflect.DeepEqual(message["event"], map[string]interface{}{"videoId": "1-LpQekNa9g"}) {
 			t.Fatalf("%s event %v", id, message["event"])
+		}
+		// Stream state outlives chat messages so a long stream still reads as live.
+		if expiresAt, _ := message["expiresAt"].(time.Time); expiresAt.Before(before.Add(90*24*time.Hour)) || expiresAt.After(after.Add(90*24*time.Hour)) {
+			t.Fatalf("%s expiresAt %v, want 90 days after the write", id, message["expiresAt"])
 		}
 	}
 }

@@ -37,6 +37,9 @@ jobs:
 
       - run: go test -race ./...
 
+      - name: Test alert reconciliation
+        run: python3 -m unittest discover -s monitoring
+
   build:
     runs-on: ubuntu-latest
     permissions:
@@ -74,6 +77,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: ./agent
+          build-args: VCS_REF=${{ github.sha }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

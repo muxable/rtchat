@@ -175,7 +175,7 @@ func (s *Server) twitchEmotes(ctx context.Context, token, channel string) ([]Emo
 	}
 	login := text(first(user["data"])["login"])
 	if login == "" {
-		return nil, unavailable()
+		return nil, upstreamError("twitch users", errors.New("provider response missing user login"))
 	}
 	// One Helix call lists everything the user can use, including the
 	// channel's follower emotes. Tokens from before user:read:emotes was
@@ -212,7 +212,7 @@ func (s *Server) twitchEmotes(ctx context.Context, token, channel string) ([]Emo
 
 func (s *Server) userEmotes(ctx context.Context, token, userID, channel string) ([]twitchEmote, error) {
 	if userID == "" {
-		return nil, unavailable()
+		return nil, upstreamError("twitch user emotes", errors.New("provider response missing user ID"))
 	}
 	result := []twitchEmote{}
 	after := ""
@@ -234,7 +234,7 @@ func (s *Server) userEmotes(ctx context.Context, token, userID, channel string) 
 			return result, nil
 		}
 	}
-	return nil, unavailable()
+	return nil, upstreamError("twitch user emotes", errors.New("provider response exceeded 50 pages"))
 }
 
 // setEmotes resolves the emote sets IRC reports, 25 sets per Helix request,
@@ -249,7 +249,7 @@ func (s *Server) setEmotes(ctx context.Context, token, login string) ([]twitchEm
 		return []twitchEmote{}, nil
 	}
 	if len(sets) > 5000 {
-		return nil, unavailable()
+		return nil, upstreamError("twitch emote sets", errors.New("provider response exceeded 5000 emote sets"))
 	}
 	batches := make([][]twitchEmote, (len(sets)+24)/25)
 	var group errgroup.Group

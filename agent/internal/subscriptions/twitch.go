@@ -11,6 +11,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/muxable/rtchat/agent/internal/callable"
+	"github.com/muxable/rtchat/agent/internal/chatmessage"
 	"github.com/muxable/rtchat/agent/internal/provider"
 	"github.com/muxable/rtchat/agent/internal/subscriptionlock"
 	"go.uber.org/zap"
@@ -79,7 +80,9 @@ func (s *Service) subscribeTwitch(ctx context.Context, uid, channel string) (int
 		_, err = ref.Set(ctx, map[string]interface{}{"lastActiveAt": firestore.ServerTimestamp}, firestore.MergeAll)
 		return user.Login, err
 	}
-	err = subscriptionlock.With(ctx, s.DB, "twitch:"+channel, func(ctx context.Context) error {
+	// Foreground opens must not wait for a worker's full 90-second lease.
+	// Keep lifecycle work serialized, but let callers retry busy channels.
+	err = subscriptionlock.WithWaitLimit(ctx, s.DB, "twitch:"+channel, foregroundLeaseWait, func(ctx context.Context) error {
 		// A server profile and its stored OAuth grant must identify the same
 		// broadcaster before authenticated-only subscriptions are reconciled.
 		userToken, err := s.API.Tokens.AccessToken(ctx, uid, "twitch")
@@ -129,6 +132,9 @@ func (s *Service) subscribeTwitch(ctx context.Context, uid, channel string) (int
 		}
 		return nil
 	})
+	if errors.Is(err, subscriptionlock.ErrBusy) {
+		return nil, unavailable("Twitch subscriptions are busy; try again shortly")
+	}
 	return user.Login, err
 }
 
@@ -442,7 +448,7 @@ func (s *Service) welcome(ctx context.Context, uid, channel, login string) error
 		ref := s.DB.Collection("channels").Doc("twitch:" + channel).Collection("messages").Doc(fmt.Sprintf("welcome-v1-%d", i+1))
 		_, err := ref.Create(ctx, map[string]interface{}{
 			"channelId": "twitch:" + channel, "annotations": map[string]interface{}{"isAction": false, "isFirstTimeChatter": false}, "author": map[string]interface{}{"displayName": "muxfd", "userId": "158394109", "color": ""}, "reply": nil, "timestamp": firestore.ServerTimestamp,
-			"tags": map[string]interface{}{"user-id": "158394109", "room-id": "158394109", "display-name": "muxfd", "color": "", "username": "muxfd", "badges": map[string]interface{}{}, "emotes-raw": "", "badges-raw": ""}, "type": "message", "message": message, "expiresAt": time.Now().Add(14 * 24 * time.Hour),
+			"tags": map[string]interface{}{"user-id": "158394109", "room-id": "158394109", "display-name": "muxfd", "color": "", "username": "muxfd", "badges": map[string]interface{}{}, "emotes-raw": "", "badges-raw": ""}, "type": "message", "message": message, "expiresAt": time.Now().Add(chatmessage.TTL),
 		})
 		if err != nil && status.Code(err) != codes.AlreadyExists {
 			return err

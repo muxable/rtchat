@@ -13,6 +13,7 @@ import {
 // @ts-ignore streamlabs requires exactly socket.io-client@2.3.1
 import io from "socket.io-client";
 import { log } from "./log";
+import { MESSAGE_TTL_MS } from "./messages";
 
 type Donation = {
   id: number;
@@ -157,7 +158,7 @@ function listenForSingleUserId(userId: string) {
           type: "streamlabs.donation",
           timestamp: admin.firestore.Timestamp.fromDate(donation.timestamp),
           expiresAt: admin.firestore.Timestamp.fromMillis(
-            Date.now() + 1000 * 86400 * 7 * 2,
+            Date.now() + MESSAGE_TTL_MS,
           ),
         });
     }),

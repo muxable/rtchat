@@ -73,7 +73,11 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 		start := time.Now()
 		writer := &statusWriter{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(writer, r)
-		zap.L().Info("http request",
+		level := zap.InfoLevel
+		if writer.status >= 500 {
+			level = zap.ErrorLevel
+		}
+		zap.L().Log(level, "http request",
 			zap.String("method", r.Method),
 			zap.String("path", r.URL.Path),
 			zap.String("via", callable.Via(r)),

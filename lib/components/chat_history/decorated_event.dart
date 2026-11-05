@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/style.dart';
 
 class DecoratedEventWidget extends StatelessWidget {

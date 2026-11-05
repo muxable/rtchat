@@ -1,6 +1,6 @@
 import 'dart:core';
 
-import 'package:rtchat/components/image/resilient_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 /// The streaming platforms a [Channel] can belong to.
 abstract final class Providers {
@@ -49,8 +49,8 @@ class Channel {
     );
   }
 
-  ResilientNetworkImage get profilePicture {
-    return ResilientNetworkImage(profilePictureUrl);
+  CachedNetworkImageProvider get profilePicture {
+    return CachedNetworkImageProvider(profilePictureUrl.toString());
   }
 
   Map<String, dynamic> toJson() {

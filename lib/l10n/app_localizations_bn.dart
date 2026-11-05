@@ -1,6 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-import 'package:rtchat/l10n/app_localizations.dart';
+import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
@@ -539,7 +539,7 @@ class AppLocalizationsBn extends AppLocalizations {
       viewerCount,
     );
 
-    return '<b>$displayName</b> $viewerCountString দর্শক নিয়ে রেইড করছে!';
+    return '<b>$displayName</b> <b>$viewerCountString</b> দর্শক নিয়ে রেইড করছে!';
   }
 
   @override

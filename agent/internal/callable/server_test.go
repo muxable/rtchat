@@ -4,13 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/muxable/rtchat/agent/internal/observability"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest/observer"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func TestTransport(t *testing.T) {
@@ -150,7 +154,95 @@ func TestRequestLog(t *testing.T) {
 	if ok["callable"] != "ok" || ok["status"] != int64(200) || ok["code"] != "ok" || ok["provider"] != "kick" || ok["authenticated"] != true || ok["via"] != "getBadges" {
 		t.Fatalf("unexpected success log %v", ok)
 	}
-	if entries[1].Level != zap.WarnLevel || fail["callable"] != "fail" || fail["status"] != int64(500) || fail["code"] != "internal" || fail["error"] != "boom" || fail["via"] != "" {
+	if entries[1].Level != zap.ErrorLevel || fail["callable"] != "fail" || fail["status"] != int64(500) || fail["code"] != "internal" || fail["error"] != "boom" || fail["via"] != "" {
 		t.Fatalf("unexpected failure log %v", fail)
+	}
+}
+
+func TestPanicIsReportedWithoutLeakingToClient(t *testing.T) {
+	core, logs := observer.New(zap.InfoLevel)
+	undo := zap.ReplaceGlobals(zap.New(observability.Wrap(core), zap.AddCaller(), zap.AddStacktrace(zap.WarnLevel)))
+	defer undo()
+	server := NewServer(nil)
+	server.Register("panic", false, func(context.Context, json.RawMessage) (any, error) { panic("private panic detail") })
+	request := httptest.NewRequest("POST", "/panic", strings.NewReader(`{"data":null}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+	server.ServeHTTP(response, request)
+	if response.Code != 500 || strings.Contains(response.Body.String(), "private panic detail") {
+		t.Fatal(response.Code, response.Body.String())
+	}
+	entries := logs.FilterLevelExact(zap.ErrorLevel).All()
+	if len(entries) != 1 {
+		t.Fatal(entries)
+	}
+	fields := entries[0].ContextMap()
+	stack, _ := fields["stack_trace"].(string)
+	if fields["@type"] == nil || fields["path"] != "/panic" || !strings.Contains(stack, "private panic detail") || !strings.Contains(stack, "TestPanicIsReportedWithoutLeakingToClient.func") {
+		t.Fatal(fields)
+	}
+}
+
+func TestContextErrorsUseCanonicalStatus(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		err    error
+		status int
+		code   string
+	}{
+		{"canceled", context.Canceled, 499, "cancelled"},
+		{"wrapped cancellation", fmt.Errorf("read token: %w", context.Canceled), 499, "cancelled"},
+		{"grpc cancellation", status.Error(codes.Canceled, "private detail"), 499, "cancelled"},
+		{"wrapped grpc cancellation", fmt.Errorf("read token: %w", status.Error(codes.Canceled, "private detail")), 499, "cancelled"},
+		{"deadline", context.DeadlineExceeded, 504, "deadline-exceeded"},
+		{"grpc deadline", status.Error(codes.DeadlineExceeded, "private detail"), 504, "deadline-exceeded"},
+		{"explicit error", &Error{Code: "unavailable", Message: "retry"}, 503, "unavailable"},
+		{"unrelated failure", errors.New("private detail"), 500, "internal"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			core, logs := observer.New(zap.InfoLevel)
+			defer zap.ReplaceGlobals(zap.New(observability.Wrap(core)))()
+			server := NewServer(nil)
+			server.Register("subscribe", false, func(context.Context, json.RawMessage) (any, error) { return nil, tc.err })
+			request := httptest.NewRequest("POST", "/subscribe", strings.NewReader(`{"data":{}}`))
+			request.Header.Set("Content-Type", "application/json")
+			response := httptest.NewRecorder()
+			server.ServeHTTP(response, request)
+			if response.Code != tc.status || !strings.Contains(response.Body.String(), strings.ToUpper(strings.ReplaceAll(tc.code, "-", "_"))) || strings.Contains(response.Body.String(), "private detail") {
+				t.Fatalf("response: %d %s", response.Code, response.Body.String())
+			}
+			entries := logs.FilterMessage("http request").All()
+			if len(entries) != 1 || entries[0].ContextMap()["code"] != tc.code || entries[0].ContextMap()["status"] != int64(tc.status) {
+				t.Fatalf("logs: %v", entries)
+			}
+			fields := entries[0].ContextMap()
+			if tc.status == 499 && (entries[0].Level != zap.InfoLevel || fields["@type"] != nil) {
+				t.Fatalf("client cancellation reported as an agent issue: %v", entries)
+			}
+			if tc.status >= 500 && fields["@type"] == nil {
+				t.Fatalf("server failure no longer reported: %v", entries)
+			}
+		})
+	}
+}
+
+// Handlers may wrap a caller's disconnect as an explicit provider error; the
+// request context, not the returned error, decides whether the caller left.
+func TestCallerDisconnectOverridesExplicitError(t *testing.T) {
+	core, logs := observer.New(zap.InfoLevel)
+	defer zap.ReplaceGlobals(zap.New(observability.Wrap(core)))()
+	ctx, disconnect := context.WithCancel(context.Background())
+	server := NewServer(nil)
+	server.Register("getEmotes", false, func(ctx context.Context, _ json.RawMessage) (any, error) {
+		disconnect()
+		<-ctx.Done()
+		return nil, fmt.Errorf("twitch access token: %w: %w", &Error{Code: "unavailable", Message: "retry"}, status.Error(codes.Canceled, "context canceled"))
+	})
+	request := httptest.NewRequestWithContext(ctx, "POST", "/getEmotes", strings.NewReader(`{"data":{}}`))
+	request.Header.Set("Content-Type", "application/json")
+	server.ServeHTTP(httptest.NewRecorder(), request)
+	entries := logs.FilterMessage("http request").All()
+	if len(entries) != 1 || entries[0].Level != zap.InfoLevel || entries[0].ContextMap()["status"] != int64(499) || entries[0].ContextMap()["@type"] != nil {
+		t.Fatalf("caller disconnect reported as agent failure: %v", entries)
 	}
 }

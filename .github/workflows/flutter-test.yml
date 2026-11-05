@@ -32,6 +32,8 @@ jobs:
         with:
           cache: true
       - run: flutter test
+      - name: Test Twitch preview bridge
+        run: node --test test/assets/twitch_tunnel_test.cjs
       - name: Test on_device_tts
         run: flutter test
         working-directory: packages/on_device_tts

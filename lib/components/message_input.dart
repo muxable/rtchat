@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/autocomplete.dart';
 import 'package:rtchat/components/emote_picker.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/components/provider_icon.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/actions.dart';
@@ -65,7 +65,7 @@ class EmoteTextEditingController extends TextEditingController {
             preferBelow: false,
             child: Image(
               height: styleModel.fontSize,
-              image: ResilientNetworkImage(token.url),
+              image: CachedNetworkImageProvider(token.url.toString()),
               errorBuilder: (context, error, stackTrace) => Text(token.code),
             ),
           ),
@@ -407,21 +407,35 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                           onPressed:
                               channel == null
                                   ? null
-                                  : () {
+                                  : () async {
                                     if (_isEmotePickerVisible) {
                                       setState(
                                         () => _isEmotePickerVisible = false,
                                       );
                                       _chatInputFocusNode.requestFocus();
-                                    } else {
-                                      _chatInputFocusNode.unfocus();
-                                      setState(() {
-                                        _isEmotePickerVisible = true;
-                                        _emoteIndex = Random().nextInt(
-                                          _emotes.length,
-                                        );
-                                      });
+                                      return;
                                     }
+
+                                    _chatInputFocusNode.unfocus();
+
+                                    // Wait for the keyboard visibility change.
+                                    if (_isKeyboardVisible) {
+                                      await keyboardSubscription
+                                          .asFuture<void>()
+                                          .timeout(
+                                            const Duration(milliseconds: 300),
+                                            onTimeout: () {},
+                                          );
+                                    }
+
+                                    if (!mounted) return;
+
+                                    setState(() {
+                                      _isEmotePickerVisible = true;
+                                      _emoteIndex = Random().nextInt(
+                                        _emotes.length,
+                                      );
+                                    });
                                   },
                           splashRadius: 24,
                           icon:
@@ -432,8 +446,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget> {
                                     child: Image(
                                       width: 24,
                                       height: 24,
-                                      image: ResilientNetworkImage(
-                                        Uri.parse(_emotes[_emoteIndex]),
+                                      image: CachedNetworkImageProvider(
+                                        _emotes[_emoteIndex],
                                       ),
                                     ),
                                   ),

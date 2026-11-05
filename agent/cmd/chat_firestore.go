@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/muxable/rtchat/agent/internal/chatmessage"
 	"github.com/muxable/rtchat/agent/internal/clients/twitch"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,7 +28,7 @@ func (s chatFirestore) channel(id string) *firestore.DocumentRef {
 	return s.DB.Collection("channels").Doc("twitch:" + id)
 }
 func (s chatFirestore) raidMessage(ctx context.Context, id, kind string, raid map[string]any, at time.Time) error {
-	_, err := s.channel(id).Collection("messages").Doc(kind+"-"+field(raid, "id")).Create(ctx, map[string]any{"channelId": "twitch:" + id, "type": kind, "raid": raid, "timestamp": at, "expiresAt": time.Now().Add(14 * 24 * time.Hour)})
+	_, err := s.channel(id).Collection("messages").Doc(kind+"-"+field(raid, "id")).Create(ctx, map[string]any{"channelId": "twitch:" + id, "type": kind, "raid": raid, "timestamp": at, "expiresAt": time.Now().Add(chatmessage.TTL)})
 	if status.Code(err) == codes.AlreadyExists {
 		return nil
 	}

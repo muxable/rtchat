@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/muxable/rtchat/agent/internal/chatmessage"
 )
 
 type text struct {
@@ -336,5 +338,5 @@ func actionData(channel, video string, raw json.RawMessage, now time.Time) map[s
 	for key, value := range details {
 		snippet[key] = value
 	}
-	return map[string]interface{}{"type": "youtube." + kind, "channelId": "youtube:" + channel, "timestamp": timestamp, "expiresAt": now.Add(14 * 24 * time.Hour), "event": map[string]interface{}{"id": id, "snippet": snippet, "authorDetails": author}}
+	return map[string]interface{}{"type": "youtube." + kind, "channelId": "youtube:" + channel, "timestamp": timestamp, "expiresAt": now.Add(chatmessage.TTL), "event": map[string]interface{}{"id": id, "snippet": snippet, "authorDetails": author}}
 }

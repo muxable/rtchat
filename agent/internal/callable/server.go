@@ -5,13 +5,18 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"mime"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/muxable/rtchat/agent/internal/cancel"
+	"github.com/muxable/rtchat/agent/internal/observability"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Handler func(context.Context, json.RawMessage) (any, error)
@@ -91,7 +96,7 @@ func (s *Server) wrap(name string, requireAuth bool, handler Handler) http.Handl
 			zap.Float64("latency_ms", float64(time.Since(start))/float64(time.Millisecond)),
 		}
 		if status >= 500 {
-			zap.L().Warn("http request", append(fields, zap.Error(err))...)
+			zap.L().Error("http request", append(fields, zap.Error(err))...)
 			return
 		}
 		zap.L().Info("http request", fields...)
@@ -110,6 +115,8 @@ func Via(r *http.Request) string {
 	return via
 }
 
+var errCallerGone = &Error{Code: "cancelled", Message: "CANCELLED"}
+
 // callInfo is what the request log records about a call.
 type callInfo struct {
 	provider      string
@@ -119,6 +126,12 @@ type callInfo struct {
 // serve writes the response and returns the error it sent, if any.
 func (s *Server) serve(w http.ResponseWriter, r *http.Request, requireAuth bool, handler Handler) (call callInfo, err error) {
 	fail := func(e error) (callInfo, error) {
+		// A disconnecting caller cancels every downstream call, and handlers may
+		// wrap the resulting failure as a provider outage. The request context is
+		// the ground truth: if the caller left, report the call as cancelled.
+		if errors.Is(r.Context().Err(), context.Canceled) {
+			e = fmt.Errorf("%w: %w", errCallerGone, e)
+		}
 		writeError(w, e)
 		return call, e
 	}
@@ -192,6 +205,10 @@ func canonical(err error) (*Error, int) {
 		if _, ok := statusCodes[explicit.Code]; ok {
 			e = explicit
 		}
+	} else if cancel.IsCanceled(err) {
+		e = &Error{Code: "cancelled", Message: "CANCELLED"}
+	} else if errors.Is(err, context.DeadlineExceeded) || status.Code(err) == codes.DeadlineExceeded {
+		e = &Error{Code: "deadline-exceeded", Message: "DEADLINE_EXCEEDED"}
 	}
 	return e, statusCodes[e.Code]
 }
@@ -226,14 +243,14 @@ func readData(dec *json.Decoder) (json.RawMessage, error) {
 	if dec.Decode(new(any)) != io.EOF {
 		return nil, errors.New("trailing JSON")
 	}
-	return data, nil
+	return decodeData(data)
 }
 
 func invoke(ctx context.Context, data json.RawMessage, handler Handler) (result any, err error) {
 	defer func() {
-		if recover() != nil {
+		if value := recover(); value != nil {
 			result = nil
-			err = errors.New("handler panic")
+			err = observability.CapturePanic(value)
 		}
 	}()
 	return handler(ctx, data)

@@ -1,6 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 import 'package:flutter/material.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 
 class TwitchClipData {
   final String? imageUrl;
@@ -72,9 +72,7 @@ class _TwitchMessageLinkPreviewWidgetState
           leading:
               data.imageUrl == null
                   ? null
-                  : Image(
-                    image: ResilientNetworkImage(Uri.parse(data.imageUrl!)),
-                  ),
+                  : Image(image: CachedNetworkImageProvider(data.imageUrl!)),
           title: data.title == null ? null : Text(data.title!),
           subtitle: data.description == null ? null : Text(data.description!),
           isThreeLine: true,

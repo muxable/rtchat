@@ -121,4 +121,48 @@ void main() {
     await pumpEventQueue();
     expect(tts.neuralEngine, isNull);
   });
+  test(
+    'prefers the catalog default over a smaller pack installed alongside it',
+    () {
+      final packs = [
+        for (final pack in bundledVoicePacks) installedPackOf(pack),
+      ];
+      expect(NeuralEngineSelector.choose(packs.reversed)?.id, 'supertonic-3');
+      expect(
+        NeuralEngineSelector.choose(packs, preferredId: 'supertonic-2')?.id,
+        'supertonic-2',
+      );
+      expect(
+        NeuralEngineSelector.choose(packs, preferredId: 'missing')?.id,
+        'supertonic-3',
+      );
+    },
+  );
+
+  test(
+    'switches after selection and falls back when that pack is deleted',
+    () async {
+      for (final pack in bundledVoicePacks) {
+        repository.add(installedPackOf(pack));
+      }
+      await selector.start();
+      final first = tts.neuralEngine as FakeTtsEngine;
+      expect(first.name, 'supertonic-3');
+      tts.preferredVoicePackId = 'supertonic-2';
+      await pumpEventQueue();
+      expect((tts.neuralEngine! as FakeTtsEngine).name, 'supertonic-2');
+      expect(first.isDisposed, isTrue);
+      repository.remove('supertonic-2');
+      await pumpEventQueue();
+      expect((tts.neuralEngine! as FakeTtsEngine).name, 'supertonic-3');
+    },
+  );
+
+  test('persists the preferred pack without changing older settings', () {
+    expect(tts.toJson(), isNot(contains('voicePack')));
+    tts.preferredVoicePackId = 'supertonic-2';
+    final restored = TtsModel.fromJson(tts.toJson(), engine: FakeTtsEngine());
+    expect(restored.preferredVoicePackId, 'supertonic-2');
+    restored.dispose();
+  });
 }

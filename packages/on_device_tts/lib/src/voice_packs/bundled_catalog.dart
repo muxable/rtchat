@@ -1,9 +1,9 @@
 // The voice packs the package offers.
 //
 // PROVISIONAL. The engines (#1502 on Android, #1517 on iOS) run on ONNX
-// Runtime without a phonemizer, so the only model for now is Supertonic 3,
-// which needs none. Models that need espeak-ng phonemes (Kitten, Piper,
-// Kokoro) come back with #1518.
+// Runtime without a phonemizer, so the default model is Supertonic 3,
+// which needs none. Supertonic 2 is also available as a smaller five-language
+// alternative. Models requiring phonemes need a separate engine integration.
 //
 // The files are the originals on Hugging Face (Supertone/supertonic-3),
 // pinned to revision 3cadd1ee6394adea1bd021217a0e650ede09a323. Hosting them
@@ -168,6 +168,199 @@ final bundledVoicePacks = List<VoicePack>.unmodifiable([
         'https://huggingface.co/Supertone/supertonic-3/blob/$_revision/LICENSE',
       ),
       attribution: 'Supertonic 3 by Supertone Inc.',
+    ),
+    config: const {
+      'duration_predictor': 'onnx/duration_predictor.onnx',
+      'text_encoder': 'onnx/text_encoder.onnx',
+      'vector_estimator': 'onnx/vector_estimator.onnx',
+      'vocoder': 'onnx/vocoder.onnx',
+      'tts_json': 'onnx/tts.json',
+      'unicode_indexer': 'onnx/unicode_indexer.json',
+      'voice_styles': [
+        'voice_styles/F1.json',
+        'voice_styles/F2.json',
+        'voice_styles/F3.json',
+        'voice_styles/F4.json',
+        'voice_styles/F5.json',
+        'voice_styles/M1.json',
+        'voice_styles/M2.json',
+        'voice_styles/M3.json',
+        'voice_styles/M4.json',
+        'voice_styles/M5.json',
+      ],
+    },
+  ),
+
+  VoicePack(
+    id: 'supertonic-2',
+    name: 'Supertonic 2',
+    version: 1,
+    modelType: VoicePackModelType.supertonic,
+    languages: const ['en', 'ko', 'es', 'pt', 'fr'],
+    speakers: const [
+      VoicePackSpeaker(index: 0, name: 'F1', gender: 'female'),
+      VoicePackSpeaker(index: 1, name: 'F2', gender: 'female'),
+      VoicePackSpeaker(index: 2, name: 'F3', gender: 'female'),
+      VoicePackSpeaker(index: 3, name: 'F4', gender: 'female'),
+      VoicePackSpeaker(index: 4, name: 'F5', gender: 'female'),
+      VoicePackSpeaker(index: 5, name: 'M1', gender: 'male'),
+      VoicePackSpeaker(index: 6, name: 'M2', gender: 'male'),
+      VoicePackSpeaker(index: 7, name: 'M3', gender: 'male'),
+      VoicePackSpeaker(index: 8, name: 'M4', gender: 'male'),
+      VoicePackSpeaker(index: 9, name: 'M5', gender: 'male'),
+    ],
+    files: [
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/onnx/duration_predictor.onnx',
+        ),
+        size: 1521526,
+        sha256:
+            '6d556b3691165c364be91dc0bd894656b5949f5acd2750d8ec2f954010845011',
+        path: 'onnx/duration_predictor.onnx',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/onnx/text_encoder.onnx',
+        ),
+        size: 27431318,
+        sha256:
+            'dd5f535ed629f7df86071043e15f541ce1b2ab7f1bdbce4c7892b307bca79fa3',
+        path: 'onnx/text_encoder.onnx',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/onnx/tts.json',
+        ),
+        size: 8699,
+        sha256:
+            'ee531d9af9b80438a2ed703e22155ee6c83b12595ab22fd3bb6de94c7502fe96',
+        path: 'onnx/tts.json',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/onnx/unicode_indexer.json',
+        ),
+        size: 262196,
+        sha256:
+            'b7662a73a0703f43b97c0f2e089f8e8325e26f5d841aca393b5a54c509c92df1',
+        path: 'onnx/unicode_indexer.json',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/onnx/vector_estimator.onnx',
+        ),
+        size: 132471364,
+        sha256:
+            '105e9d66fd8756876b210a6b4aa03fc393b1eaca3a8dadcc8d9a3bc785c86a35',
+        path: 'onnx/vector_estimator.onnx',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/onnx/vocoder.onnx',
+        ),
+        size: 101405066,
+        sha256:
+            '19bd51f47a186069c752403518a40f7ea4c647455056d2511f7249691ecddf7c',
+        path: 'onnx/vocoder.onnx',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/voice_styles/F1.json',
+        ),
+        size: 420050,
+        sha256:
+            '6106950ebeb8a5da29ea22075f605db659cd07dbc288a68292543d9129aa250f',
+        path: 'voice_styles/F1.json',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/voice_styles/F2.json',
+        ),
+        size: 420293,
+        sha256:
+            '8b97feb16d79ac0447136796708feac5f83dbabe92a5be1168212653c38729ae',
+        path: 'voice_styles/F2.json',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/voice_styles/F3.json',
+        ),
+        size: 419887,
+        sha256:
+            '7eda5bccb4e6eb7f228fa182462d5fcf982d77628234603599027f0734d70c29',
+        path: 'voice_styles/F3.json',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/voice_styles/F4.json',
+        ),
+        size: 419642,
+        sha256:
+            'e056fc2bee393edc8bff761eb28f33fb461e8dad828c3b05348a010ac1b7bb79',
+        path: 'voice_styles/F4.json',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/voice_styles/F5.json',
+        ),
+        size: 419709,
+        sha256:
+            'ce7645ad7e3c13cca04e0d62bf890ef9ac401988005ba8f5e9c9b59257bc6931',
+        path: 'voice_styles/F5.json',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/voice_styles/M1.json',
+        ),
+        size: 420510,
+        sha256:
+            'a04c823cbda6dd1c7de131ec68fea83bbb70d7f29d61623304eb871e3b83b5a1',
+        path: 'voice_styles/M1.json',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/voice_styles/M2.json',
+        ),
+        size: 420285,
+        sha256:
+            '7ddd07bf873a3fd67d09ef4e8293b486beb658158b47e371166198e4c6926072',
+        path: 'voice_styles/M2.json',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/voice_styles/M3.json',
+        ),
+        size: 420005,
+        sha256:
+            'e8e77a56459e4dc8cdfeb88e6f778dc9a0adf22e1184414f4b0e82a5d1edbe72',
+        path: 'voice_styles/M3.json',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/voice_styles/M4.json',
+        ),
+        size: 419957,
+        sha256:
+            '95322725e4d25d9ed4e7dcccbf0f3726b0e9a2471d876b7942373218dbd30174',
+        path: 'voice_styles/M4.json',
+      ),
+      VoicePackFile(
+        url: Uri.parse(
+          'https://huggingface.co/Supertone/supertonic-2/resolve/75e6727618a02f323c720cba9478152d4bc16ca4/voice_styles/M5.json',
+        ),
+        size: 419619,
+        sha256:
+            'be52f82327da63ff18481ce2dd8060c7df432e0168d748745ef3e21b92d706a5',
+        path: 'voice_styles/M5.json',
+      ),
+    ],
+    license: VoicePackLicense(
+      name: 'LicenseRef-OpenRAIL-M',
+      url: Uri.parse(
+        'https://huggingface.co/Supertone/supertonic-2/blob/75e6727618a02f323c720cba9478152d4bc16ca4/LICENSE',
+      ),
+      attribution: 'Supertonic 2 by Supertone Inc.',
     ),
     config: const {
       'duration_predictor': 'onnx/duration_predictor.onnx',

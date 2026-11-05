@@ -1,7 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/layout.dart';
 import 'package:rtchat/models/messages/tokens.dart';
 import 'package:rtchat/models/style.dart';
@@ -48,7 +48,7 @@ Iterable<InlineSpan> renderToken(
         preferBelow: false,
         child: Image(
           height: styleModel.fontSize,
-          image: ResilientNetworkImage(token.url),
+          image: CachedNetworkImageProvider(token.url.toString()),
           errorBuilder: (context, error, stackTrace) => Text(token.code),
         ),
       ),

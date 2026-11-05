@@ -45,8 +45,10 @@ dependencies:
   webview_flutter_wkwebview: ^3.27.2
   uuid: ^4.6.0
   flutter_markdown_plus: ^1.0.12
+  cached_network_image: ^4.0.6
 
 dev_dependencies:
+  webview_flutter_platform_interface: ^2.15.1
   audioplayers_platform_interface: ^7.2.0
   leak_tracker_flutter_testing: ^3.0.10
   flutter_test:
@@ -54,6 +56,8 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_cache_manager: ^3.4.5
+  http: ^1.6.0
 
 flutter:
   config:

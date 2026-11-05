@@ -111,3 +111,39 @@ func TestLeaseRetentionDistinguishesUncertainAndLogicalFailures(t *testing.T) {
 		})
 	}
 }
+
+func TestWaitLimitDoesNotShortenLeasedWork(t *testing.T) {
+	if os.Getenv("FIRESTORE_EMULATOR_HOST") == "" {
+		t.Skip("set FIRESTORE_EMULATOR_HOST")
+	}
+	ctx := context.Background()
+	db, err := firestore.NewClient(ctx, fmt.Sprintf("bounded-lifecycle-%d", time.Now().UnixNano()), option.WithoutAuthentication())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := db.Collection("subscriptionLeases").Doc("busy").Set(ctx, map[string]interface{}{"owner": "worker", "until": time.Now().Add(time.Minute)}); err != nil {
+		t.Fatal(err)
+	}
+	started := time.Now()
+	if err := WithWaitLimit(ctx, db, "busy", 100*time.Millisecond, func(context.Context) error { t.Error("entered occupied lease"); return nil }); !errors.Is(err, ErrBusy) {
+		t.Fatal(err)
+	}
+	if elapsed := time.Since(started); elapsed > time.Second {
+		t.Fatal("wait budget was ignored", elapsed)
+	}
+	if err := WithWaitLimit(ctx, db, "free", time.Second, func(work context.Context) error {
+		deadline, ok := work.Deadline()
+		if !ok || time.Until(deadline) < 40*time.Second {
+			t.Error("leased work inherited acquisition deadline", deadline)
+		}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	canceled, stop := context.WithCancel(ctx)
+	stop()
+	if err := WithWaitLimit(canceled, db, "busy", time.Second, func(context.Context) error { t.Error("entered lease after cancellation"); return nil }); !errors.Is(err, context.Canceled) {
+		t.Fatal("caller cancellation was reported as contention", err)
+	}
+}

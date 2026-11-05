@@ -33,6 +33,7 @@ extension Embed on Channel {
 class _StreamPreviewState extends State<StreamPreview> {
   late WebViewController _controller;
   late Uri url;
+  bool _isControllerReady = false;
 
   var _isOverlayActive = false;
   Timer? _overlayTimer;
@@ -75,81 +76,99 @@ class _StreamPreviewState extends State<StreamPreview> {
       _controller = WebViewController.fromPlatformCreationParams(
         AndroidWebViewControllerCreationParams(),
       );
-      // Android blocks unmuted playback that wasn't started by a tap inside
-      // the webview, which leaves the preview muted.
-      (_controller.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false);
     } else {
       throw UnsupportedError("Unsupported platform");
     }
 
-    _controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..enableZoom(false)
-      ..loadRequest(url)
-      ..addJavaScriptChannel(
-        "Flutter",
-        onMessageReceived: (message) {
-          try {
-            final data = jsonDecode(message.message);
-            if (data is Map && data.containsKey('params')) {
-              final params = data['params'];
-              if (params is Map && mounted) {
-                setState(() => _playerState = params["playback"]);
-              }
+    unawaited(_initializeController());
+  }
+
+  Future<void> _initializeController() async {
+    final model = Provider.of<StreamPreviewModel>(context, listen: false);
+    if (_controller.platform is AndroidWebViewController) {
+      await (_controller.platform as AndroidWebViewController)
+          .setMediaPlaybackRequiresUserGesture(false);
+    }
+    await _controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    await _controller.enableZoom(false);
+    await _controller.addJavaScriptChannel(
+      "Flutter",
+      onMessageReceived: (message) {
+        try {
+          final data = jsonDecode(message.message);
+          if (data is! Map || !mounted) return;
+          final params = data['params'];
+          if (data['namespace'] == 'twitch-embed' &&
+              (data['eventName'] == 'offline' ||
+                  data['eventName'] == 'error')) {
+            setState(() => _playerState = 'Unavailable');
+          } else if (params is Map && params['playback'] is String) {
+            final playback = params['playback'] as String;
+            // Idle updates must not cover the player's offline/error message.
+            if (_playerState != 'Unavailable' || playback != 'Idle') {
+              setState(() => _playerState = playback);
             }
-          } catch (e, st) {
-            FirebaseCrashlytics.instance.recordError(e, st);
           }
-        },
-      )
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (url) async {
-            // only twitch's player can be driven over the javascript tunnel,
-            // and dispose() loads a blank page that has no player at all.
-            if (!mounted || !_isTwitch) {
-              return;
-            }
+        } catch (e, st) {
+          FirebaseCrashlytics.instance.recordError(e, st);
+        }
+      },
+    );
+    await _controller.setNavigationDelegate(
+      NavigationDelegate(
+        onPageFinished: (finishedUrl) async {
+          final channelUrl = url;
+          // only twitch's player can be driven over the javascript tunnel,
+          // and dispose() loads a blank page that has no player at all.
+          if (!mounted ||
+              !_isTwitch ||
+              Uri.tryParse(finishedUrl)?.host != 'player.twitch.tv') {
+            return;
+          }
+          await _runJavaScript(
+            await rootBundle.loadString('assets/twitch-tunnel.js'),
+          );
+          if (!mounted || url != channelUrl) {
+            return;
+          }
+          if (Platform.isIOS) {
             await _runJavaScript(
-              await rootBundle.loadString('assets/twitch-tunnel.js'),
+              "window.action(window.Actions.SetMuted, ${model.volume == 0})",
             );
-            // wait a second for twitch to catch up.
-            await Future.delayed(const Duration(seconds: 1));
-            if (!mounted) {
-              return;
-            }
-            if (Platform.isIOS) {
+          } else {
+            await _runJavaScript(
+              "window.action(window.Actions.SetMuted, false)",
+            );
+            await _runJavaScript(
+              "window.action(window.Actions.SetVolume, ${model.volume / 100})",
+            );
+            if (model.isHighDefinition) {
               await _runJavaScript(
-                "window.action(window.Actions.SetMuted, ${model.volume == 0})",
+                "window.action(window.Actions.SetQuality, 'auto')",
               );
             } else {
               await _runJavaScript(
-                "window.action(window.Actions.SetMuted, false)",
+                "window.action(window.Actions.SetQuality, '360p')",
               );
-              await _runJavaScript(
-                "window.action(window.Actions.SetVolume, ${model.volume / 100})",
-              );
-              if (model.isHighDefinition) {
-                await _runJavaScript(
-                  "window.action(window.Actions.SetQuality, 'auto')",
-                );
-              } else {
-                await _runJavaScript(
-                  "window.action(window.Actions.SetQuality, '360p')",
-                );
-                await Future.delayed(const Duration(seconds: 2));
-                if (!mounted || !_isTwitch) {
-                  return;
-                }
-                await _runJavaScript(
-                  "window.action(window.Actions.SetQuality, '360p30')",
-                );
+              await Future.delayed(const Duration(seconds: 2));
+              if (!mounted || !_isTwitch || url != channelUrl) {
+                return;
               }
+              await _runJavaScript(
+                "window.action(window.Actions.SetQuality, '360p30')",
+              );
             }
-          },
-        ),
-      );
+          }
+          // Small mobile previews do not qualify for Twitch autoplay.
+          // The tunnel waits until the player is ready before starting it.
+          await _runJavaScript("window.action(window.Actions.Play)");
+        },
+      ),
+    );
+    _isControllerReady = true;
+    if (mounted) {
+      await _controller.loadRequest(url);
+    }
   }
 
   @override
@@ -172,8 +191,13 @@ class _StreamPreviewState extends State<StreamPreview> {
     super.didUpdateWidget(oldWidget);
     final newUrl = widget.channel.embedUri;
     if (url != newUrl) {
-      _controller.loadRequest(newUrl);
+      _playerState = null;
+      _isOverlayActive = false;
+      _overlayTimer?.cancel();
       url = newUrl;
+      if (_isControllerReady) {
+        _controller.loadRequest(newUrl);
+      }
     }
   }
 
@@ -287,6 +311,7 @@ class _StreamPreviewState extends State<StreamPreview> {
                                     !_isOverlayActive
                                         ? null
                                         : () async {
+                                          final channelUrl = url;
                                           model.isHighDefinition =
                                               !model.isHighDefinition;
                                           if (model.isHighDefinition) {
@@ -300,7 +325,9 @@ class _StreamPreviewState extends State<StreamPreview> {
                                             await Future.delayed(
                                               const Duration(seconds: 2),
                                             );
-                                            if (!mounted || !_isTwitch) {
+                                            if (!mounted ||
+                                                !_isTwitch ||
+                                                url != channelUrl) {
                                               return;
                                             }
                                             await _runJavaScript(

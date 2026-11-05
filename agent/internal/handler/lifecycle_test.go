@@ -10,6 +10,7 @@ import (
 
 type fakeChat struct {
 	onConnect   func()
+	onRoomState func(twitch.RoomStateMessage)
 	connect     func() error
 	disconnect  func() error
 	onReconnect func(twitch.ReconnectMessage)
@@ -61,3 +62,5 @@ func TestAuthenticatedCloseDisconnects(t *testing.T) {
 func (c *fakeChat) OnReconnectMessage(f func(twitch.ReconnectMessage)) { c.onReconnect = f }
 
 func (c *fakeChat) SetIRCToken(token string) { c.token = token }
+
+func (c *fakeChat) OnRoomStateMessage(f func(twitch.RoomStateMessage)) { c.onRoomState = f }

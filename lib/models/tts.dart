@@ -25,6 +25,7 @@ import 'package:rtchat/models/messages/twitch/subscription_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_gift_event.dart';
 import 'package:rtchat/models/messages/twitch/subscription_message_event.dart';
 import 'package:rtchat/models/tts/language.dart';
+import 'package:rtchat/models/tts/samples.dart';
 import 'package:rtchat/models/tts/muted_user.dart';
 import 'package:rtchat/models/views.dart';
 
@@ -76,9 +77,9 @@ enum NeuralTtsFallback {
 /// 3. and by the platform's voices too when the neural engine fails, for
 ///    that message only (unless it was unsaid in the meantime).
 ///
-/// Chat is in its channel's language ([languageFor]). Alerts and system
-/// messages are made of the app's strings, so they are in its language, and
-/// always read with the chosen voice.
+/// Chat is in its channel's language ([languageFor]). Generated mode/backlog
+/// announcements use the current reading language when translated; other alerts
+/// use the app's language. Announcements and alerts use the chosen voice.
 ///
 /// A loaded neural model takes a few hundred megabytes, so it's released
 /// ([releaseNeuralModels]) when text to speech is turned off, after
@@ -226,6 +227,7 @@ class TtsModel extends ChangeNotifier {
     bool includeAuthorPrelude = false,
   }) {
     if (model is ChatMessage) {
+      l10n = _localizationsForLanguage(l10n, languageFor(model).languageCode);
       final text = model.tokenized
           .where(
             (token) =>
@@ -347,11 +349,30 @@ class TtsModel extends ChangeNotifier {
     }
   }
 
+  AppLocalizations _localizationsForLanguage(
+    AppLocalizations fallback,
+    String language,
+  ) {
+    final available = AppLocalizations.supportedLocales;
+    final match = LanguageTag.bestMatch(
+      language,
+      available.map((locale) => locale.toLanguageTag()),
+    );
+    if (match == null) return fallback;
+    return lookupAppLocalizations(
+      available.firstWhere((locale) => locale.toLanguageTag() == match),
+    );
+  }
+
+  AppLocalizations _announcementLocalizations(AppLocalizations fallback) =>
+      _localizationsForLanguage(fallback, readingLanguage.languageCode);
+
   void setMode(AppLocalizations localizations, TtsMode mode) {
     if (_mode == mode) {
       return;
     }
     _mode = mode;
+    localizations = _announcementLocalizations(localizations);
     switch (mode) {
       case TtsMode.alertsOnly:
         say(
@@ -534,23 +555,45 @@ class TtsModel extends ChangeNotifier {
   /// `en`, `pt`); none without a voice pack.
   Future<List<String>> neuralLanguages() => _router.languages();
 
+  /// Previews the stream's language, or an explicitly selected voice language.
+  Future<void> previewSample({String? language, String? voiceId}) {
+    final spokenLanguage = language ?? readingLanguage.languageCode;
+    return previewVoice(
+      spokenLanguage,
+      voiceId,
+      ttsSampleMessage(spokenLanguage),
+    );
+  }
+
   /// Reads [text] in [language] with the neural voice [voiceId], after what
-  /// is being read now. Does nothing if no neural voice can read it.
-  Future<void> previewVoice(String language, String voiceId, String text) {
+  /// is being read now. Uses the system engine when no neural voice can read it.
+  Future<void> previewVoice(String language, String? voiceId, String text) {
     final completer = Completer<void>();
     _idleTimer?.cancel();
     _afterQueue(() async {
       try {
         await _releasing;
+        if (_isDisposed) return;
         final route =
             _neuralFallback == null ? await _router.route(language) : null;
-        await route?.engine.speak(
-          text,
-          voice: route.voiceWithId(voiceId),
-          rate: _speed,
-          pitch: _pitch,
-          language: route.language,
-        );
+        if (route != null) {
+          await route.engine.speak(
+            text,
+            voice: route.voiceWithId(
+              voiceId ?? _chosenVoiceId(language, route.language),
+            ),
+            rate: _speed,
+            pitch: _pitch,
+            language: route.language,
+          );
+        } else {
+          await _systemEngine.speak(
+            text,
+            rate: _speed,
+            pitch: _pitch,
+            language: language,
+          );
+        }
       } catch (e, st) {
         _reportError(e, st);
       } finally {
@@ -721,20 +764,32 @@ class TtsModel extends ChangeNotifier {
       // the system voices read chat in its channel's language, when known;
       // otherwise, and for alerts, they keep their default.
       final systemLanguage =
-          model is ChatMessage ? _knownLanguageFor(model) : null;
+          model is ChatMessage
+              ? _knownLanguageFor(model)?.languageCode
+              : localizations.localeName.replaceAll('_', '-');
       await _systemEngine.speak(
         vocalization,
         rate: _speed,
         pitch: _pitch,
-        language: systemLanguage?.languageCode,
+        language: systemLanguage,
       );
     } catch (e, st) {
       _reportError(e, st);
     }
   }
 
-  /// The engine that speaks with a neural voice pack, or null to speak with
-  /// the platform's voices.
+  String? _preferredVoicePackId;
+
+  /// The installed pack selected by the user; null uses the default catalog order.
+  String? get preferredVoicePackId => _preferredVoicePackId;
+
+  set preferredVoicePackId(String? id) {
+    if (_preferredVoicePackId == id) return;
+    _preferredVoicePackId = id;
+    notifyListeners();
+  }
+
+  /// The engine that speaks with a neural voice pack, or null for system voices.
   TtsEngine? get neuralEngine => _neuralEngine;
 
   /// Replaces the neural engine; the model owns [engine] from now on. The
@@ -840,6 +895,7 @@ class TtsModel extends ChangeNotifier {
   });
 
   void _turnOffForBacklog(AppLocalizations localizations) {
+    localizations = _announcementLocalizations(localizations);
     _pending.clear();
     _mode = TtsMode.disabled;
     say(
@@ -875,6 +931,8 @@ class TtsModel extends ChangeNotifier {
   }
 
   void _updateFromJsonInternal(Map<String, dynamic> json) {
+    _preferredVoicePackId =
+        json['voicePack'] is String ? json['voicePack'] as String : null;
     if (json['isBotMuted'] != null) {
       _isBotMuted = json['isBotMuted'];
     }
@@ -966,6 +1024,7 @@ class TtsModel extends ChangeNotifier {
     "pitch": pitch,
     "speed": speed,
     "neuralVoices": Map.of(_neuralVoices),
+    if (_preferredVoicePackId != null) "voicePack": _preferredVoicePackId,
     'mutedUsers': _mutedUsers.map((e) => e.toJson()).toList(),
   };
 }

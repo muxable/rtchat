@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -208,7 +209,22 @@ class ChatHistoryMessage extends StatelessWidget {
             onCancel:
                 host == null
                     ? null
-                    : () => ActionsAdapter.forAccount(host).cancelRaid(channel),
+                    : () async {
+                      try {
+                        await ActionsAdapter.forAccount(
+                          host,
+                        ).cancelRaid(channel);
+                      } catch (error) {
+                        if (!context.mounted) return;
+                        final message =
+                            error is FirebaseFunctionsException
+                                ? error.message ?? error.code
+                                : error.toString();
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(message)));
+                      }
+                    },
           );
         },
       );
@@ -259,6 +275,8 @@ class ChatHistoryMessage extends StatelessWidget {
   }
 }
 
+enum _ModerationAction { delete, timeout, ban, unban }
+
 /// Long-press moderation for chat messages on channels the user owns.
 class _ModerationActions extends StatelessWidget {
   final ChatMessage message;
@@ -293,7 +311,8 @@ class _ModerationActions extends StatelessWidget {
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         onLongPress: () async {
           FocusManager.instance.primaryFocus?.unfocus();
-          var showTimeoutDialog = await showDialog<bool>(
+          final messenger = ScaffoldMessenger.of(context);
+          final action = await showDialog<_ModerationAction>(
             context: context,
             builder: (context) {
               return Dialog(
@@ -352,8 +371,7 @@ class _ModerationActions extends StatelessWidget {
                       ),
                       title: Text(AppLocalizations.of(context)!.deleteMessage),
                       onTap: () {
-                        actions.delete(channel, m.messageId);
-                        Navigator.pop(context);
+                        Navigator.pop(context, _ModerationAction.delete);
                       },
                     ),
                     ListTile(
@@ -367,7 +385,7 @@ class _ModerationActions extends StatelessWidget {
                         )!.timeoutUser(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
-                        Navigator.pop(context, true);
+                        Navigator.pop(context, _ModerationAction.timeout);
                       },
                     ),
                     ListTile(
@@ -381,12 +399,7 @@ class _ModerationActions extends StatelessWidget {
                         )!.banUser(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
-                        actions.ban(
-                          channel,
-                          m.author.login,
-                          userId: m.author.userId,
-                        );
-                        Navigator.pop(context);
+                        Navigator.pop(context, _ModerationAction.ban);
                       },
                     ),
                     ListTile(
@@ -400,12 +413,7 @@ class _ModerationActions extends StatelessWidget {
                         )!.unbanUser(m.author.displayName ?? m.author.login),
                       ),
                       onTap: () {
-                        actions.unban(
-                          channel,
-                          m.author.login,
-                          userId: m.author.userId,
-                        );
-                        Navigator.pop(context);
+                        Navigator.pop(context, _ModerationAction.unban);
                       },
                     ),
                     ListTile(
@@ -439,27 +447,53 @@ class _ModerationActions extends StatelessWidget {
               );
             },
           );
-          if (showTimeoutDialog == true && context.mounted) {
-            await showDialog(
-              context: context,
-              builder: (context) {
-                return TimeoutDialog(
-                  title: AppLocalizations.of(
-                    context,
-                  )!.timeoutUser(m.author.displayName ?? m.author.login),
-                  onPressed: (duration) {
-                    actions.timeout(
-                      channel,
-                      m.author.login,
-                      "timed out by streamer",
-                      duration,
-                      userId: m.author.userId,
-                    );
-                    Navigator.pop(context);
-                  },
+          try {
+            switch (action) {
+              case _ModerationAction.delete:
+                await actions.delete(channel, m.messageId);
+              case _ModerationAction.ban:
+                await actions.ban(
+                  channel,
+                  m.author.login,
+                  userId: m.author.userId,
                 );
-              },
-            );
+              case _ModerationAction.unban:
+                await actions.unban(
+                  channel,
+                  m.author.login,
+                  userId: m.author.userId,
+                );
+              case _ModerationAction.timeout:
+                if (!context.mounted) return;
+                final duration = await showDialog<Duration>(
+                  context: context,
+                  builder:
+                      (context) => TimeoutDialog(
+                        title: AppLocalizations.of(
+                          context,
+                        )!.timeoutUser(m.author.displayName ?? m.author.login),
+                        onPressed:
+                            (duration) => Navigator.pop(context, duration),
+                      ),
+                );
+                if (duration == null) return;
+                await actions.timeout(
+                  channel,
+                  m.author.login,
+                  "timed out by streamer",
+                  duration,
+                  userId: m.author.userId,
+                );
+              case null:
+                return;
+            }
+          } catch (error) {
+            if (!messenger.mounted) return;
+            final message =
+                error is FirebaseFunctionsException
+                    ? error.message ?? error.code
+                    : error.toString();
+            messenger.showSnackBar(SnackBar(content: Text(message)));
           }
         },
         child: child,

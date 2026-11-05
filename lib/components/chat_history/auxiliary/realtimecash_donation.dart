@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:rtchat/components/chat_history/decorated_event.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
@@ -21,13 +23,13 @@ class RealtimeCashDonationEventWidget extends StatelessWidget {
             text:
                 model.donor != null && model.donor!.isNotEmpty
                     ? AppLocalizations.of(context)!.realtimeCashTipWithDonor(
-                      model.donor!,
+                      htmlEscape.convert(model.donor!),
                       model.value.toString(),
-                      model.currency,
+                      htmlEscape.convert(model.currency),
                     )
                     : AppLocalizations.of(context)!.realtimeCashTipAnonymous(
                       model.value.toString(),
-                      model.currency,
+                      htmlEscape.convert(model.currency),
                     ),
             tags: {
               'b': StyledTextTag(style: Theme.of(context).textTheme.titleSmall),

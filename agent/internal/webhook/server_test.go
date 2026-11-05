@@ -66,6 +66,9 @@ func TestLoggingMiddleware(t *testing.T) {
 			if len(entries) != 1 {
 				t.Fatalf("got %d log entries, want 1", len(entries))
 			}
+			if test.status >= 500 && entries[0].Level != zap.ErrorLevel {
+				t.Fatal("server failure was not logged as an error")
+			}
 			fields := entries[0].ContextMap()
 			if fields["method"] != http.MethodPost || fields["path"] != "/events" || fields["status"] != int64(test.status) {
 				t.Fatalf("unexpected log fields: %v", fields)

@@ -87,7 +87,10 @@ void main() {
     );
     await tester.pumpAndSettle();
     final utterance = engine.utterances.single;
-    expect(utterance.text, 'This is a sample message for text to speech.');
+    expect(
+      utterance.text,
+      lookupAppLocalizations(const Locale('fr')).sampleMessage,
+    );
     expect(utterance.voice?.name, 'F3');
     expect(utterance.language, 'fr');
     // previewing doesn't pick the voice.

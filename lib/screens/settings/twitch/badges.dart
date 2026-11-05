@@ -1,7 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/image/cross_fade_image.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/adapters/chat_state.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
@@ -47,13 +47,11 @@ class TwitchBadgesScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final badge = badges[index];
               final lastVersion = badge.versions.last;
-              final image = ResilientNetworkImage(
-                Uri.parse(lastVersion.imageUrl4x),
-              );
+              final image = CachedNetworkImageProvider(lastVersion.imageUrl4x);
               return CheckboxListTile.adaptive(
                 secondary: CrossFadeImage(
                   alignment: Alignment.center,
-                  placeholder: image.placeholderImage,
+                  placeholder: MemoryImage(kTransparentImage),
                   image: image,
                   width: 36,
                   height: 36,

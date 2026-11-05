@@ -26,6 +26,7 @@ class NeuralEngineSelector {
   // identifies the install the current engine speaks with.
   String? _installed;
   var _isDisposed = false;
+  String? _preferred;
 
   NeuralEngineSelector({
     required this.repository,
@@ -41,6 +42,8 @@ class NeuralEngineSelector {
   /// whenever the installed packs change.
   Future<void> start() {
     if (_changes == null) {
+      _preferred = tts.preferredVoicePackId;
+      tts.addListener(_onTtsChanged);
       _changes = repository.changes.listen((_) => refresh());
       _refreshing = _checkDeviceMemory();
     }
@@ -58,12 +61,34 @@ class NeuralEngineSelector {
     }
   }
 
-  /// The installed pack to speak with: the first, by id, that a
-  /// [NeuralTtsEngine] can speak with.
-  static InstalledVoicePack? choose(Iterable<InstalledVoicePack> installed) =>
-      (installed.where((pack) => NeuralTtsEngine.canSpeak(pack.pack)).toList()
-            ..sort((a, b) => a.id.compareTo(b.id)))
-          .firstOrNull;
+  /// The selected installed pack, otherwise the catalog's preferred pack.
+  /// Unknown packs retain deterministic ordering after catalog entries.
+  static InstalledVoicePack? choose(
+    Iterable<InstalledVoicePack> installed, {
+    String? preferredId,
+  }) {
+    final available =
+        installed.where((pack) => NeuralTtsEngine.canSpeak(pack.pack)).toList();
+    for (final pack in available) {
+      if (pack.id == preferredId) return pack;
+    }
+    final priority = {
+      for (final (i, pack) in bundledVoicePacks.indexed) pack.id: i,
+    };
+    available.sort((a, b) {
+      final order = (priority[a.id] ?? priority.length).compareTo(
+        priority[b.id] ?? priority.length,
+      );
+      return order == 0 ? a.id.compareTo(b.id) : order;
+    });
+    return available.firstOrNull;
+  }
+
+  void _onTtsChanged() {
+    if (_preferred == tts.preferredVoicePackId) return;
+    _preferred = tts.preferredVoicePackId;
+    refresh();
+  }
 
   /// Looks at the installed packs again and swaps the engine if the pack to
   /// speak with changed.
@@ -74,7 +99,10 @@ class NeuralEngineSelector {
 
   Future<void> _refresh() async {
     if (_isDisposed) return;
-    final pack = choose((await repository.installedPacks()).values);
+    final pack = choose(
+      (await repository.installedPacks()).values,
+      preferredId: tts.preferredVoicePackId,
+    );
     if (_isDisposed) return;
     final installed =
         pack == null
@@ -98,6 +126,7 @@ class NeuralEngineSelector {
   /// disposes it.
   void dispose() {
     _isDisposed = true;
+    tts.removeListener(_onTtsChanged);
     _changes?.cancel();
     _changes = null;
   }

@@ -72,6 +72,9 @@ func (s *chatRoutes) twitch(ctx context.Context, uid, token, action string, r ch
 		if err != nil {
 			return nil, err
 		}
+		if user.ID == "" {
+			return nil, &callable.Error{Code: "not-found", Message: "Twitch user not found"}
+		}
 		target = user.ID
 	}
 	switch action {
@@ -115,6 +118,10 @@ func (s *chatRoutes) twitch(ctx context.Context, uid, token, action string, r ch
 		if err == nil && s.store.RaidCancel(ctx, r.ChannelID, time.Now()) != nil {
 			zap.L().Warn("failed to record raid cancel")
 		}
+	}
+	var rejected *twitch.ModerationRejected
+	if errors.As(err, &rejected) {
+		return nil, &callable.Error{Code: "failed-precondition", Message: rejected.Message}
 	}
 	return nil, err
 }

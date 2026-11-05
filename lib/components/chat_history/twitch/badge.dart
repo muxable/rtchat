@@ -1,6 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rtchat/components/image/resilient_network_image.dart';
 import 'package:rtchat/models/messages/twitch/badge.dart';
 
 class TwitchBadgeWidget extends StatelessWidget {
@@ -36,7 +36,10 @@ class TwitchBadgeWidget extends StatelessWidget {
             }
             return Padding(
               padding: const EdgeInsets.only(right: 5),
-              child: Image(image: ResilientNetworkImage(url), height: height),
+              child: Image(
+                image: CachedNetworkImageProvider(url.toString()),
+                height: height,
+              ),
             );
           }
         }
