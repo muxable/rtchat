@@ -351,8 +351,7 @@ class _ChannelSearchResultsWidgetState
         oldWidget.followedChannels != widget.followedChannels) {
       _debounce?.cancel();
       _results = _search();
-    } else if (oldWidget.query != widget.query ||
-        oldWidget.isShowOnlyOnline != widget.isShowOnlyOnline) {
+    } else if (oldWidget.query != widget.query) {
       _debounce?.cancel();
       _debounce = Timer(const Duration(milliseconds: 500), () {
         if (!mounted) return;
