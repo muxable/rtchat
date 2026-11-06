@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import 'package:rtchat/components/provider_icon.dart';
-import 'package:rtchat/components/scanner_error.dart';
-import 'package:rtchat/components/scanner_settings.dart';
+import 'package:rtchat/components/qr_scanner.dart';
 import 'package:rtchat/l10n/app_localizations.dart';
 import 'package:rtchat/models/accounts.dart';
 import 'package:rtchat/models/adapters/donations.dart';
@@ -96,12 +94,6 @@ class _RealtimeCashWidget extends StatefulWidget {
 }
 
 class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
-  var _scanController = MobileScannerController(
-    // facing: CameraFacing.back,
-    // torchEnabled: false,
-    detectionSpeed: DetectionSpeed.noDuplicates,
-  );
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<String?>(
@@ -139,60 +131,21 @@ class _RealtimeCashWidgetState extends State<_RealtimeCashWidget> {
                   hintText: AppLocalizations.of(context)!.walletAddress,
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.qr_code_scanner),
-                    onPressed: () {
+                    onPressed: () async {
                       final messenger = ScaffoldMessenger.of(context);
-
-                      showModalBottomSheet(
-                        isScrollControlled: true,
-                        context: context,
-                        builder: (ctx) {
-                          return Stack(
-                            children: [
-                              MobileScanner(
-                                errorBuilder: (context, error) {
-                                  return ScannerErrorWidget(error: error);
-                                },
-                                controller: _scanController,
-                                onDetect: (capture) {
-                                  final address = parseWalletAddress(
-                                    capture.barcodes.firstOrNull?.rawValue,
-                                  );
-                                  if (address == null) {
-                                    messenger.showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          AppLocalizations.of(
-                                            context,
-                                          )!.invalidUrlErrorText,
-                                        ),
-                                      ),
-                                    );
-                                  } else {
-                                    widget.donations.setRealtimeCashAddress(
-                                      address: address,
-                                    );
-                                  }
-                                  Navigator.pop(ctx);
-                                },
-                              ),
-                              Positioned(
-                                top: 50,
-                                left: 0,
-                                right: 0,
-                                child: ScannerSettings(
-                                  scanController: _scanController,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ).then((value) {
-                        _scanController.dispose();
-
-                        _scanController = MobileScannerController(
-                          detectionSpeed: DetectionSpeed.noDuplicates,
+                      final l10n = AppLocalizations.of(context)!;
+                      final value = await scanQrCode(context);
+                      if (value == null) return;
+                      final address = parseWalletAddress(value);
+                      if (address == null) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text(l10n.invalidUrlErrorText)),
                         );
-                      });
+                      } else {
+                        widget.donations.setRealtimeCashAddress(
+                          address: address,
+                        );
+                      }
                     },
                   ),
                 ),
@@ -291,14 +244,9 @@ class _RealTimeKitWidget extends StatefulWidget {
 class _RealTimeKitWidgetState extends State<_RealTimeKitWidget> {
   final _apiKeyController = TextEditingController();
 
-  var _scanController = MobileScannerController(
-    detectionSpeed: DetectionSpeed.noDuplicates,
-  );
-
   @override
   void dispose() {
     _apiKeyController.dispose();
-    _scanController.dispose();
     super.dispose();
   }
 
@@ -357,71 +305,23 @@ class _RealTimeKitWidgetState extends State<_RealTimeKitWidget> {
                   hintText: 'API Key',
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.qr_code_scanner),
-                    onPressed: () {
+                    onPressed: () async {
                       final messenger = ScaffoldMessenger.of(context);
-
-                      showModalBottomSheet(
-                        isScrollControlled: true,
-                        context: context,
-                        builder: (ctx) {
-                          return Stack(
-                            children: [
-                              MobileScanner(
-                                errorBuilder: (context, error) {
-                                  return ScannerErrorWidget(error: error);
-                                },
-                                controller: _scanController,
-                                onDetect: (capture) async {
-                                  final barcode = capture.barcodes.firstOrNull;
-                                  final value = barcode?.rawValue?.trim();
-
-                                  if (value == null || value.isEmpty) {
-                                    messenger.showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          AppLocalizations.of(
-                                            context,
-                                          )!.invalidUrlErrorText,
-                                        ),
-                                      ),
-                                    );
-                                    return;
-                                  }
-
-                                  _apiKeyController.text = value;
-                                  Navigator.pop(ctx);
-
-                                  try {
-                                    await _saveApiKey(value);
-                                  } catch (error) {
-                                    if (!mounted) return;
-                                    messenger.showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Could not save RealtimeKit API key: $error',
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                              Positioned(
-                                top: 50,
-                                left: 0,
-                                right: 0,
-                                child: ScannerSettings(
-                                  scanController: _scanController,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ).whenComplete(() {
-                        _scanController.dispose();
-                        _scanController = MobileScannerController(
-                          detectionSpeed: DetectionSpeed.noDuplicates,
+                      final value = await scanQrCode(context);
+                      if (value == null) return;
+                      _apiKeyController.text = value;
+                      try {
+                        await _saveApiKey(value);
+                      } catch (error) {
+                        if (!mounted) return;
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Could not save RealtimeKit API key: $error',
+                            ),
+                          ),
                         );
-                      });
+                      }
                     },
                   ),
                 ),
