@@ -18,6 +18,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+      - name: Check translations
+        run: python3 scripts/check_translations.py
+      - name: Test translation check
+        run: python3 -m unittest discover -s scripts -p "test_*.py"
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:

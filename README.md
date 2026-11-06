@@ -41,4 +41,4 @@ Adding YouTube support is possible but requires a decent amount of work. If you 
 
 ## Translations
 
-We welcome translations please use our [translation tool](https://translations.muxable.com/?repo=muxable/rtchat&lang=) and add the country code at the end that you wish to translate to. Feel free to make a PR or send it to us in the [discord](https://discord.gg/UKHJMQs74u).
+Translations live in `lib/l10n/app_<locale>.arb`, with `app_en.arb` as the template. Every locale must provide a nonempty translation for each template message. Run `python3 scripts/check_translations.py` to check before submitting a PR; CI runs the same check.
